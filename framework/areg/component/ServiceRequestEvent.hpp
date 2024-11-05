@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ServiceRequestEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service Request Event.
  *              Base Service Request event class to send events to Stub
@@ -113,12 +113,12 @@ public:
     /**
      * \brief   Returns sequence number set in info.
      **/
-    inline unsigned int getSequenceNumber( void ) const;
+    inline const SequenceNumber & getSequenceNumber( void ) const;
 
     /**
      * \brief   Sets new sequence number.
      **/
-    inline void setSequenceNumber(unsigned int newSeqNr);
+    inline void setSequenceNumber(const SequenceNumber & newSeqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -163,7 +163,7 @@ protected:
     /**
      * \brief   Sequence number.
      **/
-    unsigned int                mSequenceNr;
+    SequenceNumber              mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -197,12 +197,12 @@ inline NEService::eRequestType ServiceRequestEvent::getRequestType( void ) const
     return mRequestType;
 }
 
-inline unsigned int ServiceRequestEvent::getSequenceNumber( void ) const
+inline const SequenceNumber & ServiceRequestEvent::getSequenceNumber( void ) const
 {
     return mSequenceNr;
 }
 
-inline void ServiceRequestEvent::setSequenceNumber( unsigned int newSeqNr )
+inline void ServiceRequestEvent::setSequenceNumber(const SequenceNumber & newSeqNr )
 {
     mSequenceNr = newSeqNr;
 }

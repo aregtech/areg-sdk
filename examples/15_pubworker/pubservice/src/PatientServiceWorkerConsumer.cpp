@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/PatientServiceWorkerConsumer.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This is a patient service worker thread to read out data from console.
@@ -11,8 +11,8 @@
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include "areg/base/NEUtilities.hpp"
-#include "generated/src/NECommon.hpp"
-#include "generated/src/PatientInformationStub.hpp"
+#include "common/NECommon.hpp"
+#include "generate/examples/15_pubworker/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS
@@ -31,7 +31,7 @@ PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumer
 {
 }
 
-void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread )
+void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* workThread */, ComponentThread & /* masterThread */ )
 {
     bool quitApp = false;
 
@@ -45,7 +45,7 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
         char firstName[128] = {0};
         char lastName[128]  = {0};
         float weight        = 0.0f;
-        int age             = 0;
+        uint32_t age        = 0u;
 
         printf("\n===============================");
         printf("\nEnter Patient information .....\n");
@@ -91,7 +91,7 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
         /******************************************
          * Do you want to continue or exit application?
          ******************************************/
-        char cmd[2] = {0};
+        char cmd[8] = {0};
         printf("Do you want to continue? (y/n): ");
         if ( MACRO_SCANF( "%1s", cmd, 2 ) != 1 )
         {
@@ -107,6 +107,6 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
     Application::signalAppQuit();
 }
 
-void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
+void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & /* workThread */)
 {
 }

@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/NotificationEvent.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Notification event.
  *
@@ -24,7 +24,7 @@
 //////////////////////////////////////////////////////////////////////////
 // NotificationEventData class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-NotificationEventData::NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, unsigned int seqNr )
+NotificationEventData::NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, const SequenceNumber & seqNr )
     : mProxy        (&proxy)
     , mNotifyType   (notifyType)
     , mNotifyId     (notifyId)
@@ -84,7 +84,7 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(NotificationEvent, ThreadEventBase)
+IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
@@ -104,8 +104,8 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, IENotifica
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : ThreadEventBase (Event::eEventType::EventNotifyClient)
-    , mData             (data)
+    : Event (Event::eEventType::EventNotifyClient)
+    , mData (data)
 {
     setTargetThread();
 }
@@ -134,9 +134,5 @@ void IENotificationEventConsumer::startEventProcessing( Event& eventElem )
     if (eventNotify != nullptr)
     {
         processNotificationEvent(*eventNotify);
-    }
-    else
-    {
-        OUTPUT_WARN("Received not a Notification Event [ %s ]. Ignoring event processing", eventElem.getRuntimeClassName().getString());
     }
 }

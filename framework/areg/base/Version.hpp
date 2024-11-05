@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/Version.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Version class.
  *              This class contains version information such as
@@ -115,7 +115,7 @@ public:
      * \brief   Determines equality of two versions.
      * \remark  This operator compares exact match of version number.
      *          For compatibility check, have a look appropriate IsCompatible method.
-     * \param   other   The second version to compare
+     * \param   version     The second version to compare
      * \return  Returns true if 2 versions are equal.
      * \see     IsCompatible
      **/
@@ -125,7 +125,7 @@ public:
      * \brief   Determines inequality of two versions.
      * \remark  This operator compares exact match of version number.
      *          For compatibility check, have a look appropriate IsCompatible method.
-     * \param   other   The second version to compare
+     * \param   version     The second version to compare
      * \return  Returns true if 2 versions are unequal.
      * \see     IsCompatible
      **/
@@ -135,7 +135,7 @@ public:
      * \brief   Determines whether existing version is smaller.
      * \remark  This operator compares exact match of version number.
      *          For compatibility check, have a look appropriate IsCompatible method.
-     * \param   other   The second version to compare
+     * \param   version     The second version to compare
      * \return  Returns true if existing version is smaller than given.
      * \see     IsCompatible
      **/
@@ -145,7 +145,7 @@ public:
      * \brief   Determines whether existing version is greater.
      * \remark  This operator compares exact match of version number.
      *          For compatibility check, have a look appropriate IsCompatible method.
-     * \param   other   The second version to compare
+     * \param   version     The second version to compare
      * \return  Returns true if existing version is greater than given.
      * \see     IsCompatible
      **/
@@ -166,7 +166,7 @@ public:
     /**
      * \brief	Streams to input object, i.e. write data from version to streaming object.
      * \param	stream	Streaming object to write data
-     * \param	input	Version object to read version data.
+     * \param	output	Version object to read version data.
      * \return	Reference to stream object.
      **/
     friend inline IEOutStream & operator << (IEOutStream & stream, const Version & output);

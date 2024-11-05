@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/Process.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       The class to handle process. Get process ID, process handle,
  *              process name, etc.
@@ -137,13 +137,15 @@ public:
      **/
     inline Process::eProcEnv getEnvironment( void ) const;
 
+    unsigned int getBitness(void) const;
+
     /**
      * \brief   returns the value of the environment variable var, 
      *          or an empty string if:
      *              -   No such environment variable exists or it is empty.
      *              -   There is a reason that it should not be used 
      *                  (e.g. elevated privileges in Linux).
-     * \param   var   The environment variable to return valur.
+     * \param   var   The environment variable to return value.
      **/
     String getSafeEnvVariable( const char * var ) const;
 

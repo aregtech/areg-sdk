@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LayoutManager.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Layout Manager to format output text messages.
  ************************************************************************/
@@ -20,6 +20,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TEArrayList.hpp"
 #include "areg/trace/NETrace.hpp"
+
+#if AREG_LOGS
 
 /************************************************************************
  * Dependencies
@@ -81,7 +83,6 @@ public:
      *          It will go through all layouts to generate message and write in stream.
      * \param   logMsg  The logging message to stream.
      * \param   stream  The streaming object to write output message.
-     * \return  Returns true if operation succeeded.
      **/
     void logMessage( const NETrace::sLogMessage & logMsg, IEOutStream & stream ) const;
 
@@ -123,4 +124,5 @@ inline bool LayoutManager::isValid( void ) const
     return (mLayoutList.isEmpty() == false);
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP

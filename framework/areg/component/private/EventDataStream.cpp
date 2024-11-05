@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDataStream.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, event data stream implementation
  *
@@ -39,7 +39,7 @@ const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::Ev
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::EmptyString*/ )
+EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::getEmptyString()*/ )
     : IEIOStream    ( )
 
     , mEventDataType(evetDataType)
@@ -47,7 +47,6 @@ EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, cons
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
-    ;
 }
 
 EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
@@ -149,14 +148,14 @@ unsigned int EventDataStream::read( IEByteBuffer & buffer ) const
     return result;
 }
 
-unsigned int EventDataStream::read( String & asciiString ) const
+unsigned int EventDataStream::read( String & ascii ) const
 {
-    return mDataBuffer.read(asciiString);
+    return mDataBuffer.read(ascii);
 }
 
-unsigned int EventDataStream::read( WideString & wideString ) const
+unsigned int EventDataStream::read( WideString & wide ) const
 {
-    return mDataBuffer.read(wideString);
+    return mDataBuffer.read(wide);
 }
 
 void EventDataStream::resetCursor( void ) const
@@ -185,14 +184,14 @@ unsigned int EventDataStream::write( const IEByteBuffer & buffer )
     return result;
 }
 
-unsigned int EventDataStream::write( const String & asciiString )
+unsigned int EventDataStream::write( const String & ascii )
 {
-    return mDataBuffer.write(asciiString);
+    return mDataBuffer.write(ascii);
 }
 
-unsigned int EventDataStream::write( const WideString & wideString )
+unsigned int EventDataStream::write( const WideString & wide )
 {
-    return mDataBuffer.write(wideString);
+    return mDataBuffer.write(wide);
 }
 
 void EventDataStream::flush( void )

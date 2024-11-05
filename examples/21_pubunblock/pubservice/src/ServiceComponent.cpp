@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/ServiceComponent.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file is demonstration of manual unlocking of the request.
@@ -85,7 +85,7 @@ void ServiceComponent::requestHelloUblock( unsigned int clientId, unsigned int s
               << " Session = " << sessionId << std::endl;
 }
 
-void ServiceComponent::processTimer( Timer & timer )
+void ServiceComponent::processTimer( Timer & /* timer */ )
 {
     TRACE_SCOPE( examples_21_pubservice_ServiceComponent_processTimer );
     SessionEtnry entry = mSessionList.popFirst( );
@@ -99,7 +99,7 @@ void ServiceComponent::processTimer( Timer & timer )
         TRACE_DBG( "Succeeded to send response to client [ %u ], sequence [ %u ]", entry.clientId, entry.seqNr );
 
         std::cout << "<<< Response at [ " << timestamp << " ]: "
-                  << " Clinet = " << entry.clientId
+                  << " Client = " << entry.clientId
                   << " Sequence = " << entry.seqNr << std::endl;
     }
     else

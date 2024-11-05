@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        ServiceClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -37,32 +37,22 @@ ServiceClient::ServiceClient(const String & roleName, Component & owner)
     TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_serviceConnected);
-    if ( HelloWorldClientBase::serviceConnected( isConnected, proxy ) )
+    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        TRACE_DBG( "Proxy [ %s ] is [ %s ]"
-            , ProxyAddress::convAddressToPath( proxy.getProxyAddress( ) ).getString( )
-            , isConnected ? "connected" : "disconnected" );
-
-        notifyOnBroadcastReachedMaximum( isConnected );
-
-        if ( isConnected )
-        {
-            mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );    // dynamic subscribe.
-        }
-        else
-        {
-            mTimer.stopTimer( );
-        }
-
-        return true;
+        notifyOnBroadcastReachedMaximum( true );
+        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
     }
     else
     {
-        return false;
+        notifyOnBroadcastReachedMaximum( false );
+        mTimer.stopTimer( );
     }
+
+    return result;
 }
 
 void ServiceClient::responseHelloWorld( const String & clientName, unsigned int clientId )
@@ -73,7 +63,7 @@ void ServiceClient::responseHelloWorld( const String & clientName, unsigned int 
     mID = clientId;
 }
 
-void ServiceClient::broadcastReachedMaximum( int maxNumber )
+void ServiceClient::broadcastReachedMaximum( int /* maxNumber */ )
 {
     TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
     TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
@@ -89,7 +79,7 @@ void ServiceClient::processTimer(Timer & timer)
     requestHelloWorld(timer.getName());
 }
 
-inline String ServiceClient::timerName( Component & owner ) const
+inline String ServiceClient::timerName( Component & /* owner */ ) const
 {
     ASSERT( getProxy( ) != nullptr );
     String result = "";

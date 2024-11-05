@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/FileWin32.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, File object 
  *              Windows OS specific implementation
@@ -20,8 +20,8 @@
 #ifdef	_WINDOWS
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-#include <windows.h>
-#include <shlobj.h>
+#include <Windows.h>
+#include <ShlObj.h>
 
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
@@ -100,8 +100,8 @@ void File::_osCloseFile( void )
 
 bool File::_osOpenFile( void )
 {
-    bool result = false;
-    if (isOpened() == false)
+    bool result{ isOpened( ) };
+    if ( result == false)
     {
         if (mFileName.isEmpty() == false )
         {
@@ -111,49 +111,41 @@ bool File::_osOpenFile( void )
             unsigned long creation  = 0;
             unsigned long attributes= FILE_ATTRIBUTE_NORMAL;
 
-            if (mFileMode & FileBase::FOB_READ)
+            if ((mFileMode & FileBase::FOB_READ) != 0)
                 access |= GENERIC_READ;
 
-            if (mFileMode & FileBase::FOB_WRITE)
+            if ((mFileMode & FileBase::FOB_WRITE) != 0)
                 access |= GENERIC_WRITE;
             
-            if (mFileMode & FileBase::FOB_SHARE_READ)
+            if ((mFileMode & FileBase::FOB_SHARE_READ) != 0)
                 shared |= FILE_SHARE_READ;
             
-            if (mFileMode & FileBase::FOB_SHARE_WRITE)
+            if ((mFileMode & FileBase::FOB_SHARE_WRITE) != 0)
                 shared |= FILE_SHARE_WRITE;
             
-            if (mFileMode & FileBase::FOB_CREATE)
+            if ((mFileMode & FileBase::FOB_CREATE) != 0)
                 creation |= CREATE_ALWAYS;
             
-            if (mFileMode & FileBase::FOB_EXIST)
+            if ((mFileMode & FileBase::FOB_EXIST) != 0)
                 creation |= OPEN_EXISTING;
             
-            if (mFileMode & FileBase::FOB_TRUNCATE)
+            if ((mFileMode & FileBase::FOB_TRUNCATE) != 0)
                 creation |= TRUNCATE_EXISTING;
             
-            if (mFileMode & FileBase::FOB_TEMP_FILE)
+            if ((mFileMode & FileBase::FOB_TEMP_FILE) != 0)
                 attributes = FILE_ATTRIBUTE_TEMPORARY;
             
-            if (mFileMode & FileBase::FOB_WRITE_DIRECT)
+            if ((mFileMode & FileBase::FOB_WRITE_DIRECT) != 0)
                 attributes |= FILE_FLAG_WRITE_THROUGH;
             
-            if ( mFileMode & FileBase::FOB_CREATE )
+            if ((mFileMode & FileBase::FOB_CREATE ) != 0)
             {
                 File::createDirCascaded( File::getFileDirectory(mFileName) );
             }
 
-            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr ));
+            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr));
             result = isOpened();
         }
-        else
-        {
-            OUTPUT_ERR("Either file name or file open mode is not set.");
-        }
-    }
-    else
-    {
-        OUTPUT_WARN("File is already opened. Close file.");
     }
 
     return result;
@@ -171,10 +163,6 @@ unsigned int File::_osReadFile(unsigned char* buffer, unsigned int size) const
     {
         result = static_cast<unsigned int>(sizeRead);
     }
-    else
-    {
-        OUTPUT_ERR("Failed to read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(GetLastError()));
-    }
 
     return result;
 }
@@ -185,10 +173,7 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     ASSERT((buffer != nullptr) && (size != 0));
 
     DWORD sizeWrite{ 0 };
-    if (::WriteFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeWrite, nullptr) == FALSE)
-    {
-        OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(GetLastError()));
-    }
+    ::WriteFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeWrite, nullptr);
 
     return static_cast<unsigned int>(sizeWrite);
 }
@@ -235,10 +220,6 @@ bool File::_osTruncateFile( void )
     {
         result = SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? true : false;
     }
-    else
-    {
-        OUTPUT_ERR("Failed to set file pointer new position.");
-    }
 
     return result;
 }
@@ -253,7 +234,7 @@ void File::_osFlushFile( void )
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const char* prefix, unsigned int unique)
+unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, unsigned int unique)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);

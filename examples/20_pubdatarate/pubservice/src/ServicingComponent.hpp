@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        pubservice/src/ServicingComponent.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of large data 
@@ -17,12 +17,12 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/TEEvent.hpp"
-#include "generated/src/LargeDataStub.hpp"
+#include "generate/examples/20_pubdatarate/LargeDataStub.hpp"
 
-#include "areg/appbase/Console.hpp"
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
+#include "aregextend/console/Console.hpp"
 
 #include "common/SimpleBitmap.hpp"
 #include "common/NELargeData.hpp"
@@ -86,7 +86,7 @@ class ServicingComponent    : public    Component
         ServicingComponent &    mService;   //!< The service, which handles the options
 
     //////////////////////////////////////////////////////////////////////////
-    // Forbidden calss
+    // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
         OptionConsumer( void ) = delete;
         DECLARE_NOCOPY_NOMOVE(OptionConsumer);
@@ -122,7 +122,7 @@ class ServicingComponent    : public    Component
         ServicingComponent &    mService;   //!< The service, which handles the options
 
     //////////////////////////////////////////////////////////////////////////
-    // Forbidden calss
+    // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
         TimerConsumer( void ) = delete;
         DECLARE_NOCOPY_NOMOVE(TimerConsumer);
@@ -133,45 +133,45 @@ class ServicingComponent    : public    Component
 //////////////////////////////////////////////////////////////////////////
 
     //!< Coordinates to output application title / headline
-    static constexpr Console::Coord     COORD_TITLE     { 0, 0 };
+    static constexpr Console::Coord     COORD_TITLE     { 1, 2 };
 
-    static constexpr Console::Coord     COORD_COMM_RATE { 0, 1 };
+    static constexpr Console::Coord     COORD_COMM_RATE { 1, 3 };
 
     //!< Coordinates to output data rate
-    static constexpr Console::Coord     COORD_DATA_RATE { 0, 2 };
+    static constexpr Console::Coord     COORD_DATA_RATE { 1, 4 };
 
     //!< Coordinates to output item rate
-    static constexpr Console::Coord     COORD_ITEM_RATE { 0, 3 };
+    static constexpr Console::Coord     COORD_ITEM_RATE { 1, 5 };
 
     //!< Coordinates to output information of thread suspend statistics
-    static constexpr Console::Coord     COORD_INFO_SLEEP{ 0, 4 };
+    static constexpr Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
 
     //!< Coordinates to input the option commands
-    static constexpr Console::Coord     COORD_OPTIONS   { 0, 5 };
+    static constexpr Console::Coord     COORD_OPTIONS   { 1, 7 };
 
     //!< Coordinates to output the error information.
-    static constexpr Console::Coord     COORD_ERROR_INFO{ 0, 6 };
+    static constexpr Console::Coord     COORD_ERROR_INFO{ 1, 8 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr Console::Coord     COORD_OPT_INFO  { 0, 8 };
+    static constexpr Console::Coord     COORD_OPT_INFO  { 1, 10 };
 
     //!< Message to output as application title / headline
-    static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part..." };
+    static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part...\n" };
 
     //!< The message to output network communication rate.
-    static constexpr std::string_view   MSG_COMM_RATE   { "Network communication: sent [ % 4.02f ] %s / sec, receive [ % 4.02f ] %s / sec." };
+    static constexpr std::string_view   MSG_COMM_RATE   { "Network communication: sent [ % 4.02f ] %s / sec, receive [ % 4.02f ] %s / sec.\n" };
 
     //!< The message to output data rate information
-    static constexpr std::string_view   MSG_DATA_RATE   { "Data rate: sent [ % 4.02f ] %s / sec." };
+    static constexpr std::string_view   MSG_DATA_RATE   { "Data rate: sent [ % 4.02f ] %s / sec.\n" };
 
     //!< The message to output item rate information
-    static constexpr std::string_view   MSG_ITEM_RATE   { "Block rate: sent [ %u ] items / sec, each [ % 4.02f ] %s. Sleep [ %u ] times, ignored [ %u ] times." };
+    static constexpr std::string_view   MSG_ITEM_RATE   { "Block rate: sent [ %u ] items / sec, each [ % 4.02f ] %s. Sleep [ %u ] times, ignored [ %u ] times.\n" };
 
     //!< The message to output as application option input
     static constexpr std::string_view   MSG_INPUT_OPTION{ "Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
 
     //!< The message to output as an error.
-    static constexpr std::string_view   MSG_INVALID_CMD { "Invalid command or value, type \'-h\' or \'--help\' for commands." };
+    static constexpr std::string_view   MSG_INVALID_CMD { "Invalid command or value, type \'-h\' or \'--help\' for commands.\n" };
 
     //!< The option command input thread.
     static constexpr std::string_view   THREAD_WAITINPUT{ "ConsoleInputThread" };
@@ -215,11 +215,11 @@ protected:
      **/
     ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServicingComponent(void) = default;
 
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
 protected:
 
 /************************************************************************/
@@ -243,13 +243,16 @@ protected:
      **/
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
+/************************************************************************/
+// StubBase overrides
+/************************************************************************/
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
-     * \param   client      The address of proxy client, which connection status is changed.
-     * \param   isConnected Flag, indicating whether client is connected or disconnected.
-     *                      When client disconnects, all listeners are removed.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
+     * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual void clientConnected( const ProxyAddress & client, bool isConnected ) override;
+    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
 
 /************************************************************************/
 // IEThreadConsumer interface overrides

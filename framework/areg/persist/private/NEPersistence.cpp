@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/NEPersistence.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       File data persist syntax namespace
  ************************************************************************/
@@ -16,4 +16,4 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/persist/private/NEPersistence.hpp"
+#include "areg/persist/NEPersistence.hpp"

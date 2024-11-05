@@ -5,7 +5,7 @@
 In this example the client sends a request each 200 ms and the service replies each 500,
 so that when the client sends next request, there is always a pending request on the service.
 To process the request and make correct reply, the service manually unblocks the request
-and when timeout is expired, sends the respons.
+and when timeout is expired, sends the response.
 The service is stopped and the application is shutdown when there is no more pending request.</Description>
     </Overview>
     <DataTypeList>
@@ -34,13 +34,13 @@ The service is stopped and the application is shutdown when there is no more pen
     </AttributeList>
     <MethodList>
         <Method ID="33" MethodType="request" Name="Identifier" Response="Identifier">
-            <Description>Request to assign an ID to the client used to to call unblock request.</Description>
+            <Description>Request to assign an ID to the client used to call unblock request.</Description>
         </Method>
         <Method ID="34" MethodType="response" Name="Identifier">
             <Description>Sent to set ID for client.</Description>
             <ParamList>
                 <Parameter DataType="uint32" ID="35" Name="clientId">
-                    <Description>Generated ID for the client used when send requst to unblock.</Description>
+                    <Description>Generated ID for the client used when send request to unblock.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -64,7 +64,7 @@ and stops sending request when reach the maximum.</Description>
                 </Parameter>
                 <Parameter DataType="uint32" ID="31" Name="seqNr">
                     <Description>The sequence number created by the client. On reply the service sends the sequence number so that
-the cilent can check that all sequences exist.</Description>
+the client can check that all sequences exist.</Description>
                 </Parameter>
             </ParamList>
         </Method>

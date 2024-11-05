@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        locservice/src/ServiceClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -25,7 +25,7 @@ Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & en
     return DEBUG_NEW ServiceClient(entry, owner);
 }
 
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -39,17 +39,12 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_19_pubclient_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::serviceConnected(isConnected, proxy);
+    bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
 
-    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
-                , proxy.getProxyAddress().getRoleName().getString()
-                , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected" : "disconnected");
-
-    if (isConnected)
+    if (isConnected())
     {
         // dynamic subscribe on messages.
         notifyOnServiceStateUpdate( true );
@@ -111,6 +106,8 @@ void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
     }
 }
 
+#if AREG_LOGS
+
 void ServiceClient::requestStartSleepFailed( NEService::eResultType FailureReason )
 {
     TRACE_SCOPE( examples_19_pubclient_ServiceClient_requestStartSleepFailed );
@@ -128,3 +125,5 @@ void ServiceClient::requestShutdownServiceFailed( NEService::eResultType Failure
     TRACE_SCOPE( examples_19_pubclient_ServiceClient_requestShutdownServiceFailed );
     TRACE_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::getString( FailureReason ) );
 }
+
+#endif  // AREG_LOGS

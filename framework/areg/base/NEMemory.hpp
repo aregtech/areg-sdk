@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/NEMemory.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Basic functions and types to deal with objects 
  *              located in memory.
@@ -349,7 +349,7 @@ namespace NEMemory
          * \brief   An ID of target object, receiving message.
          *          In remote messaging, this is Cookie of target
          **/
-        uint64_t       rbhTarget;
+        ITEM_ID         rbhTarget;
         /**
          * \brief   Data checksum value for validation check-up.
          *          Should be ignored if value is NEMemory::IGNORE_CHECKSUM
@@ -359,7 +359,7 @@ namespace NEMemory
          * \brief   An ID of source object, sending message.
          *          In remote messaging, this is Cookie of source
          **/
-        uint64_t       rbhSource;
+        ITEM_ID         rbhSource;
         /**
          * \brief   The Remote message ID registered in the system
          **/
@@ -371,7 +371,7 @@ namespace NEMemory
         /**
          * \brief   The Remote message sequence number set during messaging
          **/
-        unsigned int    rbhSequenceNr;
+        SequenceNumber  rbhSequenceNr;
     } sRemoteMessageHeader;
 
     //////////////////////////////////////////////////////////////////////////
@@ -699,7 +699,7 @@ inline const IEInStream & operator >> (const IEInStream & stream, NEMemory::uAli
  * \brief   Support streaming operator for NEMemory::uAlign type.
  *          Write NEMemory::uAlign to streaming object
  * \param   stream  The streaming object to write
- * \param   input   The NEMemory::uAlign item to write to stream
+ * \param   output  The NEMemory::uAlign item to write to stream
  * \return  Writing streaming object
  **/
 inline IEOutStream & operator << (IEOutStream & stream, const NEMemory::uAlign & output)
@@ -761,10 +761,17 @@ inline void NEMemory::memMove( void * memDst, const void * memSrc, uint32_t coun
 inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
 {
     uint32_t result = 0;
-    if ( (memDst != memSrc) && (memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0) )
+    if (memDst != memSrc)
     {
-        result = MACRO_MIN(dstSpace, count);
-        ::memcpy(memDst, memSrc, result);
+        if ((memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0))
+        {
+            result = MACRO_MIN(dstSpace, count);
+            ::memcpy(memDst, memSrc, result);
+        }
+    }
+    else
+    {
+        result = count;
     }
 
     return result;
@@ -780,7 +787,7 @@ inline NEMath::eCompare NEMemory::memCompare( const void * memLeft, const void *
     }
     else if ( (memLeft != nullptr) && (memRight != nullptr) )
     {
-        uint32_t cmp = ::memcmp(memLeft, memRight, count);
+        int32_t cmp = ::memcmp(memLeft, memRight, count);
         result = (cmp > 0 ? NEMath::eCompare::Bigger : (cmp < 0 ?  NEMath::eCompare::Smaller : NEMath::eCompare::Equal));
     }
     else if ( memLeft != nullptr )
@@ -807,12 +814,12 @@ inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uin
 
 inline unsigned char * NEMemory::getBufferDataWrite(NEMemory::sByteBuffer * byteBuffer)
 {
-    return (byteBuffer != nullptr ? reinterpret_cast<unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
+    return (byteBuffer != nullptr ? reinterpret_cast<unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
 inline const unsigned char * NEMemory::getBufferDataRead(const sByteBuffer * byteBuffer)
 {
-    return (byteBuffer != nullptr ? reinterpret_cast<const unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
+    return (byteBuffer != nullptr ? reinterpret_cast<const unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
 /************************************************************************/

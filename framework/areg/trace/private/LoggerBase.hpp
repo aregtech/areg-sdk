@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LoggerBase.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Logger base object
  ************************************************************************/
@@ -24,6 +24,7 @@
 
 #include <string_view>
 
+#if AREG_LOGS
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -51,7 +52,7 @@ protected:
      **/
     static constexpr std::string_view   FOMAT_MESSAGE_HELLO     { "Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
     /**
-     * \brief   The format of logger end ('bey' message) to display in console
+     * \brief   The format of logger end ('bye' message) to display in console
      **/
     static constexpr std::string_view   FORMAT_MESSAGE_BYE      { "Completed logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
 
@@ -105,11 +106,6 @@ public:
      *          Every logger should implement method to process logger specific logging.
      **/
     virtual void logMessage( const NETrace::sLogMessage & logMessage ) = 0;
-
-    /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
-     **/
-    virtual void flushLogs( void ) = 0;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
@@ -166,11 +162,13 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
-private:
+protected:
     /**
      * \brief   The instance of tracer configurations object.
      **/
-    LogConfiguration &  mTracerConfiguration;
+    LogConfiguration &  mLogConfiguration;
+
+private:
     /**
      * \brief   Message layouts to create messages
      **/
@@ -203,7 +201,7 @@ inline bool LoggerBase::reopenLogger(void)
 
 inline const LogConfiguration & LoggerBase::getTraceConfiguration( void ) const
 {
-    return mTracerConfiguration;
+    return mLogConfiguration;
 }
 
 inline const LayoutManager & LoggerBase::getLayoutMessage(void) const
@@ -221,4 +219,5 @@ inline const LayoutManager & LoggerBase::getLayoutExitScope(void) const
     return mLayoutsScopeExit;
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LOGGERBASE_HPP

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/IEByteBuffer.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Byte Buffer interface.
  *              This is base class for classes supporting functionalities
@@ -49,7 +49,7 @@ protected:
 
     /**
      * \brief   IEByteBuffer::MAX_BUF_LENGTH
-     *          Maximum length of byte buffer. It is defined as 1 Mb.
+     *          Maximum length of byte buffer. It is defined as 64 Mb.
      **/
     static constexpr unsigned int   MAX_BUF_LENGTH  { 0x04000000u };
 
@@ -77,10 +77,6 @@ public:
      * \brief   Destructor 
      **/
     virtual ~IEByteBuffer( void ) = default;
-
-    /**
-     * \brief   Moves data from given source
-     **/
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

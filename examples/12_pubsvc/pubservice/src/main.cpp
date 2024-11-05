@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : The application provides network discoverable Public service,
 //               which predefined methods are called from remote clients.
 //============================================================================
@@ -12,7 +12,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
 #ifdef _WIN32
@@ -71,8 +71,6 @@ int main()
         TRACE_DBG( "Servicing model is loaded" );
         // wait until Application quit signal is set.
         Application::waitAppQuit( NECommon::WAIT_INFINITE );
-        // stop and unload components
-        Application::unloadModel( _modelName );
 
         std::cout
             << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)

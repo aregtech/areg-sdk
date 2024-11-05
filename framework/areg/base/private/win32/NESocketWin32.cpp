@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/NESocketWin32.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform. Socket POSIX specific wrappers methods
  ************************************************************************/
@@ -23,8 +23,8 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 
 #include <atomic>
 
@@ -58,8 +58,6 @@ namespace NESocket
             ::memset(&wsaData, 0, sizeof(WSADATA));
             if (::WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
             {
-                OUTPUT_ERR("Failed to initialize Windows Socket of version 2.2, error code [ %p ]", static_cast<id_type>(::WSAGetLastError()));
-
                 result = false;
                 _instanceCount.fetch_sub(1);
             }
@@ -72,7 +70,6 @@ namespace NESocket
     {
         if (_instanceCount.fetch_sub(1) == 1)
         {
-            OUTPUT_INFO("Releasing socket, no more instances are created");
             ::WSACleanup();
         }
     }
@@ -107,13 +104,13 @@ namespace NESocket
                 if (errCode == static_cast<int>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = NESocket::getMaxSendSize(hSocket);
+                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxSendSize(hSocket));
                 }
                 else
                 {
                     // in all other cases
-                    dataLength = 0;    // break loop
-                    result = -1;   // notify failure
+                    dataLength = 0; // break loop
+                    result = -1;     // notify failure
                 }
             }
         }
@@ -140,8 +137,8 @@ namespace NESocket
             }
             else if (read == 0)
             {
-                dataLength = 0;    // break loop. the other side disconnected
-                result = 0;    // no data could read. specified socket is closed
+                dataLength = 0; // break loop. the other side disconnected
+                result = 0;     // no data could read. specified socket is closed
             }
             else
             {
@@ -149,13 +146,13 @@ namespace NESocket
                 if (errCode == static_cast<int>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = NESocket::getMaxReceiveSize(hSocket);
+                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxReceiveSize(hSocket));
                 }
                 else
                 {
                     // in all other cases
-                    dataLength = 0;    // break loop
-                    result = -1;   // notify failure
+                    dataLength = 0; // break loop
+                    result = -1;    // notify failure
                 }
             }
         }

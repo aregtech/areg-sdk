@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventData.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Request and Response events,
  *              Event Data object containing minimal generic data to
@@ -26,13 +26,13 @@
 //////////////////////////////////////////////////////////////////////////
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventData::EventData( unsigned int msgId, EventDataStream::eEventData dataType, const String & name /*= String::EmptyString*/ )
+EventData::EventData( unsigned int msgId, EventDataStream::eEventData dataType, const String & name /*= String::getEmptyString()*/ )
     : mDataType (NEService::getMessageDataType(msgId))
     , mData     (dataType, name)
 {
 }
 
-EventData::EventData( unsigned int msgId, const EventDataStream & args, const String & name /*= String::EmptyString*/ )
+EventData::EventData( unsigned int msgId, const EventDataStream & args, const String & name /*= String::getEmptyString()*/ )
     : mDataType (NEService::getMessageDataType(msgId))
     , mData     (args, name)
 {

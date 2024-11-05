@@ -6,7 +6,6 @@
 #include "chatter/services/CentralMessaging.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/NEDistributedApp.hpp"
-#include "generated/NEConnectionManager.hpp"
 #include "areg/base/GEGlobal.h"
 #include "chatter/services/ConnectionHandler.hpp"
 
@@ -84,7 +83,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
         const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
         if ( listConnections.getSize() > 0 )
         {
-            outputMessage( "<Info>", String::toString(listConnections.getSize()) + " participants...", 0, 0, 0 );
+            outputMessage( "<Info>", String::makeString(listConnections.getSize()) + " participants...", 0, 0, 0 );
         }
 
         for (uint32_t i = 0; i < listConnections.getSize(); ++ i )
@@ -182,7 +181,7 @@ BEGIN_MESSAGE_MAP(PageMessaging, CPropertyPage)
     ON_BN_CLICKED( IDC_CHECK_KEYTYPE, &PageMessaging::OnClickedCheckKeytype )
     ON_BN_CLICKED( IDC_CHECK_BROADCAST, &PageMessaging::OnClickedCheckBroadcast )
     ON_EN_CHANGE( IDC_EDIT_MESSAGE_ALL, &PageMessaging::OnChangeEditMessageAll )
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID( WM_KICKIDLE, PageMessaging::OnKickIdle )
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_SEND       , &PageMessaging::OnButtonUpdateSend )
     ON_UPDATE_COMMAND_UI( IDC_CHECK_MESSAGES    , &PageMessaging::OnCheckUpdate )
     ON_UPDATE_COMMAND_UI( IDC_CHECK_KEYTYPE     , &PageMessaging::OnCheckUpdate )
@@ -316,7 +315,7 @@ void PageMessaging::OnTypeMessage( uint32_t cookie, NECommon::sMessageData & dat
 
 void PageMessaging::OnSendMessage( uint32_t cookie, NECommon::sMessageData & data )
 {
-        outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
+    outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
 }
 
 LRESULT PageMessaging::OnOutputMessage( WPARAM wParam, LPARAM lParam )
@@ -369,8 +368,8 @@ void PageMessaging::outputMessage( const String & nickname, const String & messa
 {
     outputMessage( CString(nickname.getString())
                  , CString(message.getString())
-                 , CString( begin.isValid() ? begin.formatTime().getString() : String::EmptyString.data() )
-                 , CString( end.isValid()   ? end.formatTime().getString()   : String::EmptyString.data() )
+                 , CString( begin.isValid() ? begin.formatTime().getString() : String::getEmptyString().getString() )
+                 , CString( end.isValid()   ? end.formatTime().getString()   : String::getEmptyString().getString() )
                  , cookie );
 }
 
@@ -379,11 +378,12 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
     if ( message.IsEmpty() == false )
     {
         int pos = mLastItem;
-        for ( pos; pos < mCtrlList.GetItemCount(); ++ pos )
+        for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )
                 break;
         }
+        
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/ThreadAddress.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread Address class
  ************************************************************************/
@@ -87,7 +87,7 @@ public:
     ThreadAddress( void );
     /**
      * \brief   Initialization constructor. Sets current process ID and the thread name.
-     * \param   threadID    Thread ID to set.
+     * \param   threadName  Thread name to set.
      **/
     explicit ThreadAddress( const char * threadName );
     explicit ThreadAddress( const String & threadName );
@@ -195,7 +195,7 @@ public:
 
     /**
      * \brief	Parse string and retrieves thread address data from path.
-     * \param	pathProxy	    The thread path as a string.
+     * \param	threadPath	    The thread path as a string.
      * \param	out_nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting thread path.
      **/

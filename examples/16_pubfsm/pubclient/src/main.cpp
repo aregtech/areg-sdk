@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project contains an instance service client, which model
 //               is defined dynamically during run-time.This approach 
 //               guaranties to start and run several instance of the same 
@@ -20,7 +20,7 @@
 #include "areg/trace/GETrace.h"
 #include "areg/base/NEUtilities.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef WINDOWS
@@ -87,14 +87,14 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == NEMath::eCompare::Equal) || 
-         (NEString::compareFast(buffer, "1") == NEMath::eCompare::Equal) )
+    if ( (NEString::compareIgnoreCase<char, char>(buffer, "sn") == NEMath::eCompare::Equal) || 
+         (NEString::compare<char, char>(buffer, "1") == NEMath::eCompare::Equal) )
     {
         isEastWest = false;
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ((NEString::compareFastIgnoreCase(buffer, "ew") == NEMath::eCompare::Equal) || 
-             (NEString::compareFast(buffer, "2") == NEMath::eCompare::Equal) )
+    else if ((NEString::compareIgnoreCase<char, char>(buffer, "ew") == NEMath::eCompare::Equal) ||
+             (NEString::compare<char, char>(buffer, "2") == NEMath::eCompare::Equal) )
     {
         isEastWest = true;
         printf("\nSelected Choice: East-West traffic.\n");

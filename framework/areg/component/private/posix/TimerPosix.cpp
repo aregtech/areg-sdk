@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/posix/TimerPosix.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX specific timer information
  *
@@ -142,7 +142,7 @@ bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     sigEvent.sigev_notify_function  = funcTimer;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    return (RETURNED_OK == ::timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId));
+    return (RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
 }
 
 inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
@@ -174,15 +174,18 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
                 interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
             }
 
-            ::clock_gettime(CLOCK_MONOTONIC, &mDueTime);
-            NESynchTypesIX::convTimeout(mDueTime, msTimeout);
-
-            if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
+            if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
             {
-                result          = false;
-                mDueTime.tv_sec = 0;
-                mDueTime.tv_nsec= 0;
-                mContextId 		= 0;
+                NESynchTypesIX::convTimeout(mDueTime, msTimeout);
+                result = true;
+
+                if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
+                {
+                    result          = false;
+                    mDueTime.tv_sec = 0;
+                    mDueTime.tv_nsec= 0;
+                    mContextId 		= 0;
+                }
             }
         }
     }

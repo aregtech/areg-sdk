@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/SharedBuffer.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform Switches
  *
@@ -29,71 +29,90 @@ inline SharedBuffer& SharedBuffer::self( void )
 //////////////////////////////////////////////////////////////////////////
 SharedBuffer::SharedBuffer( unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , BufferPosition    ( static_cast<IEByteBuffer &>(self()) )
+    , IECursorPosition  ( )
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
 }
 
 SharedBuffer::SharedBuffer( unsigned int reserveSize, unsigned int blockSize)
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , BufferPosition    ( static_cast<IEByteBuffer &>(self()) )
+    , IECursorPosition  ( )
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     reserve(reserveSize, false);
 }
 
 SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , BufferPosition    ( static_cast<IEByteBuffer &>(self()) )
+    , IECursorPosition  ( )
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     reserve(size, false);
     writeData(buffer, size);
 }
 
+SharedBuffer::SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize)
+    : BufferStreamBase  (static_cast<IECursorPosition&>(self()), static_cast<IECursorPosition&>(self()))
+    , IECursorPosition  ( )
+
+    , mBlockSize        (MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE))
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+{
+    reserveSize = MACRO_MAX(reserveSize, size);
+    reserve(reserveSize, false);
+    writeData(buffer, size);
+}
+
 SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
-    : BufferStreamBase( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , BufferPosition  ( static_cast<IEByteBuffer &>(self()) )
+    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
+    , IECursorPosition  ( )
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
-    unsigned int size   = (NEString::getStringLength<char>(textString) + 1) * sizeof(char);
+    unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<char>(textString)) + 1u) * sizeof(char);
     size = reserve(size, false);
     writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringA.data( )), size);
 }
 
 SharedBuffer::SharedBuffer(const wchar_t * textString, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
-    : BufferStreamBase( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , BufferPosition  ( static_cast<IEByteBuffer &>(self()) )
+    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
+    , IECursorPosition  ( )
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
-    unsigned int size   = (NEString::getStringLength<wchar_t>(textString) + 1) * sizeof(wchar_t);
+    unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
     size = reserve(size, false);
     writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringW.data( )), size);
 }
 
 SharedBuffer::SharedBuffer( const SharedBuffer & src )
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , BufferPosition    ( static_cast<IEByteBuffer &>(self()) )
+    , IECursorPosition  ( )
 
     , mBlockSize        (src.mBlockSize)
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     mByteBuffer = src.mByteBuffer;
-    BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+    mBufferPosition.setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
 }
 
 SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self( )), static_cast<IECursorPosition &>(self( )) )
-    , BufferPosition    ( static_cast<IEByteBuffer &>(self( )) )
+    , IECursorPosition  ( )
 
     , mBlockSize        ( src.mBlockSize )
+    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     mByteBuffer = src.mByteBuffer;
-    BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+    mBufferPosition.setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
     src.invalidate();
 }
 
@@ -108,7 +127,7 @@ SharedBuffer & SharedBuffer::operator = ( const SharedBuffer &src )
         if (src.isValid())
         {
             mByteBuffer = src.mByteBuffer;
-            BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+            mBufferPosition.setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
         }
         else
         {
@@ -126,7 +145,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
         if ( src.isValid( ) )
         {
             mByteBuffer = src.mByteBuffer;
-            BufferPosition::setPosition( 0, IECursorPosition::eCursorPosition::PositionBegin );
+            mBufferPosition.setPosition( 0, IECursorPosition::eCursorPosition::PositionBegin );
             src.invalidate();
         }
         else
@@ -138,6 +157,11 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
     return (*this);
 }
 
+unsigned int SharedBuffer::setPosition(int offset, IECursorPosition::eCursorPosition startAt) const
+{
+    return mBufferPosition.setPosition(offset, startAt);
+}
+
 bool SharedBuffer::isShared( void ) const
 {
     return (isValid() && (mByteBuffer.use_count() > 1) );
@@ -145,7 +169,7 @@ bool SharedBuffer::isShared( void ) const
 
 void SharedBuffer::invalidate( void )
 {
-    BufferPosition::invalidate( );
+    mBufferPosition.invalidate( );
     BufferStreamBase::invalidate();
 }
 
@@ -162,13 +186,29 @@ const unsigned char* SharedBuffer::getBufferAtCurrentPosition( void ) const
             ASSERT(curPos < written);
             result = getBuffer() + curPos;
         }
-        else
-        {
-            OUTPUT_WARN("The current cursor position is at the end. Buffer at current position is nullptr.");
-        }
     }
 
     return result;
+}
+
+SharedBuffer SharedBuffer::clone(void) const
+{
+    unsigned int reserved{ getSizeUsed() };
+    SharedBuffer result;
+    if ((result.reserve(reserved, false) >= reserved) && (reserved != 0))
+    {
+        unsigned char * dst = result.getBuffer();
+        const unsigned char * src = getBuffer();
+        NEMemory::memCopy(dst, reserved, src, reserved);
+        result.setSizeUsed(reserved);
+    }
+
+    return result;
+}
+
+unsigned int SharedBuffer::getPosition(void) const
+{
+    return mBufferPosition.getPosition();
 }
 
 bool SharedBuffer::canShare( void ) const

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ProxyEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Event and Proxy Event
  *              Consumer classes.
@@ -20,6 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
@@ -158,7 +159,7 @@ private:
  *              function depending on event runtime class ID.
  * 
  **/
-class AREG_API IEProxyEventConsumer : public ThreadEventConsumerBase
+class AREG_API IEProxyEventConsumer : public IEEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

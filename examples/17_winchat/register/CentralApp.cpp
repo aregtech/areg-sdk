@@ -81,6 +81,9 @@ BOOL CentralApp::InitInstance()
     // such as the name of your company or organization
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
+    // Don't start connection with the router, this will be started on UI
+    Application::initApplication(true, true, false, true, false, nullptr);
+
     do
     {
         CentralDialog dlg;

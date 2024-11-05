@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/Thread.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread class
  *              Base class for all kind of threads. Use this class or
@@ -176,13 +176,18 @@ public:
     virtual bool createThread( unsigned int waitForStartMs = NECommon::DO_NOT_WAIT );
 
     /**
-     * \brief	Destroys thread and frees resources. Once thread is destroyed,
-     *          it can be re-created again. The calling thread (current thread)
-     *          may be blocked until target thread is destroyed.
+     * \brief   Override the method to trigger exist event for the threads.
+     **/
+    virtual void triggerExit( void );
+
+    /**
+     * \brief	Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT and it expires,
+     *          the function terminates the thread. The shutdown thread can be re-created again.
+     *          The calling thread (current thread) may be blocked until target thread completes the job.
      * \param	waitForStopMs	Waiting time out in milliseconds until target thread is finis run.
-     *                          -   Set DO_NOT_WAIT to trigger exit thread and immediately return
-     *                              without waiting for thread to complete job.
-     *                          -   Set WAIT_INFINITE to wait until thread completes job and exit.
+     *                          -   Set DO_NOT_WAIT to trigger exit and immediately return
+     *                              without waiting for thread to complete the job.
+     *                          -   Set WAIT_INFINITE to trigger exit and wait until thread completes the job.
      *                          -   Set any other value in milliseconds to specify waiting time
      *                              until thread completes the job or timeout expires.
      * \return	Returns the thread completion status. The following statuses are defined:
@@ -190,13 +195,7 @@ public:
      *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
      *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus destroyThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
-
-    /**
-     * \brief   It calls destroyThread() with infinite timeout. In each thread class the shutdown procedure may differ.
-     *          For more details see description in each class derived from Thread.
-     **/
-    virtual void shutdownThread( void );
+    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -209,7 +208,7 @@ public:
     virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE );
 
     /**
-     * \brief   It calls destroyThread() with waiting timeout 10 ms. If waiting time is expired, 
+     * \brief   It calls shutdownThread() with waiting timeout 10 ms. If waiting time is expired, 
      *          it immediately terminates the thread and returns completion status 'terminated'.
      *          Use this function only if thread does not react anymore and immediate termination
      *          is required. By calling this method, the system does not guarantee the graceful
@@ -296,7 +295,7 @@ public:
     /**
      * \brief	Search by thread ID and return pointer the thread object.
      *          If ID could not find, returns nullptr
-     * \param	threadID    The unique ID of thread to search
+     * \param	threadId    The unique ID of thread to search
      * \return	If not nullptr, the thread object was found.
      **/
     inline static Thread * findThreadById( id_type threadId );
@@ -304,8 +303,8 @@ public:
     /**
      * \brief	Search by thread context and return pointer the thread object.
      *          If Context could not find, returns nullptr
-     * \param	threadContext   The unique Context of thread.
-     *                          It contains Process and Thread IDs information
+     * \param	threadAddres    The unique address of the thread, that contains 
+     *                          the name of the thread, process and thread ID.
      * \return	If not nullptr, the thread object was found.
      **/
     inline static Thread * findThreadByAddress( const ThreadAddress & threadAddres );
@@ -313,7 +312,7 @@ public:
     /**
      * \brief   Lookup Thread by thread ID and returns Thread Address object,
      *          which contains information of Process ID and Thread ID.
-     * \param	threadID	The ID of thread to get address
+     * \param	threadId	The ID of thread to get address
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
@@ -342,7 +341,7 @@ public:
     inline static void switchThread( void );
 
     /**
-     * \brief   Return the ID of current thread.
+     * \brief   Returns the ID of current thread.
      **/
     inline static id_type getCurrentThreadId( void );
 
@@ -492,8 +491,12 @@ private:
 
     /**
      * \brief   Cleans data of Thread object, i.e. reset running flag, invalidates thread info.
+     * \param   unregister  Flag, indicating whether it should search the thread object
+     *          in the resource maps and remove it. If 'true', it will search and remove
+     *          all pointers from the maps then close handles and reset variable.
+     *          Otherwise, it make only closes handles and resets variables.
      **/
-    void _cleanResources( void );
+    void _cleanResources( bool unregister);
 
     /**
      * \brief   Registers Thread. Returns true if succeed
@@ -581,7 +584,6 @@ private:
      * \brief	Sets name to new created name. Might be useful during debugging.
      * \param	threadId	The unique ID of thread to set name
      * \param	threadName	The name to set.
-     * \return
      **/
     static void _osSetThreadName( id_type threadId, const char * threadName );
 
@@ -615,7 +617,7 @@ private:
 
     /**
      * \brief   OS specific implementation to set thread new priority.
-     *          returns the previos priority of the thread.
+     *          returns the previous priority of the thread.
      **/
     Thread::eThreadPriority _osSetPriority( eThreadPriority newPriority );
 
@@ -648,15 +650,20 @@ private:
 /************************************************************************/
 // Resource controlling and mapping variables
 /************************************************************************/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-    static  MapThreadHandleResource     _mapThreadhHandle;  //!< Map of thread object where key is thread handle
-    static  MapThreadNameResource       _mapThreadName;     //!< Map of thread object where key is thread name
-    static  MapThreadIDResource         _mapThreadId;       //!< Map of thread object where key is thread ID
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    /**
+     * \brief   Returns static map of thread object where key is thread handle.
+     **/
+    static  Thread::MapThreadHandleResource & _getMapThreadhHandle();
+
+    /**
+     * \brief   Returns static map of thread object where key is thread name.
+     **/
+    static  Thread::MapThreadNameResource & _getMapThreadName();
+
+    /**
+     * \brief   Returns static map of thread object where key is thread ID
+     **/
+    static  Thread::MapThreadIDResource & _getMapThreadId();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -672,12 +679,12 @@ private:
 
 inline Thread* Thread::_findThreadByHandle(THREADHANDLE threadHandle)
 {
-    return Thread::_mapThreadhHandle.findResourceObject(threadHandle);
+    return Thread::_getMapThreadhHandle().findResourceObject(threadHandle);
 }
 
 inline THREADHANDLE Thread::_findThreadHandleById( id_type threadId)
 {
-    Thread * result = Thread::_mapThreadId.findResourceObject(threadId);
+    Thread * result = Thread::_getMapThreadId().findResourceObject(threadId);
     return (result != nullptr ? result->mThreadHandle : nullptr);
 }
 
@@ -718,12 +725,12 @@ inline const ThreadAddress & Thread::getAddress( void ) const
 
 inline Thread* Thread::findThreadByName(const String & threadName)
 {
-    return (!threadName.isEmpty() ? Thread::_mapThreadName.findResourceObject(threadName) : nullptr);
+    return (!threadName.isEmpty() ? Thread::_getMapThreadName().findResourceObject(threadName) : nullptr);
 }
 
 inline Thread* Thread::findThreadById( id_type threadId)
 {
-    return Thread::_mapThreadId.findResourceObject(threadId);
+    return Thread::_getMapThreadId().findResourceObject(threadId);
 }
 
 inline Thread* Thread::findThreadByAddress(const ThreadAddress& threadAddress)

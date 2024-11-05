@@ -15,7 +15,7 @@
 #include "register/res/stdafx.h"
 #include "register/ui/CentralDialog.hpp"
 #include "register/CentralApp.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -39,7 +39,7 @@ public:
     enum { IDD = IDD_ABOUTBOX };
 
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
                                                         // Implementation
 protected:
@@ -121,7 +121,7 @@ BEGIN_MESSAGE_MAP(CentralDialog, CPropertySheet)
     ON_WM_SYSCOMMAND()
     ON_WM_PAINT()
     ON_WM_QUERYDRAGICON()
-    ON_COMMAND(IDOK, OnRedirectOK)
+    ON_COMMAND(IDOK, &CentralDialog::OnRedirectOK)
 
     ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection   ), &CentralDialog::OnCmdServiceConnection )
 END_MESSAGE_MAP()
@@ -145,10 +145,8 @@ BOOL CentralDialog::OnInitDialog()
         pSysMenu->AppendMenu( MF_STRING, SC_MINIMIZE, _T( "Minimize" ) );
         pSysMenu->AppendMenu( MF_STRING, SC_RESTORE, _T( "Restore" ) );
 
-        BOOL bNameValid;
         CString strAboutMenu;
-        bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-        ASSERT(bNameValid);
+        VERIFY(strAboutMenu.LoadString(IDS_ABOUTBOX));
         if (!strAboutMenu.IsEmpty())
         {
             pSysMenu->AppendMenu(MF_SEPARATOR);
@@ -161,9 +159,6 @@ BOOL CentralDialog::OnInitDialog()
     //  when the application's main window is not a dialog
     SetIcon(m_hIcon, TRUE);			// Set big icon
     SetIcon(m_hIcon, FALSE);		// Set small icon
-
-    // Initialize application, enable logging, servicing, timer and watchdog.
-    Application::initApplication( true, true, false, true, true );
 
     SetActivePage(&mPageConnections);
     SetActivePage(&mPageSetupNetwork);

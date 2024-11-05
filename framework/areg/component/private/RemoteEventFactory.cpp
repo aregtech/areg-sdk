@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/RemoteEventFactory.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Factory class. Creates event
  *              from stream and converts event to stream.
@@ -59,9 +59,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                 if ( eventRequest != nullptr )
                 {
                     Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( static_cast<ITEM_ID>(comChannel.getSource())
-                                    , static_cast<ITEM_ID>(chTarget.getSource())
-                                    , static_cast<ITEM_ID>(stream.getSource()) );
+                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
                     eventRequest->setTargetChannel(chTarget);
                     eventRequest->setSourceChannel(chSource);
 
@@ -92,9 +90,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                 if ( eventNotify != nullptr )
                 {
                     Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( static_cast<ITEM_ID>(comChannel.getSource())
-                                    , static_cast<ITEM_ID>(chTarget.getSource())
-                                    , static_cast<ITEM_ID>(stream.getSource()) );
+                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
                     eventNotify->setTargetChannel(chTarget);
                     eventNotify->setSourceChannel(chSource);
 
@@ -195,7 +191,6 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setMessageId( stubEvent->getRequestId() );
                     stream.setResult( NEMemory::MESSAGE_SUCCESS );
                     stream.setSequenceNr( stubEvent->getSequenceNumber() );
-                    stream.bufferCompletionFix();
                 }
             }
             else
@@ -219,7 +214,6 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setMessageId( stubEvent->getRequestId() );
                     stream.setResult( NEMemory::MESSAGE_SUCCESS );
                     stream.setSequenceNr( stubEvent->getSequenceNumber() );
-                    stream.bufferCompletionFix();
                 }
             }
             else
@@ -243,7 +237,6 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setMessageId( proxyEvent->getResponseId() );
                     stream.setResult( NEMemory::MESSAGE_SUCCESS );
                     stream.setSequenceNr( proxyEvent->getSequenceNumber() );
-                    stream.bufferCompletionFix();
                 }
             }
             else

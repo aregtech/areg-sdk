@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ABEE2F20-BB60-434F-92D8-75DB71020E01}</ProjectGuid>
@@ -14,7 +17,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
@@ -41,11 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
-    <Text Include="ReadMe.txt" />
-    <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ServicingComponent.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

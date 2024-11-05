@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/TrafficLightService.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -49,7 +49,7 @@ Component * TrafficLightService::CreateComponent(const NERegistry::ComponentEntr
     return DEBUG_NEW TrafficLightService(entry, owner);
 }
 
-void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

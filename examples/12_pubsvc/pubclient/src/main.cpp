@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : The application contains a Public service client software
 //               component. It receives connected notification and starts 
 //               calling remote method of the Public service. To make periodic
@@ -16,7 +16,7 @@
 #include "areg/trace/GETrace.h"
 
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "ServiceClient.hpp"
 
 #ifdef WINDOWS
@@ -63,13 +63,14 @@ DEF_TRACE_SCOPE(example_12_pubclient_main_main);
 int main()
 {
     printf("Testing remote servicing ultra-small client...\n");
-    // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     Application::initApplication( );
 
-    do 
+    // force to start logging with default settings
+    TRACER_CONFIGURE_AND_START(nullptr);
+
+    do
     {
         TRACE_SCOPE(example_12_pubclient_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);

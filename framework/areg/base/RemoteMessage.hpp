@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/RemoteMessage.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Remote Shared Buffer class. This Buffer is used for 
  *              Read and Write of data during remote communication
@@ -145,24 +145,24 @@ public:
     /**
      * \brief   Returns the ID of remote source set in Remote Buffer header.
      **/
-    inline uint64_t getSource( void ) const;
+    inline const ITEM_ID & getSource( void ) const;
 
     /**
      * \brief   Sets the ID of source in Remote Buffer.
      * \param   idSource    The ID of source to set in Remote Buffer
      **/
-    inline void setSource( uint64_t idSource );
+    inline void setSource(const ITEM_ID & idSource);
 
     /**
      * \brief   Returns the ID of remote target set in Remote Buffer header.
      **/
-    inline uint64_t getTarget( void ) const;
+    inline const ITEM_ID & getTarget( void ) const;
 
     /**
      * \brief   Sets the ID of target in Remote Buffer.
      * \param   idTarget    The ID of target to set in Remote Buffer
      **/
-    inline void setTarget( uint64_t idTarget );
+    inline void setTarget(const ITEM_ID & idTarget);
 
     /**
      * \brief   Returns the message ID value set in remote buffer
@@ -188,13 +188,13 @@ public:
     /**
      * \brief   Returns Sequence number value set in Remote Buffer.
      **/
-    inline unsigned int getSequenceNr( void ) const;
+    inline const SequenceNumber & getSequenceNr( void ) const;
 
     /**
      * \brief   Sets new Sequence number value in Remote Buffer.
      * \param   newSequenceNr   New Sequence number value set in Remote Buffer
      **/
-    inline void setSequenceNr( unsigned int newSequenceNr );
+    inline void setSequenceNr(const SequenceNumber & newSequenceNr );
 
     /**
      * \brief   Returns true if marked checksum value is valid. Otherwise, it returns false
@@ -210,17 +210,26 @@ public:
      *          It is strongly recommended to call method again if the buffer was changed
      *          or before transferring buffer to remote target.
      **/
-    void bufferCompletionFix( void );
+    void bufferCompletionFix( void ) const;
 
     /**
      * \brief   Initializes new buffer based on given Byte Buffer Header data.
      *          If succeeds to allocate new buffer, sets reference counter to 1,
      *          sets data used size to the value specified in header.
      *          The method expects that allocated data will be manually filled.
-     * \param   rmHeader    Instance of Remote Buffer Header containing buffer information
+     * \param   rmHeader    Instance of Remote Buffer Header containing buffer information.
+     * \param   reserve     The size in bytes to reserve in the buffer
      * \return  Returns pointer to allocated data buffer to copy data.
      **/
-    unsigned char * initMessage( const NEMemory::sRemoteMessageHeader & rmHeader );
+    unsigned char * initMessage( const NEMemory::sRemoteMessageHeader & rmHeader, unsigned int reserve = 0 );
+
+    /**
+     * \brief   Clones the message buffer with the data.
+     * \param   source  The ID of the source to set. Ignored if 0
+     * \param   target  The ID of the target to set. Ignored if 0
+     * \return  Returns the cloned message buffer.
+     **/
+    RemoteMessage clone(const ITEM_ID & source = 0, const ITEM_ID & target = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -313,26 +322,30 @@ inline unsigned int RemoteMessage::getChecksum( void ) const
     return _getHeader().rbhChecksum;
 }
 
-inline uint64_t RemoteMessage::getSource( void ) const
+inline const ITEM_ID & RemoteMessage::getSource( void ) const
 {
     return _getHeader().rbhSource;
 }
 
-inline void RemoteMessage::setSource( uint64_t idSource )
+inline void RemoteMessage::setSource(const ITEM_ID & idSource )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhSource = idSource;
+    }
 }
 
-inline uint64_t RemoteMessage::getTarget( void ) const
+inline const ITEM_ID & RemoteMessage::getTarget( void ) const
 {
     return _getHeader().rbhTarget;
 }
 
-inline void RemoteMessage::setTarget( uint64_t idTarget )
+inline void RemoteMessage::setTarget(const ITEM_ID & idTarget )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhTarget = idTarget;
+    }
 }
 
 inline unsigned int RemoteMessage::getMessageId( void ) const
@@ -342,8 +355,10 @@ inline unsigned int RemoteMessage::getMessageId( void ) const
 
 inline void RemoteMessage::setMessageId( unsigned int newMessageId )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhMessageId = newMessageId;
+    }
 }
 
 inline unsigned int RemoteMessage::getResult( void ) const
@@ -353,16 +368,18 @@ inline unsigned int RemoteMessage::getResult( void ) const
 
 inline void RemoteMessage::setResult( unsigned int newResult )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhResult = newResult;
+    }
 }
 
-inline unsigned int RemoteMessage::getSequenceNr(void) const
+inline const SequenceNumber & RemoteMessage::getSequenceNr(void) const
 {
     return _getHeader().rbhSequenceNr;
 }
 
-inline void RemoteMessage::setSequenceNr( unsigned int newSequenceNr )
+inline void RemoteMessage::setSequenceNr(const SequenceNumber & newSequenceNr )
 {
     if ( isValid() )
     {

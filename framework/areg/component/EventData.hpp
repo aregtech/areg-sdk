@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/EventData.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Data object containing data to
  *              support request and response communication.
@@ -59,7 +59,7 @@ public:
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const String & name = String::EmptyString);
+    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const String & name = String::getEmptyString());
 
     /**
      * \brief	Constructor.
@@ -71,7 +71,7 @@ public:
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, const EventDataStream & args, const String & name = String::EmptyString);
+    EventData(unsigned int msgId, const EventDataStream & args, const String & name = String::getEmptyString());
 
     /**
      * \brief   Copy constructor.

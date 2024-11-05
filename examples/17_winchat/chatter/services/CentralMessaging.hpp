@@ -5,7 +5,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/CentralMessagerClientBase.hpp"
+#include "generate/examples/17_winchat/CentralMessagerClientBase.hpp"
 
 class DispatcherThread;
 class ConnectionHandler;
@@ -17,7 +17,7 @@ class CentralMessaging    : public CentralMessagerClientBase
 //////////////////////////////////////////////////////////////////////////
 public:
     CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
-    virtual ~CentralMessaging( void );
+    virtual ~CentralMessaging( void ) = default;
 
 public:
 
@@ -28,16 +28,9 @@ public:
     void ReceiveBroadcasting( bool doReceive );
 
 //////////////////////////////////////////////////////////////////////////
-// ConnectionManager Interface Attributes
+// Overrides
 //////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************
- * Attribute ConnectionList functions
- ************************************************************************/
-//////////////////////////////////////////////////////////////////////////
-// CentralMessager Interface Requests / Responses / Broadcast
-//////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Server broadcast.
      *          The response, sent by connection manager to notify the message typing update
@@ -48,7 +41,7 @@ public:
      * \param   newMessage  The message sent by initiator
      * \param   dateTime    The local time-stamp of initiator
      **/
-    virtual void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+    virtual void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime ) override;
     /**
      * \brief   Server broadcast.
      *          Sent each time when a client is typing a key
@@ -58,7 +51,7 @@ public:
      * \param   cookie      Assigned cookie of initiator
      * \param   newMessage  The message typed by initiator
      **/
-    virtual void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
+    virtual void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage ) override;
     /**
      * \brief   Server broadcast.
      *          Server broadcasts a message to all clients.
@@ -67,61 +60,44 @@ public:
      * \param   serverMessage   The message sent by servicing server
      * \param   dateTime        The time-stamp of servicing component
      **/
-    virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime );
+    virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function. No request
-     *          will be processed until this function is not called for
-     *          client object. Also set listeners here if client is interested
-     *          to receive update notifications.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected. Make cleanups and stop sending
-     *                          requests or assigning for notification if
-     *                          this flag is false. No event to Stub target will
-     *                          be sent, until no service connected event is
-     *                          received.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
-     *          If Proxy objects are not equal, it should return false;
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden constructor / destructor
+// Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
+    inline CentralMessaging & self( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Member variables
+// Hidden variables
 //////////////////////////////////////////////////////////////////////////
-private:
     ConnectionHandler &   mConnectionHandler;
     bool        mReceiveMessages;
     bool        mReceiveTyping;
     bool        mReceiveBroadcast;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    inline CentralMessaging & self( void );
-
-//////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    CentralMessaging( void );
-    CentralMessaging( const CentralMessaging & /*src*/ );
-    const CentralMessaging & operator = ( const CentralMessaging & /*src*/ );
+private:
+    CentralMessaging( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( CentralMessaging );
 };
 
 //////////////////////////////////////////////////////////////////////////

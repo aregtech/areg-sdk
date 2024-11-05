@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates use of timers. The demo initializes,
 //               starts and stops multiple timers processed in different 
 //               threads. The timers require the start of Timer Manager (timer 
@@ -124,8 +124,8 @@ namespace
         aThread.stopTimers( );
 
         TRACE_DBG( "Completed demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName( ).getString( ) );
-        aThread.triggerExitEvent( );
-        aThread.completionWait( NECommon::WAIT_INFINITE );
+        aThread.triggerExit( );
+        aThread.shutdownThread( NECommon::WAIT_INFINITE );
 
         TRACE_WARN( "The [ %s ] thread has completed job...", aThread.getName( ).getString( ) );
     }
@@ -244,8 +244,8 @@ int main()
 {
     std::cout << "Demo to run timers in the binding thread context ..." << std::endl;
 
-    // Start tracing. Use default configuration file, which is "./config/log.init"
-    Application::startTracer( nullptr, true);
+    // Start tracing. Use default configuration file, which is "./config/areg.init"
+    Application::startTracer(true);
     
     do 
     {

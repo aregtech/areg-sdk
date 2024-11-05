@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CF1C33CA-6F11-4B5C-B92B-F0138B90B956}</ProjectGuid>
@@ -14,7 +17,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
@@ -25,10 +28,6 @@
   <ItemGroup>
     <ClInclude Include="common\src\ClientComponent.hpp" />
     <ClInclude Include="common\src\ServiceComponent.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="twothreads\CMakeLists.txt" />
-    <Text Include="twothreads\src\CMakeLists.txt" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>

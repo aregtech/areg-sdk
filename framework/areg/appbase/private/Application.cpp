@@ -6,25 +6,31 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/appbase/private/Application.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Singleton application object,
  *              which is responsible to initialize and start components
  ************************************************************************/
 
 #include "areg/appbase/Application.hpp"
+
+#include "areg/base/File.hpp"
+#include "areg/base/NESocket.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/base/File.hpp"
+
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/NERegistry.hpp"
-#include "areg/trace/private/TraceManager.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/private/TimerManager.hpp"
 #include "areg/component/private/WatchdogManager.hpp"
+
 #include "areg/trace/NETrace.hpp"
+#include "areg/trace/private/TraceManager.hpp"
+
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and types
@@ -32,10 +38,9 @@
 Application Application::_theApplication;
 
 Application::Application(void)
-    : mSetup        ( false )
-    , mConfigTracer ( )
-    , mConfigService( )
-    , mAppState     ( Application::eAppState::AppStateStopped )
+    : mAppState     ( NEApplication::eApplicationState::AppStateStopped )
+    , mSetup        ( false )
+    , mConfigManager( )
     , mAppQuit      (false, false)
     , mLock         ( )
     , mStorage      ( )
@@ -47,51 +52,44 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , bool startRouting   /*= true */
                                   , bool startTimer     /*= true */
                                   , bool startWatchdog  /*= true */
-                                  , const char * fileTraceConfig /*= NEApplication::DEFAULT_TRACING_CONFIG_FILE */
-                                  , const char * fileRouterConfig/*= NEApplication::DEFAULT_ROUTER_CONFIG_FILE */)
+                                  , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
+                                  , IEConfigurationListener* configListener /*= nullptr*/)
 {
-    OUTPUT_DBG("Going to initialize application");
-    Application::_setAppState(Application::eAppState::AppStateInitializing);
-
+    Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
     Application::_osSetupHandlers();
     Application::setWorkingDirectory( nullptr );
     startTimer = startTimer == false ? startServicing : startTimer;
 
+    Application::loadConfiguration(NEString::isEmpty(configFile) ? NEApplication::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
+
     if (startTracing)
     {
-        Application::startTracer(fileTraceConfig, NEString::isEmpty<char>(fileTraceConfig));
-        OUTPUT_DBG("Requested to start tracer with config file [ %s ]", fileTraceConfig != nullptr ? fileTraceConfig : "");
-    }
-    else if (NEString::isEmpty<char>(fileTraceConfig) == false)
-    {
-        Application::tracerConfig(fileTraceConfig);
+        Application::startTracer(true);
     }
 
     if ( startTimer )
     {
-        OUTPUT_DBG("Starting timer manager");
         Application::startTimerManager();
     }
 
     if ( startWatchdog )
     {
-        OUTPUT_DBG("Starting watchdog manager");
         Application::startWatchdogManager();
     }
 
     if ( startServicing )
     {
-        OUTPUT_DBG("Starting service manager");
         Application::startServiceManager();
     }
 
-    if ( startRouting )
+    if (startRouting)
     {
-        Application::startMessageRouting(fileRouterConfig);
+        Application::startMessageRouting(static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip));
     }
-    else if ( NEString::isEmpty<char>( fileRouterConfig ) == false )
+
+    if (Application::getInstance().mAppState == NEApplication::eApplicationState::AppStateInitializing)
     {
-        Application::configMessageRouting(fileRouterConfig);
+        Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
     }
 
     Application::getInstance().mAppQuit.resetEvent();
@@ -99,20 +97,21 @@ void Application::initApplication(  bool startTracing   /*= true */
 
 void Application::releaseApplication(void)
 {
-    Application::_setAppState(Application::eAppState::AppStateReleasing);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
 
-    Application & theApp  = Application::getInstance();
+    WatchdogManager::stopWatchdogManager(false);
+    TimerManager::stopTimerManager(false);
+    ComponentLoader::unloadComponentModel(false, String::EmptyString);
+    ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
+    NETrace::stopLogging(false);
 
-    WatchdogManager::stopWatchdogManager();
-    TimerManager::stopTimerManager();
-    ComponentLoader::unloadComponentModel( String::EmptyString );
-    ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
-    NETrace::stopLogging();
+    WatchdogManager::waitWatchdogManager();
+    TimerManager::waitTimerManager();
+    ComponentLoader::waitModelUnload(String::EmptyString);
+    ServiceManager::_waitServiceManager();
+    NETrace::waitLoggingEnd();
 
-    theApp.mConfigTracer    = String::EmptyString;
-    theApp.mConfigService   = String::EmptyString;
-
-    Application::_setAppState(Application::eAppState::AppStateStopped);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
     Application::_osReleaseHandlers();
 }
 
@@ -123,7 +122,7 @@ bool Application::loadModel(const char * modelName /*= nullptr */)
 
 void Application::unloadModel(const char * modelName /*= nullptr */)
 {
-    ComponentLoader::unloadComponentModel(modelName);
+    ComponentLoader::unloadComponentModel(true, modelName);
 }
 
 bool Application::isModelLoaded(const char * modelName)
@@ -139,93 +138,17 @@ const NERegistry::Model & Application::findModel( const char * modelName )
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
     String path( NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
-
-#ifdef _DEBUG
-    
-    if (File::setCurrentDir(path))
-    {
-        OUTPUT_DBG("Set current directory [ %s ]", path.getString());
-    }
-    else
-    {
-        OUTPUT_ERR("No information about current working directory. Ignoring to setup!");
-    }
-
-#else
-    
     File::setCurrentDir(path);
-
-#endif // _DEBUG
 }
 
-bool Application::tracerConfig( const char * configFile /*= nullptr*/ )
+bool Application::startTracer(bool force /*= false*/ )
 {
-    bool result = false;
-    Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : configFile;
-
-    OUTPUT_DBG("Requested to start tracer configuration [ %s ]", config);
-
-    if ( NETrace::isStarted() == false )
-    {
-        if (NETrace::configureLoging(config))
-        {
-            theApp.mConfigTracer = config;
-            result = true;
-        }
-    }
-    else
-    {
-        result = true;
-    }
-
-    return result;
-}
-
-bool Application::startTracer(const char * configFile /*= nullptr*/, bool force /*= false*/ )
-{
-    bool result = false;
-    Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : configFile;
-
-    OUTPUT_DBG("Requested to start tracer with config file [ %s ], forcing [ %s ]", config, force ? "TRUE" : "FALSE");
-
-    if (NETrace::isStarted() == false)
-    {
-        if (NETrace::startLogging(config))
-        {
-            OUTPUT_DBG("Succeeded to start tracer, setting flags and config file name [ %s ]", config);
-            theApp.mConfigTracer    = NETrace::getConfigFile();
-            result = true;
-        }
-        else if (force)
-        {
-            OUTPUT_WARN("The tracing is enabled, but there is neither configuration file specified, nor default exists.");
-            OUTPUT_WARN("Forcing to start logging with system default values.");
-            if ( NETrace::forceStartLogging() )
-            {
-                OUTPUT_INFO("Succeeded to start forced tracer!!!");
-                theApp.mConfigTracer= "";
-                result = true;
-            }
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to start tracer!");
-        }
-    }
-    else
-    {
-        OUTPUT_INFO("The tracer is already started, ignoring starting");
-        result = true;
-    }
-
-    return result;
+    return NETrace::isStarted() || NETrace::startLogging() || (force && NETrace::forceStartLogging());
 }
 
 void Application::stopTracer(void)
 {
-    NETrace::stopLogging();
+    NETrace::stopLogging(true);
 }
 
 bool Application::isTracerStarted(void)
@@ -245,19 +168,19 @@ bool Application::isTracerConfigured(void)
 
 void Application::stopServiceManager( void )
 {
-    Application::_setAppState(Application::eAppState::AppStateReleasing);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
     
     if ( ServiceManager::isServiceManagerStarted() )
     {
-        ServiceManager::_stopServiceManager();
+        ServiceManager::_stopServiceManager(true);
     }
     
-    Application::_setAppState(Application::eAppState::AppStateStopped);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
 }
 
 bool Application::startServiceManager( void )
 {
-    Application::_setAppState(Application::eAppState::AppStateInitializing);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
 
     bool result = false;
 
@@ -268,19 +191,17 @@ bool Application::startServiceManager( void )
             Application::startTimerManager();
             Application::startWatchdogManager();
             result = true;
-            Application::_setAppState(Application::eAppState::AppStateReady);
+            Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
         }
         else
         {
-            OUTPUT_ERR("Failed to start service manager!");
+            Application::_setAppState(NEApplication::eApplicationState::AppStateFailure);
         }
     }
     else
     {
         result = true;
-        Application::_setAppState(Application::eAppState::AppStateReady);
-
-        OUTPUT_INFO("The service manager has been started, ignoring to start service manager");
+        Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
     }
 
     return result;
@@ -295,7 +216,7 @@ bool Application::startTimerManager( void )
 void Application::stopTimerManager(void)
 {
     Application::_osReleaseHandlers();
-    TimerManager::stopTimerManager();
+    TimerManager::stopTimerManager(true);
 }
 
 bool Application::startWatchdogManager(void)
@@ -305,84 +226,33 @@ bool Application::startWatchdogManager(void)
 
 void Application::stopWatchdogManager(void)
 {
-    WatchdogManager::stopWatchdogManager();
+    WatchdogManager::stopWatchdogManager(true);
 }
 
-bool Application::startMessageRouting(const char * configFile /*= nullptr*/ )
+bool Application::startMessageRouting(unsigned int connectTypes)
 {
-    bool result = false;
-    Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : configFile;
+    bool result{ false };
 
     if (Application::isServiceManagerStarted())
     {
-        if ( ServiceManager::_isRoutingServiceStarted( ) == false )
-        {
-            if ( ServiceManager::_routingServiceStart( config ) )
-            {
-                result = true;
-                theApp.mConfigService   = config;
-            }
-            else
-            {
-                OUTPUT_ERR("Failed to start routing service client");
-            }
-        }
-        else
-        {
-            result = true;
-            OUTPUT_INFO("The Router Service client is already started, ignoring start request");
-        }
-    }
-    else
-    {
-        OUTPUT_WARN("The service manager was not started, cannot start the message routing client!");
+        result = (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceStart(connectTypes));
     }
 
     return result;
 }
 
-bool Application::configMessageRouting( const char * configFile /*= nullptr*/ )
+bool Application::configMessageRouting( void )
 {
-    bool result = false;
-    Application & theApp  = Application::getInstance( );
-    const char * config     = NEString::isEmpty<char>(configFile) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : configFile;
-
-    if ( ServiceManager::_isRoutingServiceStarted( ) == false )
-    {
-        if ( ServiceManager::_routingServiceConfigure( config ) )
-        {
-            result = true;
-            theApp.mConfigService   = config;
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to start routing service client");
-        }
-    }
-    else
-    {
-        result = true;
-        OUTPUT_INFO("The Router Service client is already started, ignoring start request");
-    }
-
-    return result;
+    return (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceConfigure());
 }
 
 bool Application::startMessageRouting( const char * ipAddress, unsigned short portNr )
 {
-    bool result = false;
-    Application & theApp = Application::getInstance( );
+    bool result{ false };
+
     if ( Application::startServiceManager() )
     {
-        if( ServiceManager::_isRoutingServiceStarted( ) || ServiceManager::_routingServiceStart(ipAddress, portNr))
-        {
-            result = true;
-        }
-        else
-        {
-            theApp.mConfigService.clear();
-        }
+        result = ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceStart(ipAddress, portNr);
     }
 
     return result;
@@ -391,11 +261,6 @@ bool Application::startMessageRouting( const char * ipAddress, unsigned short po
 void Application::stopMessageRouting( void )
 {
     ServiceManager::_routingServiceStop();
-}
-
-void Application::enableMessageRouting( bool enable )
-{
-    ServiceManager::_routingServiceEnable(enable);
 }
 
 bool Application::isServiceManagerStarted(void)
@@ -408,11 +273,6 @@ bool Application::isRouterConnected( void )
     return ServiceManager::_isRoutingServiceStarted();
 }
 
-bool Application::isMessageRoutingEnabled(void)
-{
-    return ServiceManager::_isRoutingServiceEnabled();
-}
-
 bool Application::isMessageRoutingConfigured(void)
 {
     return ServiceManager::_isRoutingServiceConfigured();
@@ -420,7 +280,12 @@ bool Application::isMessageRoutingConfigured(void)
 
 bool Application::startRouterService(void)
 {
-    return Application::_osStartRouterService();
+    return Application::_osStartLocalService(NEApplication::ROUTER_SERVICE_NAME_WIDE, NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE);
+}
+
+bool Application::startLoggingService(void)
+{
+    return Application::_osStartLocalService(NEApplication::LOGGER_SERVICE_NAME_WIDE, NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE);
 }
 
 bool Application::isElementStored( const String & elemName )
@@ -471,7 +336,7 @@ void Application::signalAppQuit(void)
 bool Application::isServicingReady(void)
 {
     Application & theApp = Application::getInstance();
-    return (theApp.mAppState == Application::eAppState::AppStateReady);
+    return (theApp.mAppState == NEApplication::eApplicationState::AppStateReady);
 }
 
 void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
@@ -479,43 +344,115 @@ void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned 
     ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
 }
 
-bool Application::_setAppState(eAppState newState)
+const String & Application::getApplicationName(void)
+{
+    return Process::getInstance().getAppName();
+}
+
+const String & Application::getMachineName(void)
+{
+    return NESocket::getHostname();
+}
+
+ConfigManager& Application::getConfigManager(void)
+{
+    return Application::getInstance().mConfigManager;
+}
+
+bool Application::loadConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * listener /*= nullptr*/)
+{
+    Application& theApp = Application::getInstance();
+    bool result{ true };
+    if (theApp.mConfigManager.readConfig(fileName == nullptr ? NEApplication::DEFAULT_CONFIG_FILE : fileName, listener) == false)
+    {
+        result = false;
+        Application::setupDefaultConfiguration(listener);
+    }
+
+    return result;
+}
+
+bool Application::saveConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * /*listener*/ /*= nullptr*/)
+{
+    Application& theApp = Application::getInstance();
+    return theApp.mConfigManager.saveConfig(fileName);
+}
+
+void Application::setupDefaultConfiguration(IEConfigurationListener * listener /*= nullptr*/)
+{
+    Application& theApp = Application::getInstance();
+    const String& module = Process::getInstance().getAppName();
+
+    const uint32_t countReadonly{ MACRO_ARRAYLEN(NEApplication::DefaultReadonlyProperties) };
+    NEPersistence::ListProperties defReadonly(countReadonly);
+    for (const auto & entry : NEApplication::DefaultReadonlyProperties)
+    {
+        defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString));
+    }
+
+    NEPersistence::ListProperties defWritable;
+    for (const auto& entry : NEApplication::DefaultLogScopesConfig)
+    {
+        if (module == entry.configKey.module)
+        {
+            defWritable.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString, false));
+        }
+    }
+
+    theApp.mConfigManager.setConfiguration(defReadonly, defWritable, listener);
+}
+
+bool Application::isConfigured(void)
+{
+    return Application::getInstance().mConfigManager.isConfigured();
+}
+
+bool Application::_setAppState(NEApplication::eApplicationState newState)
 {
     bool result = false;
     Application & theApp = Application::getInstance();
+    if (newState == NEApplication::eApplicationState::AppStateFailure)
+    {
+        theApp.mAppState = newState;
+    }
+
     switch (theApp.mAppState)
     {
-    case Application::eAppState::AppStateStopped:
-        if (newState == Application::eAppState::AppStateInitializing)
+    case NEApplication::eApplicationState::AppStateStopped:
+        if (newState == NEApplication::eApplicationState::AppStateInitializing)
         {
-            theApp.mAppState = Application::eAppState::AppStateInitializing;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateInitializing;
             result = true;
         }
         break;
 
-    case Application::eAppState::AppStateInitializing:
-        if (newState == Application::eAppState::AppStateReady)
+    case NEApplication::eApplicationState::AppStateInitializing:
+        if (newState == NEApplication::eApplicationState::AppStateReady)
         {
-            theApp.mAppState = Application::eAppState::AppStateReady;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateReady;
             result = true;
         }
         break;
 
-    case Application::eAppState::AppStateReady:
-        if (newState == Application::eAppState::AppStateReleasing)
+    case NEApplication::eApplicationState::AppStateReady:
+        if (newState == NEApplication::eApplicationState::AppStateReleasing)
         {
-            theApp.mAppState = Application::eAppState::AppStateReleasing;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateReleasing;
             result = true;
         }
         break;
 
-    case Application::eAppState::AppStateReleasing:
-        if (newState == Application::eAppState::AppStateStopped)
+    case NEApplication::eApplicationState::AppStateReleasing:
+        if (newState == NEApplication::eApplicationState::AppStateStopped)
         {
-            theApp.mAppState = Application::eAppState::AppStateStopped;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateStopped;
             result = true;
         }
         break;
+
+    case NEApplication::eApplicationState::AppStateFailure:
+        result = true;
+        break; // ignore
 
     default:
         ASSERT(false);

@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        pubservice/src/TrafficLightService.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/SimpleTrafficLightStub.hpp"
+#include "generate/examples/14_pubtraffic/SimpleTrafficLightStub.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/TEEvent.hpp"
 
@@ -114,7 +114,7 @@ private:
     private:
         /**
          * \brief   Automatically triggered when event is dispatched by thread.
-         * \param   data    The Timer Event Data object containing Timer object.
+         * \param   timer   The Timer Event Data object containing Timer object.
          **/
         virtual void processTimer( Timer & timer ) override;
 

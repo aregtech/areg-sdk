@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyEvent.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Event class implementation.
  *
@@ -88,8 +88,8 @@ IEOutStream & ProxyEvent::writeStream( IEOutStream & stream ) const
 // IEProxyEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 IEProxyEventConsumer::IEProxyEventConsumer( const ProxyAddress & proxy )
-    : ThreadEventConsumerBase   ( )
-    , mProxyAddress             ( proxy )
+    : IEEventConsumer   ( )
+    , mProxyAddress     ( proxy )
 {
 }
 
@@ -121,7 +121,7 @@ inline void IEProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eve
 
 inline void IEProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
-    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
+    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
     {
         serviceConnectionUpdated( eventConnect.getStubAddress(), eventConnect.getTargetProxy().getChannel(), eventConnect.getConnectionStatus() );
     }
@@ -160,15 +160,7 @@ void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
                     }
                     else
                     {
-                        ProxyEvent* proxyEvent = RUNTIME_CAST(&eventElem, ProxyEvent);
-                        if (proxyEvent != nullptr)
-                        {
                             processProxyEvent(*proxyEvent);
-                        }
-                        else
-                        {
-                            processGenericEvent(eventElem);
-                        }
                     }
                 }
             }

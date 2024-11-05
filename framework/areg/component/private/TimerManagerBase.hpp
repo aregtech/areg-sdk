@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagerBase.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager Base class.
  *
@@ -82,8 +82,9 @@ protected:
     virtual bool runDispatcher( void ) override;
 
     /**
-     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
-     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
     virtual void readyForEvents( bool isReady ) override;
 
@@ -94,9 +95,21 @@ protected:
     bool startTimerManagerThread( void );
 
     /**
-     * \brief   Stops Timer Manager Thread and waits until it exists.
+     * \brief   Stops Timer Manager Thread. Cancels and stops all timers.
+     *          If 'waitComplete' is set to True, the calling thread is
+     *          blocked until Timer Manager thread completes jobs and cleans resources.
+     *          Otherwise, this triggers stop and exit events, and immediately returns.
+     * \param   waitComplete    If true, waits for Timer Manager Thread to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and returns.
      **/
-    void stopTimerManagerThread( void );
+    void stopTimerManagerThread( bool waitComplete );
+
+    /**
+     * \brief   The calling thread is blocked until Timer Manager Thread did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Timer Manager Thread without waiting for completion.
+     **/
+    void waitCompletion(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.

@@ -6,7 +6,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/DirectMessagerClientBase.hpp"
+#include "generate/examples/17_winchat/DirectMessagerClientBase.hpp"
 #include "chatter/NEDistributedApp.hpp"
 
 class ChatPrticipantHandler;
@@ -15,9 +15,17 @@ class DirectMessagingClient   : public DirectMessagerClientBase
 {
 public:
     DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler & handlerParticipants );
-    virtual ~DirectMessagingClient( void );
+    virtual ~DirectMessagingClient( void ) = default;
 
-public:
+    /**
+     * \brief   Call to send request to leave the chat and release notifications.
+     **/
+    void shutdownChat(void);
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+protected:
     /**
      * \brief   Response callback.
      *          Response to join chat
@@ -29,7 +37,7 @@ public:
      * \param   timeConnected   Time-stamp when the request to join was accepted and new participants was registered.
      * \see     requestChatJoin
      **/
-    virtual void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected );
+    virtual void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected ) override;
 
     /**
      * \brief   Server broadcast.
@@ -40,7 +48,7 @@ public:
      * \param   msgText     The message, which was sent.
      * \param   timeSent    The time-stamp when the message was sent.
      **/
-    virtual void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
+    virtual void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Server broadcast.
@@ -50,7 +58,7 @@ public:
      * \param   participant The structure of participant, who initiated message during typing.
      * \param   msgText     The text message while typing.
      **/
-    virtual void broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText );
+    virtual void broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText ) override;
 
     /**
      * \brief   Server broadcast.
@@ -60,7 +68,7 @@ public:
      * \param   participant The structure of participant, joined chat-room.
      * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
-    virtual void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined );
+    virtual void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined ) override;
 
     /**
      * \brief   Server broadcast.
@@ -70,7 +78,7 @@ public:
      * \param   participant The structure of participant, who left the chat-room.
      * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
-    virtual void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft );
+    virtual void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft ) override;
 
     /**
      * \brief   Server broadcast.
@@ -78,35 +86,27 @@ public:
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastChatClosed( void );
+    virtual void broadcastChatClosed( void ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function. No request
-     *          will be processed until this function is not called for
-     *          client object. Also set listeners here if client is interested
-     *          to receive update notifications.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected. Make cleanups and stop sending
-     *                          requests or assigning for notification if
-     *                          this flag is false. No event to Stub target will
-     *                          be sent, until no service connected event is
-     *                          received.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
-     *          If Proxy objects are not equal, it should return false;
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
 private:
     inline DirectMessagingClient & self( void );
 
@@ -115,8 +115,17 @@ private:
     inline void postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam);
 
 private:
-    ChatPrticipantHandler &   mParticipantsHandler;
+    ChatPrticipantHandler & mParticipantsHandler;
+    bool                    mJoinedChat;
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+    DirectMessagingClient( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( DirectMessagingClient );
 };
 
 inline DirectMessagingClient & DirectMessagingClient::self( void )
-{   return (*this);         }
+{
+    return (*this);
+}

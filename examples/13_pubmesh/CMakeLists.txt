@@ -1,37 +1,28 @@
-# SRC lists
-unset(13_generated_SRC)
-unset(13_common_SRC)
-unset(13_SRC1)
-unset(13_SRC2)
-unset(13_SRC3)
+# add service interfaces
+addServiceInterface(13_generated res LocalHelloWorld)
+addServiceInterface(13_generated res PublicHelloWorld)
+addServiceInterface(13_generated res SystemShutdown)
 
-# Project names
-set(gen_projName 13_generated)
-set(common_projName 13_common)
-set(projName1 13_pubclients)
-set(projName2 13_pubservice)
-set(projName3 13_pubsvcmesh)
+# add projects
 
-set(13_pubmesh_BASE "${AREG_EXAMPLES}/13_pubmesh")
+# add static library
+macro_declare_static_library(13_common  13_generated
+    common/src/LocalHelloWorldClient.cpp
+    common/src/LocalHelloWorldService.cpp
+    common/src/PublicHelloWorldClient.cpp
+    common/src/PublicHelloWorldService.cpp
+)
 
-include_directories(${13_pubmesh_BASE})
+# add examples
+macro_declare_executable(13_pubclients 13_generated 13_common
+    pubclients/src/main.cpp
+)
 
-include(${13_pubmesh_BASE}/generated/CMakeLists.txt)
-include(${13_pubmesh_BASE}/common/CMakeLists.txt)
-include(${13_pubmesh_BASE}/pubclients/CMakeLists.txt)
-include(${13_pubmesh_BASE}/pubservice/CMakeLists.txt)
-include(${13_pubmesh_BASE}/pubsvcmesh/CMakeLists.txt)
+macro_declare_executable(13_pubservice 13_generated 13_common
+    pubservice/src/main.cpp
+    pubservice/src/PublicServiceComponent.cpp
+)
 
-list(APPEND 13_lib_list ${gen_projName} ${common_projName})
-
-addStaticLib(${gen_projName} "${13_generated_SRC}")
-addStaticLibEx(${common_projName} "${13_common_SRC}" "${gen_projName}")
-addExecutableEx(${projName1} "${13_SRC1}" "${13_lib_list}")
-addExecutableEx(${projName2} "${13_SRC2}" "${13_lib_list}")
-addExecutableEx(${projName3} "${13_SRC3}" "${13_lib_list}")
-
-target_include_directories(${gen_projName} BEFORE PRIVATE ${13_pubmesh_BASE})
-target_include_directories(${common_projName} BEFORE PRIVATE ${13_pubmesh_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${13_pubmesh_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${13_pubmesh_BASE})
-target_include_directories(${projName3} BEFORE PRIVATE ${13_pubmesh_BASE})
+macro_declare_executable(13_pubsvcmesh 13_generated 13_common
+    pubsvcmesh/src/main.cpp
+)

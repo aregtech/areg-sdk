@@ -1,1 +1,1 @@
-include(${subProjDir}/CMakeLists.txt)
+macro_declare_executable(04_trace src/main.cpp)

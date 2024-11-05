@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/FileBuffer.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Memory Shared Buffer File object.
  *              This class behaves as a File object. All write and read
@@ -69,15 +69,15 @@ public:
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The referenced object to shared buffer to attach. 
-     * \param	name	The name of file object. Can be nullptr.
+     * \param	sharedBuffer    The referenced object to shared buffer to attach. 
+     * \param	name	        The name of file object. Can be nullptr.
      **/
     FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The referenced object to shared buffer to attach.
-     * \param	name	The name of file object. Can be nullptr.
+     * \param	sharedBuffer    The referenced object to shared buffer to attach.
+     * \param	name	        The name of file object. Can be nullptr.
      **/
     FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
 
@@ -247,18 +247,18 @@ public:
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const override;
+    virtual unsigned int read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const override;
+    virtual unsigned int read( WideString & wide ) const override;
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
@@ -284,18 +284,18 @@ public:
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
+     * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & asciiString ) override;
+    virtual unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString  The buffer of String containing data to stream to Output Stream.
+     * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wideString ) override;
+    virtual unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief	Write data to output stream object from given buffer

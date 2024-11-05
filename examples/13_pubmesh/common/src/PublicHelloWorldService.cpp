@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        common/src/PublicHelloWorldService.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -101,8 +101,13 @@ void PublicHelloWorldService::requestHelloWorld( unsigned int clientID )
     if ( mClientList.isValidPosition( pos ) )
     {
         // use printf() because of multithreading environment.
-        printf( "\"Hello Public client [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.getString( ), ++mNumMessages );
+        printf( "\">>> Public [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.getString( ), ++mNumMessages );
     }
 
     responseHelloWorld( theClient.crID );
+}
+
+bool PublicHelloWorldService::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+{
+    return PublicHelloWorldStub::clientConnected(client, status);
 }

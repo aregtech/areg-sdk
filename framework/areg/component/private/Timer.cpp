@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Timer.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer class.
  *              Use to fire timer.
@@ -33,7 +33,7 @@ DEF_TRACE_SCOPE(areg_component_Timer_startTimer);
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Timer::Timer( IETimerConsumer& timerConsumer
-            , const String & timerName  /*= String::EmptyString*/
+            , const String & timerName  /*= String::getEmptyString()*/
             , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
             , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : TimerBase         ( TimerBase::eTimerType::TimerTypeNormal, NEUtilities::generateName(timerName), timeoutMs )
@@ -56,16 +56,6 @@ Timer::~Timer(void)
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-
-bool Timer::startTimer( void )
-{
-    return startTimer(mTimeoutInMs, 1);
-}
-
-void Timer::stopTimer(void)
-{
-    _stopTimer();
-}
 
 bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Timer::CONTINUOUSLY*/ )
 {
@@ -115,6 +105,11 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     }
 }
 
+void Timer::stopTimer(void)
+{
+    _stopTimer();
+}
+
 bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/ )
 {
     Lock lock(mLock);
@@ -140,7 +135,6 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
     return mActive;
 }
 
-
 void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
 {
     mStartedAt = MACRO_MAKE_64(highValue, lowValue);
@@ -159,10 +153,6 @@ void Timer::_queueTimer( void )
             {
                 mStarted = false;
                 TimerManager::stopTimer(self());
-                OUTPUT_WARN("Timer Object: Temporary stopped timer [ %s ]! current queued = [ %d ], max queue = [ %d ]"
-                                , mName.getString()
-                                , mCurrentQueued
-                                , mMaxQueued);
             }
         }
     }
@@ -179,22 +169,7 @@ void Timer::_unqueueTimer( void )
            if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
            {
                 mStarted = TimerManager::startTimer(self(), *mDispatchThread);
-                OUTPUT_WARN("Timer Object: Restarting timer [ %s ]! started = [ %s ], current queued = [ %d ], max queue = [ %d ]"
-                                , mStarted ? "YES" : "NO"
-                                , mName.getString()
-                                , mCurrentQueued
-                                , mMaxQueued);
            }
-#ifdef _DEBUG
-
-           else if (mStarted == false)
-           {
-               OUTPUT_WARN("Timer Object: Ignore restart timer. Timer [ %s ] is not started, current queued = [ %d ], max queue = [ %d ]"
-                                , mName.getString()
-                                , mCurrentQueued
-                                , mMaxQueued);
-           }
-#endif  // _DEBUG
         }
     }
 }

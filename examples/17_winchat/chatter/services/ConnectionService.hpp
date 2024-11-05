@@ -28,7 +28,7 @@ public:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread );
+    virtual void startupComponent( ComponentThread & comThread ) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -36,7 +36,7 @@ public:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread );
+    virtual void shutdownComponent( ComponentThread & comThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor

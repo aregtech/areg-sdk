@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        pubservice/src/PublicServiceComponent.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/SystemShutdownStub.hpp"
+#include "generate/examples/13_pubmesh/SystemShutdownStub.hpp"
 #include "common/src/PublicHelloWorldService.hpp"
 #include "common/src/LocalHelloWorldClient.hpp"
 
@@ -72,6 +72,14 @@ protected:
      * \param	comThread	The component thread, which triggered startup command
      **/
     virtual void startupComponent( ComponentThread & comThread ) override;
+
+    /**
+     * \brief   Triggered when proxy client either connected or disconnected to stub.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
+     * \return  Returns true if connected service consumer is relevant to the provider.
+     **/
+    virtual bool clientConnected(const ProxyAddress & client, NEService::eServiceConnection status) override;
 
     /**
      * \brief   Request call.

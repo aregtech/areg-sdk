@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/SharedBuffer.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Shared Buffer class
  *              This Buffer is used for Read and Write of data and
@@ -54,8 +54,8 @@
  *          to share data between different instances of thread.
  *          The instance of Shared Buffer can be used for data streaming.
  **/
-class AREG_API SharedBuffer : public BufferStreamBase  // This is data streaming object
-                            , public BufferPosition    // To control read and write operations
+class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streaming object
+                            , public  IECursorPosition  // To control read and write operations
 {
     friend class FileBuffer;
 
@@ -71,7 +71,7 @@ public:
     explicit SharedBuffer(unsigned int blockSize = NEMemory::BLOCK_SIZE);
 
     /**
-     * \brief   Constructor to reserve space for byte buffer object
+     * \brief   Reserves the space in the byte buffer to write data and sets block size.
      * \param   reserveSize Size in bytes to reserve
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
@@ -79,13 +79,26 @@ public:
     SharedBuffer( unsigned int reserveSize, unsigned int blockSize );
 
     /**
-     * \brief	Initialization constructor, writes given data into byte buffer
+     * \brief	Reserves space and writes given data into byte buffer.
      * \param	buffer      The data to initialize byte buffer
      * \param	size        The length in bytes of data
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
     SharedBuffer( const unsigned char * buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE );
+
+    /**
+     * \brief	Reserves requested space in bytes and writes given data into byte buffer.
+     *          The reserved space should at least the size of the buffer to write.
+     *          If the requested space to reserve is smaller than the size of the buffer,
+     *          it will be increased to the size of the buffer.
+     * \param   reserveSize Number of bytes to reserve in the shared buffer.
+     * \param	buffer      The data to initialize byte buffer
+     * \param	size        The length in bytes of data
+     * \param   blockSize   The size of minimum block size to increase on resize.
+     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     **/
+    SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief	Initialization constructor, writes given null-terminated string into byte buffer.
@@ -167,7 +180,7 @@ public:
      * \brief	Friend global operator declaration to make Shared Buffer streamable.
      *          Writes the data from shared buffer to streaming
      * \param	stream	The data streaming object to write data
-     * \param	input	The Shared Buffer object to write data
+     * \param	output	The Shared Buffer object to write data
      * \return	Reference to Streaming object.
      **/
     friend inline IEOutStream & operator << ( IEOutStream & stream, const SharedBuffer & output );
@@ -206,9 +219,40 @@ public:
      **/
     inline unsigned int getBlockSize( void ) const;
 
+    /**
+     * \brief   Clones and returns the cloned shared buffer. The existing buffer has no change.
+     **/
+    SharedBuffer clone(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// IECursorPosition overrides
+/************************************************************************/
+    /**
+     * \brief	Returns the current position of pointer relative to begin in streaming data.
+     *          The valid position should not be equal to INVALID_CURSOR_POSITION.
+     *          Check current position validation before accessing data in streaming object.
+     * \return	Returns the current position of pointer relative to begin in streaming data.
+     **/
+    virtual unsigned int getPosition( void ) const override;
+
+    /**
+     * \brief	Sets the pointer position and returns current position in streaming data
+     *          The positive value of offset means move pointer forward.
+     *          The negative value of offset means move pointer back.
+     *
+     * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
+     * \param	startAt	Specifies the starting position of pointer and should have one of values:
+     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from the beginning of data
+     *                  IECursorPosition::eCursorPosition::PositionCurrent -- position from current pointer position
+     *                  IECursorPosition::eCursorPosition::PositionEnd     -- position from the end of file
+     *
+     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
+     **/
+    virtual unsigned int setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const override;
 
 /************************************************************************/
 // IEByteBuffer interface overrides, not implemented in BufferStreamBase
@@ -260,6 +304,12 @@ protected:
      *          This value is a constant and cannot be changed. Set during initialization.
      **/
     const unsigned int          mBlockSize;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    BufferPosition              mBufferPosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Local function member

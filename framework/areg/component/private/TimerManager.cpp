@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManager.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
@@ -45,9 +45,14 @@ bool TimerManager::startTimerManager( void )
     return getInstance().startTimerManagerThread( );
 }
 
-void TimerManager::stopTimerManager( void )
+void TimerManager::stopTimerManager(bool waitComplete)
 {
-    getInstance().stopTimerManagerThread();
+    getInstance().stopTimerManagerThread(waitComplete);
+}
+
+void TimerManager::waitTimerManager(void)
+{
+    return getInstance().waitCompletion();
 }
 
 bool TimerManager::isTimerManagerStarted( void )

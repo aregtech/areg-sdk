@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ExitEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Exit Event declaration.
  *              All dispatchers receiving this event should be stopped
@@ -22,6 +22,7 @@ IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 ExitEvent::ExitEvent( void )
     : Event   ( Event::eEventType::EventExternal )
 {
+    mEventPrio = Event::eEventPriority::EventPriorityExit;
 }
 
 ExitEvent & ExitEvent::getExitEvent( void )

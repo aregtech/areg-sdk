@@ -18,10 +18,10 @@
     <ClInclude Include="system\GEPlatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\resources\resource.hpp">
+    <ClInclude Include="mcrouter\resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\resources\targetver.hpp">
+    <ClInclude Include="mcrouter\resources\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcrouter\app\MulticastRouter.hpp">
@@ -30,37 +30,22 @@
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\ServerService.hpp">
+    <ClInclude Include="mcrouter\service\RouterServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp">
+    <ClInclude Include="mcrouter\service\private\ServiceRegistry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerReceiveThread.hpp">
+    <ClInclude Include="mcrouter\service\private\ListServiceProxies.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerSendThread.hpp">
+    <ClInclude Include="mcrouter\service\private\ServiceProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerServiceEvent.hpp">
+    <ClInclude Include="mcrouter\service\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServiceProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\app\private\ConsoleService.hpp">
+    <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,16 +53,23 @@
     <None Include="mcrouter\resources\mcrouter.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\mcrouter_install.bat">
+    <None Include="mcrouter\resources\mcrouter.service.install.bat">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\mcrouter_post_build.bat">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="mcrouter\resources\mcrouter_uninstall.bat">
+    <None Include="mcrouter\resources\mcrouter.service.uninstall.bat">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="mcrouter\resources\small.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="mcrouter\Readme.md" />
+    <None Include="mcrouter\resources\Readme.md">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="mcrouter\resources\mcrouter.service">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="mcrouter\resources\mcrouter_post_build.bat">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -85,34 +77,19 @@
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp">
+    <ClCompile Include="mcrouter\service\private\RouterServerService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerReceiveThread.cpp">
+    <ClCompile Include="mcrouter\service\private\ServiceRegistry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerSendThread.cpp">
+    <ClCompile Include="mcrouter\service\private\ListServiceProxies.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerService.cpp">
+    <ClCompile Include="mcrouter\service\private\ServiceProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerServiceEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServiceProxy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp">
+    <ClCompile Include="mcrouter\service\private\ServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp">
@@ -124,7 +101,7 @@
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\ConsoleService.cpp">
+    <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -134,11 +111,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
     <Text Include="mcrouter\CMakeLists.txt" />
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\posix\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\win32\CMakeLists.txt" />
-    <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
+    <Text Include="mcrouter\service\private\CMakeLists.txt" />
   </ItemGroup>
 </Project>

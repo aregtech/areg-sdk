@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2BE2FB7A-E258-4AE1-A744-D52BD7ACC548}</ProjectGuid>
@@ -14,7 +17,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
@@ -36,15 +39,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="common\NECommon.hpp" />
     <ClInclude Include="pubservice\src\TrafficLightService.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pubservice\src\main.cpp" />
     <ClCompile Include="pubservice\src\TrafficLightService.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubservice\CMakeLists.txt" />
-    <Text Include="pubservice\src\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/persist/PropertyValue.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Property Value object to persist data.
  ************************************************************************/
@@ -41,24 +41,29 @@ public:
     PropertyValue( void ) = default;
     /**
      * \brief   Initializes Value from string.
-     * \param   value    The Value as a string to parse.
+     * \param   value       The Value as a string to parse.
      **/
     explicit PropertyValue( const char * value );
     /**
      * \brief   Initializes Value from 32-bit unsigned integer.
-     * \param   value    The Value as 32-bit unsigned integer to set.
+     * \param   intValue    The Value as 32-bit unsigned integer to set.
      **/
     explicit PropertyValue( unsigned int intValue );
     /**
      * \brief   Initializes Value from digit with floating point.
-     * \param   value    The Value as a digit with floating point to set.
+     * \param   dValue      The Value as a digit with floating point to set.
      **/
     explicit PropertyValue( double dValue );
     /**
-     * \brief   Initializes Value from list of identifiers.
-     * \param   value    The Value as a list of identifiers to set.
+     * \brief   Initializes Value from digit with floating point.
+     * \param   bValue    The Value as a boolean value.
      **/
-    explicit PropertyValue( const TEArrayList<Identifier> idList );
+    explicit PropertyValue(bool bValue);
+    /**
+     * \brief   Initializes Value from list of identifiers.
+     * \param   idList  The Value as a list of identifiers to set.
+     **/
+    explicit PropertyValue( const std::vector<Identifier> & idList );
     /**
      * \brief   Copies value from given source
      * \param   value   The source to copy value
@@ -105,21 +110,27 @@ public:
 
     /**
      * \brief   Copies property Value from given source as a 32-bit unsigned integer
-     * \param   intValue    The data to convert.
+     * \param   intValue    The 32-bit digit data to convert.
      **/
     PropertyValue & operator = ( unsigned int intValue );
 
     /**
      * \brief   Copies property Value from given source as a digit with floating point
-     * \param   dValue      The data to convert.
+     * \param   dValue      The digit with the floating point to convert.
      **/
     PropertyValue & operator = ( double dValue );
+
+    /**
+     * \brief   Copies property Value from given source as a digit with floating point
+     * \param   bValue      The boolean data to convert.
+     **/
+    PropertyValue& operator = (bool bValue);
 
     /**
      * \brief   Copies property Value from given source as a list of identifiers
      * \param   idList      The data to convert.
      **/
-    PropertyValue & operator = ( const TEArrayList<Identifier> & idList );
+    PropertyValue & operator = ( const std::vector<Identifier> & idList );
 
     /**
      * \brief   Checks equality of two Value objects.
@@ -134,6 +145,26 @@ public:
      * \return  Returns true if Value objects are not equal.
      **/
     bool operator != ( const PropertyValue & other ) const;
+
+    /**
+     * \brief   Converts the property value into the 32-bit unsigned integer.
+     **/
+    operator unsigned int(void) const;
+
+    /**
+     * \brief   Converts the property value into the string.
+     **/
+    operator const String& (void) const;
+
+    /**
+     * \brief   Converts the property value into the floating point digit.
+     **/
+    operator double(void) const;
+
+    /**
+     * \brief   Converts the property value into the boolean.
+     **/
+    operator bool(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -174,6 +205,16 @@ public:
     void setString( const char * value );
 
     /**
+     * \brief   Returns the boolean value of the property value
+     **/
+    bool getBoolean(void) const;
+
+    /**
+     * \brief   Sets the boolean value.
+     **/
+    void setBoolean(bool newValue);
+
+    /**
      * \brief   Returns value as a 32-bit unsigned integer
      **/
     unsigned int getInteger( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
@@ -197,17 +238,47 @@ public:
     void setDouble( double dValue );
 
     /**
-     * \brief   Returns value as a list of identifiers.
-     * \param   idList  On output, this contains list of identifiers
-     * \return  Number of identifiers in the list.
+     * \brief   Returns combined digital value of the identifiers.
+     * \param   lookupList  The lookup list to convert literal identifiers into integer values.
+     * \return  Combined with logical OR operation digital value of the identifiers.
      **/
-    unsigned int getIndetifier( const TEArrayList<Identifier> idList ) const;
+    unsigned int getIndetifier( const std::vector<Identifier> & lookupList) const;
 
     /**
      * \brief   Converts and sets value as a list of Identifiers
      * \param   idList      The list of Identifiers to convert and set.
      **/
-    void setIndentifier( const TEArrayList<Identifier> idList );
+    void setIndentifier( const std::vector<Identifier> & idList );
+
+    /**
+     * \brief   Parses the value and returns the list of identifiers.
+     * \param   lookupList  The lookup list to convert literal identifiers into integer values.
+     * \return  Combined with logical OR ('|') operation digital value of the identifiers.
+     **/
+    TEArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
+
+    /**
+     * \brief   Sets as a string the list of values of the property.
+     * \param   idBits      The bitwise set of IDs.
+     * \param   lookupList  The lookup list to find entry and convert to the string.
+     **/
+    void setIdentifierList(unsigned int idBits, const std::vector<Identifier>& lookupList);
+
+    /**
+     * \brief   Parses the value and returns the list of string. The strings in the value should be
+     *          separated by logical OR ('|') symbol to get the list. Otherwise, the returned array
+     *          has one entry and that entry is equal to the value.
+     * \param   makeUnique  Flag, indicating whether the entries in the result should be unique or not.
+     *                      If the flag is 'false', the entries in the result list are not checked.
+     * \return  Returns the list of strings.
+     **/
+    TEArrayList<String> getValueList(bool makeUnique = false) const;
+
+    /**
+     * \brief   Sets a list of string as a value.
+     * \param   list    The list of strings to set as a value;
+     **/
+    void setValueList(const std::vector<String>& list);
 
     /**
      * \brief   Parses given string, extracts Value data.

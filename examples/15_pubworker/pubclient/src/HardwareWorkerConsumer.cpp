@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubclient/src/HardwareWorkerConsumer.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This is a hardware manager worker thread to communication with hardware.
@@ -22,7 +22,7 @@ inline HardwareWorkerConsumer & HardwareWorkerConsumer::self(void)
     return (*this);
 }
 
-void HardwareWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread )
+void HardwareWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & /* masterThread */ )
 {
     PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
 
@@ -62,7 +62,7 @@ void HardwareWorkerConsumer::updateInfoPatient(const SharedBuffer & data)
     printf("Update patient info ...\n");
     printf("\tFirst Name ......: %s\n", infoPatient.firstName.getString());
     printf("\tLast Name .......: %s\n", infoPatient.lastName.getString());
-    printf("\tPatient weight ..: %.02f kg\n", static_cast<float>(infoPatient.weight));
+    printf("\tPatient weight ..: %.02f kg\n", static_cast<double>(infoPatient.weight));
     printf("\tPatient age .....: %d y.\n", infoPatient.age);
     printf("-----------------------------\n\n");
 }

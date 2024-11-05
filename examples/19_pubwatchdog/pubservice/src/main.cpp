@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : The application provides network discoverable Public service,
 //               which predefined methods are called from remote clients.
 //============================================================================
@@ -12,8 +12,8 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NEHelloWatchdog.hpp"
-#include "generated/src/NECommon.hpp"
+#include "generate/examples/19_pubwatchdog/NEHelloWatchdog.hpp"
+#include "common/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
 #ifdef WINDOWS

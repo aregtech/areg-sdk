@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManager.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
@@ -95,9 +95,21 @@ public:
     static bool startTimerManager( void );
 
     /**
-     * \brief   Stops Timer Manager and destroys Timer Thread.
+     * \brief   Stops Timer Manager and Timer Thread. Cancels and stops all timers.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until Timer Manager thread completes jobs and cleans resources.
+     *          Otherwise, this triggers stop and exit events, and immediately returns.
+     * \param   waitComplete    If true, waits for Timer Manager to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and returns.
      **/
-    static void stopTimerManager( void );
+    static void stopTimerManager(bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Timer Manager did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Timer Manager without waiting for completion.
+     **/
+    static void waitTimerManager(void);
 
     /**
      * \brief   Returns true if Timer Manager has been started and ready to process timers.
@@ -162,8 +174,9 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
-     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
     virtual void readyForEvents( bool isReady ) override;
 
@@ -241,7 +254,7 @@ private:
 
     /**
      * \brief   Starts system timer and returns true if timer started with success.
-     * \param   timerInfo   The timer information object
+     * \param   timer   The timer object.
      * \return  Returns true if system timer started with success.
      **/
     static bool _osSystemTimerStart( Timer& timer );

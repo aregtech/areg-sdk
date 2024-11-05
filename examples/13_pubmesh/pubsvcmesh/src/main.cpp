@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project contains multiple instances of Public and Local
 //               services that form a mesh of services and make cross-
 //               communication. The application shuts down when the 'main' 
@@ -48,7 +48,7 @@ public:
     /**
      * \brief   Called by system to delete component and free resources.
      * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
+     *          entry   The entry of registry, which describes the component.
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
     {
@@ -106,7 +106,7 @@ public:
     /**
      * \brief   Called by system to delete component and free resources.
      * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
+     *          entry   The entry of registry, which describes the component.
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
     {
@@ -238,9 +238,6 @@ int main()
         
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
-
-        // stop and unload components
-        Application::unloadModel( _modelName );
 
         std::cout
             << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)

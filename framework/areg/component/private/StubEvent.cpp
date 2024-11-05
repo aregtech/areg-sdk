@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubEvent.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Component Thread.
  *
@@ -82,15 +82,15 @@ void StubEvent::deliverEvent( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class declaration
+// IEStubEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 // IEStubEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 IEStubEventConsumer::IEStubEventConsumer( const StubAddress & stubAddress )
-    : ThreadEventConsumerBase   ( )
-    , mStubAddress              ( stubAddress )
+    : IEEventConsumer   ( )
+    , mStubAddress      ( stubAddress )
 {
 }
 
@@ -131,7 +131,7 @@ inline void IEStubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestE
 
 inline void IEStubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
+    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
     {
         if (notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection)
         {
@@ -186,16 +186,11 @@ void IEStubEventConsumer::startEventProcessing( Event & eventElem )
         }
         else
         {
-            ; // ignore, wrong stub address
+            // ignore, wrong stub address
         }
     }
     else
     {
         processGenericEvent(eventElem);
     }
-}
-
-void IEStubEventConsumer::consumerRegistered( bool isRegistered )
-{
-    ThreadEventConsumerBase::consumerRegistered(isRegistered);
 }

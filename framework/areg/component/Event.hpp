@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/Event.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Base class declaration.
  *              This event class is generic and base class for all kind
@@ -38,13 +38,13 @@
 #define DECLARE_EVENT_STATIC_REGISTRATION(EventClass)                                                                   \
     public:                                                                                                             \
         /*  Declare static function to add/register event consumer to start processing event.       */                  \
-        static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::EmptyString);      \
+        static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());      \
         /*  Declare static function to add/register event consumer to start processing event.       */                  \
         static bool addListener(IEEventConsumer& eventConsumer, id_type whichThread);                                   \
         /*  Declare static function to add/register event consumer to start processing event.       */                  \
         static bool addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);                         \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
-        static bool removeListener(IEEventConsumer& eventConsumer, const String & whichThread = String::EmptyString);   \
+        static bool removeListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());   \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
         static bool removeListener(IEEventConsumer& eventConsumer, id_type whichThread);                                \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
@@ -57,7 +57,7 @@
  **/
 #define IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)                                                                 \
     /*  Implementation of adding / registering event consumer.                                  */                      \
-    bool EventClass::addListener(IEEventConsumer& eventConsumer, const String & whichThread /*= String::EmptyString*/)  \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, const String & whichThread /*= String::getEmptyString()*/)  \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
     /*  Implementation of adding / registering event consumer.                                  */                      \
     bool EventClass::addListener(IEEventConsumer& eventConsumer, id_type whichThread)                                   \
@@ -66,7 +66,7 @@
     bool EventClass::addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }                       \
     /*  Implementation of removing / unregistering event consumer.                              */                      \
-    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const String& whichThread/*= String::EmptyString*/) \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const String& whichThread/*= String::getEmptyString()*/) \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
     /*  Implementation of removing / unregistering event consumer.                              */                      \
     bool EventClass::removeListener(IEEventConsumer& eventConsumer, id_type whichThread)                                \
@@ -188,7 +188,28 @@ public:
     /**
      * \return Returns string value of Event::eEventType
      **/
-    static inline const char* getString( Event::eEventType eventType );
+    static inline const char* getString(Event::eEventType eventType);
+
+    /**
+     * \brief   Event::eEventPiority
+     *          The priorities of the events.
+     **/
+    typedef enum class E_EventPriority  : unsigned int
+    {
+          EventPriorityUndefined    //!< Undefined priority, should not be used.
+        , EventPriorityLow          //!< The priority of the event is low, should be processed only if there is no event in the queue.
+        , EventPriorityNormal       //!< The priority of the event is normal, should be processed in FIFO principle.
+        , EventPriorityHigh         //!< The priority of the event is high, should be processed before any other events.
+        , EventPriorityCritical     //!< The priority of the event is critical, should be processed nearly immediately.
+        , EventPriorityIgnore       //!< The priority of event should be ignored. Should be set in event.
+        , EventPriorityExit         //!< The highest priority of the event. Should be processed as soon as possible and should not be removed from the stack.
+    } eEventPriority;
+
+    /**
+     * \brief   Event::DefaultPriority
+     *          The default priority of the events.
+     **/
+    static constexpr eEventPriority DefaultPriority     { eEventPriority::EventPriorityNormal };
 
     /**
      * \brief   Predefined invalid event object. It has Unknown type with ID 0.
@@ -407,6 +428,16 @@ public:
     inline void setEventType( Event::eEventType eventType );
 
     /**
+     * \brief   Returns the priority of the event.
+     **/
+    inline eEventPriority getEventPriority(void) const;
+
+    /**
+     * \brief   Sets new priority of the event.
+     **/
+    inline void setEventPriority(eEventPriority eventPrio);
+
+    /**
      * \brief   Returns pointer of Event Consumer object.
      *          If nullptr, no Event Consumer is set and the Event cannot be processed.
      **/
@@ -501,6 +532,10 @@ protected:
      **/
     eEventType          mEventType;
     /**
+     * \brief   The event priority
+     **/
+    eEventPriority      mEventPrio;
+    /**
      * \brief   Event consumer.
      **/
     IEEventConsumer*    mConsumer;
@@ -590,6 +625,16 @@ inline bool Event::isRemote(void) const
 inline bool Event::isCustom( void ) const
 {
     return Event::isCustom( mEventType );
+}
+
+inline Event::eEventPriority Event::getEventPriority(void) const
+{
+    return mEventPrio;
+}
+
+inline void Event::setEventPriority(Event::eEventPriority eventPrio)
+{
+    mEventPrio = eventPrio;
 }
 
 inline const char* Event::getString(Event::eEventType eventType)

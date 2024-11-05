@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/appbase/private/configure.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Configuration Header file
  *              Set required configuration includes here
@@ -19,6 +19,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/system/GEPlatform.h"
+#include "areg/base/GESwitches.h"
 
 #endif  // AREG_APPBASE_PRIVATE_CONFIGURE_HPP

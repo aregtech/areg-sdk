@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/StubBase.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Base class.
  *              This is Base class of all Stub objects. Derive class and
@@ -105,7 +105,7 @@ protected:
         /**
          * \brief   Initialize message ID and sequence number. The target Proxy Address should be set manually.
          **/
-        inline Listener(unsigned int reqId, unsigned int seqId);
+        inline Listener(unsigned int reqId, const SequenceNumber & seqId);
 
         /**
          * \brief   Creates Listener from given parameters.
@@ -113,7 +113,7 @@ protected:
          * \param   seqId   The Sequence number.
          * \param   proxy   The target proxy address.
          **/
-        inline Listener(unsigned int reqId, unsigned int seqId, const ProxyAddress & proxy);
+        inline Listener(unsigned int reqId, const SequenceNumber & seqId, const ProxyAddress & proxy);
 
         /**
          * \brief   Copies listener data from given source.
@@ -163,7 +163,7 @@ protected:
         /**
          * \brief   Sequence number of Listener
          **/
-        unsigned int    mSequenceNr;
+        SequenceNumber  mSequenceNr;
         /**
          * \brief   The address of target Proxy object.
          **/
@@ -184,7 +184,7 @@ protected:
     /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = TEIntegerHashMap<StubBase::Listener>;
+    using MapStubSession     = TEIntegerMap<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
@@ -309,11 +309,11 @@ public:
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
-     * \param   client      The address of proxy client, which connection status is changed.
-     * \param   isConnected Flag, indicating whether client is connected or disconnected.
-     *                      When client disconnects, all listeners are removed.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
+     * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual void clientConnected( const ProxyAddress & client, bool isConnected );
+    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status );
 
 /************************************************************************/
 // StubBase overrides. Public pure virtual methods 
@@ -402,17 +402,17 @@ protected:
     /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
      *          registration status. If succeeded, the value is NEService::ServiceConnected
-     * \param   stubTarget          The address of registered Stub
-     * \param   connectionStatus    Stub registration status.
+     * \param   stubTarget  The address of registered service provider
+     * \param   status      The connection status of the service provider.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus ) override;
+    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection status ) override;
 
     /**
      * \brief   Send by system when client is requested connect / disconnect
-     * \param   proxyAddress        The address of source proxy
-     * \param   connectionStatus    Connection status of specified client
+     * \param   proxyAddress    The address of the service consumer proxy.
+     * \param   status          The service consumer connection status.
      **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection connectionStatus ) override;
+    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status ) override;
 
     /**
      * \brief   Triggered to process generic stub event.
@@ -491,7 +491,7 @@ protected:
      * \param   seqNr       The sequence number of call request.
      * \param   requestId   The triggered request ID .
      **/
-    void prepareRequest(StubBase::Listener & listener, unsigned int seqNr, unsigned int requestId);
+    void prepareRequest(StubBase::Listener & listener, const SequenceNumber & seqNr, unsigned int requestId);
 
     /**
      * \brief   Search and add all listeners, which have same specified request ID 
@@ -502,7 +502,7 @@ protected:
      *                          specified request ID.
      * \return  Returns the size of filtered listener list.
      **/
-    int findListeners(unsigned int requestId, StubListenerList & out_listners) const;
+    uint32_t findListeners(unsigned int requestId, StubListenerList & out_listners) const;
 
     /**
      * \brief   Searches notification listener in the list of listeners and returns true
@@ -549,7 +549,6 @@ protected:
      * \brief   Returns all listeners for specified proxy and on output returns
      *          list of remove request IDs.
      * \param   whichProxy  The address of request source proxy to remove.
-     * \param   removedIDs  The list of removed request IDs
      **/
     void clearAllListeners(const ProxyAddress & whichProxy);
 
@@ -558,7 +557,7 @@ protected:
      *          listed in given listener list.
      * \param   whichListeners  The list of listeners, containing target proxy address,
      *                          to send update notification event.
-     * \param   eventElem       The event, containing updated object ID and the new
+     * \param   masterEvent     The event, containing updated object ID and the new
      *                          value of attribute.
      **/
     void sendResponseNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
@@ -567,7 +566,7 @@ protected:
      * \brief   Sends error message for requested to get attribute.
      * \param   whichListeners  The list of listeners containing target
      *                          proxy address to send error notification.
-     * \param   eventElem       The event, containing error type and 
+     * \param   masterEvent     The event, containing error type and 
      *                          attribute object ID.
      **/
     void sendErrorNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
@@ -577,7 +576,7 @@ protected:
      *          listed listeners, containing target proxy addresses.
      * \param   whichListeners  The list of listeners, containing
      *                          address of proxy to send update notification.
-     * \param   eventElem       The event message to send, which contains 
+     * \param   masterEvent     The event message to send, which contains 
      *                          attribute object ID, update type and new 
      *                          updated  value of attribute.
      **/
@@ -646,7 +645,7 @@ protected:
      * \param   seqNr           The sequence number of call.
      * \return  Returns true if request can be executed and the appropriate response is prepared.
      **/
-    bool canExecuteRequest( StubBase::Listener & whichListener, unsigned int whichResponse, unsigned int seqNr);
+    bool canExecuteRequest( StubBase::Listener & whichListener, unsigned int whichResponse, const SequenceNumber & seqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -702,7 +701,7 @@ private:
     /**
      * \brief   Session map object, contains list of unblock requests
      **/
-    MapStubSession                  mMapSessions;
+    MapStubSession                      mMapSessions;
 
     /**
      * \brief   Stub object resource map.
@@ -754,14 +753,14 @@ inline StubBase::Listener::Listener( unsigned int reqId )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, unsigned int seqId )
+inline StubBase::Listener::Listener( unsigned int reqId, const SequenceNumber & seqId )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, unsigned int seqId, const ProxyAddress& proxy )
+inline StubBase::Listener::Listener( unsigned int reqId, const SequenceNumber & seqId, const ProxyAddress& proxy )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( proxy )

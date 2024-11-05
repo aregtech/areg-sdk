@@ -1,172 +1,160 @@
 # ###########################################################################
 # Common settings for all projects
+# Copyright 2022-2023 Aregtech
 # ###########################################################################
+
+set(AREG_PACKAGE_NAME   "areg")
+
+if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+endif()
+
+# Identify compiler short name
+if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
+
+    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _compiler_found)
+    if (_compiler_found)
+        message(STATUS "AREG: >>> Use system default settings:")
+        message(STATUS "AREG: ... Compiler family = \'${AREG_COMPILER_FAMILY}\'")
+        message(STATUS "AREG: ... CXX compiler = \'${AREG_CXX_COMPILER}\'")
+        message(STATUS "AREG: ... CC  compiler = \'${AREG_C_COMPILER}\'")
+    else()
+        message(WARNING "AREG: >>> The compiler \'${${CMAKE_CXX_COMPILER}}\' is unknown, the compilation result is unpredictable")
+    endif()
+
+elseif("${AREG_COMPILER_SHORT}" STREQUAL "")
+
+    message(FATAL_ERROR "AREG: >>> The cmake file \'${AREG_CMAKE_CONFIG_DIR}/setup.cmake\' should be included before \'common.cmake\', fix it and retry again.")
+
+endif()
 
 # Identify the OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
+# Identify CPU platform
 set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 
-# Determining bitness by size of void pointer
+# Detect and set bitness here
 # 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-nit (x86)
-if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
-    set(AREG_BITNESS "32")
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(AREG_BITNESS 64)
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(AREG_BITNESS 32)
+else()
+    message(WARNING "AREG: >>> Undefined Bitness, use default!")
 endif()
 
 # -----------------------------------------------------
 # areg specific internal variable settings
 # -----------------------------------------------------
 # The toolchain
-if (CYGWIN)
-    message(STATUS ">>> The Cmake Compiler ID is ${CMAKE_CXX_COMPILER_ID}, set CYGWIN")
-    set(AREG_TOOLCHAIN "CYGWIN")
-else()
-    set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER_ID}")
-endif()
+set(AREG_CXX_TOOLCHAIN "${CMAKE_CXX_COMPILER}")
+set(AREG_CC_TOOLCHAIN  "${CMAKE_CC_COMPILER}")
 
 # The development environment -- POSIX or Win32 API
 set(AREG_DEVELOP_ENV)
 # The linker flags
 set(AREG_LDFLAGS)
+set(AREG_LDFLAGS_STR "")
+# set areg extended static library dependencies
+set(AREG_EXTENDED_LIBS)
+set(AREG_EXTENDED_LIBS_STR "")
 # The compiler options
 set(AREG_COMPILER_OPTIONS)
+# set areg compiler version
+set(AREG_COMPILER_VERSION)
+set(AREG_TARGET_COMPILER_OPTIONS)
+# Set the SQLite library reference
+set(AREG_SQLITE_LIB_REF)
+set(AREG_SQLITE_LIB     sqlite3)
+option(AREG_SQLITE_FOUND "SQLite3 package found flag" FALSE)
+option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
 remove_definitions(-D_MBCS -DMBCS)
 
-if(CMAKE_BUILD_TYPE MATCHES Release)
-    add_definitions(-DNDEBUG)
-    remove_definitions(-DDEBUG -D_DEBUG)
-else()
-    add_definitions(-DDEBUG)
-    remove_definitions(-DNDEBUG -D_NDEBUG)
-endif()
+set(AREG_OPT_DISABLE_WARN_COMMON)
+set(AREG_OPT_DISABLE_WARN_FRAMEWORK)
+set(AREG_OPT_DISABLE_WARN_TOOLS)
+set(AREG_OPT_DISABLE_WARN_EXAMPLES)
+set(AREG_OPT_DISABLE_WARN_CODEGEN)
+set(AREG_OPT_DISABLE_WARN_THIRDPARTY)
 
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-    # POSIX API
-    add_definitions(-DPOSIX)
-    set(AREG_DEVELOP_ENV "Posix")
+    include(${AREG_CMAKE_CONFIG_DIR}/clang.cmake)
 
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
-    endif()
+elseif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 
-    if(AREG_BITNESS MATCHES "32")
-        list(APPEND AREG_COMPILER_OPTIONS -m32)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -m64)
-    endif()
-
-    # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libstdc++ ${AREG_USER_DEFINES})
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
-
-elseif (CMAKE_COMPILER_IS_GNUCXX )
-
-    # POSIX API
-    add_definitions(-DPOSIX)
-    set(AREG_DEVELOP_ENV "Posix")
-
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
-    endif()
-
-    if(AREG_BITNESS MATCHES "32")
-        list(APPEND AREG_COMPILER_OPTIONS -m32)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -m64)
-    endif()
-
-    # GNU compile options
-    if (CYGWIN)
-        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=gnu++17 ${AREG_USER_DEFINES})
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
-    endif()
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
+    include(${AREG_CMAKE_CONFIG_DIR}/gnu.cmake)
 
 elseif (MSVC)
 
-    # Visual Studio C++
-    # Windows / Win32 API
-    set(AREG_DEVELOP_ENV "Win32")
-    add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
-
-    if(NOT CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
-    endif()
-        
-    if (${AREG_BITNESS} MATCHES "64")
-        add_definitions(-DWIN64 -D_WIN64)
-    endif()
-
-    # MS Visual C++ compile options
-    list(APPEND AREG_COMPILER_OPTIONS)
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32 ${AREG_USER_DEF_LIBS})
+    include(${AREG_CMAKE_CONFIG_DIR}/msvc.cmake)
 
 else()
 
-    message(WARNING ">>> Unsupported compiler type. The result is unpredictable, by default use GNU compiler settings and POSIX API")
-    # POSIX API
-    add_definitions(-DPOSIX)
-    set(AREG_DEVELOP_ENV "Posix")
+    message(WARNING "AREG: >>> Unsupported compiler type may cause unpredicted results, use default GNU compiler settings and POSIX API")
+    include(${AREG_CMAKE_CONFIG_DIR}/gnu.cmake)
 
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
+endif()
+
+if (AREG_EXTENDED)
+    add_definitions(-DAREG_EXTENDED=1)
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        list(APPEND AREG_EXTENDED_LIBS ncurses)
+        set(AREG_EXTENDED_LIBS_STR "-lncurses")
     endif()
+else()
+    add_definitions(-DAREG_EXTENDED=0)
+endif()
 
-    if(AREG_BITNESS MATCHES "32")
-        list(APPEND AREG_COMPILER_OPTIONS -m32)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -m64)
-    endif()
-
-    # Compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
-
+if (AREG_LOGS)
+    add_definitions(-DAREG_LOGS=1)
+else()
+    add_definitions(-DAREG_LOGS=0)
 endif()
 
 # -------------------------------------------------------
 # Setup product paths
 # -------------------------------------------------------
 
-# Relative path of the output folder for the builds
-set(AREG_PRODUCT_PATH)
-if (NOT "${AREG_TOOLCHAIN}" STREQUAL "${CMAKE_CXX_COMPILER_ID}")
-    set(AREG_PRODUCT_PATH "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}-${CMAKE_CXX_COMPILER_ID}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}")
+if (AREG_ENABLE_OUTPUTS)
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        # Relative path of the output folder for the builds
+        set(_product_path "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
+        string(TOLOWER "${_product_path}" _product_path)
+        # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${_product_path}")
+        unset(_product_path)
+    endif()
+
 else()
-    set(AREG_PRODUCT_PATH "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}")
-endif()
-string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
-# The absolute path for builds
-if (NOT DEFINED AREG_OUTPUT_DIR OR AREG_OUTPUT_DIR STREQUAL "")
-    set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}")
+    endif()
+
 endif()
 
-# The absolute path for generated files
-set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_USER_DEF_OUTPUT_DIR}/generate")
-# The absolute path for obj files.
+# The directory to output static libraries
+if (NOT DEFINED AREG_OUTPUT_LIB OR "${AREG_OUTPUT_LIB}" STREQUAL "")
+    # set absolute path to AREG_OUTPUT_LIB if it is not manually set
+    set(AREG_OUTPUT_LIB "${AREG_OUTPUT_DIR}/lib")
+endif()
+
+# The directory to output shared libraries and executables
+if (NOT DEFINED AREG_OUTPUT_BIN OR "${AREG_OUTPUT_BIN}" STREQUAL "")
+    # set absolute path to AREG_OUTPUT_BIN if it is not manually set
+    set(AREG_OUTPUT_BIN "${AREG_OUTPUT_DIR}/bin")
+endif()
+
+# The absolute path for compiled object files.
 set(AREG_OUTPUT_OBJ "${AREG_OUTPUT_DIR}/obj")
-# The absolute path for static libraries
-set(AREG_OUTPUT_LIB "${AREG_OUTPUT_DIR}/lib")
-# The absolute path for all executables and shared libraries
-set(AREG_OUTPUT_BIN "${AREG_OUTPUT_DIR}/bin")
-
-# Project inclues
-set(AREG_INCLUDES "-I${AREG_BASE} -I${AREG_GENERATE_DIR} -I${AREG_USER_DEF_INCLUDES}")
 
 # Setting output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
@@ -187,18 +175,33 @@ add_compile_options(${AREG_COMPILER_OPTIONS})
 # Adding areg/product directory for clean-up
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
+# Add include search paths
+include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
+
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB} ${AREG_USER_DEF_LIB_PATHS}")
+link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
     set(CMAKE_EXECUTABLE_SUFFIX ".out")
 endif()
 
-message(STATUS "-------------------- Status Report Begin --------------------")
-message(STATUS ">>> Build executables are with extension \'${CMAKE_EXECUTABLE_SUFFIX}\'")
-message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' ${AREG_BITNESS}-bit platform ${AREG_PROCESSOR} with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_TOOLCHAIN}\', and build type \'${CMAKE_BUILD_TYPE}\'")
-message(STATUS ">>> Binary output folder \'${AREG_OUTPUT_BIN}\'")
-message(STATUS ">>> Library output folder \'${AREG_OUTPUT_LIB}\'")
-message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\'")
-message(STATUS "-------------------- Status Report End ----------------------")
+set(COMMON_COMPILE_DEF)
+if(AREG_BINARY MATCHES "static")
+    set(COMMON_COMPILE_DEF IMP_AREG_LIB)
+else()
+    set(COMMON_COMPILE_DEF IMP_AREG_DLL)
+endif()
+
+find_package(Java COMPONENTS Runtime)
+if (NOT ${Java_FOUND})
+    find_package(Java COMPONENTS Development)
+endif()
+
+# Check and setup variables for installation
+if (AREG_INSTALL)
+    option(INSTALL_GTEST "Disable Googletest installation" OFF)
+    if (NOT "${AREG_INSTALL_PATH}" STREQUAL "")
+        set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
+    endif()
+endif()

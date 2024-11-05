@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/TEResourceMap.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Resource Container Map class template.
  *              Use to store resources associated with the Key. 
@@ -100,7 +100,7 @@ public:
     /**
      * \brief	Returns the size of Resource Map
      **/
-    inline int getSize(void) const;
+    inline uint32_t getSize(void) const;
 
     /**
      * \brief   Returns true if resource map is empty.
@@ -212,6 +212,12 @@ public:
      *          reached end of the resource map.
      **/
     inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const;
+
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& getData(void) const;
+
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -411,7 +417,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::tryL
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline int TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize( void ) const
+inline uint32_t TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize( void ) const
 {
     Lock lock(mSynchObj);
     return HashMap::getSize();
@@ -502,6 +508,12 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
     }
 
     return result;
+}
+
+template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getData(void) const
+{
+    return HashMap::getData();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>

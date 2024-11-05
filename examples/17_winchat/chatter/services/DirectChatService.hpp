@@ -6,13 +6,13 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/DirectMessagerStub.hpp"
+#include "generate/examples/17_winchat/DirectMessagerStub.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
 #include "areg/component/NERegistry.hpp"
 #include "areg/base/TEResourceMap.hpp"
-#include "generated/NEDirectConnection.hpp"
-#include "generated/NECommon.hpp"
+#include "generate/examples/17_winchat/NEDirectConnection.hpp"
+#include "common/NECommon.hpp"
 #include "chatter/NEDistributedApp.hpp"
 
 class DirectConnectionClient;
@@ -48,7 +48,7 @@ public:
      * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
-    virtual void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
+    virtual void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect ) override;
 
     /**
      * \brief   Request call.
@@ -58,7 +58,7 @@ public:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    virtual void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
+    virtual void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Request call.
@@ -67,7 +67,7 @@ public:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    virtual void requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText );
+    virtual void requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText ) override;
 
     /**
      * \brief   Request call.
@@ -76,7 +76,7 @@ public:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    virtual void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave );
+    virtual void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave ) override;
 
 protected:
 
@@ -89,7 +89,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread );
+    virtual void startupComponent( ComponentThread & comThread ) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -97,7 +97,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread );
+    virtual void shutdownComponent( ComponentThread & comThread ) override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -110,7 +110,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder );
+    virtual void startupServiceInterface( Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor

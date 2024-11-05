@@ -6,49 +6,30 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceManager.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Trace manager. The container of scopes, configuring
  *              tracer, starts and stops tracing.
  ************************************************************************/
 #include "areg/trace/private/TraceManager.hpp"
 
+#include "areg/appbase/Application.hpp"
+#include "areg/base/File.hpp"
+#include "areg/base/Process.hpp"
+
+#include "areg/trace/IELogDatabaseEngine.hpp"
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/LogMessage.hpp"
-#include "areg/trace/private/TraceEvent.hpp"
 
-#include "areg/base/Process.hpp"
-#include "areg/base/File.hpp"
-#include "areg/base/FileBuffer.hpp"
-#include "areg/base/Containers.hpp"
-#include "areg/base/NEString.hpp"
-
-//////////////////////////////////////////////////////////////////////////
-// TraceManager::TraceScopeMap class implementation
-//////////////////////////////////////////////////////////////////////////
-
+#if AREG_LOGS
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// TraceManager class static members
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   Tracing thread name
- **/
-const TraceManager::sLogEnabling    TraceManager::DEFAULT_LOG_ENABLED_SCOPES[]   = 
-{
-      { TraceManager::LOG_SCOPES_ALL.data() , static_cast<unsigned int>(NETrace::PrioDebug ) | static_cast<unsigned int>(NETrace::PrioScope)}
-    , { TraceManager::LOG_SCOPES_SELF.data(), static_cast<unsigned int>(NETrace::PrioNotset)                                                }
-    , { nullptr /* must end with nullptr */ , static_cast<unsigned int>(NETrace::PrioNotset)                                                }
-};
-
-//////////////////////////////////////////////////////////////////////////
-// TraceManager class static methods
+// TraceManager static methods
 //////////////////////////////////////////////////////////////////////////
 
 TraceManager & TraceManager::getInstance( void )
@@ -57,114 +38,145 @@ TraceManager & TraceManager::getInstance( void )
     return _theTraceManager;
 }
 
-unsigned int TraceManager::makeScopeId( const char * scopeName )
+void TraceManager::logMessage(const NETrace::sLogMessage& logData )
 {
-    return  NEMath::crc32Calculate(scopeName);
+    TraceManager::getInstance().sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
 }
 
-void TraceManager::sendLogMessage( LogMessage & logData )
+void TraceManager::logMessage(const SharedBuffer& logData)
 {
-    TraceManager & tracer = TraceManager::getInstance();
-    logData.setModuleId( tracer.mModuleId );
-    tracer._sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceMessage, logData) );
+    TraceManager::getInstance().sendLogEvent(TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData));
 }
 
-inline void TraceManager::_sendLogEvent( const TraceEventData & data )
+void TraceManager::logMessage(const RemoteMessage& logData)
 {
-    TraceEvent::sendEvent( data, static_cast<IETraceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+    TraceManager::getInstance().sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
 }
 
-bool TraceManager::startLogging( const char * configFile /*= nullptr*/, unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/ )
+void TraceManager::sendCommandMessage(TraceEventData::eTraceAction cmd, const SharedBuffer& data)
 {
-    TraceManager & traceManager = TraceManager::getInstance();
-    bool canStart = false;
+    TraceManager::getInstance().sendLogEvent(TraceEventData(cmd, data));
+}
 
-    do
+bool TraceManager::readLogConfig( const char* configFile /*= nullptr*/ )
+{
+    return Application::loadConfiguration(configFile);
+}
+
+bool TraceManager::startLogging(const char* configFile /*= nullptr*/ )
+{
+    Application::loadConfiguration(configFile);
+
+    TraceManager& traceManager = TraceManager::getInstance();
+    Lock lock(traceManager.mLock);
+    if (traceManager.isReady() == false)
     {
-        Lock lock(traceManager.mLock);
-        if (TraceManager::isLoggingConfigured() == false)
-        {
-        	if (traceManager.isReady( ) == false)
-        	{
-                canStart = traceManager.loadConfiguration( configFile);
-            }
-        }
-        else
-        {
-        	canStart = traceManager.isReady( ) == false;
-        }
+        lock.unlock();
+        VERIFY(traceManager.startLoggingThread());
+        lock.lock();
+    }
 
-    } while (false);
-
-    return (canStart ? traceManager.startLoggingThread( waitTimeout ) : traceManager.mIsStarted);
+    return traceManager.mIsStarted;
 }
 
-void TraceManager::stopLogging( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/ )
+bool TraceManager::saveLogConfig(const char* configFile /*= nullptr*/ )
 {
-    getInstance().stopLoggingThread(waitTimeout);
+    TraceManager::updateScopeConfiguration();
+    return Application::saveConfiguration(configFile);
 }
 
-void TraceManager::registerTraceScope( TraceScope & scope )
+void TraceManager::updateScopeConfiguration(void)
 {
-    getInstance()._registerScope(scope);
-}
+    TraceManager& traceManager = TraceManager::getInstance();
+    Lock lock(traceManager.mLock);
 
-void TraceManager::unregisterTraceScope( TraceScope & scope )
-{
-    getInstance()._unregisterScope(scope);
-}
-
-void TraceManager::activateTraceScope( TraceScope & scope )
-{
-    getInstance().activateScope(scope);
-}
-
-bool TraceManager::configureLogging(const char * configFile /*= nullptr */)
-{
-    return TraceManager::getInstance().loadConfiguration(configFile);
-}
-
-bool TraceManager::isLoggingConfigured(void)
-{
-    bool result = false;
-    TraceManager & traceManager = TraceManager::getInstance();
-    do 
-    {
-        Lock lock(traceManager.mLock);
-        result = (traceManager.mConfigFile.isEmpty() == false) && (traceManager.mPropertyList.isEmpty() == false);
-    } while (false);
-    return result;
+    LogConfiguration config;
+    config.updateScopeConfiguration(traceManager.mScopeController);
 }
 
 bool TraceManager::isLoggingEnabled(void)
 {
-    TraceManager & traceManager = TraceManager::getInstance();
-    Lock lock(traceManager.mLock);
-    return traceManager._isEnabled();
+    return TraceManager::getInstance().mLogConfig.isLoggingEnabled();
 }
 
-const String& TraceManager::getConfigFile(void)
+bool TraceManager::isLoggingConfigured(void)
 {
-    TraceManager& traceManager = TraceManager::getInstance();
-    Lock lock(traceManager.mLock);
-    return traceManager.mConfigFile;
+    return Application::isConfigured();
 }
 
 bool TraceManager::forceActivateLogging(void)
 {
     bool result = false;
     TraceManager & traceManager = TraceManager::getInstance();
-    if ( (traceManager.isLoggingConfigured() == false) && (traceManager.isLoggingStarted() == false) )
+    if ( traceManager.isLoggingStarted() == false )
     {
-        result = traceManager.activateTracingDefaults();
+        Lock lock( traceManager.mLock );
+        traceManager.mLogConfig.setStatus(true);
+        traceManager.mLogConfig.setLogEnabled(NETrace::eLogingTypes::LogTypeFile, true);
+        traceManager.mScopeController.activateDefaults( );
+        result = traceManager.startLoggingThread( );
     }
 
     return result;
 }
 
+void TraceManager::setDefaultConfiguration(bool overwriteExisting)
+{
+    if (overwriteExisting || Application::isConfigured() == false)
+    {
+        Application::setupDefaultConfiguration();
+    }
+}
+
+bool TraceManager::setScopePriority( const char * scopeName, unsigned int newPrio )
+{
+    ScopeController & ctrScope = TraceManager::getInstance( ).mScopeController;
+    unsigned int scopeId = NETrace::makeScopeId( scopeName );
+    const TraceScope * scope = ctrScope.getScope( scopeId );
+    bool result{ scope != nullptr };
+    if ( result && (scope->getPriority() != newPrio))
+    {
+        ctrScope.setScopePriority( scopeId, newPrio );
+    }
+
+    return result;
+}
+
+void TraceManager::updateScopes(const String & scopeName, unsigned int scopeId, unsigned int newPrio)
+{
+    ScopeController & ctrScope = TraceManager::getInstance().mScopeController;
+    ctrScope.clearConfigScopes();
+    ctrScope.changeScopeActivityStatus(scopeName, scopeId, newPrio);
+}
+
+unsigned int TraceManager::getScopePriority( const char * scopeName )
+{
+    ScopeController & ctrScope = TraceManager::getInstance( ).mScopeController;
+    unsigned int scopeId = NETrace::makeScopeId( scopeName );
+    const TraceScope * scope = ctrScope.getScope( scopeId );
+    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid));
+}
+
+void TraceManager::setLogDatabaseEngine(IELogDatabaseEngine * dbEngine)
+{
+    TraceManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
+}
+
+bool TraceManager::isLogDabaseEngineInitialized(void)
+{
+    return TraceManager::getInstance().mLoggerDatabase.isValid();
+}
+
+bool TraceManager::isLogDatabaseEnabled(void)
+{
+    return TraceManager::getInstance().mLogConfig.getDatabaseEnable();
+}
+
 void TraceManager::forceEnableLogging(void)
 {
-    TraceManager::getInstance().mLogConfig.getStatus().parseProperty( NELogConfig::DEFAULT_LOG_ENABLE.data() );
+    TraceManager& traceManager = TraceManager::getInstance();
+    traceManager.mLogConfig.setStatus(true);
+    traceManager.mLogConfig.setLogEnabled(NETrace::eLogingTypes::LogTypeFile, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -174,21 +186,15 @@ TraceManager::TraceManager(void)
     : DispatcherThread      ( TraceManager::TRACER_THREAD_NAME.data() )
     , IETraceEventConsumer  ( )
 
-    , mMapTraceScope    ( )
-    , mScopesActivated  ( false )
+    , mScopeController  ( )
 	, mIsStarted		( false )
-
-    , mConfigFile       ( )
     , mLogConfig        ( )
-
-    , mConfigScopeList  ( )
-    , mConfigScopeGroup ( )
-    , mPropertyList     ( )
-
-    , mModuleId         ( Process::getInstance().getId() )
 
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
+    , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
+    , mLoggerDatabase   ( mLogConfig )
+    , mEventProcessor   ( self() )
 
     , mLogStarted       ( false, false )
     , mLock             ( )
@@ -198,621 +204,178 @@ TraceManager::TraceManager(void)
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class methods
 //////////////////////////////////////////////////////////////////////////
-void TraceManager::_registerScope( TraceScope & scopeRegister )
-{
-#ifdef DEBUG
-    if ( mMapTraceScope.findResourceObject( static_cast<unsigned int>(scopeRegister)) != nullptr )
-    {
-        OUTPUT_ERR("The scope [ %s ] is already registered", scopeRegister.getScopeName().getString());
-    }
-#endif // DEBUG
-
-    ASSERT(mMapTraceScope.findResourceObject( static_cast<unsigned int>(scopeRegister)) == nullptr);
-    mMapTraceScope.registerResourceObject( static_cast<unsigned int>(scopeRegister), &scopeRegister);
-}
-
-void TraceManager::_unregisterScope(TraceScope & scopeUnregister)
-{
-    mMapTraceScope.unregisterResourceObject( static_cast<unsigned int>(scopeUnregister));
-}
-
-bool TraceManager::_isScopeRegistered(unsigned int scopeId) const
-{
-    return _getScope( scopeId ) != nullptr ;
-}
-
-bool TraceManager::_isScopeRegistered(const char * scopeName) const
-{
-    return _isScopeRegistered( TraceManager::makeScopeId(scopeName) );
-}
-
-bool TraceManager::_isScopeRegistered(const TraceScope & scope) const
-{
-    return _isScopeRegistered( scope.getScopeId() );
-}
-
-void TraceManager::setScopePriority( unsigned int scopeId, unsigned int newPrio )
-{
-    mMapTraceScope.lock();
-
-    TraceScope * scope = mMapTraceScope.findResourceObject(scopeId);
-    if ( scope != nullptr )
-    {
-        scope->setPriority( newPrio );
-    }
-
-    mMapTraceScope.unlock();
-}
-
-void TraceManager::addScopePriority(unsigned int scopeId, NETrace::eLogPriority addPrio)
-{
-    mMapTraceScope.lock();
-
-    TraceScope * scope = mMapTraceScope.findResourceObject(scopeId);
-    if ( scope != nullptr )
-        scope->addPriority(addPrio);
-
-    mMapTraceScope.unlock();
-}
-
-void TraceManager::removeScopePriority(unsigned int scopeId, NETrace::eLogPriority remPrio)
-{
-    mMapTraceScope.lock();
-
-    TraceScope * scope = mMapTraceScope.findResourceObject(scopeId);
-    if ( scope != nullptr )
-        scope->removePriority(remPrio);
-
-    mMapTraceScope.unlock();
-}
-
-int TraceManager::setScopeGroupPriority(const String & scopeGroupName, unsigned int newPrio)
-{
-    int result = 0;
-    if (scopeGroupName.isEmpty() == false)
-    {
-        mMapTraceScope.lock();
-
-        unsigned int scopeId    = 0;
-        for ( TraceScope * scope = mMapTraceScope.resourceFirstKey(scopeId); scope != nullptr; scope = mMapTraceScope.resourceNextKey(scopeId) )
-        {
-            if ( scopeGroupName.compare(scope->getScopeName(), false) == NEMath::eCompare::Equal )
-            {
-                scope->setPriority(newPrio);
-                ++ result;
-            }
-        }
-
-        mMapTraceScope.unlock();
-    }
-    return result;
-}
-
-int TraceManager::addScopeGroupPriority(const String & scopeGroupName, NETrace::eLogPriority addPrio)
-{
-    int result{ 0 };
-    if ( scopeGroupName.isEmpty() == false)
-    {
-        mMapTraceScope.lock();
-
-        unsigned int scopeId{ 0 };
-        for ( TraceScope * scope = mMapTraceScope.resourceFirstKey(scopeId); scope != nullptr; scope = mMapTraceScope.resourceNextKey(scopeId) )
-        {
-            if ( NEString::compareStrings<char, char>( scopeGroupName, scope->getScopeName( ), NEString::COUNT_ALL, false ) == NEMath::eCompare::Equal)
-            {
-                scope->addPriority(addPrio);
-                ++ result;
-            }
-        }
-
-        mMapTraceScope.unlock();
-    }
-    return result;
-}
-
-int TraceManager::removeScopeGroupPriority(const String& scopeGroupName, NETrace::eLogPriority remPrio)
-{
-    int result{ 0 };
-    if ( scopeGroupName.isEmpty() == false)
-    {
-        mMapTraceScope.lock();
-
-        unsigned int scopeId{ 0 };
-        for ( TraceScope * scope = mMapTraceScope.resourceFirstKey(scopeId); scope != nullptr; scope = mMapTraceScope.resourceNextKey(scopeId) )
-        {
-            if (scopeGroupName.compare(scope->getScopeName(), false) == NEMath::eCompare::Equal)
-            {
-                scope->removePriority(remPrio);
-                ++ result;
-            }
-        }
-
-        mMapTraceScope.unlock();
-    }
-    return result;
-}
-
-bool TraceManager::loadConfiguration( const char * filePath /*= nullptr */ )
-{
-    Lock lock(mLock);
-
-    if (NEString::isEmpty<char>(filePath))
-    {
-        mConfigFile = Process::getInstance().getPath() + File::getPathSeparator() + NEApplication::DEFAULT_TRACING_CONFIG_FILE;
-    }
-    else
-    {
-        mConfigFile = filePath;
-    }
-
-    mConfigFile = File::getFileFullPath( File::normalizePath(mConfigFile) );
-    File fileConfig( mConfigFile, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
-    fileConfig.open( );
-
-    return loadConfiguration( fileConfig ) && initializeConfig( );
-}
-
-bool TraceManager::loadConfiguration( const FileBase & configFile )
-{
-    Lock lock(mLock);
-
-    clearConfigData();
-    if ( configFile.isOpened() )
-    {
-        mConfigFile = configFile.getName();
-
-        String line;
-        TraceProperty newProperty;
-        while ( configFile.readLine( line ) > 0 )
-        {
-            if ( newProperty.parseProperty(line) )
-            {
-                // search, whether the property is already set
-                ListProperties::LISTPOS pos = mPropertyList.find(newProperty);
-                if ( mPropertyList.isValidPosition(pos) )
-                {
-                    mPropertyList.setAt( pos, newProperty );
-                }
-                else
-                {
-                    mPropertyList.pushLast(newProperty);
-                }
-
-                newProperty.clearProperty();
-            }
-        }
-    }
-
-    return (mPropertyList.isEmpty() == false);
-}
-
 void TraceManager::clearConfigData( void )
 {
     Lock lock(mLock);
-
-    mLogConfig.clearProperties();
-
-    mConfigScopeList.clear();
-    mConfigScopeGroup.clear();
-    mPropertyList.clear();
+    mScopeController.clearConfigScopes( );
 }
 
-bool TraceManager::activateTracingDefaults( void )
-{
-    do 
-    {
-        Lock lock(mLock);
-
-        mLogConfig.setDefaultValues();
-
-        int i = 0;
-        do 
-        {
-            const sLogEnabling & scopes = TraceManager::DEFAULT_LOG_ENABLED_SCOPES[i ++];
-            if ( scopes.logScope == nullptr)
-                break;
-
-            mConfigScopeGroup.setAt(scopes.logScope, static_cast<int>(scopes.logPrio));
-        } while (true);
-
-    } while (false);
-
-    return startLoggingThread();
-}
-
-bool TraceManager::initializeConfig(void)
+void TraceManager::resetScopes(void)
 {
     Lock lock(mLock);
-
-    String moduleName      = Process::getInstance().getAppName();
-    for (ListProperties::LISTPOS pos = mPropertyList.firstPosition(); mPropertyList.isValidPosition(pos); pos = mPropertyList.nextPosition(pos) )
-    {
-        const TraceProperty &     prop    = mPropertyList.valueAtPosition(pos);
-        const TracePropertyKey &  Key     = prop.getKey();
-
-        // For any property, either global setting is set, or local
-        if ( Key.isModuleKeySet(moduleName) && (mLogConfig.updateProperty(prop) == false) )
-        {
-            if ( Key.getLogConfig() == NELogConfig::eLogConfig::ConfigScope )
-            {
-                const TracePropertyValue& Value   = prop.getValue( );
-                ASSERT( Key.isValidKey( ) );
-                unsigned int prio = Value.getPriority( );
-                if ( Key.isGlobalKey( ) && Key.getModuleData().isEmpty( ) )
-                {
-                    ASSERT( Key.getModule( ).isEmpty( ) );
-                    mConfigScopeGroup.setAt(NELogConfig::MODULE_SCOPE.data(), prio);
-                }
-                else if ( Key.getModuleData( ).findLast( NELogConfig::SYNTAX_SCOPE_GROUP ) >= NEString::START_POS )
-                {
-                    mConfigScopeGroup.setAt( Key.getModuleData( ), prio );
-                }
-                else
-                {
-                    mConfigScopeList.setAt( Key.getModuleData( ), prio );
-                }
-            }
-        }
-    }
-
-    return _isValid( );
+    mScopeController.resetScopes();
 }
 
-bool TraceManager::_isValid(void) const
+bool TraceManager::isRemoteLoggingEnabled(void) const
 {
-    return (mLogConfig.getVersion().isValid() ? (isFileValid() || isHostValid() || isDebugOutputValid() || isDatabaseValid()) : false);
+    return mLogConfig.isRemoteLoggingEnabled();
 }
 
-bool TraceManager::_isEnabled(void) const
+bool TraceManager::isDatabaseLoggingEnabled(void) const
 {
-    return mLogConfig.getStatus().getKey().isValidKey() ? static_cast<bool>(mLogConfig.getStatus().getValue()) : NELogConfig::DEFAULT_LOG_ENABLED;
+    return mLogConfig.isDatabaseLoggingEnabled();
 }
 
-bool TraceManager::isHostValid(void) const
+bool TraceManager::isFileLoggingEnabled(void) const
 {
-    return (mLogConfig.getRemoteHost().isValid() || mLogConfig.getRemotePort().isValid());
+    return mLogConfig.isFileLoggingEnabled();
 }
 
-bool TraceManager::isDatabaseValid(void) const
+bool TraceManager::isDebugOutputLoggingEnabled(void) const
 {
-    return (mLogConfig.getDatabaseHost().isValid() && mLogConfig.getDatabaseName().isValid() && mLogConfig.getDatabaseDriver().isValid() );
+    return mLogConfig.isDebugOutputLoggingEnabled();
 }
 
-bool TraceManager::isFileValid(void) const
+bool TraceManager::startLoggingThread( void )
 {
-    return mLogConfig.getLogFile().isValid();
-}
-
-bool TraceManager::isDebugOutputValid(void) const
-{
-    return mLogConfig.getDebugOutput().isValid();
-}
-
-bool TraceManager::startLoggingThread( unsigned int waitTimeout /* = NECommon::WAIT_INFINITE */ )
-{
-    bool result = false;
     ASSERT((isRunning() == false) && (isReady() == false));
+    mLogStarted.resetEvent( );
     if ( createThread(NECommon::WAIT_INFINITE) )
     {
-        // SetScopesActivity(true);
         if ( waitForDispatcherStart(NECommon::WAIT_INFINITE) )
         {
-            mLogStarted.resetEvent();
-
-            _sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStartLogs) );
-
-            result = mLogStarted.lock(waitTimeout);
+            sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStartLogs) );
+            mLogStarted.lock( NECommon::WAIT_INFINITE );
         }
+    }
+#ifdef  DEBUG
+    else
+    {
+        ASSERT( false );
+    }
+#endif  // DEBUG
+
+    return mIsStarted;
+}
+
+void TraceManager::stopLoggingThread(bool waitComplete)
+{
+    sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStopLogs) );
+    mIsStarted = false;
+
+    if (waitComplete)
+    {
+        completionWait(NECommon::WAIT_INFINITE);
+        shutdownThread(NECommon::DO_NOT_WAIT);
+    }
+}
+
+void TraceManager::waitLoggingThreadEnd(void)
+{
+    mIsStarted = false;
+    completionWait(NECommon::WAIT_INFINITE);
+    shutdownThread(NECommon::DO_NOT_WAIT);
+}
+
+void TraceManager::readyForEvents( bool isReady )
+{
+    if ( isReady )
+    {
+        TraceEvent::addListener( static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        DispatcherThread::readyForEvents( true );
     }
     else
     {
-        OUTPUT_ERR("Failed to create [ %s ] System Timer Thread", TraceManager::TRACER_THREAD_NAME);
-    }
+        DispatcherThread::readyForEvents( false );
+        TraceEvent::removeListener( static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
-    return result;
-}
-
-void TraceManager::stopLoggingThread( unsigned int waitTimeout /* = NECommon::WAIT_INFINITE */ )
-{
-    // RemoveAllEvents(false);
-    _sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStopLogs) );
-    completionWait( isRunning() ? waitTimeout : NECommon::DO_NOT_WAIT );
-}
-
-void TraceManager::processEvent(const TraceEventData & data)
-{
-    const SharedBuffer & stream = data.getReadableStream();
-
-    switch ( data.getTraceAction() )
-    {
-    case TraceEventData::eTraceAction::TraceConfigure:
-        {
-            loadConfiguration( FileBuffer(stream, "TraceConfigure") );
-        }
-        break;
-
-    case TraceEventData::eTraceAction::TraceChangeConfig:
-        {
-            ; // not implemented yet
-        }
-        break;
-
-    case TraceEventData::eTraceAction::TraceStartLogs:
-        {
-            traceStartLogs( );
-            mLogStarted.setEvent();
-        }
-        break;
-
-    case TraceEventData::eTraceAction::TraceStopLogs:
-        {
-            traceStopLogs( );
-            triggerExitEvent();
-            mLogStarted.resetEvent();
-        }
-        break;
-
-    case TraceEventData::eTraceAction::TraceEnableLogs:
-        {
-            static_cast<TracePropertyValue &>(mLogConfig.getStatus().getValue()) = true;
-        }
-        break;
-
-    case TraceEventData::eTraceAction::TraceDisableLogs:
-        {
-            static_cast<TracePropertyValue &>(mLogConfig.getStatus().getValue()) = false;
-        }
-        break;
-
-    case TraceEventData::eTraceAction::TraceChangeScopes:
-        {
-            SortedStringList list;
-            stream >> list;
-            onUpdateScopes( list );
-        }
-        break;
-
-    case TraceEventData::eTraceAction::TraceMessage:
-        {
-            traceMessage( LogMessage(static_cast<const IEInStream &>(stream)) );
-        }
-        break;
-
-    default:
-        break; // ignore, do nothing
+        // When we are here, all loggers should be already closed.
+        ASSERT(mLoggerFile.isLoggerOpened() == false);
+        ASSERT(mLoggerDebug.isLoggerOpened() == false);
+        ASSERT(mLoggerTcp.isLoggerOpened() == false);
+        ASSERT(mLoggerDatabase.isLoggerOpened() == false);
     }
 }
 
-bool TraceManager::runDispatcher(void)
+void TraceManager::processEvent( const TraceEventData & data )
 {
-    TraceEvent::addListener(static_cast<IETraceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-    bool result = DispatcherThread::runDispatcher();
-
-    mLoggerFile.closeLogger();
-    mLoggerDebug.closeLogger();
-
-    TraceEvent::removeListener(static_cast<IETraceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-
-    return result;
+    mEventProcessor.processLogEvent( data.getTraceAction( ), data.getReadableStream( ) );
 }
 
 void TraceManager::traceStartLogs( void )
 {
-    if ( _isValid() && _isEnabled() )
+    if ( mLogConfig.isLoggingEnabled() )
     {
-        setScopesActivity( true );
-        mLoggerFile.openLogger();
+        mScopeController.configureScopes();
+        mScopeController.changeScopeActivityStatus( true );
+        if (mLoggerFile.isLoggerOpened() == false)
+        {
+            mLoggerFile.openLogger();
+        }
+
 #if defined(OUTPUT_DEBUG)
-        mLoggerDebug.openLogger();
+        if (mLoggerDebug.isLoggerOpened() == false)
+        {
+            mLoggerDebug.openLogger();
+        }
 #endif // !defined(OUTPUT_DEBUG)
 
-        mIsStarted = true;
-    }
-}
-
-void TraceManager::setScopesActivity( bool makeActive )
-{
-    if ( _isValid() )
-    {
-        mMapTraceScope.lock();
-        if ( _isEnabled() && makeActive && (mScopesActivated == false) )
+        if (mLoggerTcp.isLoggerOpened() == false)
         {
-            unsigned int defaultPrio= NELogConfig::DEFAULT_LOG_PRIORITY;
-            mConfigScopeGroup.find( NELogConfig::MODULE_SCOPE.data(),  defaultPrio);
-
-            for (TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos) )
-            {
-                activateScope(*mMapTraceScope.valueAtPosition(pos), defaultPrio);
-            }
-
-            mScopesActivated    = true;
-        }
-        else if ( (makeActive == false) && mScopesActivated )
-        {
-            for (TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos) )
-            {
-                mMapTraceScope.valueAtPosition(pos)->setPriority( NETrace::PrioNotset );
-            }
-
-            mScopesActivated    = false;
+            mLoggerTcp.openLogger();
         }
 
-        mMapTraceScope.unlock();
+        if (mLoggerDatabase.isLoggerOpened() == false)
+        {
+            mLoggerDatabase.openLogger();
+        }
     }
+
+    mIsStarted = true;
+    mLogStarted.setEvent( );
 }
 
 void TraceManager::traceStopLogs(void)
 {
-    setScopesActivity( false );
+    mScopeController.changeScopeActivityStatus( false );
+    mLogStarted.resetEvent( );
+
+    mIsStarted = false;
+
+    mLoggerDebug.closeLogger( );
+    mLoggerFile.closeLogger( );
+    mLoggerTcp.closeLogger( );
+    mLoggerDatabase.closeLogger();
+    triggerExit( );
 }
 
-void TraceManager::onUpdateScopes(SortedStringList & scopeList)
+void TraceManager::writeLogMessage( const NETrace::sLogMessage & logMessage )
 {
-    mMapTraceScope.lock();
-
-    String moduleName = Process::getInstance().getAppName();
-
-    String line;
-    while (scopeList.removeLast(line))
-    {
-        TraceProperty scopeProperty(line);
-        if ( scopeProperty.isValid() )
-        {
-            const TracePropertyKey &  Key     = scopeProperty.getKey();
-            const TracePropertyValue & Value  = scopeProperty.getValue();
-            if ( Key.getLogConfig() == NELogConfig::eLogConfig::ConfigScope)
-            {
-                // first, save property in property list
-                ListProperties::LISTPOS pos = mPropertyList.find(scopeProperty);
-                if ( mPropertyList.isValidPosition(pos) )
-                {
-                    mPropertyList.setAt(pos, scopeProperty);
-                }
-                else
-                {
-                    mPropertyList.pushLast(scopeProperty);
-                }
-
-                const String & moduleData = Key.getModuleData();
-                // update scope list / or group scope only for this module
-                if ( Key.getModule() == moduleName )
-                {
-                    NETrace::eLogPriority prio = static_cast<NETrace::eLogPriority>(Value);
-                    setScopesPriority( moduleData, prio);
-                }
-            }
-            else
-            {
-                ; // not a scope, ignore
-            }
-        }
-        else
-        {
-            ; // did not parse, ignore
-        }
-    } // end loop
-
-    mMapTraceScope.unlock();
-}
-
-void TraceManager::traceMessage( const LogMessage & logMessage )
-{
-    mLoggerFile.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
-    mLoggerDebug.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
+    mLoggerFile.logMessage( logMessage );
+    mLoggerDebug.logMessage( logMessage );
+    mLoggerTcp.logMessage( logMessage );
+    mLoggerDatabase.logMessage(logMessage);
 
     if ( hasMoreEvents() == false )
     {
         mLoggerFile.flushLogs();
-    }
-}
-
-void TraceManager::activateScope( TraceScope & traceScope )
-{
-    Lock lock(mLock);
-
-    unsigned int defaultPrio= NELogConfig::DEFAULT_LOG_PRIORITY;
-    if ( mConfigScopeGroup.find( NELogConfig::MODULE_SCOPE,  defaultPrio) == false )
-    {
-        defaultPrio = NELogConfig::DEFAULT_LOG_PRIORITY;
-    }
-
-    activateScope(traceScope, defaultPrio);
-}
-
-void TraceManager::activateScope( TraceScope & traceScope, unsigned int defaultPriority )
-{
-    Lock lock(mLock);
-
-    traceScope.setPriority( defaultPriority ); // set first default priority
-    const String& scopeName = traceScope.getScopeName();
-    unsigned int scopePrio  = defaultPriority;
-
-    if ( mConfigScopeList.find(scopeName, scopePrio) )
-    {
-        traceScope.setPriority( scopePrio ); // exact match. Set priority
-    }
-    else
-    {
-        String groupName( scopeName );
-        NEString::CharPos pos = NEString::END_POS;
-        do
-        {
-            pos = groupName.findLast(NELogConfig::SYNTAX_SCOPE_SEPARATOR, pos, true);
-            if (groupName.isValidPosition(pos))
-            {
-                // set group syntax
-                groupName.setAt(NELogConfig::SYNTAX_SCOPE_GROUP, pos + 1).resize(pos + 2);
-                pos -= 1;
-            }
-            else
-            {
-                pos = NEString::INVALID_POS;
-                groupName = NELogConfig::SYNTAX_SCOPE_GROUP;
-            }
-
-            if (mConfigScopeGroup.find(groupName, scopePrio))
-            {
-                // Found group priority, set it
-                traceScope.setPriority(scopePrio);
-                break; // found.
-            }
-
-        } while (pos != NEString::INVALID_POS);
-    }
-}
-
-void TraceManager::setScopesPriority(const String & scopeName, unsigned int logPriority)
-{
-    if (scopeName.isEmpty() == false)
-    {
-        NEString::CharPos pos = scopeName.findLast(NELogConfig::SYNTAX_SCOPE_SEPARATOR, NEString::END_POS, true);
-        if ( pos == NEString::INVALID_POS )
-        {
-            // there is a complete scope name, make changes.
-            TraceScope * traceScope   = nullptr;
-            mConfigScopeList.setAt(scopeName, logPriority);
-            if (mMapTraceScope.find(TraceManager::makeScopeId(scopeName.getString()), traceScope) && (traceScope != nullptr))
-            {
-                traceScope->setPriority(logPriority);
-            }
-        }
-        else if ( pos == NEString::START_POS )
-        {
-            // change all, it is set group change for complete module
-            mConfigScopeGroup.setAt(scopeName, logPriority);
-            for (TraceScopeMap::MAPPOS mapPos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(mapPos); mapPos = mMapTraceScope.nextPosition(mapPos))
-            {
-                mMapTraceScope.valueAtPosition(mapPos)->setPriority(logPriority);
-            }
-        }
-        else if ( (pos > 0) && (scopeName[pos - 1] == NELogConfig::SYNTAX_SCOPE_SEPARATOR))
-        {
-            // it is a group scope, update all groups
-            mConfigScopeGroup.setAt(scopeName, logPriority);
-            int len = static_cast<int>(pos - 1);
-            for (TraceScopeMap::MAPPOS mapPos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(mapPos); mapPos = mMapTraceScope.nextPosition(mapPos) )
-            {
-                TraceScope * traceScope = mMapTraceScope.valueAtPosition(mapPos);
-                if (NEString::compareStrings<char, char>(scopeName, traceScope->getScopeName(), len) == NEMath::eCompare::Equal)
-                {
-                    traceScope->setPriority(logPriority);
-                }
-            }
-        }
+        mLoggerDatabase.flushLogs();
     }
 }
 
 bool TraceManager::postEvent(Event & eventElem)
 {
-    bool result = false;
-    if (RUNTIME_CAST(&eventElem, TraceEvent) != nullptr)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        OUTPUT_ERR("Not a TraceEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
-        eventElem.destroy();
-    }
-    return result;
+    return EventDispatcher::postEvent(eventElem);
 }
+
+inline void TraceManager::sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+{
+    TraceEvent::sendEvent( data, static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
+}
+
+void TraceManager::changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio )
+{
+    mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
+}
+
+#endif  // AREG_LOGS

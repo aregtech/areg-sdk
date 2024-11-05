@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates how to create custom event 
 //               dispatching and simple threads.As events to dispatch, the 
 //               demo uses timers and timer events.
@@ -85,7 +85,7 @@ void HelloThread::onThreadRuns( void )
     Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
 }
 
-//! \brief   A disatcher thread that runs timer.
+//! \brief   A dispatcher thread that runs timer.
 class HelloDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
@@ -100,8 +100,9 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
-     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
     virtual void readyForEvents( bool isReady ) override;
 
@@ -132,9 +133,9 @@ protected:
 
     /**
      * \brief   Triggered when Timer is expired.
-     * \param   timer   The timer object that is expired.
+     *          timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override
+    virtual void processTimer( Timer & /* timer */ ) override
     {
         // this never happens, since we break dispatching in dispatchEvent() method.
         ASSERT( false );
@@ -177,6 +178,7 @@ void HelloDispatcher::readyForEvents(bool isReady )
     TRACE_SCOPE( main_HelloDispatcher_readyForEvents );
     TRACE_DBG( "The dispatcher is running. The custom business logic can be set here ..." );
 
+    DispatcherThread::readyForEvents( isReady );
     if (isReady)
     {
         mTimer.startTimer(100);
@@ -187,12 +189,19 @@ void HelloDispatcher::readyForEvents(bool isReady )
     }
 }
 
+#if AREG_LOGS
 bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
     TRACE_SCOPE(main_HelloDispatcher_dispatchEvent);
     TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
     return true; // break dispatching event, so that it is never called 'processTimer()' method.
 }
+#else   // AREG_LOGS
+bool HelloDispatcher::dispatchEvent(Event & /*eventElem*/)
+{
+    return true; // break dispatching event, so that it is never called 'processTimer()' method.
+}
+#endif  // AREG_LOGS
 
 DEF_TRACE_SCOPE(main_main);
 
@@ -229,10 +238,10 @@ int main()
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().getString());
-        helloDispatcher.destroyThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
 
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().getString());
-        helloThread.destroyThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

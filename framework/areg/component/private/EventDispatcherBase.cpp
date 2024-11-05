@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcherBase.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher Base class
  *
@@ -42,13 +42,18 @@ EventDispatcherBase::EventDispatcherBase(const String & name )
 
 EventDispatcherBase::~EventDispatcherBase( void )
 {
-    removeAllEvents( );
     mHasStarted = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class, methods
 //////////////////////////////////////////////////////////////////////////
+
+bool EventDispatcherBase::isExitEvent( const Event * anEvent ) const
+{
+    return (anEvent == static_cast<const Event *>(&ExitEvent::getExitEvent( )));
+}
+
 void EventDispatcherBase::signalEvent( uint32_t eventCount )
 {
     eventCount != 0 ? mEventQueue.setEvent() : mEventQueue.resetEvent();
@@ -56,52 +61,60 @@ void EventDispatcherBase::signalEvent( uint32_t eventCount )
 
 bool EventDispatcherBase::startDispatcher( void )
 {
-    bool result = true;
-    if (mHasStarted == false)
-    {
-        mHasStarted = true;
-        mEventExit.resetEvent();
-        result      = runDispatcher();
-    }
-
-    return result;
+    mEventExit.resetEvent( );
+    return runDispatcher( );
 }
 
 void EventDispatcherBase::stopDispatcher( void )
 {
-    mExternaEvents.lockQueue();
-    removeEvents(false);
-    mExternaEvents.pushEvent(ExitEvent::getExitEvent());
-    mHasStarted = false;
-    mExternaEvents.unlockQueue();
+    mExternaEvents.lockQueue( );
+    if ( mHasStarted )
+    {
+        removeEvents( true );
+        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ) );
+    }
+
+    mEventExit.setEvent( );
+    mExternaEvents.unlockQueue( );
+}
+
+void EventDispatcherBase::exitDispatcher(void)
+{
+    mInternalEvents.removeAllEvents();
+    mExternaEvents.removeAllEvents();
+
     mEventExit.setEvent();
 }
 
 void EventDispatcherBase::shutdownDispatcher( void )
 {
+    mExternaEvents.lockQueue( );
     if ( mHasStarted )
     {
-        mExternaEvents.lockQueue();
         removeEvents( true );
         mExternaEvents.pushEvent(ExitEvent::getExitEvent());
-        mHasStarted = false;
-        mExternaEvents.unlockQueue();
     }
+
+    mEventExit.setEvent( );
+    mExternaEvents.unlockQueue( );
 }
 
 bool EventDispatcherBase::queueEvent( Event& eventElem )
 {
-    bool result = false;
+    bool result{ false };
     if ( mHasStarted )
     {
-        result = true;
         Event::eEventType eventType = eventElem.getEventType();
-        if ( Event::isInternal(eventType) )
+        if (Event::isInternal(eventType))
+        {
             mInternalEvents.pushEvent(eventElem);
-        else if ( Event::isExternal(eventType) )
+            result = true;
+        }
+        else if (Event::isExternal(eventType))
+        {
             mExternaEvents.pushEvent(eventElem);
-        else
-            result = false;
+            result = true;
+        }
     }
 
     return result;
@@ -112,40 +125,16 @@ bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClas
     mConsumerMap.lock();
 
     bool result = false;
-    OUTPUT_DBG("[ %s ] dispatcher: Registers consumer [ %p ] for event [ %s ]. The dispatcher state is [ %s ]"
-                , mDispatcherName.getString()
-                , reinterpret_cast<void *>(&whichConsumer)
-                , whichClass.getName().getString()
-                , isReady() ? "Ready" : "Not ready");
-
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
     if (listConsumers == nullptr)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Did not find consumer list for event [ %s ], creating new"
-                        , mDispatcherName.getString()
-                        , whichClass.getName().getString());
-        
         listConsumers   = DEBUG_NEW EventConsumerList();
         if (listConsumers != nullptr)
             mConsumerMap.registerResourceObject(whichClass, listConsumers);
     }
-#ifdef DEBUG
-    else
-    {
-        OUTPUT_DBG("[ %s ] dispatcher: Fount consumer list for event [ %s ]"
-                        , mDispatcherName.getString()
-                        , whichClass.getName().getString());
-    }
-#endif // DEBUG
 
     if ( (listConsumers != nullptr) && (listConsumers->existConsumer(whichConsumer) == false) )
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Add new consumer. There are [ %d ] registered consumers for event [ %s ]. There are [ %d ] Consumer Lists in map"
-                    , mDispatcherName.getString()
-                    , listConsumers->getSize()
-                    , whichClass.getName().getString()
-                    , mConsumerMap.getSize());
-
         result = listConsumers->addConsumer(whichConsumer);
     }
 
@@ -158,33 +147,18 @@ bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichC
     mConsumerMap.lock();
 
     bool result = false;
-    OUTPUT_DBG("[ %s ] dispatcher: Going to unregister consumer [ %p ] for event class [ %s ]"
-                , mDispatcherName.getString()
-                , static_cast<void *>(&whichConsumer)
-                , whichClass.getName().getString());
-
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
     if (listConsumers != nullptr)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Found Consumer List for event class [ %s ], going to remove consumer. Number of consumers in list [ %d ]"
-                    , mDispatcherName.getString()
-                    , whichClass.getName().getString()
-                    , listConsumers->getSize());
-
         result = listConsumers->removeConsumer(whichConsumer);
         if (listConsumers->isEmpty())
         {
             mConsumerMap.unregisterResourceObject(whichClass);
             delete listConsumers;
-            OUTPUT_DBG("[ %s ] dispatcher: Consumer List of event [ %s ] is empty, unregistered from map and deleted. Still [ %d ] lists in map"
-                        , mDispatcherName.getString()
-                        , whichClass.getName().getString()
-                        , mConsumerMap.getSize());
         }
     }
     else
     {
-        OUTPUT_WARN("[ %s ] dispatcher: Did not find registered consumer list for event [ %s ]", mDispatcherName.getString(), whichClass.getName().getString());
         // AAvetyan:    The reason why it does not find, because it is cleaned in _clean() function.
         //              This is mainly happening in component, which has server interface implementation.
         //              To make graceful shutdown, in _clean() method should be set filtering.
@@ -201,8 +175,6 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
-    OUTPUT_DBG("[ %s ] dispatcher: Removing Consumer [ %p ] from Consumer Map", mDispatcherName.getString(), static_cast<void *>(&whichConsumer));
-
     int result = 0;
     TELinkedList<RuntimeClassID> removedList;
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
@@ -211,18 +183,10 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
     Value = mConsumerMap.resourceFirstKey(Key);
     while (Value != nullptr)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Found registered event entry [ %s ] for consumer [ %p ]"
-                    , mDispatcherName.getString()
-                    , Key.getName().getString()
-                    , static_cast<void*>(&whichConsumer));
         ASSERT(Value->isEmpty() == false);
-
         result += Value->removeConsumer(whichConsumer) ? 1 : 0;
         if (Value->isEmpty())
         {
-            OUTPUT_WARN("[ %s ] dispatcher: The Consumer List of event entry [ %s ] is empty, marking for deleting"
-                            , mDispatcherName.getString()
-                            , Key.getName().getString());
             removedList.pushFirst(Key);
         }
 
@@ -235,11 +199,6 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
         ASSERT(Value != nullptr);
         delete Value;
         Value = nullptr;
-
-        OUTPUT_WARN("[ %s ] dispatcher: Unregistered and deleted Consumer List of event entry [ %s ]. There are still [ %d ] Consumer Lists in map"
-                        , mDispatcherName.getString()
-                        , Key.getName().getString()
-                        , mConsumerMap.getSize());
     }
 
     mConsumerMap.unlock();
@@ -248,13 +207,12 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
 
 bool EventDispatcherBase::runDispatcher( void )
 {
-    IESynchObject* syncObjects[2] = {&mEventExit, &mEventQueue};
-    MultiLock multiLock(syncObjects, 2, false);
+    readyForEvents( true );
 
+    IESynchObject* syncObjects[2] {&mEventExit, &mEventQueue};
+    MultiLock multiLock(syncObjects, 2, false);
     int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
-
-    readyForEvents(true);
 
     do 
     {
@@ -266,7 +224,6 @@ bool EventDispatcherBase::runDispatcher( void )
             {
                 if (eventElem == nullptr)
                 {
-                    OUTPUT_WARN("The event object is nullptr. Ignoring and waiting for lock.");
                     continue;
                 }
 
@@ -293,30 +250,26 @@ bool EventDispatcherBase::runDispatcher( void )
 
                 } while (eventElem != nullptr);
             }
-            else
-            {
-                OUTPUT_WARN(">>> Going to exit [ %s ] dispatcher", static_cast<const char *>(mDispatcherName.getString()));
-            }
         }
         else
         {
             whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
-            OUTPUT_WARN("Received exit event. Going to exit [ %s ] dispatcher", static_cast<const char *>(mDispatcherName.getString()));
         }
+
     } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
 
     readyForEvents(false);
-    mHasStarted = false;
     removeAllEvents( );
     _clean();
-
-    OUTPUT_WARN("The Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
 
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }
 
-void EventDispatcherBase::readyForEvents( bool /* isReady */ )
+void EventDispatcherBase::readyForEvents( bool isReady )
 {
+    mExternaEvents.lockQueue( );
+    mHasStarted = isReady;
+    mExternaEvents.unlockQueue( );
 }
 
 Event* EventDispatcherBase::pickEvent( void )
@@ -375,11 +328,10 @@ bool EventDispatcherBase::hasRegisteredConsumer( const RuntimeClassID& whichClas
     return mConsumerMap.existResource(whichClass);
 }
 
-void EventDispatcherBase::_clean()
+inline void EventDispatcherBase::_clean()
 {
     mConsumerMap.lock();
 
-    OUTPUT_WARN("[ %s ] dispatcher: Cleaning up, there are [ %d ] registered consumer maps", mDispatcherName.getString(), mConsumerMap.getSize());
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
     while (mConsumerMap.isEmpty() == false)
     {
@@ -387,11 +339,6 @@ void EventDispatcherBase::_clean()
         EventConsumerList* Value =  mConsumerMap.unregisterResourceObject(Key);
         Value->removeAllConsumers();
         delete Value;
-
-        OUTPUT_WARN("[ %s ] dispatcher: Unregistered and deleted Consumer List of event entry [ %s ]. There are still [ %d ] Consumer Lists in map"
-                        , mDispatcherName.getString()
-                        , Key.getName().getString()
-                        , mConsumerMap.getSize());
     }
 
     mConsumerMap.unlock();

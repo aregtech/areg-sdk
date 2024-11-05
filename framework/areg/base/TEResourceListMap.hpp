@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/TEResourceListMap.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Resource List Container Map class template.
  *              Use to store list of resources associated with the Key.
@@ -95,7 +95,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    ~TEResourceListMap( void ) = default;
+    ~TEResourceListMap( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -105,7 +105,7 @@ public:
     /**
      * \brief	Returns the size of Resource Map
      **/
-    inline int getSize(void) const;
+    inline uint32_t getSize(void) const;
 
     /**
      * \brief   Returns true if resource map is empty.
@@ -202,9 +202,9 @@ public:
      * \brief	Removes Resource object from the resource list of the map.
      *          The function searches resource by checking every entry in the list.
      *          If found, removes the entry from the list. It remove empty resource
-     *          list if 'removeEmpty' parameter is true.
-     * \param	Resource	The resource object to lookup
-     * \param   removeEmpty If true and the resource list is empty, removes the entry.
+     *          list if 'remEmptyList' parameter is true.
+     * \param	Resource	    The resource object to lookup.
+     * \param   remEmptyList    If true and the resource list is empty, removes the entry.
      * \return	Returns true if found and removed the resource from the list.
      **/
     inline bool removeResourceObject( RESOURCE_OBJECT Resource, bool remEmptyList );
@@ -215,6 +215,11 @@ public:
      *          cleanup job if needed.
      **/
     inline void removeAllResources( void );
+
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::unordered_map<RESOURCE_KEY, ResourceList>& getData(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods.
@@ -386,6 +391,16 @@ TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>
 
     , mSynchObj ( synchObject )
 {
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::~TEResourceListMap(void)
+{
+    removeAllResources();
 }
 
 template < typename RESOURCE_KEY
@@ -572,7 +587,7 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashM
 
     for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); pos = HashMap::nextPosition( pos ) )
     {
-        cleanResourceList(pos->first, pos->second);
+        cleanResourceList(HashMap::keyAtPosition(pos), HashMap::valueAtPosition(pos));
     }
 
     HashMap::clear( );
@@ -583,7 +598,17 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
          , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline int TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getSize( void ) const
+inline const std::unordered_map<RESOURCE_KEY, ResourceList>& TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getData(void) const
+{
+    return HashMap::getData();
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline uint32_t TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getSize( void ) const
 {
     Lock lock( mSynchObj );
     return HashMap::getSize( );

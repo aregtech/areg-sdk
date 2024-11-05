@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/GEGlobal.h
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, global include header file
  *
@@ -28,7 +28,8 @@
  *          should be included and/or defined here.
  **/
 
-#include "system/GEPlatform.h"
+
+#include "areg/system/GEPlatform.h"
 
 #define OUTPUT_DEBUG_LEVEL_DEBUG    4
 #define OUTPUT_DEBUG_LEVEL_INFO     3
@@ -38,14 +39,103 @@
 #define OUTPUT_DEBUG_LEVEL_ALL      OUTPUT_DEBUG_LEVEL_DEBUG
 
 #ifdef DEBUG
-    #ifndef OUTPUT_DEBUG_LEVEL
+    #if !defined(OUTPUT_DEBUG_LEVEL)
         #define OUTPUT_DEBUG_LEVEL      OUTPUT_DEBUG_LEVEL_NONE
+    #elif   (OUTPUT_DEBUG_LEVEL > OUTPUT_DEBUG_LEVEL_ALL)
+        #define OUTPUT_DEBUG_LEVEL      OUTPUT_DEBUG_LEVEL_ALL
     #endif // !OUTPUT_DEBUG_LEVEL
-#else
+#else   // !DEBUG
     #undef  OUTPUT_DEBUG_LEVEL
     #define OUTPUT_DEBUG_LEVEL          OUTPUT_DEBUG_LEVEL_NONE
 #endif // DEBUG
 
+#if defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define IMP_AREG_DLL
+    #define _IMP_AREG_DLL
+
+#endif  // defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
+
+#if defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define IMP_AREG_LIB
+    #define _IMP_AREG_LIB
+
+#endif  // defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
+
+#if defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define EXP_AREG_DLL
+    #define _EXP_AREG_DLL
+
+#endif  // defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
+
+#if defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define EXP_AREG_LIB
+    #define _EXP_AREG_LIB
+
+#endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
 
 /**
  * \brief   Basic types
@@ -58,11 +148,11 @@
 #include "areg/base/GESwitches.h"
 #include "areg/base/GEMacros.h"
 
-#ifdef _DEBUG
+#ifdef DEBUG
     #if (defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) 
         
         #undef  OUTPUT_DEBUG
-        #define OUTPUT_DEBUG
+        #define OUTPUT_DEBUG    1
 
     #else // !(defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0))
 

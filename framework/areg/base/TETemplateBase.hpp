@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/ETemplateBase.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, common constants class for templates.
  *
@@ -41,8 +41,6 @@ class TEResourceMapImpl
 public:
     /**
      * \brief	Called when all resources are removed.
-     * \param	Key	        The Key value of resource
-     * \param	Resource	Pointer to resource object
      **/
     inline void implCleanResource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT /*Resource*/ )
     {   }

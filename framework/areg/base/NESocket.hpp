@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/NESocket.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform. Socket OS Wrapper methods
  ************************************************************************/
@@ -64,6 +64,13 @@ namespace NESocket
         SocketAddress( void );
 
         /**
+         * \brief   Creates an object and sets directly the resolved IP-address and the port number.
+         * \param   address     The IP-address of the socket.
+         * \param   portNr      The port number of the socket.
+         **/
+        SocketAddress(const String& address, uint16_t portNr);
+
+        /**
          * \brief   Copies the socket address data from given source.
          * \param   source  The source of data to copy.
          **/
@@ -73,7 +80,7 @@ namespace NESocket
          * \brief   Moves the socket address data from given source.
          * \param   source  The source of data to move.
          **/
-        SocketAddress( SocketAddress  && source ) noexcept;
+        SocketAddress( SocketAddress && source ) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -186,6 +193,92 @@ namespace NESocket
     };
 
 //////////////////////////////////////////////////////////////////////////
+// NESocket::UserData class declaration
+//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The class that contains the user name and password pair.
+     **/
+    class AREG_API UserData
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Creates empty user name and password.
+         **/
+        UserData(void);
+
+        /**
+         * \brief   Sets the user name and the password pair.
+         **/
+        UserData(const String& user, const String& password);
+
+        /**
+         * \brief   Copies user name and password from the given source.
+         **/
+        UserData(const UserData& src);
+        UserData(UserData&& src) noexcept;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Copies user name and password from the given source.
+         **/
+        NESocket::UserData& operator = (const NESocket::UserData& source);
+        NESocket::UserData& operator = (NESocket::UserData&& source);
+
+        /**
+         * \brief   Compares 2 user name and password elements
+         *          and returns true if they are equal.
+         **/
+        bool operator == (const NESocket::UserData & other);
+
+        /**
+         * \brief   Compares 2 user name and password elements
+         *          and returns true if they are not equal.
+         **/
+        bool operator != (const NESocket::UserData & other);
+
+        /**
+         * \brief   Returns user name.
+         **/
+        const String& getUser(void) const;
+
+        /**
+         * \brief   Sets user name.
+         **/
+        void setUser(const String& user);
+
+        /**
+         * \brief   Returns password.
+         **/
+        const String& getPassword(void) const;
+
+        /**
+         * \brief   Sets the password.
+         **/
+        void setPassword(const String& password);
+
+        /**
+         * \brief   Returns true if the entry is valid.
+         *          The entry is valid if at least the user name is not empty.
+         **/
+        bool isValid(void) const;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        //!< The user name entry.
+        String mUser;
+        //!< The user password entry.
+        String mPassword;
+    };
+
+//////////////////////////////////////////////////////////////////////////
 // NESocket namespace constants declaration
 //////////////////////////////////////////////////////////////////////////
 
@@ -215,25 +308,39 @@ namespace NESocket
      **/
     constexpr std::string_view          LocalAddress                { "127.0.0.1" };
     /**
-     * \brief   NESocket::DEFAULT_SEGMENT_SIZE
-     *          The default size of segment when sends or receives data.
+     * \brief   NESocket::IP_SEPARATOR
+     *          The property separator
      **/
-    constexpr unsigned int              DEFAULT_SEGMENT_SIZE        { 16384 };
+    constexpr char              IP_SEPARATOR                        { '.' };
     /**
-     * \brief   NESocket::MAX_SEGMENT_SIZE
-     *          The maximum size of segment when sends or receives data.
+     * \brief   NESocket::IP_ADDRESS_SIZE
+     *          The size of buffer to reserve for IP address, like "255.255.255.255"
      **/
-    constexpr unsigned int              MAX_SEGMENT_SIZE            { 8 * NECommon::ONE_MEGABYTE };
+    constexpr uint32_t  IP_ADDRESS_SIZE                             { 16 };
+
     /**
-     * \brief   NESocket::MIN_SEGMENT_SIZE
-     *          The minimum size of segment when sends or receives data.
+     * \brief   NESocket::PACKET_MIN_SIZE
+     *          The minimum size of packet when send or receive data.
      **/
-    constexpr unsigned int              MIN_SEGMENT_SIZE            { 8 * NECommon::ONE_KILOBYTE };
+    constexpr unsigned int              PACKET_MIN_SIZE             { 512 };
+
     /**
-     * \brief   NESocket::SEGMENT_INVALID_SIZE
-     *          The invalid size of segment.
+     * \brief   NESocket::PACKET_DEFAULT_SIZE
+     *          The default size of packet when send or receive data.
      **/
-    constexpr unsigned int              SEGMENT_INVALID_SIZE        { 0 };
+    constexpr unsigned int              PACKET_DEFAULT_SIZE         { 1500 };
+
+    /**
+     * \brief   NESocket::PACKET_MAX_SIZE
+     *          The maximum size of packet when send or receive data.
+     **/
+    constexpr unsigned int              PACKET_MAX_SIZE             { 65536 };
+
+    /**
+     * \brief   NESocket::PACKET_INVALID_SIZE
+     *          Packet invalid size.
+     **/
+    constexpr unsigned int              PACKET_INVALID_SIZE         { 0 };
 
     /**
      * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
@@ -251,7 +358,7 @@ namespace NESocket
      *          Checks socket descriptor and returns true if it not equal to InvalidSocketHandle.
      * \param   hSocket     The socket descriptor to check
      **/
-    AREG_API bool isSocketHandleValid( SOCKETHANDLE hSocket );
+    inline bool isSocketHandleValid( SOCKETHANDLE hSocket );
 
     /**
      * \brief   NESocket::socketInitialize
@@ -377,29 +484,29 @@ namespace NESocket
 
     /**
      * \brief   NESocket::setMaxSendSize
-     *          Sets the socket buffer size in bytes to send the packet at once.
+     *          Sets the socket packet size in bytes to send data at once.
      * \param   hSocket     The valid socket descriptor to set the value.
      * \param   sendSize    The size in bytes to sent the packet at once.
-     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
-     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     *                      The minimum size is NESocket::PACKET_MIN_SIZE,
+     *                      the maximum is NESocket::PACKET_MAX_SIZE.
      **/
     AREG_API unsigned int setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize);
 
     /**
      * \brief   NESocket::getMaxReceiveSize
-     *          Calculated the maximum number of package size in bytes, which can be received.
-     *          This value may vary by protocol.
+     *          Maximum size of packet in bytes to receive data.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
     AREG_API unsigned int getMaxReceiveSize( SOCKETHANDLE hSocket );
 
     /**
      * \brief   NESocket::setMaxReceiveSize
-     *          Sets the socket buffer size in bytes to receive the packet at once.
+     *          Sets the socket packet size in bytes to receive data at once.
      * \param   hSocket     The valid socket descriptor to set the value.
      * \param   recvSize    The size in bytes to receive the packet at once.
-     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
-     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     *                      The minimum size is NESocket::PACKET_MIN_SIZE.
+     *                      The maximum is NESocket::PACKET_MAX_SIZE.
+     *                      The default seize is NESocket::PACKET_DEFAULT_SIZE.
      **/
     AREG_API unsigned int setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize);
 
@@ -417,7 +524,7 @@ namespace NESocket
      *          If failles, returns negative number.
      *          Returns zero if buffer is empty and nothing to sent.
      **/
-    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize );
+    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
 
     /**
      * \brief   NESocket::receiveData
@@ -434,7 +541,7 @@ namespace NESocket
      *          In case of failure, the specified socket should be closed.
      *          Returns zero if buffer is empty and nothing to receive.
      **/
-    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize );
+    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
 
     /**
      * \brief   NESocket::disableSend
@@ -467,6 +574,13 @@ namespace NESocket
      **/
     AREG_API unsigned int pendingRead( SOCKETHANDLE hSocket );
 
+    /**
+     * \brief   NESocket::getHostname
+     *          Returns the host name of the local machine.
+     *          Or returns empty string if failed.
+     **/
+    AREG_API const String & getHostname(void);
+
 }   // namespace NESocket end
 
 //////////////////////////////////////////////////////////////////////////
@@ -492,6 +606,11 @@ inline void NESocket::SocketAddress::resetAddress( void )
 {
     mIpAddr = String::EmptyString;
     mPortNr = NESocket::InvalidPort;
+}
+
+inline bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
+{
+    return ((hSocket != NESocket::InvalidSocketHandle) && (hSocket != NESocket::FailedSocketHandle));
 }
 
 #endif  // AREG_BASE_NESOCKET_HPP

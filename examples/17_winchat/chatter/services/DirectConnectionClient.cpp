@@ -15,27 +15,25 @@
 {
 }
 
-DirectConnectionClient::~DirectConnectionClient( )
+bool DirectConnectionClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-}
+    bool result = DirectConnectionClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
+    {
+        requestConnectoinSetup( mParticipantsHandler.GetInitiator( ), mParticipantsHandler.GetParticipantList( ) );
+    }
+    else
+    {
+        requestCloseConnection( mParticipantsHandler.GetInitiator( ) );
+    }
 
-bool DirectConnectionClient::serviceConnected( bool isConnected, ProxyBase & proxy )
-{
-    bool result = false;
-    if ( (isConnected == true) && DirectConnectionClientBase::serviceConnected( isConnected, proxy ) )
-    {
-        requestConnectoinSetup( mParticipantsHandler.GetInitiator( ), mParticipantsHandler.GetParticipantList() );
-        result = true;
-    }
-    else if ( (isConnected == false) && DirectConnectionClientBase::serviceConnected( isConnected, proxy ) )
-    {
-        requestCloseConnection(mParticipantsHandler.GetInitiator());
-        result = true;
-    }
     return result;
 }
 
-void DirectConnectionClient::responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
+                                                    , const NEDirectConnection::sParticipant & /* target */
+                                                    , const NEDirectConnection::sInitiator & initiator
+                                                    , const NEDirectConnection::ListParticipants & /* listParticipants */ )
 {
     ASSERT(mParticipantsHandler.GetInitiator() == initiator);
 }

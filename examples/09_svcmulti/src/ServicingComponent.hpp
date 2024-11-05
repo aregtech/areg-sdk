@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        src/ServicingComponent.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -54,8 +54,8 @@ protected:
 
     /**
      * \brief   Instantiates the component object.
+     * \param   entry       The entry of registry, which describes the component.
      * \param   ownerThread The instance of component owner thread.
-     * \param   roleName    The role name of component, given in the system.
      * \param   data        The optional component data set in system. Can be empty / no data.
      **/
     ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT data);
@@ -63,7 +63,7 @@ protected:
     virtual ~ServicingComponent(void) = default;
 
 /************************************************************************/
-// CEStubBase overrides. Triggered by Component on startup.
+// StubBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**

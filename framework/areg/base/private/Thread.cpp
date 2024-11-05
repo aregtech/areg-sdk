@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Thread.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread class
  *              platform independent code
@@ -52,9 +52,23 @@ IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 /************************************************************************/
 // Define internal static mapping objects
 /************************************************************************/
-Thread::MapThreadHandleResource       Thread::_mapThreadhHandle;
-Thread::MapThreadNameResource         Thread::_mapThreadName;
-Thread::MapThreadIDResource           Thread::_mapThreadId;
+Thread::MapThreadHandleResource& Thread::_getMapThreadhHandle()
+{
+    static Thread::MapThreadHandleResource _mapThreadhHandle;
+    return _mapThreadhHandle;
+}
+
+Thread::MapThreadNameResource& Thread::_getMapThreadName()
+{
+    static Thread::MapThreadNameResource _mapThreadName;
+    return _mapThreadName;
+}
+
+Thread::MapThreadIDResource& Thread::_getMapThreadId()
+{
+    static Thread::MapThreadIDResource _mapThreadId;
+    return _mapThreadId;
+}
 
 /************************************************************************/
 // Default thread procedure
@@ -71,8 +85,6 @@ unsigned long Thread::_defaultThreadFunction(void* data)
             Lock lock(threadObj->mSynchObject);
         } while (false);
 
-        OUTPUT_DBG("Thread [ %s ] starts job...", static_cast<const char *>(threadObj->getName().getString( )));
-
         // instantiate thread local storage before starting running
         // it should be created in the thread context
         Thread::_getThreadLocalStorage(threadObj);
@@ -81,19 +93,8 @@ unsigned long Thread::_defaultThreadFunction(void* data)
 
         // delete thread local storage.
         Thread::_getThreadLocalStorage(nullptr);
-
-        OUTPUT_DBG("Thread [ %s ] completed job with code [ %s ]"
-                        , threadObj->getName().getString()
-                        , IEThreadConsumer::getString( result ) );
-
         threadObj->mWaitForExit.setEvent();
     }
-#ifdef  _DEBUG
-    else
-    {
-        OUTPUT_WARN("Unknown thread completed job with code [ %s ]", IEThreadConsumer::getString(result));
-    }
-#endif // _DEBUG
 
     return static_cast<unsigned long>(result);
 }
@@ -157,7 +158,7 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
 
 Thread::~Thread( void )
 {
-    _cleanResources();
+    _cleanResources(false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -194,20 +195,26 @@ bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT
     return result;
 }
 
-
-Thread::eCompletionStatus Thread::destroyThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
+void Thread::triggerExit( void )
 {
-    return _osDestroyThread( waitForStopMs );
 }
 
-void Thread::shutdownThread( void )
+Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
 {
-    destroyThread(NECommon::WAIT_INFINITE);
+    Thread::eCompletionStatus result{ _osDestroyThread( waitForStopMs ) };
+
+    if ( mSynchObject.tryLock( ) )
+    {
+        _cleanResources( true );
+        mSynchObject.unlock( );
+    }
+
+    return result;
 }
 
 Thread::eCompletionStatus Thread::terminateThread( void )
 {
-    return destroyThread( NECommon::WAIT_10_MILLISECONDS );
+    return shutdownThread( NECommon::WAIT_10_MILLISECONDS );
 }
 
 bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
@@ -241,9 +248,8 @@ void Thread::onPostExitThread( void )
 
 const String & Thread::getThreadName( id_type threadId )
 {
-    static String emptyString;
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != nullptr ? threadObj->getName() : emptyString);
+    return (threadObj != nullptr ? threadObj->getName() : String::getEmptyString());
 }
 
 const ThreadAddress & Thread::getThreadAddress( id_type threadId )
@@ -258,7 +264,7 @@ int Thread::_threadEntry( void )
 
     if (Thread::_findThreadByHandle(mThreadHandle) != nullptr )
     {
-        Thread::getCurrentThreadStorage().setStorageItem(STORAGE_THREAD_CONSUMER.data(), (void *)&mThreadConsumer);
+        Thread::getCurrentThreadStorage().setStorageItem(STORAGE_THREAD_CONSUMER.data(), reinterpret_cast<void *>(&mThreadConsumer));
 
         _setRunning(true);
 
@@ -274,20 +280,24 @@ int Thread::_threadEntry( void )
 
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
     }
-    else
-    {
-        ; // do nothing
-    }
+
+    _cleanResources( true );
 
     return static_cast<int>(result);
 }
 
-void Thread::_cleanResources( void )
+void Thread::_cleanResources(bool unregister)
 {
-    THREADHANDLE handle = mThreadHandle;
+    Lock lock(mSynchObject);
 
-    mThreadHandle   = INVALID_THREAD_HANDLE;
-    mThreadId       = INVALID_THREAD_ID;
+    if (unregister)
+    {
+        _unregisterThread();
+    }
+
+    THREADHANDLE handle{ mThreadHandle };
+    mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
+    mThreadId       = Thread::INVALID_THREAD_ID;
     mIsRunning      = false;
     mThreadPriority = Thread::eThreadPriority::PriorityUndefined;
 
@@ -296,9 +306,9 @@ void Thread::_cleanResources( void )
 
 bool Thread::_registerThread( void )
 {
-    Thread::_mapThreadhHandle.registerResourceObject(mThreadHandle, this);
-    Thread::_mapThreadName.registerResourceObject(mThreadAddress.getThreadName(), this);
-    Thread::_mapThreadId.registerResourceObject(mThreadId, this);
+    Thread::_getMapThreadhHandle().registerResourceObject(mThreadHandle, this);
+    Thread::_getMapThreadName().registerResourceObject(mThreadAddress.getThreadName(), this);
+    Thread::_getMapThreadId().registerResourceObject(mThreadId, this);
 
     _osSetThreadName(mThreadId, mThreadAddress.getThreadName());
     return mThreadConsumer.onThreadRegistered(this);
@@ -310,18 +320,24 @@ void Thread::_unregisterThread( void )
     {
         mThreadConsumer.onThreadUnregistering();
         
-        Thread::_mapThreadhHandle.unregisterResourceObject(mThreadHandle);
-        Thread::_mapThreadName.unregisterResourceObject(mThreadAddress.getThreadName());
-        Thread::_mapThreadId.unregisterResourceObject(mThreadId);
+        Thread::_getMapThreadhHandle().unregisterResourceObject(mThreadHandle);
+        Thread::_getMapThreadName().unregisterResourceObject(mThreadAddress.getThreadName());
+        Thread::_getMapThreadId().unregisterResourceObject(mThreadId);
 
-        if (Thread::_mapThreadhHandle.isEmpty())
-            Thread::_mapThreadhHandle.removeAllResources();
+        if (Thread::_getMapThreadhHandle().isEmpty())
+        {
+            Thread::_getMapThreadhHandle().removeAllResources();
+        }
 
-        if (Thread::_mapThreadName.isEmpty())
-            Thread::_mapThreadName.removeAllResources();
+        if (Thread::_getMapThreadName().isEmpty())
+        {
+            Thread::_getMapThreadName().removeAllResources();
+        }
 
-        if (Thread::_mapThreadId.isEmpty())
-            Thread::_mapThreadId.removeAllResources();
+        if (Thread::_getMapThreadId().isEmpty())
+        {
+            Thread::_getMapThreadId().removeAllResources();
+        }
     }
     else
     {
@@ -340,12 +356,12 @@ IEThreadConsumer& Thread::getCurrentThreadConsumer( void )
 
 Thread * Thread::getFirstThread( id_type & OUT threadId )
 {
-    return _mapThreadId.resourceFirstKey( threadId );
+    return _getMapThreadId().resourceFirstKey( threadId );
 }
 
 Thread * Thread::getNextThread( id_type & IN OUT threadId )
 {
-    return _mapThreadId.resourceNextKey( threadId );
+    return _getMapThreadId().resourceNextKey( threadId );
 }
 
 #ifdef  _DEBUG
@@ -354,28 +370,21 @@ Thread * Thread::getNextThread( id_type & IN OUT threadId )
 /************************************************************************/
 void Thread::dumpThreads( void )
 {
-    OUTPUT_DBG(">>> Starting dump Thread objects");
-    OUTPUT_DBG(">>> ............................");
+    Thread::MapThreadNameResource& mapNames{ Thread::_getMapThreadName() };
+    mapNames.lock();
 
-    Thread::_mapThreadName.lock();
-
-    if (Thread::_mapThreadName.isEmpty() == false)
+    if (mapNames.isEmpty() == false)
     {
         String threadName("");
         Thread* threadObj{ nullptr };
-        Thread::_mapThreadName.resourceFirstKey(threadName);
+        mapNames.resourceFirstKey(threadName);
         do
         {
-            OUTPUT_WARN("The thread with name [ %s ] is still registered in resource!", static_cast<const char *>(threadName.getString()));
-            threadObj = Thread::_mapThreadName.resourceNextKey(threadName);
-
+            threadObj = mapNames.resourceNextKey(threadName);
         } while (threadObj != nullptr );
     }
 
-    Thread::_mapThreadName.unlock();
-
-    OUTPUT_DBG("<<< .......................");
-    OUTPUT_DBG("<<< End dump Thread objects");
+    mapNames.unlock();
 }
 
 #endif // _DEBUG

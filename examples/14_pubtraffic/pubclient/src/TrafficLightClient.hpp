@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        pubclient/src/TrafficLightClient.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client.
@@ -13,9 +13,9 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/SimpleTrafficLightClientBase.hpp"
+#include "generate/examples/14_pubtraffic/SimpleTrafficLightClientBase.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 //! The simple service client, which receives data update notifications.
 class TrafficLightClient    : public    Component
@@ -67,15 +67,17 @@ protected:
 // IEProxyListener Overrides
 /************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
     /**
      * \brief   Triggered, when SouthNorth attribute is updated. The function contains

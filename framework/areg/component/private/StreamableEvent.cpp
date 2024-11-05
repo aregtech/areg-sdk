@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StreamableEvent.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Streamable communication Event.
  *
@@ -22,18 +22,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(StreamableEvent, ThreadEventBase)
+IMPLEMENT_RUNTIME_EVENT(StreamableEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 StreamableEvent::StreamableEvent( Event::eEventType eventType )
-    : ThreadEventBase (eventType)
+    : Event (eventType)
 {
 }
 
 StreamableEvent::StreamableEvent( const IEInStream & stream )
-    : ThreadEventBase ( Event::eEventType::EventUnknown )
+    : Event ( Event::eEventType::EventUnknown )
 {
     stream >> Event::mEventType;
 }

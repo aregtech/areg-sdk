@@ -48,12 +48,9 @@ PageChat::PageChat( const String & serviceName
     , mCtrlTimerValue           ( )
     , mCtrlTimerSpin            ( )
     , mTimerId                  ( 0 )
+    , mModelName                ( )
 {
 
-}
-
-PageChat::~PageChat()
-{
 }
 
 void PageChat::DoDataExchange(CDataExchange* pDX)
@@ -76,7 +73,7 @@ void PageChat::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(PageChat, CPropertyPage)
     ON_WM_DESTROY( )
     ON_WM_TIMER()
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID(WM_KICKIDLE, PageChat::OnKickIdle)
     ON_EN_UPDATE(IDC_EDIT_CHAT, &PageChat::OnUpdateEditChat)
     ON_EN_CHANGE(IDC_CHAT_TIMER, &PageChat::OnEnChangeChatTimer)
     ON_BN_CLICKED( IDC_CHECK_CHAT_MESSAGES, &PageChat::OnClickedCheckChatMessages )
@@ -136,12 +133,14 @@ BOOL PageChat::OnInitDialog( )
 
     NEMemory::uAlign data;
     data.alignClsPtr.mElement = reinterpret_cast<NEMemory::_EmptyClass *>(this);
+    ASSERT(mModelName.isEmpty());
 
     NERegistry::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
     if ( ComponentLoader::isModelLoaded(model.getModelName()) == false )
     {
+        mModelName = model.getModelName();
         ComponentLoader::addModelUnique( model );
-        ComponentLoader::loadComponentModel( model.getModelName( ) );    
+        ComponentLoader::loadComponentModel( mModelName );    
     }
     else
     {
@@ -207,22 +206,21 @@ void PageChat::OnClickedButtonChatSend( )
 
 void PageChat::OnDestroy( )
 {
-    DirectMessagingClient * client = this->GetChatClient( );
+    DirectMessagingClient * client = GetChatClient( );
     if ( client != nullptr )
     {
-        client->clearAllNotifications();
-        client->requestChatLeave( GetConnectionOwner( ), DateTime::getNow() );
+        client->shutdownChat();
+        SetChatClient(nullptr);
+        SetChatWindow(0);
     }
 
+    if (mModelName.isEmpty() == false)
+    {
+        ComponentLoader::unloadComponentModel(true, mModelName);
+        mModelName.clear();
 
-    SetChatWindow( 0 );
-    SetChatClient( nullptr );
-
-    const NEDirectConnection::sInitiator & initiator = GetInitiator();
-    String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel( modelName );
-    
-    ChatPrticipantHandler::Invalidate();
+        ChatPrticipantHandler::Invalidate();
+    }
     
     CPropertyPage::OnDestroy( );
 }
@@ -230,19 +228,16 @@ void PageChat::OnDestroy( )
 
 void PageChat::OnClickedButtonCloseChat( )
 {
-    DirectMessagingClient * client = this->GetChatClient( );
+    DirectMessagingClient * client = GetChatClient( );
     if ( client != nullptr )
     {
-        client->clearAllNotifications();
-        client->requestChatLeave( GetConnectionOwner( ), DateTime::getNow() );
+        client->shutdownChat();
+        SetChatWindow(0);
+        SetChatClient(nullptr);
     }
 
-    SetChatWindow( 0 );
-    SetChatClient( nullptr );
-
-    const NEDirectConnection::sInitiator & initiator = GetInitiator();
     String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel( modelName );
+    ComponentLoader::unloadComponentModel(true, modelName );
 
     ChatPrticipantHandler::Invalidate();
 
@@ -355,11 +350,12 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
     if ( message.IsEmpty() == false )
     {
         int pos = mLastItem;
-        for ( pos; pos < mCtrlList.GetItemCount(); ++ pos )
+        for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )
                 break;
         }
+        
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;

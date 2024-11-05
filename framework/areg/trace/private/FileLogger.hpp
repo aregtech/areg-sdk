@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/FileLogger.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, File Logger object to log message into the file
  ************************************************************************/
@@ -23,8 +23,10 @@
 
 #include "areg/base/File.hpp"
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
-// DebugOutputLogger class declaration
+// FileLogger class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Message logger to output messages in to the file.
@@ -38,8 +40,7 @@ class FileLogger    : public    LoggerBase
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Constructor.
-     *          Instantiates logger and sets tracer configuration object,
+     * \brief   Instantiates logger and sets tracer configuration object,
      *          which contains methods to get property values after
      *          configuring tracer.
      * \param   tracerConfig    The instance tracer configuration object,
@@ -85,14 +86,15 @@ public:
     virtual void logMessage( const NETrace::sLogMessage & logMessage ) override;
 
     /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
-     **/
-    virtual void flushLogs( void ) override;
-
-    /**
      * \brief   Returns true if logger is initialized (opened).
      **/
     virtual bool isLoggerOpened( void ) const override;
+
+public:
+    /**
+     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
+     **/
+    void flushLogs(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -111,4 +113,5 @@ private:
     DECLARE_NOCOPY_NOMOVE( FileLogger );
 };
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_FILELOGGER_HPP

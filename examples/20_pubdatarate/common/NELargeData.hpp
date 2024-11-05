@@ -1,7 +1,7 @@
 #pragma once
 /************************************************************************
  * \file        common\NELargeData.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains basic constants and objects that are
@@ -86,7 +86,7 @@ namespace NELargeData
 //////////////////////////////////////////////////////////////////////////
     public:
         inline ImageBlock(void);
-        inline ImageBlock(ImageBlock&& src);
+        inline ImageBlock(ImageBlock&& src) noexcept;
         inline ~ImageBlock(void);
 
 //////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ namespace NELargeData
          * 
          * \param   src     The source of an image block.
          */
-        inline ImageBlock& operator = (ImageBlock&& src);
+        inline ImageBlock& operator = (ImageBlock&& src) noexcept;
 
         /**
          * \brief   Allocates space and initializes image block of specified size.
@@ -194,7 +194,7 @@ inline NELargeData::ImageBlock::ImageBlock(void)
 {
 }
 
-inline NELargeData::ImageBlock::ImageBlock(NELargeData::ImageBlock&& src)
+inline NELargeData::ImageBlock::ImageBlock(NELargeData::ImageBlock&& src) noexcept
     : mBlock    (std::move(src.mBlock))
 {
     src.mBlock = nullptr;
@@ -205,7 +205,7 @@ inline NELargeData::ImageBlock::~ImageBlock(void)
     release();
 }
 
-inline NELargeData::ImageBlock& NELargeData::ImageBlock::operator = (NELargeData::ImageBlock&& src)
+inline NELargeData::ImageBlock& NELargeData::ImageBlock::operator = (NELargeData::ImageBlock&& src) noexcept
 {
     if (this != &src)
     {
@@ -264,7 +264,7 @@ inline void NELargeData::ImageBlock::release(void)
 
 inline uint32_t NELargeData::ImageBlock::getSize(void) const
 {
-    return (mBlock != 0 ? mBlock->blockSize : 0);
+    return (mBlock != nullptr ? mBlock->blockSize : 0);
 }
 
 inline bool NELargeData::ImageBlock::isEmpty(void) const

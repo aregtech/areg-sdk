@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}</ProjectGuid>
@@ -14,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -39,22 +42,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloServiceClientBase.cpp" />
-    <ClCompile Include="generated\src\private\HelloServiceEvents.cpp" />
-    <ClCompile Include="generated\src\private\HelloServiceProxy.cpp" />
-    <ClCompile Include="generated\src\private\HelloServiceStub.cpp" />
-    <ClCompile Include="generated\src\private\NEHelloService.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\NEHelloService.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\HelloServiceClientBase.hpp" />
-    <ClInclude Include="generated\src\HelloServiceStub.hpp" />
-    <ClInclude Include="generated\src\NEHelloService.hpp" />
-    <ClInclude Include="generated\src\private\HelloServiceEvents.hpp" />
-    <ClInclude Include="generated\src\private\HelloServiceProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\HelloServiceClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\HelloServiceStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\NEHelloService.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceProxy.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\HelloService.siml" />

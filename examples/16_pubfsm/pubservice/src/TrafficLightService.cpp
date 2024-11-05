@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/TrafficLightService.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This is a Traffic Light controller, which uses finite-state machine (FSM),
@@ -11,7 +11,7 @@
   ************************************************************************/
 #include "pubservice/src/TrafficLightService.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
@@ -34,7 +34,7 @@ Component * TrafficLightService::CreateComponent(const NERegistry::ComponentEntr
     return DEBUG_NEW TrafficLightService(entry, owner);
 }
 
-void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

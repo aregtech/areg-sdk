@@ -9,12 +9,14 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 
+#include <iostream>
+
 Component * ClientComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
     return DEBUG_NEW ClientComponent(entry, owner);
 }
 
-void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -25,12 +27,13 @@ ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, Compo
 {
 }
 
-bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ClientComponent::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    bool result = false;
-    if ( HelloServiceClientBase::serviceConnected(isConnected, proxy) )
+    bool result{ false };
+    if ( HelloServiceClientBase::serviceConnected(status, proxy) )
     {
-        if (isConnected)
+        result = true;
+        if (NEService::isServiceConnected(status))
         {
             // Up from this part the client can:
             //      a. call requests to run on the server side.
@@ -52,7 +55,7 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
 
 void ClientComponent::responseHelloService( bool success )
 {
-    printf("%s to output message.\n", success ? "succeeded" : "failed");
+    std::cout << (success ? "Succeeded" : "Failed") << " to output message." << std::endl;
 
     // Sleep for no reason! Do not do this in a real application.
     // It is done to give a chance to see an output message on the console.
@@ -63,10 +66,12 @@ void ClientComponent::responseHelloService( bool success )
     Application::signalAppQuit();
 }
 
-void ClientComponent::requestHelloServiceFailed(NEService::eResultType FailureReason)
+void ClientComponent::requestHelloServiceFailed(NEService::eResultType /* FailureReason */)
 {
     // make error handling here.
-    printf("Failed to execute request, retry again.\n");
+    std::cerr << "Failed to execute request, retry again." << std::endl;
+
+    // Try again, if connected
     if (isConnected())
     {
         // the service is still connected, and can resend the request.

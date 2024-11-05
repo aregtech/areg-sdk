@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientReceiveThread.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Receive Message Thread
  ************************************************************************/
@@ -20,12 +20,13 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/RemoteServiceEvent.hpp"
+
+#include <atomic>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteServiceHandler;
+class IERemoteMessageHandler;
 class ClientConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,8 +47,10 @@ public:
      * \brief   Initializes Service handler and client connection objects.
      * \param   remoteService   The instance of remote service to process messages.
      * \param   connection      The instance of client connection object to read messages.
+     * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD
+     *                          to have unique thread names.
      **/
-    ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection );
+    ClientReceiveThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);
 
     /**
      * \brief   Destructor.
@@ -62,7 +65,19 @@ public:
      * \brief   Returns accumulative value of received data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataReceive( void );
+    inline uint32_t extractDataReceive( void ) const;
+
+    /**
+     * \brief   Call to enable or disable the received data calculation.
+     *          It as well resets the existing calculated data.
+     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     **/
+    inline void setEnableCalculateData(bool enable);
+
+    /**
+     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     **/
+    inline bool isCalculateDataEnabled(void) const;
 
 protected:
 /************************************************************************/
@@ -85,7 +100,7 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteServiceHandler &    mRemoteService;
+    IERemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of connection to receive messages from remote routing service.
      **/
@@ -94,7 +109,12 @@ private:
     /**
      * \brief   Accumulative value of received data size.
      */
-    std::atomic_uint            mBytesReceive;
+    mutable std::atomic_uint    mBytesReceive;
+
+    /**
+     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+     **/
+    bool                        mSaveDataReceive;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -104,9 +124,23 @@ private:
     DECLARE_NOCOPY_NOMOVE( ClientReceiveThread );
 };
 
-inline uint32_t ClientReceiveThread::extractDataReceive( void )
+inline uint32_t ClientReceiveThread::extractDataReceive( void ) const
 {
     return static_cast<uint32_t>(mBytesReceive.exchange(0));
+}
+
+inline void ClientReceiveThread::setEnableCalculateData(bool enable)
+{
+    if (mSaveDataReceive != enable)
+    {
+        mBytesReceive.store(0u);
+        mSaveDataReceive = enable;
+    }
+}
+
+inline bool ClientReceiveThread::isCalculateDataEnabled(void) const
+{
+    return mSaveDataReceive;
 }
 
 #endif  // AREG_IPC_PRIVATE_CLIENTRECEIVETHREAD_HPP

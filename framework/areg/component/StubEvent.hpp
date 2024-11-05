@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/StubEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Component Event and 
  *              Component Event Consumer class.
@@ -31,8 +31,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/RuntimeObject.hpp"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
-
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
 
@@ -41,7 +41,7 @@
  ************************************************************************/
 // class StreamableEvent
     class StubEvent;
-// class ThreadEventConsumerBase
+// class IEEventConsumer
     class IEStubEventConsumer;
 
 /************************************************************************
@@ -175,7 +175,7 @@ private:
  *          consumer of Stub specific events. It is extended in StubBase
  *          class, which is a base class for all Stub objects.
  **/
-class AREG_API IEStubEventConsumer  : public ThreadEventConsumerBase
+class AREG_API IEStubEventConsumer  : public IEEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -230,29 +230,19 @@ protected:
     virtual void processGenericEvent( Event & eventElem ) = 0;
 
     /**
-     * \brief   Send by system when client is requested connect / disconnect
-     * \param   proxyAddress        The address of source proxy
-     * \param   connectionStatus    Connection status of specified client
-     **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection connectionStatus ) = 0;
-
-    /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
      *          registration status. If succeeded, the value is NEService::ServiceConnected
-     * \param   stubTarget          The address of registered Stub
-     * \param   connectionStatus    Stub registration status.
+     * \param   stubTarget  The address of registered service provider
+     * \param   status      The connection status of the service provider.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus ) = 0;
+    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection status ) = 0;
 
     /**
-     * \brief   This function is triggered when object is adding listener
-     *          and triggered by dispatcher to indicate whether consumer
-     *          registered or not.
-     * \param isRegistered  On adding listener, this parameter
-     *                      should be true. On removing -- false.
-     *                      Otherwise there was an error adding listener.
+     * \brief   Send by system when client is requested connect / disconnect
+     * \param   proxyAddress    The address of the service consumer proxy.
+     * \param   status          The service consumer connection status.
      **/
-    virtual void consumerRegistered( bool isRegistered ) override;
+    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

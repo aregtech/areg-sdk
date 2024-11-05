@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/DebugOutputLogger.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Debug Output Logger object to log message into the
  *              system Output console object
@@ -25,12 +25,13 @@
 
 #include "areg/base/String.hpp"
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
 // DebugOutputLogger class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Message logger in output window, normally used in debugging.
- *          The messages are not saved in the file.
+ * \brief   Message logger in to log message in output window, normally used in debugging.
  *          At the moment the output logger supports only ASCII messages
  *          and any Unicode character might output wrong.
  **/
@@ -89,11 +90,6 @@ public:
     virtual void logMessage( const NETrace::sLogMessage & logMessage ) override;
 
     /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
-     **/
-    virtual void flushLogs( void ) override;
-
-    /**
      * \brief   Returns true if logger is initialized (opened).
      **/
     virtual bool isLoggerOpened( void ) const override;
@@ -128,18 +124,18 @@ protected:
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
+     * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & asciiString ) override;
+    virtual unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString  The buffer of String containing data to stream to Output Stream.
+     * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wideString ) override;
+    virtual unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief	Flushes cached data to output stream object.
@@ -178,4 +174,5 @@ private:
     DECLARE_NOCOPY_NOMOVE( DebugOutputLogger );
 };
 
+#endif // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP

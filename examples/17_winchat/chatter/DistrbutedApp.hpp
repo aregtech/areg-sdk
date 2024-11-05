@@ -10,7 +10,7 @@
 // All rights reserved.
 
 // DistrbutedApp.hpp : main header file for the distrbutedapp application
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 //
 #pragma once
 
@@ -33,12 +33,12 @@ public:
 
     // Overrides
 public:
-    virtual BOOL InitInstance();
+    virtual BOOL InitInstance() override;
 
     // Implementation
 
     DECLARE_MESSAGE_MAP()
-    virtual int ExitInstance( );
+    virtual int ExitInstance( ) override;
 };
 
 extern DistrbutedApp theApp;

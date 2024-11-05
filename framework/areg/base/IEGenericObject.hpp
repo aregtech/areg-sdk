@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/IEGenericObject.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Object Interface and
  *              Generic Object instance factory.
@@ -56,6 +56,7 @@ protected:
      * \brief   Default constructor. Protected.
      **/
     IEGenericObject( void );
+
     /**
      * \brief   Initialization Constructor. Protected.
      **/
@@ -65,7 +66,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEGenericObject( void );
+    virtual ~IEGenericObject( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -109,6 +110,10 @@ public:
      *          The meaning of content may vary in different classes.
      **/
     void *  mObjData;
+
+private:
+    IEGenericObject(const IEGenericObject & /* src */) = delete;
+    IEGenericObject & operator = (const IEGenericObject & /* src */) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////

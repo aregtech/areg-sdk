@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/WorkerThread.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Worker Thread class.
  *              Use to create component related Worker Thread .
@@ -150,13 +150,11 @@ protected:
 // Dispatcher overrides
 /************************************************************************/
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // Dispatcher Thread overrides

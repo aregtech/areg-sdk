@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/NEDebugWin32.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Windows OS specific implementation of Debugging utilities
  *
@@ -20,29 +20,33 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Containers.hpp"
 
-#include <windows.h>
+#include <Windows.h>
 
 #if _MSC_VER
     #pragma warning(disable: 4091)
 #endif  // _MSC_VER
 
-#include <dbghelp.h>
+#include <DbgHelp.h>
 
 #if _MSC_VER
     #pragma warning(default: 4091)
 #endif  // _MSC_VER
 
+#ifdef  _DEBUG
 void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 {
-#ifdef  _DEBUG
     if ( NEString::isEmpty<char>( msg ) == false )
         ::OutputDebugStringA( msg );
-#endif  // _DEBUG
 }
+#else   // _DEBUG
+void AREG_API_IMPL NEDebug::outputMessageOS(const char* /*msg*/)
+{
+}
+#endif  // _DEBUG
 
+#ifdef  _DEBUG
 void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
 {
-#ifdef  _DEBUG
 
     constexpr char  _stackFormat[]              { "        %s:(%d): %s: %s" };
     constexpr char  _msgFileUnavailable[]       { "<File and line number not available>" };
@@ -94,8 +98,8 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
             char message[_symNameLength + MAX_PATH + 8] = { 0 };
 
             char symBuffer[_sizeOfSymInfo]  = { 0 };
-            IMAGEHLP_LINE64     lineInfo    = { 0 };
-            IMAGEHLP_MODULE64   moduleInfo  = { 0 };
+            IMAGEHLP_LINE64     lineInfo   { };
+            IMAGEHLP_MODULE64   moduleInfo { };
             PSYMBOL_INFO        symbolInfo  = reinterpret_cast<PSYMBOL_INFO>(symBuffer);
 
             unsigned int curDepth = 0;
@@ -128,7 +132,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
                                     , _symNameLength + MAX_PATH + 8
                                     , _stackFormat
                                     , hasFile     ? lineInfo.FileName    : _msgFileUnavailable
-                                    , hasFile     ? lineInfo.LineNumber  : -1
+                                    , hasFile     ? static_cast<int32_t>(lineInfo.LineNumber)  : -1
                                     , hasFunction ? symbolInfo->Name     : _msgFunctionUnavailable
                                     , hasModule   ? moduleInfo.ImageName : _msgModuleUnavailable );
 
@@ -152,8 +156,11 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
     {
         out_callStack.push_back( _msgCannotExtractSym );
     }
-#endif  // _DEBUG
 }
+#else   // _DEBUG
+void AREG_API_IMPL NEDebug::dumpExceptionCallStack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& OUT /*out_callStack*/)
+{
+}
+#endif  // _DEBUG
 
 #endif  // _WINDOWS
-

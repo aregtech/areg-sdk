@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project contains service client and the worker thread 
 //               described in the model.The worker thread imitates the output
 //               device.
@@ -13,7 +13,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubclient/src/PatientClient.hpp"
 
 #ifdef WINDOWS
@@ -54,7 +54,7 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(false, true, true, true, true, nullptr, nullptr );
+    Application::initApplication(false, true, true, true, true, nullptr );
 
 
     // load model to initialize components

@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/SocketAccepted.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Accepted Socket class implementation.
  ************************************************************************/
@@ -18,8 +18,6 @@
 SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress )
     : Socket  ( hSocket, sockAddress)
 {
-    setRecvSegmentSize(NESocket::DEFAULT_SEGMENT_SIZE);
-    setSendSegmentSize(NESocket::DEFAULT_SEGMENT_SIZE);
 }
 
 bool SocketAccepted::createSocket(const char * /*hostName*/, unsigned short /*portNr*/)

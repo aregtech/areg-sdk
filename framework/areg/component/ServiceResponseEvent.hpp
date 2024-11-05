@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ServiceResponseEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service Response Event.
  *              Base Service Response Event class to send events to
@@ -80,7 +80,7 @@ protected:
                         , NEService::eResultType result
                         , unsigned int responseId
                         , Event::eEventType eventType
-                        , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief   Copies all data from given source, except the target proxy address. This is used if proxy needs to clone
@@ -120,12 +120,12 @@ public:
     /**
      * \brief   Returns sequence number of call.
      **/
-    inline unsigned int getSequenceNumber( void ) const;
+    inline const SequenceNumber & getSequenceNumber( void ) const;
 
     /**
      * \brief   Sets sequence number of call.
      **/
-    inline void setSequenceNumber( unsigned int newSeqNr );
+    inline void setSequenceNumber( const SequenceNumber & newSeqNr );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -180,7 +180,7 @@ protected:
     /**
      * \brief   The sequence number.
      **/
-    unsigned int            mSequenceNr;
+    SequenceNumber          mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -204,12 +204,12 @@ inline NEService::eResultType ServiceResponseEvent::getResult( void ) const
     return mResult;
 }
 
-inline unsigned int ServiceResponseEvent::getSequenceNumber( void ) const
+inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber( void ) const
 {
     return mSequenceNr;
 }
 
-inline void ServiceResponseEvent::setSequenceNumber( unsigned int newSeqNr )
+inline void ServiceResponseEvent::setSequenceNumber( const SequenceNumber & newSeqNr )
 {
     mSequenceNr = newSeqNr;
 }

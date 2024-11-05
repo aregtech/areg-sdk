@@ -6,11 +6,11 @@
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="3" Name="ListParticipants" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="4" Name="sParticipant" Type="DefinedType">
             <Description>The imported structure of participant</Description>
@@ -159,7 +159,7 @@
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="39" Name="generated/NECommon.hpp">
+        <Location ID="39" Name="common/NECommon.hpp">
             <Description>Shared data</Description>
         </Location>
     </IncludeList>

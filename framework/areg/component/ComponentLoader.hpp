@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentLoader.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Component Loader class.
  *              This is singleton configuration object, which should be 
@@ -37,9 +37,9 @@
  **/
 #define BEGIN_MODEL(model_name)                                                                                 \
     /*  Declare Load model method and give name of model                            */                          \
-    static NERegistry::Model _createdModelData( const char * _modelName )                                       \
+    static NERegistry::Model _createdModelData( const char * _model_name_ )                                     \
     {                                                                                                           \
-        NERegistry::Model __model(_modelName);
+        NERegistry::Model __model(_model_name_);
 
 #define END_MODEL(model_name)                                                                                   \
         return __model;                                                                                         \
@@ -270,6 +270,7 @@
  ************************************************************************/
 class Component;
 class ComponentThread;
+class Thread;
 
 //////////////////////////////////////////////////////////////////////////
 // ModelDataCreator class declaration
@@ -364,6 +365,12 @@ private:
      **/
     using ModelList     = TEArrayList<NERegistry::Model>;
 
+    /**
+     * \brief   ComponentLoader::ThreadList
+     *          Array of component threads.
+     **/
+    using ThreadList    = TEArrayList<Thread *>;
+
 //////////////////////////////////////////////////////////////////////////
 // Static members
 //////////////////////////////////////////////////////////////////////////
@@ -377,7 +384,7 @@ public:
 
     /**
      * \brief   Call to start instantiating registered objects in the specified model.
-     *          If specified modelName is nullptr, the function will load all Models,
+     *          If specified modelName is empty, the function will load all Models,
      *          which are not loaded. If name is specified, it will search in Model list
      *          model with specified name and if found, it will load Model.
      *          The function returns true, if Model is either already loaded or 
@@ -388,14 +395,27 @@ public:
      *                      models, which are not loaded yet.
      * \return  Returns true if model is loaded with success.
      **/
-    static bool loadComponentModel( const String & modelName = String::EmptyString );
+    static bool loadComponentModel( const String & modelName );
 
     /**
      * \brief   Call to shutdown and destroy instantiated objects of mode, and make cleanups.
-     * \param   modelName   The name of model to unload. If nullptr, it will unloaded
-     *                      all previously loaded models.
+     *          This method blocks calling thread if 'waitComplete' is set to true.
+     *          The caller waits until all jobs are complete and threads exit.
+     *          Otherwise, it triggers exit and immediately returns.
+     * \param   waitComplete    If true, waits for Component Loader to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and
+     *                          returns.
+     * \param   modelName       The name of model to unload. If empty, it will unloaded
+     *                          all previously loaded models.
      **/
-    static void unloadComponentModel( const String & modelName = String::EmptyString );
+    static void unloadComponentModel( bool waitComplete, const String & modelName );
+
+    /**
+     * \brief   The calling thread is blocked until Component Loader did not
+     *          complete the jobs and exit threads. This should be called if previously
+     *          it was requested to stop the Watchdog Manager without waiting for completion.
+     **/
+    static void waitModelUnload(const String & modelName);
 
     /**
      * \brief   This call unloads components of specified mode and remove model
@@ -403,7 +423,7 @@ public:
      * \param   modelName   The name of model to unload and remove. If nullptr, it will unloaded
      *                      all previously loaded models and all models will be removed.
      **/
-    static void removeComponentModel( const String & modelName = String::EmptyString );
+    static void removeComponentModel( const String & modelName );
 
     /**
      * \brief   Adds new model to the model list. The name of the new model, names of threads and
@@ -501,23 +521,23 @@ private:
 protected:
 
     /**
-     * \breif   Loads all models, which are not loaded yet.
-     * \return  Returns true if succeeded to load models.
+     * \brief   Loads all models, which are not loaded yet.
+     * \return  Returns number of models that was loaded.
      **/
-    bool loadAllModels( void );
+    int loadAllModels( void );
 
     /**
      * \brief   Loads threads and components of specified model.
      *          It will start registered threads, which will load registered components.
-     *          If modelName is nullptr or empty, it will load all Models.
-     *          If modelName is not nullptr and not empty, it will search for Model with
+     *          If modelName is empty, it will load all Models.
+     *          If modelName is not empty, it will search for Model with
      *          specified name and will start registered threads.
      *          Function returns when all threads are started with success.
      * \param   modelName   The name of Model to load. If empty string, loads all models,
      *                      which are not loaded yet.
-     * \return  Returns true if components are loaded with success.
+     * \return  Returns number of models that was loaded.
      **/
-    bool loadModel( const String & modelName = String::EmptyString );
+    int loadModel( const String & modelName);
 
     /**
      * \brief   Loads specified Model. It will start all registered in Model threads,
@@ -528,18 +548,47 @@ protected:
     bool loadModel( NERegistry::Model & whichModel ) const;
     /**
      * \brief   Unloads Model with specified name, deletes components and stops threads.
-     *          If modelName is not nullptr and not empty, it will unload
+     *          If modelName is not empty, it will unload
      *          model with specified name.
-     *          If modelName is nullptr or empty, it will unload all models.
-     * \param   modelName   The name of model to unload. If nullptr, it will unload all models
+     *          If modelName is empty, it will unload all models.
+     *          This method blocks calling thread if 'waitComplete' is set to true.
+     *          The caller waits until all jobs are complete and threads exit.
+     *          Otherwise, it triggers exit and immediately returns.
+     * \param   waitComplete    If true, waits for Component Loader to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and
+     *                          returns.
+     * \param   modelName       The name of model to unload. If empty string, it will unload all models
      **/
-    void unloadModel( const String & modelName = String::EmptyString );
+    void unloadModel( bool waitComplete, const String & modelName );
 
     /**
      * \brief   Unloads specified Model, deletes components and stops threads.
-     * \param   whichModel  The Model object, which should be unloaded.
+     *          This method blocks calling thread if 'waitComplete' is set to true.
+     *          The caller waits until all jobs are complete and threads exit.
+     *          Otherwise, it triggers exit and immediately returns.
+     * \param   waitComplete    If true, waits for Component Loader to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and
+     *                          returns.
+     * \param   whichModel      The Model object, which should be unloaded.
      **/
-    void unloadModel( NERegistry::Model & whichModel ) const;
+    void unloadModel( bool waitComplete, NERegistry::Model & whichModel ) const;
+
+    /**
+     * \brief   Call to wait the component threads defined in the model to complete the job
+     *          and exit. The specified model should already unloaded to wait for completion.
+     *          This method blocks calling thread until all jobs are complete and threads exit.
+     * \param   modelName       The name of the model to wait. If empty, it waits for completion
+     *                          of all model components.
+     **/
+    void waitModelThreads(const String & modelName);
+
+    /**
+     * \brief   Call to wait the component threads defined in the model to complete the job
+     *          and exit. The specified model should already unloaded to wait for completion.
+     *          This method blocks calling thread until all jobs are complete and threads exit.
+     * \param   whichModel      The Model object, which component threads should be completed.
+     **/
+    void waitModelThreads(NERegistry::Model & whichModel);
 
     /**
      * \brief   Searches in registries model by name. If found, returns valid pointer. Otherwise, returns null.
@@ -569,29 +618,29 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Shuts down threads, specified in Thread List of Registry.
-     *          This will automatically delete all registered components
-     *          and stop registered worker threads.
-     * \param   whichThreads    The list of registered threads. 
-     *                          Every element contains unique name of thread, 
-     *                          which can be found in the system.
+     * \brief   Triggers exit events to shut down threads, specified in Thread List.
+     *          This automatically deletes all registered components
+     *          and stops registered worker threads.
+     * \param   threadList  The list of registered threads with unique names, 
+     *                          which found in the system.
      **/
-    void shutdownThreads( const NERegistry::ComponentThreadList & whichThreads ) const;
+    void _exitThreads( const ThreadList & threadList ) const;
 
     /**
-     * \brief   The call of this function will suspend current thread and
-     *          the function will return when all threads in the registered list
-     *          completed and exit. The call of this function does not stop or
-     *          destroy threads
-     * \param   whichThreads    The list of registered thread to wait for completion.
+     * \brief   The call of this function will blocks current thread and
+     *          the function returns when all threads in the list complete jobs and exit.
+     *          The call of this function does not close the thread objects.
+     * \param   threadList  The list of registered threads with unique names,
+     *                          which found in the system.
      **/
-    void waitThreadsCompletion( const NERegistry::ComponentThreadList & whichThreads ) const;
+    void _waitThreads( const ThreadList & threadList ) const;
 
     /**
-     * \brief   The call of this function will destroy all registered in the list
-     *          threads and wait until all threads complete job and exit.
+     * \brief   The call of this function closes all threads in the list.
+     * \param   threadList  The list of registered threads with unique names,
+     *                          which found in the system.
      **/
-    void destroyThreads( const NERegistry::ComponentThreadList & whichThreads ) const;
+    void _shutdownThreads( const ThreadList & threadList ) const;
 
     /**
      * \brief   Adds new Model object to the list.  All models should have

@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Channel.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, channel interface. Responsible to deliver
  *              events to target. The Target object is either in the same
@@ -30,7 +30,7 @@ Channel::Channel( void )
 {
 }
 
-Channel::Channel( ITEM_ID source, ITEM_ID target /*= NEService::TARGET_UNKNOWN*/, ITEM_ID cookie /*= NEService::COOKIE_UNKNOWN*/ )
+Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= NEService::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= NEService::COOKIE_UNKNOWN*/ )
     : mSource( source )
     , mTarget( target )
     , mCookie( cookie )
@@ -69,8 +69,11 @@ Channel & Channel::operator = ( Channel && source ) noexcept
 
 String Channel::convToString( void ) const
 {
-    String result;
-    return result.format("%llu.%llu.%llu", mSource, mTarget, mCookie);
+    constexpr const char * format{ "%llu.%llu.%llu" };
+
+    char buffer[ 128 ]{ 0 };
+    int len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
+    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 
 const Channel & Channel::convFromString(const String & channel)

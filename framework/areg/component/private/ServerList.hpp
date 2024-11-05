@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerList.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Server List declaration
  *
@@ -81,9 +81,8 @@ public:
      *          creates new Server Info with Undefined state and inserts
      *          Client Info in the list.
      *          The function returns registered Client Info object.
-     * \param   whichClient     The address of Proxy-client to register in the list.
-     * \param   serviceType     Type of service. If ServiceAny, it will depend whether 
-     *                          Proxy address is local or remote
+     * \param   whichClient [in]    The address of Proxy-client to register in the list.
+     * \param   out_client  [out]   On output, this contain the information of connected service consumer (client).
      * \return  Returns registered Client Info object.
      **/
     const ServerInfo & registerClient( const ProxyAddress & whichClient, ClientInfo & out_client );
@@ -96,7 +95,7 @@ public:
      *          in the system, or the Stub server is in Undefined state and
      *          there are no more clients waiting for Service Interface.
      * \param   whichClient The address of Proxy client to unregister.
-     * \param   out_client  On output, this will contain Client information
+     * \param   out_client  On output, this will contain service consumer (client) information.
      * \return  If returns -1, either client was not registered, or the list
      *          of clients is empty and the server is in Undefined state.
      *          Any other value specifies number of existing client related
@@ -108,12 +107,10 @@ public:
      * \brief   Registers specified Stub Server in the list, if the address is valid, it sets Server state
      *          connected. On output, out_clientWaitingList will contain list of Client Info waiting
      *          for server connection. The function returns updated and registered Server Info object.
-     * \param   server              The Stub server address to register. 
-     *                              If valid, it sets Server Info state to connected.
-     * \param   serviceType         Type of service. If ServiceAny, it will depend whether Server stub
-     *                              address is local or remote
-     * \param   out_waitingClients  On output, contains list of Client Info objects waiting for
-     *                              Server to be connected.
+     * \param   addrStub       [in]     The Stub server address to register. 
+     *                                  If valid, it sets Server Info state to connected.
+     * \param   out_clinetList [out]    On output, contains list of Client Info objects waiting for
+     *                                  Server to be connected.
      * \return  Returns updated and registered Server Info object.
      **/
     const ServerInfo & registerServer( const StubAddress & addrStub, ClientList & out_clinetList );
@@ -121,8 +118,10 @@ public:
     /**
      * \brief   Unregisters specified Stub Server from the list and returns related
      *          to Service Interface Client Info object list.
-     * \param   whichServer The address of Stub Server object to unregister
-     * \return  Returns related to Service Interface Client Info object list.
+     * \param   whichServer    [in]     The address of Stub Server object to unregister.
+     * \param   out_clinetList [out]    On output, this contains the list of service consumer (client)
+     *                                  objects that were previousely registered to the service provider (server).
+     * \return  Returns updated and registered Server Info object.
      **/
     ServerInfo unregisterServer( const StubAddress & whichServer, ClientList & out_clinetList );
 

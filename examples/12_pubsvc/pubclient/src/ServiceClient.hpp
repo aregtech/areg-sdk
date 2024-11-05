@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        pubclient/src/ServiceClient.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -14,13 +14,13 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloWorldClientBase.hpp"
+#include "generate/examples/12_pubsvc/HelloWorldClientBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //! \brief  A client component to call request, and process response and broadcast.
-//!         The reuqests are triggered on each timer timeout.
+//!         The requests are triggered on each timer timeout.
 class ServiceClient : public    Component
                     , protected HelloWorldClientBase
                     , private   IETimerConsumer
@@ -78,7 +78,7 @@ protected:
      *          Triggered to notify that  reached the maximum number of requests.
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   maxNumber   The maximum number of reqeusts.
+     * \param   maxNumber   The maximum number of requests.
      **/
     virtual void broadcastReachedMaximum( int maxNumber ) override;
 
@@ -86,15 +86,17 @@ protected:
 // IEProxyListener Overrides
 /************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.

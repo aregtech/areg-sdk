@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project contains an instance service client, which model
 //               is defined dynamically during run-time. This approach 
 //               guaranties to start and run several instance of the same 
@@ -16,20 +16,21 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/base/NEUtilities.hpp"
+#include "aregextend/console/Console.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef WIN32
     #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "aregextend.lib")
     #pragma comment(lib, "14_generated.lib")
 #endif // WIN32
 
-//! A demo of dynamic model and client with data update subsription.
+//! A demo of dynamic model and client with data update subscription.
 int main()
 {
     constexpr char const _modelName[]{ "TheModel" };
@@ -47,7 +48,7 @@ int main()
 
     Console & console = Console::getInstance( );
     console.enableConsoleInput( true );
-    console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subsription..." );
+    console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 
     // At first, determine which traffic direction should be set.
     // This is used to react on the right attribute.

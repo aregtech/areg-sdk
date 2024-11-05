@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        mcrouter/private/app/MulticastRouterPosix.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \file        mcrouter/app/private/MulticastRouterPosix.cpp
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Router, Multicast Router Service process
  ************************************************************************/
@@ -24,122 +24,17 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 
-
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char* argv[], char* envp[])
 {
-    int result      = 0;
-    MulticastRouter & router = MulticastRouter::getInstance();
-
-    if (router.parseOptions(argc, argv) == false)
-    {
-        router.resetDefaultOptions();
-    }
-
-    switch ( router.getCurrentCommand() )
-    {
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Install:
-        result = router.serviceInstall() ? 0 : -2;
-        break;
-
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Uninstall:
-        router.serviceUninstall();
-        break;
-
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Service:
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
-        router.setState(NEMulticastRouterSettings::eRouterState::RouterStarting);
-        router.serviceMain( static_cast<int>(argc), argv);
-        router.setState( NEMulticastRouterSettings::eRouterState::RouterStopped );
-        router.serviceStop();
-        break;
-
-    default:
-        ASSERT(false);  // unexpected
-        break;
-    }
-
-    return result;
+    return MulticastRouter::getInstance().serviceMain(argc, argv);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, End
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// MulticastRouter class implementation
-//////////////////////////////////////////////////////////////////////////
-bool MulticastRouter::_osIsValid( void ) const
-{
-    return true;
-}
-
-bool MulticastRouter::_osRegisterService( void )
-{
-    return false;
-}
-
-
-void MulticastRouter::_osFreeResources( void )
-{
-    mSvcHandle = nullptr;
-    mSeMHandle = nullptr;
-}
-
-bool MulticastRouter::_osOpenService(void)
-{
-    return true;
-}
-
-bool MulticastRouter::_osCcreateService(void)
-{
-    return true;
-}
-
-void MulticastRouter::_osDeleteService( void )
-{
-}
-
-bool MulticastRouter::_osSetState( NEMulticastRouterSettings::eRouterState newState )
-{
-    bool result{ true };
-
-    if ( newState != mRouterState )
-    {
-        switch ( newState )
-        {
-        case NEMulticastRouterSettings::eRouterState::RouterStopped:
-            break;
-
-        case NEMulticastRouterSettings::eRouterState::RouterStarting:
-            break;
-
-        case NEMulticastRouterSettings::eRouterState::RouterStopping:
-            break;
-
-        case NEMulticastRouterSettings::eRouterState::RouterRunning:
-            break;
-
-        case NEMulticastRouterSettings::eRouterState::RouterContinuing:
-            break;
-
-        case NEMulticastRouterSettings::eRouterState::RouterPausing:
-            break;
-
-        case NEMulticastRouterSettings::eRouterState::RouterPaused:
-            break;
-
-        default:
-            ASSERT(false);
-        }
-
-        mRouterState = newState;
-    }
-
-    return result;
-}
-
-#endif  // _POSIX
+#endif // POSIX

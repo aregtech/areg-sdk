@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/StubAddress.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Address class.
  *
@@ -98,15 +98,15 @@ public:
                , const Version & serviceVersion
                , NEService::eServiceType serviceType
                , const String & roleName
-               , const String & threadName = String::EmptyString );
+               , const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Initialize Stub address from given service item, role name and holder thread.
-     * \param   serviceItem     Service item, which contains basic information of service
-     * \param   roleName        The role name of holder component
-     * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
+     * \param   service     Service item, which contains basic information of service
+     * \param   roleName    The role name of holder component
+     * \param   threadName  Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
+    StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Initialize Stub address from given service data, role name and holder thread.
@@ -114,7 +114,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
+    StubAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.
@@ -239,6 +239,26 @@ public:
     inline bool isRemoteAddress( void ) const;
 
     /**
+     * \brief   Returns true if the source of communication channel is local, i.e. it is the same process.
+     **/
+    inline bool isSourceLocal( void ) const;
+
+    /**
+     * \brief   Returns true if the source of communication channel is public, i.e. it is external process.
+     **/
+    inline bool isSourcePublic( void ) const;
+
+    /**
+     * \brief   Returns true if the target of communication channel is local, i.e. it is the same process.
+     **/
+    inline bool isTargetLocal( void ) const;
+
+    /**
+     * \brief   Returns true if the target of communication channel is public, i.e. it is external process.
+     **/
+    inline bool isTargetPublic( void ) const;
+
+    /**
      * \brief   Returns stub communication channel
      **/
     inline const Channel & getChannel( void ) const;
@@ -251,22 +271,22 @@ public:
     /**
      * \brief   Returns stub cookies value
      **/
-    inline ITEM_ID getCookie( void ) const;
+    inline const ITEM_ID & getCookie( void ) const;
 
     /**
      * \brief   Sets stub cookie value
      **/
-    inline void setCookie( ITEM_ID cookie );
+    inline void setCookie(const ITEM_ID & cookie );
 
     /**
      * \brief   Returns the ID of source set in communication channel
      **/
-    inline ITEM_ID getSource( void ) const;
+    inline const ITEM_ID & getSource( void ) const;
 
     /**
      * \brief   Sets the ID of source in communication channel.
      **/
-    inline void setSource( ITEM_ID source );
+    inline void setSource(const ITEM_ID & source );
 
     /**
      * \brief   Returns the service owner thread name.
@@ -309,7 +329,6 @@ public:
     /**
      * \brief   Converts Stub address to string as a Address Path, containing
      *          path separator.
-     * \param   addrStub    The Stub address containing information to crate path
      * \return  Returns converted path of Stub as string, containing Stub address information
      **/
     String convToString( void ) const;
@@ -320,7 +339,6 @@ public:
      *          from Stub path.
      * \param   pathStub        The path of Stub object, containing information for address.
      * \param   out_nextPart    If not nullptr, on output this will contain remaining part of Stub path
-     * \return  Returns initialized StubAddress object, containing information taken from path
      **/
     void convFromString(const char* pathStub, const char** out_nextPart = nullptr);
 
@@ -428,7 +446,7 @@ inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService
     if ( static_cast<const ServiceAddress *>(this) != &addrService)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
-        mThreadName = String::EmptyString;
+        mThreadName = String::getEmptyString();
         mChannel    = Channel();
         mMagicNum   = StubAddress::_magicNumber(*this);
     }
@@ -441,7 +459,7 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     if ( static_cast<const ServiceAddress *>(this) != &addrService )
     {
         static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
-        mThreadName = String::EmptyString;
+        mThreadName = String::getEmptyString();
         mChannel    = Channel( );
         mMagicNum   = StubAddress::_magicNumber( *this );
     }
@@ -476,7 +494,27 @@ inline bool StubAddress::isLocalAddress(void) const
 
 inline bool StubAddress::isRemoteAddress(void) const
 {
-    return (mChannel.getCookie() > NEService::COOKIE_ROUTER );
+    return (mChannel.getCookie() >= NEService::COOKIE_ANY);
+}
+
+inline bool StubAddress::isSourceLocal( void ) const
+{
+    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getSource( ) != 0);
+}
+
+inline bool StubAddress::isSourcePublic( void ) const
+{
+    return (mChannel.getCookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
+}
+
+inline bool StubAddress::isTargetLocal( void ) const
+{
+    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+}
+
+inline bool StubAddress::isTargetPublic( void ) const
+{
+    return (mChannel.getCookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
 inline const String & StubAddress::getThread( void ) const
@@ -494,22 +532,22 @@ inline void StubAddress::setChannel(const Channel & channel)
     mChannel = channel;
 }
 
-inline ITEM_ID StubAddress::getCookie( void ) const
+inline const ITEM_ID & StubAddress::getCookie( void ) const
 {
     return mChannel.getCookie();
 }
 
-inline void StubAddress::setCookie( ITEM_ID cookie )
+inline void StubAddress::setCookie(const ITEM_ID & cookie )
 {
     mChannel.setCookie(cookie);
 }
 
-inline ITEM_ID StubAddress::getSource( void ) const
+inline const ITEM_ID & StubAddress::getSource( void ) const
 {
     return mChannel.getSource();
 }
 
-inline void StubAddress::setSource( ITEM_ID source )
+inline void StubAddress::setSource(const ITEM_ID & source )
 {
     return mChannel.setSource(source);
 }

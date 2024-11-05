@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubAddress.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Stub Address implementation.
  *
@@ -76,7 +76,7 @@ StubAddress::StubAddress( const String & serviceName
                         , const Version & serviceVersion
                         , NEService::eServiceType serviceType
                         , const String & roleName
-                        , const String & threadName   /*= String::EmptyString*/ )
+                        , const String & threadName   /*= String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -91,7 +91,7 @@ StubAddress::StubAddress( const String & serviceName
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const ServiceItem & service, const String & roleName, const String & threadName /*= String::EmptyString */)
+StubAddress::StubAddress(const ServiceItem & service, const String & roleName, const String & threadName /*= String::getEmptyString() */)
     : ServiceAddress( service, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -106,7 +106,7 @@ StubAddress::StubAddress(const ServiceItem & service, const String & roleName, c
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::EmptyString */)
+StubAddress::StubAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString() */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -200,26 +200,21 @@ void StubAddress::setThread(const String & threadName)
 
 bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) const
 {
-    bool result = false;
-    ITEM_ID target = mChannel.getSource();
-    if ( target != NEService::TARGET_UNKNOWN )
+    bool result{ false };
+
+    const ITEM_ID & target{ mChannel.getSource() };
+    Thread* thread = target != NEService::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
+    DispatcherThread* dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    if (dispatcher != nullptr)
     {
-        Thread * thread = Thread::findThreadById(static_cast<id_type>(target));
-        DispatcherThread * dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
-        if ( dispatcher != nullptr )
-        {
-            result = serviceEvent.registerForThread(dispatcher);
-            serviceEvent.deliverEvent();
-        }
-        else
-        {
-            serviceEvent.destroy();
-        }
+        result = serviceEvent.registerForThread(dispatcher);
+        serviceEvent.deliverEvent();
     }
     else
     {
         serviceEvent.destroy();
     }
+
     return result;
 }
 

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/IEQueueListener.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Queue Listener interface
  *              Implement class to react on signal method, which is triggered
@@ -63,7 +63,6 @@ public:
      *          Override method to provide queuing logic.
      * \param	eventCount	The number of event elements currently in the queue.
      *                      If zero, queue is empty, dispatcher can be suspended.
-     * \return  
      **/
     virtual void signalEvent(uint32_t eventCount ) = 0;
 

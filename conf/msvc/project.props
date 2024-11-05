@@ -6,37 +6,36 @@
     <PropertyGroup>
         <_PropertySheetDisplayName>project</_PropertySheetDisplayName>
     </PropertyGroup>
+    <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+        <Import Project="$(SolutionDir)msvc_setup.props"/>
+    </ImportGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(SolutionDir)\conf\msvc\project_defaults.props"/>
+        <Import Project="$(AregSdkRoot)conf\msvc\project_defaults.props"/>
     </ImportGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
     <ImportGroup Label="ExtensionSettings">
     </ImportGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(SolutionDir)\conf\msvc\user.props" />
+        <Import Project="$(AregSdkRoot)conf\msvc\user.props" />
     </ImportGroup>
     <PropertyGroup Label="UserMacros">
-        <ProjectIncludes>$(SrcInc);$(ProjectSourceDir);$(ProjectDevDir);$(ProjectGeneratedDir);$(ProjectDir);</ProjectIncludes>
-        <ProjectCommonDefines Condition="'$(Platform)'=='Win32'">
-            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;
-        </ProjectCommonDefines>
-        <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >
-            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;WIN64;_WIN64
-        </ProjectCommonDefines>
+        <ProjectIncludes>$(ProjectDir);$(AregCommonIncludes);</ProjectIncludes>
+        <ProjectCommonDefines Condition="'$(Platform)'=='Win32'">$(AregCommonDefines);UNICODE;_UNICODE;WINDOWS;_WINDOWS;WIN32;_WIN32</ProjectCommonDefines>
+        <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >$(AregCommonDefines);UNICODE;_UNICODE;WINDOWS;_WINDOWS;WIN32;_WIN32;WIN64;_WIN64</ProjectCommonDefines>
     </PropertyGroup>
     <PropertyGroup>
-        <IntDir>$(OutObjDir)\</IntDir>
-        <OutDir>$(OutBinDir)\</OutDir>
+        <IntDir>$(OutObjDir)</IntDir>
+        <OutDir>$(OutBinDir)</OutDir>
     </PropertyGroup>
     <PropertyGroup>
         <OutputPath>$(OutDir)</OutputPath>
         <IntermediateOutputPath>$(IntDir)</IntermediateOutputPath>
-        <BaseIntermediateOutputPath>$(ProjectGeneratedDir)</BaseIntermediateOutputPath>
+        <BaseIntermediateOutputPath>$(AregGenerateDir)</BaseIntermediateOutputPath>
         <CoreCompileDependsOn>$(CoreCompileDependsOn);AddToolOutput</CoreCompileDependsOn>
     </PropertyGroup>
     <ItemDefinitionGroup>
         <ClCompile>
-            <AdditionalIncludeDirectories>$(UserDefIncludes);$(ProjectIncludes);$(ThirdIncludes);%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(ProjectIncludes);%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
             <AdditionalUsingDirectories>$(OutDir);%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Debug'">$(ProjectCommonDefines);_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Release'">$(ProjectCommonDefines);NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -44,11 +43,11 @@
             <ExceptionHandling>Sync</ExceptionHandling>
         </ClCompile>
         <Link>
-            <ImportLibrary>$(OutLibDir)\$(TargetName).lib</ImportLibrary>
-            <AdditionalLibraryDirectories>$(OutLibDir);$(ProjectAdditionalLibs);$(UserDefLibs);$(ThirdDefLibs);$(OutBinDir);$(UserDefBinss);$(ThirdDefBins);%(AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
+            <ImportLibrary>$(OutLibDir)$(TargetName).lib</ImportLibrary>
+            <AdditionalLibraryDirectories>$(OutLibDir);$(OutBinDir);%(AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
         </Link>
         <ResourceCompile>
-            <AdditionalIncludeDirectories>$(UserDefIncludes);$(ProjectIncludes);$(ThirdIncludes);%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(ProjectIncludes);%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Debug'">$(ProjectCommonDefines);_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Release'">$(ProjectCommonDefines);NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
         </ResourceCompile>

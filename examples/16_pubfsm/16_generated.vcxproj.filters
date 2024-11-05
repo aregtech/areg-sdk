@@ -15,96 +15,75 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\IETrafficLightActionHandler.cpp">
+    <None Include="res\PowerManager.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TrafficController.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\NEPowerManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\NETrafficLightFSM.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\NETrafficController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\TrafficLightFSM.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\NEPowerManager.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\NETrafficController.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PowerManagerClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PowerManagerEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PowerManagerProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PowerManagerStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\TrafficControllerClientBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\TrafficControllerEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\TrafficControllerProxy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\TrafficControllerStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\private\IETrafficLightActionHandler.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\NETrafficLightFSM.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\TrafficLightFSM.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\PowerManagerEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\PowerManagerProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\NEPowerManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\TrafficControllerEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\NETrafficController.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\TrafficControllerProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\PowerManagerClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NEPowerManager.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\PowerManagerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NETrafficController.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\TrafficControllerClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\PowerManagerClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\TrafficControllerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\PowerManagerStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\TrafficControllerClientBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\TrafficControllerStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NECommon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\PowerManager.siml" />
-    <None Include="res\TrafficController.siml" />
   </ItemGroup>
 </Project>

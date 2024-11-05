@@ -6,25 +6,78 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/appbase/NEApplication.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Application global namespace and configurations
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/appbase/NEApplication.hpp"
 
-/**
- * "AREG TCP/IP connection Message Multicast Router Service"
- **/
-AREG_API_IMPL char NEApplication::ROUTER_SERVICE_NAME_ASCII[]    { "AREG TCP/IP connection Message Multicast Router Service" };
-// { 'A', 'R', 'E', 'G', ' ', 'T', 'C', 'P', '/', 'I', 'P', ' ', 'c', 'o', 'n', 'n', 'e', 'c', 't', 'i', 'o', 'n', ' ', 'M', 'e', 's', 's', 'a', 'g', 'e', ' ', 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' ', 'R', 'o', 'u', 't', 'e', 'r', ' ', 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+//! Logging type identifiers
+AREG_API_IMPL const std::vector<Identifier>     NEApplication::LogTypeIdentifiers =
+{
+      {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeUndefined)               , NEApplication::DefaultLogTypes[0].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeRemote)                  , NEApplication::DefaultLogTypes[1].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeFile)                    , NEApplication::DefaultLogTypes[2].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeDebug)                   , NEApplication::DefaultLogTypes[3].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeDatabase)                , NEApplication::DefaultLogTypes[4].ltIdName        }
+};
 
-/**
- * L"AREG TCP/IP connection Message Multicast Router Service"
- **/
-AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_NAME_WIDE[]  { L"AREG TCP/IP connection Message Multicast Router Service" };
-// { 'A', 'R', 'E', 'G', ' ', 'T', 'C', 'P', '/', 'I', 'P', ' ', 'c', 'o', 'n', 'n', 'e', 'c', 't', 'i', 'o', 'n', ' ', 'M', 'e', 's', 's', 'a', 'g', 'e', ' ', 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' ', 'R', 'o', 'u', 't', 'e', 'r', ' ', 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+//! Connection type identifiers
+AREG_API_IMPL const std::vector<Identifier>   NEApplication::ConnectionIdentifiers
+{
+      { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined)  , NEApplication::DefaultConnections[0].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)      , NEApplication::DefaultConnections[1].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUdp)        , NEApplication::DefaultConnections[2].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectWeb)        , NEApplication::DefaultConnections[3].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectSM)         , NEApplication::DefaultConnections[4].ltIdName     }
+};
+
+//! Remote service identifiers
+AREG_API_IMPL const std::vector<Identifier>   NEApplication::RemoteServiceIdentifiers
+{
+      { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown)     , NEApplication::DefaultRemotetServices[0].ltIdName }
+    , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceRouter)      , NEApplication::DefaultRemotetServices[1].ltIdName }
+    , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceLogger)      , NEApplication::DefaultRemotetServices[2].ltIdName }
+};
+
+//! Log priority identifiers
+AREG_API_IMPL const std::vector<Identifier>   NEApplication::LogScopePriorityIndentifiers
+{
+      { static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid)                   , NETrace::PRIO_NO_PRIO                             }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset)                    , NETrace::PRIO_NOTSET_STR                          }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioScope)                     , NETrace::PRIO_SCOPE_STR                           }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioFatal)                     , NETrace::PRIO_FATAL_STR                           }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioError)                     , NETrace::PRIO_ERROR_STR                           }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioWarning)                   , NETrace::PRIO_WARNING_STR                         }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioInfo)                      , NETrace::PRIO_INFO_STR                            }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioDebug)                     , NETrace::PRIO_DEBUG_STR                           }
+};
+
+ //! AREG TCP/IP Multicast Router Service name
+AREG_API_IMPL char NEApplication::ROUTER_SERVICE_NAME_ASCII[]           { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! AREG TCP/IP Multicast Router Service name
+AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_NAME_WIDE[]         { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! Router Service executable
+AREG_API_IMPL char NEApplication::ROUTER_SERVICE_EXECUTABLE_ASCII[]     { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
+
+//! Router Service executable
+AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE[]   { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
+
+//! AREG TCP/IP Log Collector Service name
+AREG_API_IMPL char NEApplication::LOGGER_SERVICE_NAME_ASCII[]           { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! AREG TCP/IP Log Collector Service name
+AREG_API_IMPL wchar_t NEApplication::LOGGER_SERVICE_NAME_WIDE[]         { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! Log Collector Service executable
+AREG_API_IMPL char NEApplication::LOGGER_SERVICE_EXECUTABLE_ASCII[]     { 'l', 'o', 'g', 'g', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
+
+//! Log Collector Service executable
+AREG_API_IMPL wchar_t NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE[]   { 'l', 'o', 'g', 'g', 'e', 'r', '.', 'e', 'x', 'e', '\0' };

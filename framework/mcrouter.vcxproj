@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}</ProjectGuid>
@@ -14,7 +18,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -23,6 +27,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>$(AregFrameworkSources)mcrouter\resources\mcrouter_post_build.bat "$(AregFrameworkSources)mcrouter\resources\" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy  mcrouter service install and uninstall scripts to the config directory.</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
     <ClCompile>
@@ -34,52 +42,42 @@
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp" />
     <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp" />
     <ClCompile Include="mcrouter\app\private\posix\MulticastRouterPosix.cpp" />
-    <ClCompile Include="mcrouter\app\private\ConsoleService.cpp" />
+    <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp" />
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServerReceiveThread.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServerSendThread.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServerService.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServerServiceEvent.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServiceProxy.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp" />
+    <ClCompile Include="mcrouter\service\private\ListServiceProxies.cpp" />
+    <ClCompile Include="mcrouter\service\private\RouterServerService.cpp" />
+    <ClCompile Include="mcrouter\service\private\ServiceProxy.cpp" />
+    <ClCompile Include="mcrouter\service\private\ServiceRegistry.cpp" />
+    <ClCompile Include="mcrouter\service\private\ServiceStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mcrouter\app\private\ConsoleService.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServerReceiveThread.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServerSendThread.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServerServiceEvent.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServiceProxy.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp" />
-    <ClInclude Include="mcrouter\tcp\ServerService.hpp" />
+    <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp" />
+    <ClInclude Include="mcrouter\service\private\ListServiceProxies.hpp" />
+    <ClInclude Include="mcrouter\service\private\ServiceProxy.hpp" />
+    <ClInclude Include="mcrouter\service\private\ServiceRegistry.hpp" />
+    <ClInclude Include="mcrouter\service\private\ServiceStub.hpp" />
+    <ClInclude Include="mcrouter\service\RouterServerService.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="mcrouter\app\MulticastRouter.hpp" />
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp" />
-    <ClInclude Include="mcrouter\resources\resource.hpp" />
-    <ClInclude Include="mcrouter\resources\targetver.hpp" />
+    <ClInclude Include="mcrouter\resources\resource.h" />
+    <ClInclude Include="mcrouter\resources\targetver.h" />
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="mcrouter\Readme.md" />
+    <None Include="mcrouter\resources\mcrouter.service" />
     <None Include="mcrouter\resources\mcrouter.ico" />
-    <None Include="mcrouter\resources\small.ico" />
-    <None Include="mcrouter\resources\mcrouter_install.bat" />
-    <None Include="mcrouter\resources\mcrouter_uninstall.bat" />
     <None Include="mcrouter\resources\mcrouter_post_build.bat" />
+    <None Include="mcrouter\resources\Readme.md" />
+    <None Include="mcrouter\resources\small.ico" />
+    <None Include="mcrouter\resources\mcrouter.service.install.bat" />
+    <None Include="mcrouter\resources\mcrouter.service.uninstall.bat" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\posix\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\win32\CMakeLists.txt" />
     <Text Include="mcrouter\CMakeLists.txt" />
-    <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
+    <Text Include="mcrouter\service\private\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

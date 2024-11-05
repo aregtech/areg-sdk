@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/TEMap.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Map class template.
  *              In the map object every element is accessed by the unique key.
@@ -68,7 +68,7 @@
  *                  possible to convert to type 'const VALUE&'.
  **/
 template < typename KEY, typename VALUE>
-class TEMap : protected Constless<std::map<KEY, VALUE>>
+class TEMap : protected Constless< std::map<KEY, VALUE> >
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -179,7 +179,7 @@ public:
      *          There should be possibility to stream key and value pairs and if KEY or VALUE
      *          are not primitives, but an object, they should have implemented streaming operator.
      * \param   stream  The stream to write values.
-     * \param   input   The sorted map object containing value to stream.
+     * \param   output  The sorted map object containing value to stream.
      **/
     template < typename K, typename V >
     friend inline IEOutStream & operator << ( IEOutStream & stream, const TEMap<K, V> & output );
@@ -209,7 +209,7 @@ public:
      * \brief   Returns true if specified position points the first entry in the sorted map.
      * \param   pos     The position to check.
      **/
-    inline bool isStartPosition(const MAPPOS pos) const;
+    inline bool isFirstPosition(const MAPPOS pos) const;
 
     /**
      * \brief   Returns the invalid position of the sorted map.
@@ -236,9 +236,14 @@ public:
 
     /**
      * \brief	Checks and returns true if the given element exist in the sorted map or not.
-     * \param	key	    The key of value to search.
+     * \param	Key	    The key of value to search.
      */
     inline bool contains(const KEY& Key) const;
+
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::map<KEY, VALUE>& getData(void) const;
 
 /************************************************************************/
 // Operations
@@ -248,11 +253,6 @@ public:
      * \brief   Remove all entries of the map.
      **/
     inline void clear(void);
-
-    /**
-     * \brief   Delete extra entries in the map.
-     **/
-    inline void freeExtra(void);
 
     /**
      * \brief   Sets the size of the map to zero and deletes all capacity space.
@@ -307,26 +307,33 @@ public:
      * \brief   Extracts elements from the given source and inserts into the sorted map.
      *          If there is an entry with the key equivalent to the key from source element,
      *          then that element is not extracted from the source and remains unchanged.
-     * \param   source  The source of map to merge.
-     */
-    inline void merge( const TEMap<KEY, VALUE> & source );
+     *          On output, the `source` parameter may be empty if all entries are merged, or
+     *          can be unchanged if the target object contains entries with the same keys.
+     * \param[in,out]   source  The source of the sorted map to merge.
+     **/
+    inline void merge( TEMap<KEY, VALUE> & source );
     inline void merge( TEMap<KEY, VALUE> && source );
 
     /**
      * \brief   Adds new entry with the specified key in the sorted map if it is not existing.
-     *          If the entry with specified key exists, neither new entry is added, nor the existing is updated.
+     *          If 'updateExisting' parameter is true, it updates the existing key and value.
      *          The method returns pair of value, where it indicates the position of the entry
      *          and the flag, indicating whether it added new entry or not.
-     * \param   Key     The key of the entry in the sorted map.
-     * \param   Value   The value of the entry in the sorted map.
+     * \param   newKey          The key of the entry in the sorted map.
+     * \param   newValue        The value of the entry in the sorted map.
+     * \param   updateExisting  The flag, indicating whether should update the entry with the existing key.
+     *                          If true, updates the existing key and value.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, setting this parameter true updates the value of the existing entry.
+     *                          the existing Key and Value entries.
      * \return  Returns a pair of 'MAPPOS' and 'bool' values, where
      *              -   'MAPPOS' indicates the position of the entry in the sorted map.
      *              -   'bool' equal to 'true' indicates that new entry is created.
      *                  If this value is 'false' no new entry is created. When new entry is created, the existing
      *                  position values can be invalidated.
      **/
-    inline std::pair<MAPPOS, bool> addIfUnique(const KEY & newKey, const VALUE & newValue);
-    inline std::pair<MAPPOS, bool> addIfUnique(KEY && newKey, VALUE && newValue);
+    inline std::pair<MAPPOS, bool> addIfUnique(const KEY & newKey, const VALUE & newValue, bool updateExisting = false );
+    inline std::pair<MAPPOS, bool> addIfUnique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
 
     /**
      * \brief   Updates existing element specified by the Key and returns the position in the map.
@@ -341,9 +348,15 @@ public:
      * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
      *          Otherwise, returns false.
      * \param	Key	        The Key of the entry to search and remove.
-     * \param	out_Value   If succeeded to remove, on output it contains the value of the removed element.
      **/
     inline bool removeAt(const KEY& Key );
+
+    /**
+     * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
+     *          Otherwise, returns false.
+     * \param	Key	        The Key of the entry to search and remove.
+     * \param	out_Value   If succeeded to remove, on output it contains the value of the removed element.
+     **/
     inline bool removeAt( const KEY & Key, VALUE & out_Value );
 
     /**
@@ -358,46 +371,71 @@ public:
     /**
      * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
      *          or invalid position if removed last element in the map.
-     * \param	curPos      The valid position of the element in the sorted map to remove.
+     * \param	atPosition  The valid position of the element in the sorted map to remove.
+     * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
+     *          removed last element in the map.
+     **/
+    inline MAPPOS removePosition(MAPPOS atPosition);
+
+    /**
+     * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
+     *          or invalid position if removed last element in the map.
+     * \param	atPosition  The valid position of the element in the sorted map to remove.
      * \param	out_Key     On output, this contains the key of the removed element
      * \param	out_Value   On output, this contains the value of the removed element.
      * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
      *          removed last element in the map.
      **/
-    inline MAPPOS removePosition(MAPPOS atPosition);
-    inline MAPPOS removePosition(MAPPOS IN curPos, KEY & OUT out_Key, VALUE & OUT out_Value );
+    inline MAPPOS removePosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value );
 
     /**
      * \brief   Removes the first entry in the sorted map.
-     * 
+     **/
+    inline void removeFirst(void);
+
+    /**
+     * \brief   Removes the first entry in the sorted map.
      * \param   out_Key     On output it contains the key of the removed element in the sorted map.
      * \param   out_Value   On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and first entry is removed. Otherwise, returns false.
      **/
-    inline void removeFirst(void);
     inline bool removeFirst(KEY& OUT out_Key, VALUE& OUT out_Value);
 
     /**
      * \brief   Removes the last entry in the sorted map.
-     *
+     **/
+    inline void removeLast(void);
+
+    /**
+     * \brief   Removes the last entry in the sorted map.
      * \param   out_Key     On output it contains the key of the removed element in the sorted map.
      * \param   out_Value   On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and last entry is removed. Otherwise, returns false.
      **/
-    inline void removeLast(void);
     inline bool removeLast(KEY& OUT out_Key, VALUE& OUT out_Value);
 
     /**
      * \brief	Returns position of the next entry in the sorted map followed the given position.
-     *
      * \param	atPosition  The position of the entry to get next and extract values.
-     * \param	out_Key     On output, this contains key of given position.
-     * \param	out_Value   On output, this contains value of given position.
-     * \param	out_Element On output, this element contains pair of Key and Value specified by given position.
      * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
      **/
     inline MAPPOS nextPosition(MAPPOS IN atPosition) const;
+
+    /**
+     * \brief	Returns position of the next entry in the sorted map followed the given position.
+     * \param	atPosition  The position of the entry to get next and extract values.
+     * \param	out_Key     On output, this contains key of given position.
+     * \param	out_Value   On output, this contains value of given position.
+     * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
+     **/
     inline MAPPOS nextPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+
+    /**
+     * \brief	Returns position of the next entry in the sorted map followed the given position.
+     * \param	atPosition  The position of the entry to get next and extract values.
+     * \param	out_Element On output, this element contains pair of Key and Value specified by given position.
+     * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
+     **/
     inline MAPPOS nextPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element ) const;
 
     /**
@@ -405,9 +443,14 @@ public:
      * \param	atPosition	The position of the element to extract key and value.
      * \param	out_Key	    On output, contains key of the element at given position.
      * \param	out_Value   On output, contains value of the element at given position.
-     * \param	out_Element On output, contains the Key and Value pair of the element at given position
      **/
     inline void getAtPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+
+    /**
+     * \brief	Extract data of the key and value of the entry by given position.
+     * \param	atPosition	The position of the element to extract key and value.
+     * \param	out_Element On output, contains the Key and Value pair of the element at given position
+     **/
     inline void getAtPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const;
 
     /**
@@ -498,9 +541,9 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::firstPosition( void
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
+inline bool TEMap<KEY, VALUE>::isFirstPosition(const MAPPOS pos) const
 {
-    return (pos == mValueList.begin());
+    return (mValueList.empty() == false) && (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
@@ -541,12 +584,6 @@ inline void TEMap<KEY, VALUE>::clear(void)
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::freeExtra(void)
-{
-    mValueList.clear();
-}
-
-template < typename KEY, typename VALUE >
 inline void TEMap<KEY, VALUE>::release(void)
 {
     mValueList.clear();
@@ -582,6 +619,12 @@ inline bool TEMap<KEY, VALUE>::contains(const KEY& Key) const
     return (mValueList.find(Key) != mValueList.end());
 }
 
+template<typename KEY, typename VALUE>
+inline const std::map<KEY, VALUE>& TEMap<KEY, VALUE>::getData(void) const
+{
+    return mValueList;
+}
+
 template < typename KEY, typename VALUE >
 inline void TEMap<KEY, VALUE>::setAt(const KEY & Key, const VALUE & newValue)
 {
@@ -607,7 +650,7 @@ inline void TEMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::merge(const TEMap<KEY, VALUE>& source)
+inline void TEMap<KEY, VALUE>::merge(TEMap<KEY, VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }
@@ -619,15 +662,29 @@ inline void TEMap<KEY, VALUE>::merge(TEMap<KEY, VALUE> && source)
 }
 
 template < typename KEY, typename VALUE >
-inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue)
+inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue, bool updateExisting /*= false*/ )
 {
-    return mValueList.insert({ newKey, newValue });
+    std::pair<MAPPOS, bool> result = mValueList.insert({ newKey, newValue });
+    if ( updateExisting && (result.second == false) )
+    {
+        ASSERT( result.first != mValueList.end( ) );
+        result.first->second = newValue;
+    }
+
+    return result;
 }
 
 template < typename KEY, typename VALUE >
-inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue)
+inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue, bool updateExisting /*= false*/ )
 {
-    return mValueList.insert(std::make_pair(newKey, newValue));
+    std::pair<MAPPOS, bool> result = mValueList.insert( std::make_pair( newKey, newValue ) );
+    if ( updateExisting && (result.second == false) )
+    {
+        ASSERT( result.first != mValueList.end( ) );
+        result.first->second = newValue;
+    }
+
+    return result;
 }
 
 template < typename KEY, typename VALUE >
@@ -692,7 +749,7 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::removePosition(type
     out_Key         = curPos->first;
     out_Value       = curPos->second;
 
-    return mValueList.erase(++curPos);
+    return mValueList.erase(curPos);
 }
 
 template < typename KEY, typename VALUE >
@@ -775,7 +832,7 @@ template < typename KEY, typename VALUE >
 inline typename TEMap<KEY, VALUE>::MAPPOS
 TEMap<KEY, VALUE>::nextPosition( TEMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
-    return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
+    return nextPosition(atPosition, out_Element.first, out_Element.second);
 }
 
 template < typename KEY, typename VALUE >
@@ -808,7 +865,7 @@ inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosi
 template < typename KEY, typename VALUE >
 inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
-    getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
+    getAtPosition(atPosition, out_Element.first, out_Element.second);
 }
 
 template < typename KEY, typename VALUE >
@@ -865,8 +922,6 @@ inline const IEInStream & operator >> ( const IEInStream & stream, TEMap<K, V> &
     stream >> size;
 
     input.mValueList.clear();
-    input.mValueList.reserve(size);
-
     for (uint32_t i = 0; i < size; ++ i)
     {
         K key;

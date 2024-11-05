@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/NECommon.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Common constants
  *
@@ -41,25 +41,14 @@ namespace NECommon
      *          2.  ShiftOnOverlap  --  Do not change ring capacity if it is full,
      *                                  but shift start position, i.e. overwrite 
      *                                  the first element of ring and insert new element.
-     *          3. ResizeOnOvelap   --  Always resize ring if it is full. This changes
+     *          3. ResizeOnOverlap  --  Always resize ring if it is full. This changes
      *                                  the actual capacity of ring, making it bigger.
      **/
     enum class eRingOverlap : uint8_t
     {
-        /**
-         * \brief   Do not insert new element, if ring is full.
-         *          New element is lost.
-         **/
-          StopOnOverlap     = 0
-        /**
-         * \brief   Shifts start position, if ring is full, insert new element,
-         *          and do not resize ring. Last element is lost.
-         **/
-        , ShiftOnOverlap    = 1
-        /**
-         * \brief   Resize ring, if it is full. No element is lost.
-         **/
-        , ResizeOnOvelap    = 2
+          StopOnOverlap     = 0 //!< Do not insert new element, if ring is full. New element is lost.
+        , ShiftOnOverlap    = 1 //!< Shifts start position, if ring is full, insert new element, and do not resize ring. Last element is lost.
+        , ResizeOnOverlap   = 2 //!< Resize ring, if it is full. No element is lost.
 
     };
 
@@ -189,13 +178,13 @@ namespace NECommon
      * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
-    constexpr unsigned int  MAP_DEFAULT_HASH_SIZE   { static_cast<unsigned int>(64 - 1) };
+    constexpr unsigned int  MAP_DEFAULT_HASH_SIZE   { static_cast<unsigned int>(64u - 1u) };
 
     /**
      * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
      *          The default capacity of the array.
      **/
-    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(2048) };
+    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(64u) };
 
     /**
      * \brief   NECommon::RING_START_POSITION
@@ -332,7 +321,7 @@ namespace NECommon
 
     /**
      * \brief   NECommon::STR_1_NS_SHORT
-     *          1 nansecond short abbreviation.
+     *          1 nanosecond short abbreviation.
      **/
     constexpr std::string_view  STR_1_NS_SHORT      { "ns" };
 
@@ -376,7 +365,7 @@ namespace NECommon
      * \brief   NECommon::DURATION_DURATION_1_MIN1_SEC
      *          1 minute duration in nanoseconds.
      **/
-    constexpr unsigned int  DURATION_1_MIN          { 60 * DURATION_1_SEC };
+    constexpr uint64_t          DURATION_1_MIN          { 60 * static_cast<uint64_t>(DURATION_1_SEC) };
 
     /**
      * \brief   NECommon::STR_1_MIN_SHORT
@@ -475,6 +464,21 @@ namespace NECommon
      *          Object separator such as channel or version numbers.
      **/
     constexpr char              OBJECT_SEPARATOR                { '.' };
+
+    /**
+     * \brief   NECommon::eCookie
+     *          The list of reserved cookie values
+     **/
+    typedef enum class E_Cookies : ITEM_ID
+    {
+          CookieInvalid     = 0     //!< Invalid cookie value
+        , CookieLocal       = 1     //!< Valid cookie value of local services
+        , CookieRouter      = 2     //!< Valid cookie value of the message routing system service
+        , CookieLogger      = 3     //!< Valid cookie value of the log collector system service
+        , CookieAny         = 255   //!< Any valid cookie
+        , CookieFirstRemote = 256   //!< First valid cookie of any other remote service
+    } eCookies;
+
 }
 
 #endif  // AREG_BASE_NECOMMON_HPP

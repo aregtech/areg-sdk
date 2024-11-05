@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/SynchLockAndWaitIX.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Lock and wait object for POSIX synchronization objects.
  *
@@ -63,7 +63,7 @@ class SynchLockAndWaitIX
     using MapLockAndWait        = TEMap<IEWaitableBaseIX *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
-// SynchWaitableMapIX class declaration
+// ImplResourceListMap class declaration
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   The helper class of resource list map that contains helper functions implementation.
@@ -275,6 +275,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
     /**
+     * \brief   Returns static list of waitables, where keys are id_type and values are waitables.
+     **/
+    static SynchLockAndWaitIX::MapWaitIDResource& _mapWaitResourceIds(void);
+
+    /**
+     * \brief   Returns the static instance of synchronization resource map.
+     */
+    static SynchResourceMapIX& _mapSynchResources(void);
+
+    /**
      * \brief   Returns true if no event in the list is fired.
      **/
     inline bool _noEventFired( void ) const;
@@ -404,15 +414,6 @@ private:
      * \brief   The list of waitables.
      **/
     WaitingList                             mWaitingList;
-
-    /**
-     * \brief   Static list of waitables, where keys are id_type and values are waitables.
-     **/
-    static MapWaitIDResource                _mapWaitIdResource;
-    /**
-     * \brief   The singleton instance of synchronization resource map.
-     */
-    static SynchResourceMapIX   			_theSynchResourceMapIX;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

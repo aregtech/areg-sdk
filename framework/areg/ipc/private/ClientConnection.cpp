@@ -6,17 +6,18 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        areg/ipc/ClientConnection.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \file        areg/ipc/private/ClientConnection.cpp
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Client Connection class declaration
  ************************************************************************/
-#include "areg/ipc/private/ClientConnection.hpp"
+#include "areg/ipc/ClientConnection.hpp"
 
-#include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
+
+#include "areg/trace/GETrace.h"
 
 ClientConnection::ClientConnection( void )
     : SocketConnectionBase    ( )
@@ -55,46 +56,5 @@ bool ClientConnection::createSocket(void)
 void ClientConnection::closeSocket(void)
 {
     setCookie(NEService::COOKIE_UNKNOWN);
-    return mClientSocket.closeSocket();
-}
-
-bool ClientConnection::requestConnectServer(void)
-{
-    bool result = false;
-    if ( isValid() )
-    {
-        if ( getCookie() == NEService::COOKIE_LOCAL )
-        {
-            RemoteMessage msgHelloServer = NEConnection::createConnectRequest();
-            result = msgHelloServer.isValid() ? sendMessage(msgHelloServer) > 0 : false;
-        }
-        else
-        {
-            result = true;  // nothing to set, valid connection
-        }
-    }
-    return result;
-}
-
-bool ClientConnection::requestDisconnectServer(void)
-{
-    bool result = false;
-    if ( isValid() )
-    {
-        RemoteMessage msgBeyServer = NEConnection::createDisconnectRequest(getCookie());
-        result = msgBeyServer.isValid() ? sendMessage(msgBeyServer) > 0 : false;
-        closeSocket();
-    }
-    return result;
-}
-
-RemoteMessage ClientConnection::getDisconnectMessage(void) const
-{
-    RemoteMessage result;
-    if (isValid())
-    {
-        result = NEConnection::createDisconnectRequest(getCookie());
-    }
-
-    return result;
+    mClientSocket.closeSocket();
 }

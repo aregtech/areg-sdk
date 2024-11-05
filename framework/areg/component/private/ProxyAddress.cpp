@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyAddress.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Address class implementation.
  *
@@ -91,7 +91,7 @@ ProxyAddress::ProxyAddress( const String & serviceName
                           , const Version & serviceVersion
                           , NEService::eServiceType serviceType
                           , const String & roleName
-                          , const String & threadName /*= String::EmptyString*/ )
+                          , const String & threadName /*= String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -102,7 +102,7 @@ ProxyAddress::ProxyAddress( const String & serviceName
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName /*= String::EmptyString*/ )
+ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName /*= String::getEmptyString()*/ )
     : ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -113,7 +113,7 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::EmptyString*/)
+ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString()*/)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -202,27 +202,21 @@ bool ProxyAddress::deliverServiceEvent(ServiceResponseEvent & proxyEvent) const
     return ProxyAddress::_deliverEvent( static_cast<Event &>(proxyEvent), mChannel.getSource());
 }
 
-bool ProxyAddress::_deliverEvent(Event & serviceEvent, ITEM_ID idTarget)
+bool ProxyAddress::_deliverEvent(Event & serviceEvent, const ITEM_ID & idTarget)
 {
-    bool result = false;
-    if ( idTarget != NEService::TARGET_UNKNOWN )
+    bool result{ false };
+    Thread* thread = idTarget != NEService::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(idTarget)) : nullptr;
+    DispatcherThread* dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    if (dispatcher != nullptr)
     {
-        Thread * thread = Thread::findThreadById(static_cast<id_type>(idTarget));
-        DispatcherThread * dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
-        if ( dispatcher != nullptr )
-        {
-            result = serviceEvent.registerForThread(dispatcher);
-            serviceEvent.deliverEvent();
-        }
-        else
-        {
-            serviceEvent.destroy();
-        }
+        result = serviceEvent.registerForThread(dispatcher);
+        serviceEvent.deliverEvent();
     }
     else
     {
         serviceEvent.destroy();
     }
+
     return result;
 }
 

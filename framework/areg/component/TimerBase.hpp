@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/TimerBase.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer base class.
  *
@@ -99,22 +99,6 @@ public:
      **/
     virtual ~TimerBase( void );
 
-/************************************************************************/
-// TimerBase class overrides
-/************************************************************************/
-public:
-    /**
-     * \brief   Call to start timer. The timer should have valid timeout.
-     * 
-     * \return  Returns true if succeeded to start timer.
-     */
-    virtual bool startTimer( void ) = 0;
-
-    /**
-     * \brief   Call to stop previously started timer.
-     **/
-    virtual void stopTimer( void ) = 0;
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
@@ -183,8 +167,6 @@ protected:
      * \brief   Call to creates system waitable timer.
      *          The timer can be used if succeeded to create handle.
      *          It has OS specific implementation
-     * 
-     * \param   timer   The instance of the timer to create system waitable timer.
      * \return  Returns true if succeeded to create system timer or the timer was already created.
      **/
     bool createWaitableTimer( void );
@@ -192,8 +174,6 @@ protected:
     /**
      * \brief   Call to destroy system waitable.
      *          After calling this method, the timer cannot be used anymore.
-     * 
-     * \param   timer   The instance of the timer to destroy system waitable timer.
      **/
     void destroyWaitableTimer( void );
 
@@ -203,7 +183,7 @@ protected:
 private:
 
     /**
-     * \brief   OS cpecific implementation of creating waitable timer and
+     * \brief   OS specific implementation of creating waitable timer and
      *          returns the handle of created timer.
      **/
     TIMERHANDLE _osCreateWaitableTimer( void );

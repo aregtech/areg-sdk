@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/IETimerConsumer.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer Event Consumer.
  *
@@ -32,11 +32,5 @@ void IETimerConsumer::startEventProcessing( Event& eventElem )
     if (timer != nullptr )
     {
         processTimer(*timer);
-    }
-    else
-    {
-        OUTPUT_ERR("Ignoring to process timer event. Either wrong runtime class [ %s ] or invalid timer pointer [ %p ]"
-                    , eventElem.getRuntimeClassName().getString()
-                    , timer);
     }
 }

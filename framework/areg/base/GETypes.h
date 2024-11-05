@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/GETypes.h
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, global include header file
  *
@@ -24,7 +24,7 @@
  *          everywhere instead of the default types.
  *          included from GGlobal.h
  **/
-#include "system/GEPlatform.h"
+#include "areg/system/GEPlatform.h"
 
 #if defined(_MSC_VER) && (_MSC_VER < 1600 ) // MS express/studio 2008 or earlier
 
@@ -62,20 +62,31 @@
  * \brief   The type defining ID. It is 64-bit in 64-bit systems.
  **/
 #ifdef BIT64
+
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t   id_type;
     #else   // !_UINTPTR_T_DEFINED
         typedef uint64_t    id_type;
-#endif  // _UINTPTR_T_DEFINED
+    #endif  // _UINTPTR_T_DEFINED
+    
 #else   // defined(BIT32)
+
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t   id_type;
     #else   // !_UINTPTR_T_DEFINED
         typedef uint32_t    id_type;
     #endif  // _UINTPTR_T_DEFINED
+
 #endif  // id_type
 
-typedef id_type    ptr_type;
+//! The digital value type of the pointer.
+typedef id_type     ptr_type;
+
+//! The sequence number type.
+typedef uint64_t    SequenceNumber;
+
+//!< The signed sequence type.
+typedef int64_t     SignedSequence;
 
 /**
  * \brief   The type defines an item ID.

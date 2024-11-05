@@ -49,7 +49,7 @@
             <DebugInformationFormat Condition="'$(ConfigShortName)'=='Release'">None</DebugInformationFormat>
             <FunctionLevelLinking Condition="'$(ConfigShortName)'=='Release'">true</FunctionLevelLinking>
             <IntrinsicFunctions Condition="'$(ConfigShortName)'=='Release'">true</IntrinsicFunctions>
-            <WholeProgramOptimization Condition="'$(ConfigShortName)'=='Release'">true</WholeProgramOptimization>
+            <WholeProgramOptimization Condition="'$(ConfigShortName)'=='Release'">false</WholeProgramOptimization>
         </ClCompile>			
         <Link>
             <LinkErrorReporting>QueueForNextLogin</LinkErrorReporting>

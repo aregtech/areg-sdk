@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientList.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Client List implementation
  *
@@ -55,16 +55,12 @@ const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient,
 
 bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client )
 {
-    bool result = false;
+    bool result{ false };
 
-    ClientInfo client(whichClient);
-    LISTPOS pos = find(client);
+    LISTPOS pos = find( ClientInfo(whichClient) );
     if (isValidPosition(pos))
     {
-        ClientInfo& client = valueAtPosition(pos);
-        client.setTargetServer(StubAddress::getInvalidStubAddress());
-        client.setConnectionStatus(NEService::eServiceConnection::ServicePending);
-        removeAt(pos);
+        removeAt(pos, out_client);
         result = true;
     }
 
@@ -90,8 +86,8 @@ void ClientList::serverUnavailable( ClientList & out_clientList )
     for (LISTPOS pos = firstPosition(); isValidPosition(pos); ++pos )
     {
         ClientInfo & client = valueAtPosition( pos );
+        out_clientList.pushLast( client );
         client.setTargetServer( StubAddress::getInvalidStubAddress() );
         client.setConnectionStatus( NEService::eServiceConnection::ServicePending );
-        out_clientList.pushLast(client);
     }
 }

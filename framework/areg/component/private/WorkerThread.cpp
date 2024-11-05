@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/WorkerThread.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Worker Thread implementation.
  *
@@ -51,27 +51,21 @@ WorkerThread::WorkerThread( const String & threadName
 //////////////////////////////////////////////////////////////////////////
 bool WorkerThread::postEvent( Event& eventElem )
 {
-    bool result = false;
-    if ( Event::isCustom(eventElem.getEventType()) )
+    return Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
+}
+
+void WorkerThread::readyForEvents( bool isReady )
+{
+    if ( isReady )
     {
-        EventDispatcher::postEvent(eventElem);
+        mWorkerThreadConsumer.registerEventConsumers( self( ), mBindingComponent.getMasterThread( ) );
     }
     else
     {
-        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName().getString(), static_cast<int>(eventElem.getEventType()));
-        eventElem.destroy();
-        ASSERT(false);
+        mWorkerThreadConsumer.unregisterEventConsumers( self( ) );
     }
 
-    return result;
-}
-
-bool WorkerThread::runDispatcher( void )
-{
-    mWorkerThreadConsumer.registerEventConsumers(self(), mBindingComponent.getMasterThread());
-    bool result = DispatcherThread::runDispatcher();
-    mWorkerThreadConsumer.unregisterEventConsumers(self());
-    return result;
+    DispatcherThread::readyForEvents(isReady);
 }
 
 DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& whichClass )
@@ -98,7 +92,7 @@ void WorkerThread::terminateSelf(void)
     mHasStarted = false;
     removeAllEvents();
     mEventExit.setEvent();
-    Thread::destroyThread(NECommon::TIMEOUT_10_MS);
+    Thread::shutdownThread(NECommon::TIMEOUT_10_MS);
 
     delete this;
 }

@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Version.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Version class
  *
@@ -101,7 +101,7 @@ Version & Version::convFromString( const String & version )
     pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
     version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
 
-    mMajor  = major.toUInt32();;
+    mMajor  = major.toUInt32();
     mMinor  = minor.toUInt32();
     mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
 
@@ -110,7 +110,7 @@ Version & Version::convFromString( const String & version )
 
 Version & Version::convFromString( const char * version )
 {
-	return convFromString( String(version != nullptr ? version : String::EmptyString) );
+	return convFromString( String(version != nullptr ? version : NEString::EmptyStringA) );
 }
 
 Version & Version::operator = ( const Version &src )
@@ -156,8 +156,11 @@ bool Version::operator > ( const Version & version ) const
 
 String Version::convToString( void ) const
 {
-    String result;
-    return result.format("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
+    constexpr const char * format{ "%d%c%d%c%d" };
+
+    char buffer[ 128 ]{ 0 };
+    int len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
+    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 
 //////////////////////////////////////////////////////////////////////////

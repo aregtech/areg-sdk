@@ -2,12 +2,12 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates use of logging (tracing). The 
-//               logging requires source code compilation with ENABLE_TRACES
+//               logging requires source code compilation with AREG_LOGS=1
 //               preprocessor directive to enable logging macro. It as well
 //               requires log enabling in the configuration file (by default 
-//               "./config/log.init" file). If there is no configuration file,
+//               "./config/areg.init" file). If there is no configuration file,
 //               the logging can be forced to be enabled to apply default
 //               logging settings.
 // 
@@ -106,7 +106,7 @@ int main()
         TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", aThread.getName().getString());
-        aThread.destroyThread(NECommon::WAIT_INFINITE);
+        aThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

@@ -5,7 +5,7 @@
 
 #include "register/res/resource.h"
 #include "register/NECentralApp.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/base/TEArrayList.hpp"
 
 class PageConnections : public CPropertyPage
@@ -26,7 +26,7 @@ class PageConnections : public CPropertyPage
 DECLARE_DYNAMIC(PageConnections)
 
 // Dialog Data
-	enum { IDD = IDD_PAGE_CONNECTIONS };
+enum { IDD = IDD_PAGE_CONNECTIONS };
 
 public:
 	PageConnections();
@@ -40,8 +40,8 @@ public:
     void OnDefaultClicked( void );
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    virtual BOOL OnInitDialog( );
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+    virtual BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
 

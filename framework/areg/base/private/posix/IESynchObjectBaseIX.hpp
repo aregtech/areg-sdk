@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/IESynchObjectBaseIX.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX based Synchronization object base.
  *
@@ -52,7 +52,7 @@ public:
     /**
      * \brief   The length of synchronization object name, including null-termination symbol.
      **/
-    static const int    _MAX_NAME_LENGTH    = 32;
+    static constexpr int    _MAX_NAME_LENGTH    { 32 };
 
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor.

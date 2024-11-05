@@ -6,44 +6,30 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LoggerBase.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Logger interface
  ************************************************************************/
 #include "areg/trace/private/LoggerBase.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 
+#if AREG_LOGS
+
 LoggerBase::LoggerBase( LogConfiguration & tracerConfig )
-    : mTracerConfiguration  ( tracerConfig )
-    , mLayoutsMessage       ( )
-    , mLayoutsScopeEnter    ( )
-    , mLayoutsScopeExit     ( )
+    : mLogConfiguration ( tracerConfig )
+    , mLayoutsMessage   ( )
+    , mLayoutsScopeEnter( )
+    , mLayoutsScopeExit ( )
 {
 }
 
 bool LoggerBase::createLayouts(void)
 {
-    bool result = false;
-    const TraceProperty & propMessage = mTracerConfiguration.getLayoutMessage();
-    const TraceProperty & propEnter   = mTracerConfiguration.getLayoutEnter();
-    const TraceProperty & propExit    = mTracerConfiguration.getLayoutExit();
-
-    if (propMessage.isValid() )
-    {
-        result |= mLayoutsMessage.createLayouts( static_cast<const String&>(propMessage.getValue( )) );
-    }
-
-    if ( propEnter.isValid() )
-    {
-        result |= mLayoutsScopeEnter.createLayouts( static_cast<const String&>(propEnter.getValue( )) );
-    }
-
-    if ( propExit.isValid() )
-    {
-        result |= mLayoutsScopeExit.createLayouts( static_cast<const String&>(propExit.getValue( )) );
-    }
+    bool result = mLayoutsMessage.createLayouts(mLogConfiguration.getLayoutMessage());
+    result |= mLayoutsScopeEnter.createLayouts(mLogConfiguration.getLayoutEnter());
+    result |= mLayoutsScopeExit.createLayouts(mLogConfiguration.getLayoutExit());
 
     return result;
 }
@@ -54,3 +40,5 @@ void LoggerBase::releaseLayouts(void)
     mLayoutsScopeEnter.deleteLayouts();
     mLayoutsScopeExit.deleteLayouts();
 }
+
+#endif  // AREG_LOGS

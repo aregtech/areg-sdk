@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentAddress.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Component Address class.
  *              This class defines address object of component.
@@ -117,7 +117,6 @@ public:
      *          Use this constructor if Component is created in current
      *          component thread.
      * \param	roleName	The role name of component.
-     * \return	
      **/
     ComponentAddress( const String & roleName );
 

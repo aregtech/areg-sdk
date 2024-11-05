@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientSendThread.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Send Message Thread
  ************************************************************************/
@@ -20,14 +20,14 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/RemoteServiceEvent.hpp"
+#include "areg/ipc/SendMessageEvent.hpp"
 
 #include <atomic>
 
- /************************************************************************
+/************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteServiceHandler;
+class IERemoteMessageHandler;
 class ClientConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,8 +48,10 @@ public:
      * \brief   Initializes Service handler and client connection objects.
      * \param   remoteService   The instance of remote service to process messages.
      * \param   connection      The instance of client connection object to send messages.
+     * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_SEND_MESSAGE_THREAD
+     *                          to have unique thread names.
      **/
-    ClientSendThread( IERemoteServiceHandler & remoteService, ClientConnection & connection );
+    ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
     /**
      * \brief   Destructor
      **/
@@ -63,7 +65,19 @@ public:
      * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataSend( void );
+    inline uint32_t extractDataSend( void ) const;
+
+    /**
+     * \brief   Call to enable or disable the received data calculation.
+     *          It as well resets the existing calculated data.
+     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     **/
+    inline void setEnableCalculateData(bool enable);
+
+    /**
+     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     **/
+    inline bool isCalculateDataEnabled(void) const;
 
 protected:
 /************************************************************************/
@@ -71,13 +85,11 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running.
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -114,7 +126,7 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteServiceHandler &    mRemoteService;
+    IERemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/
@@ -123,7 +135,12 @@ private:
     /**
      * \brief   Accumulative value of sent data size.
      **/
-    std::atomic_uint             mBytesSend;
+    mutable std::atomic_uint    mBytesSend;
+
+    /**
+     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+     **/
+    bool                        mSaveDataSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -133,9 +150,23 @@ private:
     DECLARE_NOCOPY_NOMOVE( ClientSendThread );
 };
 
-inline uint32_t ClientSendThread::extractDataSend( void )
+inline uint32_t ClientSendThread::extractDataSend( void ) const
 {
     return static_cast<uint32_t>(mBytesSend.exchange( 0 ));
+}
+
+inline void ClientSendThread::setEnableCalculateData(bool enable)
+{
+    if (mSaveDataSend != enable)
+    {
+        mBytesSend.store(0u);
+        mSaveDataSend = enable;
+    }
+}
+
+inline bool ClientSendThread::isCalculateDataEnabled(void) const
+{
+    return mSaveDataSend;
 }
 
 #endif  // AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP

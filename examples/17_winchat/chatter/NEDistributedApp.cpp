@@ -4,10 +4,10 @@
  ************************************************************************/
 
 #include "chatter/NEDistributedApp.hpp"
-#include "generated/NECommon.hpp"
-#include "generated/NEDirectConnection.hpp"
+#include "common/NECommon.hpp"
+#include "generate/examples/17_winchat/NEDirectConnection.hpp"
 
-#include <windows.h>
+#include <Windows.h>
 #include <tchar.h>
 
 static inline void _createRoleName( const String & nickName, uint32_t cookie, const char * prefix, String & output )

@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}</ProjectGuid>
+    <ProjectName>11_localmesh</ProjectName>
+    <RootNamespace>11_localmesh</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="locsvcmesh\src\ServiceHelloWorld.cpp" />
+    <ClCompile Include="locsvcmesh\src\ServiceClient.cpp" />
+    <ClCompile Include="locsvcmesh\src\ServicingComponents.cpp" />
+    <ClCompile Include="locsvcmesh\src\main.cpp" />
+    <ClCompile Include="locsvcmesh\src\ClientComponent.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="locsvcmesh\src\ServiceHelloWorld.hpp" />
+    <ClInclude Include="locsvcmesh\src\ServiceClient.hpp" />
+    <ClInclude Include="locsvcmesh\src\ServicingComponents.hpp" />
+    <ClInclude Include="locsvcmesh\src\ClientComponent.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

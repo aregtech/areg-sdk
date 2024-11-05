@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/Timer.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer class.
  *              Use to fire timer.
@@ -91,29 +91,13 @@ public:
      *                          and play no role.
      **/
     explicit Timer( IETimerConsumer & timerConsumer
-                  , const String & timerName = String::EmptyString
+                  , const String & timerName = String::getEmptyString()
                   , uint32_t timeoutMs       = NECommon::INVALID_TIMEOUT
                   , int maxQueued            = Timer::IGNORE_TIMER_QUEUE );
     /**
      * \brief   Destructor
      **/
     virtual ~Timer( void );
-
-/************************************************************************/
-// TimerBase class overrides
-/************************************************************************/
-public:
-    /**
-     * \brief   Call to start timer. The timer should have valid timeout.
-     * 
-     * \return  Returns true if succeeded to start timer.
-     */
-    virtual bool startTimer( void ) override;
-
-    /**
-     * \brief   Call to stop previously started timer.
-     **/
-    virtual void stopTimer( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -162,6 +146,11 @@ public:
      * \return  Returns true if Timer was successfully started.
      **/
     bool startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread, unsigned int eventCount = TimerBase::CONTINUOUSLY);
+
+    /**
+     * \brief   Call to stop previously started timer.
+     **/
+    void stopTimer( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

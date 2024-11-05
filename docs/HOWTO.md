@@ -1,7 +1,8 @@
+﻿
 # How To
 ```
 This file is part of AREG SDK
-Copyright (c) 2021-2022, Aregtech
+Copyright (c) 2021-2023, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
@@ -10,22 +11,13 @@ This document replies to several **howto** questions, which are listed in the _T
 
 ---
 
-## Table of content[![](./docs/img/pin.svg)](#table-of-contents)
+## Table of contents
 
-1. [How to use preprocessor directives](#how-to-use-preprocessor-directives)
-2. [How to compile](#how-to-compile)
-    - [Linux build](#linux-build)
-    - [Windows build](#windows-build)
-    - [CMake build](#cmake-build)
-    - [Make build](#make-build)
-    - [Visual Studio Code build](#visual-studio-code-build)
-    - [Microsoft Visual Studio Build](#microsoft-visual-studio-build)
-    - [Eclipse build](#eclipse-build)
-    - [Other POSIX builds](#other-posix-builds)
+1. [How to use preprocessor defines](#how-to-use-preprocessor-defines)
+2. [How to build](#how-to-build)
 3. [How to debug in IDE](#how-to-debug-in-ide)
     - [Debug with Visual Studio Code](#debug-with-visual-studio-code)
     - [Debug with Microsoft Visual Studio](#debug-with-microsoft-visual-studio)
-    - [Debug with Eclipse](#debug-with-eclipse)
 4. [How to create a new project](#how-to-create-a-new-project)
 5. [How to integrate in a project](#how-to-integrate-in-a-project)
 6. [How to use logging](#how-to-use-logging)
@@ -35,265 +27,64 @@ This document replies to several **howto** questions, which are listed in the _T
 
 ---
 
-## How to use preprocessor directives[![](./img/pin.svg)](#how-to-use-preprocessor-directives)
+## How to use preprocessor defines
 
-AREG SDK uses a few preprocessor directives to compile **POSIX** and **Windows** versions of codes. Here is the list:
-| Preprocessor | Description and meaning |
-| --- | --- |
-| **POSIX** | Compile sources with _POSIX API_, details are in [POSIX.md](./POSIX.md). |
-| **WINDOWS** | Compile sources with _Win32 API_, details are in [WIN32.md](./WIN32.md). |
-| **DEBUG** | Compile Debug configuration. |
-| **NDEBUG** | Compile Release configuration. |
-| **EXP_AREG_LIB** | Build AREG framework as a _static_ library (same is **EXPORT_STATIC_SYMBOLS**). |
-| **EXP_AREG_DLL** | Build AREG framework as a _shared_ library (same is **EXPORT_SHARED_SYMBOLS**). |
-| **IMP_AREG_LIB** | Link with _static_ AREG framework library (same is **IMPORT_STATIC_SYMBOLS**). |
-| **IMP_AREG_DLL** | Link with _shared_ AREG framework library (same is **IMPORT_SHARED_SYMBOLS**). |
-| **ENABLE_TRACES** | Enable logging / tracing in the sources. |
+The AREG SDK provides a range of preprocessor defines that developers can utilize during the code compilation process. These defines enable developers to customize the SDK's behavior according to their specific requirements. The [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki serves as a comprehensive guide, offering detailed explanations and examples on how to modify these defines during compilation.
 
-The preprocessor directives are either set in `Makefile` or `CMakeList.txt` files, or in the project settings of IDE, or they are automatically set depending on configurations in [user.props](../conf/msvc/user.props), [user.cmake](../conf/cmake/user.cmake) or [user.mk](../conf/make/user.mk) depending on the toolchain that developer is going to use.
+By modifying the preprocessor defines, developers can enable or disable features, configure behaviors, and customize the SDK to suit their application's needs. The Wiki page acts as a valuable reference, ensuring a clear understanding of each define's purpose.
 
-Bellow is a quick description of preprocessor directives and settings.
+To utilize the preprocessor defines effectively, developers can follow these steps:
 
-**POSIX and WINDOWS directives**
+1. Refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki to become familiar with the available defines and their functionalities.
 
-The _POSIX_ and _WINDOWS_ directives indicate whether the projects are compiled with _POSIX_ or _Win32_ API. In `CMake` and `Make` these directives are automatically set when the compiler is selected. For example, 
-- In `CMake` when set variables `CMAKE_CXX_COMPILER` and `CMAKE_C_COMPILER` in `user.cmake` file, like `set(CMAKE_CXX_COMPILER "gcc")`;
-- In `Make` when set variable `Toolset` in `user.mk` file, like `Toolset := g++`.
-In both this cases the sources are compiled with _POSIX API_. If, for example, set `CMAKE_CXX_COMPILER` to Microsoft Visual C++ compiler, like `set(CMAKE_CXX_COMPILER "cl")`, then the sources will be compiled with _Win32 API_.
+2. Identify the specific preprocessor define(s) that require modification to achieve the desired behavior or feature configuration.
 
-**DEBUG and NDEBUG directives**
+3. Depending on the build system being used (such as CMake, Make, Microsoft Visual Studio, or Visual Studio Code), update the corresponding configuration files or build commands to set the desired values for the preprocessor defines.
 
-The _DEBUG_ and _NDEBUG_ directives indicate the build configuration. In `user.cmake` this setting is set by `set(Config "Debug")` and in `user.mk` file it is set by `Config := Debug`.
- 
-**EXP_AREG_LIB, EXP_AREG_DLL, IMP_AREG_LIB and IMP_AREG_DLL**
+4. Rebuild the AREG SDK components using the updated preprocessor defines.
 
-This preprocessor directives indicate whether the `areg` library is compiled as _shared_ or _static_ library, and whether the application should be linked with _shared_ or _static_ `areg` library. In `user.cmake` file this setting are set by `set(areg "shared")` and in `user.mk` it is set by `areg := shared`.
+By effectively utilizing the preprocessor defines, developers can tailor the AREG SDK to their project's specific requirements, achieving the desired functionality and behavior.
 
-**ENABLE_TRACES**
+It is highly recommended to refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki for a comprehensive understanding of each define and its usage. This will enable developers to leverage the full potential of the SDK and make the most of its capabilities.
 
-This preprocessor directive is directly set and it indicates whether the sources are compiled with enabled or disabled logs. If logs are enabled, i.e. the sources are compile with `ENABLE_TRACES` option, the sources are contain logs that can be used to log messages. Otherwise, the logs are not included in the builds and application will not log messages.
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-## How to compile
+---
 
-AREG SDK provides **Makefile**, **Eclipse** and **Visual Studio** project files to compile sources and examples. _Makefile_ and _Eclipse_ projects are to build software with _POSIX API_, and _Visual Studio_ project files are to build software with _Win32 API_. By default, there is no need to make additional changes in settings to compile projects. To run **IPC** examples, make sure the process **mcrouter** has started as a console application or as a service handled by the system.
+## How to build
 
-### POSIX build
+The AREG SDK source codes have a minimum requirement of **C++17**. They can be compiled using tools such as `cmake`, `make`, `cygwin`, or `msbuild`. The codes are compatible with **Windows**, **Linux**, and **macOS** environments, including compilation within **WSL** (_Windows Subsystem for Linux_).
 
-To build the _POSIX_ version of projects use _make_ or _Eclipse for C/C++ Developers_ IDE to compile with _GCC_ or _clang_ compilers. AREG framework and examples require C++ 17 or higher.
+The [Software Build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile sources and build applications using various tools and IDEs.
 
-#### make
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-_make_ and _Makefile_ is used to build AREG framework with _POSIX API_. To build projects, open command line terminal in _AREG SDK root_ directory and do one of these actions:
-
-| Description | Command |
-| --- | --- |
-| Compile all projects: | `$ make [all]` |
-| Compile _framework_ only: | `$ make framework` |
-| Compile _examples_ only: | `$ make examples` |
-
-All builds are located in the created `./product/build/<compiler-platform-path>` sub-folder located in the _areg-sdk root_ directory.
-
-To clean an existing build call `$ make clean` command terminal. This removes the entire _'product'_ output directory.
-
-In all cases, parallel compilation with `-j` can be used to speedup the compilation. For example, to compile `areg-sdk` sources with 8 threads:`$ make -j 8`
-
-**Change the compiler settings:**
-
-To change compiler settings, use [user.mk](../conf/make/user.mk) file and edit. Do not commit the developer specific file if other developers use different settings.
-* To set the compiler, change _Toolset_. Supported values: _g++_ (default compiler), _gcc_, _clang++-13_. Example: `Toolset      := clang++-13`
-* To set the hardware platform, change _Platform_. Supported values: &lt;_no value_&gt; (take default), _x86_, _x86_64_, _arm_, _aarch64_. Example: `Platform := _x86_`.
-* To set the cross-compile, change _CrossCompile_. Supported values: &lt;_no value_&gt; (take default), _arm-linux-gnueabihf-g++_ (Linux g++ compiler for arm32), _arm-linux-gnueabihf-gcc_ (Linux GCC compiler for arm32), _aarch64-linux-gnu-g++_ (Linux g++ compiler for arm64), _aarch64-linux-gnu-gcc_ (Linux GCC compiler for arm64). Example: `CrossCompile := arm-linux-gnueabihf-g++`.
-* To set the AREG framework library type, change _areg_. Supported values: **_static_** (build and link AREG framework as a static library), **_shared_** (build and linke AREG framework as a shared library). Example: `areg   := static`.
-* To set build configuration, change _Config_. Supported values: **_Debug_** (build debug version) and **_Release_** (build release version). Example: `Config := Debug`.
-* To set additional compiler preprocessor directives, change _UserDefines_. Example: `UserDefines     := -DENABLE_TRACES`.
-* To set additional include directories, change _UserDefIncludes_.
-* To set additional library directories, change _UserDefLibPaths_.
-* To set additional libraries, change _UserDefLibs_.
-* To set the build output directory, change _UserDefOutput_. By default, the binaries are compiled in the `./product` sub-folder created in _AREG SDK root_.
-* To set the binary output directory, change _ProjBuildPath_. By default, the path includes compile, hardware, operating system and configuration information.
-
-Examples for the command to use for different settings:
-
-```shell
-# Compile areg-sdk with clang using 8 threads
-$ make -j 8 Toolset=clang++-13
-```
-```shell
-# Compile areg-sdk with arm-linux-gnueabihf-g++ for arm32
-$ make -j 8 CrossCompile=arm-linux-gnueabihf-
-```
-
-```shell
-# Compile areg-sdk as Debug shared library with aarch64-linux-gnu-gcc
-$ make -j 8 Config=Debug CrossCompile=aarch64-linux-gnu- Toolset=gcc
-```
-
-#### Eclipse for C/C++ Developer
-
-_Eclipse_ IDE is used to build software with _POSIX API_ in Linux or Windows OS. You need to import the existing _Eclipse_ projects to workspace created in _AREG SDK root_ directory and specify OS suitable _Toolchain_ in the settings. For example, for Windows use _cygwin GCC_ Toolchain.
-
-**How to import projects**:
-* Open _Eclipse for C/C++ Developers_ IDE.
-* Create a _New Workspace_, specify _areg-sdk_ as workspace root.
-* In _Eclipse_ IDE select _Import_ menu (_File_ ==> _Import_) to start importing.
-* In the _Select_ dialog select _General_ ==> _Existing Projects into Workspace_.
-* Click the _Next_ button, this opens the _Import Projects_ dialog.
-* In the _Import Projects_ dialog click _Select_ ==> _Browse_ and set _areg-sdk_ folder.
-* After scanning, _Projects_ contains a list of projects.
-* Select either areg and mcrouter, or select all to compile all.
-
-The Debug builds are output in _Debug_ and the Release builds are in _Release_ subfolders of each project. By default, _AREG framework_ is compiled as a static library. Change the settings of the framework and project if you need the shared library.
-
-### Windows build
-
-To compile Windows versions of projects, use Visual Studio 2019 or higher to open the solution.
-
-**How to load projects**:
-* In Visual Studio open _areg-sdk.sln_ file, located in _areg-sdk_ root folder.
-* In the toolbar of Visual Studio select:
-    - **Win32** or **x64** in _Solution Platform_ to build 32- or 64-bit binaries.
-    - **dbg_vc142** or **rls_vc142** in  _Solution Configuration_ to build Debug or Release configuration.
-
-We have taken the advantage of Visual Studio property files and have chosen this behaviour of _Solution Configuration_ to escape changing the PlatformToolset settings in project files if a team works with different versions of Visual Studio. If you need to support newer versions of Visual Studio, register the _Platform_, _Configuration_ and _PlatformToolset_ in the **config_compile.props** file located in _areg-sdk_ and update _areg-sdk_ solution file.
-
-> 💡 **Note:** _You'll get error if you choose the compiler version, which does not exist in your system!_ 
-
-Example to building 64-bit Release in VS2019: in the _Solution Configurations_ of VS2019 toolbar select **rls_v142** and in the _Solution Platform_ select **x64**. Compile the Solution. All projects are output in the created `./product` subfolder of the _areg-sdk_ root.
-
-### Other builds
-Currently the AREG SDK does not contain project files of any other IDE or other scripts like CMake to build from the command line.
+---
 
 ## How to create a project or integrate in project
 
-Here is information to integrate the AREG framework in the existing project. 
-1. Include **&lt;areg-sdk-root&gt;/framework** in the _include path_ list of the project.
-2. Set preprocessor directive **POSIX** or **WINDOWS** to specify _POSIX_ or _Win32_ API build of `areg-sdk`.
-3. Set preprocessor directive **DEBUG** for Debug or **NDEBUG** for Release build of applications.
-4. Set preprocessor directive **IMP_AREG_DLL** for the `areg` framework shared library or **IMP_AREG_LIB** for the `areg` framework static library.
-5. Optionally, set preprocessor directive **ENABLE_TRACES** if need logs / traces.
-6. Include library output directory in library search path and specify _AREG framework_ library to link with.
+The [Setup a project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) page of AREG SDK Wiki provides a detailed explanation and examples on how to create a project based on AREG framework, as well as how to include AREG framework in your build environment.
 
-Now your project is ready to use the AREG framework.
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-The examples of _AREG SDK_ for **POSIX** in Eclipse IDE are built having following settings:
-- _areg-sdk/framework_ path is set in the include paths of projects.
-- The library search path has _areg-sdk/framework/areg/Debug_ path for Debug and _areg-sdk/framework/areg/Release_ path for Release configuration.
-- _areg_, _pthread_ and _rt_ libraries are listed in the list of libraries to link.
-- Preprocessor directives for Debug build `POSIX, DEBUG, IMP_AREG_LIB, ENABLE_TRACES` and for Release build `POSIX, NDEBUG, IMP_AREG_LIB, ENABLE_TRACES`.
+---
 
 ## How to use logging
 
-#### Creating logs
+The projects based on AREG SDK can be compiled with or without logs. If a projects are compiled with logs, the logs, log scopes and group of scopes can be activated or deactivated during runtime.
 
-Tracing / Logging MACRO are declared in the [_GTrace.h_](./../framework/areg/trace/GETrace.h) header file. Use predefined _MACRO_ to configure, enable and output logs. 
+The [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Logging-System) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile source codes with logs, as well as hot to create logging scopes, log messages and configure the logging.
 
-- To compile sources with logging, compile the application with _ENABLE_TRACES_ preprocessor directive. If this is not specified, the logs will not exist in binaries. Example: `UserDefines := -DENABLE_TRACES`
-- There must be declared _scopes_ to generate logs. 
-- Use MACRO _**DEF_TRACE_SCOPE**(some_unique_name_of_scope)_ to declare scope. The scopes must have unique names.
-- Use macro _**TRACE_SCOPE**(some_unique_name_of_scope)_ in methods to prepare tracing.
-- As soon as the method is executed, the scope generates an _"Enter"_ message to log.
-- Use MACRO _TRACE_DBG, TRACE_INFO, TRACE_WARN, TRACE_ERR, TRACE_FATAL_ to log messages by priority.
-- Use standard string formatting flags to log messages (similar to _printf()_).
-- No need to set _end-of-line_ ('\n') at the end of the message. The tracer automatically adds.
-- When exit the method, the scope generates _"Exit"_ message to log.
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-Example:
-```cpp
-// A class in project 'something'
-class SomeObject
-{
-public:
-    void foo();
-    void bar();
-};
-
-// define unique scopes
-DEF_TRACE_SCOPE(something_SomeObject_foo);
-DEF_TRACE_SCOPE(something_SomeObject_bar);
-
-void SomeObject::foo()
-{
-    TRACE_SCOPE(something_SomeObject_foo);
-    TRACE_DBG("Now we can output logs with arguments %s and there is no need %s.", "just like printf() method", "to set new line");
-}
-
-void SomeObject::bar()
-{
-    TRACE_SCOPE(something_SomeObject_bar);
-    TRACE_WARN("You may as well output logs by priority");
-}
-
-```
-
-#### Enable logging
-
-The application(s) must be compiled with the _TRACE_ENABLE_ preprocessor directive. The _logging service_ is enabled in 2 steps:
-1. In the log initialization file (by default, **log.init**) set `log.enable = true` to enable logging service for all applications or `log.enable.appName = true` to enable logging only for a specific application(s).
-2. Use `TRACER_START_LOGGING()` macro and specify the log initialization file path to start logging service. If `nullptr`, the default relative path _./config/log.init_ is used.
-3. The tracing as well is enabled by calling `Application::initApplication()` method.
-4. You may as well filter logs by scopes and priorities in the `log.init` file.
-
-Example of enabling logs:
-
-In `log.init` file
-```
-log.enable      = true  # enable global logging
-log.file        = %home%/logs/%appname%_%time%.log          # create logs in 'log' subfolder of user home 
-
-scope.something.something_SomeObject_bar = DEBUG | SCOPE ;  # enable all logs for specified scope
-scope.something.something_SomeObject_foo = NOTSET ;         # disable any log of specific scope
-```
-
-in `main.cpp` file:
-```cpp
-// main.cpp file
-
-DEF_TRACE_SCOPE(something_main);
-
-int main()
-{
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
-    do
-    {
-        // initialize scope after logging service is started
-        TRACE_SCOPE(something_main);
-        TRACE_INFO("Now I can log!");
-
-        SomeObject obj;
-        obj.foo(); // <== the log scope is disabled, no logging
-        obj.bar(); // <== logs scope "Enter", log message, log "Exit"
-    } while (false);
-
-    return 0;
-}
-```
-
-See the details of initialization in the [log.init](./../framework/areg/resources/log.init) file. Browse [04_trace](./../examples/04_trace/) and other following examples to see how logs are initialized and used. Use macro `TRACER_FORCE_LOGGING()` to force the logging service to start with default settings (enable all log scopes and priorities of the application).
-
-> 💡 Currently logs output messages in the file. Other output settings are reserved and currently have no effect. It is planned to extend log service with more features.
-
-#### Configure logging
-
-The logs are configured in [log.init](./../framework/areg/resources/log.init), which syntax parser is part of the framework. Change appropriate sections to filter log priorities and log scopes, or change the name of the output log file.
-
-An example of filtering logs and scopes:
-```
-scope.appName.some_unique_scope_name_in_method       = SCOPE | DEBUG # Enable all logs for the scope
-scope.appName.some_unique_scope_name_in_other_method = ERROR         # Enable only error message, not scope Enter and Exit
-scope.appName.some_unique_scope_name_in_somewhere    = NOTSET        # Disable any log
-```
-In this example:
-* _some_unique_scope_name_in_method_ scope enables all logs, including _Enter_ and _Exit_ messages of scope.
-* _some_unique_scope_name_in_other_method_ scope enables only ERROR and FATAL logs. All other logs, including scope _Enter_ and _Exit_ are filtered out.
-* _some_unique_scope_name_in_somewhere_ scope disables any log.
+---
 
 ## How to use multicast router
 
-Multicast Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The multicast router and the applications must have a configured [_router.init_](./.../framework/areg/resources/router.init) file located in the `./config` subfolder of binaries. Set the IP-address and the port number of the multicast router to connect. 
+Multicast Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The multicast router can run as a stand-alone application or as a service managed by operating system. The multicast should be configured and all applications should contain [areg.init](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/areg.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
 
-```
-connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
-connection.port.tcpip       = 8181      # the connection port of mcrouter
-```
-When starting an application with _Public_ service(s), make sure that the **mcrouter** is started. If your application uses only _Local_ services, it does not need the multicast router.
+The [Message-Router](https://github.com/aregtech/areg-sdk/wiki/06.-Message-Router) page of the AREG SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---

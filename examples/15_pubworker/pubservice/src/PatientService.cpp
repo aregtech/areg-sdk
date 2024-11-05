@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/PatientService.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This is a patient info service.
@@ -18,7 +18,7 @@ Component * PatientService::CreateComponent(const NERegistry::ComponentEntry & e
     return DEBUG_NEW PatientService(entry, owner);
 }
 
-void PatientService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void PatientService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

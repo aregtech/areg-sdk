@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates creation of a simple thread to 
 //               output "Hello World!" message on console.
 //============================================================================
@@ -39,7 +39,7 @@ protected:
     //! \brief  This callback is triggered when thread runs and fully operable.
     virtual void onThreadRuns( void ) override
     {
-        std::cout << "The thread " << getName( ) << " runs, outputing message." << std::endl;
+        std::cout << "The thread " << getName( ) << " runs, output message." << std::endl;
         std::cout << "!!! Hello World !!!" << std::endl;
     }
 
@@ -48,7 +48,7 @@ private:
     inline HelloThread & self( void )
     {
         return (*this);
-    };
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ int main()
     // create and start thread, wait until it is started.
     aThread.createThread(NECommon::WAIT_INFINITE);
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.destroyThread(NECommon::WAIT_INFINITE);
+    aThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

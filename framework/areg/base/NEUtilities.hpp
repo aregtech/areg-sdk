@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/NEUtilities.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Utilities
  *              Helper functions and constants.
@@ -48,6 +48,48 @@ namespace   NEUtilities
 /************************************************************************/
 // NEUtilities namespace predefined constants
 /************************************************************************/
+
+    /**
+     * \brief   NEUtilities::TIME_FORMAT_ISO8601_OUTPUT
+     *          The format to display the time in microseconds, ISO8601 standard
+     **/
+    constexpr std::string_view  TIME_FORMAT_ISO8601_OUTPUT  { "%Y-%m-%d %H:%M:%S,%l" };
+    /**
+     * \brief   NEUtilities::TIME_FORMAT_ISO8601
+     *          Short name of TIME_FORMAT_ISO8601_OUTPUT
+     **/
+    constexpr std::string_view  TIME_FORMAT_ISO8601         { "ISO8601" };
+
+     /**
+      * \brief   NEUtilities::TIME_FORMAT_ABSOLUTE_OUTPUT
+      *          The format to display only the absolute time in milliseconds
+      **/
+    constexpr std::string_view  TIME_FORMAT_ABSOLUTE_OUTPUT{ "%H:%M:%S,%l" };
+    /**
+     * \brief   NEUtilities::TIME_FORMAT_ABSOLUTE
+     *          Short name of TIME_FORMAT_ABSOLUTE_OUTPUT
+     **/
+    constexpr std::string_view  TIME_FORMAT_ABSOLUTE        { "ABSOLUTE" };
+
+     /**
+      * \brief   NEUtilities::TIME_FORMAT_DATE_OUTPUT
+      *          The format to display the date, time and milliseconds
+      **/
+    constexpr std::string_view  TIME_FORMAT_DATE_OUTPUT     { "%d %b %Y %H:%M:%S,%l" };
+    /**
+     * \brief   NEUtilities::TIME_FORMAT_DATE
+     *          Short name of TIME_FORMAT_DATE_OUTPUT
+     **/
+    constexpr std::string_view  TIME_FORMAT_DATE            { "DATE" };
+
+    /**
+     * \brief   Default time format
+     **/
+    constexpr std::string_view  DEFAULT_TIME_FORMAT         { NEUtilities::TIME_FORMAT_ISO8601 };
+    /**
+     * \brief   Default time format output
+     **/
+    constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT  { NEUtilities::TIME_FORMAT_ISO8601_OUTPUT };
 
     /**
      * \brief   NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE
@@ -122,36 +164,186 @@ namespace   NEUtilities
      **/
     constexpr TIME64                MICROSEC_TO_NS                    	{ 1'000LL };
 
+    /**
+     * \brief   NEUtilities::MIN_TO_SECS
+     *          Seconds in 1 minute.
+     **/
+    constexpr TIME64                MIN_TO_SECS                         { 60LL };
+
+    /**
+     * \brief   NEUtilities::MIN_TO_MILLISECS
+     *          Milliseconds in 1 minute.
+     **/
+    constexpr TIME64                MIN_TO_MILLISECS                    { MIN_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::MIN_TO_MICROSECS
+     *          Microseconds in 1 minute.
+     **/
+    constexpr TIME64                MIN_TO_MICROSECS                    { MIN_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_MINS
+     *          Minutes in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_MINS                        { 60LL };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_SECS
+     *          Seconds in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_SECS                        { HOUR_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_MILLISECS
+     *          Milliseconds in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_MILLISECS                   { HOUR_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_MICROSECS
+     *          Microseconds in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_MICROSECS                   { HOUR_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_HOURS
+     *          Hours in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_HOURS                        { 24LL };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_MINS
+     *          Minutes in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_MINS                         { DAY_TO_HOURS * HOUR_TO_MINS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_SECS
+     *          Seconds in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_SECS                         { DAY_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_MILLISECS
+     *          Milliseconds in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_MILLISECS                    { DAY_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_MICROSECS
+     *          Microseconds in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_MICROSECS                    { DAY_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_DAYS
+     *          Days in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_DAYS                        { 365LL };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_HOURS
+     *          Hours in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_HOURS                       { YEAR_TO_DAYS * DAY_TO_HOURS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MINS
+     *          Minutes in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MINS                        { YEAR_TO_HOURS * HOUR_TO_MINS};
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_SECS
+     *          Seconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_SECS                        { YEAR_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MILLISECS
+     *          Milliseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MILLISECS                   { YEAR_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MICROSECS
+     *          Microseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MICROSECS                   { YEAR_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_DAYS_EX
+     *          Days in 1 leap year
+     **/
+    constexpr TIME64                YEAR_TO_DAYS_EX                     { 366LL };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_HOURS_EX
+     *          Hours in 1 leap year.
+     **/
+    constexpr TIME64                YEAR_TO_HOURS_EX                    { YEAR_TO_DAYS * DAY_TO_HOURS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MINS_EX
+     *          Minutes in 1 leap year.
+     **/
+    constexpr TIME64                YEAR_TO_MINS_EX                     { YEAR_TO_HOURS * HOUR_TO_MINS};
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_SECS_EX
+     *          Seconds in 1 leap year.
+     **/
+    constexpr TIME64                YEAR_TO_SECS_EX                     { YEAR_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MILLISECS_EX
+     *          Milliseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MILLISECS_EX                { YEAR_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MICROSECS_EX
+     *          Microseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MICROSECS_EX                { YEAR_TO_SECS * SEC_TO_MICROSECS };
+
+
 /************************************************************************/
 // NEUtilities namespace utility types
 /************************************************************************/
-    
+
     /**
      * \brief   NEUtilities::sSystemTime
      *          The structure defines date-time data used in system time
      **/
     typedef struct S_SystemTime
     {
-        unsigned short  stYear;         //!< The year in the time
-        unsigned short  stMonth;        //!< The month in the time, which starts from 1 (January) until 12 (December)
-        unsigned short  stDayOfWeek;    //!< The day of week in the time, which starts from 0 (Sunday) until 6 (Saturday)
-        unsigned short  stDay;          //!< The day of the month in the time, which starts from 1
-        unsigned short  stHour;         //!< The hour in the time, which starts from 0
-        unsigned short  stMinute;       //!< The minute in the time, which starts from 0
-        unsigned short  stSecond;       //!< The second in the time, which starts from 0
-        unsigned short  stMillisecs;    //!< The millisecond in the time, which starts from 0
-        unsigned short  stMicrosecs;    //!< The microseconds in the time, which starts from 0
+        int     stYear{ 0 };        //!< The year in the time
+        int     stMonth{ 0 };       //!< The month in the time, which starts from 1 (January) until 12 (December)
+        int     stDayOfWeek{ 0 };   //!< The day of week in the time, which starts from 1 (Sunday) until 7 (Saturday)
+        int     stDayOfYear{ 0 };   //!< The day of the year, which starts from 1 to 365
+        int     stDay{ 0 };         //!< The day of the month in the time, which starts from 1
+        int     stHour{ 0 };        //!< The hour in the time, which starts from 0
+        int     stMinute{ 0 };      //!< The minute in the time, which starts from 0
+        int     stSecond{ 0 };      //!< The second in the time, which starts from 0
+        int     stMillisecs{ 0 };   //!< The millisecond in the time, which starts from 0
+        int     stMicrosecs{ 0 };   //!< The microseconds in the time, which starts from 0
     } sSystemTime;
 
     /**
-     * \brief   NEUtilities::sFileTime
-     *          Specifies file time type and format.
+     * \brief   Converts time in microseconds to time in seconds.
+     * \param   microsecs   The time in microseconds.
+     * \return  Returns time in seconds.
      **/
-    typedef struct S_FileTime
-    {
-        unsigned long   ftLowDateTime;  //!< Low part of date-time.
-        unsigned long   ftHighDateTime; //!< High part of date-time.
-    } sFileTime;
+    inline time_t convToSeconds(const TIME64 & microsecs);
+
+    /**
+     * \brief   Converts the broken time to seconds, throwing out the milliseconds and microseconds.
+     * \param   sysTime     The broken time to convert.
+     * \return  Returns time in seconds.
+     **/
+    AREG_API time_t convToSeconds(const sSystemTime& sysTime);
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
@@ -161,13 +353,6 @@ namespace   NEUtilities
     AREG_API void systemTimeNow( sSystemTime & OUT sysTime, bool localTime );
 
     /**
-     * \brief   Returns current time. On output 'out_fileTime' time contains the date-time data.
-     * \param   fileTime    On output the file-time parameter contains date-time of current time.
-     * \param   localTime   If true, in output the out_fileTime contains local time values.
-     **/
-    AREG_API void systemTimeNow( sFileTime & OUT fileTime, bool localTime );
-
-    /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
      *          passed microseconds since January 1, 1970 (UNIX epoch).
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
@@ -175,20 +360,20 @@ namespace   NEUtilities
     AREG_API TIME64 systemTimeNow( void );
 
     /**
-     * \brief   Returns system time data as a 64-bit integer value. The returned value is
-     *          passed microseconds since January 1, 1970 (UNIX epoch).
+     * \brief   Returns system time data as a 64-bit integer value in microseconds passed since Unix epoch,
+     *          which is January 1, 1970 (UNIX epoch).
      * \param   sysTime     The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
     AREG_API TIME64 convToTime( const sSystemTime & IN sysTime );
 
     /**
-     * \brief   Returns file time data as a 64-bit integer value. The returned value is
-     *          passed microseconds since January 1, 1970 (UNIX epoch).
-     * \param   fileTime    The system time structure with data to convert.
+     * \brief   Returns tm structure data as a 64-bit integer value in microseconds passed since Unix epoch,
+     *          which is January 1, 1970 (UNIX epoch).
+     * \param   time    The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 convToTime( const sFileTime & IN fileTime );
+    AREG_API TIME64 convToTime(const struct tm& IN time);
 
     /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into system time data structure.
@@ -196,27 +381,6 @@ namespace   NEUtilities
      * \param   sysTime     On output the system time parameter contains date-time of converted time.
      **/
     AREG_API void convToSystemTime( const TIME64 & IN timeValue, sSystemTime & OUT sysTime );
-
-    /**
-     * \brief   Converts given file-time data structure into system time data structure.
-     * \param   fileTime        The file-time data structure to convert.
-     * \param   out_sysTime     On output the system time parameter contains date-time of converted time.
-     **/
-    AREG_API void convToSystemTime( const sFileTime & fileTime, sSystemTime & out_sysTime );
-
-    /**
-     * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into file time data structure.
-     * \param   timeValue   64-bit value as microseconds passed since January 1 1970.
-     * \param   fileTime    On output the file-time parameter contains date-time of converted time.
-     **/
-    AREG_API void convToFileTime( const TIME64 & IN timeValue, sFileTime & OUT fileTime );
-
-    /**
-     * \brief   Converts given system-time data structure into file-time data structure.
-     * \param   sysTime     The system-time data structure to convert.
-     * \param   fileTime    On output the file-time parameter contains date-time of converted time.
-     **/
-    AREG_API void convToFileTime( const sSystemTime & IN sysTime, sFileTime & OUT fileTime );
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -228,17 +392,6 @@ namespace   NEUtilities
      *              - NEMath::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
     AREG_API NEMath::eCompare compareTimes( const sSystemTime & lhs, const sSystemTime & rhs );
-
-    /**
-     * \brief   Compare 2 file-time data structures and returns result indicating equality of data.
-     * \param   lhs     Left-Hand Operand to compare
-     * \param   rhs     Right-Hand Operand to compare
-     * \return  Returns one of possible results: 
-     *              - NEMath::Smaller if Left-Hand Operand 'lhs' is smaller than Right-Hand Operand 'rhs'
-     *              - NEMath::Equal if both operands are equal
-     *              - NEMath::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
-     **/
-    AREG_API NEMath::eCompare compareTimes( const sFileTime & lhs, const sFileTime & rhs );
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
@@ -253,6 +406,16 @@ namespace   NEUtilities
     AREG_API NEMath::eCompare compareTimes( const TIME64 & lhs, const TIME64 & rhs );
 
     /**
+     * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.
+     *
+     * \param   time  [in]  The time in microseconds to parse and extract.
+     * \param   secs  [out] On output, this contains the time in seconds.
+     * \param   milli [out] On output, this contains the remaining time in milliseconds.
+     * \param   micro [out] On output, this contains the remaining time in microseconds.
+     **/
+    AREG_API void convMicrosecs(const TIME64 & IN time, time_t & OUT secs, unsigned short & OUT milli, unsigned short & OUT micro);
+
+    /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
      * \param   sysTime     The system-time data structure to convert.
      * \param   time        On output the parameter contains date-time of converted system time without information of milliseconds.
@@ -260,11 +423,19 @@ namespace   NEUtilities
     AREG_API void convToTm( const sSystemTime & IN sysTime, struct tm & OUT time );
 
     /**
+     * \brief   Converts time in microseconds since Unix epoch (January 1, 1970) to standard 'tm' type.
+     *          In conversion, a milliseconds and microseconds part of data will be lost.
+     * \param   timeMicro   The time in microseconds since Unix epoch (January 1, 1970) to convert.
+     * \param   time        On output the parameter contains date-time of converted system time without information of milliseconds.
+     **/
+    AREG_API void convToTm(const TIME64& IN timeMicro, struct tm& OUT time);
+
+    /**
      * \brief   Converts standard 'tm' type to system-time data structure. In conversion, a milliseconds part of data will not exist.
      * \param   time        Contains date-time of converted system time without information of milliseconds.
      * \param   sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void convToSystemTime( const tm & IN time, sSystemTime & OUT sysTime );
+    AREG_API void convToSystemTime( const struct tm & IN time, sSystemTime & OUT sysTime );
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
@@ -288,11 +459,19 @@ namespace   NEUtilities
 
     /**
      * \brief   Converts the system UTC time to local time.
-     * \param   inUtcTime       The UTC time in microseconds passed since January 1 1970
-     * \param   outLocalTime    On return this structure contains the local time information.
+     * \param   utcTime     The UTC time in microseconds passed since January 1 1970
+     * \param   localTime   On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
     AREG_API bool convToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime );
+
+    /**
+     * \brief   Converts the system UTC time to local time in structure of tm.
+     * \param   utcTime     The UTC time in microseconds passed since January 1 1970
+     * \param   localTm     On return this structure contains the local time information.
+     * \return  Returns true if conversion succeeded.
+     **/
+    AREG_API bool convToLocalTm(const TIME64 & IN utcTime, struct tm & OUT localTm);
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate names
@@ -343,10 +522,32 @@ namespace   NEUtilities
      *                              The length of buffer should be big enough
      *                              to contain prefix and prefix.
      * \param   length              The length of buffer to set name.
-     * \param   specChar    Special character used in generated name.
      * \return  Returns the content of 'out_buffer'. If 'out_buffer' is invalid, returns nullptr.
      **/
     AREG_API const char * generateName( const char * prefix, char * OUT out_buffer, int length);
+
+    /**
+     * \brief   This function generates and returns name 
+     *          using time-stamp value in nanoseconds in the name.
+     *          If passed prefix is nullptr, it will use predefined
+     *          NEUtilities::DEFAULT_GENERATED_NAME constant as a
+     *          prefix for name. Before calling this function,
+     *          the output buffer should be allocated and the length
+     *          of buffer should be big enough to contain prefix
+     *          and the time-stamp. The time-stamp requires at least
+     *          34 characters. Generated output name is in 
+     *          format <prefix>:{nn:nn:nn:nn:nn:nn:nn:nn})
+     * \param   prefix              The prefix to add in generated name.
+     *                              If this value is nullptr it will use
+     *                              NEUtilities::DEFAULT_GENERATED_NAME as
+     *                              a prefix for name.
+     * \param   out_buffer [out]    The output buffer to fill generated name.
+     *                              The length of buffer should be big enough
+     *                              to contain prefix and prefix.
+     * \param   length              The length of buffer to set name.
+     * \param   specChar    Special character used in generated name.
+     * \return  Returns the content of 'out_buffer'. If 'out_buffer' is invalid, returns nullptr.
+     **/
     AREG_API const char * generateName( const char * prefix, char * OUT out_buffer, int length, const char * specChar);
 
 /************************************************************************/
@@ -397,7 +598,7 @@ namespace   NEUtilities
      *          std::cout << "Time passed " << stopWatch.passedMillisecond() << " ms" << std::endl;
      * 
      *          std::cout << "Started new timer at epoch time " << stopWatch.start() << std::endl;
-     *          std::cout << "Stoppedn timer at epoch time " << stopWatch.stop() << std::endl;
+     *          std::cout << "Stopped timer at epoch time " << stopWatch.stop() << std::endl;
      *          std::cout << "Time passed: " << stopWatch.passedNanoseconds() << " ns" << std::endl;
      **/
     class AREG_API Duration
@@ -435,12 +636,12 @@ namespace   NEUtilities
         inline TIME64 stop( void );
 
         /**
-         * \bief    Returns the starting time in nanoseconds since epoch.
+         * \brief   Returns the starting time in nanoseconds since epoch.
          **/
         inline TIME64 getStart( void ) const;
 
         /**
-         * \bief    Returns the stopping time in nanoseconds since epoch.
+         * \brief   Returns the stopping time in nanoseconds since epoch.
          **/
         inline TIME64 getStop( void ) const;
 
@@ -470,7 +671,7 @@ namespace   NEUtilities
         inline uint64_t passedMinutes( void ) const;
 
         /**
-         * \bried   Returns the duration in nanoseconds since watch timer started.
+         * \brief   Returns the duration in nanoseconds since watch timer started.
          *          If the stop was called before, it returns the duration between start and stop calls.
          *          If the stop was not called, it returns the duration since last time started. 
          **/
@@ -497,6 +698,15 @@ namespace   NEUtilities
 // NEUtilities::Duration inline methods
 //////////////////////////////////////////////////////////////////////////
 
+time_t NEUtilities::convToSeconds(const TIME64& microsecs)
+{
+    return static_cast<time_t>(microsecs / NEUtilities::SEC_TO_MICROSECS);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NEUtilities::Duration inline methods
+//////////////////////////////////////////////////////////////////////////
+
 inline NEUtilities::Duration::Duration( void )
     : mStart        ( std::chrono::steady_clock::now() )
     , mStop         ( mStart )
@@ -508,7 +718,7 @@ inline TIME64 NEUtilities::Duration::start( void )
     mStart      = std::chrono::steady_clock::now();
     mStop       = mStart;
 
-    return mStart.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
 inline TIME64 NEUtilities::Duration::stop( void )
@@ -518,47 +728,47 @@ inline TIME64 NEUtilities::Duration::stop( void )
         mStop = std::chrono::steady_clock::now( );
     }
 
-    return mStop.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
 inline TIME64 NEUtilities::Duration::getStart( void ) const
 {
-    return mStart.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
 inline TIME64 NEUtilities::Duration::getStop( void ) const
 {
-    return mStop.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::passedNanoseconds( void ) const
 {
-    return (mStop - mStart).count();
+    return static_cast<uint64_t>((mStop - mStart).count());
 }
 
 inline uint64_t NEUtilities::Duration::passedMicroseconds( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count();
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
 }
 
 inline uint64_t NEUtilities::Duration::passedMilliseconds( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( );
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::passedSeconds( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( );
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::passedMinutes( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( );
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::durationSinceStart( void ) const
 {
-    return (mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( ));
+    return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
 }
 
 #endif  // AREG_BASE_NEUTILITIES_HPP

@@ -8,6 +8,7 @@
 *.log
 *.stackdump
 *.d
+*.diff
 
 .git
 .metadata

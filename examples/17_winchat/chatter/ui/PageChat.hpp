@@ -7,12 +7,12 @@
 
 #include "chatter/res/stdafx.h"
 #include "chatter/res/resource.h"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
 #include "areg/base/TEHashMap.hpp"
-#include "generated/NEDirectConnection.hpp"
+#include "generate/examples/17_winchat/NEDirectConnection.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 class PageChat  : public CPropertyPage
@@ -34,7 +34,7 @@ public:
               , const NEDirectConnection::ListParticipants & listParties
               , const NEDirectConnection::sParticipant & ownerConnection
               , bool isInitiator );
-	virtual ~PageChat();
+	virtual ~PageChat() = default;
 
 // Dialog Data
 	enum { IDD = IDD_PAGE_CHAT };
@@ -43,13 +43,13 @@ public:
     void OnDefaultClicked( void );
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
-    virtual BOOL OnInitDialog( );
-    virtual BOOL OnKillActive( );
-    virtual BOOL OnSetActive( );
+    virtual BOOL OnInitDialog( ) override;
+    virtual BOOL OnKillActive( ) override;
+    virtual BOOL OnSetActive( ) override;
 
 public:
     afx_msg void OnClickedCheckChatMessages( );
@@ -94,7 +94,7 @@ private:
     INT                 mLastItem;
     CString             mTitle;
     BOOL                mEditEnabled;
-    // If enabled, makes autotype
+    // If enabled, makes auto-type
     BOOL                mDoAutotype;
     // The timer in milliseconds to generate letter.
     INT                mTimerValue;
@@ -102,7 +102,10 @@ private:
     CEdit               mCtrlTimerValue;
     // The timer spin
     CSpinButtonCtrl     mCtrlTimerSpin;
+    // The timer ID
     UINT_PTR            mTimerId;
+    // The name of dynamically created model.
+    String              mModelName;
 
 private:
     PageChat( void );

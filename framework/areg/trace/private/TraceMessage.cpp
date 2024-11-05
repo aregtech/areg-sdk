@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceMessage.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Logger object, make logging by priority.
  ************************************************************************/
@@ -22,6 +22,7 @@
 
 #include <stdarg.h>
 
+#if AREG_LOGS
 
 TraceMessage::TraceMessage( const TraceScope & traceScope )
     : mScopeName( traceScope.getScopeName() )
@@ -30,18 +31,17 @@ TraceMessage::TraceMessage( const TraceScope & traceScope )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg(NETrace::LogScopeEnter, mScopeId, NETrace::PrioScope, mScopeName);
-        TraceManager::sendLogMessage(msg);
+        LogMessage msg{ NETrace::eLogMessageType::LogMessageScopeEnter, mScopeId, NETrace::PrioScope, mScopeName };
+        TraceManager::logMessage(msg);
     }
 }
-
 
 TraceMessage::~TraceMessage( void )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg(NETrace::LogScopeExit, mScopeId, NETrace::PrioScope, mScopeName);
-        TraceManager::sendLogMessage(msg);
+        LogMessage msg{ NETrace::eLogMessageType::LogMessageScopeExit, mScopeId, NETrace::PrioScope, mScopeName };
+        TraceManager::logMessage(msg);
     }
 }
 
@@ -118,7 +118,19 @@ void TraceMessage::logTrace( NETrace::eLogPriority logPrio, const char * format,
 
 inline void TraceMessage::_sendLog( unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * format, va_list args )
 {
-    LogMessage logData(NETrace::LogMessage, scopeId, msgPrio, nullptr, 0);
-    logData.lmTrace.traceMessageLen = String::formatStringList( logData.lmTrace.traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, format, args );
-    TraceManager::sendLogMessage( logData );
+    LogMessage logData(NETrace::eLogMessageType::LogMessageText, scopeId, msgPrio, nullptr, 0);
+    logData.logMessageLen = static_cast<uint32_t>(String::formatStringList( logData.logMessage, NETrace::LOG_MESSAGE_IZE, format, args ));
+    TraceManager::logMessage( logData );
 }
+
+#else   // AREG_LOGS
+
+TraceMessage::TraceMessage(const TraceScope& /*traceScope*/)
+{
+}
+
+TraceMessage::~TraceMessage(void)
+{
+}
+
+#endif // AREG_LOGS

@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        locservice/src/ServiceClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -22,7 +22,7 @@ Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & en
     return DEBUG_NEW ServiceClient(entry, owner);
 }
 
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -36,17 +36,12 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::serviceConnected(isConnected, proxy);
+    bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
 
-    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
-                , proxy.getProxyAddress().getRoleName().getString()
-                , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected" : "disconnected");
-
-    if (isConnected)
+    if (isConnected())
     {
         if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
         {
@@ -74,11 +69,21 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     return result;
 }
 
+#if AREG_LOGS
+
 void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
 {
     TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
     TRACE_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
 }
+
+#else  // AREG_LOGS
+
+void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState /*ServiceState*/, NEService::eDataStateType /*state*/ )
+{
+}
+
+#endif  // AREG_LOGS
 
 void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
 {

@@ -88,7 +88,7 @@ It as well broadcasts own text message to all connected clients.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="24" Name="generated/NECommon.hpp">
+        <Location ID="24" Name="common/NECommon.hpp">
             <Description>The shared namespace to include</Description>
         </Location>
     </IncludeList>

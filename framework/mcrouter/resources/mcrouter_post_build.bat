@@ -1,72 +1,19 @@
-@echo off
+@echo on
 SETLOCAL
 
-:: initialize passed variables. add if needed
+:: full path of resource folder
+set RESOURCE_DIR=%1
+:: full path of target folder -- output folder
+set TARGET_DIR=%2
 
-:: full path of target folder -- compiled executable folder
-set TARGET_DIR=%1
-
-:: configuration name -- 'Debug' or 'Release'
-set CONFIG_NAME=%2
-
-:: platform name -- 'Win32' or 'x64'
-set PLATFORM_NAME=%3
-
-:: full path of project directory
-set PROJECT_DIR=%4
-
-:: the name of project
-set PROJECT_NAME=%5
-
-:: full path of project resource folder
-set PROJECT_RESOUR_DIR=%6
-
-:: full path of user resource folder
-set USER_RESOUR_DIR=%7
-
-:: project resource directory, common and application
-set RESOUR_PRJ_DIR=%PROJECT_DIR%resources\%PROJECT_NAME%
-set RESOUR_CMN_DIR=%PROJECT_DIR%resources\common
-
+:: set the 'system32' in the PATH to call 'copy' command
 set OLDPATH=%PATH%
 set PATH=%SystemRoot%\System32;%PATH%
 
-::copy dependent DLLs
+:: create 'config' directory if does not exist and copy file
+IF NOT EXIST "%TARGET_DIR%config" mkdir      "%TARGET_DIR%config"
+copy /D /y "%RESOURCE_DIR%mcrouter.service.install.bat"   "%TARGET_DIR%config\"
+copy /D /y "%RESOURCE_DIR%mcrouter.service.uninstall.bat" "%TARGET_DIR%config\"
 
-:: copy additional dependencies
-
-copy /D /y %RESOUR_PRJ_DIR%\broker_install.bat    %TARGET_DIR%\broker_install.bat
-copy /D /y %RESOUR_PRJ_DIR%\broker_uninstall.bat  %TARGET_DIR%\broker_uninstall.bat
-
-
-:: check whether should copy debug or relase versions of libs
-IF /i "%CONFIG_NAME%" EQU "Debug" GOTO DEBUG_LIBS
-IF /i "%CONFIG_NAME%" NEQ "Debug" GOTO RELEASE_LIBS   
-
-:: copy debug versions of DLLs
-:DEBUG_LIBS
-
-:: finished copying, go to end
-GOTO END_SCRIPT
-
-:: copy release versions of DLLs
-:RELEASE_LIBS
-
-:: finished copying, go to end
-GOTO END_SCRIPT
-
-:: finished copying, go to end
-GOTO END_SCRIPT
-
-:: end, reset environment variables
-:END_SCRIPT
+:: restore PATH
 set PATH=%OLDPATH%
-set RESOUR_PRJ_DIR=
-set RESOUR_CMN_DIR=
-set TARGET_DIR=
-set CONFIG_NAME=
-set PLATFORM_NAME=
-set PROJECT_DIR=
-set PROJECT_NAME=
-set PROJECT_RESOUR_DIR=
-set USER_RESOUR_DIR=

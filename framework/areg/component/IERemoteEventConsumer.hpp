@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/IERemoteEventConsumer.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Remote Event consumer to dispatch remote events.
  *
@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 
 /************************************************************************
@@ -36,7 +37,7 @@ class RemoteResponseEvent;
  * \brief   The interface of remote event consumer. Derived by Stub object
  *          with type of remote to trigger event processing.
  **/
-class AREG_API IERemoteEventConsumer   : public    ThreadEventConsumerBase
+class AREG_API IERemoteEventConsumer   : public    IEEventConsumer
 {
 protected:
     /**
@@ -71,7 +72,7 @@ public:
      * \brief   Triggered when the Stub receives remote response request event to process.
      *          For example, send by Proxy and processed by Stub when need to start or stop
      *          to subscribe on information or response sent by Stub.
-     * \param   requestNotifyEvent  The remote response request event to be processed.
+     * \param   responseEvent  The remote response event on the request to processed.
      **/
     virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) = 0;
 

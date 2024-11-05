@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerEventData.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer Event Data class.
  *
@@ -73,7 +73,7 @@ bool TimerEvent::sendEvent( Timer & timer, id_type dispatchThreadId )
 
 bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
 {
-    bool result = false;
+    bool result{ false };
     if ( dispatchThread.isRunning() )
     {
         TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
@@ -82,14 +82,6 @@ bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
             static_cast<Event *>(timerEvent)->deliverEvent();
             result = true;
         }
-        else
-        {
-            OUTPUT_ERR("Could not create Timer Event. Ignoring sending event");
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Invalid Dispatcher Thread. Ignoring sending event");
     }
 
     return result;

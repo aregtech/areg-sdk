@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        locsvcmesh/src/ServiceHelloWorld.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains implementation of a service.
@@ -12,7 +12,7 @@
   ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/src/HelloWorldStub.hpp"
+#include "generate/examples/11_locmesh/HelloWorldStub.hpp"
 
 //! \brief  An implementation of a service to include in the components.
 //!         This service receives requests, send response and broadcast.

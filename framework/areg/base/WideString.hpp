@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/WideString.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, WideString Class to handle basic
  *              null-terminated string operations.
@@ -58,10 +58,16 @@ class AREG_API WideString : public TEString<wchar_t>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   WideString::EmptyString
-     *          The empty string.
+     * \brief   WideString::getEmptyString()
+     *          The empty wide string.
      **/
-    static constexpr std::wstring_view   EmptyString      { L"" };   //!< Empty WideString
+    static const WideString & getEmptyString( void );
+
+    /**
+     * \brief   WideString::EmptyString
+     *          The empty wide string.
+     **/
+    static constexpr wchar_t EmptyString[ ]{ L"" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -349,46 +355,46 @@ public:
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( int32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( int32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given unsigned 32-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( uint32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( uint32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given signed 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( int64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( int64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given unsigned 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( uint64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( uint64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \return  Returns converted string.
      **/
-    static WideString toString( float number );
+    static WideString makeString( float number );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \return  Returns converted string.
      **/
-    static WideString toString( double number );
+    static WideString makeString( double number );
     /**
      * \brief   Converts given boolean value to string.
      * \param   value   The boolean value to convert to string
      * \return  Returns converted string.
      **/
-    static WideString toString( bool value );
+    static WideString makeString( bool value );
 
     /**
      * \brief   Formats the string. The classic rules similar of 'spintf' are applied.
@@ -425,7 +431,7 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const WideString& format(const wchar_t* format, ...);
+    WideString& format(const wchar_t* format, ...);
 
     /**
      * \brief   Formats the string. The classic rules similar of 'vsprintf' are applied.
@@ -435,41 +441,121 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const WideString& formatList(const wchar_t* format, va_list argptr);
+    WideString& formatList(const wchar_t* format, va_list argptr);
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
      *          If string has not enough space to copy characters, it will reallocate the space.
-     *
      * \param   source  The source of string to copy characters.
-     * \param   pos     The position in source string to start to copy.
      * \param   count   The number of characters to copy. By default, it copies all characters.
-     * \param   ch      A character to assign.
      * \return  Returns modified string.
      **/
     WideString& assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   ch      A character to assign.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const wchar_t ch);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
      *          and by amount of characters to append.
-     *
+     * \param   source  The source of string to append characters.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    WideString& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     * \param   source  The source of string to append characters.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
      * \param   source  The source of string to append characters.
      * \param   pos     If specified the valid zero-based position in the given string to append.
      *                  Otherwise, it append starting from the beginning.
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     * \param   source  The source of string to append characters.
+     * \param   pos     If specified the valid zero-based position in the given string to append.
+     *                  Otherwise, it append starting from the beginning.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     * \param   source  The source of string to append characters.
+     * \param   pos     If specified the valid zero-based position in the given string to append.
+     *                  Otherwise, it append starting from the beginning.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
      * \param   ch      A character to append.
      * \return  Returns modified string.
      **/
-    WideString& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline WideString& append(const wchar_t ch);
 
     /**
@@ -598,7 +684,6 @@ protected:
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 
-
 //////////////////////////////////////////////////////////////////////////
 // Hasher of WideString class
 //////////////////////////////////////////////////////////////////////////
@@ -613,7 +698,7 @@ namespace std
         //! An operator to convert String object to unsigned int.
         inline unsigned int operator()(const WideString& key) const
         {
-            return static_cast<unsigned int>(std::hash<std::wstring>{}(key.getObject()));
+            return static_cast<unsigned int>(std::hash<std::wstring>{}(key.getData()));
         }
     };
 }
@@ -959,48 +1044,48 @@ inline double WideString::toDouble( void ) const
 
 inline bool WideString::toBool( void ) const
 {
-    return (NEString::compareIgnoreCase<wchar_t, char>( getString(), NECommon::BOOLEAN_TRUE.data() ) == NEMath::eCompare::Equal);
+    return (isEmpty() || NEString::compareIgnoreCase<wchar_t, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::eCompare::Equal ? false : true);
 }
 
 inline WideString & WideString::fromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    *this = WideString::toString(value, radix);
+    *this = WideString::makeString(value, radix);
     return (*this);
 }
 
 inline WideString & WideString::fromUInt32( uint32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    (*this) = WideString::toString( value, radix );
+    (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
 inline WideString & WideString::fromInt64( int64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    (*this) = WideString::toString( value, radix );
+    (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
 inline WideString & WideString::fromUInt64( uint64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    (*this) = WideString::toString( value, radix );
+    (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
 inline WideString & WideString::fromFloat( float value )
 {
-    (*this) = WideString::toString( value );
+    (*this) = WideString::makeString( value );
     return (*this);
 }
 
 inline WideString & WideString::fromDouble( double value )
 {
-    (*this) = WideString::toString( value );
+    (*this) = WideString::makeString( value );
     return (*this);
 }
 
 inline WideString & WideString::fromBool( bool value )
 {
-    (*this) = WideString::toString( value );
+    (*this) = WideString::makeString( value );
     return (*this);
 }
 

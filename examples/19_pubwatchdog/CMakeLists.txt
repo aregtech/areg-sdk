@@ -1,24 +1,14 @@
-# SRC lists
-unset(19_generated_SRC)
-unset(19_SRC1)
-unset(19_SRC2)
 
-# Project names
-set(gen_projName 19_generated)
-set(projName1 19_pubclient)
-set(projName2 19_pubservice)
+# add service interface
+addServiceInterface(19_generated res HelloWatchdog)
 
-set(19_pubwatchdog_BASE "${AREG_EXAMPLES}/19_pubwatchdog")
+# add projects
+macro_declare_executable(19_pubclient   19_generated
+    pubclient/src/main.cpp
+    pubclient/src/ServiceClient.cpp
+)
 
-include(${19_pubwatchdog_BASE}/generated/CMakeLists.txt)
-include(${19_pubwatchdog_BASE}/pubclient/CMakeLists.txt)
-include(${19_pubwatchdog_BASE}/pubservice/CMakeLists.txt)
-
-# Setting up appropriate flags
-addStaticLib(${gen_projName} "${19_generated_SRC}")
-addExecutableEx(${projName1} "${19_SRC1}" "${gen_projName}")
-addExecutableEx(${projName2} "${19_SRC2}" "${gen_projName}")
-
-target_include_directories(${gen_projName} BEFORE PRIVATE ${19_pubwatchdog_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${19_pubwatchdog_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${19_pubwatchdog_BASE})
+macro_declare_executable(19_pubservice   19_generated
+    pubservice/src/main.cpp
+    pubservice/src/ServicingComponent.cpp
+)

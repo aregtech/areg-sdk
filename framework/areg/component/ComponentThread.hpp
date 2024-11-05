@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentThread.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Component Thread.
  *              All components are instantiated and run within
@@ -133,9 +133,21 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Stops Dispatcher and exists Dispatcher Thread without terminating
+     * \brief	Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT and it expires,
+     *          the function terminates the thread. The shutdown thread can be re-created again.
+     *          The calling thread (current thread) may be blocked until target thread completes the job.
+     * \param	waitForStopMs	Waiting time out in milliseconds until target thread is finis run.
+     *                          -   Set DO_NOT_WAIT to trigger exit and immediately return
+     *                              without waiting for thread to complete the job.
+     *                          -   Set WAIT_INFINITE to trigger exit and wait until thread completes the job.
+     *                          -   Set any other value in milliseconds to specify waiting time
+     *                              until thread completes the job or timeout expires.
+     * \return	Returns the thread completion status. The following statuses are defined:
+     *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
+     *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
+     *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual void shutdownThread( void ) override;
+    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -287,15 +299,15 @@ protected:
      **/
     Component *     mCurrentComponent;
 
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
      * \brief   The watchdog object to track the event processing.
      **/
     Watchdog        mWatchdog;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER

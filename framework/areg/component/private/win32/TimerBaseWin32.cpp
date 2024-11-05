@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/win32/TimerBaseWin32.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer base class implementation.
  *              Windows OS specific implementation.
@@ -19,11 +19,10 @@
 
 #ifdef  _WINDOWS
 
-#include <windows.h>
+#include <Windows.h>
 
 TIMERHANDLE TimerBase::_osCreateWaitableTimer()
 {
-    TIMERHANDLE result{ nullptr };
     TCHAR * name{ nullptr };
     TCHAR convertName[MAX_PATH];
 
@@ -33,16 +32,7 @@ TIMERHANDLE TimerBase::_osCreateWaitableTimer()
         name = convertName;
     }
 
-    result = static_cast<TIMERHANDLE>(::CreateWaitableTimer( nullptr, FALSE, name ));
-
-#ifdef _DEBUG
-    if ( result == nullptr )
-    {
-        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0x%p ]", mName.getString( ), GetLastError( ) );
-    }
-#endif // _DEBUG
-
-    return result;
+    return static_cast<TIMERHANDLE>(::CreateWaitableTimer( nullptr, FALSE, name ));
 }
 
 void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )

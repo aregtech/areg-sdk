@@ -6,7 +6,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloServiceStub.hpp"
+#include "generate/examples/00_helloservice/HelloServiceStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceComponent declaration

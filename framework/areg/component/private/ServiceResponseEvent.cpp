@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceResponseEvent.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service Response Event implementation.
  *
@@ -22,7 +22,7 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                           , NEService::eResultType result
                                           , unsigned int responseId
                                           , Event::eEventType eventType
-                                          , unsigned int seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
+                                          , const SequenceNumber & seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ProxyEvent    (target, eventType)
     , mResponseId   (responseId)
     , mResult       (result)

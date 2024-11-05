@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcher.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher class
  *
@@ -65,19 +65,12 @@ void EventDispatcher::onThreadRuns( void )
 
 int EventDispatcher::onThreadExit( void )
 {
-    stopDispatcher( );
+    exitDispatcher( );
     mDispatcherThread   = nullptr;
     return static_cast<int>(IEThreadConsumer::eExitCodes::ExitNormal);
 }
 
 bool EventDispatcher::postEvent( Event& eventElem )
 {
-    bool result = mDispatcherThread != nullptr ? queueEvent(eventElem) : false;
-    if (result == false)
-    {
-        OUTPUT_ERR("Failed to queue event of type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
-        eventElem.destroy();
-    }
-
-    return result;
+    return queueEvent(eventElem);
 }

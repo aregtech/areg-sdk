@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project creates an instance of Public service. It also
 //               defines and processes custom events.
 //
@@ -17,24 +17,18 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
+#include "aregextend/console/Console.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "aregextend.lib")
     #pragma comment(lib, "14_generated.lib")
 #endif // WINDOWS
-
-#ifdef _WINDOWS
-    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
-    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
-#endif  // _WINDOWS
-
 
 constexpr char const _modelName[]  { "TheModel" };   // The name of model
 constexpr char const _threadName[] { "TestSimpleTrafficThread" };	// The name of component thread
@@ -63,7 +57,7 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(false, true, true, true, true, nullptr, nullptr );
+    Application::initApplication(true, true, true, true, true, nullptr);
 
 
     // load model to initialize components

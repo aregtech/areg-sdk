@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of synchronization objects,
 //               including waiting for multiple synchronization objects such 
 //               as mutex and synchronization events, that differ by types 
@@ -20,6 +20,7 @@
 
 #include "areg/base/GEGlobal.h"
 
+#include "areg/base/DateTime.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
 #include "areg/base/Thread.hpp"
 
@@ -27,6 +28,8 @@
 #include "areg/component/Event.hpp"
 
 #include "areg/trace/GETrace.h"
+
+#include <chrono>
 
 #ifdef  _WIN32
     // link with areg library, valid only for MSVC
@@ -40,10 +43,10 @@ class GoodbyeThread;
 // Synchronization objects
 //////////////////////////////////////////////////////////////////////////
 
-SynchEvent  gEventExit(true, false);    //!< Non-signaled, manual reset event
-SynchEvent  gEventRun(true, true);      //!< Non-signaled, auto-reset event
-Mutex       gMutexWait(false);          //!< Not locked mutex
-Mutex       gMutexDummy(false);         //!< Not locked mutex
+static SynchEvent  gEventExit(true, false);    //!< Non-signaled, manual reset event
+static SynchEvent  gEventRun(true, true);      //!< Non-signaled, auto-reset event
+static Mutex       gMutexWait(false);          //!< Not locked mutex
+static Mutex       gMutexDummy(false);         //!< Not locked mutex
 
 //!< HelloThread class declaration, simple thread.
 class HelloThread   : public    Thread
@@ -154,7 +157,7 @@ void HelloThread::onThreadRuns( void )
         {
             Lock lock( gMutexDummy );
 
-            std::cout << "Wait multilock timeout expired, continue the job." << std::endl;
+            std::cout << "Wait multi-lock timeout expired, continue the job." << std::endl;
             TRACE_DBG("Thread [ %s ] waiting timeout expired, continuing the job", getName( ).getString( ) );
             Thread::sleep(waitTimeout);
             TRACE_DBG("Thread [ %s ] continues to wait", getName( ).getString( ) );
@@ -205,7 +208,7 @@ void GoodbyeThread::onThreadRuns( void )
 
     // This multi-lock uses 1 synchronization event and 1 mutex, waits for any is signaled.
     int waitResult = multiLock.lock( NECommon::WAIT_INFINITE, false, false );
-    std::cout << "Multilock is signaled the elem " << waitResult << " is unlocked" << std::endl;
+    std::cout << "Multi-lock is signaled the elem " << waitResult << " is unlocked" << std::endl;
     TRACE_DBG( "Lock finished with result [ %d ]", waitResult );
 
     multiLock.unlock( waitResult );
@@ -216,10 +219,10 @@ void GoodbyeThread::onThreadRuns( void )
 }
 
 DEF_TRACE_SCOPE(main_main);
-//! \brief   A Demo of synchronization objects, use of various synch objects in multi-lock.
+//! \brief   A Demo of synchronization objects, use of various synchronization objects in multi-lock.
 int main()
 {
-    std::cout << "A Demo of synchronization objects, use of various synch objects in multi-lock ..." << std::endl;
+    std::cout << "A Demo of synchronization objects, use of various synchronization objects in multi-lock ..." << std::endl;
 
     // Force to start logging. See outputs log files in appropriate "logs" sub-folder.
     TRACER_CONFIGURE_AND_START( nullptr );
@@ -263,13 +266,31 @@ int main()
 
         MultiLock multiLock(synchObjects, MACRO_ARRAYLEN(synchObjects), true);
 
-        std::cout << "All synchonization objects are unlocked. Completing all threads." << std::endl;
+        std::cout << "All synchronization objects are unlocked. Completing all threads." << std::endl;
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("The threads completed jobs, wait threads to shutdown to exit application");
-        helloThread.destroyThread(NECommon::WAIT_INFINITE);
-        goodbyeThread.destroyThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
+        goodbyeThread.shutdownThread(NECommon::WAIT_INFINITE);
 
+        constexpr uint32_t eventTimeout{ 1000 };
+        TRACE_INFO("Testing event synchronization object with event waiting timeout  [ %u ] ms", eventTimeout);
+        std::cout << "Testing event synchronization object with event waiting timeout " << eventTimeout << " ms" << std::endl;
+
+        DateTime start{ DateTime::getNow() };
+        std::cout << "Start at: " << start.formatTime().getData() << std::endl;
+
+        SynchEvent localEvent(false, false);
+        localEvent.resetEvent();
+        localEvent.lock(eventTimeout); // lock with timeout
+
+        DateTime end{ DateTime::getNow() };
+        std::chrono::nanoseconds ns{ end.getTime() - start.getTime() };
+        std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns)};
+        std::cout << "End at: " << end.formatTime().getData() << std::endl;
+        TRACE_INFO("The lock timeout it [ %llu ]", ms.count());
+        std::cout << "The event was locked for " << ms.count() << " ms" << std::endl;
+        ASSERT(eventTimeout <= ms.count());
     } while (false);
 
     // Stop logging.

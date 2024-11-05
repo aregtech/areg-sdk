@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/File.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, File object
  *              common parts
@@ -30,11 +30,6 @@
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
-
-const char File::getPathSeparator( void )
-{
-    return static_cast<char>(std::filesystem::path::preferred_separator);
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -75,10 +70,6 @@ bool File::open(const String& fileName, unsigned int mode)
 
         result = open();
     }
-    else
-    {
-        OUTPUT_WARN("File is already opened. Close file.");
-    }
 
     return result;
 }
@@ -100,7 +91,7 @@ unsigned int File::getSizeReadable( void ) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
 
         lenRead = _osGetPositionFile();
         lenUsed = !err ? static_cast<unsigned int>(sz) : 0;
@@ -117,7 +108,7 @@ unsigned int File::getSizeWritable( void ) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
 
         lenWritten  = _osGetPositionFile();
         lenAvailable = !err ? static_cast<unsigned int>(sz) : 0;
@@ -137,12 +128,12 @@ bool File::remove( void )
 
         close();
         std::error_code err;
-        result = std::filesystem::remove(mFileName.getObject(), err);
+        result = std::filesystem::remove(mFileName.getData(), err);
     }
 
     mFileHandle = File::_osGetInvalidHandle();
     mFileMode   = FileBase::FO_MODE_INVALID;
-    mFileName   = String::EmptyString;
+    mFileName   = String::getEmptyString();
 
     return result;
 }
@@ -188,25 +179,47 @@ inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 
 String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
 {
-    String result;
-
-    result.reserve(File::MAXIMUM_PATH);
-    unsigned int space{ 0 };
-    if (result.getCapacity() != 0)
+    char buffer[File::MAXIMUM_PATH];
+    String pref(prefix == nullptr ? Process::getInstance().getAppName().getString() : prefix);
+    String name;
+    if (unique)
     {
-        char* buffer = result.getBuffer();
-        unsigned int ticks = unique ? 0 : static_cast<unsigned int>(DateTime::getSystemTickCount());
-        prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
-        String dir = inTempFolder ? File::getTempDir() : File::getCurrentDir();
-        if (dir.isEmpty() == false)
-        {
-            space = _osCreateTempFile(buffer, dir.getString(), prefix, ticks);
-        }
+        unsigned int ticks = unique ? static_cast<unsigned int>(DateTime::getSystemTickCount()) : 0u;
+        DateTime timestamp{ DateTime::getNow() };
+        int len = String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
+                                      , pref.getString()
+                                      , static_cast<uint32_t>(Process::getInstance().getId())
+                                      , ticks
+                                      , timestamp.getTime());
+        name.assign(buffer, len > 0 ? len : 0);
+    }
+    else
+    {
+        name = pref;
     }
 
-    result.resize(space);
+    if (inTempFolder)
+    {
+        String dir = File::getTempDir();
+        uint32_t len = _osCreateTempFileName(buffer, dir.getString(), name.getString(), unique);
+        if (len != 0)
+        {
+            name.assign(buffer, static_cast<NEString::CharCount>(len));
+        }
+        else
+        {
+            std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
+            name = filePath.string();
+        }
+    }
+    else
+    {
+        String dir = File::getCurrentDir();
+        std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
+        name = filePath.string();
+    }
 
-    return result;
+    return name;
 }
 
 String File::genTempFileName()
@@ -225,9 +238,9 @@ String File::getFileNameWithExtension( const char* filePath )
     if ( NEString::isEmpty<char>(filePath) == false )
     {
         NEString::CharPos pos = NEString::getStringLength<char>(filePath) - 1;
-        if (filePath[pos] != File::getPathSeparator())
+        if (filePath[pos] != File::PATH_SEPARATOR )
         {
-            pos = NEString::findLast<char>(File::getPathSeparator(), filePath, pos - 1, nullptr);
+            pos = NEString::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
             if (NEString::isPositionValid(pos))
             {
                 result = filePath + pos + 1;
@@ -235,7 +248,7 @@ String File::getFileNameWithExtension( const char* filePath )
         }
     }
 
-    return (result != nullptr ? String(result) : String::EmptyString);
+    return (result != nullptr ? String(result) : String::getEmptyString());
 }
 
 String File::getFileName( const char* filePath )
@@ -265,14 +278,29 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::getPathSeparator(), filePath, NEString::END_POS, nullptr);
-    return (NEString::isPositionValid(pos) ? String(filePath, pos) : String(String::EmptyString));
+    constexpr char separator{ File::PATH_SEPARATOR };
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, true, nullptr);
+    if ( NEString::isPositionValid( pos ) )
+    {
+        return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
+    }
+    else
+    {
+        return String::EmptyString;
+    }
 }
 
 bool File::createDirCascaded( const char* dirPath )
 {
-    std::error_code err;
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directories(dirPath, err) : false);
+    bool result{ false };
+    if ( NEString::isEmpty<char>( dirPath ) == false )
+    {
+        std::error_code err;
+        std::filesystem::create_directories( dirPath, err );
+        result = static_cast<bool>(err) == false;
+    }
+
+    return result;
 }
 
 String File::normalizePath(const char* fileName)
@@ -283,12 +311,13 @@ String File::normalizePath(const char* fileName)
         result = fileName;
         FileBase::normalizeName(result);
         std::error_code err;
-        std::filesystem::path fp = std::filesystem::absolute(result.getObject(), err);
+        std::filesystem::path fp = std::filesystem::absolute(result.getData(), err);
         if (!err)
         {
             result = fp.string();
         }
     }
+
     return result;
 }
 
@@ -308,13 +337,13 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
         else
         {
             length = NEString::getStringLength<char>(filePath); 
-            if ( filePath[length - 1] == File::getPathSeparator() )
+            if ( filePath[length - 1] == File::PATH_SEPARATOR )
                 -- length;
         }
 
         if (length != 0)
         {
-            int pos = NEString::findLast(File::getPathSeparator(), filePath, NEString::END_POS, nextPos);
+            int pos = NEString::findLast( File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;
@@ -333,7 +362,7 @@ String File::getParentDir(const char * filePath)
     const char * end = nullptr;
     if (File::findParent(filePath, &end))
     {
-        result.assign(filePath, MACRO_ELEM_COUNT(filePath, end));
+        result.assign(filePath, static_cast<NEString::CharCount>(MACRO_ELEM_COUNT(filePath, end)) );
     }
 
     return result;
@@ -349,7 +378,7 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
     {
         if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
         {
-            String node(start, MACRO_ELEM_COUNT(start, end));
+            String node(start, static_cast<uint32_t>(MACRO_ELEM_COUNT(start, end)));
             if (node.isEmpty() == false)
                 in_out_List.pushLast( node );
 
@@ -363,12 +392,12 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
 
     if (start != end)
     {
-        String node(start, MACRO_ELEM_COUNT(start, end));
+        String node(start, static_cast<uint32_t>(MACRO_ELEM_COUNT(start, end)));
         if (node.isEmpty() == false)
             in_out_List.pushLast( node );
     }
 
-    return (in_out_List.getSize() - oldCount);
+    return static_cast<int>(in_out_List.getSize() - static_cast<uint32_t>(oldCount));
 }
 
 unsigned int File::read(IEByteBuffer & buffer) const
@@ -376,14 +405,14 @@ unsigned int File::read(IEByteBuffer & buffer) const
     return FileBase::read(buffer);
 }
 
-unsigned int File::read(String & asciiString) const
+unsigned int File::read(String & ascii) const
 {
-    return FileBase::read(asciiString);
+    return FileBase::read(ascii);
 }
 
-unsigned int File::read(WideString & wideString) const
+unsigned int File::read(WideString & wide) const
 {
-    return FileBase::read(wideString);
+    return FileBase::read(wide);
 }
 
 unsigned int File::read(unsigned char* buffer, unsigned int size) const
@@ -395,14 +424,6 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
         {
             result = _osReadFile(buffer, size);
         }
-        else
-        {
-            OUTPUT_WARN("The length is zero, do not copy data.");
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or reading mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
     }
 
     return result;
@@ -413,14 +434,14 @@ unsigned int File::write(const IEByteBuffer & buffer)
     return FileBase::write(buffer);
 }
 
-unsigned int File::write(const String & asciiString)
+unsigned int File::write(const String & ascii)
 {
-    return FileBase::write(asciiString);
+    return FileBase::write(ascii);
 }
 
-unsigned int File::write(const WideString & wideString)
+unsigned int File::write(const WideString & wide)
 {
-    return FileBase::write(wideString);
+    return FileBase::write(wide);
 }
 
 unsigned int File::write(const unsigned char* buffer, unsigned int size)
@@ -432,14 +453,6 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
         {
             result = _osWriteFile(buffer, size);
         }
-        else
-        {
-            OUTPUT_WARN("The size of data is zero, ignoring to write data.");
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or writing mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
     }
 
     return result;
@@ -461,7 +474,7 @@ unsigned int File::getLength(void) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
         result = !err ? static_cast<unsigned int>(sz) : 0;
     }
     return result;
@@ -469,7 +482,6 @@ unsigned int File::getLength(void) const
 
 unsigned int File::reserve(unsigned int newSize)
 {
-    OUTPUT_DBG("Going to reserve [ %u ] of data for file [ %s ].", newSize, mFileName.isEmpty() == false ? static_cast<const char*>(mFileName) : "null");
     unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
     if (isOpened() && canWrite())
     {
@@ -477,7 +489,7 @@ unsigned int File::reserve(unsigned int newSize)
         close();
 
         std::error_code err;
-        std::filesystem::resize_file(mFileName.getObject(), newSize, err);
+        std::filesystem::resize_file(mFileName.getData(), newSize, err);
         if (open() && !err)
         {
             if (newSize == 0)
@@ -623,11 +635,8 @@ String File::getFileFullPath(const char* filePath)
 
 String File::getSpecialDir(File::eSpecialFolder specialFolder)
 {
-    String result;
-    
-    result.reserve(File::MAXIMUM_PATH);
-    unsigned int space = result.getCapacity() != 0 ? _osGetSpecialDir(result.getBuffer(), File::MAXIMUM_PATH, specialFolder) : 0;
-    result.resize(space);
+    char buffer[File::MAXIMUM_PATH];
+    unsigned int space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);
 
-    return result;
+    return String(buffer, space);
 }

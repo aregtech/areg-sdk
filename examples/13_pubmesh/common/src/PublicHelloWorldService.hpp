@@ -1,8 +1,9 @@
-#pragma once
+#ifndef PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP
+#define PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP
 
 /************************************************************************
  * \file        common/src/PublicHelloWorldService.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of remote servicing 
@@ -13,7 +14,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/src/PublicHelloWorldStub.hpp"
+#include "generate/examples/13_pubmesh/PublicHelloWorldStub.hpp"
 
 //! \brief  Implementation of a public service to receive requests from remote clients.
 class PublicHelloWorldService : private PublicHelloWorldStub
@@ -69,6 +70,14 @@ protected:
      **/
     virtual void requestHelloWorld( unsigned int clientID ) override;
 
+    /**
+     * \brief   Triggered when proxy client either connected or disconnected to stub.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
+     * \return  Returns true if connected service consumer is relevant to the provider.
+     **/
+    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -82,3 +91,5 @@ protected:
     PublicHelloWorldService( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( PublicHelloWorldService );
 };
+
+#endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP

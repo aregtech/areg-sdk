@@ -6,62 +6,79 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientSendThread.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Send Message Thread
  ************************************************************************/
 #include "areg/ipc/private/ClientSendThread.hpp"
 
-#include "areg/ipc/NEConnection.hpp"
-#include "areg/ipc/private/ClientConnection.hpp"
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "areg/component/NEService.hpp"
+#include "areg/ipc/ClientConnection.hpp"
+#include "areg/ipc/IERemoteMessageHandler.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
-ClientSendThread::ClientSendThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
-    : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
+ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
+    : DispatcherThread  ( namePrefix + NEConnection::CLIENT_SEND_MESSAGE_THREAD )
+    , IESendMessageEventConsumer( )
+
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mBytesSend        ( 0 )
+    , mSaveDataSend     ( false )
 {
 }
 
-bool ClientSendThread::runDispatcher(void)
+void ClientSendThread::readyForEvents( bool isReady )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
-    TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
+    TRACE_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
-    SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-
-    bool result = DispatcherThread::runDispatcher();
-
-    SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), result ? "SUCCESS" : "FAILURE");
-    return result;
+    if ( isReady )
+    {
+        TRACE_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
+        SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::readyForEvents( true );
+    }
+    else
+    {
+        DispatcherThread::readyForEvents( false );
+        SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        mConnection.closeSocket( );
+        TRACE_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
+    }
 }
 
 void ClientSendThread::processEvent( const SendMessageEventData & data )
 {
-    const RemoteMessage & msg = data.getRemoteMessage();
-    if ( msg.isValid())
+    if ( data.isForwardMessage() )
     {
+        const RemoteMessage & msg = data.getRemoteMessage( );
         int sizeSend = mConnection.sendMessage( msg );
-        if ( sizeSend <= 0 )
+        if ( sizeSend > 0 )
         {
-            mRemoteService.failedSendMessage( msg );
+            if (mSaveDataSend)
+            {
+                mBytesSend += static_cast<uint32_t>(sizeSend);
+            }
         }
         else
         {
-            mBytesSend += static_cast<uint32_t>(sizeSend);
+            mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
         }
+    }
+    else if (data.isExitThreadMessage() )
+    {
+        mConnection.closeSocket( );
+        triggerExit( );
     }
 }
 
 bool ClientSendThread::postEvent(Event & eventElem)
 {
-    return ( RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr ? EventDispatcher::postEvent(eventElem) : false );
+    return (RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }

@@ -8,20 +8,24 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcrouter", "framework\mcrouter.vcxproj", "{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD549A95-E734-4E26-A5B2-2330FC310C8D}"
 	ProjectSection(SolutionItems) = preProject
 		CMakeLists.txt = CMakeLists.txt
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE.txt = LICENSE.txt
+		msvc_setup.props = msvc_setup.props
+		nuget.config = nuget.config
 		README.md = README.md
+		Releases.md = Releases.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F-814D-4F13-9F2F-87B667937FC7}"
 	ProjectSection(SolutionItems) = preProject
 		tools\codegen.jar = tools\codegen.jar
-		tools\generate-examples.bat = tools\generate-examples.bat
 		tools\generate.bat = tools\generate.bat
 		tools\generate.sh = tools\generate.sh
 		tools\README.md = tools\README.md
@@ -30,23 +34,21 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}"
 	ProjectSection(SolutionItems) = preProject
 		docs\DEVELOP.md = docs\DEVELOP.md
+		docs\HelloService.md = docs\HelloService.md
 		docs\HelloService.siml = docs\HelloService.siml
 		docs\HOWTO.md = docs\HOWTO.md
 		docs\POSIX.md = docs\POSIX.md
 		docs\README.md = docs\README.md
 		docs\Sample.siml = docs\Sample.siml
+		docs\Sample.xsd = docs\Sample.xsd
+		docs\ServiceInterface.md = docs\ServiceInterface.md
+		docs\USECASES.md = docs\USECASES.md
 		docs\WIN32.md = docs\WIN32.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "conf", "conf", "{A9875C78-1248-4693-9310-5C46C73DDCEB}"
 	ProjectSection(SolutionItems) = preProject
 		conf\README.md = conf\README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "make", "make", "{4571029B-5844-49A6-A1B4-AA3DCC8B63C7}"
-	ProjectSection(SolutionItems) = preProject
-		conf\make\common.mk = conf\make\common.mk
-		conf\make\user.mk = conf\make\user.mk
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "msvc", "msvc", "{C0125346-EA97-4FE0-ABC8-592A556B3481}"
@@ -74,8 +76,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{7BD2AAAA-FA5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmake", "cmake", "{5E95D089-DBB0-467A-BC0A-B00B9297023A}"
 	ProjectSection(SolutionItems) = preProject
+		conf\cmake\areg.cmake = conf\cmake\areg.cmake
+		conf\cmake\clang.cmake = conf\cmake\clang.cmake
 		conf\cmake\common.cmake = conf\cmake\common.cmake
 		conf\cmake\functions.cmake = conf\cmake\functions.cmake
+		conf\cmake\gnu.cmake = conf\cmake\gnu.cmake
+		conf\cmake\install.cmake = conf\cmake\install.cmake
+		conf\cmake\msvc.cmake = conf\cmake\msvc.cmake
+		conf\cmake\setup.cmake = conf\cmake\setup.cmake
 		conf\cmake\user.cmake = conf\cmake\user.cmake
 	EndProjectSection
 EndProject
@@ -88,15 +96,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00_helloservice", "00_helloservice", "{2DF9C20F-08BB-475B-8901-C1A64D88BA8A}"
 	ProjectSection(SolutionItems) = preProject
 		examples\00_helloservice\CMakeLists.txt = examples\00_helloservice\CMakeLists.txt
-		examples\00_helloservice\ReadMe.txt = examples\00_helloservice\ReadMe.txt
+		examples\00_helloservice\ReadMe.md = examples\00_helloservice\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_generated", "examples\00_helloservice\00_generated.vcxproj", "{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5B537BA4-4245-4E64-93E9-E35738AB22B3}"
 	ProjectSection(SolutionItems) = preProject
-		examples\00_helloservice\res\generate.bat = examples\00_helloservice\res\generate.bat
-		examples\00_helloservice\res\generate.sh = examples\00_helloservice\res\generate.sh
 		examples\00_helloservice\res\HelloService.siml = examples\00_helloservice\res\HelloService.siml
 	EndProjectSection
 EndProject
@@ -172,17 +181,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10_locsvc", "10_locsvc", "{F99F67DA-37F9-46DD-A416-64C930758DE5}"
 	ProjectSection(SolutionItems) = preProject
 		examples\10_locsvc\CMakeLists.txt = examples\10_locsvc\CMakeLists.txt
-		examples\10_locsvc\ReadMe.txt = examples\10_locsvc\ReadMe.txt
+		examples\10_locsvc\ReadMe.md = examples\10_locsvc\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{B3924215-AD6D-45DA-81D7-FE5D406A677B}"
 	ProjectSection(SolutionItems) = preProject
-		examples\10_locsvc\res\generate.bat = examples\10_locsvc\res\generate.bat
-		examples\10_locsvc\res\generate.sh = examples\10_locsvc\res\generate.sh
 		examples\10_locsvc\res\HelloWorld.siml = examples\10_locsvc\res\HelloWorld.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "10_generated", "examples\10_locsvc\10_generated.vcxproj", "{4056956C-7E12-4432-86F8-D900A52866A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "10_locservice", "examples\10_locsvc\10_locservice.vcxproj", "{8273239C-C5A8-4752-9DFC-E1678222C36E}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -193,19 +203,20 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "11_locmesh", "11_locmesh", "{35133FDA-2CD3-4BAD-9C54-145DC4DC787A}"
 	ProjectSection(SolutionItems) = preProject
 		examples\11_locmesh\CMakeLists.txt = examples\11_locmesh\CMakeLists.txt
-		examples\11_locmesh\ReadMe.txt = examples\11_locmesh\ReadMe.txt
+		examples\11_locmesh\ReadMe.md = examples\11_locmesh\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{FBEE67BE-BFF5-43BB-A9DB-2E8A65734B3D}"
 	ProjectSection(SolutionItems) = preProject
-		examples\11_locmesh\res\generate.bat = examples\11_locmesh\res\generate.bat
-		examples\11_locmesh\res\generate.sh = examples\11_locmesh\res\generate.sh
 		examples\11_locmesh\res\HelloWorld.siml = examples\11_locmesh\res\HelloWorld.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_generated", "examples\11_locmesh\11_generated.vcxproj", "{1D3A6135-F0EE-4531-B682-55270B70B699}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_locmesh", "examples\11_locmesh\11_locmesh.vcxproj", "{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_localmesh", "examples\11_locmesh\11_localmesh.vcxproj", "{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1D3A6135-F0EE-4531-B682-55270B70B699} = {1D3A6135-F0EE-4531-B682-55270B70B699}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
@@ -214,17 +225,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "12_pubsvc", "12_pubsvc", "{13F637CA-7D9B-4218-8B55-D415897B8DE0}"
 	ProjectSection(SolutionItems) = preProject
 		examples\12_pubsvc\CMakeLists.txt = examples\12_pubsvc\CMakeLists.txt
-		examples\12_pubsvc\ReadMe.txt = examples\12_pubsvc\ReadMe.txt
+		examples\12_pubsvc\ReadMe.md = examples\12_pubsvc\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{9235A909-A2F2-4C90-977A-DA514B76BBE5}"
 	ProjectSection(SolutionItems) = preProject
-		examples\12_pubsvc\res\generate.bat = examples\12_pubsvc\res\generate.bat
-		examples\12_pubsvc\res\generate.sh = examples\12_pubsvc\res\generate.sh
 		examples\12_pubsvc\res\HelloWorld.siml = examples\12_pubsvc\res\HelloWorld.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_generated", "examples\12_pubsvc\12_generated.vcxproj", "{CCBBF424-D22D-480F-A13E-28095E33827C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_pubclient", "examples\12_pubsvc\12_pubclient.vcxproj", "{C6AEF053-AA0C-46A8-A2F2-4330021D2DE2}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -241,19 +253,20 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "13_pubmesh", "13_pubmesh", "{BB26B4E2-9A39-4CD5-8BE0-A14BA7BE2D5D}"
 	ProjectSection(SolutionItems) = preProject
 		examples\13_pubmesh\CMakeLists.txt = examples\13_pubmesh\CMakeLists.txt
-		examples\13_pubmesh\ReadMe.txt = examples\13_pubmesh\ReadMe.txt
+		examples\13_pubmesh\ReadMe.md = examples\13_pubmesh\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{08364AF0-D407-4FEC-A759-A4499EE45A59}"
 	ProjectSection(SolutionItems) = preProject
-		examples\13_pubmesh\res\generate.bat = examples\13_pubmesh\res\generate.bat
-		examples\13_pubmesh\res\generate.sh = examples\13_pubmesh\res\generate.sh
 		examples\13_pubmesh\res\LocalHelloWorld.siml = examples\13_pubmesh\res\LocalHelloWorld.siml
 		examples\13_pubmesh\res\PublicHelloWorld.siml = examples\13_pubmesh\res\PublicHelloWorld.siml
 		examples\13_pubmesh\res\SystemShutdown.siml = examples\13_pubmesh\res\SystemShutdown.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_generated", "examples\13_pubmesh\13_generated.vcxproj", "{D708316F-7E34-4E09-A782-4021C5500C0D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_pubclients", "examples\13_pubmesh\13_pubclients.vcxproj", "{CC971823-8685-4102-B7E6-E56E31C02370}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -279,17 +292,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "14_pubtraffic", "14_pubtraffic", "{5EB605B1-44A1-4C33-B5BA-23AFEA531487}"
 	ProjectSection(SolutionItems) = preProject
 		examples\14_pubtraffic\CMakeLists.txt = examples\14_pubtraffic\CMakeLists.txt
-		examples\14_pubtraffic\ReadMe.txt = examples\14_pubtraffic\ReadMe.txt
+		examples\14_pubtraffic\ReadMe.md = examples\14_pubtraffic\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{0AC9ECDD-CCF4-4E61-BAD3-EF379002EDCE}"
 	ProjectSection(SolutionItems) = preProject
-		examples\14_pubtraffic\res\generate.bat = examples\14_pubtraffic\res\generate.bat
-		examples\14_pubtraffic\res\generate.sh = examples\14_pubtraffic\res\generate.sh
 		examples\14_pubtraffic\res\SimpleTrafficLight.siml = examples\14_pubtraffic\res\SimpleTrafficLight.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_generated", "examples\14_pubtraffic\14_generated.vcxproj", "{5B38C49F-3C26-43CD-B457-75806BFE69EC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_pubclient", "examples\14_pubtraffic\14_pubclient.vcxproj", "{28F7BC4C-5CAD-457D-B208-9E92759910E7}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -306,17 +320,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "15_pubworker", "15_pubworker", "{5EE61717-AD86-46E4-B4D0-5AA9280B0E09}"
 	ProjectSection(SolutionItems) = preProject
 		examples\15_pubworker\CMakeLists.txt = examples\15_pubworker\CMakeLists.txt
-		examples\15_pubworker\ReadMe.txt = examples\15_pubworker\ReadMe.txt
+		examples\15_pubworker\ReadMe.md = examples\15_pubworker\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{8B53447D-2482-4219-93DA-D33C2F899B71}"
 	ProjectSection(SolutionItems) = preProject
-		examples\15_pubworker\res\generate.bat = examples\15_pubworker\res\generate.bat
-		examples\15_pubworker\res\generate.sh = examples\15_pubworker\res\generate.sh
 		examples\15_pubworker\res\PatientInformation.siml = examples\15_pubworker\res\PatientInformation.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "15_generated", "examples\15_pubworker\15_generated.vcxproj", "{68C8AE77-005B-4F81-8876-5A87A69823E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "15_pubclient", "examples\15_pubworker\15_pubclient.vcxproj", "{1EB10EE3-1F75-440E-94EE-D74FCF7CA79E}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -333,18 +348,19 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "16_pubfsm", "16_pubfsm", "{7955A5EE-8C1E-4BE2-BE4F-55839EDC4E3C}"
 	ProjectSection(SolutionItems) = preProject
 		examples\16_pubfsm\CMakeLists.txt = examples\16_pubfsm\CMakeLists.txt
-		examples\16_pubfsm\ReadMe.txt = examples\16_pubfsm\ReadMe.txt
+		examples\16_pubfsm\ReadMe.md = examples\16_pubfsm\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{58982601-1D8A-4F81-A69E-1D148C667937}"
 	ProjectSection(SolutionItems) = preProject
-		examples\16_pubfsm\res\generate.bat = examples\16_pubfsm\res\generate.bat
-		examples\16_pubfsm\res\generate.sh = examples\16_pubfsm\res\generate.sh
 		examples\16_pubfsm\res\PowerManager.siml = examples\16_pubfsm\res\PowerManager.siml
 		examples\16_pubfsm\res\TrafficController.siml = examples\16_pubfsm\res\TrafficController.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_generated", "examples\16_pubfsm\16_generated.vcxproj", "{AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_pubclient", "examples\16_pubfsm\16_pubclient.vcxproj", "{C23BA253-475E-49DD-A92E-616C2A93831A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -361,7 +377,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "17_winchat", "17_winchat", "{503FAC02-04F9-466D-B783-4608413BDFBA}"
 	ProjectSection(SolutionItems) = preProject
 		examples\17_winchat\CMakeLists.txt = examples\17_winchat\CMakeLists.txt
-		examples\17_winchat\ReadMe.txt = examples\17_winchat\ReadMe.txt
+		examples\17_winchat\ReadMe.md = examples\17_winchat\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{DF308E31-0D12-4B57-93CE-770B2D538DB1}"
@@ -370,11 +386,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{DF308E31-0D1
 		examples\17_winchat\res\ConnectionManager.siml = examples\17_winchat\res\ConnectionManager.siml
 		examples\17_winchat\res\DirectConnection.siml = examples\17_winchat\res\DirectConnection.siml
 		examples\17_winchat\res\DirectMessager.siml = examples\17_winchat\res\DirectMessager.siml
-		examples\17_winchat\res\generate.bat = examples\17_winchat\res\generate.bat
-		examples\17_winchat\res\generate.sh = examples\17_winchat\res\generate.sh
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_generated", "examples\17_winchat\17_generated.vcxproj", "{BAD5F8A5-B916-4E76-8594-78B003C1155B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_chatter", "examples\17_winchat\17_chatter.vcxproj", "{DB6BDE22-DB74-49FD-AB01-8DB5FCEE16FD}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -391,10 +408,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "18_locwatchdog", "18_locwatchdog", "{83821483-D719-475B-88E3-F548C267E3AB}"
 	ProjectSection(SolutionItems) = preProject
 		examples\18_locwatchdog\CMakeLists.txt = examples\18_locwatchdog\CMakeLists.txt
-		examples\18_locwatchdog\ReadMe.txt = examples\18_locwatchdog\ReadMe.txt
+		examples\18_locwatchdog\ReadMe.md = examples\18_locwatchdog\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_generated", "examples\18_locwatchdog\18_generated.vcxproj", "{38A88D1E-B86C-48E2-9B9E-68F672388734}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_locservice", "examples\18_locwatchdog\18_locservice.vcxproj", "{766E4B9C-F428-4289-8975-DC3D22EEDBF6}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -405,10 +425,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "19_pubwatchdog", "19_pubwatchdog", "{E5D433F5-DBA3-45D5-8A7A-32A10566AA8E}"
 	ProjectSection(SolutionItems) = preProject
 		examples\19_pubwatchdog\CMakeLists.txt = examples\19_pubwatchdog\CMakeLists.txt
-		examples\19_pubwatchdog\ReadMe.txt = examples\19_pubwatchdog\ReadMe.txt
+		examples\19_pubwatchdog\ReadMe.md = examples\19_pubwatchdog\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_generated", "examples\19_pubwatchdog\19_generated.vcxproj", "{F6570975-AE13-41EB-8465-066A6766C211}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubclient", "examples\19_pubwatchdog\19_pubclient.vcxproj", "{7ECC4BF9-45A4-4774-869B-239E3B152E05}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -425,7 +448,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "20_pubdatarate", "20_pubdatarate", "{840A1C6C-5940-4464-AF58-DBA24484C64F}"
 	ProjectSection(SolutionItems) = preProject
 		examples\20_pubdatarate\CMakeLists.txt = examples\20_pubdatarate\CMakeLists.txt
-		examples\20_pubdatarate\ReadMe.txt = examples\20_pubdatarate\ReadMe.txt
+		examples\20_pubdatarate\ReadMe.md = examples\20_pubdatarate\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "multiprocess", "multiprocess", "{9DFC39D1-06B5-4E91-972D-1749CE02ED7F}"
@@ -435,6 +458,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "twothreads", "twothreads", "{A635554F-60C0-4415-A6BD-A5A47C0D9221}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_generated", "examples\20_pubdatarate\20_generated.vcxproj", "{B8900569-8956-47AF-A2E7-50EB1DD788DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubclient", "examples\20_pubdatarate\20_pubclient.vcxproj", "{70307B6F-61D5-4015-8578-E0E3549B7AB9}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -450,34 +476,34 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubservice", "examples\2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C8E80B4D-FE97-48F9-A056-F916E6897CE4}"
 	ProjectSection(SolutionItems) = preProject
-		examples\18_locwatchdog\res\generate.bat = examples\18_locwatchdog\res\generate.bat
-		examples\18_locwatchdog\res\generate.sh = examples\18_locwatchdog\res\generate.sh
 		examples\18_locwatchdog\res\HelloWatchdog.siml = examples\18_locwatchdog\res\HelloWatchdog.siml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5DF9E173-0D3F-4D4B-A838-37ED95A093FC}"
 	ProjectSection(SolutionItems) = preProject
-		examples\19_pubwatchdog\res\generate.bat = examples\19_pubwatchdog\res\generate.bat
-		examples\19_pubwatchdog\res\generate.sh = examples\19_pubwatchdog\res\generate.sh
 		examples\19_pubwatchdog\res\HelloWatchdog.siml = examples\19_pubwatchdog\res\HelloWatchdog.siml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5EBF83AB-0028-4075-AA32-CA3EBEA4B7A0}"
 	ProjectSection(SolutionItems) = preProject
-		examples\20_pubdatarate\res\generate.bat = examples\20_pubdatarate\res\generate.bat
-		examples\20_pubdatarate\res\generate.sh = examples\20_pubdatarate\res\generate.sh
 		examples\20_pubdatarate\res\LargeData.siml = examples\20_pubdatarate\res\LargeData.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_common", "examples\13_pubmesh\13_common.vcxproj", "{5372A6CE-25DA-4E7D-9EC5-8F99A74BF4E7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D708316F-7E34-4E09-A782-4021C5500C0D} = {D708316F-7E34-4E09-A782-4021C5500C0D}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "21_pubunblock", "21_pubunblock", "{967610F9-FBB0-4793-9E76-F500C4167FCE}"
 	ProjectSection(SolutionItems) = preProject
 		examples\21_pubunblock\CMakeLists.txt = examples\21_pubunblock\CMakeLists.txt
-		examples\21_pubunblock\ReadMe.txt = examples\21_pubunblock\ReadMe.txt
+		examples\21_pubunblock\ReadMe.md = examples\21_pubunblock\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_generated", "examples\21_pubunblock\21_generated.vcxproj", "{EB228067-EA4D-452C-91FC-91DB3B445C31}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_pubclient", "examples\21_pubunblock\21_pubclient.vcxproj", "{A09D9D20-FBB8-4C1A-8628-3071AC7903DA}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -492,25 +518,189 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_pubservice", "examples\2
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{93F005FC-C82E-41C7-AD15-C2F7C8287BFF}"
-	ProjectSection(SolutionItems) = preProject
-		tests\CMakeLists.txt = tests\CMakeLists.txt
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "googletest", "googletest", "{4CD64072-ECEB-47D9-8384-C1CF2E6193DC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "units", "units", "{48E60088-F431-4FFB-A170-31DAF8EC2DC8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "thirdparty\gtest.vcxproj", "{BB5D8C31-A4F1-4962-8181-668103FDDE22}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest_main", "thirdparty\gtest_main.vcxproj", "{11927EA9-1F1B-497D-8251-0C1EC93A770E}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-unit-tests", "tests\areg-unit-tests.vcxproj", "{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A149-4893-A023-253593403974}"
 	ProjectSection(SolutionItems) = preProject
-		examples\21_pubunblock\res\generate.bat = examples\21_pubunblock\res\generate.bat
-		examples\21_pubunblock\res\generate.sh = examples\21_pubunblock\res\generate.sh
 		examples\21_pubunblock\res\HelloUnblock.siml = examples\21_pubunblock\res\HelloUnblock.siml
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.vcxproj", "{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aregextend", "framework\aregextend.vcxproj", "{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_generated", "examples\22_pubsub\22_generated.vcxproj", "{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "22_pubsub", "22_pubsub", "{285E5D8D-7561-4FA9-9B90-89054E8EE93F}"
+	ProjectSection(SolutionItems) = preProject
+		examples\22_pubsub\CMakeLists.txt = examples\22_pubsub\CMakeLists.txt
+		examples\22_pubsub\ReadMe.md = examples\22_pubsub\ReadMe.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{29121F55-3BA7-4701-9C44-2B1BA5103A5F}"
+	ProjectSection(SolutionItems) = preProject
+		examples\22_pubsub\res\PubSub.siml = examples\22_pubsub\res\PubSub.siml
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_publisher", "examples\22_pubsub\22_publisher.vcxproj", "{DFA66387-8E95-4745-9DEB-AC4A82165F9A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A} = {73EC875E-F233-4FA9-B3AF-E2981EA59B3A}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_subscriber", "examples\22_pubsub\22_subscriber.vcxproj", "{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A} = {73EC875E-F233-4FA9-B3AF-E2981EA59B3A}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "23_pubsubmix", "23_pubsubmix", "{5CB52248-C396-4985-BB18-266DACF7838C}"
+	ProjectSection(SolutionItems) = preProject
+		examples\23_pubsubmix\CMakeLists.txt = examples\23_pubsubmix\CMakeLists.txt
+		examples\23_pubsubmix\ReadMe.md = examples\23_pubsubmix\ReadMe.md
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "23_generated", "examples\23_pubsubmix\23_generated.vcxproj", "{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "23_pubsubctrl", "examples\23_pubsubmix\23_pubsubctrl.vcxproj", "{175B6636-9885-40EF-8748-37136DEB5122}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9} = {6C5C01FA-1F9B-4132-881C-14C18EC15FA9}
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6} = {D6A76B16-C1F9-4FCC-B625-74471FA47BD6}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "23_pubsubdyn", "examples\23_pubsubmix\23_pubsubdyn.vcxproj", "{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9} = {6C5C01FA-1F9B-4132-881C-14C18EC15FA9}
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6} = {D6A76B16-C1F9-4FCC-B625-74471FA47BD6}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{E74A499A-2B19-4EC5-ADCC-549565C9F2A9}"
+	ProjectSection(SolutionItems) = preProject
+		examples\23_pubsubmix\res\PubSubMix.siml = examples\23_pubsubmix\res\PubSubMix.siml
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "23_common", "examples\23_pubsubmix\23_common.vcxproj", "{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6} = {D6A76B16-C1F9-4FCC-B625-74471FA47BD6}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "24_pubsubmulti", "24_pubsubmulti", "{7B7FB883-C82B-45F1-BCEA-0E97E8BAD476}"
+	ProjectSection(SolutionItems) = preProject
+		examples\24_pubsubmulti\CMakeLists.txt = examples\24_pubsubmulti\CMakeLists.txt
+		examples\24_pubsubmulti\ReadMe.md = examples\24_pubsubmulti\ReadMe.md
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "24_generated", "examples\24_pubsubmulti\24_generated.vcxproj", "{76479E1B-8BD5-4143-897F-F1E93DC1C64B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "24_publisher", "examples\24_pubsubmulti\24_publisher.vcxproj", "{383F6294-1771-4E78-B5CB-61B04F6BD660}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B} = {76479E1B-8BD5-4143-897F-F1E93DC1C64B}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "24_subscribermulti", "examples\24_pubsubmulti\24_subscribermulti.vcxproj", "{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B} = {76479E1B-8BD5-4143-897F-F1E93DC1C64B}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areglogger", "framework\areglogger.vcxproj", "{B29F438E-904C-4929-903C-F4673182A417}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5} = {A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logobserver", "framework\logobserver.vcxproj", "{6941F2A7-F0C7-4293-8646-AF68A7E35183}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{B29F438E-904C-4929-903C-F4673182A417} = {B29F438E-904C-4929-903C-F4673182A417}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aregsqlite3", "thirdparty\sqlite3.vcxproj", "{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", "{BB98F00E-A26C-48A8-AE2A-CEECB9E3FFB1}"
+	ProjectSection(SolutionItems) = preProject
+		thirdparty\CMakeLists.txt = thirdparty\CMakeLists.txt
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "examples\dummy\dummy.vcxproj", "{98743716-82FC-4B02-96AF-E6F649403A0A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-workflows", "{85EF9AE6-92A6-4DD9-833C-455EEAEA186D}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\accessibility-bot.yml = .github\workflows\accessibility-bot.yml
+		.github\workflows\cmake.yml = .github\workflows\cmake.yml
+		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{11AEF28F-83CA-493A-B507-F271FCB35DBA}"
+	ProjectSection(SolutionItems) = preProject
+		examples\24_pubsubmulti\res\PubSub.siml = examples\24_pubsubmulti\res\PubSub.siml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "exports", "exports", "{60EE7204-7D44-4087-8880-900D00536202}"
+	ProjectSection(SolutionItems) = preProject
+		conf\exports\areg.pc.in = conf\exports\areg.pc.in
+		conf\exports\aregextend.pc.in = conf\exports\aregextend.pc.in
+		conf\exports\areglogger.pc.in = conf\exports\areglogger.pc.in
+		conf\exports\config.cmake.in = conf\exports\config.cmake.in
+		conf\exports\logger.service.in = conf\exports\logger.service.in
+		conf\exports\logger.service.install.bat.in = conf\exports\logger.service.install.bat.in
+		conf\exports\logger.service.uninstall.bat.in = conf\exports\logger.service.uninstall.bat.in
+		conf\exports\mcrouter.service.in = conf\exports\mcrouter.service.in
+		conf\exports\mcrouter.service.install.bat.in = conf\exports\mcrouter.service.install.bat.in
+		conf\exports\mcrouter.service.uninstall.bat.in = conf\exports\mcrouter.service.uninstall.bat.in
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{31AB3D1E-3F6C-4415-B3A5-BB8AA449A1E2}"
+	ProjectSection(SolutionItems) = preProject
+		conf\exports\example\CMakeLists.txt = conf\exports\example\CMakeLists.txt
+		conf\exports\example\example.cpp = conf\exports\example\example.cpp
+		conf\exports\example\README.md = conf\exports\example\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A5DB-4F6E-A526-6AA2B3C31AD3}"
+	ProjectSection(SolutionItems) = preProject
+		docs\wiki\AREG-PACKAGE.md = docs\wiki\AREG-PACKAGE.md
+		docs\wiki\BUILD.md = docs\wiki\BUILD.md
+		docs\wiki\CMAKE-INTEGRATE.md = docs\wiki\CMAKE-INTEGRATE.md
+		docs\wiki\LOGGER.md = docs\wiki\LOGGER.md
+		docs\wiki\MCROUTER.md = docs\wiki\MCROUTER.md
+		docs\wiki\MSVS-BUILD.md = docs\wiki\MSVS-BUILD.md
+		docs\wiki\MSVS-INTEGRATE.md = docs\wiki\MSVS-INTEGRATE.md
+		docs\wiki\README.md = docs\wiki\README.md
+		docs\wiki\USER-CMAKE.md = docs\wiki\USER-CMAKE.md
+		docs\wiki\VSCODE.md = docs\wiki\VSCODE.md
+		docs\wiki\WSL.md = docs\wiki\WSL.md
 	EndProjectSection
 EndProject
 Global
@@ -929,22 +1119,6 @@ Global
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57}.Release|Win32.Build.0 = Release|Win32
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57}.Release|x64.ActiveCfg = Release|x64
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57}.Release|x64.Build.0 = Release|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|Win32.ActiveCfg = Debug|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|Win32.Build.0 = Debug|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|x64.ActiveCfg = Debug|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|x64.Build.0 = Debug|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|Win32.ActiveCfg = Release|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|Win32.Build.0 = Release|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|x64.ActiveCfg = Release|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|x64.Build.0 = Release|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|Win32.ActiveCfg = Debug|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|Win32.Build.0 = Debug|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|x64.ActiveCfg = Debug|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|x64.Build.0 = Debug|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|Win32.ActiveCfg = Release|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|Win32.Build.0 = Release|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|x64.ActiveCfg = Release|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|x64.Build.0 = Release|x64
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Debug|Win32.Build.0 = Debug|Win32
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Debug|x64.ActiveCfg = Debug|x64
@@ -953,6 +1127,134 @@ Global
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Release|Win32.Build.0 = Release|Win32
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Release|x64.ActiveCfg = Release|x64
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Release|x64.Build.0 = Release|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|Win32.Build.0 = Debug|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|x64.ActiveCfg = Debug|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|x64.Build.0 = Debug|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|Win32.ActiveCfg = Release|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|Win32.Build.0 = Release|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|x64.ActiveCfg = Release|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|x64.Build.0 = Release|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|Win32.Build.0 = Debug|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|x64.ActiveCfg = Debug|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|x64.Build.0 = Debug|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|Win32.ActiveCfg = Release|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|Win32.Build.0 = Release|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|x64.ActiveCfg = Release|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|x64.Build.0 = Release|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|Win32.Build.0 = Debug|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|x64.ActiveCfg = Debug|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|x64.Build.0 = Debug|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|Win32.ActiveCfg = Release|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|Win32.Build.0 = Release|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|x64.ActiveCfg = Release|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|x64.Build.0 = Release|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|Win32.Build.0 = Debug|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|x64.ActiveCfg = Debug|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|x64.Build.0 = Debug|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|Win32.ActiveCfg = Release|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|Win32.Build.0 = Release|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|x64.ActiveCfg = Release|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|x64.Build.0 = Release|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|Win32.Build.0 = Debug|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|x64.ActiveCfg = Debug|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|x64.Build.0 = Debug|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|Win32.ActiveCfg = Release|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|Win32.Build.0 = Release|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|x64.ActiveCfg = Release|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|x64.Build.0 = Release|x64
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Debug|Win32.Build.0 = Debug|Win32
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Debug|x64.ActiveCfg = Debug|x64
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Debug|x64.Build.0 = Debug|x64
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Release|Win32.ActiveCfg = Release|Win32
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Release|Win32.Build.0 = Release|Win32
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Release|x64.ActiveCfg = Release|x64
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}.Release|x64.Build.0 = Release|x64
+		{175B6636-9885-40EF-8748-37136DEB5122}.Debug|Win32.ActiveCfg = Debug|Win32
+		{175B6636-9885-40EF-8748-37136DEB5122}.Debug|Win32.Build.0 = Debug|Win32
+		{175B6636-9885-40EF-8748-37136DEB5122}.Debug|x64.ActiveCfg = Debug|x64
+		{175B6636-9885-40EF-8748-37136DEB5122}.Debug|x64.Build.0 = Debug|x64
+		{175B6636-9885-40EF-8748-37136DEB5122}.Release|Win32.ActiveCfg = Release|Win32
+		{175B6636-9885-40EF-8748-37136DEB5122}.Release|Win32.Build.0 = Release|Win32
+		{175B6636-9885-40EF-8748-37136DEB5122}.Release|x64.ActiveCfg = Release|x64
+		{175B6636-9885-40EF-8748-37136DEB5122}.Release|x64.Build.0 = Release|x64
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Debug|Win32.Build.0 = Debug|Win32
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Debug|x64.ActiveCfg = Debug|x64
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Debug|x64.Build.0 = Debug|x64
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Release|Win32.ActiveCfg = Release|Win32
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Release|Win32.Build.0 = Release|Win32
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Release|x64.ActiveCfg = Release|x64
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB}.Release|x64.Build.0 = Release|x64
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Debug|Win32.Build.0 = Debug|Win32
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Debug|x64.ActiveCfg = Debug|x64
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Debug|x64.Build.0 = Debug|x64
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Release|Win32.ActiveCfg = Release|Win32
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Release|Win32.Build.0 = Release|Win32
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Release|x64.ActiveCfg = Release|x64
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}.Release|x64.Build.0 = Release|x64
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Debug|Win32.Build.0 = Debug|Win32
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Debug|x64.ActiveCfg = Debug|x64
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Debug|x64.Build.0 = Debug|x64
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Release|Win32.ActiveCfg = Release|Win32
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Release|Win32.Build.0 = Release|Win32
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Release|x64.ActiveCfg = Release|x64
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B}.Release|x64.Build.0 = Release|x64
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Debug|Win32.ActiveCfg = Debug|Win32
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Debug|Win32.Build.0 = Debug|Win32
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Debug|x64.ActiveCfg = Debug|x64
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Debug|x64.Build.0 = Debug|x64
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Release|Win32.ActiveCfg = Release|Win32
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Release|Win32.Build.0 = Release|Win32
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Release|x64.ActiveCfg = Release|x64
+		{383F6294-1771-4E78-B5CB-61B04F6BD660}.Release|x64.Build.0 = Release|x64
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Debug|Win32.Build.0 = Debug|Win32
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Debug|x64.ActiveCfg = Debug|x64
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Debug|x64.Build.0 = Debug|x64
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Release|Win32.ActiveCfg = Release|Win32
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Release|Win32.Build.0 = Release|Win32
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Release|x64.ActiveCfg = Release|x64
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Release|x64.Build.0 = Release|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|Win32.Build.0 = Debug|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|x64.ActiveCfg = Debug|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|x64.Build.0 = Debug|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|Win32.ActiveCfg = Release|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|Win32.Build.0 = Release|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|x64.ActiveCfg = Release|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|x64.Build.0 = Release|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|Win32.Build.0 = Debug|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|x64.ActiveCfg = Debug|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|x64.Build.0 = Debug|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|Win32.ActiveCfg = Release|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|Win32.Build.0 = Release|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|x64.ActiveCfg = Release|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|x64.Build.0 = Release|x64
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Debug|Win32.Build.0 = Debug|Win32
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Debug|x64.ActiveCfg = Debug|x64
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Debug|x64.Build.0 = Debug|x64
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Release|Win32.ActiveCfg = Release|Win32
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Release|Win32.Build.0 = Release|Win32
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Release|x64.ActiveCfg = Release|x64
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}.Release|x64.Build.0 = Release|x64
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Debug|Win32.Build.0 = Debug|Win32
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Debug|x64.ActiveCfg = Debug|x64
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Debug|x64.Build.0 = Debug|x64
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Release|Win32.ActiveCfg = Release|Win32
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Release|Win32.Build.0 = Release|Win32
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Release|x64.ActiveCfg = Release|x64
+		{98743716-82FC-4B02-96AF-E6F649403A0A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -961,7 +1263,6 @@ Global
 		{7D57975F-814D-4F13-9F2F-87B667937FC7} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
 		{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
 		{A9875C78-1248-4693-9310-5C46C73DDCEB} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
-		{4571029B-5844-49A6-A1B4-AA3DCC8B63C7} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
 		{C0125346-EA97-4FE0-ABC8-592A556B3481} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
 		{7BD2AAAA-FA5E-4895-837F-4A24C85A851A} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 		{5E95D089-DBB0-467A-BC0A-B00B9297023A} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
@@ -1042,12 +1343,31 @@ Global
 		{EB228067-EA4D-452C-91FC-91DB3B445C31} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
 		{A09D9D20-FBB8-4C1A-8628-3071AC7903DA} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
-		{4CD64072-ECEB-47D9-8384-C1CF2E6193DC} = {93F005FC-C82E-41C7-AD15-C2F7C8287BFF}
 		{48E60088-F431-4FFB-A170-31DAF8EC2DC8} = {93F005FC-C82E-41C7-AD15-C2F7C8287BFF}
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22} = {4CD64072-ECEB-47D9-8384-C1CF2E6193DC}
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E} = {4CD64072-ECEB-47D9-8384-C1CF2E6193DC}
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1} = {48E60088-F431-4FFB-A170-31DAF8EC2DC8}
 		{C485A89F-A149-4893-A023-253593403974} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
+		{285E5D8D-7561-4FA9-9B90-89054E8EE93F} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
+		{29121F55-3BA7-4701-9C44-2B1BA5103A5F} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
+		{5CB52248-C396-4985-BB18-266DACF7838C} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
+		{D6A76B16-C1F9-4FCC-B625-74471FA47BD6} = {5CB52248-C396-4985-BB18-266DACF7838C}
+		{175B6636-9885-40EF-8748-37136DEB5122} = {5CB52248-C396-4985-BB18-266DACF7838C}
+		{16B91C15-D6ED-49F7-9C67-CEA02DD56FCB} = {5CB52248-C396-4985-BB18-266DACF7838C}
+		{E74A499A-2B19-4EC5-ADCC-549565C9F2A9} = {5CB52248-C396-4985-BB18-266DACF7838C}
+		{6C5C01FA-1F9B-4132-881C-14C18EC15FA9} = {5CB52248-C396-4985-BB18-266DACF7838C}
+		{7B7FB883-C82B-45F1-BCEA-0E97E8BAD476} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
+		{76479E1B-8BD5-4143-897F-F1E93DC1C64B} = {7B7FB883-C82B-45F1-BCEA-0E97E8BAD476}
+		{383F6294-1771-4E78-B5CB-61B04F6BD660} = {7B7FB883-C82B-45F1-BCEA-0E97E8BAD476}
+		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D} = {7B7FB883-C82B-45F1-BCEA-0E97E8BAD476}
+		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5} = {BB98F00E-A26C-48A8-AE2A-CEECB9E3FFB1}
+		{98743716-82FC-4B02-96AF-E6F649403A0A} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
+		{85EF9AE6-92A6-4DD9-833C-455EEAEA186D} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
+		{11AEF28F-83CA-493A-B507-F271FCB35DBA} = {7B7FB883-C82B-45F1-BCEA-0E97E8BAD476}
+		{60EE7204-7D44-4087-8880-900D00536202} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
+		{31AB3D1E-3F6C-4415-B3A5-BB8AA449A1E2} = {60EE7204-7D44-4087-8880-900D00536202}
+		{C33D0DF1-A5DB-4F6E-A526-6AA2B3C31AD3} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}

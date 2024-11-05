@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEDebug.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Debugging utilities
  *
@@ -121,7 +121,6 @@ namespace NEDebug
      *          If message is empty, nothing is output.
      *          Method is valid only for DEBUG build.
      * \param   msg     The message to output.
-     * \param   isError And additional flag, indicating whether it an error or not.
      **/
     void AREG_API outputMessageOS( const char * msg );
 }

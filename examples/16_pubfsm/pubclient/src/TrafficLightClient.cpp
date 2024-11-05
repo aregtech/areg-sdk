@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubclient/src/TrafficLightClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This is a Traffic Light controller client to switch lights.
@@ -10,7 +10,7 @@
   ************************************************************************/
 #include "pubclient/src/TrafficLightClient.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/appbase/Application.hpp"
 
@@ -25,7 +25,7 @@ Component * TrafficLightClient::CreateComponent(const NERegistry::ComponentEntry
     return DEBUG_NEW TrafficLightClient(entry, owner);
 }
 
-void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete(&compObject);
 }
@@ -89,45 +89,40 @@ void TrafficLightClient::broadcastEastWest(NETrafficController::eVehicleTrafficL
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", NECommon::getName(LightVehicle), NECommon::getName(LightPedestrian));
 }
 
-bool TrafficLightClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
-    bool result = false;
-    if (TrafficControllerClientBase::serviceConnected(isConnected, proxy))
+    bool result = TrafficControllerClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        result = true;
-
-        if (isConnected)
+        if ( mIsEastWest )
         {
-            if ( mIsEastWest )
-            {
-                TRACE_DBG("The traffic light controller is connected, East-West direction");
-                notifyOnTrafficEastWestUpdate(true);
-            }
-            else
-            {
-                TRACE_DBG("The traffic light controller is connected, South-North direction");
-                notifyOnTrafficSouthNorthUpdate(true);
-            }
+            TRACE_DBG( "The traffic light controller is connected, East-West direction" );
+            notifyOnTrafficEastWestUpdate( true );
         }
         else
         {
-            TRACE_WARN("The traffic light controller is disconnected, set states OFF and close the application");
-
-            printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                        , NECommon::getName(NETrafficController::eVehicleTrafficLight::VehicleLightOFF)
-                        , NECommon::getName(NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF));
-            printf("\nClose the application ...");
-
-            notifyOnTrafficEastWestUpdate(false);
-            notifyOnBroadcastEastWest(false);
-            notifyOnBroadcastSouthNorth(false);
-            notifyOnBroadcastSouthNorth(false);
-
-
-            Application::signalAppQuit();
+            TRACE_DBG( "The traffic light controller is connected, South-North direction" );
+            notifyOnTrafficSouthNorthUpdate( true );
         }
+    }
+    else
+    {
+        TRACE_WARN( "The traffic light controller is disconnected, set states OFF and close the application" );
+
+        printf( "\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
+                , NECommon::getName( NETrafficController::eVehicleTrafficLight::VehicleLightOFF )
+                , NECommon::getName( NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF ) );
+        printf( "\nClose the application ..." );
+
+        notifyOnTrafficEastWestUpdate( false );
+        notifyOnBroadcastEastWest( false );
+        notifyOnBroadcastSouthNorth( false );
+        notifyOnBroadcastSouthNorth( false );
+
+
+        Application::signalAppQuit( );
     }
 
     return result;

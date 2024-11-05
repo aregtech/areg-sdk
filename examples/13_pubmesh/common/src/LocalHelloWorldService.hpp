@@ -1,8 +1,9 @@
-#pragma once
+#ifndef PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP
+#define PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP
 
 /************************************************************************
  * \file        common/src/LocalHelloWorldService.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -13,7 +14,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/src/LocalHelloWorldStub.hpp"
+#include "generate/examples/13_pubmesh/LocalHelloWorldStub.hpp"
 
 //! \brief  A local service to receive request to output message on console
 class LocalHelloWorldService  : private LocalHelloWorldStub
@@ -61,3 +62,5 @@ private:
     LocalHelloWorldService( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( LocalHelloWorldService );
 };
+
+#endif  // PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP

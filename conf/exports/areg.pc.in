@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}/tools/areg
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+
+Name: areg
+Description: AREG communication framework
+Version: @PROJECT_VERSION@
+URL: https://github.com/aregtech/areg-sdk
+Libs: -L${libdir} -lareg
+Libs.private: @AREG_LDFLAGS_STR@
+Cflags: -I${includedir}

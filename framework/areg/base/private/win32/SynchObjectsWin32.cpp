@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/ESynchObjectsWin32.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Synchronization objects. Windows specific methods
  *
@@ -19,7 +19,7 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/private/win32/SpinLockWin32.hpp"
-#include <windows.h>
+#include <Windows.h>
 
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class implementation
@@ -48,7 +48,6 @@ void Mutex::_osCreateMutex( bool initLock )
     mSynchObject = synchObj;
     if ( initLock )
     {
-        // _osLockMutex( NECommon::WAIT_INFINITE );
         mOwnerThreadId.store( Thread::getCurrentThreadId( ) );
     }
 }
@@ -87,7 +86,7 @@ void SynchEvent::_osCreateEvent( bool initLock )
     mSynchObject = static_cast<void *>(CreateEvent( nullptr, mAutoReset ? FALSE : TRUE, initLock ? FALSE : TRUE, nullptr ));
 }
 
-bool SynchEvent::_osUnlockEvent( void * eventHandle )
+bool SynchEvent::_osUnlockEvent( void * /* eventHandle */ )
 {
     return ( ::SetEvent( static_cast<HANDLE>(mSynchObject) ) != FALSE );
 }
@@ -306,8 +305,8 @@ bool SynchTimer::_osSetTimer( void )
 {
     constexpr int NANOSECONDS_COEF_100  { 10'000 };
 
-    LARGE_INTEGER dueTime;
-    dueTime.QuadPart = -(static_cast<int64_t>(mTimeout) * NANOSECONDS_COEF_100);
+    LARGE_INTEGER dueTime{};
+    dueTime.QuadPart = -(static_cast<LONGLONG>(mTimeout) * NANOSECONDS_COEF_100);
     LONG lPeriod = mIsPeriodic ? static_cast<LONG>(mTimeout) : 0;
     return (SetWaitableTimer( static_cast<HANDLE>(mSynchObject), &dueTime, lPeriod, nullptr, nullptr, FALSE ) != FALSE);
 }
@@ -323,15 +322,15 @@ bool SynchTimer::_osCancelTimer( void )
 
 int MultiLock::_osLock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
-    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
+    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS] { };
     for ( int i = 0; i < mSizeCount; ++ i)
     {
         syncHandles[i] = mSyncObjArray[i]->getHandle( );
     }
 
     int index = MultiLock::LOCK_INDEX_INVALID;
-    unsigned int maxEvent= static_cast<unsigned int>(WAIT_OBJECT_0 + mSizeCount);
-    unsigned int result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<unsigned int>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
+    unsigned int maxEvent= static_cast<uint32_t>(WAIT_OBJECT_0) + static_cast<uint32_t>(mSizeCount);
+    unsigned int result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<uint32_t>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
     if (result < maxEvent)
     {
         if (waitForAll == false)
@@ -370,9 +369,9 @@ namespace
 {
     inline double _getFrequencyNs(void)
     {
-        LARGE_INTEGER frequency{ 0 };
+        LARGE_INTEGER frequency{ };
         QueryPerformanceFrequency(&frequency);
-        return ( static_cast<double>(frequency.QuadPart / static_cast<double>(Wait::ONE_SEC.count())) );
+        return ( static_cast<double>(static_cast<double>(frequency.QuadPart) / static_cast<double>(Wait::ONE_SEC.count())) );
     }
 
     const double _ticksPerNs{ _getFrequencyNs() };
@@ -381,11 +380,12 @@ namespace
 
 void Wait::_osInitTimer(void)
 {
-    mTimer = ::CreateWaitableTimerEx( NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS );
+    mTimer = ::CreateWaitableTimerEx( nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS );
 }
 
 void Wait::_osReleaseTimer(void)
 {
+    ASSERT(mTimer != nullptr);
     ::CancelWaitableTimer( mTimer );
     ::CloseHandle( mTimer );
     mTimer = nullptr;
@@ -398,7 +398,7 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
     Wait::eWaitResult result {Wait::eWaitResult::WaitInvalid};
     if (timeout >= Wait::MIN_WAIT)
     {
-        LARGE_INTEGER dueTime;
+        LARGE_INTEGER dueTime{};
         dueTime.QuadPart = static_cast<int64_t>(timeout.count() / ONE_MS.count()) * _COEF;
         ::SetWaitableTimer(mTimer, &dueTime, 0, nullptr, nullptr, FALSE);
         if (::WaitForSingleObject(mTimer, INFINITE) == WAIT_OBJECT_0)
@@ -411,7 +411,7 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
         LARGE_INTEGER start, dueTime;
         QueryPerformanceCounter(&start);
         // due time is current time in ticks + expected ticks
-        int64_t deadline = start.QuadPart + static_cast<int64_t>(timeout.count() * _ticksPerNs);
+        int64_t deadline = start.QuadPart + static_cast<int64_t>(static_cast<double>(timeout.count()) * _ticksPerNs);
         
         do
         {

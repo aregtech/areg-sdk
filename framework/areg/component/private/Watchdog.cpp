@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Watchdog.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread watchdog object implementation
  *
@@ -46,17 +46,6 @@ Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::WATCHD
 Watchdog::~Watchdog(void)
 {
     WatchdogManager::stopTimer(*this);
-}
-
-bool Watchdog::startTimer(void)
-{
-    startGuard();
-    return true;
-}
-
-void Watchdog::stopTimer(void)
-{
-    stopGuard();
 }
 
 void Watchdog::startGuard(void)

@@ -23,13 +23,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
     <Text Include="CMakeLists.txt" />
-    <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ServicingComponent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.md" />
   </ItemGroup>
 </Project>

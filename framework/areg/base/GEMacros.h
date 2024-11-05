@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/GEMacros.h
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Predefined MACRO
  *
@@ -54,7 +54,7 @@
  * \brief   Return size of statically defined array
  **/
 #ifndef MACRO_ARRAYLEN
-    #define MACRO_ARRAYLEN(a)   (sizeof(a) / sizeof(a[0]))
+    #define MACRO_ARRAYLEN(a)   static_cast<uint32_t>(sizeof(a) / sizeof(a[0]))
 #endif  // MACRO_ARRAYLEN
 
 /**
@@ -167,6 +167,14 @@
                 ( (static_cast<uint64_t>(bits_16_8 ) <<  8) & static_cast<uint64_t>(0x000000000000FF00) ) |                 \
                 ( (static_cast<uint64_t>(bits_8_0  ) <<  0) & static_cast<uint64_t>(0x00000000000000FF) )  )
 #endif  // MACRO_CONSTRUCT_64
+
+/**
+ * \brief   Compute the difference (delta) between 2 digits
+ **/
+#ifndef MACRO_DELTA
+    #define MACRO_DELTA(x, y)   ((x) > (y) ? (x) - (y) : (y) - (x))
+#endif // !MACRO_DELTA
+
 
 /**
  * \brief   Creates signed 64-bit integer literals
@@ -311,7 +319,7 @@
  * \brief   Returns the sign of given number
  **/
 #ifndef MACRO_SIGN_OF
-    #define  MACRO_SIGN_OF( val )               ( (val) == 0 ? 0 : ((val) > 0 ? 1 : -1) )
+    #define  MACRO_SIGN_OF( val )               ( static_cast<int>((val) > 0) - static_cast<int>((val) < 0) )
 #endif  // MACRO_SIGN_OF
 
 /**
@@ -339,7 +347,7 @@
  * \brief   Returns absolute value of digit. The return value is always positive
  **/
 #ifndef MACRO_ABS
-    #define MACRO_ABS(x)                        ( (x) < 0 ? -1 * (x) : (x) )
+    #define MACRO_ABS(x)                        ( (x) >= 0 ? (x) : -1 * (x) )
 #endif  // MACRO_ABS
 
 /**
@@ -360,7 +368,7 @@
 #endif  // MACRO_REMAIN_SIZE
 
 #ifndef MACRO_MAKE_CONST_PTR
-    #define MACRO_MAKE_CONST_PTR(ptr)		    ((const unsigned char *)(ptr))
+    #define MACRO_MAKE_CONST_PTR(ptr)		    (reinterpret_cast<const unsigned char *>(ptr))
 #endif // !MACRO_MAKE_CONST_PTR
 
 #ifndef MACRO_MAKE_PTR
@@ -368,23 +376,23 @@
 #endif // !MACRO_MAKE_PTR
 
 #ifndef MACRO_MAKE_NUM_PTR
-    #define MACRO_MAKE_NUM_PTR(type, num)       ((type)(num))
+    #define MACRO_MAKE_NUM_PTR(type, num)       (static_cast<type>(reinterpret_cast<uintptr_t>(num)))
 #endif  // MACRO_MAKE_NUM_PTR
 
 #ifndef MACRO_MAKE_NUMBER64
-    #define MACRO_MAKE_NUMBER64(num)            ((uint64_t)(num))
+    #define MACRO_MAKE_NUMBER64(num)            (static_cast<uint64_t>(num))
 #endif // !MACRO_MAKE_NUMBER64
 
 #ifndef MACRO_MAKE_NUMBER32
-    #define MACRO_MAKE_NUMBER32(num)	        (uint32_t)MACRO_MAKE_NUMBER64(num)
+    #define MACRO_MAKE_NUMBER32(num)	        static_cast<uint32_t>MACRO_MAKE_NUMBER64(num)
 #endif // !MACRO_MAKE_NUMBER32
 
 #ifndef MACRO_MAKE_NUMBER
-    #define MACRO_MAKE_NUMBER(num)              ((size_t)(num))
+    #define MACRO_MAKE_NUMBER(num)              (static_cast<size_t>(num))
 #endif  // !MACRO_MAKE_NUMBER
 
 #ifndef MACRO_PTR2NUMBER
-    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_CONST_PTR(ptr) - MACRO_MAKE_CONST_PTR(nullptr) )
+    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_CONST_PTR(ptr) - static_cast<const unsigned char *>(nullptr) )
 #endif  // MACRO_PTR2NUMBER
 
 #ifndef MACRO_PTR2INT32
@@ -392,16 +400,49 @@
 #endif  // MACRO_PTR2INT32
 
 #ifndef MACRO_COUNT_SIZE
-    #define MACRO_COUNT_SIZE(first, last)       static_cast<int32_t>( MACRO_MAKE_CONST_PTR(last) - MACRO_MAKE_CONST_PTR(first) )
+    #define MACRO_COUNT_SIZE(first, last)       static_cast<uint32_t>( MACRO_MAKE_CONST_PTR(last) - MACRO_MAKE_CONST_PTR(first) )
 #endif  // MACRO_COUNT_SIZE
 
 #ifndef MACRO_ELEM_COUNT
-    #define MACRO_ELEM_COUNT(first, last)       static_cast<int32_t>( last - first )
+    #define MACRO_ELEM_COUNT(first, last)       static_cast<uint32_t>( last - first )
 #endif // !MACRO_ELEM_COUNT
 
 #ifndef MACRO_OFFSETOF
     #define MACRO_OFFSETOF(Cls, mem )           static_cast<uint32_t>((size_t)&(((Cls *)0)->mem))
 #endif // !MACRO_OFFSETOF
+
+//!< MACRO to make strings.
+#ifndef MACRO_MAKE_STRING
+    //!< This macro makes a message string
+    #define MACRO_MAKE_STRING(x)        #x
+    //!< This macro converts a value to a string
+    #define MACRO_CONV_STRING(x)        MACRO_MAKE_STRING(x)
+#endif // !MACRO_MAKE_STRING
+
+//!< This macro makes a message
+#ifndef MACRO_MAKE_MESSAGE
+    #define MACRO_MAKE_MESSAGE(x)       ">>> " ##x
+#endif // !MACRO_MAKE_MESSAGE
+
+#ifndef MACRO_DO_PRAGMA
+    #ifdef MS_VISUAL_CPP
+        #define MACRO_DO_PRAGMA(x) __pragma (#x)
+    #else
+        #define MACRO_DO_PRAGMA(x) _Pragma (#x)
+    #endif
+#endif // MACRO_DO_PRAGMA
+
+//!< This macro creates and outputs compile time message
+#ifndef MACRO_COMPILER_MESSAGE
+    #define MACRO_COMPILER_MESSAGE(msg)     MACRO_DO_PRAGMA(message (">>> " #msg))
+#endif // !MACRO_COMPILER_MESSAGE
+
+//!< This macro creates and outputs compile time message with prefix "TODO" and the message,
+//! followed with the file name and the line number to prompt.
+#ifndef MACRO_TODO
+    #define MACRO_TODO(msg)                 MACRO_DO_PRAGMA(">>> TODO :: " #msg ": here --> " __FILE__":" MACRO_CONV_STRING(__LINE__))
+#endif // !MACRO_TODO
+
 
 /**
  * \brief   Defined assertion macro.

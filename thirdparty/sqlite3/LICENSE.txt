@@ -1,0 +1,3 @@
+SQLite Is Public Domain
+For details please visit the official web-site
+https://www.sqlite.org/copyright.html

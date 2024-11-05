@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/StreamableEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Streamable communication Event.
  *
@@ -20,7 +20,7 @@
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/private/ThreadEventBase.hpp"
+#include "areg/component/Event.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // StreamableEvent class declaration
@@ -33,7 +33,7 @@
  *          created and used directly. Instead, one of derived classes
  *          should be used.
  **/
-class AREG_API StreamableEvent : public ThreadEventBase
+class AREG_API StreamableEvent : public Event
 {
 //////////////////////////////////////////////////////////////////////////
 // friend classes

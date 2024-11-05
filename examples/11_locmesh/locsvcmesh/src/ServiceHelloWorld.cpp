@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        locsvcmesh/src/ServiceHelloWorld.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains implementation of a service.
@@ -41,7 +41,7 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
 
     responseHelloWorld( roleName, clientId );
 
-    if ( mRemainRequest == 0 )
+    if (mRemainRequest <= 0)
     {
         TRACE_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
         if ( mIsMain )
@@ -56,6 +56,8 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
     }
 }
 
+#if AREG_LOGS
+
 void ServiceHelloWorld::requestShutdownService( unsigned int clientID, const String & roleName )
 {
     TRACE_SCOPE( examples_11_locsvcmesh_ServiceHelloWorld_requestShutdownService );
@@ -67,3 +69,15 @@ void ServiceHelloWorld::requestShutdownService( unsigned int clientID, const Str
         Application::signalAppQuit( );
     }
 }
+
+#else  // AREG_LOGS
+
+void ServiceHelloWorld::requestShutdownService( unsigned int /*clientID*/, const String & /*roleName*/ )
+{
+    if ( mIsMain )
+    {
+        Application::signalAppQuit( );
+    }
+}
+
+#endif  // AREG_LOGS

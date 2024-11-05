@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/Layouts.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The collection of layouts
  ************************************************************************/
@@ -18,8 +18,10 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/trace/private/NELogConfig.hpp"
 #include "areg/base/String.hpp"
+#include "areg/trace/private/NELogging.hpp"
+
+#if AREG_LOGS
 
 /************************************************************************
  * Dependencies
@@ -50,12 +52,13 @@ class IELayout;
     class ThreadNameLayout;
     class ScopeNameLayout;
     class AnyTextLayout;
+    class CookieIdLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // IELayout interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The layout base interface extended by all layout objects.
+ * \brief   The layout base interface to extend by all layout objects.
  **/
 class IELayout
 {
@@ -66,7 +69,7 @@ protected:
     /**
      * \brief   Initializes the layout type
      **/
-    IELayout( NELogConfig::eLayouts layout );
+    IELayout( NELogging::eLayouts layout );
 
 public:
     /**
@@ -84,7 +87,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      * \note    Every layout object should overwrite this message to make layout specific outputs.
      **/
@@ -97,7 +100,7 @@ public:
     /**
      * \brief   Returns the layout type
      **/
-    inline NELogConfig::eLayouts getLayoutType( void ) const;
+    inline NELogging::eLayouts getLayoutType( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -106,7 +109,7 @@ protected:
     /**
      * \brief   Layout type. Cannot be modified.
      **/
-    const NELogConfig::eLayouts  mLayout;
+    const NELogging::eLayouts  mLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -176,7 +179,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -242,7 +245,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -308,7 +311,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -318,7 +321,7 @@ public:
 // MessageLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs message data to the stream.
+ * \brief   This layout outputs log message to the stream.
  **/
 class MessageLayout       : public    IELayout
 {
@@ -374,7 +377,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -384,7 +387,7 @@ public:
 // EndOfLineLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout prints end-of-line data at the end of message.
+ * \brief   This layout prints end-of-line data at current position of cursor.
  **/
 class EndOfLineLayout   : public    IELayout
 {
@@ -440,7 +443,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -506,7 +509,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -516,7 +519,7 @@ public:
 // ScopeIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the information of scope ID in the message.
+ * \brief   This layout outputs the information of scope ID in the streaming object.
  **/
 class ScopeIdLayout : public    IELayout
 {
@@ -572,7 +575,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -582,7 +585,7 @@ public:
 // ThreadIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the information of thread ID, which generated logging message.
+ * \brief   This layout outputs thread ID in the streaming object.
  **/
 class ThreadIdLayout      : public    IELayout
 {
@@ -638,7 +641,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -648,7 +651,7 @@ public:
 // ModuleNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the name of running module (process) in the message.
+ * \brief   This layout outputs the name of the thread, which logs message.
  **/
 class ModuleNameLayout      : public    IELayout
 {
@@ -704,7 +707,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -770,7 +773,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -780,7 +783,7 @@ public:
 // ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout output information of scope name in the logging message.
+ * \brief   This layout outputs scope name in the streaming object.
  **/
 class ScopeNameLayout    : public    IELayout
 {
@@ -836,7 +839,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -846,7 +849,7 @@ public:
 // AnyTextLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs any text message as it is without formating.
+ * \brief   This layout outputs any text message as it is without formating in the streaming object.
  **/
 class AnyTextLayout    : public    IELayout
 {
@@ -914,7 +917,7 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
     virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
@@ -930,6 +933,72 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// CookieIdLayout class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the cookie ID of the log message module.
+ **/
+class CookieIdLayout : public IELayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    CookieIdLayout( void );
+
+    /**
+     * \brief   Copies data from given source.
+     * \param   src     The source of data to copy.
+     **/
+    CookieIdLayout( const CookieIdLayout& src );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    CookieIdLayout(CookieIdLayout&& src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~CookieIdLayout( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     * \param   src     The source of data to copy.
+     **/
+    inline CookieIdLayout & operator = ( const CookieIdLayout& src );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    inline CookieIdLayout & operator = ( CookieIdLayout&& src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// IELayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout specific formated text output of give message to the streaming object.
+     * \param   msgLog  The log message data structure that contains information to output message.
+     * \param   stream  The streaming object, where the text message should be written.
+     **/
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
 // Inline methods
 //////////////////////////////////////////////////////////////////////////
 
@@ -937,7 +1006,7 @@ private:
 // IELayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogConfig::eLayouts IELayout::getLayoutType( void ) const
+inline NELogging::eLayouts IELayout::getLayoutType( void ) const
 {
     return mLayout;
 }
@@ -1134,4 +1203,19 @@ inline AnyTextLayout & AnyTextLayout::operator = ( AnyTextLayout && src ) noexce
     return (*this);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// CookieIdLayout class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline CookieIdLayout& CookieIdLayout::operator=(const CookieIdLayout& /* src */)
+{
+    return (*this);
+}
+
+inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& /* src */) noexcept
+{
+    return (*this);
+}
+
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LAYOUTS_HPP

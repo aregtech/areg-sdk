@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyConnectEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Connection event class declaration.
  *
@@ -54,9 +54,9 @@ public:
      * \brief   Initialization constructor. Initialize Connection Event, which
      *          is indicating to Proxy specified in address that the connection
      *          with Stub, specified in address, either is established or lost.
-     * \param   proxy       The address of Proxy to send Connection Event.
-     * \param   server      The address of Stub object. If valid, Proxy can send request events.
-     * \param   isConnected The flag, indicating whether Proxy established connection or it is disconnected
+     * \param   proxy           The address of Proxy to send Connection Event.
+     * \param   server          The address of Stub object. If valid, Proxy can send request events.
+     * \param   connectStatus   Indicates the connection status.
      **/
     ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, NEService::eServiceConnection connectStatus );
 

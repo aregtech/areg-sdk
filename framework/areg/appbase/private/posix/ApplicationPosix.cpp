@@ -1,6 +1,6 @@
 /************************************************************************
 * \file        areg/appbase/private/ApplicationWin.cpp
-* \ingroup     AREG Asynchronous Event-Driven Communication Framework
+* \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
 * \author      Artak Avetyan
 * \brief       AREG Platform, Windows OS specific Application methods implementation
 *              Windows apecifix API calls.
@@ -44,11 +44,11 @@ namespace
                 {
                     if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        NEString::CharPos pos = NEString::findLast<char>(File::getPathSeparator(), buffer);
+                        NEString::CharPos pos = NEString::findLast<char>( File::PATH_SEPARATOR, buffer);
                         if (NEString::isPositionValid(pos))
                         {
                             char* name = buffer + pos + 1;
-                            if (NEString::compareFastIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
+                            if (NEString::compareIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
                             {
                                 pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
                             }
@@ -108,22 +108,21 @@ void Application::_osReleaseHandlers(void)
 }
 
 /**
-* \brief   POSIX specific implementation of method.
-**/
-bool Application::_osStartRouterService( void )
+ * \brief   Windows OS specific implementation of method.
+ **/
+bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* serviceExecutable)
 {
-    int pid = _getProcIdByName(NEApplication::DEFAULT_ROUTER_SERVICE_NAME.data());
-    bool result = pid != -1;
+    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
+    ASSERT(NEString::isEmpty<wchar_t>(serviceExecutable) == false);
+    String serviceExe(serviceExecutable);
+    int pid = _getProcIdByName(serviceExe);
+    bool result{ pid > 0 };
     if (pid < 0)
     {
-        constexpr char const argv0[] { "--console" };
-        
-        String fileName = String::EmptyString;
-        fileName.append(Process::getInstance().getPath())
-                .append(File::getPathSeparator())
-                .append(NEApplication::DEFAULT_ROUTER_SERVICE_NAME);
-
-        result = execl(fileName.getString(), fileName.getString(), argv0, nullptr) > 0;
+        constexpr std::string_view fmt { "systemctl start %s" };
+        char cmd[512];
+        String::formatString(cmd, 512, fmt.data(), serviceName);
+        result = std::system(cmd);
     }
 
     return result;

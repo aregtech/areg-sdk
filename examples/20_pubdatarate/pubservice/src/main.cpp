@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : The application provides network discoverable Public service,
 //               which predefined methods are called from remote clients.
 //============================================================================
@@ -16,6 +16,7 @@
 
 #ifdef WIN32
     #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "aregextend.lib")
     #pragma comment(lib, "20_generated.lib")
 #endif // WINDOWS
 

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/NotificationEvent.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Notification event,
  *              Notification data and notification consumer classes.
@@ -23,7 +23,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/private/ThreadEventBase.hpp"
+#include "areg/component/Event.hpp"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/NEService.hpp"
 
 /************************************************************************
@@ -80,7 +81,7 @@ public:
      *                      If request fails, also request ID.
      * \param	seqNr	    The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, unsigned int seqNr );
+    NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -145,11 +146,11 @@ public:
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline unsigned int getSequenceNr( void ) const;
+    inline const SequenceNumber & getSequenceNr( void ) const;
     /**
      * \brief   Sets sequence number of a caller.
      **/
-    inline void setSequenceNr( unsigned int seqNr );
+    inline void setSequenceNr(const SequenceNumber & seqNr );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -170,7 +171,7 @@ private:
     /**
      * \brief   Call sequence number.
      **/
-    unsigned int            mSequenceNr;
+    SequenceNumber          mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.
@@ -199,7 +200,7 @@ private:
  *          The state-machines as well use internal notification events
  *          when generate event to trigger in state-machine.
  **/
-class AREG_API NotificationEvent   : public ThreadEventBase
+class AREG_API NotificationEvent   : public Event
 {
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, Declare Runtime Event
@@ -214,8 +215,8 @@ public:
      * \brief	Creates and sends Notification Event for
      *          specified notification consumer, and 
      *          containing specified notification data
-     * \param	data	    Notification Data to forward.
-     * \param	consumer	The Notification Consumer, which should be notified.
+     * \param	data	Notification Data to forward.
+     * \param	caller  The Notification Consumer, which should be notified.
      **/
     static void sendEvent(const NotificationEventData & data, IENotificationEventConsumer * caller = nullptr);
 
@@ -287,7 +288,7 @@ private:
  *          Notification Event Consumer to be able to receive and process
  *          notifications from proxies.
  **/
-class AREG_API IENotificationEventConsumer  : public ThreadEventConsumerBase
+class AREG_API IENotificationEventConsumer  : public IEEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -325,7 +326,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// ThreadEventConsumerBase overrides
+// IEEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -380,12 +381,12 @@ inline void NotificationEventData::setNotifyId( unsigned int notifyId )
     mNotifyId = notifyId;
 }
 
-inline unsigned int NotificationEventData::getSequenceNr( void ) const
+inline const SequenceNumber & NotificationEventData::getSequenceNr( void ) const
 {
     return mSequenceNr;
 }
 
-inline void NotificationEventData::setSequenceNr( unsigned int seqNr )
+inline void NotificationEventData::setSequenceNr(const SequenceNumber & seqNr )
 {
     mSequenceNr = seqNr;
 }

@@ -84,10 +84,4 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="register\CMakeLists.txt" />
-    <Text Include="register\res\CMakeLists.txt" />
-    <Text Include="register\services\CMakeLists.txt" />
-    <Text Include="register\ui\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

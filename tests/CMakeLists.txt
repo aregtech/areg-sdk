@@ -1,50 +1,68 @@
 # ###########################################################################
-# The google test settings
+# The Google test settings
+# Copyright 2022-2023 Aregtech
+# ###########################################################################
 
-# ---------------------------------------------------------------------------
-# Description : Compiles test source file and adds the specified unit test
-#               to be discovered and run by CTest.
-# Function ...: addTestEx
-# usage ......: addTestEx( <test name> <source file>) 
-# ---------------------------------------------------------------------------
-function(addTestEx testName testSource)
-    addExecutableEx(${testName} "${testSource}" "GTest::gtest_main")
-    gtest_discover_tests(${testName})
-endfunction(addTestEx testName testSource)
+if (AREG_BUILD_TESTS)
 
-# ---------------------------------------------------------------------------
-# Description : Compiles test source file, which is same as a test executable.
-#               The source file location is in 'units' folder and must not
-#               path separator symbol like '/'. The created executable has
-#               same name with the extension of executable. This means that
-#               if the source file is 'my_test.cpp', the generated executable
-#               will have name 'my_test.cpp.exe' or 'my_test.cpp.out' for Linux.
-#               Use 'addTestEx' function if source file is not in 'units' folder.
-# Function ...: addTest
-# usage ......: addTest( <test name> )
-# ---------------------------------------------------------------------------
-function(addTest testName)
-    addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "")
-endfunction(addTest testName)
+    # local variables
+    set(AREG_GTEST_INCLUDES)
+    set(AREG_GTEST_LIBRARY)
 
-# Check whether the google test sources exist.
-set(GOOGLE_TEST_BASE "${AREG_THIRDPARTY}/googletest")
-if(EXISTS "${GOOGLE_TEST_BASE}/CMakeLists.txt")
-
-    set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
     enable_testing()
-    include_directories(${GOOGLE_TEST_BASE})
+
+    if (AREG_GTEST_PACKAGE)
+        # Check whether the Google Test sources exist.
+        macro_find_package(GTest AREG_GTEST_FOUND AREG_GTEST_INCLUDES AREG_GTEST_LIBRARY)
+    endif(AREG_GTEST_PACKAGE)
+
+    if (AREG_GTEST_FOUND)
+        # Google Test package found, make no actions on it, the libraries can be used.
+        option(AREG_GTEST_FOUND  "GTest package found flag"   TRUE)
+        message(STATUS "AREG: >>> Will use existing in the system googletest package")
+        if (NOT "${AREG_GTEST_INCLUDES}" STREQUAL "")
+            include_directories("${AREG_GTEST_INCLUDES}")
+        endif()
+
+    else(AREG_GTEST_FOUND)
+
+        option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
+        message(STATUS "AREG: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
+        # Google Test package did not find, fetch sources from repository.
+        set(AREG_GTEST_PACKAGE OFF CACHE BOOL "Use GTest installed package" FORCE)
+        include(FetchContent)
+        # Fetch the latest sources from googletest repository.
+        FetchContent_Declare( googletest
+                              GIT_REPOSITORY https://github.com/google/googletest.git
+                              GIT_TAG        "main")
+
+        # For Windows: Prevent overriding the parent project's compiler/linker settings
+        set(gtest_force_shared_crt ON CACHE BOOL "For Windows: Prevent overriding the parent project\'s compiler/linker settings" FORCE)
+	    FetchContent_MakeAvailable(googletest)
+
+        if (NOT "${GTEST_INCLUDE_DIRS}" STREQUAL "")
+            include_directories("${GTEST_INCLUDE_DIRS}")
+        endif()
+
+        include(GoogleTest)
+
+        # Disable some warnings.
+        target_compile_options(gtest PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+        target_compile_options(gtest_main PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+
+        target_compile_options(gmock PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+        target_compile_options(gmock_main PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+
+        # compile gtest from source like imported interface to use to create unit tests.
+        add_library(GTest::GTest INTERFACE IMPORTED)
+        target_link_libraries(GTest::GTest INTERFACE gtest_main)
+
+    endif(AREG_GTEST_FOUND)
+
+    # Include AREG SDK unit test directory.
+    set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
+    set(AREG_UNIT_TEST_PROJECT "areg-unit-tests")
     include_directories(${AREG_TESTS})
-
-    add_subdirectory(${GOOGLE_TEST_BASE})
-
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
-
-else()
-
-    message(SEND_ERROR "Please clone the submodules using command\n
-    '$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git'")
 
 endif()

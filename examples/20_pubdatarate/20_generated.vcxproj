@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B8900569-8956-47AF-A2E7-50EB1DD788DD}</ProjectGuid>
@@ -14,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -39,22 +42,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\LargeDataClientBase.cpp" />
-    <ClCompile Include="generated\src\private\LargeDataEvents.cpp" />
-    <ClCompile Include="generated\src\private\LargeDataProxy.cpp" />
-    <ClCompile Include="generated\src\private\LargeDataStub.cpp" />
-    <ClCompile Include="generated\src\private\NELargeData.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\NELargeData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\LargeDataClientBase.hpp" />
-    <ClInclude Include="generated\src\LargeDataStub.hpp" />
-    <ClInclude Include="generated\src\NELargeData.hpp" />
-    <ClInclude Include="generated\src\private\LargeDataEvents.hpp" />
-    <ClInclude Include="generated\src\private\LargeDataProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\LargeDataClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\LargeDataStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\NELargeData.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataProxy.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\LargeData.siml" />

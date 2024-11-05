@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceManager.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Trace manager. The container of scopes, configuring
  *              tracer, starts and stops tracing.
@@ -19,30 +19,35 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/private/TraceEvent.hpp"
 
-#include "areg/trace/private/LogConfiguration.hpp"
-#include "areg/base/TEResourceMap.hpp"
-#include "areg/base/Containers.hpp"
-#include "areg/base/Version.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
-
+#include "areg/trace/LogConfiguration.hpp"
 #include "areg/trace/NETrace.hpp"
-#include "areg/trace/private/TraceProperty.hpp"
+#include "areg/trace/private/ScopeController.hpp"
 #include "areg/trace/private/FileLogger.hpp"
 #include "areg/trace/private/DebugOutputLogger.hpp"
+#include "areg/trace/private/NetTcpLogger.hpp"
+#include "areg/trace/private/DatabaseLogger.hpp"
+#include "areg/trace/private/TraceEventProcessor.hpp"
 
 #include <string_view>
+
+#if AREG_LOGS
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class IELogDatabaseEngine;
 class TraceScope;
 class LogMessage;
 class IELogger;
+namespace NETrace
+{
+    struct sLogMessage;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class declaration
@@ -55,113 +60,59 @@ class IELogger;
  *          when destroyed. Before system is able to log, the tracing should 
  *          be started (trace thread) and the configuration should be loaded.
  **/
-class TraceManager  : private   DispatcherThread
+class TraceManager  : public    DispatcherThread
                     , private   IETraceEventConsumer
 {
+    friend class TraceEventProcessor;
+
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 private:
 
-//////////////////////////////////////////////////////////////////////////
-// TraceManager::TraceScopeMap class declaration
-//////////////////////////////////////////////////////////////////////////
-    //!< Scope hash map
-    using MapTraceScope     = TEHashMap<unsigned int, TraceScope *>;
-    //!< Scope resource map helper
-    using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope *>;
-    /**
-     * \brief   Resource map, container of all logging scopes
-     **/
-    class TraceScopeMap   : public TELockResourceMap<unsigned int, TraceScope *, MapTraceScope, ImplTraceScope>
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // TraceScopeMap friend classes
-    //////////////////////////////////////////////////////////////////////////
-        friend TraceManager;
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / Destructor
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Constructor.
-         **/
-        TraceScopeMap( void ) = default;
-        /**
-         * \brief   Destructor.
-         **/
-        ~TraceScopeMap( void ) = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
-    private:
-        DECLARE_NOCOPY_NOMOVE( TraceScopeMap );
-    };
-
-    /**
-     * \brief   The map of scopes to configure.
-     * \tparam  Key     The key is a name of scope
-     * \tparam  Value   The value is a digital number of scope.
-     **/
-
-    using ListScopes        = StringToIntegerHashMap;
-    /**
-     * \brief   The list of logging properties
-     * \tparam  Value   The value is a property
-     **/
-    using ListProperties    = TELinkedList<TraceProperty>;
-
     //!< The thread name of tracer
     static constexpr std::string_view   TRACER_THREAD_NAME          { "_AREG_TRACER_THREAD_" };
-
-    //!< All scopes.
-    static constexpr std::string_view   LOG_SCOPES_ALL              { "*" };
-
-    //!< Scope indicating AREG SDK internal logs.
-    static constexpr std::string_view   LOG_SCOPES_SELF             { "areg_*" };
 
     //!< Logging activation waiting maximum timeout
     static constexpr unsigned int       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
 
-    //!< Structure of default enabled scopes and priorities.
-    typedef struct S_LogEnabling
-    {
-        const char * const  logScope;   //!< Name of the scope or scope group
-        const unsigned int  logPrio;    //!< The logging priority for that scope or scope group
-    } sLogEnabling;
-
-    //!< The list scopes or group of scopes and enabled logging priority.
-    //!< The last entry in the list must have nullptr instead of name.
-    static const sLogEnabling   DEFAULT_LOG_ENABLED_SCOPES[];
+    //!< Reconnect timeout in milliseconds
+    static constexpr unsigned int       LOG_RECONNECT_TIMEOUT       { NECommon::TIMEOUT_1_SEC * 5 };
 
 public:
-    /**
-     * \brief   Returns singleton instance of trace scope manager
-     **/
-    static TraceManager & getInstance( void );
 
     /**
-     * \brief   Returns the ID of given scope name.
-     *          If scope name is nullptr or empty, it returns zero.
-     * \param   scopeName   The name of scope. If nullptr or empty,
-     *                      the return value is zero.
-     * \return  Returns the ID of given scope name.
-     **/
-    static unsigned int makeScopeId( const char * scopeName );
-
-    /**
-     * \brief   Sends logging message for logging.
+     * \brief   Triggers an event to log message created locally in the same process.
      * \param   logData The logging message object, which will be sent to all loggers.
      **/
-    static void sendLogMessage( LogMessage & logData );
+    static void logMessage( const NETrace::sLogMessage & logData );
+
+    /**
+     * \brief   Triggers an event to log message contained in the shared buffer.
+     * \param   logData     The instance of message in shared buffer to log.
+     **/
+    static void logMessage(const SharedBuffer& logData);
+
+    /**
+     * \brief   Triggers an event to log remote message.
+     * \param   logData     The instance of remote message buffer, which contains the
+     *                      log message from another process.
+     **/
+    static void logMessage( const RemoteMessage& logData );
+
+    /**
+     * \brief   Generates and queues a message to execute internal command.
+     * \param   cmd     The command to execute.
+     * \param   data    The binary data to pass in the command.
+     **/
+    static void sendCommandMessage(TraceEventData::eTraceAction cmd, const SharedBuffer& data);
 
     /**
      * \brief   Call to configure logging. The passed configuration file name should be either
      *          full or relative path to configuration file. If passed nullptr,
      *          the default configuration file will be loaded.
      **/
-    static bool configureLogging( const char * configFile = nullptr );
+    static bool readLogConfig( const char * configFile = nullptr );
 
     /**
      * \brief   Call to initialize and start logging.
@@ -171,32 +122,54 @@ public:
      * \param   configFile  The full or relative path to configuration file.
      *                      If nullptr, the log configuration will be read out
      *                      from default configuration file.
-     * \param   waitTimeout The timeout in milliseconds to wait until logging starts.
      * \return  Returns true if could read configuration and start logging thread.
      *          If logging was already started, the call will be ignored and return true.
      *          If starting fails, returns false.
      **/
-    static bool startLogging( const char * configFile = nullptr, unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    static bool startLogging( const char * configFile = nullptr );
 
     /**
-     * \brief   Call to stop logging. This call will stop all loggers and exit thread.
-     *          The call will be blocked until either logging thread is not stopped,
-     *          or the waiting timeout is not expired.
+     * \brief   Saves the current logging state in the configuration file.
+     * \param   configFile  Relative of absolute path to the configuration file.
+     *                      If nullptr, it uses the file used to configure the logs.
+     * \return  Returns true if succeeded to save the current logging state in the configuration file.
      **/
-    static void stopLogging( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    static bool saveLogConfig( const char * configFile = nullptr );
+
+    /**
+     * \brief   Updates the list of scopes and log priorities in the application configuration.
+     **/
+    static void updateScopeConfiguration( void );
+
+    /**
+     * \brief   Call to stop Logging Manager and exits the thread.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until logging Manager completes jobs and cleans resources.
+     *          Otherwise, this triggers stop and exit events, and immediately returns.
+     * \param   waitComplete    If true, waits for Logging Manager to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and returns.
+     **/
+    inline static void stopLogging(bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Logging Manager did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Logging Manager without waiting for completion.
+     **/
+    inline static void waitLoggingEnd(void);
 
     /**
      * \brief   Registers instance of trace scope object in trace manager.
      *          The trace scope should have unique ID.
      * \param   scope   The instance of trace scope object to register
      **/
-    static void registerTraceScope( TraceScope & scope );
+    inline static void registerTraceScope( TraceScope & scope );
 
     /**
      * \brief   Unregisters instance of trace scope object in trace manager.
      * \param   scope   The instance of trace scope to unregister
      **/
-    static void unregisterTraceScope( TraceScope & scope );
+    inline static void unregisterTraceScope( TraceScope & scope );
 
     /**
      * \brief   Activates trace scope. Finds priority in priority list
@@ -204,12 +177,12 @@ public:
      * \param   scope   The instance of trace scope object to activate
      *                  and set logging priority.
      **/
-    static void activateTraceScope( TraceScope & scope );
+    inline static void activateTraceScope( TraceScope & scope );
 
     /**
      * \brief   Returns true if logging has started
      **/
-    static inline bool isLoggingStarted( void );
+    inline static bool isLoggingStarted( void );
 
     /**
      * \brief   Returns true if logging is configured and ready to start
@@ -222,11 +195,6 @@ public:
     static bool isLoggingEnabled( void );
 
     /**
-     * \brief   Returns the logging config file name set in the system.
-     **/
-    static const String& getConfigFile( void );
-
-    /**
      * \brief   Call to force to activate logging with default settings.
      *          The logging will be activated only if logging is not running and
      *          only in debug build. For release, please use real logging configuration.
@@ -236,13 +204,89 @@ public:
 
     /**
      * \brief   Forces to enable logging.
+     *          If logging is not configured, it will set default configuration,
+     *          then it will enable and start logging. If logging is configured,
+     *          it will enable and start logging with the existing configuration.
+     *          To overwrite the existing configuration and use default, call
+     *          method setDefaultConfiguration()
+     * \see     setDefaultConfiguration
      **/
-    static void forceEnableLogging( void );
+    static void forceEnableLogging(void);
+
+    /**
+     * \brief   Call to set the default configuration of logging if it is not
+     *          configured or overwrite the existing configuration, depending
+     *          on the passed overwriteExisting parameter.
+     * \param   overwriteExisting   Flag, indicating whether the existing configuration
+     *                              should be overwritten or not.
+     *                              If the parameter is true, then independent whether
+     *                              whether the configuration was already loaded or not
+     *                              the function will reset the existing configuration
+     *                              and set default parameters. Otherwise, the default
+     *                              configuration is used only if not configured.
+     *                              Note, that after calling this method, the application
+     *                              ignores to load configuration from the file.
+     *                              Reset configuration to load from file.
+     **/
+    static void setDefaultConfiguration(bool overwriteExisting);
+
+    /**
+     * \brief   Call to change the scope log priority.
+     * \param   scopeName   The name of the existing scope. Ignored if scope does not exit.
+     * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
+     * \return  Returns true if scope found and priority changed.
+     **/
+    static bool setScopePriority( const char * scopeName, unsigned int newPrio );
+
+    /**
+     * \brief   Call to change the scope log priority.
+     * \param   scopeName   The name of a single scope or scope group ended with '*' to change priority.
+     * \param   scopeId     The ID of the scope, ignored in case of scope group.
+     * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
+     **/
+    static void updateScopes(const String & scopeName, unsigned int scopeId, unsigned int newPrio);
+
+    /**
+     * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
+     * \param   scopeName   The name of the existing scope.
+     * \return  Is found the scope, returns the actual priority of the scope.
+     *          Otherwise, returns invalid priority (NETrace::eLogPriority::PrioInvalid).
+     **/
+    static unsigned int getScopePriority( const char * scopeName );
+
+    /**
+     * \brief   Call to set the instance of log database engine responsible to handle the database.
+     *          If not null, the log messages are forwarded to the database engine.
+     *          Otherwise, ignores to write the log messages.
+     * \param   dbEngine    The pointer to the log database engine to set.
+     **/
+    static void setLogDatabaseEngine(IELogDatabaseEngine * dbEngine);
+
+    /**
+     * \brief   Returns true if database and data tables are initialized and the
+     *          logging database is ready to save messages.
+     **/
+    static bool isLogDabaseEngineInitialized(void);
+
+    /**
+     * \brief   Returns true if logging in the database is enabled. The value is read from configuration file.
+     **/
+    static bool isLogDatabaseEnabled(void);
+
+    /**
+     * \brief   Returns the logger service connection cookie.
+     */
+    inline static const ITEM_ID & getConnectionCookie(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Returns singleton instance of trace scope manager
+     **/
+    static TraceManager& getInstance(void);
+
     /**
      * \brief   Protected default constructor.
      **/
@@ -253,248 +297,7 @@ private:
      **/
     virtual ~TraceManager( void ) = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Registers instance of trace scope object in trace manager.
-     *          The trace scope should have unique ID.
-     * \param   scopeRegister   The instance trace scope object to register
-     **/
-    void _registerScope( TraceScope & scopeRegister );
-
-    /**
-     * \brief   Unregisters instance of trace scope object in trace manager.
-     * \param   scopeUnregister The instance of trace scope to unregister
-     **/
-    void _unregisterScope( TraceScope & scopeUnregister );
-
-    /**
-     * \brief   By given unique scope ID it returns instance of
-     *          Trace Scope object. Returns nullptr if there is no
-     *          trace scope object with specified ID registered 
-     *          in the system.
-     * \param   scopeId     The unique trace scope ID to lookup in the system
-     * \return  Returns valid pointer to Trace Scope object if it is
-     *          registered. Otherwise, it returns nullptr.
-     **/
-    inline TraceScope * _getScope( unsigned int scopeId ) const;
-
-    /**
-     * \brief   By given unique scope name it returns instance of
-     *          Trace Scope object. Returns nullptr if there is no
-     *          trace scope object with specified name registered 
-     *          in the system.
-     * \param   scopeName   The unique trace scope name to lookup in the system
-     * \return  Returns valid pointer to Trace Scope object if it is
-     *          registered. Otherwise, it returns nullptr.
-     **/
-    inline TraceScope * _getScope( const char * scopeName ) const;
-
-    /**
-     * \brief   Checks whether there is trace scope object registered
-     *          in the system with specified unique ID.
-     * \param   scopeId     The unique trace scope ID to check in the system.
-     * \return  Returns true if there is trace scope with specified unique ID
-     *          is registered in the system. Otherwise, it returns false.
-     **/
-    bool _isScopeRegistered( unsigned int scopeId ) const;
-
-    /**
-     * \brief   Checks whether there is trace scope object registered
-     *          in the system with specified unique name.
-     * \param   scopeName   The unique trace scope name to check in the system.
-     * \return  Returns true if there is trace scope with specified unique name
-     *          is registered in the system. Otherwise, it returns false.
-     **/
-    bool _isScopeRegistered( const char * scopeName ) const;
-
-    /**
-     * \brief   Checks whether there is trace scope object registered
-     *          in the system.
-     * \param   scope       The trace scope to check in the system.
-     * \return  Returns true if there is specified trace scope
-     *          is registered in the system. Otherwise, it returns false.
-     **/
-    bool _isScopeRegistered( const TraceScope & scope ) const;
-
-    /**
-     * \brief   Returns true if configuration of trace manager is valid.
-     *          The trace manager is valid if at least one logger is specified,
-     *          even if tracing is disabled or the system has no traces.
-     **/
-    bool _isValid( void ) const;
-
-    /**
-     * \brief   Returns true if logging is enabled.
-     **/
-    bool _isEnabled( void ) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-
-/************************************************************************/
-// Trace Scope functionalities
-/************************************************************************/
-
-    /**
-     * \brief   By given unique ID searches trace scope object in the map and if found, 
-     *          sets the specified scope priority.
-     * \param   scopeId     The unique ID of trace scope to search in the system.
-     * \param   newPrio     The priority value to set for trace scope.
-     **/
-    void setScopePriority( unsigned int scopeId, unsigned int newPrio );
-
-    /**
-     * \brief   By given unique ID searches trace scope object in the map and if found, 
-     *          sets the specified scope priority.
-     * \param   scopeId     The unique ID of trace scope to search in the system.
-     * \param   newPrio     The name of priority value to set for trace scope.
-     **/
-    inline void setScopePriority( unsigned int scopeId, const String & newPrio );
-
-    /**
-     * \brief   By given unique name searches trace scope object in the map and if found, 
-     *          sets the specified scope priority.
-     * \param   scopeName   The unique name of trace scope to search in the system.
-     * \param   newPrio     The priority value to set for trace scope.
-     **/
-    inline void setScopePriority( const String& scopeName, unsigned int newPrio );
-
-    /**
-     * \brief   By given unique name searches trace scope object in the map and if found, 
-     *          sets the specified scope priority.
-     * \param   scopeName   The unique name of trace scope to search in the system.
-     * \param   newPrio     The name of priority value to set for trace scope.
-     **/
-    inline void setScopePriority( const String& scopeName, const String& newPrio );
-
-    /**
-     * \brief   By given unique ID searches trace scope object in the map and if found, 
-     *          adds the specified scope priority.
-     * \param   scopeId     The unique ID of trace scope to search in the system.
-     * \param   addPrio     The priority value to add for trace scope.
-     **/
-    void addScopePriority( unsigned int scopeId, NETrace::eLogPriority addPrio );
-
-    /**
-     * \brief   By given unique ID searches trace scope object in the map and if found, 
-     *          adds the specified scope priority.
-     * \param   scopeId     The unique ID of trace scope to search in the system.
-     * \param   addPrio     The name of priority value to add for trace scope.
-     **/
-    inline void addScopePriority( unsigned int scopeId, const String& addPrio );
-
-    /**
-     * \brief   By given unique name searches trace scope object in the map and if found, 
-     *          adds the specified scope priority.
-     * \param   scopeName   The unique name of trace scope to search in the system.
-     * \param   addPrio     The priority value to add for trace scope.
-     **/
-    inline void addScopePriority( const String& scopeName, NETrace::eLogPriority addPrio );
-
-    /**
-     * \brief   By given unique name searches trace scope object in the map and if found, 
-     *          adds the specified scope priority.
-     * \param   scopeName   The unique name of trace scope to search in the system.
-     * \param   addPrio     The name of priority value to add for trace scope.
-     **/
-    inline void addScopePriority( const String& scopeName, const String& addPrio );
-
-    /**
-     * \brief   By given unique ID searches trace scope object in the map and if found, 
-     *          removes the specified scope priority.
-     * \param   scopeId     The unique ID of trace scope to search in the system.
-     * \param   remPrio     The priority value to remove for trace scope.
-     **/
-    void removeScopePriority( unsigned int scopeId, NETrace::eLogPriority remPrio );
-
-    /**
-     * \brief   By given unique ID searches trace scope object in the map and if found, 
-     *          removes the specified scope priority.
-     * \param   scopeId     The unique ID of trace scope to search in the system.
-     * \param   remPrio     The name of priority value to remove for trace scope.
-     **/
-    inline void removeScopePriority( unsigned int scopeId, const String& remPrio );
-
-    /**
-     * \brief   By given unique name searches trace scope object in the map and if found, 
-     *          removes the specified scope priority.
-     * \param   scopeName   The unique name of trace scope to search in the system.
-     * \param   remPrio     The priority value to remove for trace scope.
-     **/
-    inline void removeScopePriority( const String & scopeName, NETrace::eLogPriority remPrio );
-
-    /**
-     * \brief   By given unique name searches trace scope object in the map and if found, 
-     *          removes the specified scope priority.
-     * \param   scopeName   The unique name of trace scope to search in the system.
-     * \param   remPrio     The name of priority value to remove for trace scope.
-     **/
-    inline void removeScopePriority( const String & scopeName, const String & remPrio );
-
-    /**
-     * \brief   By given name of scope group searches trace scope object in the map and for every
-     *          found scope object, sets the specified scope priority.
-     * \param   scopeGroupName  The name of trace scope group to search in the system.
-     * \param   newPrio         The priority value to set for every trace scope.
-     * \return  Returns number of trace scope object, which priority has been changed.
-     *          Returns zero, if could not find any trace scope within specified group.
-     **/
-    int setScopeGroupPriority( const String & scopeGroupName, unsigned int newPrio );
-
-    /**
-     * \brief   By given name of scope group searches trace scope object in the map and for every
-     *          found scope object, sets the specified scope priority.
-     * \param   scopeGroupName  The name of trace scope group to search in the system.
-     * \param   newPrio         The name of priority value to set for every trace scope.
-     * \return  Returns number of trace scope object, which priority has been changed.
-     *          Returns zero, if could not find any trace scope within specified group.
-     **/
-    inline int setScopeGroupPriority( const String & scopeGroupName, const String & newPrio );
-
-    /**
-     * \brief   By given name of scope group searches trace scope object in the map and for every
-     *          found scope object, adds the specified scope priority.
-     * \param   scopeGroupName  The name of trace scope group to search in the system.
-     * \param   addPrio         The priority value to add for every trace scope.
-     * \return  Returns number of trace scope object, which priority has been changed.
-     *          Returns zero, if could not find any trace scope within specified group.
-     **/
-    int addScopeGroupPriority( const String & scopeGroupName, NETrace::eLogPriority addPrio );
-
-    /**
-     * \brief   By given name of scope group searches trace scope object in the map and for every
-     *          found scope object, adds the specified scope priority.
-     * \param   scopeGroupName  The name of trace scope group to search in the system.
-     * \param   addPrio         The name of priority value to add for every trace scope.
-     * \return  Returns number of trace scope object, which priority has been changed.
-     *          Returns zero, if could not find any trace scope within specified group.
-     **/
-    inline int addScopeGroupPriority( const String & scopeGroupName, const String & addPrio );
-
-    /**
-     * \brief   By given name of scope group searches trace scope object in the map and for every
-     *          found scope object, removes the specified scope priority.
-     * \param   scopeGroupName  The name of trace scope group to search in the system.
-     * \param   remPrio         The priority value to remove for every trace scope.
-     * \return  Returns number of trace scope object, which priority has been changed.
-     *          Returns zero, if could not find any trace scope within specified group.
-     **/
-    int removeScopeGroupPriority( const String& scopeGroupName, NETrace::eLogPriority remPrio );
-
-    /**
-     * \brief   By given name of scope group searches trace scope object in the map and for every
-     *          found scope object, removes the specified scope priority.
-     * \param   scopeGroupName  The name of trace scope group to search in the system.
-     * \param   remPrio         The name of priority value to remove for every trace scope.
-     * \return  Returns number of trace scope object, which priority has been changed.
-     *          Returns zero, if could not find any trace scope within specified group.
-     **/
-    inline int removeScopeGroupPriority( const String& scopeGroupName, const String& remPrio );
-
+protected:
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -519,17 +322,19 @@ private:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // IETraceEventConsumer interface overrides
 /************************************************************************/
+    /**
+     * \brief   Called by event dispatcher when processes the logging event data.
+     * \param   data    The logging event data to process.
+     **/
     virtual void processEvent( const TraceEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
@@ -537,109 +342,53 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    /**
-     * \brief   Returns instance of trace manager.
-     **/
-    inline TraceManager & self( void );
-
-    /**
-     * \brief   Send log event, which contains specified logging event data
-     **/
-    void _sendLogEvent( const TraceEventData & data );
-
 /************************************************************************/
-// Logging configuration, start / stop
+// Logging initialization, start / stop
 /************************************************************************/
-
-    /**
-     * \brief   Loads specified logging configuration file. If specified file is nullptr or empty,
-     *          the system will use default path to load configuration and scopes.
-     * \param   filePath    Relative or absolute path of configuration file.
-     * \return  Returns true if succeeded to load configuration file. Otherwise, returns false.
-     *          The valid configuration should contain at least one tracing, even if it is disabled.
-     **/
-    bool loadConfiguration( const char * filePath = nullptr );
-    /**
-     * \brief   Loads specified logging configuration file. The specified file should be already
-     *          opened for reading. If file is not opened for reading, the system will not automatically open file.
-     * \param   configFile  The instance of valid configuration file opened for reading.
-     * \return  Returns true if succeeded to load configuration file. Otherwise, returns false.
-     *          The valid configuration should contain at least one tracing, even if it is disabled.
-     **/
-    bool loadConfiguration( const FileBase & configFile );
 
     /**
      * \brief   Starts logging thread, loads scopes and sets up all tracers.
      *          The configuration should be already loaded.
-     * \param   waitTimeout     The timeout in milliseconds to wait until logging starts.
      * \return  Returns true if started with success.
      **/
-    bool startLoggingThread( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    bool startLoggingThread( void );
+     
+     /**
+      * \brief   Call to stop Logging Manager and exits the thread.
+      *          If 'waitComplete' is set to true, the calling thread is
+      *          blocked until logging Manager completes jobs and cleans resources.
+      *          Otherwise, this triggers stop and exit events, and immediately returns.
+      * \param   waitComplete    If true, waits for Logging Manager to complete the jobs
+      *                          and exit threads. Otherwise, it triggers exit and returns.
+      **/
+    void stopLoggingThread(bool waitComplete);
 
     /**
-     * \brief   Stops logging thread. If needed, it will wait for completion.
-     * \param   waitTimeout     Timeout to wait in milliseconds. If zero, it will not wait
-     *                          and immediately returns from method. If INFINITE (value 0xFFFFFFFF),
-     *                          it will wait until thread completes job and exits.
+     * \brief   The calling thread is blocked until Logging Manager did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Logging Manager without waiting for completion.
      **/
-    void stopLoggingThread( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
-
-    /**
-     * \brief   Call if a logging property of specified scopes or scope group has been changed.
-     *          For example, if a logging priority is changed, enabled or disabled, or the SCOPE
-     *          flag is removed and the state should be saved in configuration file, call method to
-     *          update current property to save in configuration file.
-     * \param   scopeList   The list of scopes, which are changed property.
-     **/
-    void onUpdateScopes( SortedStringList & scopeList );
-
-    /**
-     * \brief   Activates specified scope. The system cannot log if a scope is inactive.
-     *          No property of specified scope is changed, the priority remains unchanged.
-     * \param   traceScope  The scope to activate.
-     **/
-    void activateScope( TraceScope & traceScope );
-
-    /**
-     * \brief   Activates specified scope and sets specified logging priority. 
-     *          The system cannot log if a scope is inactive. The method as well changes logging priority.
-     * \param   traceScope  The scope to activate and update logging priority.
-     **/
-    void activateScope( TraceScope & traceScope, unsigned int defaultPriority );
-
-    /**
-     * \brief   Changes the logging priority of specified scope. If found a scope with specified name,
-     *          the system changes logging priority
-     * \param   scopeName   The name of scope to search in the system to change priority.
-     * \param   logPriority The logging priority to set for scope.
-     **/
-    void setScopesPriority( const String & scopeName, unsigned int logPriority );
+    void waitLoggingThreadEnd(void);
 
     /**
      * \brief   Returns true, if settings to log traces on remote host are valid.
      **/
-    bool isHostValid( void ) const;
+    bool isRemoteLoggingEnabled( void ) const;
 
     /**
      * \brief   Returns true, if settings to log traces in database are valid.
      **/
-    bool isDatabaseValid( void ) const;
+    bool isDatabaseLoggingEnabled( void ) const;
 
     /**
      * \brief   Returns true, if settings to log traces in file are valid.
      **/
-    bool isFileValid( void ) const;
+    bool isFileLoggingEnabled( void ) const;
 
     /**
      * \brief   Returns true, if settings to log traces in debugging output window are valid.
      **/
-    bool isDebugOutputValid( void ) const;
-
-    /**
-     * \brief   Called after loading configuration to initialize configuration objects.
-     *          Returns true, if at least one logger is initialized.
-     **/
-    bool initializeConfig( void );
+    bool isDebugOutputLoggingEnabled( void ) const;
 
     /**
      * \brief   Clears logging configuration data.
@@ -647,8 +396,12 @@ private:
     void clearConfigData( void );
 
     /**
+     * \brief   Resets the scopes.
+     **/
+    void resetScopes(void);
+
+    /**
      * \brief   Loads scopes and sets priorities specified in configuration.
-     * \return  Returns true, if loading of scopes succeeded.
      **/
     void traceStartLogs( void );
 
@@ -658,67 +411,51 @@ private:
     void traceStopLogs( void );
 
     /**
-     * \brief   Logs (traces) the specified message.
-     *          The method passes message to every logger to output message.
+     * \brief   Writes a log message to the existing loggers.
      * \param   logMessage  The message to log.
-     * \note    Currently only logging in output window and file system works.
-     *          There should be slight refactoring to be able to register any logger.
      **/
-    void traceMessage( const LogMessage & logMessage );
+    void writeLogMessage( const NETrace::sLogMessage & logMessage );
 
     /**
-     * \brief   Sets activity flag of every registered scope.
-     *          If scopes are inactive, they cannot log anymore.
-     * \param   makeActive  The flag, indicating whether the scopes should be active or inactive.
+     * \brief   Sends log event with the preferred priority.
+     *          By default, it the priority is Normal.
      **/
-    void setScopesActivity( bool makeActive );
+    void sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
 
     /**
-     * \brief   Activated the tracing default settings without reading out the setting from configuration file.
-     *          It will enable all scopes and logs of current module using default layout format.
+     * \brief   Changes the scope priority. It can be either a single scope or scope group.
+     * \param   scopeName   The name of a single scope or group of scopes ending with '*'.
+     * \param   scopeId     The ID of the scope. If it is a scope group, the value is ignored.
+     * \param   scopePrio   The new priority to set to the scope or scope group.
      **/
-    bool activateTracingDefaults( void );
+    void changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio );
+
+    /**
+     * \brief   Returns read-only list of registered scopes.
+     **/
+    inline const TEHashMap<unsigned int, TraceScope *> & getScopeList( void ) const;
+
+    /**
+     * \brief   Returns instance of trace manager.
+     **/
+    inline TraceManager & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The map of registered trace scope objects.
+     * \brief   The trace control object to activate / deactivate and change priority of the scopes.
      **/
-    TraceScopeMap       mMapTraceScope;
-    /**
-     * \brief   The flag, indicating whether the scopes are activated or not.
-     **/
-    bool                mScopesActivated;
+    ScopeController     mScopeController;
     /**
      * \brief   The flag, indicating whether logger is started or not
      **/
     bool                mIsStarted;
     /**
-     * \brief   The file path of configuration file.
-     **/
-    String              mConfigFile;
-    /**
      * \brief   The logging configuration
      **/
     LogConfiguration    mLogConfig;
-    /**
-     * \brief   The list of scopes read out from configuration file.
-     **/
-    ListScopes          mConfigScopeList;
-    /**
-     * \brief   The list of scope groups read out from configuration file
-     **/
-    ListScopes          mConfigScopeGroup;
-    /**
-     * \brief   The list of all properties read out from configuration file.
-     **/
-    ListProperties      mPropertyList;
-    /**
-     * \brief   The unique ID of the module.
-     **/
-    ITEM_ID             mModuleId;
     /**
      * \brief   The file logger object, to output logs in the file.
      **/
@@ -727,6 +464,18 @@ private:
      * \brief   The debug output logger to output logs in the output device (window).
      **/
     DebugOutputLogger   mLoggerDebug;
+    /**
+     * \brief   The remote TCP/IP logging service.
+     **/
+    NetTcpLogger        mLoggerTcp;
+    /**
+     * \brief   The database logger object to write logs in the DB.
+     **/
+    DatabaseLogger      mLoggerDatabase;
+    /**
+     * \brief   The log event processor helper object.
+     **/
+    TraceEventProcessor mEventProcessor;
     /**
      * \brief   An event, indicating that the logging has been started.
      */
@@ -747,6 +496,41 @@ private:
 // TraceManager class inline functions
 //////////////////////////////////////////////////////////////////////////
 
+inline void TraceManager::stopLogging(bool waitComplete)
+{
+    getInstance().stopLoggingThread(waitComplete);
+}
+
+inline void TraceManager::waitLoggingEnd(void)
+{
+    getInstance().waitLoggingThreadEnd();
+}
+
+inline void TraceManager::registerTraceScope(TraceScope& scope)
+{
+    getInstance().mScopeController.registerScope(scope);
+}
+
+inline void TraceManager::unregisterTraceScope( TraceScope & scope )
+{
+    getInstance( ).mScopeController.unregisterScope( scope );
+}
+
+inline void TraceManager::activateTraceScope(TraceScope& scope)
+{
+    getInstance().mScopeController.activateScope(scope);
+}
+
+inline const ITEM_ID & TraceManager::getConnectionCookie(void)
+{
+    return TraceManager::getInstance().mLoggerTcp.getConnectionCookie();
+}
+
+inline const TEHashMap<unsigned int, TraceScope *> & TraceManager::getScopeList( void ) const
+{
+    return mScopeController.getScopeList( );
+}
+
 inline TraceManager & TraceManager::self( void )
 {
     return (*this);
@@ -758,74 +542,5 @@ inline bool TraceManager::isLoggingStarted( void )
     return getInstance().mIsStarted;
 }
 
-inline TraceScope * TraceManager::_getScope( unsigned int scopeId ) const
-{
-    return mMapTraceScope.findResourceObject( scopeId );
-}
-
-inline TraceScope * TraceManager::_getScope(const char * scopeName) const
-{
-    return _getScope( TraceManager::makeScopeId(scopeName) );
-}
-
-inline void TraceManager::setScopePriority(unsigned int scopeId, const String & newPrio)
-{
-    setScopePriority( scopeId, NETrace::convFromString(newPrio) );
-}
-
-inline void TraceManager::setScopePriority(const String & scopeName, unsigned int newPrio)
-{
-    setScopePriority( TraceManager::makeScopeId(scopeName), newPrio );
-}
-
-inline void TraceManager::setScopePriority(const String & scopeName, const String & newPrio)
-{
-    setScopePriority( TraceManager::makeScopeId(scopeName), NETrace::convFromString(newPrio) );
-}
-
-inline void TraceManager::addScopePriority(unsigned int scopeId, const String & addPrio)
-{
-    addScopePriority( scopeId, NETrace::convFromString(addPrio) );
-}
-
-inline void TraceManager::addScopePriority(const String & scopeName, NETrace::eLogPriority addPrio)
-{
-    addScopePriority( TraceManager::makeScopeId(scopeName), addPrio );
-}
-
-inline void TraceManager::addScopePriority(const String & scopeName, const String & addPrio)
-{
-    addScopePriority( TraceManager::makeScopeId(scopeName), NETrace::convFromString(addPrio) );
-}
-
-inline void TraceManager::removeScopePriority(unsigned int scopeId, const String & remPrio)
-{
-    removeScopePriority( scopeId, NETrace::convFromString(remPrio) );
-}
-
-inline void TraceManager::removeScopePriority(const String & scopeName, NETrace::eLogPriority remPrio)
-{
-    removeScopePriority( TraceManager::makeScopeId(scopeName), remPrio );
-}
-
-inline void TraceManager::removeScopePriority(const String & scopeName, const String & remPrio)
-{
-    removeScopePriority( TraceManager::makeScopeId(scopeName), NETrace::convFromString(remPrio) );
-}
-
-inline int TraceManager::setScopeGroupPriority(const String & scopeGroupName, const String & newPrio)
-{
-    return setScopeGroupPriority( scopeGroupName, NETrace::convFromString(newPrio) );
-}
-
-inline int TraceManager::addScopeGroupPriority(const String & scopeGroupName, const String & addPrio)
-{
-    return addScopeGroupPriority( scopeGroupName, NETrace::convFromString(addPrio) );
-}
-
-inline int TraceManager::removeScopeGroupPriority(const String& scopeGroupName, const String& remPrio)
-{
-    return removeScopeGroupPriority(scopeGroupName, NETrace::convFromString(remPrio) );
-}
-
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_TRACEMANAGER_HPP

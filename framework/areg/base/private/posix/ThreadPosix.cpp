@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/ThreadWin.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread class
  *              windows specific code
@@ -148,6 +148,8 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadTerminated;
         pthread_cancel(threadId);
+        this->mWaitForRun.resetEvent();
+        this->mWaitForExit.setEvent();
     }
     else
     {
@@ -156,12 +158,6 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         result = Thread::eCompletionStatus::ThreadCompleted;
         ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
     }
-
-    do
-    {
-        Lock lock(mSynchObject);
-        _cleanResources();
-    } while(false);
 
     return result;
 }
@@ -190,8 +186,7 @@ bool Thread::_osCreateSystemThread( void )
                 if (_registerThread() == false)
                 {
                     result = false;
-                    _unregisterThread();
-                    _cleanResources();
+                    _cleanResources(true);
                 }
             }
             else

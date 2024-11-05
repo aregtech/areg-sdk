@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/EventDataStream.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event data streaming object.
  *              This object is used to serialize and deserialize
@@ -79,7 +79,7 @@ public:
      * \param   evetDataType    The type of event data. Either for internal or for external communication
      * \param   name            The name for streaming object. Can be ignored.
      **/
-    explicit EventDataStream( EventDataStream::eEventData evetDataType, const String & name = String::EmptyString );
+    explicit EventDataStream( EventDataStream::eEventData evetDataType, const String & name = String::getEmptyString() );
 
     /**
      * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.
@@ -210,18 +210,18 @@ protected:
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const override;
+    virtual unsigned int read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const override;
+    virtual unsigned int read( WideString & wide ) const override;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -249,18 +249,18 @@ protected:
     /**
     * \brief   Writes string data from given ASCII String object to output stream object.
     *          Overwrite method if need to change behavior of streaming string.
-    * \param   asciiString     The buffer of String containing data to stream to Output Stream.
+    * \param   ascii     The buffer of String containing data to stream to Output Stream.
     * \return  Returns the size in bytes of copied string data.
     **/
-    virtual unsigned int write( const String & asciiString ) override;
+    virtual unsigned int write( const String & ascii ) override;
 
     /**
     * \brief   Writes string data from given wide-char String object to output stream object.
     *          Overwrite method if need to change behavior of streaming string.
-    * \param   wideString  The buffer of String containing data to stream to Output Stream.
+    * \param   wide  The buffer of String containing data to stream to Output Stream.
     * \return  Returns the size in bytes of copied string data.
     **/
-    virtual unsigned int write( const WideString & wideString ) override;
+    virtual unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief	Flushes cached data to output stream object.

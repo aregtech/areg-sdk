@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6941F2A7-F0C7-4293-8646-AF68A7E35183}</ProjectGuid>
+    <ProjectName>logobserver</ProjectName>
+    <RootNamespace>logobserver</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;IMP_LOGGER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="logobserver\app\LogObserver.hpp" />
+    <ClInclude Include="logobserver\app\NELogObserverSettings.hpp" />
+    <ClInclude Include="logobserver\resources\resource.h" />
+    <ClInclude Include="logobserver\resources\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="logobserver\app\private\LogObserver.cpp" />
+    <ClCompile Include="logobserver\app\private\NELogObserverSettings.cpp" />
+    <ClCompile Include="logobserver\app\private\posix\LogObserverPosix.cpp" />
+    <ClCompile Include="logobserver\app\private\win32\LogObserverWin32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="logobserver\app\CMakeLists.txt" />
+    <Text Include="logobserver\app\private\CMakeLists.txt" />
+    <Text Include="logobserver\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="logobserver\resources\logobserver.ico" />
+    <Image Include="logobserver\resources\small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="logobserver\resources\logobserver.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

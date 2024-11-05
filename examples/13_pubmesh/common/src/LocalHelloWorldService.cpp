@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        common/src/LocalHelloWorldService.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -52,6 +52,6 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
     }
 
     // use printf() because of multithreading environment.
-    printf( "\"Hello Local client [ %s ]!\", processed [ %u ] requests.\n\r", roleName.getString( ), ++mNumRequests );
+    printf( "\"Hello [ %s ]!\", processed [ %u ] requests.\n\r", roleName.getString( ), ++mNumRequests );
     responseHelloWorld( theClient );
 }

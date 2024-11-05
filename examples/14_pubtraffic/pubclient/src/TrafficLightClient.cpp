@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubclient/src/TrafficLightClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client.
@@ -17,7 +17,7 @@ Component * TrafficLightClient::CreateComponent(const NERegistry::ComponentEntry
     return DEBUG_NEW TrafficLightClient(entry, owner);
 }
 
-void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -30,26 +30,22 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 {
 }
 
-bool TrafficLightClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    bool result{ false };
-    if ( SimpleTrafficLightClientBase::serviceConnected( isConnected, proxy ) )
+    bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
+
+    if ( mTrafficDirection == NECommon::eTrafficDirection::DirectionSouthNorth )
     {
-        if ( mTrafficDirection == NECommon::eTrafficDirection::DirectionSouthNorth )
-        {
-            notifyOnSouthNorthUpdate( isConnected );
-        }
-        else
-        {
-            notifyOnEastWestUpdate( isConnected );
-        }
+        notifyOnSouthNorthUpdate( isConnected( ) );
+    }
+    else
+    {
+        notifyOnEastWestUpdate( isConnected( ) );
+    }
 
-        if ( isConnected == false )
-        {
-            Application::signalAppQuit( );
-        }
-
-        result = true;
+    if ( isConnected( ) == false )
+    {
+        Application::signalAppQuit( );
     }
 
     return result;
@@ -76,17 +72,17 @@ inline void TrafficLightClient::outputState(NESimpleTrafficLight::eTrafficLight 
     switch (lightState)
     {
     case NESimpleTrafficLight::eTrafficLight::LightRed:
-        std::cout << "Light: RED ..." << std::endl;
+        printf("Light: RED ...\r\n");
         break;
     case NESimpleTrafficLight::eTrafficLight::LightYellow:
-        std::cout << "Light: Yellow ..." << std::endl;
+        printf("Light: Yellow ...\r\n");
         break;
     case NESimpleTrafficLight::eTrafficLight::LightGreen:
-        std::cout << "Light: GREEN ..." << std::endl;
+        printf("Light: GREEN ...\r\n");
         break;
     case NESimpleTrafficLight::eTrafficLight::LightOff:
     default:
-        std::cout << "Light: OFF ..." << std::endl;
+        printf("Light: OFF ...\r\n");
         break;
     }
 }

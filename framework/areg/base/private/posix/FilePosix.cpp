@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/FilePosix.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, File object
  *              POSIX specific implementation
@@ -132,23 +132,23 @@ bool File::_osOpenFile( void )
             int     flag = 0;
             mode_t  mode = 0;
 
-            if (mFileMode & FileBase::FOB_READ)
+            if ((mFileMode & FileBase::FOB_READ) != 0)
             {
                 flag |= O_RDONLY;
             }
 
-            if (mFileMode & FileBase::FOB_WRITE)
+            if ((mFileMode & FileBase::FOB_WRITE) != 0)
             {
                 flag &= ~O_RDONLY;
                 flag |= O_RDWR;
             }
 
-            if (mFileMode & FileBase::FOB_CREATE)
+            if ((mFileMode & FileBase::FOB_CREATE) != 0)
             {
                 flag |= O_CREAT;
             }
 
-            if (mFileMode & FileBase::FOB_EXIST)
+            if ((mFileMode & FileBase::FOB_EXIST) != 0)
             {
                 flag &= ~O_CREAT;
             }
@@ -158,34 +158,34 @@ bool File::_osOpenFile( void )
                 flag |= O_TRUNC;
             }
 
-            if (mFileMode & FileBase::FOB_SHARE_READ)
+            if ((mFileMode & FileBase::FOB_SHARE_READ) != 0)
             {
-                // modes |= (S_IRGRP | S_IROTH | S_IRUSR);
-                mode |= (S_IRUSR | S_IXUSR) | (S_IRGRP | S_IXGRP) | (S_IROTH | S_IXOTH);
+                mode |= (S_IRUSR | S_IRGRP | S_IROTH);
             }
 
-            if (mFileMode & FileBase::FOB_SHARE_WRITE)
+            if ((mFileMode & FileBase::FOB_SHARE_WRITE) != 0)
             {
-                // modes |= (S_IWGRP | S_IWOTH | S_IWUSR);
-                mode |= S_IRWXU | S_IRWXG | S_IRWXO;
+                mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
             }
-
-            // if (mFileMode & FileBase::FOB_TEMP_FILE)
-            //     ; // do nothing
-            // if (mFileMode & FileBase::FOB_WRITE_DIRECT)
-            //     ; // do nothing
+            else if (((mFileMode & FileBase::FOB_CREATE) != 0) || ((mFileMode & FileBase::FOB_TRUNCATE) != 0))
+            {
+                mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
+            }
 
             String dirName(File::getFileDirectory(mFileName));
-
             if ( (flag & O_CREAT) != 0 )
             {
-                if (std::filesystem::exists(mFileName.getObject(), err))
+                if (std::filesystem::exists(mFileName.getData(), err))
                 {
-                    flag &= ~O_CREAT;
                     if (dirName == mFileName)
                     {
-                        flag |= O_DIRECTORY; // set directory option
-                        flag &= ~O_TRUNC;    // remove truncate, since it is not applicable for directories
+                        flag &= ~O_CREAT;   // remove create flag for directories
+                        flag &= ~O_TRUNC;   // remove truncate, since it is not applicable for directories
+                        flag |= O_DIRECTORY;// set directory option
+                    }
+                    else
+                    {
+                        flag |= O_TRUNC;
                     }
                 }
                 else
@@ -323,15 +323,26 @@ void File::_osFlushFile( void )
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const char* prefix, unsigned int unique)
+unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, unsigned int /*unique*/)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
-    sprintf(buffer, "%s%c%s%d.tmp", folder, File::getPathSeparator(), prefix, unique);
+    constexpr char fmtFileName[]{ "%s%c%sXXXXXX" };
+    constexpr char fmtFdName[]{ "/proc/self/fd/%d" };
+    sprintf(buffer, fmtFileName, folder, File::PATH_SEPARATOR, prefix);
+    int fno = ::mkstemp(buffer);
+    if (fno > 1)
+    {
+        char temp[128];
+        sprintf(temp, fmtFdName, fno);
+        int count = readlink(temp, buffer, File::MAXIMUM_PATH);
+        buffer[count > 0 ? count : 0] = String::EmptyChar;
+        ::close(fno);
+    }
 
-    return static_cast<unsigned int>(::mkdtemp(buffer) == buffer ? strlen(buffer) : 0);
+    return static_cast<unsigned int>(strlen(buffer));
 }
 
 unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const eSpecialFolder specialFolder)
@@ -351,7 +362,7 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
     case File::eSpecialFolder::SpecialPersonal:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
-        ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::getPathSeparator(), DIR_NAME_DOCUMENTS);
+        ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS);
         break;
 
     case File::eSpecialFolder::SpecialAppData:
@@ -359,9 +370,9 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c.%s%c%s"
                     , filePath
-                    , static_cast<int>(File::getPathSeparator())
+                    , static_cast<int>(File::PATH_SEPARATOR)
                     , Process::getInstance().getAppName().getString()
-                    , static_cast<int>(File::getPathSeparator())
+                    , static_cast<int>(File::PATH_SEPARATOR)
                     , DIR_NAME_APPDATA);
         break;
 

@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/WideString.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, WideString Class to handle basic
  *              null-terminated string operations.
@@ -35,29 +35,31 @@
     #define wcstof      wcstod
 #endif
 
-#define _MAX_BINARY_BUFFER    72
-#define _MIN_BUF_SIZE        128
-#define _BUF_SIZE            256
-#define _MAX_BUF_SIZE        512
-#define _EXTRA_BUF_SIZE     1024
-
 namespace 
 {
+    //!< A formate chars to generate human readable binary text.
     constexpr wchar_t const _formatRadixBinary[] = { L'0', L'1', L'\0' };
 
 //////////////////////////////////////////////////////////////////////////
 // WideString class implementation
 //////////////////////////////////////////////////////////////////////////
 
+    /**
+     * \brief   Format to create binary text containing '0' and '1'.
+     * \tparam  DigitType   The time of digital number to convert. Must be a primitive.
+     * \param   result      On output, this contains the conversion result.
+     * \param   number      The digit to convert.
+     * \return  Returns the number of characters copied into the string.
+     **/
     template<typename DigitType>
-    inline int32_t _formatBinary( WideString & result, DigitType number )
+    inline int32_t _formatBinary( WideString & OUT result, DigitType number )
     {
-        wchar_t buffer[_MAX_BINARY_BUFFER];
+        wchar_t buffer[ NEString::MSG_MIN_BUF_SIZE ]{ 0 };
         wchar_t * dst  = buffer;
         DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
         bool isNegative = number < 0;
 
-        number = MACRO_ABS( number );
+        number = NEMath::getAbs<DigitType>(number);
         short idx = 0;
         do
         {
@@ -69,71 +71,88 @@ namespace
 
         *dst    = static_cast<wchar_t>(NEString::EndOfString);
         int32_t count = static_cast<int32_t>(dst - buffer);
-        NEString::swapString<wchar_t>(buffer, count);
-        result = WideString::EmptyChar;
+        NEString::revertString<wchar_t>(buffer, count);
         if ( isNegative )
         {
             result = L'-';
             ++ count;
+        }
+        else
+        {
+            result = WideString::EmptyChar;
         }
 
         result  += buffer;
         return count;
     }
 
-    template<typename DigitType, int const CharCount>
+    /**
+     * \brief   Formats the digit using predefined formatting.
+     *          The buffer to format is allocated in the stack and
+     *          the length of buffer is passed as a type argument.
+     * \tparam  DigitType   The type of digit to format.
+     * \tparam  CharCount   The size of buffer to allocated in the stack.
+     *                      By default, the length of buffer in '_MIN_BUF_SIZE'
+     * \param   result      On output, contains the conversion result.
+     * \param   format      The format to convert the digit.
+     * \param   number      The digit to convert.
+     * \return  Returns number of characters in the string.
+     *          In case of error, the return is negative.
+     **/
+    template<typename DigitType, int const CharCount = NEString::MSG_MIN_BUF_SIZE>
     inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
     {
-        wchar_t buffer[CharCount];
-        buffer[0] = static_cast<wchar_t>(NEString::EndOfString);
+        wchar_t buffer[ CharCount ] { 0 };
 
-        int32_t count = -1;
-#ifdef _WIN32
+        int32_t count{ -1 };
+#ifdef WINDOWS
         count = ::swprintf_s(buffer, CharCount, format, number);
-#else   // _WIN32
+#else   // WINDOWS
         count = ::swprintf( buffer, CharCount, format, number);
-#endif  // _WIN32
-        result = buffer;
+#endif  // WINDOWS
+        result.assign(buffer, count > 0 ? count : 0);
         return count;
     }
 
+    /**
+     * \brief   Formats the list of arguments and copies the result into the buffer.
+     * \param   buffer  The buffer to copy formatted values.
+     * \param   count   The size of the buffer to allocated.
+     * \param   format  The format to convert.
+     * \param   argptr  The list of arguments to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
     inline int _formatStringList( wchar_t * buffer, int count, const wchar_t * format, va_list argptr )
     {
-
-        int result = -1;
-        if ( buffer != nullptr )
-        {
-            *buffer = static_cast<wchar_t>(NEString::EndOfString);
-#ifdef  WIN32
-            result = vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
-#else   // !WIN32
-            result = vswprintf( buffer, count, format, argptr );
-#endif  // !WIN32
-        }
-        return result;
+#ifdef  WINDOWS
+        return vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
+#else   // !WINDOWS
+        return vswprintf( buffer, count, format, argptr );
+#endif  // WINDOWS
     }
 
-    template<int const CharCount>
+    /**
+     * \brief   Formats the list of arguments and copies the result into the buffer.
+     *          The buffer is allocated in the stack.
+     * \tparam  CharCount   The size of the buffer to allocate in the stack.
+     * \param   result      On output, this contain the result of conversion.
+     * \param   format      The format to convert.
+     * \param   argptr      The list of arguments to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
+    template<int const CharCount = NEString::MSG_MIN_BUF_SIZE>
     inline int32_t _formatStringList( WideString & result, const wchar_t * format, va_list argptr )
     {
-    
-        wchar_t buffer[CharCount];
-        int32_t count = _formatStringList(buffer, CharCount, format, argptr);
-        result = buffer;
+        wchar_t buffer[ CharCount ] { 0 };
+        int32_t count = _formatStringList( buffer, CharCount, format, argptr );
+        result.assign( buffer, count > 0 ? count : 0 );
         return count;
     }
 
-    template<int const CharCount>
-    inline int32_t _formatString( WideString & result, const wchar_t * format, ... )
-    {
-        va_list argptr;
-        va_start( argptr, format );
-        int32_t count = _formatStringList<CharCount>(result, format, argptr );
-        va_end( argptr );
-        return count;
-    }
-
-    inline bool _isEqua(const wchar_t* str, const char* wstr)
+    /**
+     * \brief   Compare 2 strings of different char-set and returns true if they are equal.
+     **/
+    inline bool _isEqual(const wchar_t* str, const char* wstr)
     {
         while ((*str != TEString<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
@@ -142,6 +161,14 @@ namespace
     }
 
 } // namespace
+
+
+// the static empty string
+const WideString & WideString::getEmptyString(void)
+{
+    static const WideString _emptyString{ L"" };
+    return _emptyString;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -173,7 +200,7 @@ bool WideString::operator == (const String& other) const
     bool result = false;
     if (getLength() == other.getLength())
     {
-        result = _isEqua(getString(), other.getString());
+        result = _isEqual(getString(), other.getString());
     }
 
     return result;
@@ -184,7 +211,7 @@ bool WideString::operator == (const std::string& other) const
     bool result = false;
     if (getLength() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = _isEqua(getString(), other.c_str());
+        result = _isEqual(getString(), other.c_str());
     }
 
     return result;
@@ -195,7 +222,7 @@ bool WideString::operator == (const char* other) const
     bool result = false;
     if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = _isEqua(getString(), other);
+        result = _isEqual(getString(), other);
     }
 
     return result;
@@ -206,7 +233,7 @@ bool WideString::operator != (const char* other) const
     bool result = true;
     if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = _isEqua(getString(), other) == false;
+        result = _isEqual(getString(), other) == false;
     }
 
     return result;
@@ -217,7 +244,7 @@ bool WideString::operator != (const std::string& other) const
     bool result = true;
     if (getLength() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = _isEqua(getString(), other.c_str()) == false;
+        result = _isEqual(getString(), other.c_str()) == false;
     }
 
     return result;
@@ -228,7 +255,7 @@ bool WideString::operator != (const String& other) const
     bool result = true;
     if (getLength() == other.getLength())
     {
-        result = _isEqua(getString(), other.getString()) == false;
+        result = _isEqual(getString(), other.getString()) == false;
     }
 
     return result;
@@ -250,7 +277,7 @@ WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhra
 
     if (NEString::isEmpty<wchar_t>(src) == false)
     {
-        NEString::CharPos pos = NEString::findFirst<wchar_t>(strPhrase, src, NEString::START_POS, out_next);
+        NEString::CharPos pos = NEString::findFirst<wchar_t>(strPhrase, src, NEString::START_POS, true, out_next);
         result.assign(src, NEString::isPositionValid(pos) ? pos : NEString::COUNT_ALL);
     }
 
@@ -354,7 +381,7 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
     return result;
 }
 
-WideString WideString::toString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -366,28 +393,29 @@ WideString WideString::toString(int32_t number, NEString::eRadix radix /*= NEStr
 
     case NEString::eRadix::RadixOctal:
         if ( number < 0)
-            _formatDigit<int32_t, 24>( result, L"-%0.11o", -1 * number );
+            _formatDigit<int32_t>( result, L"-%0.11o", -1 * number );
         else
-            _formatDigit<int32_t, 24>( result, L"%0.11o", number );
+            _formatDigit<int32_t>( result, L"%0.11o", number );
         break;
 
     case NEString::eRadix::RadixHexadecimal:
         if ( number < 0 )
-            _formatDigit<int32_t, 24>( result, L"-0x%.8X", -1 * number );
+            _formatDigit<int32_t>( result, L"-0x%.8X", -1 * number );
         else
-            _formatDigit<int32_t, 24>( result, L"0x%.8X", number );
+            _formatDigit<int32_t>( result, L"0x%.8X", number );
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<int32_t, 24>( result, L"%d", number );
+        _formatDigit<int32_t>( result, L"%d", number );
         break;
     }
+
     return result;
 }
 
-WideString WideString::toString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -398,23 +426,24 @@ WideString WideString::toString(uint32_t number, NEString::eRadix radix /*= NESt
         break;
 
     case NEString::eRadix::RadixOctal:
-        _formatDigit<uint32_t, 24>(result, L"%0.11o", number);
+        _formatDigit<uint32_t>(result, L"%0.11o", number);
         break;
 
     case NEString::eRadix::RadixHexadecimal:
-        _formatDigit<uint32_t, 24>(result, L"0x%.8X", number);
+        _formatDigit<uint32_t>(result, L"0x%.8X", number);
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<uint32_t, 24>( result, L"%u", number );
+        _formatDigit<uint32_t>( result, L"%u", number );
         break;
     }
+
     return result;
 }
 
-WideString WideString::toString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -426,29 +455,29 @@ WideString WideString::toString(int64_t number, NEString::eRadix radix /*= NEStr
 
     case NEString::eRadix::RadixOctal:
         if (number < 0)
-            _formatDigit<int64_t, 32>(result, L"-%0.22llo", -1 * number);
+            _formatDigit<int64_t>(result, L"-%0.22llo", -1 * number);
         else
-            _formatDigit<int64_t, 32>(result, L"%0.22llo", number);
+            _formatDigit<int64_t>(result, L"%0.22llo", number);
         break;
 
     case NEString::eRadix::RadixHexadecimal:
         if (number < 0)
-            _formatDigit<int64_t, 32>(result, L"-0x%.16llX", -1 * number);
+            _formatDigit<int64_t>(result, L"-0x%.16llX", -1 * number);
         else
-            _formatDigit<int64_t, 32>(result, L"0x%.16llX", number);
+            _formatDigit<int64_t>(result, L"0x%.16llX", number);
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<int64_t, 32>(result, L"%lld", number);
+        _formatDigit<int64_t>(result, L"%lld", number);
         break;
     }
 
     return result;
 }
 
-WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -459,38 +488,38 @@ WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NESt
         break;
 
     case NEString::eRadix::RadixOctal:
-        _formatDigit<uint64_t, 32>( result, L"%.22llo", number );
+        _formatDigit<uint64_t>( result, L"%.22llo", number );
         break;
 
     case NEString::eRadix::RadixHexadecimal:
-        _formatDigit<uint64_t, 32>( result, L"0x%.16llX", number );
+        _formatDigit<uint64_t>( result, L"0x%.16llX", number );
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<uint64_t, 32>( result, L"%llu", number );
+        _formatDigit<uint64_t>( result, L"%llu", number );
         break;
     }
 
     return result;
 }
 
-WideString WideString::toString(float number)
+WideString WideString::makeString(float number)
 {
     WideString result;
-    _formatDigit<float, 32>( result, L"%f", number );
+    _formatDigit<double>( result, L"%f", static_cast<double>(number) );
     return result;
 }
 
-WideString WideString::toString(double number)
+WideString WideString::makeString(double number)
 {
     WideString result;
-    _formatDigit<double, 64>( result, L"%g", number );
+    _formatDigit<double>( result, L"%g", number );
     return result;
 }
 
-WideString WideString::toString( bool value )
+WideString WideString::makeString( bool value )
 {
     return WideString(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
 }
@@ -499,17 +528,17 @@ int WideString::formatString( wchar_t * strDst, int count, const wchar_t * forma
 {
     va_list argptr;
     va_start( argptr, format );
-    int result = WideString::formatStringList( strDst, count, format, argptr );
+    int result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
     va_end( argptr );
     return result;
 }
 
 int WideString::formatStringList( wchar_t * strDst, int count, const wchar_t * format, va_list argptr )
 {
-    return _formatStringList(strDst, count, format, argptr);
+    return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
 }
 
-const WideString & WideString::format(const wchar_t * format, ...)
+WideString & WideString::format(const wchar_t * format, ...)
 {
     va_list argptr;
     va_start(argptr, format);
@@ -521,20 +550,34 @@ const WideString & WideString::format(const wchar_t * format, ...)
     return (*this);
 }
 
-const WideString & WideString::formatList(const wchar_t * format, va_list argptr)
+WideString & WideString::formatList(const wchar_t * format, va_list argptr)
 {
     clear();
     if (format != nullptr)
     {
-        if ( _formatStringList<_MIN_BUF_SIZE>( *this, format, argptr ) < 0 )
+        int count = NEString::requiredBufferSize(format, argptr);
+
+        switch ( count )
         {
-            if ( _formatStringList<_BUF_SIZE>(*this, format, argptr ) < 0 )
-            {
-                if ( _formatStringList<_MAX_BUF_SIZE>(*this, format, argptr ) < 0 )
-                {
-                    _formatStringList<_EXTRA_BUF_SIZE>(*this, format, argptr );
-                }
-            }
+        case NEString::MSG_MIN_BUF_SIZE:
+            _formatStringList<NEString::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_BUF_SIZE:
+            _formatStringList<NEString::MSG_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_BIG_BUF_SIZE:
+            _formatStringList<NEString::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_EXTRA_BUF_SIZE:
+            _formatStringList<NEString::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        default:
+            ASSERT( false ); // put assertion to catch assertion.
+            break;
         }
     }
 
@@ -548,10 +591,12 @@ WideString& WideString::assign(const char* source, NEString::CharCount count /*=
     if (NEString::isEmpty<char>(source) == false)
     {
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
-        mData.resize(count);
+        mData.resize(static_cast<uint32_t>(count));
         wchar_t* dst = mData.data();
         while (--count >= 0)
+        {
             *dst++ = static_cast<wchar_t>(*source++);
+        }
 
         *dst = EmptyChar;
     }

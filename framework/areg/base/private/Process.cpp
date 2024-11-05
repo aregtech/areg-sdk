@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Process.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       The class to handle process. Get process ID, process handle, process name, etc.
  *              OS independent implementation
@@ -16,6 +16,7 @@
 #include "areg/base/Process.hpp"
 
 #include "areg/base/File.hpp"
+#include "areg/component/NEService.hpp"
 #include <filesystem>
 #include <iostream>
 
@@ -47,18 +48,31 @@ Process::Process( void )
 void Process::_initPaths( const char * fullPath )
 {
     ASSERT(fullPath != nullptr);
-    OUTPUT_DBG("Initializing data of process [ %s ]", fullPath);
-
-
     mProcessFullPath = fullPath;
-    std::filesystem::path procPath(mProcessFullPath.getObject());
+    std::filesystem::path procPath(mProcessFullPath.getData());
 
     if (procPath.empty() == false)
     {
-        mProcessPath = procPath.parent_path().empty() ? String::EmptyString : procPath.parent_path().string();
-        mProcessName = procPath.filename().empty()    ? String::EmptyString : procPath.filename().string();
-        mAppName     = procPath.stem().empty()        ? String::EmptyString : procPath.stem().string();
-        mProcessExt  = procPath.extension().empty()   ? String::EmptyString : procPath.extension().string();
+        mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
+    }
+}
+
+unsigned int Process::getBitness(void) const
+{
+    if (mProcEnv == eProcEnv::ProcEnv32Bits)
+    {
+        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness32);
+    }
+    else if (mProcEnv == eProcEnv::ProcEnv64Bits)
+    {
+        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness64);
+    }
+    else
+    {
+        return static_cast<unsigned int>(NEService::eInstanceBitness::BitnessUnknown);
     }
 }
 

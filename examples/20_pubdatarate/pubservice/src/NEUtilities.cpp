@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/NEUtilities.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file is a helper when generate and transfer the image data.
@@ -113,9 +113,11 @@ bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t which
     case eOptionFlags::CmdStart:
     case eOptionFlags::CmdStop:
     case eOptionFlags::CmdQuit:
+    case eOptionFlags::CmdNothing:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         break;
 
+    case eOptionFlags::Error:
     default:
         mFlags = static_cast<uint32_t>(eOptionFlags::Error);
         result = false;

@@ -19,7 +19,7 @@
                     <Description>The name of connected client that requested to output message.</Description>
                 </Parameter>
                 <Parameter DataType="uint32" ID="20" Name="clientId">
-                    <Description>Thegiven ID of the client that requested to output message.</Description>
+                    <Description>The given ID of the client that requested to output message.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -38,7 +38,7 @@
             <Description>Triggered to notify that  reached the maximum number of requests.</Description>
             <ParamList>
                 <Parameter DataType="int32" ID="19" Name="maxNumber">
-                    <Description>The maximum number of reqeusts.</Description>
+                    <Description>The maximum number of requests.</Description>
                 </Parameter>
             </ParamList>
         </Method>

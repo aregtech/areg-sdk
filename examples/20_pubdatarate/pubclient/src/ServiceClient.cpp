@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        locservice/src/ServiceClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -12,16 +12,20 @@
 #include "pubclient/src/ServiceClient.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
+#include "aregextend/console/Console.hpp"
 
+DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_startupComponent);
 DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_serviceConnected);
+DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_processTimer);
+DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
+DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_broadcastServiceStopping);
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
     return DEBUG_NEW ServiceClient(entry, owner);
 }
 
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -38,18 +42,22 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-void ServiceClient::startupComponent(ComponentThread& comThread)
+void ServiceClient::startupComponent(ComponentThread& /* comThread */)
 {
+    TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_startupComponent);
+    TRACE_DBG("The component [ %s ] has been started", getRoleName().getString());
+
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataSize);
     Console& console = Console::getInstance();
     console.clearCurrentLine();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
-    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), static_cast<float>(dataRate.first), dataRate.second.data(), mBlockCount);
+    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refreshScreen();
 }
 
 void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& imageBlock)
 {
+    TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
     const NELargeData::sImageBlock* block = imageBlock.getBlock();
     if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
     {
@@ -61,6 +69,9 @@ void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& i
 
 void ServiceClient::broadcastServiceStopping(void)
 {
+    TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_broadcastServiceStopping);
+    TRACE_DBG("Service stopped, quit application");
+
     mTimer.stopTimer();
     notifyOnBroadcastServiceStopping(false);
     notifyOnBroadcastImageBlockAcquired(false);
@@ -73,37 +84,34 @@ void ServiceClient::broadcastServiceStopping(void)
     Application::signalAppQuit();
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_serviceConnected);
-    bool result = LargeDataClientBase::serviceConnected(isConnected, proxy);
-
-    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
-                , proxy.getProxyAddress().getRoleName().getString()
-                , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected" : "disconnected");
+    bool result = LargeDataClientBase::serviceConnected(status, proxy);
 
     // dynamic subscribe on messages.
-    notifyOnBroadcastServiceStopping(isConnected);
-    notifyOnBroadcastImageBlockAcquired(isConnected);
+    notifyOnBroadcastServiceStopping(isConnected());
+    notifyOnBroadcastImageBlockAcquired(isConnected());
 
-    if (isConnected == false)
+    if (isConnected())
     {
-        mTimer.stopTimer();
-        Application::signalAppQuit();
+        mTimer.startTimer( NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY );
     }
     else
     {
-        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY);
+        mTimer.stopTimer( );
+        Application::signalAppQuit( );
     }
 
     return result;
 }
 
-void ServiceClient::processTimer(Timer& timer)
+void ServiceClient::processTimer(Timer& /* timer */)
 {
+    TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_processTimer);
     Console& console = Console::getInstance();
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataSize );
+    TRACE_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refreshScreen();
 

@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        pubservice/src/PatientService.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This is a patient info service.
@@ -13,7 +13,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/PatientInformationStub.hpp"
+#include "generate/examples/15_pubworker/PatientInformationStub.hpp"
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include <string_view>

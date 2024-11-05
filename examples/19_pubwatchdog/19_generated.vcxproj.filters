@@ -15,47 +15,40 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloWatchdogClientBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\HelloWatchdogEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\HelloWatchdogProxy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\HelloWatchdogStub.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\NEHelloWatchdog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\private\HelloWatchdogEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\HelloWatchdogProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\HelloWatchdogClientBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\HelloWatchdogStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NEHelloWatchdog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NECommon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogClientBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\NEHelloWatchdog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\HelloWatchdogClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\HelloWatchdogStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\NEHelloWatchdog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

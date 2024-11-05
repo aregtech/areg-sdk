@@ -1,10 +1,10 @@
 name: MSBuild
 
 on:
-  push:
-    branches: [ "master" ]
+  push:         # Keep empty to run on each branch when push the code. Otherwise, use branches: [ master ]
+    branches: [ master ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ master ]
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -27,26 +27,43 @@ jobs:
       fail-fast: false
       matrix:
         config: # Create matrix with combinations
-          # Compile for 32-bit platform
-          - {name: MSBuild-platform-Win32, platform: Win32}
-          # Compile for 32-bit platform
-          - {name: MSBuild-platform-x64, platform: x64}
+          # Compile for 32-bit platform, enabled AREG extensions and logs
+          - {name: MSBuild-Win32-ext-log,     platform: Win32,  extend: 1,  logs: 1}
+          # Compile for 32-bit platform, enabled AREG extensions and no logs
+          - {name: MSBuild-Win32-ext-nolog,   platform: Win32,  extend: 1,  logs: 0}
+          # Compile for 32-bit platform, disable AREG extensions and logs
+          - {name: MSBuild-Win32-noext-log,   platform: Win32,  extend: 0,  logs: 1}
+          # Compile for 32-bit platform, disable AREG extensions and no logs
+          - {name: MSBuild-Win32-noext-nolog, platform: Win32,  extend: 0,  logs: 0}
+          # Compile for 32-bit platform, enabled AREG extensions and logs
+          - {name: MSBuild-x64-ext-log,       platform: x64,    extend: 1,  logs: 1}
+          # Compile for 32-bit platform, enabled AREG extensions and no logs
+          - {name: MSBuild-x64-ext-nolog,     platform: x64,    extend: 1,  logs: 0}
+          # Compile for 32-bit platform, disable AREG extensions and logs
+          - {name: MSBuild-x64-noext-log,     platform: x64,    extend: 0,  logs: 1}
+          # Compile for 32-bit platform, disable AREG extensions and no logs
+          - {name: MSBuild-x64-noext-nolog,   platform: x64,    extend: 0,  logs: 0}
 
     steps:
-    - name: Checkout AREG enging (AREG SDK) source codes and submodules
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
+    - name: Checkout AREG engine (AREG SDK) source codes
+      uses: actions/checkout@v4
+
+    - name: Setup Java JDK to run code generator
+      uses: actions/setup-java@v4.5.0
+      with: 
+        java-version: 17
+        java-package: jre
+        distribution: temurin
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet packages
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{github.workspace}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
 
     - name: Build areg-sdk solution.
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{github.workspace}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} ${{env.SOLUTION_FILE_PATH}} 
+      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} /property:AregExtended=${{matrix.config.extend}} /property:AregLogs=${{matrix.config.logs}} ${{env.SOLUTION_FILE_PATH}} -t:restore,build -p:RestorePackagesConfig=true

@@ -6,17 +6,19 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ServerConnectionBase.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Server Connection class declaration.
  ************************************************************************/
 #include "areg/ipc/ServerConnectionBase.hpp"
 
+#include "areg/component/NEService.hpp"
+
 ServerConnectionBase::ServerConnectionBase( void )
     : mServerSocket         ( )
-    , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
+    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -27,7 +29,7 @@ ServerConnectionBase::ServerConnectionBase( void )
 
 ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
     : mServerSocket         ( hostName, portNr )
-    , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
+    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -38,7 +40,7 @@ ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned sho
 
 ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serverAddress)
     : mServerSocket         ( serverAddress )
-    , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
+    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -66,7 +68,7 @@ void ServerConnectionBase::closeSocket(void)
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
-    mCookieGenerator = static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid);
+    mCookieGenerator = NEService::COOKIE_REMOTE_SERVICE;
 
     mServerSocket.closeSocket();
 }
@@ -78,7 +80,7 @@ bool ServerConnectionBase::serverListen(int maxQueueSize /*= NESocket::MAXIMUM_L
 
 SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted)
 {
-    return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), mMasterList.getSize());
+    return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), static_cast<int32_t>(mMasterList.getSize()));
 }
 
 bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
@@ -86,33 +88,30 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
     Lock lock(mLock);
     bool result = false;
 
-    if ( mServerSocket.isValid() )
+    if ( mServerSocket.isValid() && clientConnection.isValid( ) )
     {
-        if ( clientConnection.isValid() )
+        const SOCKETHANDLE hSocket = clientConnection.getHandle();
+        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
+        if ( mMasterList.find(hSocket) == -1)
         {
-            const SOCKETHANDLE hSocket = clientConnection.getHandle();
-            ASSERT(hSocket != NESocket::InvalidSocketHandle);
+            ASSERT(mAcceptedConnections.contains( hSocket ) == false);
+            ASSERT(mSocketToCookie.contains(hSocket) == false);
 
-            if ( mMasterList.find(hSocket) == -1)
-            {
-                ASSERT(mAcceptedConnections.contains( hSocket ) == false);
-                ASSERT(mSocketToCookie.contains(hSocket) == false);
+            ITEM_ID cookie{ mCookieGenerator ++ };
+            ASSERT(cookie >= NEService::COOKIE_REMOTE_SERVICE);
 
-                ITEM_ID cookie = mCookieGenerator ++;
-                ASSERT(cookie >= static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid));
-
-                mAcceptedConnections.setAt(hSocket, clientConnection);
-                mCookieToSocket.setAt(cookie, hSocket);
-                mSocketToCookie.setAt(hSocket, cookie);
-                mMasterList.add( hSocket );
-                result = true;
-            }
-            else
-            {
-                ASSERT(mAcceptedConnections.contains( hSocket ));
-                ASSERT(mSocketToCookie.contains(hSocket));
-                result = true;
-            }
+            mAcceptedConnections.setAt(hSocket, clientConnection);
+            mCookieToSocket.setAt(cookie, hSocket);
+            mSocketToCookie.setAt(hSocket, cookie);
+            mMasterList.add( hSocket );
+            result = true;
+        }
+        else
+        {
+            ASSERT(mAcceptedConnections.contains( hSocket ));
+            ASSERT(mSocketToCookie.contains(hSocket));
+            result = true;
         }
     }
 
@@ -123,9 +122,9 @@ void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
 {
     Lock lock( mLock );
 
-    SOCKETHANDLE hSocket= clientConnection.getHandle();
-    MapSocketToCookie::MAPPOS pos = mSocketToCookie.find(hSocket);
-    ITEM_ID cookie = mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN;
+    SOCKETHANDLE hSocket{ clientConnection.getHandle() };
+    MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
+    ITEM_ID cookie{ mSocketToCookie.isValidPosition(pos) ? static_cast<ITEM_ID>(mSocketToCookie.valueAtPosition(pos)) : NEService::COOKIE_UNKNOWN };
 
     mSocketToCookie.removeAt(hSocket);
     mCookieToSocket.removeAt(cookie);
@@ -135,7 +134,7 @@ void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
     clientConnection.closeSocket();
 }
 
-void ServerConnectionBase::closeConnection( ITEM_ID cookie )
+void ServerConnectionBase::closeConnection( const ITEM_ID & cookie )
 {
     Lock lock(mLock);
 

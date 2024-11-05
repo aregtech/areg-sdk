@@ -4,7 +4,7 @@
  ************************************************************************/
 
 #include "register/NECentralApp.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 
-#include <windows.h>
+#include <Windows.h>
 #include <tchar.h>

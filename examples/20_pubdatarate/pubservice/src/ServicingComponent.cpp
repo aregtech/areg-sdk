@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/ServicingComponent.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -12,9 +12,9 @@
 
 #include "pubservice/src/ServicingComponent.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
+#include "aregextend/console/Console.hpp"
 
 #include <chrono>
 
@@ -55,7 +55,7 @@ Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry
     return DEBUG_NEW ServicingComponent(entry, owner);
 }
 
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -135,26 +135,19 @@ void ServicingComponent::shutdownServiceIntrface(Component& holder)
     mPauseEvent.setEvent();
 
     mBitmap.release();
-    mInputThread.destroyThread(NECommon::WAIT_INFINITE);
-    mImageThread.destroyThread(NECommon::WAIT_INFINITE);
+    mInputThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mImageThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     LargeDataStub::shutdownServiceIntrface(holder);
 }
 
-void ServicingComponent::clientConnected(const ProxyAddress& client, bool isConnected)
+bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus )
 {
-    LargeDataStub::clientConnected(client, isConnected);
-
-    if (isConnected)
-    {
-        mClients += 1;
-    }
-    else
-    {
-        mClients -= 1;
-    }
-
+    bool result = LargeDataStub::clientConnected(client, connectionStatus );
+    mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);
     _printInfo();
+
+    return result;
 }
 
 void ServicingComponent::onTimerExpired( void )
@@ -181,13 +174,13 @@ void ServicingComponent::onTimerExpired( void )
     mLock.unlock( );
 
     Console & console = Console::getInstance( );
-    Console::Coord oldPos = console.getCursorCurPosition( );
+    console.saveCursorPosition( );
 
     console.outputMsg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
     console.outputMsg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
     console.outputMsg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
 
-    console.setCursorCurPosition(oldPos);
+    console.restoreCursorPosition( );
     console.refreshScreen();
 }
 
@@ -198,10 +191,11 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     if (data.hasError())
     {
         TRACE_WARN("Error input of command");
+        Console& console = Console::getInstance();
 
-        Console::Coord oldPos = Console::getInstance().getCursorCurPosition();
-        Console::getInstance().outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
-        Console::getInstance().setCursorCurPosition(oldPos);
+        console.saveCursorPosition();
+        console.outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
+        console.restoreCursorPosition();
     }
     else if (data.hasQuit())
     {
@@ -387,13 +381,13 @@ uint64_t ServicingComponent::_getBlockImageTime(void) const
 void ServicingComponent::_printInfo(void) const
 {
     Console& console = Console::getInstance();
-    Console::Coord curPos = console.getCursorCurPosition();
+    console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 
     uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
-    double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / timePerBlock) * mOptions.mChannels;
+    double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
     NEUtilities::DataLiteral blockSize= NEUtilities::convDataSize(bytesPerBlock);
     NEUtilities::DataLiteral timeRate = NEUtilities::convDuration(timePerBlock);
@@ -406,21 +400,21 @@ void ServicingComponent::_printInfo(void) const
     console.printMsg("\tLines per Block .: % 8u lns.\n" , mOptions.mLines);
     console.printMsg("\tPixel Time ......: % 8u ns.\n"  , mOptions.mPixelTime);
     console.printMsg("\tChannels ........: % 8u ch.\n"  , mOptions.mChannels);
-    console.printMsg("\tTime per Block ..: % 8.02f %s.\n", static_cast<float>(timeRate.first), timeRate.second.data());
-    console.printMsg("\tBlock Size ......: % 8.02f %s.\n", static_cast<float>(blockSize.first), blockSize.second.data());
+    console.printMsg("\tTime per Block ..: % 8.02f %s.\n", static_cast<double>(timeRate.first), timeRate.second.data());
+    console.printMsg("\tBlock Size ......: % 8.02f %s.\n", static_cast<double>(blockSize.first), blockSize.second.data());
     console.printMsg("\tBlock Rate ......: % 8u blocks / sec.\n", static_cast<uint32_t>(blockRate));
-    console.printMsg("\tData Rate .......: % 7.02f %s / sec.\n", static_cast<float>(dataRate.first), dataRate.second.data());
+    console.printMsg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<double>(dataRate.first), dataRate.second.data());
     console.printMsg("\tConnected client : % 8d clients.\n", mClients);
     console.printTxt("---------------------------------------\n");
 
-    console.setCursorCurPosition(curPos);
+    console.restoreCursorPosition();
     console.refreshScreen();
 }
 
 void ServicingComponent::_printHelp(void) const
 {
     Console& console = Console::getInstance();
-    Console::Coord curPos = console.getCursorCurPosition();
+    console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 
     console.printTxt("---------------------------------------\n");
@@ -437,7 +431,7 @@ void ServicingComponent::_printHelp(void) const
     console.printMsg("-q         or --quit .............: Stop service and quit application.\n");
     console.printTxt("---------------------------------------\n");
 
-    console.setCursorCurPosition(curPos);
+    console.restoreCursorPosition();
     console.refreshScreen();
 }
 

@@ -7,55 +7,50 @@
 #include "chatter/services/CentralMessaging.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "generated/NECommon.hpp"
-#include "generated/NEConnectionManager.hpp"
+#include "common/NECommon.hpp"
+#include "generate/examples/17_winchat/NEConnectionManager.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_TRACE_SCOPE( distrbutedapp_CentralMessaging_ServiceConnected );
-DEF_TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastSendMessage );
-DEF_TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastKeyTyping );
-DEF_TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastBroadcastMessage );
+DEF_TRACE_SCOPE( chatter_CentralMessaging_ServiceConnected );
+DEF_TRACE_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
+DEF_TRACE_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
+DEF_TRACE_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
 CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
     : CentralMessagerClientBase   ( roleName, ownerThread )
 
-    , mConnectionHandler            ( handlerConnection )
-    , mReceiveMessages              ( false )
-    , mReceiveTyping                ( false )
-    , mReceiveBroadcast             ( false )
+    , mConnectionHandler( handlerConnection )
+    , mReceiveMessages  ( false )
+    , mReceiveTyping    ( false )
+    , mReceiveBroadcast ( false )
 {
 }
 
-CentralMessaging::~CentralMessaging( void )
+bool CentralMessaging::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-}
-
-bool CentralMessaging::serviceConnected( bool isConnected, ProxyBase & proxy )
-{
-    TRACE_SCOPE( distrbutedapp_CentralMessaging_ServiceConnected );
-    bool result = false;
-    if ( isConnected == false )
+    TRACE_SCOPE( chatter_CentralMessaging_ServiceConnected );
+    bool result = CentralMessagerClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        notifyOnBroadcastSendMessage(false);
-        notifyOnBroadcastKeyTyping(false);
-        notifyOnBroadcastBroadcastMessage(false);
-        result = CentralMessagerClientBase::serviceConnected( false, proxy );
-    }
-    else
-    {
-        result = CentralMessagerClientBase::serviceConnected( true, proxy );
         notifyOnBroadcastSendMessage( mReceiveMessages );
         notifyOnBroadcastKeyTyping( mReceiveTyping );
         notifyOnBroadcastBroadcastMessage( mReceiveBroadcast );
     }
+    else
+    {
+        notifyOnBroadcastSendMessage( false );
+        notifyOnBroadcastKeyTyping( false );
+        notifyOnBroadcastBroadcastMessage( false );
+    }
+
     return result;
 }
 
 void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
 {
-    TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastSendMessage );
+    TRACE_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
     if ( cookie != mConnectionHandler.GetCookie() )
     {
         ASSERT(nickName != mConnectionHandler.GetNickName());
@@ -76,7 +71,7 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned i
 
 void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
 {
-    TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastKeyTyping );
+    TRACE_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
     if ( cookie != mConnectionHandler.GetCookie( ) )
     {
         ASSERT( nickName != mConnectionHandler.GetNickName( ) );
@@ -97,7 +92,7 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int
 
 void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
 {
-    TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastBroadcastMessage );
+    TRACE_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
     NECommon::sMessageData * data = NECommon::newData( );
     if ( data != nullptr )
@@ -105,7 +100,7 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
         NEString::copyString<TCHAR, TCHAR>( data->nickName, NECommon::MAXLEN_NICKNAME, NECommon::SERVER_NAME );
         NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, serverMessage.getString( ) );
 
-        data->dataSave      = -1;
+        data->dataSave      = static_cast<uint64_t>(-1);
         data->timeReceived  = DateTime::getNow();
         data->timeSend      = dateTime;
 

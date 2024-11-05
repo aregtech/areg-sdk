@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/BufferPosition.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, buffer cursor position interface.
  *
@@ -35,7 +35,7 @@ class IEByteBuffer;
  *          implementation of simple cursor move functionalities.
  *          The object is used in buffer classes.
  **/
-class AREG_API BufferPosition  : public IECursorPosition
+class AREG_API BufferPosition
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -75,7 +75,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    virtual unsigned int getPosition( void ) const override;
+    unsigned int getPosition( void ) const;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -90,7 +90,7 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const override;
+    unsigned int setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

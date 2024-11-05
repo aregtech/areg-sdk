@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : The application that instantiates a simple service with 
 //               request, response, broadcast and subscription servicing 
 //               features, where clients can dynamically subscribe and 
@@ -75,8 +75,8 @@ int main()
     std::cout << "A Demo to demonstrate simple request, response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
-    Application::initApplication( true, true, false, true, true, nullptr, nullptr );
+    Application::initApplication( true, true, false, true, false, nullptr );
+    TRACER_CONFIGURE_AND_START(nullptr);
 
     do 
     {

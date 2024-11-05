@@ -1,5 +1,5 @@
-#ifndef AREG_APPBASE_CEAPPLICATION_HPP
-#define AREG_APPBASE_CEAPPLICATION_HPP
+#ifndef AREG_APPBASE_APPLICATION_HPP
+#define AREG_APPBASE_APPLICATION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/appbase/Application.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Singleton application object,
  *              which is responsible to initialize and start components
@@ -26,6 +26,12 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/SynchObjects.hpp"
 #include "areg/component/NERegistry.hpp"
+#include "areg/persist/ConfigManager.hpp"
+
+ /************************************************************************
+  * Dependencies.
+  ************************************************************************/
+class IEConfigurationListener;
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
@@ -59,33 +65,21 @@ class AREG_API Application
 public:
 
     /**
-     * \brief   Application::eAppState
-     *          Describes the application states.
-     *          -   Initially, the application is in undefined state.
-     *          -   The application is in initialization state, when Service Manager did not started yet and it
-     *              initializes any module like tracing, timer, etc.
-     *          -   Application is in ready state only when Service Manager is started.
-     *          -   Application is in release state when it is going to stop Service Manager.
-     **/
-    typedef enum class E_AppState
-    {
-          AppStateStopped       //!< Application state is undefined
-        , AppStateInitializing  //!< Application is initializing
-        , AppStateReady         //!< Application is ready. The application is ready only when Service Manager runs.
-        , AppStateReleasing     //!< Application is releasing.
-    } eAppState;
-
-    /**
      * \brief   Call to initialize application and start main services. If necessary, point the service config file path.
      *          The system ignores requests to start service if it is already running.
      *
-     * \param   startTracing        If true, application starts Tracing.
-     * \param   startServicing      If true, application starts Service Manager. This parameter is ignored if 'startRouting' is true.
-     * \param   startRouting        If true, application starts multi-cast router client and Service Manager (if not started).
-     * \param   startTimer          If true, application starts timer manager. If Service Managers, Timer Manager automatically starts.
-     * \param   startWatchdog       If true, application starts watchdog manager, so that it can track the component threads.
-     * \param   fileTraceConfig     If nullptr or empty, configures Tracing from specified file. Default location is './config/log.init' (NEApplication::DEFAULT_TRACING_CONFIG_FILE)
-     * \param   fileRouterConfig    If nullptr or empty, configures  Router client from specified file. Default location is './config/router.init' (NEApplication::DEFAULT_ROUTER_CONFIG_FILE).
+     * \param   startTracing    If true, application starts Tracing.
+     * \param   startServicing  If true, application starts Service Manager. This parameter is ignored if 'startRouting' is true.
+     * \param   startRouting    If true, application starts multi-cast router client and Service Manager (if not started).
+     * \param   startTimer      If true, application starts timer manager. If Service Managers, Timer Manager automatically starts.
+     * \param   startWatchdog   If true, application starts watchdog manager, so that it can track the component threads.
+     * \param   configFile      If nullptr or empty, configures Tracing from specified file. Default location is 
+     *                          './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE)
+     * \param   configListener  A pointer to the configuration listener. If the pointer is valid, the listener is notified
+     *                          before and after loading configuration, as well as if loading configuration fails and the 
+     *                          default configuration is set.
+     *                          By default, the pointer to listener is null, so that no notification is triggered.
+     *                          
      * \see     release, loadModel
      *
      * \example     Initialize Application
@@ -94,7 +88,7 @@ public:
      *          Application::initApplication();
      *
      *          // In this example, start all services and configuration files from user home folder:
-     *          Application::initApplication(true, true, true, true, true, "%user%/log.init", "%user%/mcrouter.init");
+     *          Application::initApplication(true, true, true, true, true, "%user%/areg.init");
      *
      *          // In this example, start all services, even if Service Manager marked 'false', because
      *          // routing requires to start Service Manager first. Read configuration files from default location:
@@ -102,15 +96,15 @@ public:
      *
      *          // In this example start no service, only make configuration of system, read configuration files from
      *          // user home folder.The services can start later:
-     *          Application::initApplication(false, false, false, false, false, "%user%/log.init", "%user%/connect.init");
+     *          Application::initApplication(false, false, false, false, false, "%user%/areg.init");
      **/
     static void initApplication(  bool startTracing   = true
                                 , bool startServicing = true
                                 , bool startRouting   = true
                                 , bool startTimer     = true
-                                , bool startWatchdog  = true
-                                , const char * fileTraceConfig = NEApplication::DEFAULT_TRACING_CONFIG_FILE.data()
-                                , const char * fileRouterConfig= NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() );
+                                , bool startWatchdog  = false
+                                , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data()
+                                , IEConfigurationListener * configListener = nullptr);
 
     /**
      * \brief   Call to stop all components, unload models, stop services and release resources.
@@ -156,7 +150,7 @@ public:
 
     /**
      * \brief   Searches model by name.
-     * \param   moldelName  The name of model to search.
+     * \param   modelName   The name of model to search.
      * \return  If found, returns valid model. Otherwise, returns invalid model.
      *          The invalid model has empty name.
      **/
@@ -171,28 +165,13 @@ public:
     static void setWorkingDirectory( const char * dirPath = nullptr );
 
     /**
-     * \brief   Call to configure tracing. 
-     * \param   configFile  Tracing configuration file path. Can also be relative path.
-     *                      If nullptr or empty, default configuration file will be 
-     *                      loaded (NEApplication::DEFAULT_TRACING_CONFIG_FILE).
-     * \return  Returns true if succeeded to configure tracing.
-     **/
-    static bool tracerConfig( const char * configFile = nullptr );
-
-    /**
      * \brief   Call to start tracing.
-     * \param   configFile  Absolute or relative path of tracing configuration file.
-     *                      -   If nullptr or empty, and logging is configured, it will start tracing;
-     *                      -   If nullptr or empty, and logging is not configured, it will first load
-     *                          the default configuration (NEApplication::DEFAULT_TRACING_CONFIG_FILE)
-     *                      -   If not nullptr and not empty, it will first load the specified configuration files.
-     *                      The loading of configuration is ignored if logging started.
-     * param    force       If true, forces load default configuration file (NEApplication::DEFAULT_TRACING_CONFIG_FILE)
+     * param    force       If true, forces load default configuration file (NEApplication::DEFAULT_CONFIG_FILE)
       *                     or use logging default settings.
      * \return  Returns true if succeeded to start tracing. Starting tracing may fail if
      *          it was not configured or configuration failed.
      **/
-    static bool startTracer( const char * configFile = nullptr, bool force = false );
+    static bool startTracer( bool force = false );
 
     /**
      * \brief   Call to stop tracing.
@@ -222,7 +201,6 @@ public:
 
     /**
      * \brief   Call to stop Service Manager. When stops, it automatically stops Routing Service connection.
-     * \return  Returns true if succeeded to start service manager.
      **/
     static void stopServiceManager( void );
 
@@ -255,22 +233,18 @@ public:
 
     /**
      * \brief   Configure message routing service.
-     * \param   configFile  The message routing configuration file.
      * \return  Returns true if could configure the message routing.
      **/
-    static bool configMessageRouting( const char * configFile = nullptr );
+    static bool configMessageRouting( void );
 
     /**
      * \brief   Call to start Message Router client. If Service Manager is not started yet, it starts
      *          Service Manager first.
-     * \param   configFile  Absolute or relative path of Message Router configuration file.
-     *                      If not nullptr, the configuration will be loaded and Router client will be started.
-     *                      If nullptr and Router client is already configured, it will start Router client.
-     *                      If nullptr and Router client is not configured yet, it will load configuration
-     *                      from default configuration file location, configure and start Router client.
+     * \param   connectTypes    The bitwise set of connections to establish.
+     *                          At the moment, only TCP/IP is possible.
      * \return  Returns true if Message Router client successfully started.
      **/
-    static bool startMessageRouting( const char * configFile = nullptr );
+    static bool startMessageRouting(unsigned int connectTypes);
 
     /**
      * \brief   Call to start Message Router client. If Service Manager is not started yet, it starts
@@ -288,19 +262,6 @@ public:
     static void stopMessageRouting( void );
 
     /**
-     * \brief   Call to enable or disable Router Service client.
-     *          If Router Service client is already running and it is requested to be disabled,
-     *          the service will be stopped. If remote Router Service client is disabled,
-     *          no service can be accessed outside of process.
-     **/
-    static void enableMessageRouting( bool enable );
-
-    /**
-     * \brief   Returns true, if Message Router client is enabled
-     **/
-    static bool isMessageRoutingEnabled( void );
-
-    /**
      * \brief   Returns true, if Message Router client is configured
      **/
     static bool isMessageRoutingConfigured( void );
@@ -313,22 +274,17 @@ public:
     static bool startRouterService( void );
 
     /**
+     * \brief   Call to start routing service on local machine.
+     *          To succeed call, the user must have appropriate access rights.
+     * \return  Returns true if Message Routing Service successfully started as service.
+     **/
+    static bool startLoggingService(void);
+
+    /**
      * \brief   Returns true if application successfully connected to Message Routing Service,
      *          and can register or request remote servicing.
      **/
     static bool isRouterConnected( void );
-
-    /**
-     * \brief   Returns the config file name of tracer.
-     *          The config file is setup once when any module first requests to setup tracer.
-     **/
-    inline static const char * getTracerConfigFile( void );
-
-    /**
-     * \brief   Returns the config file name of Router Service.
-     *          The config file is setup once when any module first requests to setup Router Service.
-     **/
-    inline static const char * getRoutingConfigFile( void );
 
     /**
      * \brief   Returns true if an element exists in the application storage
@@ -386,26 +342,78 @@ public:
      **/
     static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
 
+    /**
+     * \brief   Returns the name of the executable process.
+     **/
+    static const String & getApplicationName(void);
+
+    /**
+     * \brief   Returns the name of system host.
+     **/
+    static const String & getMachineName(void);
+
+    /**
+     * \brief   Returns the instance of application configuration initializer object
+     *          to read or write configuration properties
+     **/
+    static ConfigManager& getConfigManager(void);
+
+    /**
+     * \brief   Loads the configuration from the given file.
+     * \param   fileName    The relative or absolute path to the file to read configurations.
+     *                      If nullptr, loads configuration from default file './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE).
+     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered before and after
+     *                      reading configuration from file. If listener is null or loading configuration failed, no notification is triggered.
+     * \return  Returns true if succeeded to load configuration.
+     *          If fails, loads default configuration and returns false.
+     **/
+    static bool loadConfiguration(const char * fileName = nullptr, IEConfigurationListener * listener = nullptr);
+
+    /**
+     * \brief   Saves current configuration in the given file.
+     *          Note that only writable configuration properties are saved.
+     *          The read-only part (global configuration) remains untouched.
+     * \param   fileName    The relative or absolute path to the file to write configurations.
+     *                      If nullptr, saves configuration in the same file that was read.
+     *                      If default configuration was loaded, saves all configuration in the
+     *                      default file './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE).
+     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered before and after
+     *                      saving configuration to file. If listener is null or saving configuration failed, no notification is triggered.
+     * \return  Returns true if succeeded to save configuration.
+     *          Otherwise, returns false.
+     **/
+    static bool saveConfiguration(const char * fileName = nullptr, IEConfigurationListener * listener = nullptr);
+
+    /**
+     * \brief   Loads default configuration properties defined in NEApplication::DefaultReadonlyProperties
+     *          and in the NEApplication::DefaultLogScopesConfig. This will discard the previous configuration
+     *          if the application was already configured.
+     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered if default
+     *                      configuration is set. If listener is null, no notification is triggered.
+     **/
+    static void setupDefaultConfiguration(IEConfigurationListener * listener = nullptr);
+
+    /**
+     * \brief   Returns true if the application is already configured.
+     **/
+    static bool isConfigured(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
+     * \brief   The state of application.
+     **/
+    NEApplication::eApplicationState    mAppState;
+    /**
      * \brief   Flag, indicating application basic handling is setup. In Linux setup signal handling.
      */
     bool            mSetup;
     /**
-     * \brief   The config file name of Tracer
+     * \brief   The object to read and save application configuration properties.
      **/
-    String          mConfigTracer;
-    /**
-     * \brief   The config file name of Router Service
-     **/
-    String          mConfigService;
-    /**
-     * \brief   The state of application.
-     **/
-    eAppState       mAppState;
+    ConfigManager   mConfigManager;
     /**
      * \brief   Exit application event.
      **/
@@ -454,13 +462,17 @@ private:
      * \param   newState    The new sate of application to set.
      * \return  Returns true if succeeded to change the application state.
      **/
-    static bool _setAppState(eAppState newState);
+    static bool _setAppState(NEApplication::eApplicationState newState);
 
     /**
-     * \brief   Operating system specific implementation to start router service on machine.
-     * \return  Returns true if succeeded to start service.
+     * \brief   The OS specific implementation of start a service.
+     *          If service is not running, the application should have enough access rights
+     *          to start a service. Nothing happens if the service is running.
+     * \param   serviceName         The name of the service to check and if needed to start.
+     * \param   serviceExecutable   The name of the service executable to check.
+     * \return  Returns true, if service is running. Otherwise, returns false.
      **/
-    static bool _osStartRouterService( void );
+    static bool _osStartLocalService( const wchar_t * serviceName, const wchar_t * serviceExecutable );
 
     /**
      * \brief   OS specific implementation to make setups.
@@ -471,7 +483,6 @@ private:
 
     /**
      * \brief   OS specific implementation to release resources.
-     * 
      **/
     static void _osReleaseHandlers(void);
 
@@ -486,19 +497,9 @@ private:
 // Application class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * Application::getTracerConfigFile( void )
-{
-    return Application::getInstance().mConfigTracer.getString();
-}
-
-inline const char * Application::getRoutingConfigFile( void )
-{
-    return Application::getInstance().mConfigService.getString();
-}
-
 inline Application & Application::getInstance( void )
 {
     return Application::_theApplication;
 }
 
-#endif  // AREG_APPBASE_CEAPPLICATION_HPP
+#endif  // AREG_APPBASE_APPLICATION_HPP

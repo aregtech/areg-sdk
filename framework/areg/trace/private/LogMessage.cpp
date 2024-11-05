@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LogMessage.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       NETrace namespace contains , structures and types.
  *
@@ -24,17 +24,24 @@
 
 #include <string.h>
 
-LogMessage::LogMessage(NETrace::eLogType logType, const TraceScope & traceScope )
-    : NETrace::sLogMessage( logType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), traceScope.getScopeName( ).getLength() )
+#if AREG_LOGS
+LogMessage::LogMessage(NETrace::eLogMessageType msgType, const TraceScope & traceScope )
+    : NETrace::sLogMessage( msgType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), static_cast<uint32_t>(traceScope.getScopeName( ).getLength()) )
 {
-    ASSERT( (logType == NETrace::LogScopeEnter) || (logType == NETrace::LogScopeExit) );
+    ASSERT( (msgType == NETrace::eLogMessageType::LogMessageScopeEnter) || (msgType == NETrace::eLogMessageType::LogMessageScopeExit) );
 }
 
 void LogMessage::setMessage(const char * message, int msgLen )
 {
-    if ( (message != nullptr) && (msgLen > 0) )
-    {
-        int len = NEMemory::memCopy( this->lmTrace.traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
-        this->lmTrace.traceMessage[len] = String::EmptyChar;
-    }
+    uint32_t len = NEMemory::memCopy(this->logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
+    this->logMessage[len] = String::EmptyChar;
 }
+
+#else   // AREG_LOGS
+
+LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/, const TraceScope& /*traceScope*/)
+    : NETrace::sLogMessage( )
+{
+}
+
+#endif  // AREG_LOGS

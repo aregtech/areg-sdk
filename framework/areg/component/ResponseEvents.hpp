@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ResponseEvents.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Generic Local and Remote Request 
  *              Event object for local and remote communication
@@ -78,7 +78,7 @@ protected:
                  , const NEService::eResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
-                 , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief	Initializes event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -95,8 +95,8 @@ protected:
                  , NEService::eResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
-                 , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                 , const String & name = String::EmptyString );
+                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                 , const String & name = String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -219,7 +219,7 @@ protected:
     LocalResponseEvent( const ProxyAddress & proxyTarget
                       , NEService::eResultType result
                       , unsigned int respId
-                      , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
+                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief	Initializes local event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -235,8 +235,8 @@ protected:
                       , const ProxyAddress & proxyTarget
                       , NEService::eResultType result
                       , unsigned int respId
-                      , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                      , const String & name = String::EmptyString );
+                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                      , const String & name = String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -298,7 +298,7 @@ protected:
     RemoteResponseEvent( const ProxyAddress & proxyTarget
                        , NEService::eResultType result
                        , unsigned int respId
-                       , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief	Initializes remote event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -314,8 +314,8 @@ protected:
                        , const ProxyAddress & proxyTarget
                        , NEService::eResultType result
                        , unsigned int respId
-                       , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                       , const String & name = String::EmptyString );
+                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                       , const String & name = String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.

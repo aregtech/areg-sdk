@@ -1,8 +1,7 @@
-list(APPEND mcrouter_SRC 
-	${mcrouter_BASE}/app/private/MulticastRouter.cpp
-	${mcrouter_BASE}/app/private/NEMulticastRouterSettings.cpp
-    ${mcrouter_BASE}/app/private/ConsoleService.cpp
+macro_add_source(mcrouter_SRC "${AREG_FRAMEWORK}"
+	mcrouter/app/private/MulticastRouter.cpp
+	mcrouter/app/private/NEMulticastRouterSettings.cpp
+    mcrouter/app/private/RouterConsoleService.cpp
+    mcrouter/app/private/posix/MulticastRouterPosix.cpp
+    mcrouter/app/private/win32/MulticastRouterWin32.cpp
 )
-
-include("${mcrouter_BASE}/app/private/posix/CMakeLists.txt")
-include("${mcrouter_BASE}/app/private/win32/CMakeLists.txt")

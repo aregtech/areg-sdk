@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/TELinkedList.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Linked List class template.
  *              The linked list contains list of values that can be
@@ -94,13 +94,13 @@ public:
      * \brief   Subscript operator. Returns reference to value of element by given valid zero-based index.
      *          May be used on either the right (r-value) or the left (l-value) of an assignment statement.
      **/
-    inline VALUE& operator [] (int atIndex);
+    inline VALUE& operator [] (uint32_t atIndex);
     /**
      * \brief   Subscript operator. Returns reference to value of element by given valid zero-based index.
      *          The index should be valid number between 0 and (mSize -1).
      *          May be used on the right (r-value).
      **/
-    inline const VALUE& operator [] (int atIndex) const;
+    inline const VALUE& operator [] (uint32_t atIndex) const;
 
     /**
      * \brief   Subscript operator. Returns reference to value of element by given valid position value.
@@ -168,7 +168,7 @@ public:
      *          There should be possibility to stream values and if VALUE is not a
      *          primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The stream to write values.
-     * \param   input   The linked list object containing value to stream.
+     * \param   output  The linked list object containing value to stream.
      **/
     template<typename V>
     friend inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V> & output );
@@ -207,7 +207,7 @@ public:
      * \brief   Returns true if specified position points the first entry in the linked list.
      * \param   pos     The position to check.
      **/
-    inline bool isStartPosition(const LISTPOS pos) const;
+    inline bool isFirstPosition(const LISTPOS pos) const;
 
     /**
      * \brief   Returns true if specified position points the last entry in the linked list.
@@ -242,11 +242,23 @@ public:
      * \brief	Checks whether given element exist in the linked list or not. The elements of type
      *          VALUE should have comparing operators.
      * \param	elemSearch  The element to search.
-     * \param	startAt	    The position to start searching.
      * \return	Returns true if could find element starting at given position.
      **/
     inline bool contains(const VALUE& elemSearch) const;
+
+    /**
+     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch  The element to search.
+     * \param	startAt	    The position to start searching.
+     * \return	Returns true if could find element starting at given position.
+     **/
     inline bool contains( const VALUE & elemSearch, LISTPOS startAt) const;
+
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::list<VALUE>& getData(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -271,15 +283,15 @@ public:
      * \brief   Returns value of head element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE & getFirstEntry( void ) const;
-    inline VALUE & getFirstEntry(void);
+    inline const VALUE & firstEntry( void ) const;
+    inline VALUE & firstEntry(void);
 
     /**
      * \brief   Returns value of tail element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE & getLastEntry( void ) const;
-    inline VALUE & getLastEntry(void);
+    inline const VALUE & lastEntry( void ) const;
+    inline VALUE & lastEntry(void);
 
     /**
      * \brief	Returns the value at the given position of the linked list and on output the value
@@ -318,15 +330,24 @@ public:
     inline LISTPOS prevPosition( LISTPOS atPosition ) const;
 
     /**
-     * \brief   Returns the value of entry at the given valid position.
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by left (l-value) and right (r-value) operations.
      * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
      **/
     inline VALUE& valueAtPosition(LISTPOS atPosition);
+
+    /**
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by right (r-value) operation.
+     * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
+     **/
     inline const VALUE & valueAtPosition( const LISTPOS atPosition ) const;
 
     /**
      * \brief   Returns element value by valid zero-based index, which can be used by left (l-value) and
-     *          right operation (r-value). The index should be valid.
+     *          right (r-value) operations. The index should be valid.
      **/
     inline VALUE & getAt( uint32_t index );
 
@@ -335,6 +356,22 @@ public:
      *          The index should be valid.
      **/
     inline const VALUE & getAt(uint32_t index ) const;
+
+    /**
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by left (l-value) and right (r-value) operations.
+     * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
+     **/
+    inline VALUE& getAt(LISTPOS atPosition);
+
+    /**
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by right (r-value) operation.
+     * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
+     **/
+    inline const VALUE& getAt(const LISTPOS atPosition) const;
 
     /**
      * \brief	Extracts next position and value of the element in the linked list followed position.
@@ -391,11 +428,16 @@ public:
 
     /**
      * \brief   Adds new entry at the head of linked list if it is not existing.
-     *          If the entry with specified value exists, the entry is not added.
+     *          If parameter 'updateExisting' is true, it updates the existing entry.
      *          The method returns true if new element is added.
+     * \param   newElement      The element to add at the head of linked list.
+     * \param   updateExisting  If true, updates the existing element.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, setting this parameter true updates the existing entry.
+          * \return  Returns true if inserted new entry at the head of the linked list. Otherwise, returns false.
      **/
-    inline bool pushFirstIfUnique(const VALUE& newElement);
-    inline bool pushFirstIfUnique(VALUE&& newElement);
+    inline bool pushFirstIfUnique(const VALUE& newElement, bool updateExisting = false );
+    inline bool pushFirstIfUnique(VALUE&& newElement, bool updateExisting = false );
 
     /**
      * \brief   Add element to tail of Linked List.
@@ -405,12 +447,18 @@ public:
     inline void pushLast( VALUE && newElement );
 
     /**
-     * \brief   Adds new entry at the tails of linked list if it is not existing.
-     *          If the entry with specified value exists, the entry is not added.
+     * \brief   Adds new entry at the tail of linked list if it is not existing.
+     *          If parameter 'updateExisting' is true, it updates the existing entry.
      *          The method returns true if new element is added.
+     * \param   newElement      The element to add at the tail of linked list.
+     * \param   updateExisting  If true, updates the existing element.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, by setting this parameter true, you can replace
+     *                          the existing object.
+     * \return  Returns true if inserted new entry at the tail of the linked list. Otherwise, returns false.
      **/
-    inline bool pushLastIfUnique(const VALUE& newElement);
-    inline bool pushLastIfUnique(VALUE&& newElement);
+    inline bool pushLastIfUnique(const VALUE& newElement, bool updateExisting = false );
+    inline bool pushLastIfUnique(VALUE&& newElement, bool updateExisting = false );
 
     /**
      * \brief   Pops the element at the head of linked list and returns the stored value.
@@ -455,27 +503,55 @@ public:
      * \brief	Removes element at given position and returns position of the next entry in the linked list.
      *          Returns invalid position if tail entry is removed.
      * \param	atPosition  Position of the element to remove from Linked List. 
-     * \param   out_Value   On output, it contains value of removed element
+     * \return  Returns the position of the next entry in the linked-list.
+     *          If the tail entry is removed, returns invalid position.
      **/
     inline LISTPOS removeAt( LISTPOS atPosition );
+
+    /**
+     * \brief	Removes element at given position and returns position of the next entry in the linked list.
+     *          Returns invalid position if tail entry is removed.
+     * \param	atPosition  Position of the element to remove from Linked List. 
+     * \param   out_Value   On output, it contains value of removed element
+     * \return  Returns the position of the next entry in the linked-list.
+     *          If the tail entry is removed, returns invalid position.
+     **/
     inline LISTPOS removeAt( LISTPOS atPosition, VALUE & OUT out_Value );
 
     /**
      * \brief	Searches and removes first match of entry, which value is equal to the given element.
      *          Returns true if found and removed entry with success.
      * \param	removeElement	Element to search and remove from Linked List
-     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  Returns true if found end removed entry.
      **/
     inline bool removeEntry( const VALUE & removeElement );
+
+    /**
+     * \brief	Searches and removes first match of entry, which value is equal to the given element.
+     *          Returns true if found and removed entry with success.
+     * \param	removeElement	Element to search and remove from Linked List
+     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  Returns true if found end removed entry.
+     **/
     inline bool removeEntry(const VALUE& removeElement, LISTPOS searchAfter);
 
     /**
      * \brief	Searches position of the entry by given value and returns valid position if found an entry.
      *          Otherwise, it returns invalid position.
      * \param	searchValue	    Value of element to search.
-     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  If found, returns valid position of the entry in the linked-list.
+     *          Otherwise, returns invalid position.
      **/
     inline LISTPOS find(const VALUE& searchValue) const;
+
+    /**
+     * \brief	Searches position of the entry by given value and returns valid position if found an entry.
+     *          Otherwise, it returns invalid position.
+     * \param	searchValue	    Value of element to search.
+     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  If found, returns valid position of the entry in the linked-list.
+     *          Otherwise, returns invalid position.
+     **/
     inline LISTPOS find( const VALUE & searchValue, LISTPOS searchAfter ) const;
 
     /**
@@ -487,19 +563,25 @@ public:
 
     /**
      * \brief	Returns valid zero-based index of the element by given valid position.
-     *          Returns invalid index (-1) if the position is invalid.
+     *          Returns invalid index (0xFFFFFFFF) if the position is invalid.
      * \param	atPosition  The valid position in the linked list to return index.
      **/
-    inline int makeIndex( LISTPOS atPosition ) const;
+    inline uint32_t makeIndex( LISTPOS atPosition ) const;
 
     /**
-     * \brief   Extracts elements from the given source and inserts into the linked list.
-     *          No elements are copied. The container other becomes empty after the operation.
+     * \brief   Merges entries from the `source` into *this. Both lists should be sorted. 
+     *          No elements are copied, and the source container becomes empty after the merge.
+     *          For equivalent elements in the two lists, the elements from `*this` always precede
+     *          the elements from `source`, and the order of equivalent elements do not change, which
+     *          means that the order of elements in the result list is ascending.
      * \param   source  The source of linked list to merge.
-     */
-    inline void merge(const TELinkedList<VALUE> & source);
+     **/
+    inline void merge(TELinkedList<VALUE> & source);
     inline void merge(TELinkedList<VALUE> && source);
 
+//////////////////////////////////////////////////////////////////////////
+// Protected methods
+//////////////////////////////////////////////////////////////////////////
 protected:
 
     /**
@@ -507,7 +589,18 @@ protected:
      * \param   index   The index of the element to return position.
      **/
     inline LISTPOS getPosition( uint32_t index ) const;
-    inline LISTPOS getPosition(uint32_t index);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Converts the constant iterator of the list into the LISTPOS type.
+     * \param   cit     The constant iterator of the list.
+     * \return  Returns converted LISTPOS type.
+     **/
+    inline LISTPOS _citer2pos(typename std::list<VALUE>::const_iterator cit) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -550,7 +643,7 @@ inline bool TELinkedList<VALUE>::operator != (const TELinkedList<VALUE>& other) 
 }
 
 template <typename VALUE >
-inline VALUE & TELinkedList<VALUE>::operator []( int atIndex )
+inline VALUE & TELinkedList<VALUE>::operator [](uint32_t atIndex )
 {
     return getAt(atIndex);
 }
@@ -562,7 +655,7 @@ inline VALUE & TELinkedList<VALUE>::operator []( LISTPOS atPosition )
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::operator []( int atIndex ) const
+inline const VALUE & TELinkedList<VALUE>::operator [](uint32_t atIndex ) const
 {
     return getAt(atIndex);
 }
@@ -588,19 +681,17 @@ inline uint32_t TELinkedList<VALUE>::getSize( void ) const
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::firstPosition( void ) const
 {
-    auto cit = mValueList.begin();
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+    return _citer2pos(mValueList.begin());
 }
 
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::lastPosition( void ) const
 {
-    auto cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+    return _citer2pos(mValueList.empty() == false ? --mValueList.end() : mValueList.end());
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::isStartPosition(const LISTPOS pos) const
+inline bool TELinkedList<VALUE>::isFirstPosition(const LISTPOS pos) const
 {
     return (pos == mValueList.begin());
 }
@@ -614,8 +705,7 @@ inline bool TELinkedList<VALUE>::isLastPosition(const LISTPOS pos) const
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::invalidPosition(void) const
 {
-	auto end = mValueList.end();
-    return Constless<std::list<VALUE>>::iter(mValueList, end);
+	return _citer2pos(mValueList.end());
 }
 
 template <typename VALUE >
@@ -659,28 +749,28 @@ inline void TELinkedList<VALUE>::release(void)
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::getFirstEntry( void ) const
+inline const VALUE & TELinkedList<VALUE>::firstEntry( void ) const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline VALUE& TELinkedList<VALUE>::getFirstEntry(void)
+inline VALUE& TELinkedList<VALUE>::firstEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::getLastEntry( void ) const	
+inline const VALUE & TELinkedList<VALUE>::lastEntry( void ) const	
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
 template <typename VALUE >
-inline VALUE& TELinkedList<VALUE>::getLastEntry(void)
+inline VALUE& TELinkedList<VALUE>::lastEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
@@ -711,7 +801,7 @@ inline const VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& IN OUT in_out_PrevPos
 {
     ASSERT(in_out_PrevPosition != mValueList.end());
     LISTPOS pos = in_out_PrevPosition;
-    in_out_PrevPosition = in_out_PrevPosition == mValueList.begin() ? mValueList.end() : --in_out_PrevPosition;
+    in_out_PrevPosition = in_out_PrevPosition == _citer2pos(mValueList.begin()) ? _citer2pos(mValueList.end()) : --in_out_PrevPosition;
     return *pos;
 }
 
@@ -728,7 +818,7 @@ template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::prevPosition(LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
-    return (atPosition == mValueList.begin() ? invalidPosition() : --atPosition);
+    return _citer2pos(atPosition == mValueList.begin() ? invalidPosition() : --atPosition);
 }
 
 template <typename VALUE >
@@ -761,6 +851,18 @@ inline VALUE & TELinkedList<VALUE>::getAt(uint32_t index)
     ASSERT(isValidPosition(pos));
 
     return *pos;
+}
+
+template <typename VALUE >
+inline const VALUE& TELinkedList<VALUE>::getAt(const LISTPOS atPosition) const
+{
+    return valueAtPosition(atPosition);
+}
+
+template <typename VALUE >
+inline VALUE& TELinkedList<VALUE>::getAt(LISTPOS atPosition)
+{
+    return valueAtPosition(atPosition);
 }
 
 template <typename VALUE >
@@ -848,26 +950,37 @@ inline void TELinkedList<VALUE>::pushFirst( VALUE && newElement )
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushFirstIfUnique(const VALUE& newElement)
+inline bool TELinkedList<VALUE>::pushFirstIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.begin(), mValueList.end(), newElement) == mValueList.end())
+
+    auto pos = std::find( mValueList.begin( ), mValueList.end( ), newElement );
+    if ( pos == mValueList.end())
     {
         result = true;
         mValueList.push_front(newElement);
+    }
+    else if (updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushFirstIfUnique(VALUE&& newElement)
+inline bool TELinkedList<VALUE>::pushFirstIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.begin(), mValueList.end(), newElement) == mValueList.end())
+    auto pos = std::find( mValueList.begin( ), mValueList.end( ), newElement );
+    if ( pos == mValueList.end())
     {
         result = true;
         mValueList.push_front(std::move(newElement));
+    }
+    else if ( updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
@@ -886,26 +999,36 @@ inline void TELinkedList<VALUE>::pushLast(VALUE && newElement)
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushLastIfUnique(const VALUE& newElement)
+inline bool TELinkedList<VALUE>::pushLastIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.rbegin(), mValueList.rend(), newElement) == mValueList.rend())
+    auto pos = std::find( mValueList.rbegin( ), mValueList.rend( ), newElement );
+    if (pos == mValueList.rend())
     {
         result = true;
         mValueList.push_back(newElement);
+    }
+    else if ( updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushLastIfUnique(VALUE&& newElement)
+inline bool TELinkedList<VALUE>::pushLastIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.rbegin(), mValueList.rend(), newElement) == mValueList.rend())
+    auto pos = std::find( mValueList.rbegin( ), mValueList.rend( ), newElement );
+    if (pos == mValueList.rend())
     {
         result = true;
         mValueList.push_back(std::move(newElement));
+    }
+    else if ( updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
@@ -1033,8 +1156,7 @@ inline bool TELinkedList<VALUE>::removeEntry(const VALUE & removeElement, TELink
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::find(const VALUE& searchValue) const
 {
-    auto it = std::find(mValueList.begin(), mValueList.end(), searchValue);
-    return Constless<std::list<VALUE>>::iter(mValueList, it);
+    return _citer2pos(std::find(mValueList.begin(), mValueList.end(), searchValue));
 }
 
 template <typename VALUE >
@@ -1056,6 +1178,12 @@ inline bool TELinkedList<VALUE>::contains(const VALUE& elemSearch, LISTPOS start
     return (startAt != mValueList.end() ? std::find(startAt, invalidPosition(), elemSearch) != mValueList.end() : false);
 }
 
+template<typename VALUE>
+inline const std::list<VALUE>& TELinkedList<VALUE>::getData(void) const
+{
+    return mValueList;
+}
+
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::findIndex(uint32_t index) const
 {
@@ -1063,26 +1191,30 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::findIndex(uint
 }
 
 template <typename VALUE >
-inline int TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
+inline uint32_t TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 {
-    int result  = 0;
+    uint32_t result{ 0 };
     LISTPOS pos = mValueList.begin();
     LISTPOS end = mValueList.end();
     for (; (pos != end) && (pos != atPosition); ++pos, ++result)
         ;
 
-    return (pos != end ? result : NECommon::INVALID_INDEX);
+    return (pos != end ? result : static_cast<uint32_t>(NECommon::INVALID_INDEX));
 }
 
 template <typename VALUE >
-inline void TELinkedList<VALUE>::merge(const TELinkedList<VALUE>& source)
+inline void TELinkedList<VALUE>::merge(TELinkedList<VALUE>& source)
 {
+    mValueList.sort();
+    source.mValueList.sort();
     mValueList.merge(source.mValueList);
 }
 
 template <typename VALUE >
 inline void TELinkedList<VALUE>::merge(TELinkedList<VALUE>&& source)
 {
+    mValueList.sort();
+    source.mValueList.sort();
     mValueList.merge(std::move(source.mValueList));
 }
 
@@ -1090,17 +1222,18 @@ template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index) const
 {
     typename std::list<VALUE>::const_iterator pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
-    uint32_t count = index + 1;
-    for (uint32_t i = 1; i < count; ++i)
+    for (uint32_t i = 1; i <= index; ++i)
+    {
         ++pos;
+    }
 
-    return Constless<std::list<VALUE>>::iter(mValueList, pos);
+    return _citer2pos(pos);
 }
 
-template <typename VALUE >
-inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index)
+template<typename VALUE>
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const
 {
-    return static_cast<const TELinkedList<VALUE> *>(this)->getPosition(index);
+    return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 //////////////////////////////////////////////////////////////////////////

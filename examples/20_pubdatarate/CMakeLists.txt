@@ -1,24 +1,14 @@
-# SRC lists
-unset(20_generated_SRC)
-unset(20_SRC1)
-unset(20_SRC2)
+# add service interface
+addServiceInterface(20_generated res LargeData)
 
-# Project names
-set(gen_projName 20_generated)
-set(projName1 20_pubclient)
-set(projName2 20_pubservice)
+# add projects
+macro_declare_executable(20_pubclient   20_generated
+    pubclient/src/main.cpp
+    pubclient/src/ServiceClient.cpp
+)
 
-set(20_pubdatarate_BASE "${AREG_EXAMPLES}/20_pubdatarate")
-
-include(${20_pubdatarate_BASE}/generated/CMakeLists.txt)
-include(${20_pubdatarate_BASE}/pubclient/CMakeLists.txt)
-include(${20_pubdatarate_BASE}/pubservice/CMakeLists.txt)
-
-# Setting up appropriate flags
-addStaticLib(${gen_projName} "${20_generated_SRC}")
-addExecutableEx(${projName1} "${20_SRC1}" "${gen_projName}")
-addExecutableEx(${projName2} "${20_SRC2}" "${gen_projName}")
-
-target_include_directories(${gen_projName} BEFORE PRIVATE ${20_pubdatarate_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${20_pubdatarate_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${20_pubdatarate_BASE})
+macro_declare_executable(20_pubservice   20_generated
+    pubservice/src/main.cpp
+    pubservice/src/NEUtilities.cpp
+    pubservice/src/ServicingComponent.cpp
+)

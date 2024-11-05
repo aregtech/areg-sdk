@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/TEStack.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, FIFO Stack class templates.
  *              Blocking and non-blocking FIFO Stacks, used to queue
@@ -122,6 +122,20 @@ public:
     inline const VALUE& operator [] (STACKPOS atPosition) const;
     inline VALUE& operator [] (STACKPOS atPosition);
 
+    /**
+     * \brief   Compares 2 stack object and returns true if they are equal.
+     * \param   other   A stack object to compare.
+     * \return  Returns true if 2 stack objects are equal.
+     **/
+    inline bool operator == (const TEStack<VALUE> & other) const;
+
+    /**
+     * \brief   Compares 2 stack object and returns true if they are not equal.
+     * \param   other   A stack object to compare.
+     * \return  Returns true if 2 stack objects are not equal.
+     **/
+    inline bool operator != (const TEStack<VALUE> & other) const;
+
 public:
 /************************************************************************/
 // Friend global operators to make Stack streamable
@@ -145,7 +159,7 @@ public:
      *          There should be possibility to stream every value of Stack and if VALUE
      *          is not a primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The streaming object to write values
-     * \param   input   The Stack object to read out values.
+     * \param   output  The Stack object to read out values.
      **/
     template<typename V>
     friend IEOutStream & operator << (IEOutStream & stream, const TEStack<V> & output);
@@ -170,7 +184,7 @@ public:
      * \param   pos     The position to check.
      * \return  Returns true if specified position pointing start of the stack.
      **/
-    inline bool isStartPosition(const STACKPOS pos) const;
+    inline bool isFirstPosition(const STACKPOS pos) const;
 
     /**
      * \brief   Returns true if specified position pointing start of the stack.
@@ -203,6 +217,28 @@ public:
      * \return  Returns true if specified position points to the valid entry in the stack.
      */
     inline bool checkPosition(const STACKPOS pos) const;
+
+    /**
+     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch  The element to search.
+     * \return	Returns true if could find element starting at given position.
+     **/
+    inline bool contains(const VALUE& elemSearch) const;
+
+    /**
+     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch  The element to search.
+     * \param	startAt	    The position to start searching.
+     * \return	Returns true if could find element starting at given position.
+     **/
+    inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
+
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::deque<VALUE>& getData(void) const;
 
 /************************************************************************/
 // Operations
@@ -237,6 +273,14 @@ public:
      * \return  Returns true if stack successfully unlocked
      **/
     inline bool unlock( void ) const;
+
+    /**
+     * \brief	Sets new size of stack. If needed, either increases or truncates
+     *          elements in the stack. The elements of type VALUE should have default
+     *          constructor create and initialize elements.
+     * \param	newSize	    New size to set. If zero, stack is emptied.
+     **/
+    inline void resize(uint32_t newSize);
 
     /**
      * \brief   Returns first inserted element in the stack without changing stack.
@@ -300,11 +344,19 @@ public:
      *          The given position should be valid or equal to NECommon::START_POSITION
      *          to search at the beginning of stack.
      * \param   Value       The element value to search in the stack.
+     * \return  If found element, returns valid position. Otherwise, it returns invalid position.
+     **/
+    inline STACKPOS find(const VALUE & Value) const;
+
+    /**
+     * \brief   Searches element in the stack starting at given position.
+     *          The given position should be valid or equal to NECommon::START_POSITION
+     *          to search at the beginning of stack.
+     * \param   Value       The element value to search in the stack.
      * \param	searchAfter	If valid position, the searching starts from next element specified by position.
      *                      If invalid position, the searching starts from the beginning of the linked list.
      * \return  If found element, returns valid position. Otherwise, it returns invalid position.
      **/
-    inline STACKPOS find(const VALUE & Value) const;
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
 
     /**
@@ -426,6 +478,22 @@ public:
      **/
     inline TELockStack<VALUE> & operator = ( TELockStack<VALUE> && source ) noexcept;
 
+    /**
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TELockStack<VALUE> & operator = ( const TEStack<VALUE> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TELockStack<VALUE> & operator = ( TEStack<VALUE> && source ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -506,6 +574,22 @@ public:
      **/
     inline TENolockStack<VALUE> & operator = ( TENolockStack<VALUE> && source ) noexcept;
 
+    /**
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TENolockStack<VALUE> & operator = ( const TEStack<VALUE> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TENolockStack<VALUE> & operator = ( TEStack<VALUE> && source ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -534,17 +618,21 @@ TEStack<VALUE>::TEStack( IEResourceLock & synchObject )
 template <typename VALUE>
 TEStack<VALUE>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE> & source )
     : Constless<std::deque<VALUE>>( )
-    , mValueList    ( source.mValueList )
+    , mValueList    ( )
     , mSynchObject  ( synchObject )
 {
+    Lock lock(source.mSynchObject);
+    mValueList = source.mValueList;
 }
 
 template <typename VALUE>
 TEStack<VALUE>::TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept
     : Constless<std::deque<VALUE>>( )
-    , mValueList    ( std::move(source.mValueList) )
+    , mValueList    ( )
     , mSynchObject  ( synchObject )
 {
+    Lock lock(source.mSynchObject);
+    mValueList = std::move(source.mValueList);
 }
 
 template <typename VALUE>
@@ -584,6 +672,22 @@ inline VALUE& TEStack<VALUE>::operator [] (STACKPOS atPosition)
 }
 
 template <typename VALUE>
+inline bool TEStack<VALUE>::operator == (const TEStack<VALUE>& other) const
+{
+    Lock lock(mSynchObject);
+    Lock lockOther(other.mSynchObject);
+    return (mValueList == other.mValueList);
+}
+
+template <typename VALUE>
+inline bool TEStack<VALUE>::operator != (const TEStack<VALUE>& other) const
+{
+    Lock lock(mSynchObject);
+    Lock lockOther(other.mSynchObject);
+    return (mValueList != other.mValueList);
+}
+
+template <typename VALUE>
 inline uint32_t TEStack<VALUE>::getSize( void ) const
 {
     Lock lock( mSynchObject );
@@ -598,24 +702,25 @@ inline bool TEStack<VALUE>::isEmpty( void ) const
 }
 
 template <typename VALUE>
-inline bool TEStack<VALUE>::isStartPosition(STACKPOS pos) const
+inline bool TEStack<VALUE>::isFirstPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
-    return (pos = mValueList.begin());
+    return (pos == mValueList.begin());
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::isLastPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
-    return (mValueList.empty() == false) && (pos = --mValueList.end());
+    return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
 template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition(void) const
 {
     Lock lock(mSynchObject);
-    return Constless<std::deque<VALUE>>::iter(mValueList, mValueList.end());
+    auto end = mValueList.end();
+    return Constless<std::deque<VALUE>>::iter(mValueList, end);
 }
 
 template <typename VALUE>
@@ -641,6 +746,24 @@ inline bool TEStack<VALUE>::checkPosition(STACKPOS pos) const
         ++it;
 
     return (it != mValueList.end());
+}
+
+template<typename VALUE>
+inline bool TEStack<VALUE>::contains(const VALUE& elemSearch) const
+{
+    return contains(elemSearch, firstPosition());
+}
+
+template<typename VALUE>
+inline bool TEStack<VALUE>::contains(const VALUE& elemSearch, STACKPOS startAt) const
+{
+    return (startAt != mValueList.end() ? std::find(startAt, invalidPosition(), elemSearch) != mValueList.end() : false);
+}
+
+template<typename VALUE>
+inline const std::deque<VALUE>& TEStack<VALUE>::getData(void) const
+{
+    return mValueList;
 }
 
 template <typename VALUE>
@@ -675,6 +798,13 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::unlock( void ) const
 {
     return mSynchObject.unlock();
+}
+
+template<typename VALUE >
+inline void TEStack< VALUE >::resize(uint32_t newSize)
+{
+    Lock lock(mSynchObject);
+    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
 }
 
 template <typename VALUE>
@@ -875,6 +1005,20 @@ inline TELockStack<VALUE> & TELockStack<VALUE>::operator = ( TELockStack<VALUE> 
     return (*this);
 }
 
+template <typename VALUE>
+inline TELockStack<VALUE>& TELockStack<VALUE>::operator = (const TEStack<VALUE> & source)
+{
+    static_cast<TEStack<VALUE> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE>
+inline TELockStack<VALUE>& TELockStack<VALUE>::operator = (TEStack<VALUE> && source) noexcept
+{
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
+    return (*this);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // TENolockStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
@@ -923,6 +1067,20 @@ inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( const TENolockS
 
 template <typename VALUE>
 inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TENolockStack<VALUE> && source ) noexcept
+{
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
+    return (*this);
+}
+
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( const TEStack<VALUE> & source )
+{
+    static_cast<TEStack<VALUE> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TEStack<VALUE> && source ) noexcept
 {
     static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
     return (*this);

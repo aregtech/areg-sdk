@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{38A88D1E-B86C-48E2-9B9E-68F672388734}</ProjectGuid>
@@ -14,32 +17,28 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloWatchdogClientBase.cpp" />
-    <ClCompile Include="generated\src\private\HelloWatchdogEvents.cpp" />
-    <ClCompile Include="generated\src\private\HelloWatchdogProxy.cpp" />
-    <ClCompile Include="generated\src\private\HelloWatchdogStub.cpp" />
-    <ClCompile Include="generated\src\private\NEHelloWatchdog.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\HelloWatchdogClientBase.hpp" />
-    <ClInclude Include="generated\src\HelloWatchdogStub.hpp" />
-    <ClInclude Include="generated\src\NEHelloWatchdog.hpp" />
-    <ClInclude Include="generated\src\private\HelloWatchdogEvents.hpp" />
-    <ClInclude Include="generated\src\private\HelloWatchdogProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\HelloWatchdog.siml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\NEHelloWatchdog.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\HelloWatchdogClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\HelloWatchdogStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\NEHelloWatchdog.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>

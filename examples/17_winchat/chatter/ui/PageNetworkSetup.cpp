@@ -4,15 +4,17 @@
 #include "chatter/res/stdafx.h"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/NEDistributedApp.hpp"
+#include "chatter/services/ChatPrticipantHandler.hpp"
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/ui/PageNetworkSetup.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
+
+#include "areg/appbase/Application.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/NESocket.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/appbase/Application.hpp"
-#include "chatter/services/ChatPrticipantHandler.hpp"
+#include "areg/ipc/NERemoteService.hpp"
 
 #define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
@@ -163,7 +165,7 @@ BEGIN_MESSAGE_MAP(PageNetworkSetup, CPropertyPage)
     ON_BN_CLICKED(IDC_BROKER_DISCONNECT, &PageNetworkSetup::OnClickedBrokerDisconnect)
     ON_BN_CLICKED( IDC_BUTTON_REGISTER, &PageNetworkSetup::OnClickedButtonRegister )
     ON_EN_UPDATE(IDC_EDIT_NICKNAME, &PageNetworkSetup::OnUpdateEditNickname)
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID( WM_KICKIDLE, PageNetworkSetup::OnKickIdle )
     ON_UPDATE_COMMAND_UI( IDC_BROKER_CONNECT, &PageNetworkSetup::OnBnUpdateBrokerConnect )
     ON_UPDATE_COMMAND_UI( IDC_BROKER_DISCONNECT, &PageNetworkSetup::OnBnUdateBrokerDisconnect )
     ON_UPDATE_COMMAND_UI( IDC_BROKER_IPADDRESS, &PageNetworkSetup::OnUpdateRemoteData )
@@ -187,7 +189,7 @@ void PageNetworkSetup::OnClickedBrokerConnect()
         uint32_t temp = check.toUInt32( );
         if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
         {
-            mBrokerPort = temp;
+            mBrokerPort = static_cast<USHORT>(temp);
             String ipAddress;
             ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
             if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
@@ -264,7 +266,7 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
         uint32_t temp = check.toUInt32( );
-        mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : temp;
+        mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : static_cast<USHORT>(temp);
     }
     else
     {
@@ -379,17 +381,14 @@ BOOL PageNetworkSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    ConnectionConfiguration config;
-    if ( config.loadConfiguration( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() ) )
+    ConnectionConfiguration config(NERemoteService::eRemoteServices::ServiceRouter, NERemoteService::eConnectionTypes::ConnectTcpip);
+    unsigned char field0, field1, field2, field3;
+    if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {
-        unsigned char field0, field1, field2, field3;
-        if ( config.getConnectionHostIpAddress( field0, field1, field2, field3, NERemoteService::eServiceConnection::ConnectionTcpip ) )
-        {
-            mBrokerPort = static_cast<USHORT>(config.getConnectionPort( NERemoteService::eServiceConnection::ConnectionTcpip ));
-            CString port( String::toString( mBrokerPort ).getString( ) );
-            mCtrlAddress.SetAddress( field0, field1, field2, field3 );
-            mCtrlPort.SetWindowText( port );
-        }
+        mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
+        CString port(String::makeString(mBrokerPort).getString());
+        mCtrlAddress.SetAddress(field0, field1, field2, field3);
+        mCtrlPort.SetWindowText(port);
     }
 
     GetDlgItem(IDC_BROKER_CONNECT)->SetFocus();

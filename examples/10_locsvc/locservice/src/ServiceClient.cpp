@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        locservice/src/ServiceClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -22,7 +22,7 @@ Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & en
     return DEBUG_NEW ServiceClient(entry, owner);
 }
 
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -36,25 +36,20 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_10_locservice_ServiceClient_serviceConnected);
-    bool result = HelloWorldClientBase::serviceConnected(isConnected, proxy);
-
-    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
-                , proxy.getProxyAddress().getRoleName().getString()
-                , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected" : "disconnected");
-
+    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
     // subscribe when service connected and un-subscribe when disconnected.
-    notifyOnBroadcastReachedMaximum(isConnected);
-    if (isConnected)
+    if ( isConnected( ) )
     {
-        mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
+        notifyOnBroadcastReachedMaximum( true );
+        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
     }
     else
     {
-        mTimer.stopTimer();
+        notifyOnBroadcastReachedMaximum( false );
+        mTimer.stopTimer( );
     }
 
     return result;
@@ -66,12 +61,19 @@ void ServiceClient::responseHelloWorld( void )
     TRACE_DBG("Received response on request to print greetings from the client");
 }
 
+#if AREG_LOGS
 void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
     TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
     TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     requestShutdownService( );
 }
+#else   // AREG_LOGS
+void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
+{
+    requestShutdownService( );
+}
+#endif  // AREG_LOGS
 
 void ServiceClient::processTimer(Timer & timer)
 {

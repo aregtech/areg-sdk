@@ -1,37 +1,89 @@
-cmake_minimum_required(VERSION 3.16.0)
+# ###########################################################################
+#               CMake options of AREG SDK
+# Copyright 2022-2023 Aregtech
+# ###########################################################################
+
+cmake_minimum_required(VERSION 3.20.0)
 
 # Areg root directory
-set(AREG_SDK_ROOT           "${CMAKE_SOURCE_DIR}")
+set(AREG_SDK_ROOT           "${CMAKE_CURRENT_LIST_DIR}")
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
-set(AREG_BASE               "${AREG_SDK_ROOT}/framework")
-set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")
-set(AREG_TESTS              "${AREG_SDK_ROOT}/tests")
-set(AREG_THIRDPARTY         "${AREG_SDK_ROOT}/thirdparty")
 
-include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
+# Set 'AREG_SDK_ROOT' and optional 'AREG_CMAKE_CONFIG_DIR' variables
+#  before 'setup.cmake', and include 'setup.cmake'
+# before 'project' call.
+include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 
-set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
-set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
-set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE})
-set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
-set(CXX_STANDARD        ${AREG_CXX_STANDARD})
+# set CMake tool settings
+set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
+
+if (${AREG_COMPILER_FAMILY} MATCHES "llvm" AND WIN32)
+    set(CMAKE_GENERATOR_TOOLSET ClangCL)
+endif()
+
+# AREG SDK project name and version
+set(AREG_PROJECT_NAME "areg-sdk")
+set(AREG_PROJECT_VERSION "1.9.99.111")
 
 # Project's properties
-set(PROJECT_NAME "areg-sdk")
-set(PROJECT_VERSION "1.5.0")
-project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
+set(PROJECT_NAME ${AREG_PROJECT_NAME})
+set(PROJECT_VERSION ${AREG_PROJECT_VERSION})
+project("${PROJECT_NAME}" 
+        VERSION "${PROJECT_VERSION}" 
+        DESCRIPTION "AREG Communication Framework and Tools" 
+        HOMEPAGE_URL "https://aregtech.com" 
+        LANGUAGES CXX C)
 
+# The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
-include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 
-include_directories(${AREG_BASE})
+# add a custom command to create output build folders if they are not existing.
+# create a dummy project to add as a dependency in all other projects.
+# this ensures that the commands to create directories are called first.
+add_custom_target(areg-dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
+add_custom_command( TARGET areg-dummy PRE_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}"
+                    VERBATIM)
+
+include_directories(${AREG_FRAMEWORK})
 include_directories(${AREG_THIRDPARTY})
-include(${AREG_BASE}/CMakeLists.txt)
 
+# build AREG Framework thirdparty software
+include(${AREG_THIRDPARTY}/CMakeLists.txt)
+if (NOT AREG_SQLITE_FOUND)
+    add_dependencies(aregsqlite3 areg-dummy)
+endif()
+
+# build AREG Framework software
+include(${AREG_FRAMEWORK}/CMakeLists.txt)
+add_dependencies(areg areg-dummy)
+
+# build optional AREG project examples, if required
 if(AREG_BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/CMakeLists.txt)
 endif()
 
+# build optional AREG Framework unit tests, if required
 if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
+    if (NOT AREG_GTEST_FOUND)
+        add_dependencies(areg-unit-tests areg-dummy)
+    endif()
+else()
+    option(AREG_GTEST_PACKAGE "Use google test package" OFF)
 endif()
+
+if (AREG_INSTALL AND AREG_SQLITE_FOUND)
+    include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
+elseif(AREG_INSTALL)
+    option(AREG_INSTALL "Enable install AREG SDK" OFF)
+endif()
+
+# Print the configuration status
+printAregConfigStatus(
+    TRUE
+    "AREG"
+    "----------------------> AREG project CMake Status Report Begin <-----------------------"
+    "-----------------------> AREG project CMake Status Report End <------------------------"
+)

@@ -15,11 +15,11 @@
                     <Value IsDefault="true"/>
                     <Description>The last name of patient.</Description>
                 </Field>
-                <Field DataType="double" ID="5" Name="weight">
+                <Field DataType="float" ID="5" Name="weight">
                     <Value IsDefault="true">0.0</Value>
                     <Description>The weight of patient in kilogramms.</Description>
                 </Field>
-                <Field DataType="uint8" ID="6" Name="age">
+                <Field DataType="uint32" ID="6" Name="age">
                     <Value IsDefault="true">0</Value>
                     <Description>The age of patient.</Description>
                 </Field>

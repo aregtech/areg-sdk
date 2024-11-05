@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagerBase.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager Base class.
  *
@@ -29,29 +29,18 @@ TimerManagerBase::TimerManagerBase(const String& threadName)
 
 bool TimerManagerBase::postEvent(Event& eventElem)
 {
-    bool result = false;
-    if (RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        OUTPUT_ERR("Not a TimerManagerEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
-        eventElem.destroy();
-    }
-
-    return result;
+    return (RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }
 
 bool TimerManagerBase::runDispatcher(void)
 {
+    readyForEvents( true );
+
     IESynchObject* synchObjects[] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(synchObjects, 2, false);
-
     int whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
-    readyForEvents(true);
     do
     {
         whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false, true);
@@ -73,7 +62,6 @@ bool TimerManagerBase::runDispatcher(void)
         }
         else
         {
-            OUTPUT_DBG("Received exit event. Going to exit System Timer Thread!");
             whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
         }
 
@@ -92,42 +80,34 @@ void TimerManagerBase::readyForEvents(bool isReady)
     if (isReady)
     {
         TimerManagerEvent::addListener(static_cast<IETimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
-
-        mHasStarted = true;
-        mEventStarted.setEvent();
     }
     else
     {
         TimerManagerEvent::removeListener(static_cast<IETimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
-
-        mHasStarted = false;
-        mEventStarted.resetEvent();
     }
+
+    DispatcherThread::readyForEvents( true );
 }
 
 bool TimerManagerBase::startTimerManagerThread(void)
 {
-    bool result = false;
-    if (isReady() == false)
+    ASSERT(isReady() || (isRunning() == false));
+    return (isReady() || (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE)));
+}
+
+void TimerManagerBase::stopTimerManagerThread(bool waitComplete)
+{
+    if (waitComplete)
     {
-        ASSERT(isRunning() == false);
-        result = createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE);
-#ifdef _DEBUG
-        if (result == false)
-        {
-            OUTPUT_ERR("Failed to create [ %s ] System Timer Thread", this->getName().getString());
-        }
-#endif  // _DEBUG
+        shutdownThread(NECommon::WAIT_INFINITE);
     }
     else
     {
-        result = true;
+        triggerExit();
     }
-
-    return result;
 }
 
-void TimerManagerBase::stopTimerManagerThread(void)
+void TimerManagerBase::waitCompletion(void)
 {
-    destroyThread(NECommon::WAIT_INFINITE);
+    shutdownThread(NECommon::WAIT_INFINITE);
 }

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/WatchdogManager.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread watchdog object declaration
  *
@@ -67,9 +67,21 @@ public:
     static bool startWatchdogManager( void );
 
     /**
-     * \brief   Stops Watchdog Manager and destroys Watchdog Thread.
+     * \brief   Stops Watchdog Manager and the Thread. Cancels and stops all timers.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until Watchdog Manager completes jobs and cleans resources.
+     *          Otherwise, this triggers stop and exit events, and immediately returns.
+     * \param   waitComplete    If true, waits for Watchdog Manager to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and returns.
      **/
-    static void stopWatchdogManager( void );
+    static void stopWatchdogManager( bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Watchdog Manager did not
+     *          complete the jobs and exit. This should be called if previously
+     *          it was requested to stop the Watchdog Manager without waiting for completion.
+     **/
+    static void waitWatchdogManager(void);
 
     /**
      * \brief   Returns true if Watchdog Manager has been started and ready to process Watchdogs.
@@ -77,18 +89,17 @@ public:
     static bool isWatchdogManagerStarted( void );
 
     /**
-     * \brief   Starts the timer. If succeeds, returns true.
+     * \brief   Starts the watchdog timer. If succeeds, returns true.
      *          When timer event is fired, it will be dispatched in the
      *          thread where it was started, i.e. in the current thread.
-     * \param   timer   The timer object that should be started
+     * \param   watchdog    The watchdog object that should be started.
      * \return  Returns true if timer was successfully created.
      **/
     static bool startTimer(Watchdog& watchdog);
 
     /**
-     * \brief   Stops the timer. Returns true if timer successfully was stopped.
-     * \param   timer   The timer object that should be stopped
-     * \return  Returns true if timer was successfully stopped.
+     * \brief   Stops the watchdog timer. Returns true if timer successfully was stopped.
+     * \param   watchdog    The watchdog object that should be stopped.
      **/
     static void stopTimer(Watchdog& watchdog);
 
@@ -124,8 +135,9 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
-     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
     virtual void readyForEvents( bool isReady ) override;
 
@@ -153,7 +165,7 @@ private:
      * \brief   Stop watchdog timer and unregister from the resource map.
      * \param   watchdog   The instance of watchdog object to unregister.
      **/
-    inline void _unregisterWatchdog( Watchdog & Watchdog );
+    inline void _unregisterWatchdog( Watchdog & watchdog );
 
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods
@@ -185,14 +197,14 @@ private:
 
     /**
      * \brief   Starts system Watchdog and returns true if Watchdog started with success.
-     * \param   WatchdogInfo   The Watchdog information object
+     * \param   watchdog    The Watchdog  object with timer information.
      * \return  Returns true if system Watchdog started with success.
      **/
     static bool _osSystemTimerStart( Watchdog & watchdog );
 
     /**
      * \brief   Stops previously started waitable timer.
-     * \param   timerHandle The waitable timer handle to destroy.
+     * \param   handle      The waitable timer handle to destroy.
      **/
     static void _osSystemTimerStop(TIMERHANDLE handle);
 

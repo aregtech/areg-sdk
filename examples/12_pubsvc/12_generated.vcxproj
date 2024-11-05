@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CCBBF424-D22D-480F-A13E-28095E33827C}</ProjectGuid>
@@ -14,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -39,26 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloWorldClientBase.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldEvents.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldProxy.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldStub.cpp" />
-    <ClCompile Include="generated\src\private\NEHelloWorld.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\HelloWorldClientBase.hpp" />
-    <ClInclude Include="generated\src\HelloWorldStub.hpp" />
-    <ClInclude Include="generated\src\NEHelloWorld.hpp" />
-    <ClInclude Include="generated\src\NECommon.hpp" />
-    <ClInclude Include="generated\src\private\HelloWorldEvents.hpp" />
-    <ClInclude Include="generated\src\private\HelloWorldProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\HelloWorld.siml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\NEHelloWorld.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\HelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\HelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

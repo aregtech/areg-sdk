@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/EventDispatcher.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher class
  *              Posts, receives dispatcher event objects, registers
@@ -149,7 +149,7 @@ inline DispatcherThread * EventDispatcher::getDispatcherThread( void ) const
 
 inline bool EventDispatcher::hasMoreEvents( void ) const
 {
-    return (static_cast<const EventQueue &>(mExternaEvents).getSize() > 0);
+    return (mExternaEvents.isEmpty() == false);
 }
 
 #endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

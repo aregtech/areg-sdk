@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcherBase.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Global AREG Platform, Event Dispatcher base class.
  *              The class is providing basic dispatching functionalities,
@@ -126,9 +126,15 @@ public:
      * \param   eventClassId    The class ID of external event object.
      *                          All events having specified class ID
      *                          will be removed.
-     * \return  Returns amount of removed events.
      **/
-    inline int removeExternalEventType(const RuntimeClassID & eventClassId);
+    inline void removeExternalEventType(const RuntimeClassID & eventClassId);
+
+    /**
+     * \brief   Returns true if the specified event object is a special reserved event indicating to exit the thread.
+     * \param   anEvent     A pointer to the event object to check.
+     * \return  Returns true, if dispatcher should complete the job and exit the thread.
+     **/
+    bool isExitEvent( const Event * anEvent ) const;
 
 /************************************************************************/
 // IEEventDispatcher overrides
@@ -143,9 +149,20 @@ public:
      * \brief   Call to stop running dispatcher.
      **/
     virtual void stopDispatcher( void ) override;
-    
+
+    /**
+     * \brief   Called when dispatcher completed the job and exit.
+     *          The cleanups should be done here.
+     **/
+    virtual void exitDispatcher(void) override;
+
     /**
      * \brief   Call to queue event object in the event queue of dispatcher.
+     *          The passed event parameter should be allocated in memory and
+     *          should be globally accessed (for example, via new operator).
+     * \param   eventElem           Event object to queue in event stack of dispatcher.
+     * \return  Returns true, if Event was queued. Otherwise, it was not queued
+     *          and the object should be deleted.
      **/
     virtual bool queueEvent( Event & eventElem ) override;
     
@@ -237,7 +254,6 @@ protected:
      *          in this method.
      * \param	eventElem	Pointer to Event element, which has been finished
      *                      to be dispatched.
-     * \return	
      **/
     virtual void postDispatchEvent( Event * eventElem ) override;
 
@@ -278,8 +294,9 @@ protected:
     virtual bool pulseExit( void );
 
     /**
-     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
-     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
     virtual void readyForEvents( bool isReady );
 
@@ -382,9 +399,9 @@ inline void EventDispatcherBase::removeAllEvents(void)
     mExternaEvents.unlockQueue();
 }
 
-inline int EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
+inline void EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
 {
-    return mExternaEvents.removeEvents(eventClassId);
+    mExternaEvents.removeEvents(eventClassId);
 }
 
 inline EventDispatcherBase& EventDispatcherBase::self( void )

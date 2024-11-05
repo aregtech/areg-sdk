@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/FileBase.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       Base class of file objects.
  *
@@ -243,7 +243,7 @@ public:
      * \brief   Writes files data as wide-char string. The file outputs string until reaches end of file,
      *          or meets first unprintable symbol. On output, the 'ascii'
      * \param   stream  The instance of file data contains the data.
-     * \param   ascii   On output, this contains the wide-char string data.
+     * \param   wide    On output, this contains the wide-char string data.
      **/
     friend inline const FileBase & operator >> ( const FileBase & stream, WideString & OUT wide );
 
@@ -354,13 +354,23 @@ public:
      * \brief   Move file pointer to the beginning of file
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool moveToBegin( void );
+    inline bool moveToBegin( void ) const;
 
     /**
      * \brief   Move file pointer to the end of file
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool moveToEnd( void );
+    inline bool moveToEnd( void ) const;
+
+    /**
+     * \brief   Returns the start position value.
+     **/
+    inline static unsigned int getStartPosition( void );
+
+    /**
+     * \brief   Return the invalid position value.
+     **/
+    inline static unsigned int getInvalidPosition( void );
 
 /************************************************************************/
 // Read / Write operation functions
@@ -411,56 +421,56 @@ public:
     /**
      * \brief   Reads boolean value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readBool(bool & OUT outValue) const;
 
     /**
      * \brief   Reads 1 byte of data, covert to char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readChar(char & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to wide char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readChar(wchar_t & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to short integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readShort(short & OUT outValue) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readInt(int & OUT outValue) const;
 
     /**
      * \brief   Reads 8 bytes of data, covert to large integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readLarge(int64_t & OUT outValue) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readFloat(float & OUT outValue) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to double floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue[out]   On output contains value that could read.
+     * \param   outValue [out]   On output contains value that could read.
      **/
     inline bool readDouble(double & OUT outValue) const;
 
@@ -600,8 +610,39 @@ public:
     /**
      * \brief   Writes string into the file.
      **/
-    bool write(const char * asciiString);
-    bool write(const wchar_t * wideString);
+    bool write(const char * ascii);
+    bool write(const wchar_t * wide);
+
+    /**
+     * \brief   Searches the given binary data in the file and returns the position where the data starts.
+     * \param   startPos    The position in the file to start to search.
+     * \param   buffer      The binary data buffer to search.
+     * \param   length      The length of the data to search.
+     * \return  If found, returns the valid position in the file where the binary data starts.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     **/
+    unsigned int searchData( unsigned int startPos, const unsigned char * buffer, uint32_t length ) const;
+    /**
+     * \brief   Searches the given binary data in the file and returns the position where the data starts.
+     * \param   startPos    The position in the file to start to search.
+     * \param   buffer      The buffer of byte-binary data to search.
+     * \return  If found, returns the valid position in the file where the binary data starts.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     **/
+    unsigned int searchData( unsigned int startPos, const IEByteBuffer & buffer ) const;
+
+    /**
+     * \brief   Searches the given null-terminated text in the file and returns the position where the data starts.
+     * \param   startPos        The position in the file to start to search.
+     * \param   text            The null-terminated text to search.
+     * \param   caseSensitive   If true, the searching of text is case sensitive.
+     * \return  If found, returns the valid position in the file where the binary data starts.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     **/
+    unsigned int searchText( unsigned int startPos, const char * text, bool caseSensitive ) const;
+    unsigned int searchText( unsigned int startPos, const wchar_t * text, bool caseSensitive ) const;
+    unsigned int searchText( unsigned int startPos, const String & text, bool caseSensitive ) const;
+    unsigned int searchText( unsigned int startPos, const WideString & text, bool caseSensitive ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override methods
@@ -732,18 +773,18 @@ public:
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const override;
+    virtual unsigned int read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const override;
+    virtual unsigned int read( WideString & wide ) const override;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -760,18 +801,18 @@ public:
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
+     * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & asciiString ) override;
+    virtual unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString  The buffer of String containing data to stream to Output Stream.
+     * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wideString ) override;
+    virtual unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 
@@ -934,16 +975,26 @@ inline bool FileBase::canRead( void ) const
     return ( (getMode() & static_cast<int>(FOB_READ)) != 0 );
 }
 
-inline bool FileBase::moveToBegin( void )
+inline bool FileBase::moveToBegin( void ) const
 {
     ASSERT(isOpened());
     return IECursorPosition::moveToBegin();
 }
 
-inline bool FileBase::moveToEnd( void )
+inline bool FileBase::moveToEnd( void ) const
 {
     ASSERT(isOpened());
     return IECursorPosition::moveToEnd();
+}
+
+inline unsigned int FileBase::getStartPosition( void )
+{
+    return IECursorPosition::START_CURSOR_POSITION;
+}
+
+inline unsigned int FileBase::getInvalidPosition( void )
+{
+    return IECursorPosition::INVALID_CURSOR_POSITION;
 }
 
 inline const IEInStream& FileBase::getReadStream( void ) const

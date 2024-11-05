@@ -16,8 +16,14 @@
                     <Description>Just another field</Description>
                 </Field>
                 <Field DataType="String" ID="5" Name="anyField3">
-                    <Value IsDefault="true"/>
+                    <Value IsDefault="true">""</Value>
                     <Description>More field.</Description>
+                </Field>
+                <Field DataType="bool" ID="37" Name="anyField4">
+                    <Value IsDefault="true">false</Value>
+                </Field>
+                <Field DataType="DateTime" ID="38" Name="anyField5">
+                    <Value IsDefault="true">DateTime::getNow()</Value>
                 </Field>
             </FieldList>
         </DataType>
@@ -66,6 +72,10 @@
         <Attribute DataType="SomeStruct" ID="16" Name="SomeAttr2" Notify="Always">
             <Description>Another attribute to notify subscribers any time when value is set (maybe not changed).</Description>
         </Attribute>
+        <Attribute DataType="uint16" ID="44" Name="DeprecatedAttribute" Notify="OnChange" IsDeprecated="true">
+            <Description>This is an Attribute that mark as deprecated</Description>
+            <DeprecateHint>Example to deprecate data.</DeprecateHint>
+        </Attribute>
     </AttributeList>
     <MethodList>
         <Method ID="17" MethodType="request" Name="SomeRequest1" Response="SomeResponse1">
@@ -111,16 +121,34 @@
                 <Parameter DataType="SomeArray" ID="34" Name="value4"/>
             </ParamList>
         </Method>
+        <Method ID="39" MethodType="request" Name="SomeRequestNoResponse">
+            <Description>This request does not have a response.</Description>
+        </Method>
+        <Method ID="40" MethodType="request" Name="SomeBroadcastNoParams">
+            <Description>This broadcast has not parameters.</Description>
+        </Method>
     </MethodList>
     <ConstantList>
-        <Constant DataType="uint16" ID="35" Name="SomeConst">
+        <Constant DataType="uint16" ID="35" Name="SomeTimeout">
             <Value>100</Value>
             <Description>define a constant if need.</Description>
+        </Constant>
+        <Constant DataType="String" ID="41" Name="SomeStringConstant">
+            <Value>"This is a constant"</Value>
+            <Description>A constant, which is a string.</Description>
+        </Constant>
+        <Constant DataType="bool" ID="42" Name="SomeDeprecatedConst" IsDeprecated="true">
+            <Value>false</Value>
+            <Description>This is a constant, which we mark as deprecated.</Description>
+            <DeprecateHint>Deprecate sample.</DeprecateHint>
         </Constant>
     </ConstantList>
     <IncludeList>
         <Location ID="36" Name="areg/base/NEMath.hpp">
             <Description>can make additional includes</Description>
+        </Location>
+        <Location ID="43" Name="areg/example/nonexist/folder/DataType.dtml">
+            <Description>Supposed to have a new DataType XML file that can be included in the multiple Service Interface.</Description>
         </Location>
     </IncludeList>
 </ServiceInterface>

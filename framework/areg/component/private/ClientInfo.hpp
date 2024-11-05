@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientInfo.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Client Info class declaration
  *
@@ -153,8 +153,8 @@ public:
      *          Otherwise, it sets client state undefined.
      *          Service Info is valid, if Role Name and Service Names are valid.
      *          For more information of Service Info see description of ServiceInfo class.
-     * \param   server  The address of Stub of server.
-     *                  If valid address, this will change the state of client to connected.
+     * \param   newConnection   The address of the Stub of server (service provider).
+     *                          If valid address, this will change the state of client to connected.
      **/
     void setConnectionStatus( NEService::eServiceConnection newConnection );
 

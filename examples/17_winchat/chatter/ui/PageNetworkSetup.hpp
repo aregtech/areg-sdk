@@ -2,7 +2,7 @@
 
 #include "areg/base/String.hpp"
 #include "chatter/res/resource.h"
-#include "generated/NEConnectionManager.hpp"
+#include "generate/examples/17_winchat/NEConnectionManager.hpp"
 
 class Component;
 class NetworkSetup;
@@ -37,8 +37,8 @@ public:
     void OnDefaultClicked( void );
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    virtual BOOL OnInitDialog( );
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+    virtual BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
 public:

@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of simple local servicing 
 //               objects to create multithreading applications.It instantiates
 //               a dummy ( empty ) local service interface, which is not 
@@ -53,11 +53,11 @@ int main()
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
+    Application::initApplication(true, true, false, true, true, nullptr );
 
     do 
     {
-        unsigned int timeout{ NECommon::WAIT_5_SECONDS };
+        unsigned int timeout{ NECommon::WAIT_10_SECONDS };
 
         TRACE_SCOPE(examples_08_service_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);

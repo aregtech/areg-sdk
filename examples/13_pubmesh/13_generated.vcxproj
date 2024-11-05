@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D708316F-7E34-4E09-A782-4021C5500C0D}</ProjectGuid>
@@ -14,54 +17,50 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
-  <ItemGroup>
-    <ClCompile Include="generated\src\private\LocalHelloWorldClientBase.cpp" />
-    <ClCompile Include="generated\src\private\LocalHelloWorldEvents.cpp" />
-    <ClCompile Include="generated\src\private\LocalHelloWorldProxy.cpp" />
-    <ClCompile Include="generated\src\private\LocalHelloWorldStub.cpp" />
-    <ClCompile Include="generated\src\private\NELocalHelloWorld.cpp" />
-    <ClCompile Include="generated\src\private\NEPublicHelloWorld.cpp" />
-    <ClCompile Include="generated\src\private\NESystemShutdown.cpp" />
-    <ClCompile Include="generated\src\private\PublicHelloWorldClientBase.cpp" />
-    <ClCompile Include="generated\src\private\PublicHelloWorldEvents.cpp" />
-    <ClCompile Include="generated\src\private\PublicHelloWorldProxy.cpp" />
-    <ClCompile Include="generated\src\private\PublicHelloWorldStub.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownClientBase.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownEvents.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownProxy.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownStub.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\LocalHelloWorldClientBase.hpp" />
-    <ClInclude Include="generated\src\LocalHelloWorldStub.hpp" />
-    <ClInclude Include="generated\src\NELocalHelloWorld.hpp" />
-    <ClInclude Include="generated\src\NEPublicHelloWorld.hpp" />
-    <ClInclude Include="generated\src\NESystemShutdown.hpp" />
-    <ClInclude Include="generated\src\private\LocalHelloWorldEvents.hpp" />
-    <ClInclude Include="generated\src\private\LocalHelloWorldProxy.hpp" />
-    <ClInclude Include="generated\src\private\PublicHelloWorldEvents.hpp" />
-    <ClInclude Include="generated\src\private\PublicHelloWorldProxy.hpp" />
-    <ClInclude Include="generated\src\private\SystemShutdownEvents.hpp" />
-    <ClInclude Include="generated\src\private\SystemShutdownProxy.hpp" />
-    <ClInclude Include="generated\src\PublicHelloWorldClientBase.hpp" />
-    <ClInclude Include="generated\src\PublicHelloWorldStub.hpp" />
-    <ClInclude Include="generated\src\SystemShutdownClientBase.hpp" />
-    <ClInclude Include="generated\src\SystemShutdownStub.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="res\LocalHelloWorld.siml" />
     <None Include="res\PublicHelloWorld.siml" />
     <None Include="res\SystemShutdown.siml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\NELocalHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\NEPublicHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\NESystemShutdown.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\LocalHelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\LocalHelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\NELocalHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\NEPublicHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\NESystemShutdown.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\PublicHelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\PublicHelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\SystemShutdownClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\SystemShutdownStub.hpp" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>

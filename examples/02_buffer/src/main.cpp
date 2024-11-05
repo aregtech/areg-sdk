@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of a Shared Buffer object, 
 //               initialization streaming, read and write, passing in 
 //               multithreading environment.
@@ -50,7 +50,7 @@ private:
     inline HelloThread & self( void )
     {
         return (*this);
-    };
+    }
 
 private:
     SharedBuffer &  mBuffer;
@@ -117,7 +117,7 @@ int main()
     aThread.createThread(NECommon::WAIT_INFINITE);
 
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.destroyThread(NECommon::WAIT_INFINITE);
+    aThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

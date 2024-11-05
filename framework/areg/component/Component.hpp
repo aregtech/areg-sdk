@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/Component.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Component class declaration.
  *              To receive messages, all service interface objects
@@ -63,16 +63,16 @@ class AREG_API Component   : public    RuntimeObject
     using ImplComponentResource = TEResourceMapImpl<unsigned int, Component *>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
-     * \tparam  Component           The saved values are Component objects
+     *          Component           The saved values are Component objects.
      **/
     using MapComponentContainer  = TEIntegerHashMap<Component *>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
-     * \tparam  unsigned int            The calculated number of component as a key.
-     * \tparam  Component               The type of container values, it contains Components
-     * \tparam  MapComponentContainer   The hash-map object to store containers.
-     * \tparam  ImplComponentResource   The implementation of basic resource+map operations.
+     *          unsigned int            The calculated number of component as a key.
+     *          Component               The type of container values, it contains Components
+     *          MapComponentContainer   The hash-map object to store containers.
+     *          ImplComponentResource   The implementation of basic resource+map operations.
      **/
     using MapComponentResource  = TELockResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ public:
     /**
      * \brief   Component::ListServers
      *          The list of addresses of Servers.
-     * \tparam  StubBase  The pointer to base class of Stub objects.
+     *          StubBase  The pointer to base class of Stub objects.
      **/
     using ListServers           = TELinkedList<StubBase*>;
 
@@ -293,7 +293,7 @@ public:
     /**
      * \brief   Returns the list of registered (provided) Server Service list.
      **/
-    inline const ListServers & getServiceList( void ) const;
+    inline const ListServers & extractRemoteServiceAddresses( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -390,7 +390,7 @@ inline const ComponentAddress& Component::getAddress( void ) const
     return mComponentInfo.getAddress();
 }
 
-inline const Component::ListServers & Component::getServiceList( void ) const
+inline const Component::ListServers & Component::extractRemoteServiceAddresses( void ) const
 {
     return mServerList;
 }

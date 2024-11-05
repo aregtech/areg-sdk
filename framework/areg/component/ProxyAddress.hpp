@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ProxyAddress.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Proxy Address class.
  *              Every Proxy is reached by unique address, which is a 
@@ -99,7 +99,7 @@ public:
                 , const Version & serviceVersion
                 , NEService::eServiceType serviceType
                 , const String & roleName
-                , const String & threadName = String::EmptyString );
+                , const String & threadName = String::getEmptyString() );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -107,7 +107,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
+    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -115,7 +115,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
+    ProxyAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.
@@ -227,6 +227,26 @@ public:
     inline bool isRemoteAddress( void ) const;
 
     /**
+     * \brief   Returns true if the source of communication channel is local, i.e. it is the same process.
+     **/
+    inline bool isSourceLocal( void ) const;
+
+    /**
+     * \brief   Returns true if the source of communication channel is public, i.e. it is external process.
+     **/
+    inline bool isSourcePublic( void ) const;
+
+    /**
+     * \brief   Returns true if the target of communication channel is local, i.e. it is the same process.
+     **/
+    inline bool isTargetLocal( void ) const;
+
+    /**
+     * \brief   Returns true if the target of communication channel is public, i.e. it is external process.
+     **/
+    inline bool isTargetPublic( void ) const;
+
+    /**
      * \brief   Returns thread name of processed Proxy
      **/
     inline const String & getThread( void ) const;
@@ -245,27 +265,27 @@ public:
     /**
      * \brief   Returns Proxy cookie value
      **/
-    inline ITEM_ID getCookie( void ) const;
+    inline const ITEM_ID & getCookie( void ) const;
     /**
      * \brief   Sets Proxy cookie value
      **/
-    inline void setCookie( ITEM_ID cookie );
+    inline void setCookie(const ITEM_ID & cookie );
     /**
      * \brief   Returns Proxy source ID
      **/
-    inline ITEM_ID getSource( void ) const;
+    inline const ITEM_ID & getSource( void ) const;
     /**
      * \brief   Sets Proxy source ID
      **/
-    inline void setSource( ITEM_ID source );
+    inline void setSource(const ITEM_ID & source );
     /**
      * \brief   Returns Proxy target ID
      **/
-    inline ITEM_ID getTarget( void ) const;
+    inline const ITEM_ID & getTarget( void ) const;
     /**
      * \brief   Sets Proxy target ID
      **/
-    inline void setTarget( ITEM_ID target);
+    inline void setTarget(const ITEM_ID & target);
 
     /**
      * \brief   Returns true if proxy address is valid.
@@ -280,7 +300,9 @@ public:
 
     /**
      * \brief   Returns true if specified Stub address is compatible with Proxy
-     * \param   addStub     The Stub address to check
+     * \param   addrStub    The Stub address to check.
+     * \return  Returns true if specified service provider address (stub-address)
+     *          is compatible with the proxy address.
      **/
     bool isStubCompatible( const StubAddress & addrStub ) const;
 
@@ -340,7 +362,7 @@ private:
      * \param   serviceEvent    The service event to deliver
      * \param   idTarget        The ID of target service to deliver event
      **/
-    static bool _deliverEvent( Event & serviceEvent, ITEM_ID idTarget );
+    static bool _deliverEvent( Event & serviceEvent, const ITEM_ID & idTarget );
 
     /**
      * \brief   Returns the calculated hash-key value of specified proxy address object.
@@ -446,7 +468,27 @@ inline bool ProxyAddress::isLocalAddress(void) const
 
 inline bool ProxyAddress::isRemoteAddress(void) const
 {
-    return (mChannel.getCookie() > NEService::COOKIE_ROUTER );
+    return (mChannel.getCookie() >= NEService::COOKIE_ANY);
+}
+
+inline bool ProxyAddress::isSourceLocal( void ) const
+{
+    return (mChannel.getCookie() == NEService::COOKIE_LOCAL) && (mChannel.getSource() != 0);
+}
+
+inline bool ProxyAddress::isSourcePublic( void ) const
+{
+    return (mChannel.getCookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
+}
+
+inline bool ProxyAddress::isTargetLocal( void ) const
+{
+    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+}
+
+inline bool ProxyAddress::isTargetPublic( void ) const
+{
+    return (mChannel.getCookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
 inline const String & ProxyAddress::getThread(void) const
@@ -464,32 +506,32 @@ inline void ProxyAddress::setChannel( const Channel & channel )
     mChannel = channel;
 }
 
-inline ITEM_ID ProxyAddress::getCookie( void ) const
+inline const ITEM_ID & ProxyAddress::getCookie( void ) const
 {
     return mChannel.getCookie();
 }
 
-inline void ProxyAddress::setCookie( ITEM_ID cookie )
+inline void ProxyAddress::setCookie(const ITEM_ID & cookie )
 {
     mChannel.setCookie(cookie);
 }
 
-inline ITEM_ID ProxyAddress::getSource( void ) const
+inline const ITEM_ID & ProxyAddress::getSource( void ) const
 {
     return mChannel.getSource();
 }
 
-inline void ProxyAddress::setSource( ITEM_ID source )
+inline void ProxyAddress::setSource(const ITEM_ID & source )
 {
     return mChannel.setSource(source);
 }
 
-inline ITEM_ID ProxyAddress::getTarget( void ) const
+inline const ITEM_ID & ProxyAddress::getTarget( void ) const
 {
     return mChannel.getTarget();
 }
 
-inline void ProxyAddress::setTarget( ITEM_ID target )
+inline void ProxyAddress::setTarget(const ITEM_ID & target )
 {
     return mChannel.setTarget(target);
 }

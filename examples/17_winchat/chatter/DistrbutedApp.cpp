@@ -10,7 +10,7 @@
 // All rights reserved.
 
 // DistrbutedApp.cpp : Defines the class behaviors for the application.
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 //
 
 #include "chatter/res/stdafx.h"
@@ -77,7 +77,10 @@ BOOL DistrbutedApp::InitInstance()
     // such as the name of your company or organization
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-    do 
+    // Don't start connection with the router, this will be started on UI
+    Application::initApplication(true, true, false, true, false, nullptr);
+
+    do
     {
         DistributedDialog dlg;
         m_pMainWnd = &dlg;

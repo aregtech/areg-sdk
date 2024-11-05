@@ -6,13 +6,13 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PersistenceManager.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Data persistency manager
  ************************************************************************/
-#include "areg/persist/private/PersistenceManager.hpp"
+#include "areg/persist/PersistenceManager.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/File.hpp"
@@ -26,7 +26,7 @@ PersistenceManager & PersistenceManager::getInstance(void)
 bool PersistenceManager::parseReadable(const char * filePath)
 {
     mMapReadOnly.clear();
-    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::EmptyString);
+    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::getEmptyString());
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
@@ -44,14 +44,6 @@ bool PersistenceManager::parseReadable(const char * filePath)
                         mMapReadOnly.setAt( static_cast<unsigned int>(newProperty), newProperty );
                         newProperty.resetData();
                     }
-                    else
-                    {
-                        ; // not relevant property, ignore
-                    }
-                }
-                else
-                {
-                    ; // get next
                 }
             }
         }
@@ -62,7 +54,7 @@ bool PersistenceManager::parseReadable(const char * filePath)
 bool PersistenceManager::parseWritable(const char * filePath)
 {
     mMapWritable.clear();
-    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::EmptyString);
+    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::getEmptyString());
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
@@ -80,14 +72,6 @@ bool PersistenceManager::parseWritable(const char * filePath)
                         mMapWritable.setAt( static_cast<unsigned int>(newProperty), newProperty );
                         newProperty.resetData();
                     }
-                    else
-                    {
-                        ; // not relevant property, ignore
-                    }
-                }
-                else
-                {
-                    ; // get next
                 }
             }
         }

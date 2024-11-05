@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/DispatcherThread.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher class
  *
@@ -22,8 +22,7 @@
 
 DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
 DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_runDispatcher);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
+DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExit);
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -129,26 +128,25 @@ IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread( void )
     : ComponentThread(NullDispatcherName)
-{   ;               }
+{                   }
 
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class. Disable basic functionalities.
 //////////////////////////////////////////////////////////////////////////
 bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID & /* whichClass*/, IEEventConsumer & /*whichConsumer*/ )
-{   return false;    }
+{   return false;   }
 
 bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID & /*whichClass*/, IEEventConsumer & /* whichConsumer*/ )
-{   return false;    }
+{   return false;   }
 
 int NullDispatcherThread::removeConsumer( IEEventConsumer & /* whichConsumer*/ )
-{   return 0;        }
+{   return 0;       }
 
 bool NullDispatcherThread::hasRegisteredConsumer( const RuntimeClassID & /* whichClass */ ) const
-{   return false;    }
+{   return false;   }
 
 bool NullDispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong event dispatcher to post event type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
     ASSERT(false);
     return false;
@@ -218,23 +216,42 @@ DispatcherThread::DispatcherThread (const String & threadName )
 //////////////////////////////////////////////////////////////////////////
 bool DispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong postEvent function call, destroying event [ %s ]", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
     ASSERT(false);  // <= this should not be called.
+    // You may want to call EventDispatcher::postEvent() and/or filter events here
 
     return true;
 }
 
-Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+void DispatcherThread::triggerExit( void )
+{
+    TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExit );
+    TRACE_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
+               , getName( ).getString( )
+               , static_cast<id_type>(getId( ))
+               , mHasStarted ? "STARTED" : "NOT STARTED" );
+
+    mExternaEvents.lockQueue( );
+    if ( mHasStarted )
+    {
+        removeEvents( true );
+        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ) );
+    }
+
+    mEventExit.setEvent( );
+    mExternaEvents.unlockQueue( );
+}
+
+Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
-    TRACE_DBG("Destroying the thread the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
+    TRACE_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
                 , getName().getString( )
                 , static_cast<id_type>(getId( ))
                 , isRunning() ? "RUNNING" : "NOT RUNNING" );
 
     stopDispatcher( );
-    Thread::eCompletionStatus result = Thread::destroyThread(waitForStopMs);
+    Thread::eCompletionStatus result = Thread::shutdownThread(waitForStopMs);
     removeAllEvents( );
     return result;
 }
@@ -244,46 +261,23 @@ DispatcherThread* DispatcherThread::getEventConsumerThread( const RuntimeClassID
     return (hasRegisteredConsumer(whichClass) ? this : nullptr);
 }
 
-void DispatcherThread::shutdownThread( void )
+void DispatcherThread::readyForEvents( bool isReady )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-    TRACE_DBG("Shutting down the thread [ %s ] with ID [ %p ]."
-                , getName().getString( )
-                , static_cast<id_type>(getId( )));
-
-    shutdownDispatcher();
-}
-
-bool DispatcherThread::runDispatcher( void )
-{
-    TRACE_SCOPE( areg_component_private_DispatcherThread_runDispatcher);
-
-    mEventStarted.setEvent();
-    bool result = EventDispatcher::runDispatcher();
-    mEventStarted.resetEvent();
-
-    TRACE_DBG("The dispatcher [ %s ] with ID [ %p ] is stopping.", getName().getString( ), static_cast<id_type>(getId( )));
-
-    return result;
+    if ( isReady )
+    {
+        EventDispatcher::readyForEvents( true );
+        mEventStarted.setEvent( );
+    }
+    else
+    {
+        mEventStarted.resetEvent( );
+        EventDispatcher::readyForEvents( false );
+    }
 }
 
 bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE */ )
 {
     return mEventStarted.lock(waitTimeout);
-}
-
-void DispatcherThread::triggerExitEvent( void )
-{
-    TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
-    TRACE_DBG("Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
-                , getName().getString( )
-                , static_cast<id_type>(getId( ))
-                , mHasStarted ? "STARTED" : "NOT STARTED");
-
-    if ( mHasStarted )
-    {
-        mExternaEvents.pushEvent(ExitEvent::getExitEvent());
-    }
 }
 
 bool DispatcherThread::isExitEvent(const Event * checkEvent) const

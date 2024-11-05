@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LogMessage.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Logging Message class. 
  ************************************************************************/
@@ -53,39 +53,39 @@ public:
 
     /**
      * \brief   Initializes message log structure and sets the logging type value.
-     * \param   logType     The log type value to set in message log structure
+     * \param   msgType     The type of message to initialize
      **/
-    inline explicit LogMessage( NETrace::eLogType logType );
+    inline explicit LogMessage( NETrace::eLogMessageType msgType );
 
     /**
      * \brief   Initializes message log structure, sets the logging type value,
      *          scope ID, message priority and message text, if the string is not empty.
-     * \param   logType     The log type value to set in message log structure
+     * \param   msgType     The log message type to set in message structure
      * \param   scopeId     The ID of trace scope, which is messaging
      * \param   msgPrio     The priority of message to log
      * \param   message     The text message to log
      **/
-    inline LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message );
+    inline LogMessage(NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message );
 
     /**
      * \brief   Initializes message log structure, sets the logging type value,
      *          scope ID, message priority and message text, if the string is not empty.
-     * \param   logType     The log type value to set in message log structure.
+     * \param   msgType     The log message type to set in message structure
      * \param   scopeId     The ID of trace scope, which is messaging.
      * \param   msgPrio     The priority of message to log.
      * \param   message     The text message to log.
      * \param   msgLen      The length of the message to log.
      **/
-    inline LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen );
+    inline LogMessage( NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen );
 
     /**
      * \brief   Initializes message log structure for scope enter or exit event.
      *          The event depends on logging type value
-     * \param   logType     The log type value to set in message log structure.
+     * \param   msgType     The log message type to set in message structure.
      *                      It is either to enter or exit scope.
      * \param   traceScope  The trace scope object, which contains ID and trace scope name is set as text.
      **/
-    LogMessage( NETrace::eLogType logType, const TraceScope & traceScope );
+    LogMessage( NETrace::eLogMessageType msgType, const TraceScope & traceScope );
 
     /**
      * \brief   Copies logging message data from given source.
@@ -104,31 +104,7 @@ public:
      **/
     ~LogMessage(void) = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Copies data from given source. 
-     * \param   src     The source of data to copy.
-     **/
-    LogMessage & operator = ( const LogMessage & src ) = default;
-
-    /**
-     * \brief   Serialization operator. Initializes log message data from given stream
-     * \param   stream  The streaming object, which contains log message data
-     * \param   input   The log message object. On output, it will contain log message data,
-     *                  which read from given stream.
-     **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, LogMessage & input );
-
-    /**
-     * \brief   Serialization operator. Serialize log message data to given stream
-     * \param   stream  The streaming object, where the log message data will be serialized.
-     * \param   output  The log message object to serialize to given stream.
-     **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const LogMessage & output );
+#if AREG_LOGS
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -143,7 +119,7 @@ public:
     /**
      * \brief   Returns log type value
      **/
-    inline NETrace::eLogType getLogType( void ) const;
+    inline NETrace::eLogMessageType getMessageType( void ) const;
 
     /**
      * \brief   Return the ID of thread where the message was initialized
@@ -164,7 +140,7 @@ public:
      * \brief   Returns message log module ID. By default, it is process ID.
      *          The module ID is an unique identifier set by system.
      **/
-    inline ITEM_ID getModuleId( void ) const;
+    inline const ITEM_ID & getModuleId( void ) const;
 
     /**
      * \brief   Set the module ID. The module ID can be any value
@@ -175,7 +151,20 @@ public:
      *          The Module ID is used to differentiate same scopes
      *          in different processes / machines.
      **/
-    inline void setModuleId( ITEM_ID moduleId );
+    inline void setModuleId( const ITEM_ID & moduleId );
+
+    /**
+     * \brief   Returns the cookie value set by logger service.
+     *          If equal NEService::COOKIE_LOCAL, the log messages should not be sent to remote host.
+     *          If equal NEService::COOKIE_ANY, the log message should be queued to wait to complete remote logging service setup.
+     *          If equal or more than NEService::COOKIE_REMOTE_SERVICE, the log message can be forwarded to remote host.
+     **/
+    inline const ITEM_ID & getCookie(void) const;
+
+    /**
+     * \brief   Sets the cookie value set by logger service.
+     **/
+    inline void setCookie(const ITEM_ID& newCookie);
 
     /**
      * \brief   Returns the priority ob message log
@@ -196,7 +185,7 @@ public:
      * \brief   Sets message text in log
      **/
     void setMessage( const char * message, int msgLen );
-
+#endif  // AREG_LOGS
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -205,21 +194,23 @@ private:
     DECLARE_NOMOVE( LogMessage );
 };
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
 // LogMessage class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline LogMessage::LogMessage( NETrace::eLogType logType )
-    : NETrace::sLogMessage( logType )
+inline LogMessage::LogMessage( NETrace::eLogMessageType msgType )
+    : NETrace::sLogMessage(msgType)
 {
 }
 
-inline LogMessage::LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message )
-    : NETrace::sLogMessage( logType, scopeId, msgPrio, message.getString(), message.getLength() )
+inline LogMessage::LogMessage( NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message )
+    : NETrace::sLogMessage( msgType, scopeId, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
 {
 }
 
-inline LogMessage::LogMessage( NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
-    : NETrace::sLogMessage( logType, scopeId, msgPrio, message, msgLen )
+inline LogMessage::LogMessage( NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
+    : NETrace::sLogMessage( msgType, scopeId, msgPrio, message, msgLen )
 {
 }
 
@@ -231,64 +222,86 @@ inline LogMessage::LogMessage( const IEInStream & stream )
 
 inline const NETrace::sLogMessage & LogMessage::getLogData(void) const
 {
-    return (*this);
+    return static_cast<const NETrace::sLogMessage &>(*this);
 }
 
-inline NETrace::eLogType LogMessage::getLogType(void) const
+inline NETrace::eLogMessageType LogMessage::getMessageType(void) const
 {
-    return lmHeader.logType;
+    return this->logMsgType;
 }
 
 inline id_type LogMessage::getThreadId(void) const
 {
-    return static_cast<id_type>(lmTrace.traceThreadId);
+    return static_cast<id_type>(this->logThreadId);
 }
 
 inline unsigned int LogMessage::getScopeId(void) const
 {
-    return lmTrace.traceScopeId;
+    return this->logScopeId;
 }
 
 inline const DateTime LogMessage::getTimestamp(void) const
 {
-    return static_cast<DateTime>(lmTrace.traceTimestamp);
+    return static_cast<DateTime>(this->logTimestamp);
 }
 
-inline ITEM_ID LogMessage::getModuleId(void) const
+inline const ITEM_ID & LogMessage::getModuleId(void) const
 {
-    return lmHeader.logModuleId;
+    return this->logModuleId;
 }
 
-inline void LogMessage::setModuleId(ITEM_ID moduleId)
+inline void LogMessage::setModuleId(const ITEM_ID & moduleId)
 {
-    lmHeader.logModuleId = moduleId;
+    this->logModuleId = moduleId;
 }
 
 inline NETrace::eLogPriority LogMessage::getMessagePrio(void) const
 {
-    return lmTrace.traceMessagePrio;
+    return this->logMessagePrio;
 }
 
 inline void LogMessage::setMessagePrio(const NETrace::eLogPriority msgPrio)
 {
-    lmTrace.traceMessagePrio = msgPrio;
+    this->logMessagePrio = msgPrio;
 }
 
 inline const char * LogMessage::getMessage(void) const
 {
-    return lmTrace.traceMessage;
+    return this->logMessage;
 }
 
-inline const IEInStream & operator >> ( const IEInStream & stream, LogMessage & input )
+inline const ITEM_ID & LogMessage::getCookie(void) const
 {
-    stream >> static_cast<NETrace::sLogMessage &>(input);
-    return stream;
+    return this->logCookie;
 }
 
-inline IEOutStream & operator << ( IEOutStream & stream, const LogMessage & output )
+inline void LogMessage::setCookie(const ITEM_ID & newCookie)
 {
-    stream << static_cast<const NETrace::sLogMessage &>(output);
-    return stream;
+    this->logCookie = newCookie;
 }
 
+#else   // AREG_LOGS
+
+inline LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/)
+    : NETrace::sLogMessage()
+{
+}
+
+inline LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/, unsigned int /*scopeId*/, NETrace::eLogPriority /*msgPrio*/, const String& /*message*/)
+    : NETrace::sLogMessage()
+{
+}
+
+inline LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/, unsigned int /*scopeId*/, NETrace::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
+    : NETrace::sLogMessage()
+{
+}
+
+inline LogMessage::LogMessage(const IEInStream& stream)
+    : NETrace::sLogMessage()
+{
+    stream >> static_cast<NETrace::sLogMessage&>(*this);
+}
+
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LOGMESSAGE_HPP

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/ServerConnectionBase.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Server Connection class declaration.
  ************************************************************************/
@@ -72,7 +72,7 @@ protected:
     /**
      * \brief   The size of master list to listen sockets for incoming messages.
      **/
-    static constexpr int    MASTER_LIST_SIZE        = 64;
+    static constexpr int    MASTER_LIST_SIZE    { 64 };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -103,7 +103,7 @@ public:
      * \brief   Creates instance of object with invalid socket object.
      *          Before sending or receiving data, the socket should be created
      *          and bound to host and port. Specified remoteAddress will be set as server address.
-     * \param   remoteAddress   Address of server.
+     * \param   serverAddress   The address of server socket.
      **/
     ServerConnectionBase( const NESocket::SocketAddress & serverAddress );
 
@@ -183,7 +183,7 @@ public:
      * \return  If there is registered accepted client socket object, which matches client cookie,
      *          the returned object is valid accepted client object. Otherwise, the object is invalid.
      **/
-    inline SocketAccepted getClientByCookie( ITEM_ID clientCookie ) const;
+    inline SocketAccepted getClientByCookie(const ITEM_ID & clientCookie ) const;
 
     /**
      * \brief   Returns accepted socket object, with same unique socket handle.
@@ -229,7 +229,7 @@ public:
      *          To accept connections on server side, firs socket should be created, which is bound to a
      *          local address. A backlog for incoming connections is specified with listen, and the length
      *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
-     * \param   maxQueueSize
+     * \param   maxQueueSize    The maximum size of the socket queue in the list.
      **/
     bool serverListen( int maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
 
@@ -255,8 +255,8 @@ public:
     /**
      * \brief   Call to accept connection. Nothing will happen if connection was already accepted.
      *          For new connections, on output out_connection parameter will have accepted state.
-     * \param   out_connection  Connection to accept. If object is valid, on output this will
-     *                          be in accepted state.
+     * \param[out]  clientConnection    Connection to accept. If object is valid, on output this will
+     *                                  be in accepted state.
      **/
     bool acceptConnection( SocketAccepted & clientConnection );
 
@@ -270,19 +270,31 @@ public:
      * \brief   Call to close connection by cookie.
      * \param   cookie      The cookie of client set by routing service.
      **/
-    void closeConnection(ITEM_ID cookie);
+    void closeConnection(const ITEM_ID & cookie);
 
     /**
-     * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
+     * \brief   Sets socket in the read-only mode, i.e. no send message is possible anymore.
+     * \param   clientConnection    The connected client socket to set in read-only mode.
      * \return  Returns true if operation succeeds.
      **/
     inline bool disableSend( const SocketAccepted & clientConnection );
 
     /**
-     * \brief   Sets socket in write-only more, i.e. no receive message is possible anymore.
+     * \brief   Sets socket in the write-only mode, i.e. no receive message is possible anymore.
+     * \param   clientConnection    The connected client socket to set in write-only mode.
      * \return  Returns true if operation succeeds.
      **/
     inline bool disableReceive( const SocketAccepted & clientConnection );
+
+    /**
+     * \brief   Sets all sockets in the read-only mode, i.e. no send message is possible anymore.
+     **/
+    inline void disableSend( void );
+
+    /**
+     * \brief   Sets all sockets in the write-only more, i.e. no receive message is possible anymore.
+     **/
+    inline void disableReceive( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -384,7 +396,7 @@ inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
     return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
 }
 
-inline SocketAccepted ServerConnectionBase::getClientByCookie(ITEM_ID clientCookie) const
+inline SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
 {
     Lock lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
@@ -406,6 +418,22 @@ inline bool ServerConnectionBase::disableSend( const SocketAccepted & clientConn
 inline bool ServerConnectionBase::disableReceive( const SocketAccepted & clientConnection )
 {
     return clientConnection.disableReceive();
+}
+
+inline void ServerConnectionBase::disableSend( void )
+{
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
+    {
+        mAcceptedConnections.valueAtPosition( pos ).disableSend( );
+    }
+}
+
+inline void ServerConnectionBase::disableReceive( void )
+{
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
+    {
+        mAcceptedConnections.valueAtPosition( pos ).disableReceive( );
+    }
 }
 
 #endif  // AREG_IPC_SERVERCONNECTIONBASE_HPP

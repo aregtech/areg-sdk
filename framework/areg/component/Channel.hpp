@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/Channel.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, channel object. Responsible to deliver
  *              events to target. The Target object is either in the same
@@ -60,7 +60,7 @@ public:
      * \param   target  The channel communication target ID set by system.
      * \param   cookie  The ID assigned by system.
      **/
-    explicit Channel( ITEM_ID source, ITEM_ID target = NEService::TARGET_UNKNOWN, ITEM_ID cookie = NEService::COOKIE_UNKNOWN );
+    explicit Channel( const ITEM_ID & source, const ITEM_ID & target = NEService::TARGET_UNKNOWN, const ITEM_ID & cookie = NEService::COOKIE_UNKNOWN );
 
     /**
      * \brief   Copy constructor.
@@ -112,7 +112,7 @@ public:
     /**
      * \brief   Converts channel object to 32-bit unsigned integer value.
      **/
-    inline explicit operator ITEM_ID ( void ) const;
+    inline explicit operator const ITEM_ID & ( void ) const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -140,35 +140,35 @@ public:
     /**
      * \brief   Returns the source ID of channel.
      **/
-    inline ITEM_ID getSource( void ) const;
+    inline const ITEM_ID & getSource( void ) const;
 
     /**
      * \brief   Sets the source ID of channel.
      * \param   source  The new source ID to set in channel
      **/
-    inline void setSource( ITEM_ID source );
+    inline void setSource(const ITEM_ID & source );
 
     /**
      * \brief   Returns the target ID of channel.
      **/
-    inline ITEM_ID getTarget( void ) const;
+    inline const ITEM_ID & getTarget( void ) const;
     /**
      * \brief   Sets the source ID of channel.
      * \param   target  The new target ID to set in channel
      **/
 
-    inline void setTarget( ITEM_ID target );
+    inline void setTarget(const ITEM_ID & target );
 
     /**
      * \brief   Returns the cookie ID of channel.
      **/
-    inline ITEM_ID getCookie( void ) const;
+    inline const ITEM_ID & getCookie( void ) const;
 
     /**
      * \brief   Sets the source ID of channel.
      * \param   cookie  The new cookie ID to set in channel
      **/
-    inline void setCookie( ITEM_ID cookie );
+    inline void setCookie(const ITEM_ID & cookie );
 
     /**
      * \brief   Returns true, if channel data is valid.
@@ -215,32 +215,32 @@ private:
 // Channel class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline ITEM_ID Channel::getSource(void) const
+inline const ITEM_ID & Channel::getSource(void) const
 {
     return mSource;
 }
 
-inline void Channel::setSource(ITEM_ID source)
+inline void Channel::setSource(const ITEM_ID & source)
 {
     mSource = source;
 }
 
-inline ITEM_ID Channel::getTarget(void) const
+inline const ITEM_ID & Channel::getTarget(void) const
 {
     return mTarget;
 }
 
-inline void Channel::setTarget(ITEM_ID target)
+inline void Channel::setTarget(const ITEM_ID & target)
 {
     mTarget = target;
 }
 
-inline ITEM_ID Channel::getCookie(void) const
+inline const ITEM_ID & Channel::getCookie(void) const
 {
     return mCookie;
 }
 
-inline void Channel::setCookie(ITEM_ID cookie)
+inline void Channel::setCookie(const ITEM_ID & cookie)
 {
     mCookie = cookie;
 }
@@ -255,7 +255,7 @@ inline bool Channel::operator!=(const Channel & other) const
     return ( this != & other ? (mCookie != other.mCookie) || (mTarget != other.mTarget) || (mSource != other.mSource) : false );
 }
 
-inline Channel::operator ITEM_ID ( void ) const
+inline Channel::operator const ITEM_ID & ( void ) const
 {
     return mSource;
 }

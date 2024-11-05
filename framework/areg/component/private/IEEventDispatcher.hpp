@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/IEEventDispatcher.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Dispatcher interface.
  *              The Event Dispatcher should implement these methods to
@@ -73,6 +73,12 @@ public:
      * \brief   Call to stop running dispatcher.
      **/
     virtual void stopDispatcher( void ) = 0;
+
+    /**
+     * \brief   Called when dispatcher completed the job and exit.
+     *          The cleanups should be done here.
+     **/
+    virtual void exitDispatcher( void ) = 0;
 
     /**
      * \brief   Call to queue event object in the event queue of dispatcher.
@@ -154,7 +160,6 @@ protected:
      *          in this method.
      * \param	eventElem	Pointer to Event element, which has been finished
      *                      to be dispatched.
-     * \return	
      **/
     virtual void postDispatchEvent( Event * eventElem ) = 0;
 

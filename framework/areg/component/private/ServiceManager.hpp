@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceManager.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service Manager declaration.
  *
@@ -23,11 +23,12 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/ServiceManagerEvents.hpp"
+#include "areg/ipc/IEServiceConnectionConsumer.hpp"
+#include "areg/ipc/IEServiceRegisterConsumer.hpp"
 
 #include "areg/base/SynchObjects.hpp"
-#include "areg/component/private/ServerList.hpp"
-#include "areg/ipc/private/ClientService.hpp"
-#include "areg/ipc/IERemoteServiceConsumer.hpp"
+#include "areg/component/private/ServiceManagerEventProcessor.hpp"
+#include "areg/ipc/private/RouterClient.hpp"
 
 /************************************************************************
  * Dependencies
@@ -65,9 +66,11 @@ class ServiceResponseEvent;
  **/
 class ServiceManager    : private   DispatcherThread
                         , private   IEServiceManagerEventConsumer
-                        , private   IERemoteServiceConsumer
+                        , private   IEServiceConnectionConsumer
+                        , private   IEServiceRegisterConsumer
 {
     friend class Application;
+    friend class ServiceManagerEventProcessor;
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime
 //////////////////////////////////////////////////////////////////////////
@@ -106,9 +109,10 @@ public:
      *          unregister request to Service Manager. All Proxy clients 
      *          will receive appropriate disconnect messages to stop
      *          communication with Stub Service Interface.
-     * \param   whichServer     The address of Stub Server object, which has been
+     * \param   whichServer     The address of Stub Server object, which has been.
+     * \param   reason          The reason to unregister the service provider.
      **/
-    static void requestUnregisterServer( const StubAddress & whichServer );
+    static void requestUnregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason );
 
     /**
      * \brief   Static method to be called globally.
@@ -127,18 +131,18 @@ public:
     static void requestRegisterClient( const ProxyAddress & whichClient );
 
     /**
-     * \brief   Static method to be called globally.
-     *          The function is called when Proxy is shutting down,
-     *          and requests to unregister at Service Manager module
-     *          by specifying the address of Proxy of Service Interface.
-     *          The function will generate appropriate Event and send 
+     * \brief   Static method to be called when a proxy is shutting down
+     *          and requests to unregister the consumer by specifying
+     *          the address of Proxy of Service Interface.
+     *          The function generates appropriate Event and sends 
      *          unregister request to Service Manager. After Proxy client
      *          is unregistered, the Stub server will get notification
      *          of disconnected client.
      * \param   whichClient     The address of Proxy client object, which is
      *                          unregistering at Service Manager Module.
+     * \param   reason          The reason to unregister the service consumer
      **/
-    static void requestUnregisterClient( const ProxyAddress & whichClient );
+    static void requestUnregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason );
 
     /**
      * \brief   Static method to be called globally.
@@ -172,10 +176,32 @@ public:
      **/
     static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
 
+private:
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Default Constructor.
+     *          Protected and cannot be accessed globally.
+     **/
+    ServiceManager( void );
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ServiceManager( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Private static methods
+//////////////////////////////////////////////////////////////////////////
+
+    static inline ServiceManager & getInstance( void );
+
 /************************************************************************/
 // Service Manager start / stop functions
 /************************************************************************/
-private:
+
     /**
      * \brief   This function called, when Service Manager should be started.
      *          If Service Manager already started, the function will be ignored.
@@ -192,37 +218,42 @@ private:
      * \brief   This function called, when Service Manager should stop activities.
      *          The function is called from application manager when all
      *          Component Threads are stopped and completed.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until Service Manager thread completes jobs and cleans resources.
+     *          Otherwise, this triggers stop event and immediately returns.
+     * \param   waitComplete    If true, waits for service manager to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and
+     *                          returns.
      **/
-    static void _stopServiceManager( void );
+    static void _stopServiceManager( bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Service Manager Thread did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Service Manager Thread without
+     *          waiting for completion.
+     **/
+    static void _waitServiceManager(void);
 
 /************************************************************************/
 // Message router client start / stop functions
 /************************************************************************/
 
     /**
-     * \brief   Call to configure router client. If passed nullptr, it will use
-     *          default router configuration file. This call will not start client
-     *          automatically. To start router client, call _routingServiceStart()
-     *          manually.
-     * \param   configFile  The configuration file of router client.
-     *                      If nullptr, it will load default configuration file.
-     * \return  Returns true if succeeded to load configuration file.
+     * \brief   Call to configure router client. This method gets configuration properties
+     *          to setup connection client.
+     * \return  Returns true if succeeded to setup and configure the connection client.
      *          Otherwise, it returns false.
      * \see     _routingServiceStart
      **/
-    static bool _routingServiceConfigure( const String & configFile = String::EmptyString );
+    static bool _routingServiceConfigure( void );
 
     /**
-     * \brief   Call to start the client part of remove Routing Service.
-     * \param   configFile  If not nullptr, the router will be first configured.
-     *                      If nullptr and router was not configured, it will use
-     *                      default configuration file.
-     *                      If nullptr and router was configured, it will ignore configuration.
+     * \brief   Call to start the client connection of remote Routing Service.
      * \return  Returns true if succeeded to start router client.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const String & configFile = String::EmptyString );
-
+    static bool _routingServiceStart(unsigned int connectTypes);
 
     /**
      * \brief   Call to start connection to remote Routing Service. If called, it overwrites IP-Address and
@@ -241,14 +272,6 @@ private:
     static void _routingServiceStop( void );
 
     /**
-     * \brief   Call to enable or disable remote Routing Service client.
-     *          If client is already running and it is requested to disable, it will be stopped first.
-     * \param   enable  Flag, which is indicating whether the remote Routing Service client should be enabled or disabled.
-     *                  If true, it is enabled. Otherwise, it is disabled.
-     **/
-    static void _routingServiceEnable( bool enable );
-
-    /**
      * \brief   Returns true if Routing Service client is started and ready to operate.
      **/
     static bool _isRoutingServiceStarted( void );
@@ -257,11 +280,6 @@ private:
      * \brief   Returns true if Routing Service client is configured and ready to start.
      **/
     static bool _isRoutingServiceConfigured( void );
-
-    /**
-     * \brief   Returns true if remote Routing Service is enabled.
-     **/
-    static bool _isRoutingServiceEnabled( void );
 
     /**
      * \brief   The function generates an event to create and start component thread.
@@ -301,177 +319,93 @@ private:
     virtual bool postEvent( Event & eventElem ) override;
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
-// IERemoteServiceConsumer
+// IEServiceConnectionConsumer overrides
 /************************************************************************/
 
     /**
-     * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
-     *          specified value. In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
-     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
-     * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
-     * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
+     * \brief   Triggered when remote service connection and communication channel is established.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
+    virtual void connectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
-     * \brief   Registers remote stub in the current process.
-     * \param   stub    The address of remote stub server to register
+     * \brief   Triggered when disconnected remote service connection and communication channel.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void registerRemoteStub( const StubAddress & stub ) override;
+    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
-     * \brief   Registers remote proxy in the current process.
-     * \param   proxy   The address of remote proxy client to register
-     **/
-    virtual void registerRemoteProxy( const ProxyAddress & proxy ) override;
-
-    /**
-     * \brief   Unregisters remote stub in the current process.
-     * \param   stub    The address of remote stub server to unregister
-     * \param   cookie  The cookie that has initiated unregister message.
-     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
-     **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
-
-    /**
-     * \brief   Unregisters remote proxy in the current process.
-     * \param   proxy   The address of remote proxy client to unregister
-     * \param   cookie  The cookie that has initiated unregister message.
-     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
-     **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
-
-    /**
-     * \brief   Triggered when remote service has been started and there is a
-     *          connection established with service.
-     * \param   channel     The connection channel of remote Routing Service.
-     **/
-    virtual void remoteServiceStarted( const Channel & channel ) override;
-
-    /**
-     * \brief   Triggered when connection with remote service has been stopped.
-     * \param   channel     The connection channel of remote Routing Service.
-     **/
-    virtual void remoteServiceStopped( const Channel & channel ) override;
-
-    /**
-     * \brief   Triggered when connection with remote Routing Service is lost.
+     * \brief   Triggered when remote service connection and communication channel is lost.
      *          The connection is considered lost if it not possible to read or
-     *          receive data, and there was not stop connection triggered.
-     * \param   channel     The connection channel of remote Routing Service.
+     *          receive data, and it was not stopped by API call.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void remoteServiceConnectionLost( const Channel & channel ) override;
+    virtual void lostRemoteServiceChannel( const Channel & channel ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Private static methods
-//////////////////////////////////////////////////////////////////////////
-
-    static inline ServiceManager & getInstance( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Default Constructor.
-     *          Protected and cannot be accessed globally.
-     **/
-    ServiceManager( void );
+/************************************************************************/
+// IEServiceRegisterConsumer overrides
+/************************************************************************/
 
     /**
-     * \brief   Destructor
+     * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
+     *          If cookie value is 'NEService::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
+     *          On output out_listStubs and out_lisProxies contain the list of remote services.
+     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering.
+     * \param   out_listStubs   On output this contains the list of address of the remote service providers of specified cookie.
+     * \param   out_lisProxies  On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual ~ServiceManager( void ) = default;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
+
+    /**
+     * \brief   Triggered when a remote service provider is registered in the system.
+     * \param   stub    The address of remote service provider that has been registered.
+     **/
+    virtual void registeredRemoteServiceProvider( const StubAddress & stub ) override;
+
+    /**
+     * \brief   Triggered when a remote service consumer is registered in the system.
+     * \param   proxy   The address of remote service consumer that has been registered.
+     **/
+    virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
+
+    /**
+     * \brief   Triggered when a remote service provider is unregistered from the system.
+     * \param   stub    The address of the remote service provider that has been unregistered.
+     * \param   reason  The reason that remote service provider is unregistered.
+     * \param   cookie  The cookie of source that has initiated to unregister provider.
+     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
+     **/
+    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+
+    /**
+     * \brief   Triggered when a remote service consumer is unregistered from the system.
+     * \param   proxy   The address of the remote service consumer that has been unregistered.
+     * \param   reason  The reason that remote service consumer is unregistered.
+     * \param   cookie  The cookie of source that has initiated to unregister consumer.
+     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
+     **/
+    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The function is called when Stub Server is starting up
-     *          and requests registration at Service Manager module
-     *          by specifying the address of available Stub of Service Interface.
-     *          The function will generate appropriate Event and send 
-     *          registration request to Service Manager. If connection and 
-     *          registration succeeded, the Stub server will receive notification
-     *          and all Proxy clients will receive connection available messages
-     *          to start sending requests and assign for Attribute Update Notifications.
-     * \param   whichServer     The address of Stub Server object, which has been
-     *                          started and requesting registration at Service Manager Module.
-     **/
-    void _registerServer( const StubAddress & whichServer );
 
     /**
-     * \brief   The function is called when Stub Server is shutting down
-     *          and requests to unregister at Service Manager module
-     *          by specifying the address of Stub of Service Interface.
-     *          The function will generate appropriate Event and send 
-     *          unregister request to Service Manager. All Proxy clients 
-     *          will receive appropriate disconnect messages to stop
-     *          communication with Stub Service Interface.
-     * \param   whichServer     The address of Stub Server object, which has been
-     *                          started and requesting registration at Service Manager Module.
+     * \brief   Returns the instance of remote servicing handler.
      **/
-    void _unregisterServer( const StubAddress & whichServer );
+    inline IEServiceConnectionProvider& getServiceConnectionProvider( void );
 
     /**
-     * \brief   The function is called when new Proxy client is start up,
-     *          and requests registration at Service Manager module
-     *          by specifying the address of Proxy of Service Interface.
-     *          The function will generate appropriate Event and send 
-     *          registration request to Service Manager. If connection and 
-     *          registration succeeded, and the Stub server of implemented
-     *          Service Interface is available in the system, the Proxy will 
-     *          receive connection available notification message, containing
-     *          available Stub address of implemented Service Interface.
-     * \param   whichClient     The address of Proxy client object, which has been
-     *                          started and requesting registration at Service Manager Module.
+     * \brief   Returns the instance of remote servicing handler.
      **/
-    void _registerClient( const ProxyAddress & whichClient );
-
-    /**
-     * \brief   The function is called when Proxy is shutting down,
-     *          and requests to unregister at Service Manager module
-     *          by specifying the address of Proxy of Service Interface.
-     *          The function will generate appropriate Event and send 
-     *          unregister request to Service Manager. After Proxy client
-     *          is unregistered, the Stub server will get notification
-     *          of disconnected client.
-     * \param   whichClient     The address of Proxy client object, which is
-     *                          unregistering at Service Manager Module.
-     **/
-    void _unregisterClient( const ProxyAddress & whichClient );
-
-    /**
-     * \brief   Sends predefined Service Manager Event, notifying Proxy client 
-     *          that connection with Stub server is available and established.
-     *          When Proxy receives Event, it can start sending requests to 
-     *          the Stub of implemented Service Interface.
-     * \param   client      The Client Info object containing all required information
-     *                      to send Event. The target of Event is a Proxy address,
-     *                      specified in the Client Info object.
-     **/
-    void _sendClientConnectedEvent( const ClientInfo & client, const StubAddress & server ) const;
-
-    /**
-     * \brief   Sends predefined Service Manager event to notify that Proxy client 
-     *          disconnected service.
-     *          When Proxy receives Event, it should stop sending requests to 
-     *          the Stub of implemented Service Interface.
-     * \param   client  The Client Info object containing all required information
-     *                  to send Event. The target of Event is a Proxy address,
-     *                  specified in the Client Info object.
-     **/
-    void _sendClientDisconnectedEvent(const ClientInfo & client, const StubAddress & server) const;
+    inline IEServiceRegisterProvider& getServiceRegisterProvider(void);
 
     /**
      * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
@@ -481,26 +415,22 @@ private:
     bool _startServiceManagerThread( void );
 
     /**
-     * \brief   Starts Service Manager Thread. This call will stop Timer Server, all
+     * \brief   Stops Service Manager Thread. This call will stop Timer Server, all
      *          pending server and client Service Interface will receive disconnect
      *          notification, and the Service Manager Thread will stop and complete job.
+     * \param   waitComplete    If true, the calling thread is blocked until Service Manager
+     *                          completes the jobs. Otherwise, the method triggers
+     *                          stop service message and immediately returns.
      **/
-    void _stopServiceManagerThread( void );
+    void _stopServiceManagerThread( bool waitComplete);
 
     /**
-     * \brief   Terminates the component thread. No guarantee that all resources are cleanup.
-     *          After processing this method the thread is not operable anymore.
-     * \param   threadName  The name of component thread to terminate.
+     * \brief   The calling thread is blocked until Service Manager Thread did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Service Manager Thread without
+     *          waiting for completion.
      **/
-    bool _terminateComponentThread( const String& threadName );
-    
-    /**
-     * \brief   Creates new instance of the component thread after it was terminated.
-     *          All components, services, proxies and worker threads related with the
-     *          component thread are restarted again.
-     * \param   threadName  The name of the thread to re-start.
-     */
-    void _startComponentThread( const String & threadName );
+    void _waitServiceManagerThread(void);
 
     /**
      * \brief   Returns reference to ServiceManager object
@@ -511,18 +441,15 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The Map of Server Info object as a Key and Client Info List as Values
-     **/
-    ServerList              mServerList;
+    ServiceManagerEventProcessor    mEventProcessor;
     /**
      * \brief   The connection service.
      **/
-    ClientService           mConnectService;
+    RouterClient                    mServiceClient;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/
-    mutable ResourceLock    mLock;
+    mutable ResourceLock            mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
@@ -534,6 +461,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline IEServiceConnectionProvider& ServiceManager::getServiceConnectionProvider( void )
+{
+    return static_cast<IEServiceConnectionProvider&>(mServiceClient);
+}
+
+inline IEServiceRegisterProvider& ServiceManager::getServiceRegisterProvider(void)
+{
+    return static_cast<IEServiceRegisterProvider&>(mServiceClient);
+}
 
 inline ServiceManager & ServiceManager::self( void )
 {

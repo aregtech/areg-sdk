@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceManagerEvents.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service Manager event for client.
  *
@@ -43,12 +43,13 @@ ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddres
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterProxy(const ProxyAddress & addrProxy)
+ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, NEService::eDisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy );
     IEOutStream & stream = data.getWriteStream();
     stream << addrProxy;
     stream << addrProxy.getChannel();
+    stream << reason;
     return data;
 }
 
@@ -61,28 +62,31 @@ ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress 
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterStub(const StubAddress & addrStub)
+ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub );
     IEOutStream & stream = data.getWriteStream();
     stream << addrStub;
     stream << addrStub.getChannel();
+    stream << reason;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configureConnection(const String & configFile)
+ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection );
     IEOutStream & stream = data.getWriteStream();
-    stream << configFile;
+    stream << service;
+    stream << connectTypes;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startConnection(const String & configFile)
+ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection );
     IEOutStream & stream = data.getWriteStream();
-    stream << configFile;
+    stream << service;
+    stream << connectTypes;
     return data;
 }
 
@@ -98,14 +102,6 @@ ServiceManagerEventData ServiceManagerEventData::startNetConnection( const Strin
 ServiceManagerEventData ServiceManagerEventData::stopConnection(void)
 {
     return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection );
-}
-
-ServiceManagerEventData ServiceManagerEventData::enableRemoteService( bool enable )
-{
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_SetEnableService );
-    IEOutStream & stream = data.getWriteStream( );
-    stream << enable;
-    return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channel & channel)

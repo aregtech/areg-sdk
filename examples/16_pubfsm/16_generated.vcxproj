@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B}</ProjectGuid>
@@ -14,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -39,43 +42,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\IETrafficLightActionHandler.cpp" />
-    <ClCompile Include="generated\src\private\NEPowerManager.cpp" />
-    <ClCompile Include="generated\src\private\NETrafficController.cpp" />
-    <ClCompile Include="generated\src\private\NETrafficLightFSM.cpp" />
-    <ClCompile Include="generated\src\private\PowerManagerClientBase.cpp" />
-    <ClCompile Include="generated\src\private\PowerManagerEvents.cpp" />
-    <ClCompile Include="generated\src\private\PowerManagerProxy.cpp" />
-    <ClCompile Include="generated\src\private\PowerManagerStub.cpp" />
-    <ClCompile Include="generated\src\private\TrafficControllerClientBase.cpp" />
-    <ClCompile Include="generated\src\private\TrafficControllerEvents.cpp" />
-    <ClCompile Include="generated\src\private\TrafficControllerProxy.cpp" />
-    <ClCompile Include="generated\src\private\TrafficControllerStub.cpp" />
-    <ClCompile Include="generated\src\private\TrafficLightFSM.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\NEPowerManager.hpp" />
-    <ClInclude Include="generated\src\NECommon.hpp" />
-    <ClInclude Include="generated\src\NETrafficController.hpp" />
-    <ClInclude Include="generated\src\PowerManagerClientBase.hpp" />
-    <ClInclude Include="generated\src\PowerManagerStub.hpp" />
-    <ClInclude Include="generated\src\private\IETrafficLightActionHandler.hpp" />
-    <ClInclude Include="generated\src\private\NETrafficLightFSM.hpp" />
-    <ClInclude Include="generated\src\private\PowerManagerEvents.hpp" />
-    <ClInclude Include="generated\src\private\PowerManagerProxy.hpp" />
-    <ClInclude Include="generated\src\private\TrafficControllerEvents.hpp" />
-    <ClInclude Include="generated\src\private\TrafficControllerProxy.hpp" />
-    <ClInclude Include="generated\src\private\TrafficLightFSM.hpp" />
-    <ClInclude Include="generated\src\TrafficControllerClientBase.hpp" />
-    <ClInclude Include="generated\src\TrafficControllerStub.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\PowerManager.siml" />
     <None Include="res\TrafficController.siml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\NEPowerManager.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\NETrafficController.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\NEPowerManager.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\NETrafficController.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\PowerManagerClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\PowerManagerStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\PowerManagerProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\private\TrafficControllerProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\TrafficControllerClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubfsm\TrafficControllerStub.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

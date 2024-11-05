@@ -1,34 +1,28 @@
-#SRC lists
-unset(00_generated_SRC)
-unset(00_SRC1)
-unset(00_SRC2)
-unset(00_SRC3)
-unset(00_SRC4)
 
-# Project names
-set(gen_projName 00_generated)
-set(projName1 00_pubclient)
-set(projName2 00_pubservice)
-set(projName3 00_onethread)
-set(projName4 00_twothreads)
+# add service interface files.
+addServiceInterface(00_generated res HelloService)
 
-set(00_helloservice_BASE "${AREG_EXAMPLES}/00_helloservice")
+# add projects
+macro_declare_executable(00_pubclient   00_generated 
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    multiprocess/clientproc/src/main.cpp
+)
 
-include(${00_helloservice_BASE}/generated/CMakeLists.txt)
-include(${00_helloservice_BASE}/multiprocess/clientproc/CMakeLists.txt)
-include(${00_helloservice_BASE}/multiprocess/serviceproc/CMakeLists.txt)
-include(${00_helloservice_BASE}/onethread/CMakeLists.txt)
-include(${00_helloservice_BASE}/twothreads/CMakeLists.txt)
+macro_declare_executable(00_pubservice  00_generated 
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    multiprocess/serviceproc/src/main.cpp
+)
 
-# Setting up appropriate flags
-addStaticLib(${gen_projName} "${00_generated_SRC}")
-addExecutableEx(${projName1} "${00_SRC1}" "${gen_projName}")
-addExecutableEx(${projName2} "${00_SRC2}" "${gen_projName}")
-addExecutableEx(${projName3} "${00_SRC3}" "${gen_projName}")
-addExecutableEx(${projName4} "${00_SRC4}" "${gen_projName}")
+macro_declare_executable(00_onethread   00_generated
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    onethread/src/main.cpp
+)
 
-target_include_directories(${gen_projName} BEFORE PRIVATE ${00_helloservice_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${00_helloservice_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${00_helloservice_BASE})
-target_include_directories(${projName3} BEFORE PRIVATE ${00_helloservice_BASE})
-target_include_directories(${projName4} BEFORE PRIVATE ${00_helloservice_BASE})
+macro_declare_executable(00_twothreads  00_generated
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    twothreads/src/main.cpp
+)

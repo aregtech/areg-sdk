@@ -1,18 +1,23 @@
-# Examples which has similar building structure
-list(APPEND projectList
-    01_hello
-    02_buffer
-    03_file
-    04_trace
-    05_timer
-    06_threads
-    07_synch
-    08_service
-    09_svcmulti
-)
+# ###########################################################################
+# AREG SDK Examples with example specific functions
+# Copyright 2022-2023 Aregtech
+# ###########################################################################
+
+# ###########################################################################
+# List of examples to build
+# ###########################################################################
 
 # Examples with specific design must be included one by one.
 include(${AREG_EXAMPLES}/00_helloservice/CMakeLists.txt)
+include(${AREG_EXAMPLES}/01_hello/CMakeLists.txt)
+include(${AREG_EXAMPLES}/02_buffer/CMakeLists.txt)
+include(${AREG_EXAMPLES}/03_file/CMakeLists.txt)
+include(${AREG_EXAMPLES}/04_trace/CMakeLists.txt)
+include(${AREG_EXAMPLES}/05_timer/CMakeLists.txt)
+include(${AREG_EXAMPLES}/06_threads/CMakeLists.txt)
+include(${AREG_EXAMPLES}/07_synch/CMakeLists.txt)
+include(${AREG_EXAMPLES}/08_service/CMakeLists.txt)
+include(${AREG_EXAMPLES}/09_svcmulti/CMakeLists.txt)
 include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
 include(${AREG_EXAMPLES}/11_locmesh/CMakeLists.txt)
 include(${AREG_EXAMPLES}/12_pubsvc/CMakeLists.txt)
@@ -24,6 +29,9 @@ include(${AREG_EXAMPLES}/18_locwatchdog/CMakeLists.txt)
 include(${AREG_EXAMPLES}/19_pubwatchdog/CMakeLists.txt)
 include(${AREG_EXAMPLES}/20_pubdatarate/CMakeLists.txt)
 include(${AREG_EXAMPLES}/21_pubunblock/CMakeLists.txt)
+include(${AREG_EXAMPLES}/22_pubsub/CMakeLists.txt)
+include(${AREG_EXAMPLES}/23_pubsubmix/CMakeLists.txt)
+include(${AREG_EXAMPLES}/24_pubsubmulti/CMakeLists.txt)
 
 if (AREG_DEVELOP_ENV MATCHES "Win32")
     # This projects are based either on MFC (Microsoft Foundation Classes)
@@ -36,24 +44,8 @@ if (AREG_DEVELOP_ENV MATCHES "Win32")
         # Otherwise, output warning message and exclude from the build.
         include(${AREG_EXAMPLES}/17_winchat/CMakeLists.txt)
     else(MFC_FOUND)
-        message(NOTICE " >>> NOTE: due to missing installed MFC library, escaping compile projects:")
-        message(NOTICE " >>>		${AREG_EXAMPLES}/17_winchat")
+        message(NOTICE " AREG Examples: >>> Due to missing installed MFC library, escaping compile projects:")
+        message(NOTICE " AREG Examples: >>> ${AREG_EXAMPLES}/17_winchat")
     endif(MFC_FOUND)
 
 endif()
-
-# Iterating over projectList and extract each source file,
-# to create separate target and executable.
-# Iterating over projectList and extract each source file,
-# to create separate target and executable.
-foreach(item IN LISTS projectList)
-    unset(SRC)
-    set(itemDir ${AREG_EXAMPLES}/${item})
-    set(subProjDir ${itemDir}/src)
-    include(${AREG_EXAMPLES}/${item}/CMakeLists.txt)
-
-    # Adding target for each example.
-    addExecutable(${item} "${SRC}")
-    target_include_directories(${item} BEFORE PRIVATE "${itemDir}")
-
-endforeach()

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Watchdog.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread watchdog object declaration
  *
@@ -105,26 +105,6 @@ public:
     virtual ~Watchdog( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// TimerBase class overrides
-/************************************************************************/
-
-    /**
-     * \brief   Call to start timer. The timer should have valid timeout.
-     *
-     * \return  Returns true if succeeded to start timer.
-     */
-    virtual bool startTimer(void) override;
-
-    /**
-     * \brief   Call to stop previously started timer.
-     **/
-    virtual void stopTimer(void) override;
-
-//////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -147,12 +127,12 @@ public:
     /**
      * \brief   Returns the watchdog ID.
      */
-    inline const Watchdog::GUARD_ID getId(void) const;
+    inline Watchdog::GUARD_ID getId(void) const;
 
     /**
      * \brief   Returns the watchdog activation sequence number.
      **/
-    inline const Watchdog::SEQUENCE_ID getSequence(void) const;
+    inline Watchdog::SEQUENCE_ID getSequence(void) const;
 
     /**
      * \brief   Returns the instance of component thread that contains this watchdog.
@@ -236,12 +216,12 @@ inline bool Watchdog::isValid(void) const
     return (mHandle != nullptr);
 }
 
-inline const Watchdog::GUARD_ID Watchdog::getId(void) const
+inline Watchdog::GUARD_ID Watchdog::getId(void) const
 {
     return mGuardId;
 }
 
-inline const Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
+inline Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
 {
     return mSequence;
 }

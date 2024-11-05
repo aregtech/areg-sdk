@@ -32,9 +32,14 @@
     <ClInclude Include="pubclient\src\HardwareWorkerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubclient\CMakeLists.txt" />
-    <Text Include="pubclient\src\CMakeLists.txt" />
+    <ClInclude Include="res\NECommon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\NECommon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\PatientInfoEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

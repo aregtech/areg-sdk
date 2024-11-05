@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/ProcessPosix.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       The class to handle process. Get process ID, process handle, process name, etc.
  *              POSIX specific implementation
@@ -17,7 +17,6 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "system/GEPlatform.h"
 #include "areg/base/File.hpp"
 
 #include <unistd.h>

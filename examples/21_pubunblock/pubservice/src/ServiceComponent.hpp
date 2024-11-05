@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        pubservice/src/ServiceComponent.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file is demonstration of manual unlbocking of the request.
@@ -13,7 +13,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/IETimerConsumer.hpp"
-#include "generated/src/HelloUnblockStub.hpp"
+#include "generate/examples/21_pubunblock/HelloUnblockStub.hpp"
 
 #include "areg/base/TEStack.hpp"
 #include "areg/component/Timer.hpp"
@@ -93,7 +93,7 @@ protected:
 
     /**
      * \brief   Request call.
-     *          Request to assign an ID to the client used to to call unblock request.
+     *          Request to assign an ID to the client used to call unblock request.
      * \see     responseIdentifier
      **/
     virtual void requestIdentifier( void ) override;

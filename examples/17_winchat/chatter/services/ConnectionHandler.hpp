@@ -7,7 +7,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/SynchObjects.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 class ConnectionHandler
 {
@@ -20,23 +20,23 @@ public:
 
     inline const String & GetNickName( void ) const;
 
-    void SetCookie( const uint32_t cookie );
+    void SetCookie( uint32_t cookie );
 
-    const uint32_t GetCookie( void ) const;
+    uint32_t GetCookie( void ) const;
 
-    void SetConnectCookie( const uint32_t cookie );
+    void SetConnectCookie( uint32_t cookie );
 
-    const uint32_t GetConnectCookie( void ) const;
+    uint32_t GetConnectCookie( void ) const;
 
-    const uint32_t GetCookieDirect( void ) const;
+    uint32_t GetCookieDirect( void ) const;
 
-    inline void SetConnected( const bool isConnected );
+    inline void SetConnected( bool isConnected );
 
     inline bool GetConnected( void ) const;
 
-    inline void SetRegistered( const bool isRegistered );
+    inline void SetRegistered( bool isRegistered );
 
-    inline const bool GetRegistered( void ) const;
+    inline bool GetRegistered( void ) const;
 
     inline void SetTimeConnect( const DateTime & dateTime );
 
@@ -75,12 +75,12 @@ private:
 private:
     NECommon::ListConnections mListConnections;
     String        mNickName;
-    uint32_t        mCookie;
-    uint32_t        mConnectCookie;
+    uint32_t      mCookie;
+    uint32_t      mConnectCookie;
     DateTime      mTimeConnect;
     DateTime      mTimeConnected;
-    bool            mIsRegistered;
-    bool            mIsConnected;
+    bool          mIsRegistered;
+    bool          mIsConnected;
     mutable Mutex mLock;
 
 private:
@@ -102,7 +102,7 @@ inline const String & ConnectionHandler::GetNickName(void) const
     return mNickName;
 }
 
-inline void ConnectionHandler::SetConnected(const bool isConnected)
+inline void ConnectionHandler::SetConnected(bool isConnected)
 {
     Lock lock(mLock);
     mIsConnected    = isConnected;
@@ -115,13 +115,13 @@ inline bool ConnectionHandler::GetConnected(void) const
     return mIsConnected;
 }
 
-inline void ConnectionHandler::SetRegistered(const bool isRegistered)
+inline void ConnectionHandler::SetRegistered(bool isRegistered)
 {
     Lock lock(mLock);
     mIsRegistered   = isRegistered;
 }
 
-inline const bool ConnectionHandler::GetRegistered(void) const
+inline bool ConnectionHandler::GetRegistered(void) const
 {
     Lock lock(mLock);
     return mIsRegistered;

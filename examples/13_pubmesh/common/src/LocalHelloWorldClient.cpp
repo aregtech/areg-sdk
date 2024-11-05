@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        common/src/LocalHelloWorldClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -32,27 +32,21 @@ LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry 
 {
 }
 
-bool LocalHelloWorldClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool LocalHelloWorldClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_13_pubmesh_common_LocalHelloWorldClient_serviceConnected);
-    TRACE_DBG("Client [ %p ]: Proxy [ %s ] is [ %s ]"
-                , this
-                , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
-                , isConnected ? "CONNECTED" : "DISCONNECTED");
 
-    bool result{ false };
-    if (LocalHelloWorldClientBase::serviceConnected(isConnected, proxy) )
+    bool result = LocalHelloWorldClientBase::serviceConnected( status, proxy );
+
+    if ( isConnected( ) )
     {
-        result = true;
-        if (isConnected)
-        {
-            TRACE_DBG("Starting timer with timeout [ %d ] ms", mMsTimeout);
-            mTimer.startTimer(mMsTimeout, LocalHelloWorldClientBase::getProxy()->getProxyDispatcherThread());
-        }
-        else
-        {
-            mTimer.stopTimer();
-        }
+        TRACE_DBG( "Starting timer with timeout [ %d ] ms", mMsTimeout );
+        mTimer.startTimer( mMsTimeout, LocalHelloWorldClientBase::getProxy( )->getProxyDispatcherThread( ) );
+    }
+    else
+    {
+        TRACE_DBG( "Stopping the timer" );
+        mTimer.stopTimer( );
     }
 
     return result;

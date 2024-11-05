@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/NERegistry.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, collection of Service Registry
  *              classes to initialize and load application objects.
@@ -832,9 +832,9 @@ namespace NERegistry
          * \param   roleName            The Role Name of Component
          * \param   funcCreate          Pointer of component create function
          * \param   funcDelete          Pointer of component delete function
-         * \param   serviceList         The entry of implemented service interface, if there is any
-         * \param   dependencyList      The entry of dependent service interface, if there is any
-         * \param   workerList          The entry of worker thread, if there is any
+         * \param   service             The entry of implemented service interface, if there is any
+         * \param   dependency          The entry of dependent service interface, if there is any
+         * \param   worker              The entry of worker thread, if there is any
          **/
         ComponentEntry(   const String & masterThreadName
                         , const String & roleName
@@ -1026,7 +1026,7 @@ namespace NERegistry
          *          then dependency should be defined by Role Names "ABC" and "XYZ",
          *          indicating dependency of same Service Interface "QWERT", but
          *          different implementation in ABC and XYZ Components.
-         * \param   entry   The Dependency Entry, defining Role Name of Server Component.
+         * \param   dependencyList  The Dependency Entry, defining Role Name of Server Component.
          **/
         void addDependencyService( const NERegistry::DependencyList & dependencyList );
 
@@ -1051,7 +1051,7 @@ namespace NERegistry
         /**
          * \brief   Searches Service in dependency service list by given Role Name.
          *          If found, removes entry from the list.
-         * \param   serviceName     The name of dependency service role name to search.
+         * \param   roleName    The name of dependency service role name to search.
          * \return  Returns true if found entry and could remove it.
          **/
         bool removeDependencyService( const String & roleName );
@@ -1415,7 +1415,7 @@ namespace NERegistry
          * \brief   Adds a new component entry with the given role.
          * \param   roleName    The name of component to add. The name must be unique to add new entry.
          * \param   funcCreate  The pointer to the method that instantiates the component.
-         * \param   functDelete The pointer to the method that deletes the component.
+         * \param   funcDelete  The pointer to the method that deletes the component.
          * \return  Returns instance of new added or the instance of the existing component entry with
          *          the given role name. The checkup happens only within the current thread list.
          *

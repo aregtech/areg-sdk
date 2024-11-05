@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEDebug.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Debugging utilities
  *
@@ -36,10 +36,10 @@ void AREG_API_IMPL NEDebug::outputConsole( NEDebug::eDegubPrio priority, const c
         int lenPref = String::formatString(buffer, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", NEDebug::getPrioPrefix(priority));
         int lenMsg  = String::formatStringList(buffer + lenPref, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
         char last   = buffer[lenPref + lenMsg - 1];
-        if ( last != '\n' )
+        if ( last != NEString::EndOfLine )
         {
-            buffer[lenPref + lenMsg + 0] = '\n';
-            buffer[lenPref + lenMsg + 1] = '\0';
+            buffer[lenPref + lenMsg + 0] = NEString::EndOfLine;
+            buffer[lenPref + lenMsg + 1] = NEString::EndOfString;
         }
 
         NEDebug::outputMessageOS(buffer);

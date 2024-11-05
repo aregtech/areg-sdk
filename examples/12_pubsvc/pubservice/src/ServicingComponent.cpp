@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubservice/src/ServicingComponent.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of servicing component
@@ -25,7 +25,7 @@ Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry
     return DEBUG_NEW ServicingComponent(entry, owner);
 }
 
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -81,9 +81,16 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     }
 }
 
+#if AREG_LOGS
 void ServicingComponent::requestShutdownService(unsigned int clientID, const String & roleName)
 {
     TRACE_SCOPE(examples_12_pubservice_ServicingComponent_requestShutdownService);
     TRACE_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
     Application::signalAppQuit( );
 }
+#else   // AREG_LOGS
+void ServicingComponent::requestShutdownService(unsigned int /*clientID*/, const String & /*roleName*/)
+{
+    Application::signalAppQuit( );
+}
+#endif  // AREG_LOGS

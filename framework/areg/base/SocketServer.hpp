@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/SocketServer.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Server Socket class declaration.
  ************************************************************************/
@@ -75,7 +75,7 @@ public:
      *          or receiving data, the socket should be created 
      *          and bound to host and port.
      *          Specified remoteAddress will be set as server address.
-     * \param   remoteAddress   Address of server.
+     * \param   serverAddress   The address of server socket.
      **/
     SocketServer( const NESocket::SocketAddress & serverAddress );
 

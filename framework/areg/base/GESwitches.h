@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/GESwitches.h
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Framework Switches.
  *              This header should be included before using any of 
@@ -39,121 +39,32 @@
    #error   "AREG_API is already defined. Undefine before include this file!"
 #endif
 
-#if defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define IMP_AREG_DLL
-    #define _IMP_AREG_DLL
-
-#endif  // defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
-
-#if defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define IMP_AREG_LIB
-    #define _IMP_AREG_LIB
-
-#endif  // defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
-
-#if defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define EXP_AREG_DLL
-    #define _EXP_AREG_DLL
-
-#endif  // defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
-
-#if defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define EXP_AREG_LIB
-    #define _EXP_AREG_LIB
-
-#endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
-
 #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
-    #pragma message ("WARNING: None of preprocessor defines are set. By default sets EXP_AREG_DLL. See GESwitches.h file of AREG API Core")
-    #define EXP_AREG_DLL
-#endif  // !defined(LINK_AREG_API_DLL) && !defined(LINK_AREG_API_LIB) && !defined(IMP_AREG_API_DLL) && !defined(IMP_AREG_API_LIB)
+    #define IMP_AREG_DLL
+#endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
 /**
  * \brief   Set Exports / Imports for dynamic and static libraries
  **/
 #ifdef EXP_AREG_DLL
    #if defined(_WIN32)
-      #define AREG_API        __declspec(dllexport)
+      #define AREG_API          __declspec(dllexport)
    #elif defined(__CYGWIN__)
-      #define AREG_API        __attribute__ ((dllexport))
+      #define AREG_API          __attribute__ ((dllexport))
    #elif defined(__GNUC__) && (__GNUC__ >= 4)
-      #define AREG_API        __attribute__((visibility("default")))
+      #define AREG_API          __attribute__((visibility("default")))
    #else    // !defined(__GNUC__) && (__GNUC__ >= 4)
       #define AREG_API
    #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
-#endif   // LINK_AREG_DLL
+#endif   // EXP_AREG_DLL
 
 #ifdef IMP_AREG_DLL
    #if defined(_WIN32)
-      #define AREG_API        __declspec(dllimport)
+      #define AREG_API          __declspec(dllimport)
    #elif defined(__CYGWIN__)
-      #define AREG_API        __attribute__ ((dllimport))
+      #define AREG_API          __attribute__ ((dllimport))
    #elif defined(__GNUC__) && (__GNUC__ >= 4)
-      #define AREG_API     __attribute__((visibility("default")))
+      #define AREG_API          __attribute__((visibility("default")))
    #else    // !(__GNUC__ >= 4)
       #define AREG_API
    #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
@@ -161,17 +72,27 @@
 
 #if defined(EXP_AREG_LIB) || defined(IMP_AREG_LIB)
     #define AREG_API
-#endif // (EXP_AREG_LIB)
+#endif // defined(EXP_AREG_LIB) || defined(IMP_AREG_LIB)
 
 
 #ifndef AREG_API
    #define AREG_API
 #endif  // AREG_API
 
-#if defined(_WIN32)
-      #define AREG_API_IMPL   AREG_API
-#else    // ! ((defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32)))
-      #define AREG_API_IMPL
-#endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
+#ifdef WIN32
+    #define AREG_API_IMPL   AREG_API
+#else   // !WIN32
+    #define AREG_API_IMPL
+#endif   // WIN32
+
+// By default, no AREG extended features.
+#if !defined(AREG_EXTENDED)
+    #define AREG_EXTENDED   0
+#endif  // AREG_EXTENDED
+
+// By default, compile with logs
+#ifndef AREG_LOGS
+    #define AREG_LOGS       1
+#endif  // AREG_LOGS
 
 #endif   // AREG_BASE_GESWITCHES_H

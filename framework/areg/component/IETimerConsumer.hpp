@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/IETimerConsumer.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Timer Event Consumer.
  *
@@ -81,17 +81,16 @@ protected:
      **/
     virtual void processTimer( Timer & timer ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden overrides
-//////////////////////////////////////////////////////////////////////////
-private:
-
     /**
      * \brief   Automatically triggered when event is dispatched by thread.
      * \param   data    The Timer Event Data object containing Timer object.
      **/
     virtual void processEvent( const TimerEventData & data) override;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden overrides
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
      * \brief	Triggered when dispatcher starts to dispatch Timer Event.
      * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.

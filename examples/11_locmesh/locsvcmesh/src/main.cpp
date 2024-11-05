@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : The application that instantiates multiple instances of the
 //               same service and clients in different threads.The definition
 //               of servicing components, service provider or service client
@@ -110,7 +110,7 @@ int main()
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    Application::initApplication( true, true, false, true, true, nullptr, nullptr );
+    Application::initApplication( true, true, false, true, true, nullptr );
 
     do
     {

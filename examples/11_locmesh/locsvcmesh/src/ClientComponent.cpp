@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        locsvcmesh/src/ClientComponent.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              The component that contains service clients.
@@ -15,7 +15,7 @@ Component * ClientComponent::CreateComponent(const NERegistry::ComponentEntry & 
     return DEBUG_NEW ClientComponent(entry, owner);
 }
 
-void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

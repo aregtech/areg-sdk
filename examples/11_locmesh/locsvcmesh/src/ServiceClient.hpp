@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        ServiceClient.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file contains simple implementation of service client to
@@ -13,7 +13,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/src/HelloWorldClientBase.hpp"
+#include "generate/examples/11_locmesh/HelloWorldClientBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -31,8 +31,8 @@ public:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
+     * \param   roleName    The role name of the component.
+     * \param   owner       The component owning thread.
      **/
     ServiceClient( const String & roleName, Component & owner );
 
@@ -64,15 +64,17 @@ protected:
 // IEProxyListener Overrides
 /************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.

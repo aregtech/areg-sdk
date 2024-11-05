@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/File.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, File class to work with files on File System.7
  *              Can be also used as an object for data streaming.
@@ -25,6 +25,8 @@
 #include "areg/base/Containers.hpp"
 
 #include <string_view>
+#include <filesystem>
+
 
 /**
  * \brief   File class to work with files on File System. Supports data streaming
@@ -108,19 +110,15 @@ public:
      **/
     static constexpr int                MAXIMUM_PATH        {1024};
 
+    /**
+     * \brief   File::PATH_SEPARATOR
+     *          The OS dependent path separator. On POSIX it is '/' and on Windows it is '\\'.
+     **/
+    static constexpr char               PATH_SEPARATOR      { std::filesystem::path::preferred_separator };
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
-
-//////////////////////////////////////////////////////////////////////////
-// Public static methods
-//////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Returns path separator. The return character is OS dependent.
-     *          For example, on POSIX it is '/' and on Windows it is '\\'.
-     **/
-    static const char getPathSeparator( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -242,7 +240,7 @@ public:
      *          If new size is less than the current size of file object, data will be truncated until the new size, 
      *          and if the new size is less than the current pointer position, the pointer will be move at the end of file.
      * 
-     * \param	size	New Size is bytes to reserve or set.
+     * \param	newSize	New Size is bytes to reserve or set.
      *
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
      **/
@@ -270,18 +268,18 @@ public:
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of ASCII String to stream data from Input Stream object.
+     * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & asciiString ) const override;
+    virtual unsigned int read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString      The buffer of Wide String to stream data from Input Stream object.
+     * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const override;
+    virtual unsigned int read( WideString & wide ) const override;
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
@@ -307,18 +305,18 @@ public:
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   asciiString     The buffer of String containing data to stream to Output Stream.
+     * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & asciiString ) override;
+    virtual unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
      *          Overwrite method if need to change behavior of streaming string.
-     * \param   wideString  The buffer of String containing data to stream to Output Stream.
+     * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wideString ) override;
+    virtual unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief	Write data to output stream object from given buffer
@@ -689,7 +687,7 @@ private:
      * \param   unique  If true, the name of the file is unique.
      * \return  Returns the length of data in the buffer.
      */
-    static unsigned int _osCreateTempFile(char* buffer, const char* folder, const char * prefix, unsigned int unique);
+    static unsigned int _osCreateTempFileName(char* buffer, const char* folder, const char * prefix, unsigned int unique);
 
     /**
      * \brief   OS specific method to retrieve the OS specific methods.

@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/DateTime.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Date and Time class.
  *
@@ -24,6 +24,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#include <chrono>
 #include <string_view>
 
 /************************************************************************
@@ -43,28 +44,11 @@ public:
 /************************************************************************/
 // Public constants
 /************************************************************************/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
 
-    /**
-     * \brief   ISO8601 format of time-stamp to display logs
+/**
+     * \brief   Invalid time.
      **/
-    static constexpr std::string_view   TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
-
-    /**
-     * \brief   Absolute time format of time-stamp
-     **/
-    static constexpr std::string_view   TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
-
-    /**
-     * \brief   Format only data of time-stamp
-     **/
-    static constexpr std::string_view   TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
-
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    static constexpr TIME64             INVALID_TIME                        { 0 };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -88,20 +72,14 @@ public:
     explicit DateTime( const NEUtilities::sSystemTime & sysTime );
 
     /**
-     * \brief   Sets date and time value from given file time structure.
-     * \param   fileTime    File time structure to get date and time values.
-     **/
-    explicit DateTime( const NEUtilities::sFileTime & fileTime );
-
-    /**
      * \brief   Copies data and time data from given source.
-     * \param   src     The source to copy data.
+     * \param   dateTime    The source to copy data.
      **/
     DateTime( const DateTime & dateTime );
 
     /**
      * \brief   Moves data and time data from given source.
-     * \param   src     The source to move data.
+     * \param   dateTime    The source to move data.
      **/
     DateTime( DateTime && dateTime ) noexcept;
 
@@ -120,9 +98,25 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Converts and returns date and time value as 64-bit unsigned integer value
+     * \brief   Converts and returns date and time value as 64-bit unsigned integer value.
+     *          The returned value is microseconds passed since Unix epoch (January 1, 1970).
      **/
     inline operator TIME64 ( void ) const;
+
+    /**
+     * \brief   Converts and returns date and time value in microseconds passed since Unix epoch (Unix epoch, since January 1, 1970).
+     **/
+    inline operator std::chrono::microseconds(void) const;
+
+    /**
+     * \brief   Converts and returns date and time value in milliseconds passed since Unix epoch (Unix epoch, since January 1, 1970).
+     **/
+    inline operator std::chrono::milliseconds(void) const;
+
+    /**
+     * \brief   Converts and returns date and time value in seconds passed since Unix epoch (Unix epoch, since January 1, 1970).
+     **/
+    inline operator std::chrono::seconds(void) const;
 
     /**
      * \brief   Sets date and time value from given source.
@@ -189,7 +183,7 @@ public:
     /**
      * \brief   Writes (serializes) date and time value to streaming object.
      * \param   stream  Streaming object to serialized date and time value
-     * \param   input   Date and time object, which is contains date and time value and
+     * \param   output  Date and time object, which is contains date and time value and
      *                  should be serialized to streaming object
      **/
     friend inline IEOutStream & operator << ( IEOutStream & stream, const DateTime & output );
@@ -203,15 +197,15 @@ public:
 /************************************************************************/
     /**
      * \brief   Retrieves and returns current system time in UTC (Coordinated Universal Time).
+     *          The value in DateTime object is in microseconds passed since Unix epoch (January 1, 1970).
      * \return  Returns current date and time value.
      **/
     static DateTime getNow( void );
 
     /**
-     * \brief   Retrieves and returns current local time.
+     * \brief   Retrieves and returns current time either in UTC or local time.
      * \param   timeData    On output, it will contain the time values.
      * \param   localTime   If true, timeData is converted to local time.
-     * \return  Returns current date and time value.
      **/
     static void getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime );
 
@@ -225,26 +219,24 @@ public:
      **/
     static uint64_t getProcessTickCount( void );
 
+    /**
+     * \brief   Formats time and outputs as a string. The caller should specify the
+     *          the time format name for output.
+     * \param   dateTime    The DateTime object to convert to string.
+     * \param   result      On output this contains formated string of DateTime.
+     * \param   formatName  The formating to convert DateTime.
+     **/
+    static void formatTime(const DateTime &dateTime, String& OUT result, const std::string_view& formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT);
+
 /************************************************************************/
 // Non-static operations
 /************************************************************************/
-    /**
-     * \brief   Converts existing date and time value to system time structure
-     * \param   out_sysTime The System Time structure to feel data
-     **/
-    void convToSystemTime( NEUtilities::sSystemTime & out_sysTime ) const;
-
-    /**
-     * \brief   Retrieves date and time value from system time structure and sets value
-     * \param   sysTime     The System Time structure as a source of data.
-     **/
-    void convFromSystemTime( const NEUtilities::sSystemTime & sysTime );
 
     /**
      * \brief   Formats time and outputs as a string. The caller should specify the
      *          the time format name for output
      **/
-    String formatTime( const std::string_view & formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT ) const;
+    String formatTime( const std::string_view & formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT) const;
 
     /**
      * \brief   Returns the time data.
@@ -252,16 +244,119 @@ public:
     inline const TIME64 & getTime( void ) const;
 
     /**
+     * \brief   Set the date time value. The new value should be set in microseconds since Unix epoch.
+     * \param   newTime     The new time in microseconds since Unix epoch (January 1, 1970).
+     **/
+    inline void setTime(const TIME64& newTime);
+
+    /**
      * \brief   Returns true, if time value is not zero
      **/
     inline bool isValid( void ) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the calculated year.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getYear(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the calculated month within the year.
+     *          The first month is January and the last month is the December.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getMonth(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the day within the month.
+     *          The first day is 1 and the last day depends on month.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getDay(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the hour within the day.
+     *          The returned value is between 0 and 23.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getHours(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the minutes within the hour.
+     *          The returned value is between 0 and 59.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getMinutex(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the seconds within the minute.
+     *          The returned value is between 0 and 59.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getSecons(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the milliseconds within the second.
+     *          The returned value is between 0 and 999.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getMilliscones(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the microseconds within the millisecond.
+     *          The returned value is between 0 and 999.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getMicroseconds(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the day of the year.
+     *          The returned value is between 1 and 365 / 366.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getDayOfTheYear(void) const;
+
+    /**
+     * \brief   Breaks the date-time value and returns the day of the week.
+     *          The returned value is between 1 and 7.
+     *          The date-time value is in microseconds passed since Unix epoch.
+     **/
+    unsigned int getDayOfTheWeek(void) const;
+
+    /**
+     * \brief   Converts existing date and time value in microseconds passed since Unix epoch to system time structure.
+     *          On output, the sysTime contains converted and broken date and time values.
+     * \param[out]  sysTime     The System Time structure to break the data.
+     **/
+    void getDateTime(NEUtilities::sSystemTime& OUT sysTime);
+
+    /**
+     * \brief   Calculates and sets the value in microseconds passed since Unix epoch.
+     *          The date and time information is in 'sysTime' parameter.
+     * \param[in]   sysTime     The System Time structure as a source of data.
+     **/
+    void setDateTime(const NEUtilities::sSystemTime& IN sysTime);
+
+    /**
+     * \brief   Converts existing date and time value in microseconds passed since Unix epoch to tm structure.
+     *          On output, the 'time' contains converted and broken date and time values.
+     * \param[out]  time    The tm structure object to break the data.
+     **/
+    void getDateTime(struct tm& OUT time);
+
+    /**
+     * \brief   Calculates and sets the value in microseconds passed since Unix epoch.
+     *          The date and time information is in 'time' parameter.
+     * \param[in]   time    The tm structure as a source of data.
+     **/
+    void setDateTime(const struct tm& IN time);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Date and time value
+     * \brief   Date and time in microseconds passed since Unix epoch (January 1, 1970).
      **/
     TIME64  mDateTime;
 };
@@ -273,6 +368,21 @@ private:
 inline DateTime::operator TIME64 ( void ) const
 {
     return mDateTime;
+}
+
+inline DateTime::operator std::chrono::microseconds(void) const
+{
+    return std::chrono::microseconds(mDateTime);
+}
+
+inline DateTime::operator std::chrono::milliseconds(void) const
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(mDateTime));
+}
+
+inline DateTime::operator std::chrono::seconds(void) const
+{
+    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::microseconds(mDateTime));
 }
 
 inline DateTime & DateTime::operator = ( const DateTime & src )
@@ -292,9 +402,14 @@ inline const TIME64 & DateTime::getTime( void ) const
     return mDateTime;
 }
 
+inline void DateTime::setTime(const TIME64& newTime)
+{
+    mDateTime = newTime;
+}
+
 inline bool DateTime::isValid( void ) const
 {
-    return (mDateTime != 0);
+    return (mDateTime != INVALID_TIME);
 }
 
 inline const IEInStream & operator >> ( const IEInStream & stream, DateTime & input )

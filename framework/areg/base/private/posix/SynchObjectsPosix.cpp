@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/ESynchObjectsWin.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Synchronization objects. POSIX specific methods
  *
@@ -31,11 +31,6 @@
 
 #include <string.h>
 #include <time.h>
-
-//////////////////////////////////////////////////////////////////////////
-// Internal static methods
-//////////////////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class implementation
@@ -70,7 +65,7 @@ bool Mutex::_osLockMutex( unsigned int timeout )
 {
     bool result{ false };
     WaitableMutexIX * synchMutex{ reinterpret_cast<WaitableMutexIX *>(mSynchObject) };
-    
+
     if ( NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout) )
     {
         mOwnerThreadId.store(reinterpret_cast<id_type>(synchMutex->getOwningThreadId()));

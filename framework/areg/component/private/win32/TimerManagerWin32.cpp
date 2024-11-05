@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagerWin.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
@@ -22,7 +22,7 @@
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
 
-#include <windows.h>
+#include <Windows.h>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,38 +56,25 @@ void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 
 bool TimerManager::_osSystemTimerStart( Timer & timer )
 {
-    bool result = false;
-
     ASSERT(timer.getHandle() != nullptr);
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = timer.getEventCount() > 1 ? static_cast<long>(timer.getTimeout()) : 0;
-    int64_t dueTime = static_cast<int64_t>(timer.getTimeout()) * NEUtilities::MILLISEC_TO_100NS;  // timer from now
-    dueTime *= -1;
+    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(timer.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    dueTime *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger;
-    timeTrigger.QuadPart = dueTime;
+    timeTrigger.LowPart  = static_cast<DWORD>(MACRO_64_LO_BYTE32(dueTime));
+    timeTrigger.HighPart = static_cast<LONG >(MACRO_64_HI_BYTE32(dueTime));
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );
     timer.timerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime, reinterpret_cast<ptr_type>(timer.getHandle()) );
 
-    if ( ::SetWaitableTimer( timer.getHandle()
-                           , &timeTrigger
-                           , period
-                           , reinterpret_cast<PTIMERAPCROUTINE>(&TimerManager::_windowsTimerExpiredRoutine)
-                           , static_cast<void *>(timer.getHandle()), FALSE ) == FALSE )
-    {
-        OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                        , timer.getTimeout( )
-                        , timer.getName( ).getString()
-                        , static_cast<id_type>(GetLastError( )) );
-    }
-    else
-    {
-        result = true; // succeeded
-    }
-
-    return result;
+    return ( ::SetWaitableTimer(  timer.getHandle()
+                                , &timeTrigger
+                                , period
+                                , (PTIMERAPCROUTINE)(&TimerManager::_windowsTimerExpiredRoutine)
+                                , static_cast<void *>(timer.getHandle()), FALSE ) == TRUE );
 }
 
 #endif // _WINDOWS

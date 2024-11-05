@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
-#if !defined(AFX_RESOUR_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
@@ -87,7 +87,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
     LTEXT           "Chatter register application, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) AREGtech 2019-2022",IDC_STATIC,42,26,114,8
+    LTEXT           "Copyright (C) AREGtech 2019-2023",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
 END
 
@@ -110,9 +110,9 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
 CAPTION "Connection List"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
+    CONTROL         "",IDC_LIST_CONNECTIONS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER,10,17,305,150
     EDITTEXT        IDC_EDIT_BROADCAST,10,181,252,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "&Broadcast",IDC_BUTTON_BROADCAST,265,181,50,14
-    CONTROL         "",IDC_LIST_CONNECTIONS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER,10,17,305,150
     GROUPBOX        "Messages:",IDC_STATIC,7,7,311,163
     GROUPBOX        "Broadcast message:",IDC_STATIC,7,169,311,28
 END

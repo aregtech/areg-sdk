@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/TraceMessage.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Logging / tracing object to log messages.
  ************************************************************************/
@@ -70,6 +70,7 @@ public:
      **/
     ~TraceMessage( void );
 
+#if AREG_LOGS
 //////////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////////
@@ -198,6 +199,8 @@ private:
     const unsigned int  mScopeId;   //!< The ID of logging scope
     const unsigned int& mScopePrio; //!< The logging priority enabled in scope.
 
+#endif  // AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
@@ -209,6 +212,8 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 // TraceMessage class inline methods
 //////////////////////////////////////////////////////////////////////////////
+
+#if AREG_LOGS
 
 inline bool TraceMessage::isScopeEnabled(void) const
 {
@@ -249,5 +254,7 @@ inline bool TraceMessage::isPrioEnabled(NETrace::eLogPriority msgPrio) const
 {
     return (msgPrio == NETrace::PrioScope ? mScopePrio &  static_cast<unsigned int>(NETrace::PrioScope) : mScopePrio >= static_cast<unsigned int>(msgPrio)) ;
 }
+
+#endif  // AREG_LOGS
 
 #endif  // AREG_TRACE_TRACEMESSAGE_HPP

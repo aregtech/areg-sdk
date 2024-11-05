@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        pubclient/src/PatientClient.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This is a hardware manager component runs as patient and temperature
@@ -17,12 +17,12 @@ Component * PatientClient::CreateComponent(const NERegistry::ComponentEntry & en
     return DEBUG_NEW PatientClient(entry, owner);
 }
 
-void PatientClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void PatientClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
 
-PatientClient::PatientClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+PatientClient::PatientClient(const NERegistry::ComponentEntry & entry, ComponentThread & /* owner */)
     : Component                     ( entry.mRoleName )
     , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
 
@@ -47,21 +47,17 @@ IEWorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & cons
     }
 }
 
-bool PatientClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool PatientClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    bool result = true;
-    if (PatientInformationClientBase::serviceConnected(isConnected, proxy))
+    bool result = PatientInformationClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        notifyOnPatientUpdate(isConnected);
-
-        if (isConnected == false)
-        {
-            Application::signalAppQuit();
-        }
+        notifyOnPatientUpdate( true );
     }
     else
     {
-        result = false;
+        notifyOnPatientUpdate( false );
+        Application::signalAppQuit( );
     }
 
     return result;

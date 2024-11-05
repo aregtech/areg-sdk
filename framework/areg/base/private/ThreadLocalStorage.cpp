@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/ThreadLocalStorage.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Thread Local Storage class.
  *              Should be initialized when thread starts running.
@@ -64,7 +64,7 @@ void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::uAlign Val
 void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
 {
     NEMemory::uAlign aln;
-    aln.alignPtr.mElement = (void *)(Value);
+    aln.alignPtr.mElement = const_cast<void *>(Value);
     setStorageItem(Key, aln);
 }
 

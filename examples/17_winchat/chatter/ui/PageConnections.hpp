@@ -3,8 +3,8 @@
 #include "areg/base/GEGlobal.h"
 #include "chatter/res/resource.h"
 #include "areg/base/String.hpp"
-#include "generated/NEDirectConnection.hpp"
-#include "generated/NEConnectionManager.hpp"
+#include "generate/examples/17_winchat/NEDirectConnection.hpp"
+#include "generate/examples/17_winchat/NEConnectionManager.hpp"
 
 class String;
 class Component;
@@ -44,11 +44,11 @@ public:
 
     const String & GetRegisteredName( void ) const;
 
-    const uint32_t GetRegisteredCookie( void ) const;
+    uint32_t GetRegisteredCookie( void ) const;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    virtual BOOL OnInitDialog( );
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+    virtual BOOL OnInitDialog( ) override;
 
 	DECLARE_MESSAGE_MAP()
 protected:

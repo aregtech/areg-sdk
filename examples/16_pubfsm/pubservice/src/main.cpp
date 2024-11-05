@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project creates an instance of Public services that 
 //               contain a finite state-machine ( FSM ). A local service 
 //               interacts with the user to change the states of FSM, to run 
@@ -10,7 +10,7 @@
 //
 //               When the application starts, use one of commands:
 //                  - "on" to imitate the power ON.
-//                  - "sart" to start the run of FSM (as traffic light 
+//                  - "start" to start the run of FSM (as traffic light 
 //                    controller).
 //                  - "stop" to stop the run of FSM (as traffic light 
 //                    controller).
@@ -24,7 +24,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef WINDOWS

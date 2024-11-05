@@ -8,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/TraceScope.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Trace messaging scope object definition.
  ************************************************************************/
@@ -20,6 +20,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/NETrace.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/IEIOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
 // TraceScope class declaration
@@ -73,7 +74,14 @@ public:
      *                      From given name it creates scope ID.
      * \param   priority    The logging message priority of trace scope
      **/
-    TraceScope( const char * scopeName, NETrace::eLogPriority priority = NETrace::PrioNotset );
+    TraceScope( const char * scopeName, NETrace::eLogPriority priority = NETrace::eLogPriority::PrioNotset );
+
+    /**
+     * \brief   Initializes the trace scope object from the stream.
+     *          Unlike the previous initializer, this trace scope object is not inserted into the map.
+     * \param   stream  The streaming object that contains the information of name, ID and priority.
+     **/
+    TraceScope(const IEInStream & stream);
 
     /**
      * \brief   Destructor.
@@ -89,6 +97,21 @@ public:
      *          is same as scope ID.
      **/
     inline operator unsigned int ( void ) const;
+
+    /**
+     * \brief   Writes the scope data into the stream.
+     *          Note, the class does not have operator to deserialize
+     *          the scope object, because of 2 reasons:
+     *              1.  The default of TraceScope is deleted, so that there is
+     *                  no possibility to create scope with empty name;
+     *              2.  The name and the ID of the scope are declared as a constants
+     *                  and cannot be changed, because they are inserted in the map
+     *                  when they are created, the key of the TraceScope object in the
+     *                  map is the ID and the location in the map is fixed.
+     * \param   stream  The stream object to write data.
+     * \param   output  The scope to write into the stream object.
+     **/
+    inline friend IEOutStream & operator << ( IEOutStream & stream, const TraceScope & output );
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -209,6 +232,19 @@ namespace std
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// inline functions implementation
+//////////////////////////////////////////////////////////////////////////////
+
+inline IEOutStream & operator << ( IEOutStream & stream, const TraceScope & output )
+{
+    stream << output.mScopeName;
+    stream << output.mScopeId;
+    stream << output.mScopePrio;
+
+    return stream;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // TraceScope class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
@@ -227,29 +263,19 @@ inline void TraceScope::setPriority( unsigned int newPrio )
     mScopePrio  = newPrio;
 }
 
-inline void TraceScope::setPriority( const char * newPrio )
-{
-    setPriority( NETrace::convFromString(newPrio) );
-}
-
-inline void TraceScope::setPriority( const String & newPrio )
-{
-    setPriority( NETrace::convFromString(newPrio) );
-}
-
 inline void TraceScope::addPriority( NETrace::eLogPriority addPrio )
 {
     mScopePrio  |= static_cast<unsigned int>(addPrio);
 }
 
-inline void TraceScope::addPriority( const char * addPrio )
+void TraceScope::addPriority( const char * addPrio )
 {
-    addPriority( NETrace::convFromString(addPrio) );
+    addPriority( NETrace::stringToLogPrio(addPrio) );
 }
 
-inline void TraceScope::addPriority( const String & addPrio )
+void TraceScope::addPriority( const String & addPrio )
 {
-    addPriority( NETrace::convFromString(addPrio) );
+    addPriority( NETrace::stringToLogPrio(addPrio) );
 }
 
 inline void TraceScope::removePriority( NETrace::eLogPriority remPrio )
@@ -257,14 +283,14 @@ inline void TraceScope::removePriority( NETrace::eLogPriority remPrio )
     mScopePrio  &= ~static_cast<unsigned int>(remPrio);
 }
 
-inline void TraceScope::removePriority( const char * remPrio )
+void TraceScope::removePriority( const char * remPrio )
 {
-    removePriority( NETrace::convFromString(remPrio) );
+    removePriority( NETrace::stringToLogPrio(remPrio) );
 }
 
-inline void TraceScope::removePriority( const String & remPrio )
+void TraceScope::removePriority( const String & remPrio )
 {
-    removePriority( NETrace::convFromString(remPrio) );
+    removePriority( NETrace::stringToLogPrio(remPrio) );
 }
 
 inline unsigned int TraceScope::getPriority( void ) const

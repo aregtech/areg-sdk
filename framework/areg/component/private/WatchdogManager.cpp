@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/WatchdogManager.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The Thread Watchdog Manager.
  *              Controlling and stopping stuck threads.
@@ -43,9 +43,14 @@ bool WatchdogManager::startWatchdogManager(void)
     return getInstance().startTimerManagerThread();
 }
 
-void WatchdogManager::stopWatchdogManager(void)
+void WatchdogManager::stopWatchdogManager(bool waitComplete)
 {
-    return getInstance().stopTimerManagerThread();
+    return getInstance().stopTimerManagerThread(waitComplete);
+}
+
+void WatchdogManager::waitWatchdogManager(void)
+{
+    return getInstance().waitCompletion();
 }
 
 bool WatchdogManager::isWatchdogManagerStarted(void)
@@ -132,7 +137,7 @@ void WatchdogManager::processEvent(const TimerManagerEventData & data)
     }
 }
 
-void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes)
+void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
 {
     TRACE_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 

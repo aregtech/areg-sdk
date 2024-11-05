@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Event.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event Base class implementation
  *
@@ -48,8 +48,7 @@ bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & event
 
 bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, DispatcherThread & dispThread )
 {
-    ASSERT( dispThread.isValid() );
-    return dispThread.registerEventConsumer(classId, eventConsumer);
+    return ( dispThread.isRunning() ? dispThread.registerEventConsumer(classId, eventConsumer) : false );
 }
 
 bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const String & whichThread )
@@ -74,6 +73,7 @@ bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & ev
 Event::Event( void )
     : RuntimeObject ( )
     , mEventType    ( Event::eEventType::EventUnknown )
+    , mEventPrio    ( DefaultPriority )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
@@ -82,6 +82,7 @@ Event::Event( void )
 Event::Event( Event::eEventType eventType )
     : RuntimeObject ( )
     , mEventType    ( eventType )
+    , mEventPrio    ( DefaultPriority )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
@@ -115,13 +116,8 @@ EventDispatcher& Event::getDispatcher( void ) const
 void Event::deliverEvent( void )
 {
     EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
-    if ( (dispatcher != nullptr) && (dispatcher->isReady()) )
+    if ((dispatcher == nullptr) || (dispatcher->postEvent(*this) == false))
     {
-        dispatcher->postEvent(*this);
-    }
-    else
-    {
-        OUTPUT_ERR("The event target is unknown! Event type [ %s ] is going to be deleted.", getRuntimeClassName().getString());
         destroy();
     }
 }
@@ -165,19 +161,8 @@ bool Event::removeEventListener( IEEventConsumer& eventConsumer )
 void Event::dispatchSelf( IEEventConsumer* consumer )
 {
     consumer = consumer != nullptr ? consumer : this->mConsumer;
-    if (consumer != nullptr)
+    if ((consumer != nullptr) && consumer->preprocessEvent(*this) )
     {
-        if ( consumer->preprocessEvent(*this) )
-        {
-            consumer->startEventProcessing(*this);
-        }
-        else
-        {
-            OUTPUT_WARN("The Event [ %s ] is interrupted and not going to be processed", getRuntimeClassName().getString());
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("The Event [ %s ] has invalid consumer. The event cannot be processed!", getRuntimeClassName().getString());
+        consumer->startEventProcessing(*this);
     }
 }
