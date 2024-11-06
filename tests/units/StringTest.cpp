@@ -60,14 +60,27 @@ TEST(StringTest, TestMakeUInt32)
  * Tests makeInt64() which converts a string
  * to a int64
 */
-TEST(StringTest, TestMakeInt64)
+struct TestParams{
+    const char *input;
+    int64_t expected_result;
+};
+class StringConversionTest : public ::testing::TestWithParam<TestParams> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    ConvertStringToInt64Tests,
+    StringConversionTest,
+    ::testing::Values(
+        TestParams{"52", 52},
+        TestParams{"+52", 52},
+        TestParams{"-52", -52},
+        TestParams{"0", 0}
+    )
+);
+TEST_P(StringConversionTest, TestMakeInt64)
 {
-    constexpr char *test = "52";
-    constexpr int64_t result_int64 = 52;
-    EXPECT_EQ(String::makeInt64(test), result_int64);
+    const auto &params = GetParam();
+    EXPECT_EQ(String::makeInt64(params.input), params.expected_result);
     
-    constexpr int16_t result_int16 = 52;
-    EXPECT_EQ(String::makeInt64(test), result_int16);
 }
 
 /**
