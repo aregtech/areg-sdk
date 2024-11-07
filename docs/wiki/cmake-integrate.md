@@ -1,10 +1,6 @@
-Here’s a refined version with improved grammar, flow, and added clarity where helpful:
-
----
-
 # Integrating AREG Framework with CMake
 
-This guide covers how to integrate the AREG Framework into an existing project or create a new project using AREG Framework. There are three main methods for integration:
+This guide covers how to integrate the **AREG Framework** into an existing project or create a new project **using CMake** under **Windows** or **Linux** systems. There are three main methods for integration:
 
 1. **Fetch the source code** directly from the **[AREG SDK GitHub repository](https://github.com/aregtech/areg-sdk)**.
 2. **Install via `vcpkg`** as a prebuilt package.
@@ -41,17 +37,17 @@ Ensure the following dependencies are installed for AREG SDK integration:
 
 ## General Information
 
-AREG SDK consists of several components:
+The AREG SDK includes several key components:
 
-1. **AREG Framework (`areg` library)**: Core library for automation and Object RPC communication.
-2. **AREG Framework Extension (`aregextend` library)**: Optional library with extended utilities.
-3. **AREG Log Observer API (`areglogger` library)**: Enables applications to receive and manage log messages.
-4. **AREG Multicast Router (`mcrouter` executable)**: OS-managed service to route RPC messages.
-5. **AREG Log Collector (`logger` executable)**: OS-managed service for remote log collection.
-6. **AREG Log Observer (`logobserver` executable)**: Stand-alone application for managing logs.
-7. **AREG Code Generator (`codegen.jar` runnable)**: Java tool for generating Service Interface source code.
+1. **AREG Framework (`areg` library)**: The core library for automation and Object RPC communication.
+2. **AREG Framework Extension (`aregextend` library)**: An optional library with additional utilities.
+3. **AREG Log Observer API (`areglogger` library)**: Allows applications to receive and manage log messages.
+4. **AREG Multicast Router (`mcrouter` executable)**: An OS-managed service that routes RPC messages.
+5. **AREG Log Collector (`logger` executable)**: An OS-managed service for remote log collection.
+6. **AREG Log Observer (`logobserver` executable)**: A stand-alone application for managing logs.
+7. **AREG Code Generator (`codegen.jar` runnable)**: A Java tool for generating Service Interface source code.
 
-These components provide a robust infrastructure for integrating AREG SDK in projects, ensuring streamlined development.
+These components provide a robust foundation for integrating the AREG SDK, streamlining the development process.
 
 ---
 
