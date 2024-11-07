@@ -37,15 +37,15 @@
         <!-- ****************************************************************************************************************************** -->
         <AregLogs Condition="'$(AregLogs)'==''">1</AregLogs>
         <!-- ****************************************************************************************************************************** -->
-        <!-- Check AregBuildRoot settings. If missed, by default, it is a 'product' subdirectory relative to 'SolutionDir'.                 -->
+        <!-- Check AregOutputRoot settings. If missed, by default, it is a 'product' subdirectory relative to 'SolutionDir'.                -->
         <!-- ****************************************************************************************************************************** -->
-        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(SolutionDir)product\</AregBuildRoot>
+        <AregOutputRoot Condition="'$(AregOutputRoot)'==''">$(SolutionDir)product\</AregOutputRoot>
         <!-- ****************************************************************************************************************************** -->
         <!-- Check and set AregOutputDir, AregOutputLib, AregOutputBin and AregOutputObj.                                                   -->
         <!-- ****************************************************************************************************************************** -->
-        <AregProductPath>build\msvc-$(VCCompilerVersion)\$(OS)-$(Platform)-$(Configuration)</AregProductPath>
-        <AregProductPath>$(AregProductPath.ToLower())</AregProductPath>
-        <AregOutputDir Condition="'$(AregOutputDir)'==''">$(AregBuildRoot)$(AregProductPath)\</AregOutputDir>
+        <AregOutputBuild>build\msvc-$(VCCompilerVersion)\$(OS)-$(Platform)-$(Configuration)</AregOutputBuild>
+        <AregOutputBuild>$(AregOutputBuild.ToLower())</AregOutputBuild>
+        <AregOutputDir Condition="'$(AregOutputDir)'==''">$(AregOutputRoot)$(AregOutputBuild)\</AregOutputDir>
         <AregOutputLib Condition="'$(AregOutputLib)'==''">$(AregOutputDir)lib\</AregOutputLib>
         <AregOutputBin Condition="'$(AregOutputBin)'==''">$(AregOutputDir)bin\</AregOutputBin>
         <AregOutputObj Condition="'$(AregOutputObj)'==''">$(AregOutputDir)obj\$(ProjectName)\</AregOutputObj>
@@ -68,13 +68,13 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- Set the directory for generated source files.                                                                                  -->
-        <AregGenerateDir Condition="'$(AregGenerateDir)'==''">$(AregBuildRoot)generate\</AregGenerateDir>
+        <AregGenerateDir Condition="'$(AregGenerateDir)'==''">$(AregOutputRoot)generate\</AregGenerateDir>
         <!-- Set the directory to download thirdparty packages. If change, also change the location in nuget.config file.                   -->
-        <AregPackages Condition="'$(AregPackages)'==''">$(AregBuildRoot)packages\</AregPackages>
+        <AregPackages Condition="'$(AregPackages)'==''">$(AregOutputRoot)packages\</AregPackages>
         <!-- Set the AREG Framework path.                                                                                                   -->
-        <AregFrameworkSources>$(AregSdkRoot)framework\</AregFrameworkSources>
+        <AregFramewor>$(AregSdkRoot)framework\</AregFramewor>
         <!-- Set the path of AREG Framework resources                                                                                       -->
-        <AregFrameworkResources>$(AregFrameworkSources)areg\resources\</AregFrameworkResources>
+        <AregFrameworkResources>$(AregFramewor)areg\resources\</AregFrameworkResources>
         <!-- Set the path of thirdparty software components. Set for all projects.                                                          -->
         <AregThirdpartyDir>$(AregSdkRoot)thirdparty\</AregThirdpartyDir>
         <!-- Set the path of AREG SDK Examples.                                                                                             -->
@@ -87,7 +87,7 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- AREG Framework specific includes. The value may change when integrate in other projects.                                       -->
-        <AregCommonIncludes>$(AregFrameworkSources);$(AregBuildRoot);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
+        <AregCommonIncludes>$(AregFramewor);$(AregOutputRoot);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
         <!-- AREG Framework specific library search paths. The value may change when integrate in other projects.                           -->
         <AregCommonLibs>$(AregOutputLib);$(AregOutputBin)</AregCommonLibs>
 
@@ -100,7 +100,7 @@
         <OutObjDir>$(AregOutputObj)</OutObjDir>
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- SQLite3 directory for embedded database. Do not change.                                                                           -->
+        <!-- SQLite3 directory for embedded database. Do not change.                                                                        -->
         <!-- ****************************************************************************************************************************** -->
         <SQLiteDir>$(AregThirdpartyDir)sqlite3\</SQLiteDir>
 
@@ -117,8 +117,8 @@
         <BuildMacro Include="AregPackages">
             <Value>$(AregPackages)</Value>
         </BuildMacro>
-        <BuildMacro Include="AregFrameworkSources">
-            <Value>$(AregFrameworkSources)</Value>
+        <BuildMacro Include="AregFramewor">
+            <Value>$(AregFramewor)</Value>
         </BuildMacro>
         <BuildMacro Include="AregFrameworkResources">
             <Value>$(AregFrameworkResources)</Value>

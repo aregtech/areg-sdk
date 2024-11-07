@@ -5,7 +5,7 @@
     <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}</ProjectGuid>
@@ -18,7 +18,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -28,7 +28,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>$(AregFrameworkSources)mcrouter\resources\mcrouter_post_build.bat "$(AregFrameworkSources)mcrouter\resources\" "$(OutDir)"</Command>
+      <Command>$(AregFramewor)mcrouter\resources\mcrouter_post_build.bat "$(AregFramewor)mcrouter\resources\" "$(OutDir)"</Command>
       <Message>Call post-build script to copy  mcrouter service install and uninstall scripts to the config directory.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

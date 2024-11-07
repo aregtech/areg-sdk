@@ -10,13 +10,13 @@
         <Import Project="$(SolutionDir)msvc_setup.props"/>
     </ImportGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(AregSdkRoot)conf\msvc\project_defaults.props"/>
+        <Import Project="$(AregConfigDir)project_defaults.props"/>
     </ImportGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
     <ImportGroup Label="ExtensionSettings">
     </ImportGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(AregSdkRoot)conf\msvc\user.props" />
+        <Import Project="$(AregConfigDir)user.props" />
     </ImportGroup>
     <PropertyGroup Label="UserMacros">
         <ProjectIncludes>$(ProjectDir);$(AregCommonIncludes);</ProjectIncludes>

@@ -120,10 +120,11 @@ The fault-tolerant design of AREG offers key advantages, such as:
 ## Composition of AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition-of-areg-sdk)
 
 The **AREG SDK** consists of several modules to streamline distributed, real-time applications development:
-- **[AREG communication engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
-- **[Multicast router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
-- **[Log collector (*logger*)](./framework/logger/):** Collects logs from various applications and forwards them to log observers.
-- **[Log observer (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
+- **[AREG Communication Engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
+- **[Multicast Router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
+- **[Log Collector (*logger*)](./framework/logger/):** Collects logs from various applications and forwards them to log observers.
+- **[Log observer Library (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
+- **[Log observer (*logobserver*)](./framework/logobserver/):** In real-time mode monitors, saves and dynamically controls logs.
 - **[AREG Extended Library (*aregextend*)](./framework/aregextend/):** Offers additional objects with extended features.
 - **[Code generator](./master/tools/):** Generates Service **Provider** and **Consumer** objects from Service Interface documents.
 - **[Examples](./examples/):** Illustrates the features of AREG Framework and use of the AREG SDK components.
@@ -224,7 +225,7 @@ if (NOT areg_FOUND)
     include_directories("${AREG_SDK_ROOT}/framework")
 endif()
 
-include("${AREG_CMAKE_CONFIG_DIR}/conf/cmake/areg.cmake")
+include("${AREG_SDK_ROOT}/areg.cmake")
 ```
 
 This either finds or fetches the AREG SDK components from `master` branch. See the **[CMake Integration Guide](./docs/wiki/cmake-integrate.md)** for more details.

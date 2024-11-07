@@ -4,7 +4,7 @@
     <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}</ProjectGuid>
@@ -17,7 +17,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -27,7 +27,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>$(AregFrameworkSources)logger\resources\logger_post_build.bat "$(AregFrameworkSources)logger\resources\" "$(OutDir)"</Command>
+      <Command>$(AregFramewor)logger\resources\logger_post_build.bat "$(AregFramewor)logger\resources\" "$(OutDir)"</Command>
       <Message>Call post-build script to copy  logger service install and uninstall scripts to the config directory.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
