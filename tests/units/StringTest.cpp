@@ -60,20 +60,20 @@ TEST(StringTest, TestMakeUInt32)
  * Tests makeInt64() which converts a string
  * to a int64
 */
-struct TestParams{
+struct TestMakeInt64TestParams{
     const char *input;
     int64_t expected_result;
 };
-class StringConversionTest : public ::testing::TestWithParam<TestParams> {};
+class StringConversionTest : public ::testing::TestWithParam<TestMakeInt64TestParams> {};
 
 INSTANTIATE_TEST_SUITE_P(
     ConvertStringToInt64Tests,
     StringConversionTest,
     ::testing::Values(
-        TestParams{"52", 52},
-        TestParams{"+52", 52},
-        TestParams{"-52", -52},
-        TestParams{"0", 0}
+        TestMakeInt64TestParams{"52", 52},
+        TestMakeInt64TestParams{"+52", 52},
+        TestMakeInt64TestParams{"-52", -52},
+        TestMakeInt64TestParams{"0", 0}
     )
 );
 TEST_P(StringConversionTest, TestMakeInt64)
@@ -87,14 +87,26 @@ TEST_P(StringConversionTest, TestMakeInt64)
  * Tests makeUInt64() which converts a string
  * to a unsigned int64
 */
-TEST(StringTest, TestMakeUInt64)
+struct TestMakeUInt64TestParams{
+    const char *input;
+    uint64_t expected_result;
+};
+class TestMakeUInt64StringConversionTest : public ::testing::TestWithParam<TestMakeUInt64TestParams> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    ConvertStringToInt64Tests,
+    TestMakeUInt64StringConversionTest,
+    ::testing::Values(
+        TestMakeUInt64TestParams{"52", 52},
+        TestMakeUInt64TestParams{"0", 0},
+        TestMakeUInt64TestParams{"9223372036854775808", 9223372036854775808ULL}, // Value > 0x8000000000000000
+        TestMakeUInt64TestParams{"18446744073709551616", UINT64_MAX}
+    )
+);
+TEST_P(TestMakeUInt64StringConversionTest, TestMakeUInt64)
 {
-    constexpr char *test = "52";
-    constexpr uint64_t result_uint64 = 52;
-    EXPECT_EQ(String::makeUInt64(test), result_uint64);
-    
-    constexpr uint16_t result_uint16 = 52;
-    EXPECT_EQ(String::makeUInt64(test), result_uint16);
+    const auto &params = GetParam();
+    EXPECT_EQ(String::makeUInt64(params.input), params.expected_result);
 }
 
 /**
