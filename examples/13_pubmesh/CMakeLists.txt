@@ -1,7 +1,7 @@
 # add service interfaces
-addServiceInterface(13_generated res LocalHelloWorld)
-addServiceInterface(13_generated res PublicHelloWorld)
-addServiceInterface(13_generated res SystemShutdown)
+addServiceInterface(13_generated examples/13_pubmesh/services/LocalHelloWorld.siml)
+addServiceInterface(13_generated examples/13_pubmesh/services/PublicHelloWorld.siml)
+addServiceInterface(13_generated examples/13_pubmesh/services/SystemShutdown.siml)
 
 # add projects
 

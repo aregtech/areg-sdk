@@ -14,7 +14,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generate/examples/13_pubmesh/LocalHelloWorldStub.hpp"
+#include "examples/13_pubmesh/services/LocalHelloWorldStub.hpp"
 
 //! \brief  A local service to receive request to output message on console
 class LocalHelloWorldService  : private LocalHelloWorldStub

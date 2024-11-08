@@ -12,7 +12,6 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "common/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
 #ifdef _WIN32
@@ -28,7 +27,8 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+constexpr char const _modelName[]  { "ServiceModel" };  //!< The name of model
+constexpr char const _serviceName[]{ "HelloService" };  //!< The name of provided service
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -36,11 +36,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServicingComponent )
+        BEGIN_REGISTER_COMPONENT(_serviceName, ServicingComponent )
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::ServiceHelloName )
+        END_REGISTER_COMPONENT(_serviceName)
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 

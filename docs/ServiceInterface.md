@@ -9,23 +9,25 @@ Website: https://www.aregtech.com
 
 ## Table of Contents
 
-1. [General Information](#general-information)
-2. [Service interface prototype](#service-interface-prototype)
+- [Service Interface](#service-interface)
+  - [Table of Contents](#table-of-contents)
+  - [General Information](#general-information)
+  - [Service Interface Prototype](#service-interface-prototype)
     - [Public and Local Services](#public-and-local-services)
     - [Data Types](#data-types)
-        - [Structures](#structures)
-        - [Enumerations](#enumerations)
-        - [Imported Types](#imported-types)
-        - [Containers](#containers)
+      - [Structures](#structures)
+      - [Enumerations](#enumerations)
+      - [Imported Types](#imported-types)
+      - [Containers](#containers)
     - [Attributes](#attributes)
-    - [Requests, Responses and Broadcasts](#requests-responses-and-broadcasts)
-        - [Requests](#requests)
-        - [Responses](#responses)
-        - [Broadcasts](#broadcasts)
+    - [Requests, Responses, and Broadcasts](#requests-responses-and-broadcasts)
+      - [Requests](#requests)
+      - [Responses](#responses)
+      - [Broadcasts](#broadcasts)
     - [Constants](#constants)
     - [Includes](#includes)
-3. [Code Generator](#code-generator)
-4. [Generated Codes](#generated-codes)
+  - [Code Generator](#code-generator)
+  - [Generated Codes](#generated-codes)
 
 ---
 
@@ -331,7 +333,7 @@ set CODE_GEN=generated\src
 set CLASSPATH=%CLASSPATH%;%AREG_SDK_ROOT%\tools;%AREG_SDK_ROOT%\tools\codegen.jar
 
 @echo Generating class of HelloService Service Interface in folder %CODE_GEN% .....
-java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\HelloService.siml --target=%CODE_GEN%
+java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=services\HelloService.siml --target=%CODE_GEN%
 ```
 
 These examples demonstrate how to run the code generator tool from the command line by specifying the necessary parameters.

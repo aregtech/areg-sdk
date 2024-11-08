@@ -43,7 +43,6 @@
     <ClCompile Include="pubclient\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\NECommon.hpp" />
     <ClInclude Include="pubclient\src\ServiceClient.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

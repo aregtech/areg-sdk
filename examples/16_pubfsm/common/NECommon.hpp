@@ -11,7 +11,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "generate/examples/16_pubfsm/NETrafficController.hpp"
+#include "examples/16_pubfsm/services/NETrafficController.hpp"
 
 namespace NECommon
 {

@@ -48,7 +48,7 @@
     <ClInclude Include="common\PatientInfoEvent.hpp" />
     <ClInclude Include="pubservice\src\PatientService.hpp" />
     <ClInclude Include="pubservice\src\PatientServiceWorkerConsumer.hpp" />
-    <ClInclude Include="res\NECommon.hpp" />
+    <ClInclude Include="services\NECommon.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

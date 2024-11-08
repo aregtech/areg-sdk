@@ -5,7 +5,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generate/examples/17_winchat/CentralMessagerClientBase.hpp"
+#include "examples/17_winchat/services/CentralMessagerClientBase.hpp"
 
 class DispatcherThread;
 class ConnectionHandler;

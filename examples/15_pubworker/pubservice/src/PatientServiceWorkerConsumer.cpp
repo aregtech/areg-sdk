@@ -12,7 +12,7 @@
 
 #include "areg/base/NEUtilities.hpp"
 #include "common/NECommon.hpp"
-#include "generate/examples/15_pubworker/PatientInformationStub.hpp"
+#include "examples/15_pubworker/services/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS

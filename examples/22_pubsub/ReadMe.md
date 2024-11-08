@@ -21,7 +21,7 @@ This project uses **Object Remote Procedure Call (Object RPC)** for efficient **
 ## Sub-Projects
 
 1. **22_generated**:
-   - Contains code generated from the [PubSub.siml](./res/PubSub.siml) Service Interface document during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, making **IPC** between the publisher and subscribers straightforward and efficient.
+   - Contains code generated from the [PubSub.siml](./services/PubSub.siml) Service Interface document during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, making **IPC** between the publisher and subscribers straightforward and efficient.
 
 2. **[22_publisher](./publisher/)**:
    - Acts as the *Public Service Provider* or **Publisher**, broadcasting data updates to subscribed consumers. When any **Subscriber** is registered, it sends data notifications either on change or every time data is set, depending on the selected notification mode.
@@ -31,7 +31,7 @@ This project uses **Object Remote Procedure Call (Object RPC)** for efficient **
 
 ## Communication
 
-Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the system’s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
+Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the systemï¿½s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
 
 ## Key Features
 
@@ -50,4 +50,4 @@ Communication between the service provider and consumers is facilitated by **mcr
 
 ## Conclusion
 
-The **22_pubsub** project showcases a scalable implementation of the Pub/Sub model, supporting effective communication between distributed processes with **Object RPC** and **IPC**. By leveraging the AREG SDK’s service discovery and fault tolerance, the project provides a reliable and flexible solution for real-time data distribution in multi-process environments. This project is suited for scenarios requiring efficient, continuous data streams, demonstrating how publishers and subscribers interact smoothly in a distributed system.
+The **22_pubsub** project showcases a scalable implementation of the Pub/Sub model, supporting effective communication between distributed processes with **Object RPC** and **IPC**. By leveraging the AREG SDKï¿½s service discovery and fault tolerance, the project provides a reliable and flexible solution for real-time data distribution in multi-process environments. This project is suited for scenarios requiring efficient, continuous data streams, demonstrating how publishers and subscribers interact smoothly in a distributed system.

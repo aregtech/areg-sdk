@@ -266,7 +266,7 @@ macro_declare_executable(example main.cpp)
 For example, generating source files from `CoolServices.siml` and compiling a static library `coolservice` to link with `cool` application:
 
 ```cmake
-addServiceInterface(coolservice "" CoolService)
+addServiceInterface(coolservice "service/CoolService.siml")
 macro_declare_executable(cool coolservice main.cpp)
 ```
 

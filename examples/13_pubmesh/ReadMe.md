@@ -1,6 +1,6 @@
 # 13_pubmesh Project Overview
 
-The **13_pubmesh** project demonstrates the AREG Framework’s capability to manage a **meshed network** of **distributed services**, integrating both **Public** and **Local Services**. The project showcases how the framework efficiently connects **Service Providers** and **Service Consumers** to handle **inter-process communication (IPC)** using *Object Remote Procedure Call (Object RPC)*, enabling scalable and reliable communication across the network.
+The **13_pubmesh** project demonstrates the AREG Frameworkï¿½s capability to manage a **meshed network** of **distributed services**, integrating both **Public** and **Local Services**. The project showcases how the framework efficiently connects **Service Providers** and **Service Consumers** to handle **inter-process communication (IPC)** using *Object Remote Procedure Call (Object RPC)*, enabling scalable and reliable communication across the network.
 
 > [!IMPORTANT]
 > To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
@@ -15,7 +15,7 @@ The **13_pubmesh** project demonstrates the AREG Framework’s capability to manag
 ## Sub-Projects
 
 1. **13_generated**:
-   - This project contains code generated from the [LocalHelloWorld.siml](./res/LocalHelloWorld.siml), [PublicHelloWorld.siml](./res/PublicHelloWorld.siml), and [SystemShutdown.siml](./res/SystemShutdown.siml) Service Interface documents during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** communication across the service mesh.
+   - This project contains code generated from the [LocalHelloWorld.siml](./services/LocalHelloWorld.siml), [PublicHelloWorld.siml](./services/PublicHelloWorld.siml), and [SystemShutdown.siml](./services/SystemShutdown.siml) Service Interface documents during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** communication across the service mesh.
 
 2. **[13_common](./common/)**:
    - A static library that provides common objects and components shared by all sub-projects in this example, enabling code reuse and consistency across the mesh.

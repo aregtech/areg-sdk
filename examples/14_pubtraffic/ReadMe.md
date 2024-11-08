@@ -14,7 +14,7 @@ The **14_pubtraffic** project demonstrates how to dynamically create and manage 
 ## Sub-Projects
 
 1. **14_generated**:
-   - Contains codes, generated from the [SimpleTrafficLight.siml](./res/SimpleTrafficLight.siml) Service Interface document. The generated code automates **Object RPC** message creation and communication, enabling efficient interaction between service providers and consumers.
+   - Contains codes, generated from the [SimpleTrafficLight.siml](./services/SimpleTrafficLight.siml) Service Interface document. The generated code automates **Object RPC** message creation and communication, enabling efficient interaction between service providers and consumers.
 
 2. **[14_pubclient](./pubclient/)**:
    - A service consumer application that dynamically creates models during runtime. Multiple instances of this client can be launched, with each instance subscribing to different data sets via commands like `sn` (for nominal *South-North* direction data) or `ew` (for nominal *East-West* direction data).
@@ -24,7 +24,7 @@ The **14_pubtraffic** project demonstrates how to dynamically create and manage 
 
 ## Communication
 
-Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the system’s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
+Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the systemï¿½s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
 
 ## Key Features
 
@@ -36,8 +36,8 @@ Communication between the service provider and consumers is facilitated by **mcr
 
 - **Dynamic Runtime Model Creation**: This project is ideal for applications that require models or objects to be created dynamically during runtime, offering flexibility in service configuration and operation.
 - **Real-time Inter-Process Communication (IPC)**: Suitable for systems where real-time communication between distributed services is essential, leveraging **Object RPC** and **IPC** to ensure reliable message exchange.
-- **Custom Event-Driven Systems**: Applications that rely on custom event handling can benefit from the project’s approach to managing user-triggered events in a multithreaded environment.
+- **Custom Event-Driven Systems**: Applications that rely on custom event handling can benefit from the projectï¿½s approach to managing user-triggered events in a multithreaded environment.
 
 ## Conclusion
 
-The **14_pubtraffic** project highlights the AREG SDK’s capabilities in managing **dynamic models** and **custom events** within a **multithreaded** and **distributed system**. Through the use of **Object RPC** and **IPC**, the project demonstrates how to achieve real-time communication and event handling, making it a valuable example for developers looking to build scalable, event-driven applications.
+The **14_pubtraffic** project highlights the AREG SDKï¿½s capabilities in managing **dynamic models** and **custom events** within a **multithreaded** and **distributed system**. Through the use of **Object RPC** and **IPC**, the project demonstrates how to achieve real-time communication and event handling, making it a valuable example for developers looking to build scalable, event-driven applications.

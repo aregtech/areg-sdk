@@ -20,7 +20,7 @@
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/services/ConnectionService.hpp"
 #include "common/NECommon.hpp"
-#include "generate/examples/17_winchat/NEConnectionManager.hpp"
+#include "examples/17_winchat/services/NEConnectionManager.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _DEBUG

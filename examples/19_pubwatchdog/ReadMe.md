@@ -14,7 +14,7 @@ The **19_pubwatchdog** project demonstrates the use of a **Watchdog** in an envi
 ## Sub-Projects
 
 1. **19_generated**:
-   - Contains code generated from the [HelloWatchdog.siml](./res/HelloWatchdog.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. This generated code defines the necessary infrastructure for the Watchdog service and automates **Object RPC** messaging.
+   - Contains code generated from the [HelloWatchdog.siml](./services/HelloWatchdog.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. This generated code defines the necessary infrastructure for the Watchdog service and automates **Object RPC** messaging.
 
 2. **[19_pubclient](./pubclient/)**:
    - A *Public Service Consumer* application that connects to the *Public Service Provider*. It sends requests to simulate delayed responses, triggering the watchdog's timeout mechanism.
@@ -29,7 +29,7 @@ The **19_pubwatchdog** project demonstrates the use of a **Watchdog** in an envi
 
 ## Communication
 
-Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the system’s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
+Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the systemï¿½s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
 
 ## Key Features
 

@@ -6,7 +6,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/00_helloservice/HelloServiceClientBase.hpp"
+#include "examples/00_helloservice/services/HelloServiceClientBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ClientComponent declaration
