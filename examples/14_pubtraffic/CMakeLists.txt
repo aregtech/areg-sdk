@@ -1,6 +1,6 @@
 
 #add service interface
-addServiceInterface(14_generated res SimpleTrafficLight)
+addServiceInterface(14_generated examples/14_pubtraffic/services/SimpleTrafficLight.siml)
 
 # add projects
 macro_declare_executable(14_pubclient   14_generated

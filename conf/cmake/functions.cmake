@@ -551,13 +551,14 @@ endfunction(addSharedLib)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_add_service_interface
-# Purpose ....: Generates and adds service-specific files to a static library
-#               based on a given Service Interface document ('*.siml').
-# Parameters .: ${lib_name}         -- Name of the static library.
-#               ${interface_doc}    -- Full path to the Service Interface document file ('.siml').
-#               ${codegen_root}     -- Root directory for file generation.
-#               ${output_path}      -- Relative path for generated files.
-#               ${codegen_tool}     -- Full path to the code generator tool.
+# Purpose ....: The macro_add_service_interface function automates the generation and 
+#               inclusion of service-specific source and header files for a static library,
+#               based on a provided Service Interface document (*.siml).
+# Parameters .: ${lib_name}         -- The name of the static library where generated files will be included.
+#               ${interface_doc}    -- Full path to the Service Interface document file (.siml), which defines the service interface details.
+#               ${codegen_root}     -- Root directory where generated files will be stored.
+#               ${output_path}      -- Relative path from ${codegen_root} to the directory where generated files will be placed.
+#               ${codegen_tool}     -- Full path to the code generation tool (codegen.jar) used to generate the necessary source and header files.
 # 
 # Usage ......: macro_add_service_interface(<name-lib> <full-path-siml> <root-gen> <relative-path> <codegen-tool>)
 # Example ....: 
@@ -571,17 +572,23 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
         return()
     endif()
 
-    # Run the code generator tool
-    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --root=${codegen_root} --doc=${interface_doc} --target=${output_path})
+    if (NOT EXISTS "${interface_doc}")
+        message(FATAL_ERROR "AREG Setup: The Service Interface file \'${interface_doc}\' does not exist. Cannot generate files.")
+        return()
+    endif()
 
-    # Set path for generated files
-    set(_generate "${codegen_root}/${output_path}")
-    set(_interface_name "")
-    cmake_path(GET interface_doc STEM _interface_name)
+    set(_si_doc "${interface_doc}")
+    cmake_path(GET _si_doc STEM _interface_name)
     if ("${_interface_name}" STREQUAL "")
         message(FATAL_ERROR "AREG Setup: The path \'${interface_doc}\' has no file name. Cannot generate Service Interface files.")
         return()
     endif()
+
+    # Run the code generator tool
+    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --doc=${interface_doc} --root=${codegen_root} --target=${output_path})
+
+    # Set path for generated files
+    set(_generate "${codegen_root}/${output_path}")
     
     # List of generated source and header files
     list(APPEND _sources
@@ -613,59 +620,52 @@ endmacro(macro_add_service_interface)
 
 # ---------------------------------------------------------------------------
 # Function ...: addServiceInterfaceEx
-# Purpose ....: Wrapper for macro_add_service_interface, assuming that the code generator
-#               tool is in the 'tools/codegen.jar', the root directory for file generation
-#               is ${AREG_BUILD_ROOT} and the code is generated in the "${AREG_GENERATE}/${relative_path}". 
-#               Generates code and includes files for a Service Interface document (.siml) in a static library.
-# Parameters .: ${lib_name}       -- Static library name.
-#               ${source_root}    -- Source root directory.
-#               ${relative_path}  -- Relative path to the Service Interface file.
-#               ${sub_dir}        -- Optional sub-directory within 'relative_path'. Can be empty string.
-#               ${interface_name} -- Service Interface name (excluding `.siml` extension).
-# Usage ......: addServiceInterfaceEx(<library-name> <source-root> <relative-path> <sub-dir-opt> <service-interface-name>)
-# Example ....: addServiceInterfaceEx("fun_library" "/home/dev/project/fun/src" "my/service/interfaces" "" FunInterface)
+# Purpose ....: The addServiceInterfaceEx function acts as a wrapper for
+#               macro_add_service_interface, facilitating the generation of code
+#               and header files for a Service Interface document (.siml file)
+#               within a specified static library. This function assumes the
+#               code generator tool is located at ${AREG_SDK_TOOLS}/codegen.jar.
+#               The generated files are placed within the ${AREG_GENERATE_DIR},
+#               with a subdirectory structure specified by ${generate_path}.
+# Parameters .: ${lib_name}         -- The name of the static library to be created for the generated Service Interface code.
+#               ${source_root}      -- The root directory containing the project’s source files.
+#               ${siml_path}        -- Path to the Service Interface document file (.siml), relative to the specified ${source_root}.
+#               ${generate_path}    -- Subdirectory path within ${AREG_GENERATE_DIR} where the generated files will be stored.
+# Usage ......: addServiceInterfaceEx(<library-name> <source-root> <service-interface-relative-path> <relative-path-to-generate-codes>)
+# Example ....: addServiceInterfaceEx(fun_library "/home/dev/project/fun/src" "fun/service/interfaces/FunService.siml" "fun/service/interfaces")
 # ---------------------------------------------------------------------------
-function(addServiceInterfaceEx lib_name source_root relative_path sub_dir interface_name)
-
-    macro_normalize_path(codegen_root   "${AREG_BUILD_ROOT}")
-    macro_normalize_path(output_path    "${AREG_GENERATE}/${relative_path}")
-    macro_normalize_path(codegen_tool   "${AREG_SDK_TOOLS}/codegen.jar")
-
-    if (sub_dir STREQUAL "")
-        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${interface_name}.siml")
-    else()
-        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${sub_dir}/${interface_name}.siml")
+function(addServiceInterfaceEx lib_name source_root siml_path generate_path)
+    if ("${generate_path}" STREQUAL "")
+        cmake_path(GET siml_path PARENT_PATH generate_path)
     endif()
 
+    macro_normalize_path(_interface_doc  "${source_root}/${siml_path}")
+    macro_normalize_path(_codegen_root   "${AREG_GENERATE_DIR}")
+    macro_normalize_path(_output_path    "${generate_path}")
+    macro_normalize_path(_codegen_tool   "${AREG_SDK_TOOLS}/codegen.jar")
+
     macro_add_service_interface(${lib_name}
-                                "${interface_doc}"
-                                "${codegen_root}"
-                                "${output_path}"
-                                "${codegen_tool}")
+                                "${_interface_doc}"
+                                "${_codegen_root}"
+                                "${_output_path}"
+                                "${_codegen_tool}")
 endfunction(addServiceInterfaceEx)
 
 # ---------------------------------------------------------------------------
 # Function ...: addServiceInterface
-# Purpose ....: Wrapper for addServiceInterfaceEx, with the source root assumed
-#               to be ${CMAKE_SOURCE_DIR} and the Service Interface document is located
-#               relative to ${CMAKE_CURRENT_LIST_DIR}.
-# Parameters .: ${lib_name}       -- Name of the static library.
-#               ${sub_dir}        -- Optional sub-directory, where the Service Interface document is located. Can be empty.
-#               ${interface_name} -- Service Interface name (excluding '.siml' extension).
-# Usage ......: addServiceInterface(<library-name> <sub-dir-opt> <service-interface-name>)
+# Purpose ....: The addServiceInterface function provides a simplified wrapper for 
+#               addServiceInterfaceEx, automatically setting the source root to
+#               ${PROJECT_SOURCE_DIR}. It assumes that the Service Interface 
+#               document (.siml file) is located relative to ${PROJECT_SOURCE_DIR},
+#               and the generated source files are placed in ${AREG_GENERATE_DIR},
+#               with a directory structure mirroring the parent path of ${siml_path}.
+# Parameters .: ${lib_name}     -- The name of the static library to be created for the Service Interface.
+#               ${siml_path}    -- The path to the Service Interface document file (.siml), relative to PROJECT_SOURCE_DIR.
+# Usage ......: addServiceInterface(<library-name> <service-interface-file-relative-path>)
+# Example ....: addServiceInterface(fun_library fun/service/interface/FunService.siml)
 # ---------------------------------------------------------------------------
-function(addServiceInterface lib_name sub_dir interface_name)
-    set(_cur_dir ${CMAKE_CURRENT_LIST_DIR})
-    set(_src_dir)
-    string(FIND "${_cur_dir}" "${AREG_EXAMPLES}" _pos)
-    if (${_pos} EQUAL 0)
-        set(_src_dir "${AREG_SDK_ROOT}")
-    else()
-        set(_src_dir "${CMAKE_SOURCE_DIR}")
-    endif()
-
-    file(RELATIVE_PATH _relative_path "${_src_dir}" "${_cur_dir}")
-    addServiceInterfaceEx(${lib_name} "${_src_dir}" "${_relative_path}" "${sub_dir}" ${interface_name})
+function(addServiceInterface lib_name siml_path)
+    addServiceInterfaceEx(${lib_name} "${PROJECT_SOURCE_DIR}" "${siml_path}" "")
 endfunction(addServiceInterface)
 
 # ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 #pragma once
 
 /************************************************************************
- * \file            res/NECommon.hpp
+ * \file            services/NECommon.hpp
  * \ingroup         SimpleTrafficLight Service Interface
  * \brief           SimpleTrafficLight Service Interface common constants.
  ************************************************************************/

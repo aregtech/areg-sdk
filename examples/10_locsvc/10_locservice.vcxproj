@@ -48,7 +48,7 @@
     <ClInclude Include="locservice\src\ServicingComponent.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\HelloWorld.siml" />
+    <None Include="services\HelloWorld.siml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

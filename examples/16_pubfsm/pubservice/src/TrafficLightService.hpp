@@ -14,8 +14,8 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/16_pubfsm/PowerManagerStub.hpp"
-#include "generate/examples/16_pubfsm/TrafficControllerStub.hpp"
+#include "examples/16_pubfsm/services/PowerManagerStub.hpp"
+#include "examples/16_pubfsm/services/TrafficControllerStub.hpp"
 #include "pubservice/src/IETrafficLightActionHandler.hpp"
 
 #include "pubservice/src/PowerControllerClient.hpp"

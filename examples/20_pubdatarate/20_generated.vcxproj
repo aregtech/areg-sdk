@@ -42,21 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\private\NELargeData.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\services\private\LargeDataClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\services\private\LargeDataEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\services\private\LargeDataProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\services\private\LargeDataStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\20_pubdatarate\services\private\NELargeData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\LargeDataClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\LargeDataStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\NELargeData.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\private\LargeDataProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\services\LargeDataClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\services\LargeDataStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\services\NELargeData.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\services\private\LargeDataEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\20_pubdatarate\services\private\LargeDataProxy.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\LargeData.siml" />
+    <None Include="services\LargeData.siml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

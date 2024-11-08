@@ -42,21 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\HelloWorld.siml" />
+    <None Include="services\HelloWorld.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\NEHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\services\private\HelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\services\private\HelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\services\private\HelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\services\private\HelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\services\private\NEHelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\HelloWorldClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\HelloWorldStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\NEHelloWorld.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\services\HelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\services\HelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\services\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\services\private\HelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\services\private\HelloWorldProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

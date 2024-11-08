@@ -13,7 +13,7 @@ The **20_pubdatarate** project demonstrates the network communication data rates
 ## Sub-Projects
 
 1. **20_generated**:
-   - Contains codes generated from the [LargeData.siml](./res/LargeData.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** for message creation and dispatching, which is crucial for efficient **Inter-Process Communication (IPC)** between service components.
+   - Contains codes generated from the [LargeData.siml](./services/LargeData.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** for message creation and dispatching, which is crucial for efficient **Inter-Process Communication (IPC)** between service components.
 
 2. **[20_pubservice](./pubservice/)**:
    - This sub-project is a *Public Service* application that generates and sends bitmap image data to connected consumers. It dynamically responds to user input to create gray bitmap images, which are transmitted to service consumers for processing. The data rate for these transmissions is displayed in the console for real-time performance monitoring.

@@ -42,21 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\HelloUnblock.siml" />
+    <None Include="services\HelloUnblock.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\NEHelloUnblock.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\services\private\HelloUnblockClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\services\private\HelloUnblockEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\services\private\HelloUnblockProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\services\private\HelloUnblockStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\services\private\NEHelloUnblock.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\HelloUnblockClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\HelloUnblockStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\NEHelloUnblock.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\services\HelloUnblockClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\services\HelloUnblockStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\services\NEHelloUnblock.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\services\private\HelloUnblockEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\services\private\HelloUnblockProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

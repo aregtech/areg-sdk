@@ -13,7 +13,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/IETimerConsumer.hpp"
-#include "generate/examples/21_pubunblock/HelloUnblockStub.hpp"
+#include "examples/21_pubunblock/services/HelloUnblockStub.hpp"
 
 #include "areg/base/TEStack.hpp"
 #include "areg/component/Timer.hpp"

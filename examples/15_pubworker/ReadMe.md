@@ -14,13 +14,13 @@ The **15_pubworker** project demonstrates the use of **Worker Threads** to perfo
 ## Project Structure
 
 1. **15_generated**:
-   - This library contains code generated from the [PatientInformation.siml](./res/PatientInformation.siml) Service Interface document during CMake configuration or as part of a pre-build action in Visual Studio. The generated code simplifies the implementation of **Object RPC**, automating message creation and dispatch for inter-process communication.
+   - This library contains code generated from the [PatientInformation.siml](./services/PatientInformation.siml) Service Interface document during CMake configuration or as part of a pre-build action in Visual Studio. The generated code simplifies the implementation of **Object RPC**, automating message creation and dispatch for inter-process communication.
 
 2. **[15_pubclient](./pubclient/)**:
    - This sub-project includes a **Service Consumer** and a **Worker Thread**. The Worker Thread simulates an output device, performing tasks in the background while the service consumer interacts with the public service provider.
 
 3. **[15_pubservice](./pubservice/)**:
-   - This sub-project hosts a **Public Service Provider** along with a **Worker Thread** that processes user inputs from the console and updates the service’s attributes. Both the service and worker thread are part of the static model, which is initialized at startup and unloaded at exit.
+   - This sub-project hosts a **Public Service Provider** along with a **Worker Thread** that processes user inputs from the console and updates the serviceâ€™s attributes. Both the service and worker thread are part of the static model, which is initialized at startup and unloaded at exit.
 
 ## Communication
 

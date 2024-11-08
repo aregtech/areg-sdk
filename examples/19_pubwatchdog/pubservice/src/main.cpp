@@ -12,7 +12,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generate/examples/19_pubwatchdog/NEHelloWatchdog.hpp"
+#include "examples/19_pubwatchdog/services/NEHelloWatchdog.hpp"
 #include "common/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 

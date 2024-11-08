@@ -13,7 +13,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/14_pubtraffic/SimpleTrafficLightClientBase.hpp"
+#include "examples/14_pubtraffic/services/SimpleTrafficLightClientBase.hpp"
 
 #include "common/NECommon.hpp"
 

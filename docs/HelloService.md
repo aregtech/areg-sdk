@@ -100,7 +100,7 @@ To generate base files for the `HelloService` service, follow these steps:
 1. Open the command line terminal in the `helloservice` directory.
 2. Run the following command:
 ```bash
-java -jar ../../tools/codegen.jar --root=./ --doc=res/HelloService.siml --target=generated/src
+java -jar ../../tools/codegen.jar --root=./ --doc=services/HelloService.siml --target=generated/src
 ```
 
 This will run the `codegen.jar` and generate service provider and service consumer base files for the `HelloService` located in the `generated/src` subdirectory inside `helloservice`, and you will get the following generated codes:
@@ -542,7 +542,7 @@ After successfully compiling **serviceproc** and **clientproc**, you can now sta
 - The order in which the processes are started is not important.
 - Only one instance of **serviceproc** should be started, as we have created a fixed-name _Public_ service.
 - Multiple instances of **clientproc** can be started simultaneously, as we generate a unique name for each service consumer.
-- If you configure [_areg.init_](../framework/mcrouter/resources/areg.init) properly and specify the _IP address_ of **mcrouter**, these processes can also run on remote machines.
+- If you configure [_areg.init_](../framework/areg/resources/areg.init) properly and specify the _IP address_ of **mcrouter**, these processes can also run on remote machines.
 - Even if **serviceproc** and **clientproc** are compiled for different platforms, they can still communicate by establishing a remote connection with **mcrouter**.
 
 By following these guidelines, you can easily and effectively develop multithreading and multiprocessing applications while ensuring seamless communication between them. It is possible to create multiple services and distribute them throughout the network, allowing connected Things to serve as lightweight service providers and consumers. Computing power can be easily distributed among processes and machines, and applications can be developed for multiple platforms, even mix the platforms. Creating simulation applications is also simplified by focusing on the Service Interface API. Additionally, you have the flexibility to decide whether to provide services as _Local_ or _Public_.

@@ -1,7 +1,7 @@
 #pragma once
 
 /************************************************************************
- * \file            res/NECommon.hpp
+ * \file            services/NECommon.hpp
  * \ingroup         Patient monitoring Service
  * \brief           Common constants and service names for Patient monitoring Service.
  ************************************************************************/

@@ -1,5 +1,5 @@
 # add service interface
-addServiceInterface(18_generated res HelloWatchdog)
+addServiceInterface(18_generated examples/18_locwatchdog/services/HelloWatchdog.siml)
 
 # add project
 macro_declare_executable(18_locservice   18_generated
