@@ -36,7 +36,7 @@ Using **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Proces
 
 - **Hybrid Communication**: The Pub/Sub system supports both local and remote subscribers, allowing any process to function as both a **Publisher** and **Subscriber** simultaneously.
 - **Network Resilience**: All **Publishers** and **Subscribers** within the same process receive updates regardless of network connectivity, ensuring uninterrupted service.
-- **Immediate Data Updates**: Subscribers automatically receive the latest data upon connecting, ensuring they�re always up-to-date even if no recent updates have been published.
+- **Immediate Data Updates**: Subscribers automatically receive the latest data upon connecting, ensuring they’re always up-to-date even if no recent updates have been published.
 - **Dynamic Subscription and Publishing**: Both *23_pubsubctrl* and *23_pubsubdyn* can seamlessly switch between publisher and subscriber roles, making the system highly adaptable in dynamic, multi-process environments.
 - **Fault-Tolerant Communication**: With `mcrouter` and the AREG SDK, the system remains fault-tolerant, supporting automatic service discovery and recovery, ensuring reliable Pub/Sub functionality even during failures.
 

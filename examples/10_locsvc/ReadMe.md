@@ -1,6 +1,6 @@
 # 10_locsvc Project Overview
 
-The **10_locsvc** project demonstrates creating and managing a **Local Service** within the AREG Framework, using the Service Interface document and AREG SDK�s code generator. This example shows how to build a service provider and consumer that communicate asynchronously within a single, multithreaded process, without external visibility.
+The **10_locsvc** project demonstrates creating and managing a **Local Service** within the AREG Framework, using the Service Interface document and AREG SDK’s code generator. This example shows how to build a service provider and consumer that communicate asynchronously within a single, multithreaded process, without external visibility.
 
 The **Local Service** interface is defined in the [HelloWorld.siml](./services/HelloWorld.siml) file, and the corresponding source code is automatically generated during the build process via `codegen.jar`.
 

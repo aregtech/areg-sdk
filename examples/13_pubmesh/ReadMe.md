@@ -1,6 +1,6 @@
 # 13_pubmesh Project Overview
 
-The **13_pubmesh** project demonstrates the AREG Framework�s capability to manage a **meshed network** of **distributed services**, integrating both **Public** and **Local Services**. The project showcases how the framework efficiently connects **Service Providers** and **Service Consumers** to handle **inter-process communication (IPC)** using *Object Remote Procedure Call (Object RPC)*, enabling scalable and reliable communication across the network.
+The **13_pubmesh** project demonstrates the AREG Framework’s capability to manage a **meshed network** of **distributed services**, integrating both **Public** and **Local Services**. The project showcases how the framework efficiently connects **Service Providers** and **Service Consumers** to handle **inter-process communication (IPC)** using *Object Remote Procedure Call (Object RPC)*, enabling scalable and reliable communication across the network.
 
 > [!IMPORTANT]
 > To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.

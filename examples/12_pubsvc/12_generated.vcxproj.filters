@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="services\HelloWorld.siml" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\services\private\HelloWorldClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -50,5 +47,10 @@
     <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\services\NEHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="services\HelloWorld.siml">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
