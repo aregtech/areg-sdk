@@ -311,7 +311,7 @@ NESocket::UserData& NESocket::UserData::operator=(const NESocket::UserData& sour
     return (*this);
 }
 
-NESocket::UserData& NESocket::UserData::operator=(NESocket::UserData&& source)
+NESocket::UserData& NESocket::UserData::operator=(NESocket::UserData&& source) noexcept
 {
     mUser = std::move(source.mUser);
     mPassword = std::move(source.mPassword);

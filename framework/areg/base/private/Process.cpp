@@ -62,11 +62,11 @@ void Process::_initPaths( const char * fullPath )
 
 unsigned int Process::getBitness(void) const
 {
-    if (mProcEnv == eProcEnv::ProcEnv32Bits)
+    if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::eProcEnv::ProcEnv32Bits)) != 0)
     {
         return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness32);
     }
-    else if (mProcEnv == eProcEnv::ProcEnv64Bits)
+    else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::eProcEnv::ProcEnv64Bits)) != 0)
     {
         return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness64);
     }
