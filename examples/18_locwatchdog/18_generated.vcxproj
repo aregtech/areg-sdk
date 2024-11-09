@@ -4,7 +4,7 @@
     <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{38A88D1E-B86C-48E2-9B9E-68F672388734}</ProjectGuid>
@@ -17,28 +17,28 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="res\HelloWatchdog.siml" />
+    <None Include="services\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\NEHelloWatchdog.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\services\private\HelloWatchdogClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\services\private\HelloWatchdogEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\services\private\HelloWatchdogProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\services\private\HelloWatchdogStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\services\private\NEHelloWatchdog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\HelloWatchdogClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\HelloWatchdogStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\NEHelloWatchdog.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\services\HelloWatchdogClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\services\HelloWatchdogStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\services\NEHelloWatchdog.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\services\private\HelloWatchdogEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\services\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>

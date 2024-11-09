@@ -14,7 +14,7 @@
 #include "areg/base/IEThreadConsumer.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/Component.hpp"
-#include "generate/examples/22_pubsub/PubSubStub.hpp"
+#include "examples/22_pubsub/services/PubSubStub.hpp"
 
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"

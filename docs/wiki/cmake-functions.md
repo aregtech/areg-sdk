@@ -6,34 +6,34 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
 
 - [Introduction](#introduction)
 - [CMake Macro Overview](#cmake-macro-overview)
-  - [`macro_check_fix_areg_cxx_standard`](#macro_check_fix_areg_cxx_standard)
-  - [`macro_normalize_path`](#macro_normalize_path)
-  - [`macro_add_service_interface`](#macro_add_service_interface)
-  - [`macro_find_package`](#macro_find_package)
-  - [`macro_create_option`](#macro_create_option)
-  - [`macro_add_source`](#macro_add_source)
-  - [`macro_parse_arguments`](#macro_parse_arguments)
-  - [`macro_declare_static_library`](#macro_declare_static_library)
-  - [`macro_declare_shared_library`](#macro_declare_shared_library)
-  - [`macro_declare_executable`](#macro_declare_executable)
-  - [`macro_setup_compilers_data`](#macro_setup_compilers_data)
-  - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
+   - [`macro_check_fix_areg_cxx_standard`](#macro_check_fix_areg_cxx_standard)
+   - [`macro_normalize_path`](#macro_normalize_path)
+   - [`macro_add_service_interface`](#macro_add_service_interface)
+   - [`macro_find_package`](#macro_find_package)
+   - [`macro_create_option`](#macro_create_option)
+   - [`macro_add_source`](#macro_add_source)
+   - [`macro_parse_arguments`](#macro_parse_arguments)
+   - [`macro_declare_static_library`](#macro_declare_static_library)
+   - [`macro_declare_shared_library`](#macro_declare_shared_library)
+   - [`macro_declare_executable`](#macro_declare_executable)
+   - [`macro_setup_compilers_data`](#macro_setup_compilers_data)
+   - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
 - [CMake Functions Overview](#cmake-functions-overview)
-  - [`setAppOptions`](#setappoptions)
-  - [`addExecutableEx`](#addexecutableex)
-  - [`addExecutable`](#addexecutable)
-  - [`setStaticLibOptions`](#setstaticliboptions)
-  - [`addStaticLibEx`](#addstaticlibex)
-  - [`addStaticLib`](#addstaticlib)
-  - [`addStaticLibEx_C`](#addstaticlibex_c)
-  - [`addStaticLib_C`](#addstaticlib_c)
-  - [`setSharedLibOptions`](#setsharedliboptions)
-  - [`addSharedLibEx`](#addsharedlibex)
-  - [`addSharedLib`](#addsharedlib)
-  - [`addServiceInterfaceEx`](#addserviceinterfaceex)
-  - [`addServiceInterface`](#addserviceinterface)
-  - [`removeEmptyDirs`](#removeemptydirs)
-  - [`printAregConfigStatus`](#printaregconfigstatus)
+   - [`setAppOptions`](#setappoptions)
+   - [`addExecutableEx`](#addexecutableex)
+   - [`addExecutable`](#addexecutable)
+   - [`setStaticLibOptions`](#setstaticliboptions)
+   - [`addStaticLibEx`](#addstaticlibex)
+   - [`addStaticLib`](#addstaticlib)
+   - [`addStaticLibEx_C`](#addstaticlibex_c)
+   - [`addStaticLib_C`](#addstaticlib_c)
+   - [`setSharedLibOptions`](#setsharedliboptions)
+   - [`addSharedLibEx`](#addsharedlibex)
+   - [`addSharedLib`](#addsharedlib)
+   - [`addServiceInterfaceEx`](#addserviceinterfaceex)
+   - [`addServiceInterface`](#addserviceinterface)
+   - [`removeEmptyDirs`](#removeemptydirs)
+   - [`printAregConfigStatus`](#printaregconfigstatus)
 
 ---
 
@@ -64,15 +64,15 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Usage**: `macro_normalize_path(<out-var> <windows-path>)`
 
 ### `macro_add_service_interface`
-- **Syntax**: `macro_add_service_interface(interface_doc codegen_root output_path codegen_tool)`
+- **Syntax**: `macro_add_service_interface(lib_name interface_doc codegen_root output_path codegen_tool)`
 - **Purpose**: Generates and adds service-specific files to a static library based on a given Service Interface document (`*.siml`).
 - **Parameters**:
   - `lib_name` [in]: Name of the static library.
   - `interface_doc` [in]: Full path to the Service Interface document file (`.siml`).
   - `codegen_root` [in]: Root directory for file generation.
-  - `output_path` [in]: Relative path for generated files.
-  - `codegen_tool` [in]: Full path to the code generator tool.
-- **Usage**: `macro_add_service_interface(<name-lib> <full-path-siml> <root-gen> <relative-path> <codegen-tool>)`
+  - `output_path` [in]: Relative path from `${codegen_root}` to the directory where generated files will be placed.
+  - `codegen_tool` [in]: Full path to the code generation tool (`codegen.jar`) used to generate the necessary source and header files.
+- **Usage**: `macro_add_service_interface(<library-name> <full-path-to-siml> <codegen-root> <relative-output-path> <codegen-tool-path>)`
 - **Example**:
    ```cmkae
    macro_add_service_interface(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
@@ -308,28 +308,30 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Usage**: `addSharedLib(<target-name> <source-list>)`
 
 ### `addServiceInterfaceEx`
-- **Syntax**: `addServiceInterfaceEx(lib_name source_root relative_path sub_dir interface_name)`
-- **Purpose**: Wrapper for [`macro_add_service_interface`](#macro_add_service_interface), assuming that the root directory for code generation is `AREG_BUILD_ROOT` and generated files are located in the `${AREG_GENERATE}/${relative_path}`. Generates code and includes files for a Service Interface document (`.siml`) in a static library.
+- **Syntax**: `addServiceInterfaceEx(lib_name source_root siml_path generate_path)`
+- **Purpose**: A wrapper for `macro_add_service_interface`, facilitating the generation of code and header files for a Service Interface document (`.siml` file) within a specified static library. This function assumes the code generator tool is located at `${AREG_SDK_TOOLS}/codegen.jar`. The generated files are placed within the `${AREG_GENERATE_DIR}`, with a subdirectory structure specified by `${generate_path}`.
 - **Parameters**:
-  - `lib_name` [in]: Static library name.
-  - `source_root` [in]: Source root directory.
-  - `relative_path` [in]: Relative path to the Service Interface file.
-  - `sub_dir` [in]: Optional sub-directory within `relative_path`.
-  - `interface_name` [in]: Service Interface name (excluding `.siml` extension).
-- **Usage**: `addServiceInterfaceEx(<library-name> <source-root> <relative-path> <sub-dir-opt> <service-interface-name>)`
+  - `lib_name` [in]: The name of the static library to be created for the generated Service Interface code.
+  - `source_root` [in]: The root directory containing the project’s source files.
+  - `siml_path` [in]: Path to the Service Interface document file (.siml), relative to the specified `${source_root}`.
+  - `generate_path` [in]: Subdirectory path within `${AREG_GENERATE_DIR}` where the generated files will be stored.
+- **Usage**: `addServiceInterfaceEx(<library-name> <source-root> <service-interface-relative-path> <relative-path-to-generate-codes>)`
 - **Example**:
    ```cmake
-   addServiceInterfaceEx("fun_library" "/home/dev/project/fun/src" "my/service/interfaces" "" FunInterface)
+   addServiceInterfaceEx(fun_library "/home/dev/project/fun/src" "fun/service/interfaces/FunService.siml" "fun/service/interfaces")
    ```
 
 ### `addServiceInterface`
-- **Syntax**: `addServiceInterface(lib_name sub_dir interface_name)`
-- **Purpose**: A wrapper for [`addServiceInterfaceEx`](#addserviceinterfaceex), assuming the source root as `CMAKE_SOURCE_DIR` and the Service Interface document is located relative to+ `CMAKE_CURRENT_LIST_DIR`.
+- **Syntax**: `addServiceInterface(lib_name siml_path)`
+- **Purpose**: A simplified wrapper for [`addServiceInterfaceEx`](#addserviceinterfaceex), automatically setting the source root to `PROJECT_SOURCE_DIR`. It assumes that the Service Interface document (.siml file) is located relative to `PROJECT_SOURCE_DIR`, and the generated source files are placed in `AREG_GENERATE_DIR`, with a directory structure mirroring the parent path of `siml_path`.
 - **Parameters**:
-  - `lib_name` [in]: Static library name.
-  - `sub_dir` [in]: Optional sub-directory, where the Service Interface document is located. Can be empty.
-  - `interface_name` [in]: Service Interface name (excluding `.siml` extension).
-- **Usage**: `addServiceInterface(<library-name> <sub-dir-opt> <service-interface-name>)`
+  - `lib_name` [in]: The name of the static library to be created for the Service Interface.
+  - `siml_path` [in]: The path to the Service Interface document file (.siml), relative to `${PROJECT_SOURCE_DIR}`.
+- **Usage**: `addServiceInterface(<library-name> <service-interface-file-relative-path>)`
+- **Example**:
+  ```cmake
+  addServiceInterface(fun_library fun/service/interface/FunService.siml)
+  ```
 
 ### `removeEmptyDirs`
 - **Syntax**: `removeEmptyDirs(dir_name)`

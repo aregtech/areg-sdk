@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/14_pubtraffic/SimpleTrafficLightStub.hpp"
+#include "examples/14_pubtraffic/services/SimpleTrafficLightStub.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/TEEvent.hpp"
 

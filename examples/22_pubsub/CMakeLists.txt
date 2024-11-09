@@ -1,5 +1,5 @@
 # add service interface
-addServiceInterface(22_generated res PubSub)
+addServiceInterface(22_generated examples/22_pubsub/services/PubSub.siml)
 
 # add projects
 macro_declare_executable(22_publisher   22_generated

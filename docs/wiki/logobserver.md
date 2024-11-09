@@ -1,6 +1,6 @@
 # AREG SDK Log Observer Application
 
-The **AREG SDK Log Observer** is a console tool designed for real-time log monitoring, data management, and dynamic control over log entries received from multiple applications distributed in the network. Acting as a client to the [Log Collector](./logger.md), the Log Observer allows users to save logs to text files and/or SQLite databases while dynamically adjusting scope activation and filtering log priorities during runtime.
+The **AREG SDK Log Observer** is a console tool designed for real-time log monitoring, data management, and dynamic control over log entries received from multiple applications distributed in the network. Acting as a client to the [Log Collector](./logcollector.md), the Log Observer allows users to save logs to text files and/or SQLite databases while dynamically adjusting scope activation and filtering log priorities during runtime.
 
 ## Table of Contents
 1. [General Information](#general-information)
@@ -13,7 +13,7 @@ The **AREG SDK Log Observer** is a console tool designed for real-time log monit
 
 ## General Information
 
-The AREG SDK Log Observer functions as a client application for the [Log Collector](./logger.md) service, seamlessly integrating within AREG SDK's logging ecosystem. It enables centralized log storage in plain text and/or SQLite databases, providing extensive analysis capabilities for logs gathered from multiple applications distributed in the network. Through bi-directional communication with logging sources, the Log Observer lets users adjust scope activation and message priorities during runtime to optimize network traffic, ensuring only relevant log data is captured for analysis.
+The AREG SDK Log Observer functions as a client application for the [Log Collector](./logcollector.md) service, seamlessly integrating within AREG SDK's logging ecosystem. It enables centralized log storage in plain text and/or SQLite databases, providing extensive analysis capabilities for logs gathered from multiple applications distributed in the network. Through bi-directional communication with logging sources, the Log Observer lets users adjust scope activation and message priorities during runtime to optimize network traffic, ensuring only relevant log data is captured for analysis.
 
 ---
 

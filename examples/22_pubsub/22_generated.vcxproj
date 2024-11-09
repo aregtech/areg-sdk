@@ -4,7 +4,7 @@
     <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}</ProjectGuid>
@@ -17,7 +17,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -42,21 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\PubSub.siml" />
+    <None Include="services\PubSub.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\private\NEPubSub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\private\PubSubClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\private\PubSubEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\private\PubSubProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\private\PubSubStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\services\private\NEPubSub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\services\private\PubSubClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\services\private\PubSubEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\services\private\PubSubProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubsub\services\private\PubSubStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\NEPubSub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\private\PubSubEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\private\PubSubProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\PubSubClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\PubSubStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\services\private\PubSubEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\services\private\PubSubProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\services\NEPubSub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\services\PubSubClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubsub\services\PubSubStub.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

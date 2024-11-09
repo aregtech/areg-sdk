@@ -4,7 +4,7 @@
     <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D6A76B16-C1F9-4FCC-B625-74471FA47BD6}</ProjectGuid>
@@ -17,7 +17,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -42,21 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\PubSubMix.siml" />
+    <None Include="services\PubSubMix.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\private\NEPubSubMix.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\private\PubSubMixClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\private\PubSubMixEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\private\PubSubMixProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\private\PubSubMixStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\services\private\NEPubSubMix.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\services\private\PubSubMixClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\services\private\PubSubMixEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\services\private\PubSubMixProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubsubmix\services\private\PubSubMixStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\NEPubSubMix.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\private\PubSubMixEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\private\PubSubMixProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\PubSubMixClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\PubSubMixStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\services\private\PubSubMixEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\services\private\PubSubMixProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\services\NEPubSubMix.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\services\PubSubMixClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubsubmix\services\PubSubMixStub.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

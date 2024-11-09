@@ -24,7 +24,7 @@ $ java -jar <areg-sdk-root>/tools/codegen.jar --root=<project_root> --doc=<relat
 
 Where:
 - `<project_root>` if the path of your project, for example `~/aregtech/areg-sdk/examples`;
-- `<relative_path_to_siml>` the service interface prototype file path relative to the project root, for example `12_pubsvc/res/SystemShutdown.siml`
+- `<relative_path_to_siml>` the service interface prototype file path relative to the project root, for example `12_pubsvc/services/SystemShutdown.siml`
 - `<relative_path_to_target_location>` the generated code output folder path relative to the project root, for example `12_pubsvc/generated`
 - `<areg-sdk-root>` is the path to `areg-sdk` sources.
 

@@ -1,20 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)msvc_setup.props" />
+    <Import Project="$(SolutionDir)msvc_setup.props"/>
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{68C8AE77-005B-4F81-8876-5A87A69823E3}</ProjectGuid>
-    <ProjectName>15_generated</ProjectName>
-    <RootNamespace>15_generated</RootNamespace>
+    <ProjectGuid>{4056956C-7E12-4432-86F8-D900A52866A4}</ProjectGuid>
+	<!-- Set the project name here, replace 'replace-me' -->
+    <ProjectName>replace-me</ProjectName>
+    <RootNamespace>replace-me</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
@@ -42,21 +43,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="services\PatientInformation.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\services\private\NEPatientInformation.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\services\private\PatientInformationClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\services\private\PatientInformationEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\services\private\PatientInformationProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\services\private\PatientInformationStub.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\services\NEPatientInformation.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\services\PatientInformationClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\services\PatientInformationStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\services\private\PatientInformationEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\services\private\PatientInformationProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

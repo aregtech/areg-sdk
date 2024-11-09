@@ -26,7 +26,6 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES Release)
     list(APPEND AREG_COMPILER_OPTIONS -O2)
 else()
-
     list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
 endif()
 

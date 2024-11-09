@@ -13,7 +13,7 @@ The **11_locmesh** project builds on the [10_locsvc](./../10_locsvc) example, de
 ## Sub-Projects
 
 1. **11_generated**:
-   - This library contains code generated from the [HelloWorld.siml](./res/HelloWorld.siml) service interface document during CMake configuration or as part of a pre-build action in Visual Studio. It includes the source files necessary to define and instantiate multiple service instances.
+   - This library contains code generated from the [HelloWorld.siml](./services/HelloWorld.siml) service interface document during CMake configuration or as part of a pre-build action in Visual Studio. It includes the source files necessary to define and instantiate multiple service instances.
 
 2. **[11_locmesh](./locsvcmesh)**:
    - This sub-project demonstrates the instantiation of **multiple service providers and consumers**, each running in separate threads. Key features include:

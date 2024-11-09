@@ -13,7 +13,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/16_pubfsm/TrafficControllerClientBase.hpp"
+#include "examples/16_pubfsm/services/TrafficControllerClientBase.hpp"
 
 /**
  * \brief   Traffic light controller client, i.e. the lights.

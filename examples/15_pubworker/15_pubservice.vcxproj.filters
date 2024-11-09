@@ -32,7 +32,7 @@
     <ClInclude Include="pubservice\src\PatientServiceWorkerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="res\NECommon.hpp">
+    <ClInclude Include="services\NECommon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common\NECommon.hpp">

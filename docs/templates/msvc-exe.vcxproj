@@ -4,9 +4,10 @@
     <Import Project="$(SolutionDir)msvc_setup.props"/>
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
+	<!-- Change the project GUID -->
     <ProjectGuid>{8273239C-C5A8-4752-9DFC-E1678222C36E}</ProjectGuid>
 	<!-- Set the project name here, replace 'replace-me' -->
     <ProjectName>replace-me</ProjectName>
@@ -18,14 +19,16 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
+	  <!-- Use 'IMPORT_SHARED_SYMBOLS' to link with DLLs and 'IMPORT_STATIC_SYMBOLS' to link with static libraries -->
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+	  <!-- Make a decision whether it is a 'Console' application or 'Win32Proj' -->
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -33,6 +36,7 @@
     <ClCompile>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+	  <!-- Use 'IMPORT_SHARED_SYMBOLS' to link with DLLs and 'IMPORT_STATIC_SYMBOLS' to link with static libraries -->
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

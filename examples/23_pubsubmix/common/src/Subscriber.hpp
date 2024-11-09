@@ -13,7 +13,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "generate/examples/23_pubsubmix/PubSubMixClientBase.hpp"
+#include "examples/23_pubsubmix/services/PubSubMixClientBase.hpp"
 #include "areg/base/NEMath.hpp"
 
 /**

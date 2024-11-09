@@ -6,12 +6,12 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/17_winchat/DirectMessagerStub.hpp"
+#include "examples/17_winchat/services/DirectMessagerStub.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
 #include "areg/component/NERegistry.hpp"
 #include "areg/base/TEResourceMap.hpp"
-#include "generate/examples/17_winchat/NEDirectConnection.hpp"
+#include "examples/17_winchat/services/NEDirectConnection.hpp"
 #include "common/NECommon.hpp"
 #include "chatter/NEDistributedApp.hpp"
 

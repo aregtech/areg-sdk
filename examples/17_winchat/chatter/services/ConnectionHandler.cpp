@@ -4,7 +4,7 @@
 ************************************************************************/
 
 #include "chatter/services/ConnectionHandler.hpp"
-#include "generate/examples/17_winchat/NEConnectionManager.hpp"
+#include "examples/17_winchat/services/NEConnectionManager.hpp"
 
 ConnectionHandler::ConnectionHandler(void)
     : mListConnections  ( )

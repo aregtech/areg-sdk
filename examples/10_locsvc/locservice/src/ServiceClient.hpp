@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/10_locsvc/HelloWorldClientBase.hpp"
+#include "examples/10_locsvc/services/HelloWorldClientBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"

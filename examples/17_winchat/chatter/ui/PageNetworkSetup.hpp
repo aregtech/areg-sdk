@@ -2,7 +2,7 @@
 
 #include "areg/base/String.hpp"
 #include "chatter/res/resource.h"
-#include "generate/examples/17_winchat/NEConnectionManager.hpp"
+#include "examples/17_winchat/services/NEConnectionManager.hpp"
 
 class Component;
 class NetworkSetup;

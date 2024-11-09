@@ -76,7 +76,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{7BD2AAAA-FA5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmake", "cmake", "{5E95D089-DBB0-467A-BC0A-B00B9297023A}"
 	ProjectSection(SolutionItems) = preProject
-		conf\cmake\areg.cmake = conf\cmake\areg.cmake
 		conf\cmake\clang.cmake = conf\cmake\clang.cmake
 		conf\cmake\common.cmake = conf\cmake\common.cmake
 		conf\cmake\functions.cmake = conf\cmake\functions.cmake
@@ -104,9 +103,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_generated", "examples\00
 		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5B537BA4-4245-4E64-93E9-E35738AB22B3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{5B537BA4-4245-4E64-93E9-E35738AB22B3}"
 	ProjectSection(SolutionItems) = preProject
-		examples\00_helloservice\res\HelloService.siml = examples\00_helloservice\res\HelloService.siml
+		examples\00_helloservice\services\HelloService.siml = examples\00_helloservice\services\HelloService.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_onethread", "examples\00_helloservice\00_onethread.vcxproj", "{FE25F3A4-FB2F-47AE-89FA-7399D5475E6D}"
@@ -184,9 +183,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10_locsvc", "10_locsvc", "{
 		examples\10_locsvc\ReadMe.md = examples\10_locsvc\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{B3924215-AD6D-45DA-81D7-FE5D406A677B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{B3924215-AD6D-45DA-81D7-FE5D406A677B}"
 	ProjectSection(SolutionItems) = preProject
-		examples\10_locsvc\res\HelloWorld.siml = examples\10_locsvc\res\HelloWorld.siml
+		examples\10_locsvc\services\HelloWorld.siml = examples\10_locsvc\services\HelloWorld.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "10_generated", "examples\10_locsvc\10_generated.vcxproj", "{4056956C-7E12-4432-86F8-D900A52866A4}"
@@ -206,9 +205,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "11_locmesh", "11_locmesh", 
 		examples\11_locmesh\ReadMe.md = examples\11_locmesh\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{FBEE67BE-BFF5-43BB-A9DB-2E8A65734B3D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{FBEE67BE-BFF5-43BB-A9DB-2E8A65734B3D}"
 	ProjectSection(SolutionItems) = preProject
-		examples\11_locmesh\res\HelloWorld.siml = examples\11_locmesh\res\HelloWorld.siml
+		examples\11_locmesh\services\HelloWorld.siml = examples\11_locmesh\services\HelloWorld.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_generated", "examples\11_locmesh\11_generated.vcxproj", "{1D3A6135-F0EE-4531-B682-55270B70B699}"
@@ -228,9 +227,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "12_pubsvc", "12_pubsvc", "{
 		examples\12_pubsvc\ReadMe.md = examples\12_pubsvc\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{9235A909-A2F2-4C90-977A-DA514B76BBE5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{9235A909-A2F2-4C90-977A-DA514B76BBE5}"
 	ProjectSection(SolutionItems) = preProject
-		examples\12_pubsvc\res\HelloWorld.siml = examples\12_pubsvc\res\HelloWorld.siml
+		examples\12_pubsvc\services\HelloWorld.siml = examples\12_pubsvc\services\HelloWorld.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_generated", "examples\12_pubsvc\12_generated.vcxproj", "{CCBBF424-D22D-480F-A13E-28095E33827C}"
@@ -256,11 +255,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "13_pubmesh", "13_pubmesh", 
 		examples\13_pubmesh\ReadMe.md = examples\13_pubmesh\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{08364AF0-D407-4FEC-A759-A4499EE45A59}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{08364AF0-D407-4FEC-A759-A4499EE45A59}"
 	ProjectSection(SolutionItems) = preProject
-		examples\13_pubmesh\res\LocalHelloWorld.siml = examples\13_pubmesh\res\LocalHelloWorld.siml
-		examples\13_pubmesh\res\PublicHelloWorld.siml = examples\13_pubmesh\res\PublicHelloWorld.siml
-		examples\13_pubmesh\res\SystemShutdown.siml = examples\13_pubmesh\res\SystemShutdown.siml
+		examples\13_pubmesh\services\LocalHelloWorld.siml = examples\13_pubmesh\services\LocalHelloWorld.siml
+		examples\13_pubmesh\services\PublicHelloWorld.siml = examples\13_pubmesh\services\PublicHelloWorld.siml
+		examples\13_pubmesh\services\SystemShutdown.siml = examples\13_pubmesh\services\SystemShutdown.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_generated", "examples\13_pubmesh\13_generated.vcxproj", "{D708316F-7E34-4E09-A782-4021C5500C0D}"
@@ -295,9 +294,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "14_pubtraffic", "14_pubtraf
 		examples\14_pubtraffic\ReadMe.md = examples\14_pubtraffic\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{0AC9ECDD-CCF4-4E61-BAD3-EF379002EDCE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{0AC9ECDD-CCF4-4E61-BAD3-EF379002EDCE}"
 	ProjectSection(SolutionItems) = preProject
-		examples\14_pubtraffic\res\SimpleTrafficLight.siml = examples\14_pubtraffic\res\SimpleTrafficLight.siml
+		examples\14_pubtraffic\services\SimpleTrafficLight.siml = examples\14_pubtraffic\services\SimpleTrafficLight.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_generated", "examples\14_pubtraffic\14_generated.vcxproj", "{5B38C49F-3C26-43CD-B457-75806BFE69EC}"
@@ -323,9 +322,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "15_pubworker", "15_pubworke
 		examples\15_pubworker\ReadMe.md = examples\15_pubworker\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{8B53447D-2482-4219-93DA-D33C2F899B71}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{8B53447D-2482-4219-93DA-D33C2F899B71}"
 	ProjectSection(SolutionItems) = preProject
-		examples\15_pubworker\res\PatientInformation.siml = examples\15_pubworker\res\PatientInformation.siml
+		examples\15_pubworker\services\PatientInformation.siml = examples\15_pubworker\services\PatientInformation.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "15_generated", "examples\15_pubworker\15_generated.vcxproj", "{68C8AE77-005B-4F81-8876-5A87A69823E3}"
@@ -351,10 +350,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "16_pubfsm", "16_pubfsm", "{
 		examples\16_pubfsm\ReadMe.md = examples\16_pubfsm\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{58982601-1D8A-4F81-A69E-1D148C667937}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{58982601-1D8A-4F81-A69E-1D148C667937}"
 	ProjectSection(SolutionItems) = preProject
-		examples\16_pubfsm\res\PowerManager.siml = examples\16_pubfsm\res\PowerManager.siml
-		examples\16_pubfsm\res\TrafficController.siml = examples\16_pubfsm\res\TrafficController.siml
+		examples\16_pubfsm\services\PowerManager.siml = examples\16_pubfsm\services\PowerManager.siml
+		examples\16_pubfsm\services\TrafficController.siml = examples\16_pubfsm\services\TrafficController.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_generated", "examples\16_pubfsm\16_generated.vcxproj", "{AA7F1615-AF3B-465F-A2CE-6A9AD1786F8B}"
@@ -380,12 +379,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "17_winchat", "17_winchat", 
 		examples\17_winchat\ReadMe.md = examples\17_winchat\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{DF308E31-0D12-4B57-93CE-770B2D538DB1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{DF308E31-0D12-4B57-93CE-770B2D538DB1}"
 	ProjectSection(SolutionItems) = preProject
-		examples\17_winchat\res\CentralMessager.siml = examples\17_winchat\res\CentralMessager.siml
-		examples\17_winchat\res\ConnectionManager.siml = examples\17_winchat\res\ConnectionManager.siml
-		examples\17_winchat\res\DirectConnection.siml = examples\17_winchat\res\DirectConnection.siml
-		examples\17_winchat\res\DirectMessager.siml = examples\17_winchat\res\DirectMessager.siml
+		examples\17_winchat\services\CentralMessager.siml = examples\17_winchat\services\CentralMessager.siml
+		examples\17_winchat\services\ConnectionManager.siml = examples\17_winchat\services\ConnectionManager.siml
+		examples\17_winchat\services\DirectConnection.siml = examples\17_winchat\services\DirectConnection.siml
+		examples\17_winchat\services\DirectMessager.siml = examples\17_winchat\services\DirectMessager.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_generated", "examples\17_winchat\17_generated.vcxproj", "{BAD5F8A5-B916-4E76-8594-78B003C1155B}"
@@ -474,19 +473,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubservice", "examples\2
 		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {B8900569-8956-47AF-A2E7-50EB1DD788DD}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C8E80B4D-FE97-48F9-A056-F916E6897CE4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{C8E80B4D-FE97-48F9-A056-F916E6897CE4}"
 	ProjectSection(SolutionItems) = preProject
-		examples\18_locwatchdog\res\HelloWatchdog.siml = examples\18_locwatchdog\res\HelloWatchdog.siml
+		examples\18_locwatchdog\services\HelloWatchdog.siml = examples\18_locwatchdog\services\HelloWatchdog.siml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5DF9E173-0D3F-4D4B-A838-37ED95A093FC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{5DF9E173-0D3F-4D4B-A838-37ED95A093FC}"
 	ProjectSection(SolutionItems) = preProject
-		examples\19_pubwatchdog\res\HelloWatchdog.siml = examples\19_pubwatchdog\res\HelloWatchdog.siml
+		examples\19_pubwatchdog\services\HelloWatchdog.siml = examples\19_pubwatchdog\services\HelloWatchdog.siml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5EBF83AB-0028-4075-AA32-CA3EBEA4B7A0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{5EBF83AB-0028-4075-AA32-CA3EBEA4B7A0}"
 	ProjectSection(SolutionItems) = preProject
-		examples\20_pubdatarate\res\LargeData.siml = examples\20_pubdatarate\res\LargeData.siml
+		examples\20_pubdatarate\services\LargeData.siml = examples\20_pubdatarate\services\LargeData.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_common", "examples\13_pubmesh\13_common.vcxproj", "{5372A6CE-25DA-4E7D-9EC5-8F99A74BF4E7}"
@@ -526,9 +525,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-unit-tests", "tests\ar
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A149-4893-A023-253593403974}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{C485A89F-A149-4893-A023-253593403974}"
 	ProjectSection(SolutionItems) = preProject
-		examples\21_pubunblock\res\HelloUnblock.siml = examples\21_pubunblock\res\HelloUnblock.siml
+		examples\21_pubunblock\services\HelloUnblock.siml = examples\21_pubunblock\services\HelloUnblock.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.vcxproj", "{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}"
@@ -550,9 +549,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "22_pubsub", "22_pubsub", "{
 		examples\22_pubsub\ReadMe.md = examples\22_pubsub\ReadMe.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{29121F55-3BA7-4701-9C44-2B1BA5103A5F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{29121F55-3BA7-4701-9C44-2B1BA5103A5F}"
 	ProjectSection(SolutionItems) = preProject
-		examples\22_pubsub\res\PubSub.siml = examples\22_pubsub\res\PubSub.siml
+		examples\22_pubsub\services\PubSub.siml = examples\22_pubsub\services\PubSub.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_publisher", "examples\22_pubsub\22_publisher.vcxproj", "{DFA66387-8E95-4745-9DEB-AC4A82165F9A}"
@@ -596,9 +595,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "23_pubsubdyn", "examples\23
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{E74A499A-2B19-4EC5-ADCC-549565C9F2A9}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{E74A499A-2B19-4EC5-ADCC-549565C9F2A9}"
 	ProjectSection(SolutionItems) = preProject
-		examples\23_pubsubmix\res\PubSubMix.siml = examples\23_pubsubmix\res\PubSubMix.siml
+		examples\23_pubsubmix\services\PubSubMix.siml = examples\23_pubsubmix\services\PubSubMix.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "23_common", "examples\23_pubsubmix\23_common.vcxproj", "{6C5C01FA-1F9B-4132-881C-14C18EC15FA9}"
@@ -662,9 +661,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-
 		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{11AEF28F-83CA-493A-B507-F271FCB35DBA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{11AEF28F-83CA-493A-B507-F271FCB35DBA}"
 	ProjectSection(SolutionItems) = preProject
-		examples\24_pubsubmulti\res\PubSub.siml = examples\24_pubsubmulti\res\PubSub.siml
+		examples\24_pubsubmulti\services\PubSub.siml = examples\24_pubsubmulti\services\PubSub.siml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "exports", "exports", "{60EE7204-7D44-4087-8880-900D00536202}"
@@ -690,17 +689,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{31AB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A5DB-4F6E-A526-6AA2B3C31AD3}"
 	ProjectSection(SolutionItems) = preProject
-		docs\wiki\AREG-PACKAGE.md = docs\wiki\AREG-PACKAGE.md
-		docs\wiki\BUILD.md = docs\wiki\BUILD.md
-		docs\wiki\CMAKE-INTEGRATE.md = docs\wiki\CMAKE-INTEGRATE.md
-		docs\wiki\LOGGER.md = docs\wiki\LOGGER.md
-		docs\wiki\MCROUTER.md = docs\wiki\MCROUTER.md
-		docs\wiki\MSVS-BUILD.md = docs\wiki\MSVS-BUILD.md
-		docs\wiki\MSVS-INTEGRATE.md = docs\wiki\MSVS-INTEGRATE.md
+		docs\wiki\areg-package.md = docs\wiki\areg-package.md
+		docs\wiki\build.md = docs\wiki\build.md
+		docs\wiki\cmake-build.md = docs\wiki\cmake-build.md
+		docs\wiki\cmake-config.md = docs\wiki\cmake-config.md
+		docs\wiki\cmake-functions.md = docs\wiki\cmake-functions.md
+		docs\wiki\cmake-integrate.md = docs\wiki\cmake-integrate.md
+		docs\wiki\code-generator.md = docs\wiki\code-generator.md
+		docs\wiki\logcollector.md = docs\wiki\logcollector.md
+		docs\wiki\logging-config.md = docs\wiki\logging-config.md
+		docs\wiki\logging-develop.md = docs\wiki\logging-develop.md
+		docs\wiki\logobserver.md = docs\wiki\logobserver.md
+		docs\wiki\mcrouter.md = docs\wiki\mcrouter.md
+		docs\wiki\msvc-build.md = docs\wiki\msvc-build.md
+		docs\wiki\msvc-integrate.md = docs\wiki\msvc-integrate.md
+		docs\wiki\persistence-syntax.md = docs\wiki\persistence-syntax.md
 		docs\wiki\README.md = docs\wiki\README.md
-		docs\wiki\USER-CMAKE.md = docs\wiki\USER-CMAKE.md
-		docs\wiki\VSCODE.md = docs\wiki\VSCODE.md
-		docs\wiki\WSL.md = docs\wiki\WSL.md
+		docs\wiki\vscode.md = docs\wiki\vscode.md
+		docs\wiki\wsl-build.md = docs\wiki\wsl-build.md
 	EndProjectSection
 EndProject
 Global
@@ -1262,7 +1268,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7D57975F-814D-4F13-9F2F-87B667937FC7} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
 		{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
-		{A9875C78-1248-4693-9310-5C46C73DDCEB} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
+		{A9875C78-1248-4693-9310-5C46C73DDCEB} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 		{C0125346-EA97-4FE0-ABC8-592A556B3481} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
 		{7BD2AAAA-FA5E-4895-837F-4A24C85A851A} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 		{5E95D089-DBB0-467A-BC0A-B00B9297023A} = {A9875C78-1248-4693-9310-5C46C73DDCEB}

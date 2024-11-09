@@ -1,6 +1,6 @@
 
 # add service interface files.
-addServiceInterface(00_generated res HelloService)
+addServiceInterface(00_generated examples/00_helloservice/services/HelloService.siml)
 
 # add projects
 macro_declare_executable(00_pubclient   00_generated 

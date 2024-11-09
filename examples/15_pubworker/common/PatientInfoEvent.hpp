@@ -12,7 +12,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/TEEvent.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "generate/examples/15_pubworker/NEPatientInformation.hpp"
+#include "examples/15_pubworker/services/NEPatientInformation.hpp"
 
 /**
  * \brief   The patient information event data, event and the event consumer object declaration.

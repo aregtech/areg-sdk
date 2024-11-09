@@ -14,7 +14,7 @@ The **21_pubunblock** project demonstrates how to handle and manually unblock se
 ## Sub-Projects
 
 1. **21_generated**:
-   - This is a library of codes generated from the [HelloUnblock.siml](./res/HelloUnblock.siml) Service Interface document during the CMake configuration or as a pre-build action in Visual Studio. The generated code utilizes the Service Interface document and the code generator to automate **Object RPC**, improving communication efficiency between the service provider and remote consumers via **IPC**.
+   - This is a library of codes generated from the [HelloUnblock.siml](./services/HelloUnblock.siml) Service Interface document during the CMake configuration or as a pre-build action in Visual Studio. The generated code utilizes the Service Interface document and the code generator to automate **Object RPC**, improving communication efficiency between the service provider and remote consumers via **IPC**.
 
 2. **[21_pubservice](./pubservice/)**:
    - This sub-project provides a *Public Service* that processes requests from clients with a delay, which is a normal behavior in asynchronous communication systems such as AREG Framework. In this case, the system accumulates pending requests and automatically marks requests as *busy* until the request are processing. To enable continues request processing, in the codes the requests are manually unblocked, so that the next upcoming request can be immediately started to be processing. When the request is finished to be processed, the response is prepared and sent back to the target consumer.
@@ -24,13 +24,13 @@ The **21_pubunblock** project demonstrates how to handle and manually unblock se
 
 ## Communication
 
-Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the system’s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
+Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the systemâ€™s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
 
 ## Key Features
 
 - **Request Manual Unblocking**: The core feature of this project is the ability to manually unblock requests, allowing the service provider to continue processing new requests while waiting to complete ongoing ones. This prevents the system with asynchronous communication from stalling.
 - **Non-Blocking Client Responses**: Normally, when a client request is processed and the developer replies with the response, the system automatically prepares the response and sends to the target Consumer. In case of manual request unblocking, the develop needs manually preparing response, then reply with the response. This response preparation mechanism ensures that the right target Consumer receives the response.
-- **Fault-Tolerant Communication**: Leveraging `mcrouter` and the AREG SDK’s fault-tolerant capabilities, the system can manage communication failures gracefully, ensuring that service providers and consumers can reconnect and resume operations without data loss.
+- **Fault-Tolerant Communication**: Leveraging `mcrouter` and the AREG SDKâ€™s fault-tolerant capabilities, the system can manage communication failures gracefully, ensuring that service providers and consumers can reconnect and resume operations without data loss.
 
 ## Use Cases
 
