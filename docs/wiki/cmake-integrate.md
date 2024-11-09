@@ -158,23 +158,17 @@ target_link_libraries(example PRIVATE areg::areg)
 
 2. **Install AREG SDK Package**:  
    Use these commands:
-
-   - **Windows**:
      ```bash
      vcpkg install areg
      ```
-   - **Linux**:
-     ```bash
-     vcpkg install areg
-     ```
+   Also you can install by running commands with *triplets* like `vcpkg install areg:x64-linux` for 64-bit Linux or `vcpkg install areg:x86-windows` for 32-bit Windows. 
 
-3. **Get Toolchain File Path**:  
-   Use the following to integrate AREG SDK binaries:
-
+3. **Retrieve Toolchain File Path**:  
+   Run the following command to integrate `vcpkg` binaries with your system:
    ```bash
    vcpkg integrate install
    ```
-This also displays `CMAKE_TOOLCHAIN_FILE` CMake option and the full path to the toolchain file to build with `areg` package. Make sure you copied the command with toolchain file path.
+   This command displays the full path to set `CMAKE_TOOLCHAIN_FILE`, which is required to build projects with `vcpkg` packages. Copy this toolchain file path for later use during the build configuration process.
 
 4. **Integrate in CMake Script**:  
    Create a `CMakeLists.txt` file with the following content:
@@ -188,10 +182,10 @@ This also displays `CMAKE_TOOLCHAIN_FILE` CMake option and the full path to the 
    ```
 
 5. **Build with Toolchain File**:  
-   Replace `<vcpkg-root>` with the actual path, then run these command to configure, build and execute `example` application:
+   Replace `<path-to-vcpkg-root>` with the actual path, then run these command to configure, build and execute `example` application:
 
    ```bash
-   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<path-to-vcpkg-root>/scripts/buildsystems/vcpkg.cmake
    cmake --build ./build
    ./build/example
    ```
