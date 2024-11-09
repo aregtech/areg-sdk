@@ -57,7 +57,7 @@ public:
     /**
      * \brief   Moves patient information data from given source.
      **/
-    inline PatientInfoEventData( PatientInfoEventData && src );
+    inline PatientInfoEventData( PatientInfoEventData && src ) noexcept;
 
     /**
      * \brief   Copies patient information data from given source.
@@ -67,7 +67,7 @@ public:
     /**
      * \brief   Moves patient information data from given source.
      **/
-    inline void operator = ( PatientInfoEventData && src );
+    inline void operator = ( PatientInfoEventData && src ) noexcept;
 
     /**
      * \brief   Gets buffer that contains patient information.
@@ -126,7 +126,7 @@ inline PatientInfoEventData::PatientInfoEventData( const PatientInfoEventData & 
 {
 }
 
-inline PatientInfoEventData::PatientInfoEventData( PatientInfoEventData && src )
+inline PatientInfoEventData::PatientInfoEventData( PatientInfoEventData && src ) noexcept
     : mData ( static_cast<SharedBuffer &&>(src.mData) )
 {
 }
@@ -141,7 +141,7 @@ inline void PatientInfoEventData::operator = ( const PatientInfoEventData & src 
     mData   = src.mData;
 }
 
-inline void PatientInfoEventData::operator = ( PatientInfoEventData && src )
+inline void PatientInfoEventData::operator = ( PatientInfoEventData && src ) noexcept
 {
-    mData   = static_cast<SharedBuffer &&>(src.mData);
+    mData   = std::move(src.mData);
 }

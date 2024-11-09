@@ -38,7 +38,7 @@ void LoggerMessageProcessor::queryConnectedInstances(const RemoteMessage & msgRe
         if (instances.isValidPosition(srcPos))
         {
             const NEService::sServiceConnectedInstance& instance = instances.valueAtPosition(srcPos);
-            if (instance.ciSource == NEService::eMessageSource::MessageSourceObserver)
+            if ((static_cast<uint16_t>(instance.ciSource) && static_cast<uint16_t>(NEService::eMessageSource::MessageSourceObserver)) != 0)
             {
                 notifyConnectedInstances(mLoggerService.getInstances(), source);
             }
@@ -220,14 +220,14 @@ void LoggerMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
 
 bool LoggerMessageProcessor::isLogSource(NEService::eMessageSource msgSource)
 {
-    return ((msgSource == NEService::eMessageSource::MessageSourceClient    ) ||
-            (msgSource == NEService::eMessageSource::MessageSourceSimulation) ||
-            (msgSource == NEService::eMessageSource::MessageSourceTest      ));
+    return ((static_cast<uint16_t>(msgSource) && static_cast<uint16_t>(NEService::eMessageSource::MessageSourceClient)    ) ||
+            (static_cast<uint16_t>(msgSource) && static_cast<uint16_t>(NEService::eMessageSource::MessageSourceSimulation)) ||
+            (static_cast<uint16_t>(msgSource) && static_cast<uint16_t>(NEService::eMessageSource::MessageSourceTest)     ));
 }
 
 bool LoggerMessageProcessor::isLogObserver(NEService::eMessageSource msgSource)
 {
-    return ((msgSource == NEService::eMessageSource::MessageSourceObserver));
+    return ((static_cast<uint16_t>(msgSource) && static_cast<uint16_t>(NEService::eMessageSource::MessageSourceObserver)) != 0);
 }
 
 inline void LoggerMessageProcessor::_forwardMessageToLogSources(const RemoteMessage& msgReceived) const
