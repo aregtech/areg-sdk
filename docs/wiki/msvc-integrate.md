@@ -54,11 +54,10 @@ These components provide a robust foundation for integrating the AREG SDK, strea
 ## Example Code
 
 Create a new Microsoft Visual Studio solution with a console project named `example`. Add a file named `example.cpp` with the following content:
-
 ```cpp
 #include "areg/base/String.hpp"
 
-// Link the areg library in the source code for simplicity
+// (Optional) Link the areg library in the source code for simplicity
 #pragma comment(lib, "areg")
 
 int main() {
@@ -67,7 +66,6 @@ int main() {
     return 0;
 }
 ```
-
 This example project and source file will be used throughout the integration steps.
 
 ---
@@ -83,15 +81,13 @@ This example project and source file will be used throughout the integration ste
    Follow the instructions on the [vcpkg GitHub page](https://github.com/microsoft/vcpkg). Ensure `vcpkg` is updated to the latest package version. If you are installing `vcpkg` for the first time, close Microsoft Visual Studio to allow proper integration.
 
 2. **Install the AREG SDK Package for Windows**:  
-   Run the following command to install the AREG SDK package for Windows (64-bit):
-
+   Run the following command in PowerShell to install the AREG SDK package for Windows:
    ```bash
-   vcpkg install areg:x64-windows
+   vcpkg install areg
    ```
 
 3. **Integrate Installed Package**:  
-   Run the following command to integrate the AREG SDK binaries with Visual Studio:
-
+   Run the following command to integrate the AREG SDK binaries and headers with Visual Studio:
    ```bash
    vcpkg integrate install
    ```
@@ -99,11 +95,12 @@ This example project and source file will be used throughout the integration ste
 4. **Build the `example` Project**:  
    Since the example code includes a direct link to the `areg` library (`#pragma comment(lib, "areg")`), no additional configuration is needed. Build the `example` project and run it.
 
+Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-package.md) for more details.
+
 ### Integrate as Git Submodule
 
 1. **Define Submodule**:  
    Add the `areg-sdk` as a submodule by creating a `.gitmodules` file in your project:
-
    ```plaintext
    [submodule "areg-sdk"]
      path = areg-sdk
@@ -112,7 +109,6 @@ This example project and source file will be used throughout the integration ste
 
 2. **Download AREG SDK Sources**:  
    Run these commands to initialize and update the submodule:
-
    ```bash
    git submodule update --init --recursive
    git submodule update --remote --recursive
@@ -121,11 +117,9 @@ This example project and source file will be used throughout the integration ste
 3. **Integrate into Visual Studio Solution**:
    - Copy the `msvc_setup.props` file located in the `<areg-sdk>` directory to the root of your project (where your `example.sln` is located).
    - Open `msvc_setup.props` and set the `<AregSdkRoot>` property to the path of the `areg-sdk` submodule. For example:
-
      ```xml
      <AregSdkRoot>$(SolutionDir)areg-sdk/</AregSdkRoot>
      ```
-
      Adjust other settings, such as `AregOutputXXX`, in `msvc_setup.props` if needed to fit your project’s build structure.
    
    - Add the `areg.vcxproj` project and optionally other `*.vcxproj` files located in `<areg-sdk>/framework` to your `example` solution.

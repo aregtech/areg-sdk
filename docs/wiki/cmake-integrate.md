@@ -3,7 +3,7 @@
 This guide covers how to integrate the **AREG Framework** into an existing project or create a new project **using CMake** under **Windows** or **Linux** systems. There are three main methods for integration:
 
 1. **Fetch the source code** directly from the **[AREG SDK GitHub repository](https://github.com/aregtech/areg-sdk)**.
-2. **Install via `vcpkg`** as a prebuilt package.
+2. **Install via `vcpkg`** as a pre-built package.
 3. **Add AREG SDK as a Git submodule** to your project.
 
 > [!TIP]  
@@ -159,13 +159,13 @@ target_link_libraries(example PRIVATE areg::areg)
 2. **Install AREG SDK Package**:  
    Use these commands:
 
-   - **Windows (64-bit)**:
+   - **Windows**:
      ```bash
-     vcpkg install areg:x64-windows
+     vcpkg install areg
      ```
-   - **Linux (64-bit)**:
+   - **Linux**:
      ```bash
-     vcpkg install areg:x64-linux
+     vcpkg install areg
      ```
 
 3. **Get Toolchain File Path**:  
@@ -174,8 +174,7 @@ target_link_libraries(example PRIVATE areg::areg)
    ```bash
    vcpkg integrate install
    ```
- 
-This also displays the CMake option to use toolchain when build `areg` package. Make sure you copied the command with path to the toolchain.
+This also displays `CMAKE_TOOLCHAIN_FILE` CMake option and the full path to the toolchain file to build with `areg` package. Make sure you copied the command with toolchain file path.
 
 4. **Integrate in CMake Script**:  
    Create a `CMakeLists.txt` file with the following content:
@@ -196,6 +195,8 @@ This also displays the CMake option to use toolchain when build `areg` package. 
    cmake --build ./build
    ./build/example
    ```
+
+Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-package.md) for more details.
 
 ### Integrate as Git Submodule
 
