@@ -340,4 +340,4 @@ These options allow you to customize AREG SDK to align with specific project nee
 
 ## Integration Example
 
-For integration examples, visit the [AREG SDK Demo Repository](https://github.com/aregtech/areg-sdk-demo) for practical implementations across various projects.
+For integration examples, visit the [AREG SDK Demo Repository](https://github.com/aregtech/areg-sdk-demo) for practical implementations across various projects. Additionally, read [Integrating AREG Framework with CMake](./cmake-integration.md) document.
