@@ -1,5 +1,7 @@
 # Building AREG SDK on Windows Subsystem for Linux (WSL)
 
+Following these steps will guide you through setting up, troubleshooting, and running AREG SDK on WSL effectively.
+
 ## Contents
 1. [General Information](#general-information)
 2. [Installing a Linux Distribution in WSL](#installing-linux-distribution-in-wsl)
@@ -36,7 +38,6 @@ sudo apt-get update && sudo apt-get upgrade -y
    ```bash
    wsl --set-default-version 2
    ```
-
 ---
 
 ## 2. Troubleshooting WSL Updates
@@ -139,7 +140,3 @@ Exit application; check logs for details.
 
 > [!NOTE]  
 > For a list of examples and detailed run instructions, see the [README](./../../examples/README.md) in the AREG SDK `examples` directory.
-
----
-
-Following these steps will guide you through setting up, troubleshooting, and running AREG SDK on WSL effectively.

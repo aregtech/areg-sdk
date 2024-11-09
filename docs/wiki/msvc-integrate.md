@@ -17,8 +17,8 @@ This guide provides instructions for integrating the **AREG Framework** into an 
 - [General Information](#general-information)
 - [Example Code](#example-code)
 - [Integration Methods](#integration-methods)
-  - [Integrate Using `vcpkg` Package](#integrate-using-vcpkg-package)
-  - [Integrate as Git Submodule](#integrate-as-git-submodule)
+  - [Method 1: Integrate Using `vcpkg` Package](#method-1-integrate-using-vcpkg-package)
+  - [Method 2: Integrate as Git Submodule](#method-2-integrate-as-git-submodule)
 - [Advanced Integration](#advanced-integration)
   - [Advanced MSBuild Options](#advanced-msbuild-options)
   - [Advanced Project Settings](#advanced-project-settings)
@@ -72,7 +72,7 @@ This example project and source file will be used throughout the integration ste
 
 ## Integration Methods
 
-### Integrate Using `vcpkg` Package
+### Method 1: Integrate Using `vcpkg` Package
 
 > [!IMPORTANT]  
 > As of AREG SDK 2.0, integration via `vcpkg` is supported.
@@ -97,7 +97,7 @@ This example project and source file will be used throughout the integration ste
 
 Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-package.md) for more details.
 
-### Integrate as Git Submodule
+### Method 2: Integrate as Git Submodule
 
 1. **Define Submodule**:  
    Add the `areg-sdk` as a submodule by creating a `.gitmodules` file in your project:
@@ -161,7 +161,3 @@ Since Microsoft Visual Studio does not offer the same flexibility as CMake for d
 5. Set other projects to depend on `dummy` to ensure it builds first.
 
 For a working example, refer to the `.bat` file in [<areg-sdk>\examples\examples_generate.bat](./../../examples/examples_generate.bat) and the `dummy` project in [<areg-sdk>\examples\dummy](./../../examples/dummy/).
-
---- 
-
-This guide provides a comprehensive approach to integrating the AREG Framework into your Visual Studio projects.

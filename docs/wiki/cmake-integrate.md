@@ -14,9 +14,9 @@ This guide covers how to integrate the **AREG Framework** into an existing proje
 - [General Information](#general-information)
 - [Example Code](#example-code)
 - [Integration Methods](#integration-methods)
-  - [Integrate by Fetching Sources](#integrate-by-fetching-sources)
-  - [Integrate Using `vcpkg` Package](#integrate-using-vcpkg-package)
-  - [Integrate as Git Submodule](#integrate-as-git-submodule)
+  - [Method 1: Integrate by Fetching Sources](#method-1-integrate-by-fetching-sources)
+  - [Method 2: Integrate Using `vcpkg` Package](#method-2-integrate-using-vcpkg-package)
+  - [Method 3: Integrate as Git Submodule](#method-3-integrate-as-git-submodule)
 - [Advanced Integration](#advanced-integration)
   - [Advanced CMake Options](#advanced-cmake-options)
   - [Advanced CMake Functions](#advanced-cmake-functions)
@@ -53,7 +53,7 @@ These components provide a robust foundation for integrating the AREG SDK, strea
 
 ## Example Code
 
-Use the following code for integration examples. Create a `main.cpp` file in a separate directory:
+Use the following code for integration examples. Create a `main.cpp` file in a separate `example` directory:
 
 ```cpp
 #include "areg/base/String.hpp"
@@ -69,7 +69,7 @@ int main() {
 
 ## Integration Methods
 
-### Integrate by Fetching Sources
+### Method 1: Integrate by Fetching Sources
 
 1. **Declare the Project**:  
    Create a `CMakeLists.txt` file, ensuring the minimum CMake version is 3.20:
@@ -148,7 +148,7 @@ target_link_libraries(example PRIVATE areg::areg)
    ./build/example
    ```
 
-### Integrate Using `vcpkg` Package
+### Method 2: Integrate Using `vcpkg` Package
 
 > [!IMPORTANT]  
 > Starting with AREG SDK 2.0, integration via `vcpkg` is available.
@@ -198,7 +198,7 @@ This also displays `CMAKE_TOOLCHAIN_FILE` CMake option and the full path to the 
 
 Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-package.md) for more details.
 
-### Integrate as Git Submodule
+### Method 3: Integrate as Git Submodule
 
 1. **Define Submodule**:  
    Add `areg-sdk` as a submodule by creating a `.gitmodules` file:
@@ -296,7 +296,7 @@ if (NOT areg_FOUND)
     )
     FetchContent_MakeAvailable(areg-sdk)
 
- set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
+    set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
     include_directories("${AREG_SDK_ROOT}/framework")
 endif()
 
@@ -312,7 +312,7 @@ This file lets you set up an `example` project with AREG SDK and link necessary 
 > [!NOTE]
 > In this script, there is no need to link the `example` project with the `areg` library. It is automatically done when call `macro_declare_executable`. 
 
-If you don't want to use AREG SDK CMake macro and function, alternatively the last 2 lines can be replaced:
+If you don't want to use AREG SDK CMake macro and functions, alternatively the last 2 lines can be replaced:
 ```cmake
 add_executable(example main.cpp)
 target_link_libraries(example PRIVATE areg::areg)

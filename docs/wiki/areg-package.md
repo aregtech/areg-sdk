@@ -47,15 +47,15 @@ The [`vcpkg` package manager](https://github.com/microsoft/vcpkg) helps manage C
      ```
 
 3. **Add vcpkg to PATH (Optional)**:
-   Adding `vcpkg` to your PATH allows you to run it from any terminal session.
+   Adding `vcpkg` to your PATH allows you to run it from any terminal session (replace `<path-to-vcpkg-root>` with real path).
 
    - **On Windows**:
      ```powershell
-     set PATH=%PATH%;<path_to_vcpkg>
+     set PATH=%PATH%;<path-to-vcpkg-root>
      ```
    - **On Linux/macOS**:
      ```bash
-     export PATH=$PATH:<path_to_vcpkg>
+     export PATH=$PATH:<path-to-vcpkg-root>
      ```
 
 4. **Integrate `vcpkg` with your system**:
@@ -149,7 +149,6 @@ Steps to Set Up a Visual Studio Project:
 
    ```cpp
    #include "areg/base/String.hpp"
-   #include <iostream>
 
    int main() {
        String str("Hello from AREG SDK!");

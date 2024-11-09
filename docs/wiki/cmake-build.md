@@ -1,7 +1,7 @@
 # Building AREG SDK with CMake
 
 ## Introduction
-This guide provides step-by-step instructions for building the **AREG SDK** on Linux, Windows, and Cygwin platforms using **CMake**. It also covers IDE setups for **Microsoft Visual Studio** and **Visual Studio Code**. Follow these steps to set up your build environment and efficiently compile AREG SDK projects.
+This guide provides step-by-step instructions for building the **AREG SDK** on Linux, Windows, and Cygwin platforms using **CMake**. It also covers IDE setups for **Microsoft Visual Studio** and **Visual Studio Code**. Follow these steps to set up your build environment and efficiently compile AREG SDK projects. For troubleshooting, refer to the [AREG SDK documentation](https://github.com/aregtech/areg-sdk).
 
 ## Table of Contents
 - [System Requirements](#system-requirements)
@@ -138,7 +138,3 @@ For **Microsoft Visual Studio** or **Visual Studio Code**:
 
 **Further Resources**:
 For additional setup information, refer to [Visual Studio CMake Projects](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio) or [VS Code CMake Quickstart](https://code.visualstudio.com/docs/cpp/cmake-quickstart).
-
----
-
-This guide provides comprehensive instructions to set up, build, and optionally test the AREG SDK across multiple platforms. For troubleshooting, refer to the [AREG SDK documentation](https://github.com/aregtech/areg-sdk).
