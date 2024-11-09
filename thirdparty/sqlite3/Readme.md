@@ -66,17 +66,12 @@ For further details, refer to Microsoft's [tutorial on using vcpkg with CMake](h
 
 **Step 2: Install SQLite3**
 
-- **For Windows (64-bit)**:
   ```bash
-  ./vcpkg install sqlite3:x64-windows
-  ```
-- **For Linux (64-bit)**:
-  ```bash
-  ./vcpkg install sqlite3:x64-linux
+  ./vcpkg install sqlite3
   ```
 
 > [!NOTE]
-> For 32-bit systems, replace `x64` with `x86` in the command (`sqlite3:x86-windows` or `sqlite3:x86-linux`).
+> Also you can install binaries for other platforms by running commands with *triplets* like `vcpkg install sqlite3:x86-windows` for 32-bit Windows or `vcpkg install sqlite3:x86-linux` for 32-bit Linux.
 
 > [!IMPORTANT]
 > You may be prompted to install additional dependencies during the package installation. Follow the recommendations provided.
