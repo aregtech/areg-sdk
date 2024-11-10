@@ -190,7 +190,7 @@ target_link_libraries(example PRIVATE areg::areg)
    ./build/example
    ```
 
-Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-package.md) for more details.
+Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-package.md) for more details.
 
 ### Method 3: Integrate as Git Submodule
 
@@ -237,7 +237,7 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-packa
 
 ### Advanced CMake Options
 
-The AREG SDK offers flexible configurations via CMake, allowing customization of compilation settings, output directories, and additional features. For the full list, refer to the [CMake Configuration Options for Building AREG SDK](./cmake-config.md) document.
+The AREG SDK offers flexible configurations via CMake, allowing customization of compilation settings, output directories, and additional features. For the full list, refer to the [CMake Configuration Options for Building AREG SDK](./02a-cmake-config.md) document.
 
 > [!IMPORTANT]  
 > Set options before including the `<areg-sdk>/areg.cmake` file.
@@ -265,7 +265,7 @@ addServiceInterface(coolservice "service/CoolService.siml")
 macro_declare_executable(cool coolservice main.cpp)
 ```
 
-See [AREG SDK CMake Functions and Macros](./cmake-functions.md) for details.
+See [AREG SDK CMake Functions and Macros](./02b-cmake-functions.md) for details.
 
 ---
 

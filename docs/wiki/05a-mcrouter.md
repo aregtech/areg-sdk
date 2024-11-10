@@ -3,13 +3,13 @@
 The **Multicast Router (mcrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
 
 ## Table of Contents
-1. [General Information](#general-information)
-2. [Router Setup](#router-setup)
-3. [Router Configuration](#router-configuration)
-4. [Command Line Options](#command-line-options)
-5. [Connection Initialization](#connection-initialization)
-   - [mcrouter Initialization](#mcrouter-initialization)
-   - [Application Setup](#application-setup)
+- [General Information](#general-information)
+- [Router Setup](#router-setup)
+- [Router Configuration](#router-configuration)
+- [Command Line Options](#command-line-options)
+- [Connection Initialization](#connection-initialization)
+  - [mcrouter Initialization](#mcrouter-initialization)
+  - [Application Setup](#application-setup)
 
 ---
 
@@ -67,10 +67,10 @@ Bellow is the explanation of each setting:
 | `router::*::service`          | Specifies the message router process name.                |
 | `router::*::connect`          | Lists supported protocols (**TCP/IP** in this example).   |
 | `router::*::enable::tcpip`    | Enables or disables the protocol.                         |
-| `router::*::address::tcpip`   | Provides the router’s network-accessible IP.              |
+| `router::*::address::tcpip`   | Provides the router's network-accessible IP.              |
 | `router::*::port::tcpip`      | Assigns the port number.                                  |
 
-For further details, refer to the [AREG SDK Persistence Syntax](./persistence-syntax.md).
+For further details, refer to the [AREG SDK Persistence Syntax](./06a-persistence-syntax.md).
 
 ---
 

@@ -628,7 +628,7 @@ endmacro(macro_add_service_interface)
 #               The generated files are placed within the ${AREG_GENERATE_DIR},
 #               with a subdirectory structure specified by ${generate_path}.
 # Parameters .: ${lib_name}         -- The name of the static library to be created for the generated Service Interface code.
-#               ${source_root}      -- The root directory containing the project’s source files.
+#               ${source_root}      -- The root directory containing the project's source files.
 #               ${siml_path}        -- Path to the Service Interface document file (.siml), relative to the specified ${source_root}.
 #               ${generate_path}    -- Subdirectory path within ${AREG_GENERATE_DIR} where the generated files will be stored.
 # Usage ......: addServiceInterfaceEx(<library-name> <source-root> <service-interface-relative-path> <relative-path-to-generate-codes>)

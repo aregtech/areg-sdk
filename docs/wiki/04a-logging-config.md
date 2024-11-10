@@ -2,6 +2,15 @@
 
 The AREG SDK offers a highly configurable logging system via the **AREG log configuration file** (`areg.init`), allowing customization of log files, destinations, scope settings, and message priority to support enhanced debugging and runtime analysis.
 
+## Table of Contents
+
+- [Key Configuration Options](#key-configuration-options)
+- [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
+- [Remote Log Collector Configuration](#remote-log-collector-configuration)
+- [Scopes and Log Priorities](#scopes-and-log-priorities)
+  - [Log Priority Levels](#log-priority-levels)
+- [Conclusion](#conclusion)
+
 ---
 
 ## Key Configuration Options
@@ -12,7 +21,7 @@ The `areg.init` file, located in the `./config` folder by default, structures lo
 - **module**: Targets specific applications or globally (`*`).
 - **property & position**: Defines settings like file paths, destinations, and logging levels.
 
-For more syntax details, see the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
+For more syntax details, see the [AREG SDK Persistence Syntax documentation](./06a-persistence-syntax.md).
 
 ---
 
@@ -32,7 +41,15 @@ Example setup:
 log::*::target = remote | file | debug | db
 log::*::enable::file = true
 log::*::file::location = ./logs/%appname%_%time%.log
-```
+```- [AREG SDK Logging Configuration Guide](#areg-sdk-logging-configuration-guide)
+  - [Key Configuration Options](#key-configuration-options)
+  - [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
+  - [Configuring Log Message Layout](#configuring-log-message-layout)
+  - [Remote Log Collector Configuration](#remote-log-collector-configuration)
+  - [Scopes and Log Priorities](#scopes-and-log-priorities)
+    - [Log Priority Levels](#log-priority-levels)
+  - [Conclusion](#conclusion)
+
 
 The `log::*::enable` setting manages log activation, while parameters (e.g., `log::*::remote::queue`) optimize start-up or delayed connections. The file naming mask `%appname%_%time%.log` dynamically includes the application name and timestamp.
 
@@ -75,13 +92,13 @@ logger::*::address::tcpip = 127.0.0.1
 logger::*::port::tcpip = 8282
 ```
 
-This setup enables central log collection over a network. Scopes and priorities are adjustable in real-time through the [Log Observer](./logobserver.md) console application.
+This setup enables central log collection over a network. Scopes and priorities are adjustable in real-time through the [Log Observer](./04c-logobserver.md) console application.
 
 ---
 
 ## Scopes and Log Priorities
 
-AREG’s logging system supports selective logging by scope and priority, enabling efficient log filtering. Configure scopes in the `log` section using the `scope` property (`log::*::scope::*`) for initial setup.
+AREG's logging system supports selective logging by scope and priority, enabling efficient log filtering. Configure scopes in the `log` section using the `scope` property (`log::*::scope::*`) for initial setup.
 
 Scopes can be enabled, disabled, or grouped by priority. Example configurations:
 ```plaintext
@@ -106,7 +123,7 @@ Supported priorities include:
 
 For instance, `WARN | SCOPE` logs *Warnings*, *Errors*, *Fatal Errors*, and scope *Enter/Exit*, excluding *Debug* and *Information* levels. The priority `DEBUG | SCOPE` will log all messages.
 
-The AREG Framework allows runtime adjustments using the `logobserver` tool, providing real-time control over scopes and priorities. For details, see the [Log Observer documentation](./logobserver.md).
+The AREG Framework allows runtime adjustments using the `logobserver` tool, providing real-time control over scopes and priorities. For details, see the [Log Observer documentation](./04c-logobserver.md).
 
 ---
 

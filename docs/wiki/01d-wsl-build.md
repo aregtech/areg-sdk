@@ -2,7 +2,7 @@
 
 Following these steps will guide you through setting up, troubleshooting, and running AREG SDK on WSL effectively.
 
-## Contents
+## Table of Contents
 1. [General Information](#general-information)
 2. [Installing a Linux Distribution in WSL](#installing-linux-distribution-in-wsl)
 3. [Troubleshooting WSL Updates](#troubleshooting-wsl-updates)
@@ -23,7 +23,7 @@ The following sections provide setup, installation, and troubleshooting steps to
 
 ## 1. Installing a Linux Distribution in WSL
 
-Follow [Microsoft’s WSL installation guide](https://learn.microsoft.com/en-us/windows/wsl/install-manual) for complete steps. To install Ubuntu, use:
+Follow [Microsoft's WSL installation guide](https://learn.microsoft.com/en-us/windows/wsl/install-manual) for complete steps. To install Ubuntu, use:
 ```bash
 wsl --install -d ubuntu
 ```
@@ -69,8 +69,8 @@ Install the essential tools and libraries to compile AREG SDK:
 sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
 ```
 
-For package specifics, consult your Linux distribution’s package list, such as [Ubuntu Packages](https://packages.ubuntu.com/).<br/>
-Refer to the **System Requirements** for Linux platforms in the [Building AREG SDK with CMake](./cmake-build.md) document.
+For package specifics, consult your Linux distribution's package list, such as [Ubuntu Packages](https://packages.ubuntu.com/).<br/>
+Refer to the **System Requirements** for Linux platforms in the [Building AREG SDK with CMake](./01b-cmake-build.md) document.
 
 ---
 
@@ -114,7 +114,7 @@ Example commands to build AREG SDK with CMake:
    cmake --build ./build -j
    ```
 
-Refer to the **[AREG SDK build](./cmake-build.md)** document for further details.
+Refer to the **[AREG SDK build](./01b-cmake-build.md)** document for further details.
 
 ---
 
