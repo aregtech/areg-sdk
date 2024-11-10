@@ -2,7 +2,7 @@
 
 Following these steps will guide you through setting up, troubleshooting, and running AREG SDK on WSL effectively.
 
-## Contents
+## Table of Contents
 1. [General Information](#general-information)
 2. [Installing a Linux Distribution in WSL](#installing-linux-distribution-in-wsl)
 3. [Troubleshooting WSL Updates](#troubleshooting-wsl-updates)

@@ -2,6 +2,17 @@
 
 The AREG SDK offers a highly configurable logging system via the **AREG log configuration file** (`areg.init`), allowing customization of log files, destinations, scope settings, and message priority to support enhanced debugging and runtime analysis.
 
+## Table of Contents
+
+- [AREG SDK Logging Configuration Guide](#areg-sdk-logging-configuration-guide)
+  - [Table of Contents](#table-of-contents)
+  - [Key Configuration Options](#key-configuration-options)
+  - [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
+  - [Remote Log Collector Configuration](#remote-log-collector-configuration)
+  - [Scopes and Log Priorities](#scopes-and-log-priorities)
+    - [Log Priority Levels](#log-priority-levels)
+  - [Conclusion](#conclusion)
+
 ---
 
 ## Key Configuration Options
@@ -32,7 +43,15 @@ Example setup:
 log::*::target = remote | file | debug | db
 log::*::enable::file = true
 log::*::file::location = ./logs/%appname%_%time%.log
-```
+```- [AREG SDK Logging Configuration Guide](#areg-sdk-logging-configuration-guide)
+  - [Key Configuration Options](#key-configuration-options)
+  - [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
+  - [Configuring Log Message Layout](#configuring-log-message-layout)
+  - [Remote Log Collector Configuration](#remote-log-collector-configuration)
+  - [Scopes and Log Priorities](#scopes-and-log-priorities)
+    - [Log Priority Levels](#log-priority-levels)
+  - [Conclusion](#conclusion)
+
 
 The `log::*::enable` setting manages log activation, while parameters (e.g., `log::*::remote::queue`) optimize start-up or delayed connections. The file naming mask `%appname%_%time%.log` dynamically includes the application name and timestamp.
 
