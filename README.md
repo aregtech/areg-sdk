@@ -38,9 +38,6 @@
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
-- [Project Status](#project-status)
-- [Introduction](#introduction)
-- [Table of contents](#table-of-contents)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than Embedded](#more-than-embedded)

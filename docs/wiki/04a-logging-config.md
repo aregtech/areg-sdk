@@ -4,14 +4,12 @@ The AREG SDK offers a highly configurable logging system via the **AREG log conf
 
 ## Table of Contents
 
-- [AREG SDK Logging Configuration Guide](#areg-sdk-logging-configuration-guide)
-  - [Table of Contents](#table-of-contents)
-  - [Key Configuration Options](#key-configuration-options)
-  - [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
-  - [Remote Log Collector Configuration](#remote-log-collector-configuration)
-  - [Scopes and Log Priorities](#scopes-and-log-priorities)
-    - [Log Priority Levels](#log-priority-levels)
-  - [Conclusion](#conclusion)
+- [Key Configuration Options](#key-configuration-options)
+- [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
+- [Remote Log Collector Configuration](#remote-log-collector-configuration)
+- [Scopes and Log Priorities](#scopes-and-log-priorities)
+  - [Log Priority Levels](#log-priority-levels)
+- [Conclusion](#conclusion)
 
 ---
 

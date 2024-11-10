@@ -13,17 +13,15 @@ This guide provides instructions for integrating the **AREG Framework** into an 
 
 ## Table of Contents
 
-- [Integrating AREG Framework with Microsoft Visual Studio](#integrating-areg-framework-with-microsoft-visual-studio)
-  - [Table of Contents](#table-of-contents)
-  - [AREG SDK General Requirements](#areg-sdk-general-requirements)
-  - [General Information](#general-information)
-  - [Example Code](#example-code)
-  - [Integration Methods](#integration-methods)
-    - [Method 1: Integrate Using `vcpkg` Package](#method-1-integrate-using-vcpkg-package)
-    - [Method 2: Integrate as Git Submodule](#method-2-integrate-as-git-submodule)
-  - [Advanced Integration](#advanced-integration)
-    - [Advanced MSBuild Options](#advanced-msbuild-options)
-    - [Advanced Project Settings](#advanced-project-settings)
+- [AREG SDK General Requirements](#areg-sdk-general-requirements)
+- [General Information](#general-information)
+- [Example Code](#example-code)
+- [Integration Methods](#integration-methods)
+  - [Method 1: Integrate Using `vcpkg` Package](#method-1-integrate-using-vcpkg-package)
+  - [Method 2: Integrate as Git Submodule](#method-2-integrate-as-git-submodule)
+- [Advanced Integration](#advanced-integration)
+  - [Advanced MSBuild Options](#advanced-msbuild-options)
+  - [Advanced Project Settings](#advanced-project-settings)
 
 ---
 

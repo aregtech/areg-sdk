@@ -10,19 +10,17 @@ This guide covers how to integrate the **AREG Framework** into an existing proje
 > For a practical example of integrating AREG SDK libraries and tools, see the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
 
 ## Table of Contents
-- [Integrating AREG Framework with CMake](#integrating-areg-framework-with-cmake)
-  - [Table of Contents](#table-of-contents)
-  - [AREG SDK General Requirements](#areg-sdk-general-requirements)
-  - [General Information](#general-information)
-  - [Example Code](#example-code)
-  - [Integration Methods](#integration-methods)
-    - [Method 1: Integrate by Fetching Sources](#method-1-integrate-by-fetching-sources)
-    - [Method 2: Integrate Using `vcpkg` Package](#method-2-integrate-using-vcpkg-package)
-    - [Method 3: Integrate as Git Submodule](#method-3-integrate-as-git-submodule)
-  - [Advanced Integration](#advanced-integration)
-    - [Advanced CMake Options](#advanced-cmake-options)
-    - [Advanced CMake Functions](#advanced-cmake-functions)
-  - [Conclusion](#conclusion)
+- [AREG SDK General Requirements](#areg-sdk-general-requirements)
+- [General Information](#general-information)
+- [Example Code](#example-code)
+- [Integration Methods](#integration-methods)
+  - [Method 1: Integrate by Fetching Sources](#method-1-integrate-by-fetching-sources)
+  - [Method 2: Integrate Using `vcpkg` Package](#method-2-integrate-using-vcpkg-package)
+  - [Method 3: Integrate as Git Submodule](#method-3-integrate-as-git-submodule)
+- [Advanced Integration](#advanced-integration)
+  - [Advanced CMake Options](#advanced-cmake-options)
+  - [Advanced CMake Functions](#advanced-cmake-functions)
+- [Conclusion](#conclusion)
 
 ---
 

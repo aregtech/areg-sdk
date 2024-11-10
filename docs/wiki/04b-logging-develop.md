@@ -6,15 +6,13 @@ The AREG Framework features a robust, adaptable logging system ideal for monitor
 
 ## Table of Contents
 
-- [Developing with AREG Logging System](#developing-with-areg-logging-system)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Compile-Time Log Activation](#compile-time-log-activation)
-  - [Enabling \& Disabling Logs](#enabling--disabling-logs)
-    - [Activating Logs via the `Application` Class](#activating-logs-via-the-application-class)
-    - [Activating Logs via Macros](#activating-logs-via-macros)
-  - [Scopes \& Logging](#scopes--logging)
-  - [Logging Configuration](#logging-configuration)
+- [Overview](#overview)
+- [Compile-Time Log Activation](#compile-time-log-activation)
+- [Enabling \& Disabling Logs](#enabling--disabling-logs)
+  - [Activating Logs via the `Application` Class](#activating-logs-via-the-application-class)
+  - [Activating Logs via Macros](#activating-logs-via-macros)
+- [Scopes \& Logging](#scopes--logging)
+- [Logging Configuration](#logging-configuration)
 
 ---
 

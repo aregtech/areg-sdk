@@ -3,15 +3,13 @@
 The **Multicast Router (mcrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
 
 ## Table of Contents
-- [AREG SDK Multicast Router](#areg-sdk-multicast-router)
-  - [Table of Contents](#table-of-contents)
-  - [General Information](#general-information)
-  - [Router Setup](#router-setup)
-  - [Router Configuration](#router-configuration)
-  - [Command Line Options](#command-line-options)
-  - [Connection Initialization](#connection-initialization)
-    - [mcrouter Initialization](#mcrouter-initialization)
-    - [Application Setup](#application-setup)
+- [General Information](#general-information)
+- [Router Setup](#router-setup)
+- [Router Configuration](#router-configuration)
+- [Command Line Options](#command-line-options)
+- [Connection Initialization](#connection-initialization)
+  - [mcrouter Initialization](#mcrouter-initialization)
+  - [Application Setup](#application-setup)
 
 ---
 

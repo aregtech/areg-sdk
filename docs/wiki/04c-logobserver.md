@@ -3,13 +3,11 @@
 The **AREG SDK Log Observer** is a console tool designed for real-time log monitoring, data management, and dynamic control over log entries received from multiple applications distributed in the network. Acting as a client to the [Log Collector](./04d-logcollector.md), the Log Observer allows users to save logs to text files and/or SQLite databases while dynamically adjusting scope activation and filtering log priorities during runtime.
 
 ## Table of Contents
-- [AREG SDK Log Observer Application](#areg-sdk-log-observer-application)
-  - [Table of Contents](#table-of-contents)
-  - [General Information](#general-information)
-  - [Log Observer Setup](#log-observer-setup)
-  - [Log Observer Configuration](#log-observer-configuration)
-  - [Command Line Options](#command-line-options)
-  - [Connection Initialization](#connection-initialization)
+- [General Information](#general-information)
+- [Log Observer Setup](#log-observer-setup)
+- [Log Observer Configuration](#log-observer-configuration)
+- [Command Line Options](#command-line-options)
+- [Connection Initialization](#connection-initialization)
 
 ---
 
