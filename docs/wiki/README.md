@@ -9,7 +9,7 @@ These pages serve as comprehensive resources, providing detailed descriptions of
 
 ## Getting Started
 
-The following sections guide you through installing, configuring, and using the AREG SDK, with links to more detailed documentation in our [Wiki](#wiki-references).
+The following sections guide you through installing, configuring, and using the AREG SDK, with links to more detailed documentation in our Wiki.
 
 1. **Installation and Setup**
    - **[Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-package.md)**: Guide to installing the AREG SDK with the `vcpkg` package manager.
