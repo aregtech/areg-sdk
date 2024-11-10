@@ -689,24 +689,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{31AB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A5DB-4F6E-A526-6AA2B3C31AD3}"
 	ProjectSection(SolutionItems) = preProject
-		docs\wiki\areg-package.md = docs\wiki\areg-package.md
-		docs\wiki\build.md = docs\wiki\build.md
-		docs\wiki\cmake-build.md = docs\wiki\cmake-build.md
-		docs\wiki\cmake-config.md = docs\wiki\cmake-config.md
-		docs\wiki\cmake-functions.md = docs\wiki\cmake-functions.md
-		docs\wiki\cmake-integrate.md = docs\wiki\cmake-integrate.md
-		docs\wiki\code-generator.md = docs\wiki\code-generator.md
-		docs\wiki\logcollector.md = docs\wiki\logcollector.md
-		docs\wiki\logging-config.md = docs\wiki\logging-config.md
-		docs\wiki\logging-develop.md = docs\wiki\logging-develop.md
-		docs\wiki\logobserver.md = docs\wiki\logobserver.md
-		docs\wiki\mcrouter.md = docs\wiki\mcrouter.md
-		docs\wiki\msvc-build.md = docs\wiki\msvc-build.md
-		docs\wiki\msvc-integrate.md = docs\wiki\msvc-integrate.md
-		docs\wiki\persistence-syntax.md = docs\wiki\persistence-syntax.md
+		docs\wiki\01a-areg-package.md = docs\wiki\01a-areg-package.md
+		docs\wiki\01b-cmake-build.md = docs\wiki\01b-cmake-build.md
+		docs\wiki\01c-msvc-build.md = docs\wiki\01c-msvc-build.md
+		docs\wiki\01d-wsl-build.md = docs\wiki\01d-wsl-build.md
+		docs\wiki\02a-cmake-config.md = docs\wiki\02a-cmake-config.md
+		docs\wiki\02b-cmake-functions.md = docs\wiki\02b-cmake-functions.md
+		docs\wiki\02c-cmake-integrate.md = docs\wiki\02c-cmake-integrate.md
+		docs\wiki\02d-msvc-integrate.md = docs\wiki\02d-msvc-integrate.md
+		docs\wiki\03a-code-generator.md = docs\wiki\03a-code-generator.md
+		docs\wiki\04a-logging-config.md = docs\wiki\04a-logging-config.md
+		docs\wiki\04b-logging-develop.md = docs\wiki\04b-logging-develop.md
+		docs\wiki\04c-logobserver.md = docs\wiki\04c-logobserver.md
+		docs\wiki\04d-logcollector.md = docs\wiki\04d-logcollector.md
+		docs\wiki\05a-mcrouter.md = docs\wiki\05a-mcrouter.md
+		docs\wiki\06a-persistence-syntax.md = docs\wiki\06a-persistence-syntax.md
 		docs\wiki\README.md = docs\wiki\README.md
-		docs\wiki\vscode.md = docs\wiki\vscode.md
-		docs\wiki\wsl-build.md = docs\wiki\wsl-build.md
 	EndProjectSection
 EndProject
 Global

@@ -9,19 +9,21 @@ This guide provides instructions for integrating the **AREG Framework** into an 
 > For a practical example of integrating AREG SDK libraries and tools, refer to the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
 
 > [!NOTE]  
-> Alternatively, you can learn how to [integrate AREG Framework in a project with CMake](./cmake-integrate.md).
+> Alternatively, you can learn how to [integrate AREG Framework in a project with CMake](./02c-cmake-integrate.md).
 
 ## Table of Contents
 
-- [AREG SDK General Requirements](#areg-sdk-general-requirements)
-- [General Information](#general-information)
-- [Example Code](#example-code)
-- [Integration Methods](#integration-methods)
-  - [Method 1: Integrate Using `vcpkg` Package](#method-1-integrate-using-vcpkg-package)
-  - [Method 2: Integrate as Git Submodule](#method-2-integrate-as-git-submodule)
-- [Advanced Integration](#advanced-integration)
-  - [Advanced MSBuild Options](#advanced-msbuild-options)
-  - [Advanced Project Settings](#advanced-project-settings)
+- [Integrating AREG Framework with Microsoft Visual Studio](#integrating-areg-framework-with-microsoft-visual-studio)
+  - [Table of Contents](#table-of-contents)
+  - [AREG SDK General Requirements](#areg-sdk-general-requirements)
+  - [General Information](#general-information)
+  - [Example Code](#example-code)
+  - [Integration Methods](#integration-methods)
+    - [Method 1: Integrate Using `vcpkg` Package](#method-1-integrate-using-vcpkg-package)
+    - [Method 2: Integrate as Git Submodule](#method-2-integrate-as-git-submodule)
+  - [Advanced Integration](#advanced-integration)
+    - [Advanced MSBuild Options](#advanced-msbuild-options)
+    - [Advanced Project Settings](#advanced-project-settings)
 
 ---
 
@@ -95,7 +97,7 @@ This example project and source file will be used throughout the integration ste
 4. **Build the `example` Project**:  
    Since the example code includes a direct link to the `areg` library (`#pragma comment(lib, "areg")`), no additional configuration is needed. Build the `example` project and run it.
 
-Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-package.md) for more details.
+Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-package.md) for more details.
 
 ### Method 2: Integrate as Git Submodule
 
@@ -120,7 +122,7 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-packa
      ```xml
      <AregSdkRoot>$(SolutionDir)areg-sdk/</AregSdkRoot>
      ```
-     Adjust other settings, such as `AregOutputXXX`, in `msvc_setup.props` if needed to fit your project’s build structure.
+     Adjust other settings, such as `AregOutputXXX`, in `msvc_setup.props` if needed to fit your project's build structure.
    
    - Add the `areg.vcxproj` project and optionally other `*.vcxproj` files located in `<areg-sdk>/framework` to your `example` solution.
    - In **Project** -> **Properties** for the `example` project, navigate to **C/C++** -> **General** -> **Additional Include Directories**, and add `$(AregFramework)`.
@@ -150,7 +152,7 @@ msbuild /m /property:Configuration=Release /property:Platform=Win32 /property:Ar
 
 ### Advanced Project Settings
 
-If you want to adopt the AREG SDK’s directory structure for your projects, use the `msvc-XXX.vcxproj` template files in `<areg-sdk>\docs\templates`. These templates include all necessary properties and compiler settings. Copy the required files, rename them, edit the GUIDs, and add them to your solution.
+If you want to adopt the AREG SDK's directory structure for your projects, use the `msvc-XXX.vcxproj` template files in `<areg-sdk>\docs\templates`. These templates include all necessary properties and compiler settings. Copy the required files, rename them, edit the GUIDs, and add them to your solution.
 
 Since Microsoft Visual Studio does not offer the same flexibility as CMake for dynamic builds, additional steps are needed if using the code generator:
 

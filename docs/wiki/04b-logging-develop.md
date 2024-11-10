@@ -6,11 +6,15 @@ The AREG Framework features a robust, adaptable logging system ideal for monitor
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Compile-Time Log Activation](#compile-time-log-activation)
-3. [Enabling & Disabling Logs](#enabling-disabling-logs)
-4. [Scopes & Logging](#scopes-logging)
-5. [Logging Configuration](#logging-configuration)
+- [Developing with AREG Logging System](#developing-with-areg-logging-system)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Compile-Time Log Activation](#compile-time-log-activation)
+  - [Enabling \& Disabling Logs](#enabling--disabling-logs)
+    - [Activating Logs via the `Application` Class](#activating-logs-via-the-application-class)
+    - [Activating Logs via Macros](#activating-logs-via-macros)
+  - [Scopes \& Logging](#scopes--logging)
+  - [Logging Configuration](#logging-configuration)
 
 ---
 
@@ -104,4 +108,4 @@ Activated scopes log relevant messages, enabling developers to trace method call
 
 ## Logging Configuration
 
-Configure logging settings via a configuration file (e.g., `areg.init`) located in the `./config` folder post-compilation. This file allows defining log files, activating specific scopes, and setting message priorities. See the [Logging Configuration guide](./logging-config.md) for detailed setup instructions, which enable customized log management and integration with the [Log Collector](./logcollector.md).
+Configure logging settings via a configuration file (e.g., `areg.init`) located in the `./config` folder post-compilation. This file allows defining log files, activating specific scopes, and setting message priorities. See the [Logging Configuration guide](./04a-logging-config.md) for detailed setup instructions, which enable customized log management and integration with the [Log Collector](./04d-logcollector.md).

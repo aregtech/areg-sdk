@@ -1,6 +1,6 @@
 # 16_pubfsm Project Overview
 
-The **16_pubfsm** project demonstrates how to build and manage a *Finite-State Machine* (**FSM**) using the AREG Framework’s powerful features like *Timers* and *Events*. This project showcases how FSM models can be developed to change the data and the states of Services.
+The **16_pubfsm** project demonstrates how to build and manage a *Finite-State Machine* (**FSM**) using the AREG Framework's powerful features like *Timers* and *Events*. This project showcases how FSM models can be developed to change the data and the states of Services.
 
 > [!IMPORTANT]
 > To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
@@ -33,7 +33,7 @@ The **16_pubfsm** project demonstrates how to build and manage a *Finite-State M
 
 ## Communication and Service Discovery
 
-- **mcrouter**: The communication between the *Service Provider* and *Service Consumers* is managed through `mcrouter`, AREG’s router for handling RPC message routing and inter-process communication. 
+- **mcrouter**: The communication between the *Service Provider* and *Service Consumers* is managed through `mcrouter`, AREG's router for handling RPC message routing and inter-process communication. 
 - **Service Discovery and Fault Tolerance**: The AREG Framework ensures automatic service discovery and fault tolerance, meaning the order in which services start is irrelevant. This makes the system robust and reliable even in unpredictable environments.
 
 ## Use Cases
@@ -44,4 +44,4 @@ The **16_pubfsm** project demonstrates how to build and manage a *Finite-State M
 
 ## Conclusion
 
-The **16_pubfsm** project highlights the AREG Framework’s ability to efficiently implement a *Finite-State Machine*. Whether you're developing device application or any event-driven systems, this project provides a scalable, robust solution using FSM, triggers, timers, and events. By leveraging the AREG SDK�s features like service discovery and fault tolerance, developers can focus on building highly reliable, state-based systems with ease.
+The **16_pubfsm** project highlights the AREG Framework's ability to efficiently implement a *Finite-State Machine*. Whether you're developing device application or any event-driven systems, this project provides a scalable, robust solution using FSM, triggers, timers, and events. By leveraging the AREG SDK's features like service discovery and fault tolerance, developers can focus on building highly reliable, state-based systems with ease.

@@ -15,7 +15,7 @@ The **AREG SDK Log Collector** is a centralized service designed to gather, mana
 
 ## General Information
 
-The AREG SDK Log Collector acts as a networking service within the AREG SDK's logging ecosystem. It facilitates centralized log collection by receiving logs from multiple applications, making them accessible to log observers for in-depth analysis and management. This service enables tailored log configurations, including specific scopes and priority levels, promoting efficient tracking and debugging across distributed applications. By integrating with the AREG SDK’s logging tools, the Log Collector enhances monitoring capabilities and provides an efficient pathway for real-time diagnostics in complex multiprocess scenarios.
+The AREG SDK Log Collector acts as a networking service within the AREG SDK's logging ecosystem. It facilitates centralized log collection by receiving logs from multiple applications, making them accessible to log observers for in-depth analysis and management. This service enables tailored log configurations, including specific scopes and priority levels, promoting efficient tracking and debugging across distributed applications. By integrating with the AREG SDK's logging tools, the Log Collector enhances monitoring capabilities and provides an efficient pathway for real-time diagnostics in complex multiprocess scenarios.
 
 ---
 
@@ -62,13 +62,13 @@ Setting descriptions:
 | `logger::*::service`          | Specifies the log collector process name.             |
 | `logger::*::connect`          | Lists supported protocols (TCP/IP in this example).   |
 | `logger::*::enable::tcpip`    | Activates or deactivates the protocol.                |
-| `logger::*::address::tcpip`   | Specifies the Log Collector’s network-accessible IP.  |
+| `logger::*::address::tcpip`   | Specifies the Log Collector's network-accessible IP.  |
 | `logger::*::port::tcpip`      | Assigns the port number.                              |
 
-For further details, refer to the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
+For further details, refer to the [AREG SDK Persistence Syntax documentation](./06a-persistence-syntax.md).
 
 > [!NOTE]
-> AREG SDK includes a console tool application, `logobserver`, for capturing logs, adjusting log scopes, filtering priorities, and saving logs to a file or SQLite database. More details are available in the [logobserver documentation](./logobserver.md).
+> AREG SDK includes a console tool application, `logobserver`, for capturing logs, adjusting log scopes, filtering priorities, and saving logs to a file or SQLite database. More details are available in the [logobserver documentation](./04c-logobserver.md).
 
 ---
 

@@ -1,5 +1,7 @@
 ﻿# CMake Configuration Options for Building AREG SDK
 
+*This document describes the variables listed in `user.cmake` file.*
+
 ## CMake Configuration Overview
 
 The AREG SDK offers flexible build configurations via CMake, allowing users to customize compilation settings, output directories, library types, and additional features for tailored development environments. These options can be adjusted to optimize the AREG SDK binaries for different systems, such as Linux and Windows, and to control features like testing, logging, and package usage.
@@ -105,7 +107,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 ---
 
 ### 2. **AREG_COMPILER**
-- **Description**: Defines the compiler for both C++ and C projects, using either the full path or a shorthand name (make sure the compiler’s directory is in your PATH environment variable). Alternatively, you can set the `CMAKE_CXX_COMPILER` variable directly, achieving the same effect. This option can be skipped if `CMAKE_CXX_COMPILER` is already specified.
+- **Description**: Defines the compiler for both C++ and C projects, using either the full path or a shorthand name (make sure the compiler's directory is in your PATH environment variable). Alternatively, you can set the `CMAKE_CXX_COMPILER` variable directly, achieving the same effect. This option can be skipped if `CMAKE_CXX_COMPILER` is already specified.
    - **Possible Values**: `g++`, `gcc`, `clang++`, `clang`, `c++`, `cc`, `cl`, `clang-cl`.
    - **Defaults**: System default compiler.
    - **Example**: `cmake -B ./build -DAREG_COMPILER=g++`
@@ -205,7 +207,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 ---
 
 ### 12. **AREG_GTEST_PACKAGE**
-   - **Description**: Determines whether the system-installed Google Test package is used or fetched and compiled directly from the Google repository. If enabled (`ON`), it will attempt to use the system package; otherwise, it fetches from the repository if the package isn’t found.
+   - **Description**: Determines whether the system-installed Google Test package is used or fetched and compiled directly from the Google repository. If enabled (`ON`), it will attempt to use the system package; otherwise, it fetches from the repository if the package isn't found.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
    - **Example**: `cmake -B ./build -DAREG_GTEST_PACKAGE=OFF`
@@ -215,7 +217,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 ---
 
 ### 23. **AREG_ENABLE_OUTPUTS**
-   - **Description**: Controls whether output directories use the CMake binary directory or AREG SDK-specific defaults. When disabled (`OFF`), AREG-specific settings are ignored in favor of CMake’s default outputs, useful when integrating AREG into third-party builds.
+   - **Description**: Controls whether output directories use the CMake binary directory or AREG SDK-specific defaults. When disabled (`OFF`), AREG-specific settings are ignored in favor of CMake's default outputs, useful when integrating AREG into third-party builds.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
    - **Example**: `cmake -B ./build -DAREG_ENABLE_OUTPUTS=OFF`
@@ -302,7 +304,7 @@ sudo cmake --install ./product/cache/llvm
 
 ### Quick Notes
 
-- **Root Directory**: To integrate AREG SDK sources in other projects, set `AREG_SDK_ROOT` to the AREG SDK’s root directory before including `user.cmake` or `setup.cmake`. In the AREG SDK project, `AREG_SDK_ROOT` defaults to `CMAKE_CURRENT_LIST_DIR` in `<areg-sdk root>/CMakeLists.txt` (i.e., `AREG_SDK_ROOT` is `<areg-sdk root>`).
+- **Root Directory**: To integrate AREG SDK sources in other projects, set `AREG_SDK_ROOT` to the AREG SDK's root directory before including `user.cmake` or `setup.cmake`. In the AREG SDK project, `AREG_SDK_ROOT` defaults to `CMAKE_CURRENT_LIST_DIR` in `<areg-sdk root>/CMakeLists.txt` (i.e., `AREG_SDK_ROOT` is `<areg-sdk root>`).
 
 - **Integrating as a Package**: When using AREG SDK as a package (e.g., via `vcpkg`), set `AREG_SDK_ROOT` to the package's `share` directory and `AREG_FRAMEWORK` to the `include` directory for headers.
 

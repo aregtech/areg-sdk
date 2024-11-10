@@ -42,11 +42,11 @@ The `codegen.jar` tool in the AREG SDK is a powerful utility that automates the 
 ## Integration Tips
 
 Use AREG **CMake functions** from [functions.cmake](./../../conf/cmake/functions.cmake) to automate file generation and inclusion:
-- **addServiceInterface**: Generates files in `${AREG_GENERATE_DIR}`, following a directory structure based on the `.siml` file’s parent path.
+- **addServiceInterface**: Generates files in `${AREG_GENERATE_DIR}`, following a directory structure based on the `.siml` file's parent path.
 - **addServiceInterfaceEx**: Allows files to be generated in any specified location.
 - **macro_add_service_interface**: Uses the specified code generator and location for generated files.
 
-For automated code generation and inclusion **with Microsoft Visual Studio**, refer to [Integrating AREG Framework with Microsoft Visual Studio](./msvc-integrate.md).
+For automated code generation and inclusion **with Microsoft Visual Studio**, refer to [Integrating AREG Framework with Microsoft Visual Studio](./02d-msvc-integrate.md).
 
 ## Example Workflow
 
@@ -73,7 +73,7 @@ For automated code generation and inclusion **with Microsoft Visual Studio**, re
    ```
    - Replace `<path-to-interface-document>`, `<path-to-generated-root-directory>`, and `<relative-output-path>` as appropriate.
 
-3. **Add Generated Files to Project**: Place the generated files in the static library project’s source directory, compile, and link them with the AREG SDK.
+3. **Add Generated Files to Project**: Place the generated files in the static library project's source directory, compile, and link them with the AREG SDK.
 
 4. **Implement Application Logic**: Use the generated stubs and clients to manage requests, responses, broadcasts, and other events, enabling the development of core functionality.
 

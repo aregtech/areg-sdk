@@ -93,5 +93,5 @@ For additional examples, see the [MSBuild Workflow](./../../.github/workflow/msb
 ### Additional Resources
 
 - For additional setup information, refer to [Visual Studio CMake Projects](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio) or [VS Code CMake Quickstart](https://code.visualstudio.com/docs/cpp/cmake-quickstart).
-- Additionally, read [Integrating AREG Framework with Microsoft Visual Studio](./msvc-integrate.md) document.
+- Additionally, read [Integrating AREG Framework with Microsoft Visual Studio](./02d-msvc-integrate.md) document.
 - For more information on building the AREG SDK, troubleshooting tips, or advanced setup options, see the **AREG SDK documentation** on [GitHub](https://github.com/aregtech/areg-sdk).

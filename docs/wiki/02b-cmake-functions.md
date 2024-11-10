@@ -42,7 +42,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
 The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable CMake utilities that simplify repetitive tasks, making project setup cleaner and more maintainable.
 
 > [!NOTE]
-> Include [areg.cmake](./../../conf/cmake/areg.cmake) (not functions.cmake) in `CMakeLists.txt` files to ensure proper AREG Framework integration after setting `AREG_SDK_ROOT` to the `<areg-sdk>` installation directory. More details can be found in the [AREG Framework Integration](./cmake-integrate.md) document in the AREG SDK Wiki.
+> Include [areg.cmake](./../../conf/cmake/areg.cmake) (not functions.cmake) in `CMakeLists.txt` files to ensure proper AREG Framework integration after setting `AREG_SDK_ROOT` to the `<areg-sdk>` installation directory. More details can be found in the [AREG Framework Integration](./02c-cmake-integrate.md) document in the AREG SDK Wiki.
 
 ---
 
@@ -312,7 +312,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Purpose**: A wrapper for `macro_add_service_interface`, facilitating the generation of code and header files for a Service Interface document (`.siml` file) within a specified static library. This function assumes the code generator tool is located at `${AREG_SDK_TOOLS}/codegen.jar`. The generated files are placed within the `${AREG_GENERATE_DIR}`, with a subdirectory structure specified by `${generate_path}`.
 - **Parameters**:
   - `lib_name` [in]: The name of the static library to be created for the generated Service Interface code.
-  - `source_root` [in]: The root directory containing the project’s source files.
+  - `source_root` [in]: The root directory containing the project's source files.
   - `siml_path` [in]: Path to the Service Interface document file (.siml), relative to the specified `${source_root}`.
   - `generate_path` [in]: Subdirectory path within `${AREG_GENERATE_DIR}` where the generated files will be stored.
 - **Usage**: `addServiceInterfaceEx(<library-name> <source-root> <service-interface-relative-path> <relative-path-to-generate-codes>)`

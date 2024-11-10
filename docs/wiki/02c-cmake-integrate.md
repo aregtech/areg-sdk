@@ -10,17 +10,19 @@ This guide covers how to integrate the **AREG Framework** into an existing proje
 > For a practical example of integrating AREG SDK libraries and tools, see the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
 
 ## Table of Contents
-- [AREG SDK General Requirements](#areg-sdk-general-requirements)
-- [General Information](#general-information)
-- [Example Code](#example-code)
-- [Integration Methods](#integration-methods)
-  - [Method 1: Integrate by Fetching Sources](#method-1-integrate-by-fetching-sources)
-  - [Method 2: Integrate Using `vcpkg` Package](#method-2-integrate-using-vcpkg-package)
-  - [Method 3: Integrate as Git Submodule](#method-3-integrate-as-git-submodule)
-- [Advanced Integration](#advanced-integration)
-  - [Advanced CMake Options](#advanced-cmake-options)
-  - [Advanced CMake Functions](#advanced-cmake-functions)
-- [Conclusion](#conclusion)
+- [Integrating AREG Framework with CMake](#integrating-areg-framework-with-cmake)
+  - [Table of Contents](#table-of-contents)
+  - [AREG SDK General Requirements](#areg-sdk-general-requirements)
+  - [General Information](#general-information)
+  - [Example Code](#example-code)
+  - [Integration Methods](#integration-methods)
+    - [Method 1: Integrate by Fetching Sources](#method-1-integrate-by-fetching-sources)
+    - [Method 2: Integrate Using `vcpkg` Package](#method-2-integrate-using-vcpkg-package)
+    - [Method 3: Integrate as Git Submodule](#method-3-integrate-as-git-submodule)
+  - [Advanced Integration](#advanced-integration)
+    - [Advanced CMake Options](#advanced-cmake-options)
+    - [Advanced CMake Functions](#advanced-cmake-functions)
+  - [Conclusion](#conclusion)
 
 ---
 
@@ -190,7 +192,7 @@ target_link_libraries(example PRIVATE areg::areg)
    ./build/example
    ```
 
-Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-package.md) for more details.
+Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-package.md) for more details.
 
 ### Method 3: Integrate as Git Submodule
 
@@ -237,7 +239,7 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./areg-packa
 
 ### Advanced CMake Options
 
-The AREG SDK offers flexible configurations via CMake, allowing customization of compilation settings, output directories, and additional features. For the full list, refer to the [CMake Configuration Options for Building AREG SDK](./cmake-config.md) document.
+The AREG SDK offers flexible configurations via CMake, allowing customization of compilation settings, output directories, and additional features. For the full list, refer to the [CMake Configuration Options for Building AREG SDK](./02a-cmake-config.md) document.
 
 > [!IMPORTANT]  
 > Set options before including the `<areg-sdk>/areg.cmake` file.
@@ -265,7 +267,7 @@ addServiceInterface(coolservice "service/CoolService.siml")
 macro_declare_executable(cool coolservice main.cpp)
 ```
 
-See [AREG SDK CMake Functions and Macros](./cmake-functions.md) for details.
+See [AREG SDK CMake Functions and Macros](./02b-cmake-functions.md) for details.
 
 ---
 
