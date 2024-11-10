@@ -38,9 +38,8 @@ The following sections guide you through installing, configuring, and using the 
 6. **Data Management**
    - **[Key-Value Data Persistence Syntax in AREG SDK](./06a-persistence-syntax.md)**: Persistent data storage and management using AREG SDK's key-value storage options.
 
-<div align="center">
-  <kbd>**Help us to make docs greater:** See something is wrong, unclear or need a help? Submit a change, [open a discussion or ask](https://github.com/aregtech/areg-sdk/discussions) AREG SDK community a question.
+#wiki-footer
+**Help us to make docs greater:** See something is wrong, unclear or need a help? Submit a change, [open a discussion or ask](https://github.com/aregtech/areg-sdk/discussions) AREG SDK community a question.
 
 2023-2024 © Aregtech, www.aregtech.com, email: info[at]aregtech.com
-  </kbd>
-</div>
+
