@@ -697,6 +697,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\02b-cmake-functions.md = docs\wiki\02b-cmake-functions.md
 		docs\wiki\02c-cmake-integrate.md = docs\wiki\02c-cmake-integrate.md
 		docs\wiki\02d-msvc-integrate.md = docs\wiki\02d-msvc-integrate.md
+		docs\wiki\02e-preprocessor-definitions.md = docs\wiki\02e-preprocessor-definitions.md
 		docs\wiki\03a-code-generator.md = docs\wiki\03a-code-generator.md
 		docs\wiki\04a-logging-config.md = docs\wiki\04a-logging-config.md
 		docs\wiki\04b-logging-develop.md = docs\wiki\04b-logging-develop.md

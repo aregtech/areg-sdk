@@ -22,6 +22,7 @@ The following sections guide you through installing, configuring, and using the 
    - **[AREG SDK CMake Functions and Macros](./02b-cmake-functions.md)**: Details on CMake functions and macros provided by AREG SDK.
    - **[Integrating AREG Framework with CMake](./02c-cmake-integrate.md)**: Steps to integrate AREG SDK in your CMake projects.
    - **[Integrating AREG Framework with Microsoft Visual Studio](./02d-msvc-integrate.md)**: How to link and use AREG SDK within Visual Studio projects.
+   - **[AREG SDK Preprocessor Definitions Guide: Configuration and Usage Across Toolchains](./02e-preprocessor-definitions.md)**: Comprehensive guide to configuring preprocessor definitions for the AREG SDK across different development environments and toolchains.
 
 3. **Development Tools**
    - **[AREG SDK Code Generator (`codegen.jar`)](./03a-code-generator.md)**: Guide for using AREG SDK's code generator to create service interfaces and streamline development.
