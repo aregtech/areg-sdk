@@ -33,16 +33,6 @@ set(AREG_OS ${CMAKE_SYSTEM_NAME})
 # Identify CPU platform
 set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 
-# Detect and set bitness here
-# 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-nit (x86)
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(AREG_BITNESS 64)
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(AREG_BITNESS 32)
-else()
-    message(WARNING "AREG: >>> Undefined Bitness, use default!")
-endif()
-
 # -----------------------------------------------------
 # areg specific internal variable settings
 # -----------------------------------------------------

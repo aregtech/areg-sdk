@@ -49,8 +49,10 @@ endif()
 
 if(${AREG_BITNESS} EQUAL 32)
     list(APPEND AREG_COMPILER_OPTIONS -m32)
+    list(APPEND AREG_LDFLAGS -m32)
 else()
     list(APPEND AREG_COMPILER_OPTIONS -m64)
+    list(APPEND AREG_LDFLAGS -m64)
 endif()
 
 # Disable clang common warnings

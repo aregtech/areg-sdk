@@ -840,3 +840,15 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "=======================================================================================")
 
 endfunction(printAregConfigStatus)
+
+macro(macro_system_bitness var_bitness)
+    # Detect and set bitness here
+    # 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-nit (x86)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(${var_bitness} 64)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set(${var_bitness} 32)
+    else()
+        set(${var_bitness} 0)
+    endif()
+endmacro(macro_system_bitness)

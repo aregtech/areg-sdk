@@ -26,8 +26,9 @@
 #  16. AREG_OUTPUT_BIN      -- Directory for output binaries (executables and shared libraries).
 #  17. AREG_OUTPUT_LIB      -- Directory for output static libraries.
 #  18. AREG_PACKAGES        -- Location for fetching third-party packages such as GTest.
-#  19. AREG_INSTALL         -- Enables or disables the installation of the AREG SDK. If enabled, any dependent libraries like 'sqlite3' and 'ncurses' also must be installed.
+#  19. AREG_INSTALL         -- Enables or disables the installation of the AREG SDK binaries and headers, including dependent libraries like 'sqlite3' and 'ncurses'.
 #  20. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
+#  21. AREG_BITNESS         -- The bitness of the compiled applications. It can be either 32- or 64-bits.
 #
 # Default Values:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
@@ -50,6 +51,7 @@
 #  18. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'
 #  19. AREG_INSTALL         = ON        (possible values: ON, OFF)
 #  20. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset)
+#  21. AREG_BITNESS         = System    (possible values: 32, 64)
 #
 # Hints:
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
@@ -223,8 +225,23 @@ endif()
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
-# Specify default bitness, the system bitness is detected in 'common.cmake'
-set(AREG_BITNESS 64)
+# Check and specify bitness
+macro_system_bitness(_sys_bitness)
+if (DEFINED AREG_BITNESS)
+    if (NOT AREG_BITNESS EQUAL 32 AND NOT AREG_BITNESS EQUAL 64)
+        if (NOT _sys_bitness EQUAL 0)
+            set(AREG_BITNESS ${_sys_bitness})
+        else()
+            message(WARNING "AREG: >>> Undefined Bitness, use default!")
+        endif()
+    endif()
+elseif (NOT _sys_bitness EQUAL 0)
+    set(AREG_BITNESS ${_sys_bitness})
+else()
+    message(WARNING "AREG: >>> Undefined System Bitness, use default!")
+    set(AREG_BITNESS 64)
+endif()
+unset(_sys_bitness)
 
 # Specify CPU platform here, the system CPU platform is detected in 'commmon.cmake'
 set(AREG_PROCESSOR x86_64)
