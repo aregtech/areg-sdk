@@ -109,9 +109,9 @@ list(APPEND AREG_OPT_DISABLE_WARN_CODEGEN
         -Wno-switch-enum
         -Wno-extra-semi-stmt
         -Wno-unused-parameter
-    )
+)
 
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
         -Wno-everything
-    )
+)
