@@ -121,12 +121,12 @@ class SynchLockAndWaitIX
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
-    using ImplWaitIDResource= TEResourceMapImpl<pthread_t, SynchLockAndWaitIX *>;
+    using ImplWaitIDResource= TEResourceMapImpl<ptr_type, SynchLockAndWaitIX *>;
     /**
      * \brief   Resource map of waitable where the keys are pthread_t (thread ID) and the values are
      *          LockAndWait objects. It is used in the timer.
      **/
-    using MapWaitIDResource = TELockResourceMap<pthread_t, SynchLockAndWaitIX *, MapWaitID, ImplWaitIDResource>;
+    using MapWaitIDResource = TELockResourceMap<ptr_type, SynchLockAndWaitIX *, MapWaitID, ImplWaitIDResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Friend classes

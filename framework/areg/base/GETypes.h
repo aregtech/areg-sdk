@@ -73,9 +73,9 @@ typedef unsigned long   id_type;
 #else   // defined(BIT32)
 
     #ifdef _UINTPTR_T_DEFINED
-        typedef uintptr_t   ptr_type;
+        typedef uintptr_t       ptr_type;
     #else   // !_UINTPTR_T_DEFINED
-        typedef uint32_t    ptr_type;
+        typedef unsigned long   ptr_type;
     #endif  // _UINTPTR_T_DEFINED
 
 #endif  // ptr_type

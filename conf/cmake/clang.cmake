@@ -38,6 +38,15 @@ else()
     # POSIX API
     set(AREG_DEVELOP_ENV "Posix")
     add_definitions(-DPOSIX)
+
+    if(${AREG_BITNESS} EQUAL 32)
+        list(APPEND AREG_COMPILER_OPTIONS -m32)
+        list(APPEND AREG_LDFLAGS -m32)
+    else()
+        list(APPEND AREG_COMPILER_OPTIONS -m64)
+        list(APPEND AREG_LDFLAGS -m64)
+    endif()
+
     # Clang compile options
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0)
     # Linker flags (-l is not necessary)
@@ -45,14 +54,6 @@ else()
     set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
     set(AREG_COMPILER_VERSION -stdlib=libstdc++)
 
-endif()
-
-if(${AREG_BITNESS} EQUAL 32)
-    list(APPEND AREG_COMPILER_OPTIONS -m32)
-    list(APPEND AREG_LDFLAGS -m32)
-else()
-    list(APPEND AREG_COMPILER_OPTIONS -m64)
-    list(APPEND AREG_LDFLAGS -m64)
 endif()
 
 # Disable clang common warnings
