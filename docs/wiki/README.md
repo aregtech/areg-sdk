@@ -39,6 +39,10 @@ The following sections guide you through installing, configuring, and using the 
 6. **Data Management**
    - **[Key-Value Data Persistence Syntax in AREG SDK](./06a-persistence-syntax.md)**: Persistent data storage and management using AREG SDK's key-value storage options.
 
+7. **Troubleshootings**
+   - **[Troubleshooting WSL Updates](./07a-troubleshooting-wsl-update.md)**: Provides solutions for common issues encountered while updating the WSL.
+   - **[Troubleshooting CMake Builds on Linux](./07b-troubleshooting-cmake-linux-builds.md)**: Provides solutions for common errors encountered during the CMake compilation process on Linux.
+
 ```
 Help us to make docs greater.
 See something is wrong, unclear or need a help? 

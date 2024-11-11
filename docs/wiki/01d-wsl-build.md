@@ -9,6 +9,11 @@ Following these steps will guide you through setting up, troubleshooting, and ru
 4. [Installing Build Tools](#installing-build-tools)
 5. [Cloning AREG SDK in WSL](#cloning-areg-sdk-in-wsl)
 6. [Compiling AREG SDK](#compiling-areg-sdk)
+   - [CMake with Clang](#cmake-with-clang)
+   - [CMake with GCC](#cmake-with-gcc)
+   - [CMake for 32-bit Build with Clang](#cmake-for-32bit-build-with-clang)
+   - [CMake for 32-bit ARM Build with GNU](#cmake-for-32bit-arm-build-with-gnu)
+   - [CMake for 64-bit ARM Build with GNU](#cmake-for-64bit-arm-build-with-gnu)
 7. [Running Applications](#running-applications)
 
 ---
@@ -69,6 +74,11 @@ Install the essential tools and libraries to compile AREG SDK:
 sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
 ```
 
+You would need additional tools if you want to compile for 32-bit system:
+```bash
+sudo apt-get install -y gcc-multilib g++-multilib
+```
+
 For package specifics, consult your Linux distribution's package list, such as [Ubuntu Packages](https://packages.ubuntu.com/).<br/>
 Refer to the **System Requirements** for Linux platforms in the [Building AREG SDK with CMake](./01b-cmake-build.md) document.
 
@@ -100,21 +110,90 @@ cd /mnt/c/projects/areg-sdk/
 
 ## 5. Compiling AREG SDK
 
-Example commands to build AREG SDK with CMake:
+This section provides example commands for compiling AREG SDK using CMake in different configurations.
 
-- **CMake with Clang (Release):**
-   ```bash
-   cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TYPE=Release -DAREG_EXTENDED:BOOL=ON
-   cmake --build ./build -j
-   ```
+### CMake with Clang
+To configure and build binaries with the `clang++` compiler in `Release` mode:
+```bash
+cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TYPE=Release
+cmake --build ./build -j
+```
 
-- **CMake with GCC (Debug):**
-   ```bash
-   cmake -B ./build -DAREG_COMPILER_FAMILY=gnu -DAREG_BUILD_TYPE=Debug -DAREG_EXTENDED:BOOL=ON
-   cmake --build ./build -j
-   ```
+### CMake with GCC
+To configure and build binaries with the `g++` compiler in `Debug` mode:
+```bash
+cmake -B ./build -DAREG_COMPILER_FAMILY=gnu -DAREG_BUILD_TYPE=Debug
+cmake --build ./build -j
+```
 
-Refer to the **[AREG SDK build](./01b-cmake-build.md)** document for further details.
+### CMake for 32-bit Build with Clang
+To compile for a 32-bit system, first install the required libraries:
+```bash
+sudo apt-get install -y gcc-multilib g++-multilib
+```
+Configure and build binaries with `clang++` for a 32-bit system:
+```bash
+cmake -B ./build -DAREG_PROCESSOR=x86 -DAREG_COMPILER_FAMILY=llvm
+cmake --build ./build -j
+```
+
+> [!TIP]  
+> To verify if an application is compiled for a 32-bit system, navigate to the build binary directory and use:
+> ```bash
+> file ./mcrouter.out
+> ```
+> This command shows the binary's architecture. Example output for a 32-bit `mcrouter` binary:
+> > ./mcrouter.out: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
+> 
+> Alternatively, run:
+> ```bash
+> od -t x1 -t c ./mcrouter | head -n 2
+> ```
+> Here, the 5th byte of the **ELF Header** should be `001` for a 32-bit executable and `002` for a 64-bit.
+> ```plaintext
+> 0000000  7f  45  4c  46  01  01  01  00  00  00  00  00  00  00  00  00
+>         177   E   L   F 001 001 001  \0  \0  \0  \0  \0  \0  \0  \0  \0
+> ```
+> For more details, see the **[ELF Header](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header)** documentation.
+
+> [!IMPORTANT]
+> **Troubleshooting**: If you encounter a "could not find `<asm/errno.h>`" error, resolve it by creating a symbolic link:
+> ```bash
+> sudo ln -s /usr/include/asm-generic/ /usr/include/asm
+> ```
+
+### CMake for 32-bit ARM Build with GNU
+To compile for a 32-bit ARM system, first install the required toolchain:
+```bash
+sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+```
+
+> [!NOTE]
+> Make sure that `gcc-arm-linux-gnueabihf` is better solution than `gcc-arm-linux-gnueab` for your device. By default, for ARM processors AREG compiles with `gcc-arm-linux-gnueabihf`.
+
+
+Then configure and build AREG SDK binaries:
+```bash
+cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
+cmake --build ./build -j
+```
+Check the binary with `file ./mcrouter.out`. If successful, you’ll see output like:
+> ./mcrouter.out: ELF **32-bit** LSB executable, **ARM**, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.3, BuildID[sha1]=c606ea5ce7be9cb1175fd87587b5975e235c084e, for GNU/Linux 3.2.0, not stripped
+
+### CMake for 64-bit ARM Build with GNU
+To compile for a 64-bit ARM system, install the appropriate toolchain:
+```bash
+sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+```
+Then configure and build AREG SDK binaries:
+```bash
+cmake -B ./build -DAREG_PROCESSOR=aarch64 -DAREG_COMPILER_FAMILY=gnu
+cmake --build ./build -j
+```
+Check the binary with `file ./mcrouter.out`. Successful output will look like:
+> ./mcrouter.out: ELF **64-bit** LSB pie executable, **ARM aarch64**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=bcf786a8c893b950868addecbc347d24518a25cd, for GNU/Linux 3.7.0, not stripped
+
+For more information, refer to the **[AREG SDK Build Guide](./01b-cmake-build.md)**.
 
 ---
 

@@ -705,6 +705,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\04d-logcollector.md = docs\wiki\04d-logcollector.md
 		docs\wiki\05a-mcrouter.md = docs\wiki\05a-mcrouter.md
 		docs\wiki\06a-persistence-syntax.md = docs\wiki\06a-persistence-syntax.md
+		docs\wiki\07a-troubleshooting-wsl-update.md = docs\wiki\07a-troubleshooting-wsl-update.md
+		docs\wiki\07b-troubleshooting-cmake-linux-builds.md = docs\wiki\07b-troubleshooting-cmake-linux-builds.md
 		docs\wiki\README.md = docs\wiki\README.md
 	EndProjectSection
 EndProject

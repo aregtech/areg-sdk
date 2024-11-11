@@ -18,6 +18,8 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
    - [`macro_declare_executable`](#macro_declare_executable)
    - [`macro_setup_compilers_data`](#macro_setup_compilers_data)
    - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
+   - [`macro_guess_processor_architecture`](#macro_guess_processor_architecture)
+   - [`macro_system_bitness`](#macro_system_bitness)
 - [CMake Functions Overview](#cmake-functions-overview)
    - [`setAppOptions`](#setappoptions)
    - [`addExecutableEx`](#addexecutableex)
@@ -205,6 +207,30 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Example**:
    ```cmake
    macro_setup_compilers_data_by_family("gnu" AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _is_identified)
+   ```
+
+### `macro_guess_processor_architecture`
+- **Syntax**: `macro_guess_processor_architecture(compiler_path target_processor target_bitness)`
+- **Purpose**: If possible, detects the processor architecture and bitness by given compiler path.
+- **Parameters**:
+  - `compiler_path` [in] : Compiler path.
+  - `target_processor` [out]: Name of variable to set the CPU architecture value.
+  - `target_bitness` [out]: Name of variable to set the CPU bitness value.
+- **Usage**: `macro_guess_processor_architecture(<compiler-path> <processor-var> <bitness-var>)`
+- **Example**:
+   ```cmake
+   macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
+   ```
+
+### `macro_system_bitness`
+- **Syntax**: `macro_system_bitness(var_bitness)`
+- **Purpose**: Extracts the system default bitness. Sets in variable value `32` for 32-bit, or `64` for 64-bit system.
+- **Parameters**:
+  - `var_bitness` [out]: Name of variable to set the system bitness.
+- **Usage**: `macro_system_bitness(<var-name>)`
+- **Example**:
+   ```cmake
+   macro_system_bitness(_sys_bitness)
    ```
 
 ---

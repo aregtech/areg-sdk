@@ -18,6 +18,10 @@ This guide provides step-by-step instructions for building the **AREG SDK** on L
   - [Step 5: Running Tests and Installing](#step-5-running-tests-and-installing)
     - [Run Unit Tests:](#run-unit-tests)
     - [Install AREG SDK:](#install-areg-sdk)
+- [Cross-Compiling AREG SDK](#crosscompiling-areg-sdk)
+  - [Cross-Compiling for 32-bit Systems](#crosscompiling-for-32bit-systems)
+  - [Cross-Compiling for ARM Processors](#crosscompiling-for-arm-processors)
+  - [Cross-Compiling for AARCH64 (64-bit ARM)](#crosscompilingfor-aarch64-64bit-arm)
 - [Additional IDE Configurations](#additional-ide-configurations)
 
 ---
@@ -131,6 +135,113 @@ Install AREG SDK binaries and headers to develop multithreaded and multiprocessi
   ```powershell
   cmake --install ./build
   ```
+
+---
+
+## Cross-Compiling AREG SDK
+
+Cross-compiling allows building applications for architectures different from the native environment. Here are instructions for configuring AREG SDK to compile for 32-bit systems, as well as ARM and AARCH64 (64-bit ARM) processors.
+
+**Supported Compilers, Platforms and Architectures**
+| Compiler  | Platform      |API            | CPU Architecture          |
+|-----------|---------------|---------------|---------------------------|
+| GNU       | Linux, macOS  | POSIX         | x86, x86_64, arm, aarch64 |
+| Clang     | Linux, Windows| POSIX, Win32  | x86, x86_64               |
+| MSVC      | Windows       | Win32         | x86, x86_64               |
+| Cygwin GNU| Windows       | POSIX         | x86, x86_64               |
+
+
+### Cross-Compiling for 32-bit Systems
+
+To compile AREG SDK for a 32-bit system, you need to specify the target bitness and ensure you have the correct 32-bit libraries installed.
+
+**Steps**
+
+1. **Install Required Libraries**
+  ```bash
+  sudo apt-get install -y gcc-multilib g++-multilib
+  ```
+2. **Configure CMake for 32-bit x86 Architecture**
+  Optionally select compiler (here it is `clang++`)
+  ```bash
+  cmake -B ./build -DAREG_PROCESSOR=x86 -DAREG_COMPILER_FAMILY=llvm
+  ```
+3. **Build AREG SDK**
+  ```bash
+  cmake --build ./build -j 20
+  ```
+
+To verify that a binary is 32-bit, navigate to the build directory and run:
+```bash
+file ./mcrouter.out
+```
+This command should output something like:
+> ./mcrouter.out: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
+
+Alternatively, you can run:
+```bash
+od -t x1 -t c ./mcrouter | head -n 2
+```
+In the ELF Header, the 5th byte `001` indicates a 32-bit executable, while `002` indicates 64-bit.
+> ```plaintext
+> 0000000  7f  45  4c  46  01  01  01  00  00  00  00  00  00  00  00  00
+>         177   E   L   F 001 001 001  \0  \0  \0  \0  \0  \0  \0  \0  \0
+> ```
+For further details, refer to the **[ELF Header](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header)** Wikipedia page.
+
+### Cross-Compiling for ARM Processors
+
+Cross-compiling for ARM processors requires an ARM-compatible toolchain and configuring CMake for ARM architecture.
+
+**Steps**
+
+1. **Install ARM Toolchain**
+  ```bash
+  sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+  ```
+  > [!NOTE]
+  > For most 32-bit modern ARM processors, `gcc-arm-linux-gnueabihf` is recommended over `gcc-arm-linux-gnueab`.
+
+2. **Configure CMake for ARM Architecture**
+  ```bash
+  cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
+  ```
+3. **Build AREG SDK**
+  ```bash
+  cmake --build ./build -j 20
+  ```
+
+Verify the architecture of the compiled binary with:
+```bash
+file ./mcrouter.out
+```
+This should output message `ELF 32-bit LSB executable, ARM, ...`.
+
+### Cross-Compiling for AARCH64 (64-bit ARM)
+
+For AARCH64 architecture, install the 64-bit ARM toolchain and configure CMake accordingly.
+
+**Steps**
+1. **Install AARCH64 Toolchain**
+  ```bash
+  sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+  ```
+
+2. **Configure CMake for AARCH64 Architecture**
+  ```bash
+  cmake -B ./build -DAREG_PROCESSOR=aarch64 -DAREG_COMPILER_FAMILY=gnu
+  ```
+
+3. **Build AREG SDK**
+  ```bash
+  cmake --build ./build -j 20
+  ```
+
+Verify the binary architecture:
+```bash
+file ./mcrouter.out
+```
+This should output message `ELF 64-bit LSB executable, ARM aarch64, ...`.
 
 ---
 

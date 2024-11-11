@@ -58,40 +58,38 @@
 
 #include <stddef.h>
 
-/**
- * \brief   The type defining ID. It is 64-bit in 64-bit systems.
- **/
+//! The type defining ID. It is 64-bit in 64-bit systems.
+typedef unsigned long   id_type;
+
+//! The digital value type of the pointer.
 #ifdef BIT64
 
     #ifdef _UINTPTR_T_DEFINED
-        typedef uintptr_t   id_type;
+        typedef uintptr_t   ptr_type;
     #else   // !_UINTPTR_T_DEFINED
-        typedef uint64_t    id_type;
+        typedef uint64_t    ptr_type;
     #endif  // _UINTPTR_T_DEFINED
     
 #else   // defined(BIT32)
 
     #ifdef _UINTPTR_T_DEFINED
-        typedef uintptr_t   id_type;
+        typedef uintptr_t   ptr_type;
     #else   // !_UINTPTR_T_DEFINED
-        typedef uint32_t    id_type;
+        typedef uint32_t    ptr_type;
     #endif  // _UINTPTR_T_DEFINED
 
-#endif  // id_type
-
-//! The digital value type of the pointer.
-typedef id_type     ptr_type;
+#endif  // ptr_type
 
 //! The sequence number type.
-typedef uint64_t    SequenceNumber;
+typedef uint64_t        SequenceNumber;
 
 //!< The signed sequence type.
-typedef int64_t     SignedSequence;
+typedef int64_t         SignedSequence;
 
 /**
  * \brief   The type defines an item ID.
  **/
-typedef uint64_t    ITEM_ID;
+typedef uint64_t        ITEM_ID;
 
 /**
  * \brief   Type definition of socket descriptor. Differs in on different platforms

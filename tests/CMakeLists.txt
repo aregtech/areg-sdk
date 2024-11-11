@@ -5,6 +5,11 @@
 
 if (AREG_BUILD_TESTS)
 
+    # Disable unit tests post-build for ARM processor
+    if (${AREG_PROCESSOR} STREQUAL "arm" OR ${AREG_PROCESSOR} STREQUAL "aarch64")
+        set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
+    endif()
+
     # local variables
     set(AREG_GTEST_INCLUDES)
     set(AREG_GTEST_LIBRARY)

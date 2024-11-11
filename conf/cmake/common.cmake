@@ -12,7 +12,7 @@ endif()
 # Identify compiler short name
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
-    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _compiler_found)
+    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER AREG_PROCESSOR AREG_BITNESS _compiler_found)
     if (_compiler_found)
         message(STATUS "AREG: >>> Use system default settings:")
         message(STATUS "AREG: ... Compiler family = \'${AREG_COMPILER_FAMILY}\'")
@@ -24,14 +24,16 @@ if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
 elseif("${AREG_COMPILER_SHORT}" STREQUAL "")
 
-    message(FATAL_ERROR "AREG: >>> The cmake file \'${AREG_CMAKE_CONFIG_DIR}/setup.cmake\' should be included before \'common.cmake\', fix it and retry again.")
+    message(FATAL_ERROR "AREG: >>> The file \'${AREG_CMAKE_CONFIG_DIR}/setup.cmake\' should be included before \'common.cmake\', fix it and retry again.")
 
 endif()
 
 # Identify the OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
 # Identify CPU platform
-set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+if ("${AREG_PROCESSOR}" STREQUAL "")
+    set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+endif()
 
 # -----------------------------------------------------
 # areg specific internal variable settings
@@ -63,11 +65,21 @@ option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 add_definitions(-DUNICODE -D_UNICODE)
 remove_definitions(-D_MBCS -DMBCS)
 
+# ########################################################
+# Warnings to disable
+# ########################################################
+
+# Disable common warnings for all projects
 set(AREG_OPT_DISABLE_WARN_COMMON)
+# Disable warnings only for areg framework
 set(AREG_OPT_DISABLE_WARN_FRAMEWORK)
+# Disable warnings only for tools 
 set(AREG_OPT_DISABLE_WARN_TOOLS)
+# Disable warnings only for examples
 set(AREG_OPT_DISABLE_WARN_EXAMPLES)
+# Disable warnings only for generated codes
 set(AREG_OPT_DISABLE_WARN_CODEGEN)
+# Disable warnings only for thirdparty projects
 set(AREG_OPT_DISABLE_WARN_THIRDPARTY)
 
 # Checking Compiler for adding corresponded tweaks and flags
@@ -104,6 +116,12 @@ if (AREG_LOGS)
     add_definitions(-DAREG_LOGS=1)
 else()
     add_definitions(-DAREG_LOGS=0)
+endif()
+
+if (AREG_BITNESS EQUAL 32)
+    add_definitions(-DBIT32)
+else()
+    add_definitions(-DBIT64)
 endif()
 
 # -------------------------------------------------------

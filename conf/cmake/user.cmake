@@ -10,48 +10,48 @@
 # Available Options:
 #   1. AREG_COMPILER_FAMILY -- A quick way to set the C++ and C compilers (CMAKE_CXX_COMPILER and CMAKE_C_COMPILER).
 #   2. AREG_COMPILER        -- Sets a specific compiler for both C++ and C projects.
-#   3. AREG_BINARY          -- Specifies the library type for the AREG Framework ('shared' or 'static'). Defaults to 'shared'.
-#   4. AREG_LOGGER_LIB      -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to 'shared'.
-#   5. AREG_BUILD_TYPE      -- Specifies the build configuration ('Debug' or 'Release').
-#   6. AREG_BUILD_TESTS     -- Enables or disables building unit tests for the AREG Framework.
-#   7. AREG_BUILD_EXAMPLES  -- Enables or disables building examples for the AREG Framework.
-#   8. AREG_EXTENDED        -- Enables or disables extended AREG Framework features. May require additional dependencies.
-#   9. AREG_LOGS            -- Enables or disables logging during compilation. Defaults to 'enabled'.
-#  10. AREG_USE_PACKAGES    -- Enables or disables using installed packages. Controls other package options like SQLite and GTest.
-#  11. AREG_SQLITE_PACKAGE  -- Determines if the system's SQLite3 package should be used or compiled from source.
-#  12. AREG_GTEST_PACKAGE   -- Determines if the system's GTest package should be used or compiled from source.
-#  13. AREG_ENABLE_OUTPUTS  -- If disabled, output directories will match the CMake binary directory.
-#  14. AREG_BUILD_ROOT      -- Specifies the root directory for build files. Defaults to './product' within the AREG SDK root.
-#  15. AREG_OUTPUT_DIR      -- Directory where build outputs are placed.
-#  16. AREG_OUTPUT_BIN      -- Directory for output binaries (executables and shared libraries).
-#  17. AREG_OUTPUT_LIB      -- Directory for output static libraries.
-#  18. AREG_PACKAGES        -- Location for fetching third-party packages such as GTest.
-#  19. AREG_INSTALL         -- Enables or disables the installation of the AREG SDK binaries and headers, including dependent libraries like 'sqlite3' and 'ncurses'.
-#  20. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
-#  21. AREG_BITNESS         -- The bitness of the compiled applications. It can be either 32- or 64-bits.
+#   3. AREG_PROCESSOR       -- The processor architect. Ignore if need to use system default.
+#   4. AREG_BINARY          -- Specifies the library type for the AREG Framework ('shared' or 'static'). Defaults to 'shared'.
+#   5. AREG_LOGGER_LIB      -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to 'shared'.
+#   6. AREG_BUILD_TYPE      -- Specifies the build configuration ('Debug' or 'Release').
+#   7. AREG_BUILD_TESTS     -- Enables or disables building unit tests for the AREG Framework.
+#   8. AREG_BUILD_EXAMPLES  -- Enables or disables building examples for the AREG Framework.
+#   9. AREG_EXTENDED        -- Enables or disables extended AREG Framework features. May require additional dependencies.
+#  10. AREG_LOGS            -- Enables or disables logging during compilation. Defaults to 'enabled'.
+#  11. AREG_USE_PACKAGES    -- Enables or disables using installed packages. Controls other package options like SQLite and GTest.
+#  12. AREG_SQLITE_PACKAGE  -- Determines if the system's SQLite3 package should be used or compiled from source.
+#  13. AREG_GTEST_PACKAGE   -- Determines if the system's GTest package should be used or compiled from source.
+#  14. AREG_ENABLE_OUTPUTS  -- If disabled, output directories will match the CMake binary directory.
+#  15. AREG_BUILD_ROOT      -- Specifies the root directory for build files. Defaults to './product' within the AREG SDK root.
+#  16. AREG_OUTPUT_DIR      -- Directory where build outputs are placed.
+#  17. AREG_OUTPUT_BIN      -- Directory for output binaries (executables and shared libraries).
+#  18. AREG_OUTPUT_LIB      -- Directory for output static libraries.
+#  19. AREG_PACKAGES        -- Location for fetching third-party packages such as GTest.
+#  20. AREG_INSTALL         -- Enables or disables installation of AREG SDK binaries, headers and dependencies like 'sqlite3' and 'ncurses'.
+#  21. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
 #
 # Default Values:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
-#   3. AREG_BINARY          = shared    (possible values: shared, static)
-#   4. AREG_LOGGER_LIB      = shared    (possible values: shared, static)
-#   5. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
-#   6. AREG_BUILD_TESTS     = ON        (possible values: ON, OFF)
-#   7. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
-#   8. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
-#   9. AREG_LOGS            = ON        (possible values: ON, OFF)
-#  10. AREG_USE_PACKAGES    = ON        (possible values: ON, OFF)
-#  11. AREG_SQLITE_PACKAGE  = ON        (possible values: ON, OFF)
-#  12. AREG_GTEST_PACKAGE   = ON        (possible values: ON, OFF)
-#  13. AREG_ENABLE_OUTPUTS  = ON        (possible values: ON, OFF)
-#  14. AREG_BUILD_ROOT      = '<areg-sdk>/product'    (path for output and generated files)
-#  15. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>'
-#  16. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'
-#  17. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
-#  18. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'
-#  19. AREG_INSTALL         = ON        (possible values: ON, OFF)
-#  20. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset)
-#  21. AREG_BITNESS         = System    (possible values: 32, 64)
+#   3. AREG_PROCESSOR       = System    (possible values: x86, x64 (x86_64, amd64), arm (arm32), aarch64 (arm64))
+#   4. AREG_BINARY          = shared    (possible values: shared, static)
+#   5. AREG_LOGGER_LIB      = shared    (possible values: shared, static)
+#   6. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
+#   7. AREG_BUILD_TESTS     = ON        (possible values: ON, OFF)
+#   8. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
+#   9. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
+#  10. AREG_LOGS            = ON        (possible values: ON, OFF)
+#  11. AREG_USE_PACKAGES    = ON        (possible values: ON, OFF)
+#  12. AREG_SQLITE_PACKAGE  = ON        (possible values: ON, OFF)
+#  13. AREG_GTEST_PACKAGE   = ON        (possible values: ON, OFF)
+#  14. AREG_ENABLE_OUTPUTS  = ON        (possible values: ON, OFF)
+#  15. AREG_BUILD_ROOT      = '<areg-sdk>/product'    (path for output and generated files)
+#  16. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>'
+#  17. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'
+#  18. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
+#  19. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'
+#  20. AREG_INSTALL         = ON        (possible values: ON, OFF)
+#  21. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset)
 #
 # Hints:
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
@@ -78,6 +78,33 @@ set(AREG_CXX_COMPILER)
 set(AREG_C_COMPILER)
 set(AREG_COMPILER_SHORT)
 
+# Specify CPU platform here, the system CPU platform is detected in 'commmon.cmake'
+if (DEFINED AREG_PROCESSOR)
+    if (AREG_PROCESSOR STREQUAL "x86")
+        set(CMAKE_SYSTEM_PROCESSOR x86)
+        set(AREG_BITNESS 32)
+    elseif(AREG_PROCESSOR STREQUAL "x64" OR AREG_PROCESSOR STREQUAL "x86_64" OR AREG_PROCESSOR STREQUAL "amd64")
+        set(CMAKE_SYSTEM_PROCESSOR x86_64)
+        set(AREG_PROCESSOR  x64)
+        set(AREG_BITNESS    64)
+    elseif (AREG_PROCESSOR STREQUAL "arm" OR AREG_PROCESSOR STREQUAL "arm32")
+        set(CMAKE_SYSTEM_PROCESSOR ARM)
+        set(AREG_PROCESSOR  arm)
+        set(AREG_BITNESS    32)
+    elseif (AREG_PROCESSOR STREQUAL "aarch64" OR AREG_PROCESSOR STREQUAL "arm64")
+        set(CMAKE_SYSTEM_PROCESSOR AARCH64)
+        set(AREG_PROCESSOR  aarch64)
+        set(AREG_BITNESS    64)
+    else()
+        set(CMAKE_SYSTEM_PROCESSOR ${AREG_PROCESSOR})
+        if (NOT DEFINED AREG_BITNESS)
+            macro_system_bitness(AREG_BITNESS)
+        endif()
+    endif()
+elseif(NOT DEFINED AREG_BITNESS)
+    macro_system_bitness(AREG_BITNESS)
+endif()
+
 # If CMake compilers are specified, use them
 if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "" OR NOT "${CMAKE_C_COMPILER}" STREQUAL ""))
 
@@ -91,7 +118,7 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
     message(STATUS "AREG: >>> Using CMake specified C++ compiler '${_sys_compiler}'")
 
     # Setup compiler details based on the identified system compiler
-    macro_setup_compilers_data("${_sys_compiler}" _compiler_family _compiler_short _cxx_compiler _c_compiler _compiler_found)
+    macro_setup_compilers_data("${_sys_compiler}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_process _sys_bitness _compiler_found)
 
     if (_compiler_found)
         # Check for existing compiler family or specific compiler and issue warnings if necessary
@@ -113,11 +140,18 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_sys_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
+        if (NOT "${_sys_process}" STREQUAL "")
+            set(AREG_PROCESSOR ${_sys_process})
+            set(AREG_BITNESS   ${_sys_bitness})
+            set(CMAKE_SYSTEM_PROCESSOR ${AREG_PROCESSOR})
+        endif()
     else()
         message(WARNING "AREG: Unknown C++ compiler '${_sys_compiler}'; results may be unpredictable")
     endif()
 
     unset(_sys_compiler)
+    unset(_sys_process)
+    unset(_sys_bitness)
 
 # If a specific compiler family is set, use that to determine compilers
 elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
@@ -140,7 +174,7 @@ elseif (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
 
     message(STATUS "AREG: >>> Using user-specified C/C++ compiler '${AREG_COMPILER}'")
     # Set both C and C++ compilers based on AREG_COMPILER
-    macro_setup_compilers_data("${AREG_COMPILER}" _compiler_family _compiler_short _cxx_compiler _c_compiler _compiler_found)
+    macro_setup_compilers_data("${AREG_COMPILER}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_process _sys_bitness _compiler_found)
 
     if (_compiler_found)
         # Set the relevant variables for the chosen compiler
@@ -148,9 +182,18 @@ elseif (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_cxx_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
+        if (NOT "${_sys_process}" STREQUAL "")
+            set(AREG_PROCESSOR ${_sys_process})
+            set(AREG_BITNESS   ${_sys_bitness})
+            set(CMAKE_SYSTEM_PROCESSOR ${AREG_PROCESSOR})
+        endif()
     else()
         message(WARNING "AREG: Unknown compiler '${AREG_COMPILER}'; results may be unpredictable")
     endif()
+
+    unset(_sys_compiler)
+    unset(_sys_process)
+    unset(_sys_bitness)
 
 # If no specific compiler or family is set, use the system default
 else()
@@ -224,28 +267,6 @@ endif()
 
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
-
-# Check and specify bitness
-macro_system_bitness(_sys_bitness)
-if (DEFINED AREG_BITNESS)
-    if (NOT AREG_BITNESS EQUAL 32 AND NOT AREG_BITNESS EQUAL 64)
-        if (NOT _sys_bitness EQUAL 0)
-            set(AREG_BITNESS ${_sys_bitness})
-        else()
-            message(WARNING "AREG: >>> Undefined Bitness, use default!")
-        endif()
-    endif()
-elseif (NOT _sys_bitness EQUAL 0)
-    set(AREG_BITNESS ${_sys_bitness})
-else()
-    message(WARNING "AREG: >>> Undefined System Bitness, use default!")
-    set(AREG_BITNESS 64)
-endif()
-unset(_sys_bitness)
-
-# Specify CPU platform here, the system CPU platform is detected in 'commmon.cmake'
-set(AREG_PROCESSOR x86_64)
-
 
 if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
     option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
