@@ -3,7 +3,7 @@
 *This document provides an overview of preprocessor definitions used in AREG SDK projects, detailing each definition's purpose and usage to aid in configuring and compiling applications effectively.*
 
 ## Table of Contents
-1. [Introduction](#1-introduction)
+1. [General Information](#1-general-information)
 2. [Platform-Specific Defines](#2-platform-specific-defines)
    - [POSIX](#posix)
    - [WINDOWS](#windows)
@@ -22,7 +22,7 @@
 
 ---
 
-## 1. Introduction
+## 1. General Information
 
 The AREG SDK uses preprocessor-defined symbols to configure framework compilation, enabling customization and control over the build process. This guide provides details on each define and instructions for configuring them across various platforms and IDEs.
 

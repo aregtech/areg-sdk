@@ -4,7 +4,7 @@ Following these steps will guide you through setting up, troubleshooting, and ru
 
 ## Table of Contents
 1. [General Information](#1-general-information)
-2. [Installing a Linux Distribution in WSL](#2-installing-linux-distribution-in-wsl)
+2. [Installing a Linux Distribution in WSL](#2-installing-a-linux-distribution-in-wsl)
 3. [Troubleshooting WSL Updates](#3-troubleshooting-wsl-updates)
 4. [Installing Build Tools](#4-installing-build-tools)
 5. [Cloning AREG SDK in WSL](#5-cloning-areg-sdk-in-wsl)

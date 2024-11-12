@@ -26,7 +26,7 @@ This guide provides step-by-step instructions for building the **AREG SDK** on L
 
 ---
 
-## System Requirements
+## 1. System Requirements
 
 ### General Requirements
 Ensure your system includes the following:
@@ -46,7 +46,7 @@ If your system does not meet these requirements, proceed to [Step 1: Installing 
 
 ---
 
-## Configuration and Build Steps
+## 2. Configuration and Build Steps
 
 Follow these steps to configure and build the AREG SDK on your system.
 
@@ -141,7 +141,7 @@ Install AREG SDK binaries and headers to develop multithreaded and multiprocessi
 
 ---
 
-## Cross-Compiling AREG SDK
+## 3. Cross-Compiling AREG SDK
 
 Cross-compiling allows building applications for architectures different from the native environment. Here are instructions for configuring AREG SDK to compile for 32-bit systems, as well as ARM and AARCH64 (64-bit ARM) processors.
 
@@ -248,7 +248,7 @@ This should output message `ELF 64-bit LSB executable, ARM aarch64, ...`.
 
 ---
 
-## Additional IDE Configurations
+## 4. Additional IDE Configurations
 
 For **Microsoft Visual Studio** or **Visual Studio Code**:
 1. Open the `<areg-sdk>` directory in your IDE.
