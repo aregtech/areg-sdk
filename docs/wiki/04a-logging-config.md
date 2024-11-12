@@ -2,9 +2,19 @@
 
 The AREG SDK offers a highly configurable logging system via the **AREG log configuration file** (`areg.init`), allowing customization of log files, destinations, scope settings, and message priority to support enhanced debugging and runtime analysis.
 
+## Table of Contents
+
+1. [Key Configuration Options](#1-key-configuration-options)
+2. [Log Mechanisms and Destinations](#2-log-mechanisms-and-destinations)
+3. [Configuring Log Message Layout](#3-configuring-log-message-layout)
+3. [Remote Log Collector Configuration](#4-remote-log-collector-configuration)
+4. [Scopes and Log Priorities](#5-scopes-and-log-priorities)
+   - [Log Priority Levels](#log-priority-levels)
+5. [Conclusion](#6-conclusion)
+
 ---
 
-## Key Configuration Options
+## 1. Key Configuration Options
 
 The `areg.init` file, located in the `./config` folder by default, structures logging configurations using the format `section::(module|*)::property[::position] = value`. Each entry specifies:
 
@@ -12,11 +22,11 @@ The `areg.init` file, located in the `./config` folder by default, structures lo
 - **module**: Targets specific applications or globally (`*`).
 - **property & position**: Defines settings like file paths, destinations, and logging levels.
 
-For more syntax details, see the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
+For more syntax details, see the [AREG SDK Persistence Syntax documentation](./06a-persistence-syntax.md).
 
 ---
 
-## Log Mechanisms and Destinations
+## 2. Log Mechanisms and Destinations
 
 This configuration supports various logging outputs. Currently supported:
 
@@ -27,7 +37,7 @@ This configuration supports various logging outputs. Currently supported:
 | **Debug Output**      | *debug*   | Provides real-time debugging within IDEs (for MSVS).          |
 | **Database**          | *db*      | Logs data in database for structured analysis.                |
 
-Example setup:
+**Example setup**:
 ```plaintext
 log::*::target = remote | file | debug | db
 log::*::enable::file = true
@@ -38,7 +48,7 @@ The `log::*::enable` setting manages log activation, while parameters (e.g., `lo
 
 ---
 
-## Configuring Log Message Layout
+## 3. Configuring Log Message Layout
 
 Define log file formats in `areg.init` with the following:
 ```plaintext
@@ -66,7 +76,7 @@ Adjusting formats ensures clear, uniform log messages across applications.
 
 ---
 
-## Remote Log Collector Configuration
+## 4. Remote Log Collector Configuration
 
 For remote logging, configure protocol, IP, and port:
 ```plaintext
@@ -75,13 +85,13 @@ logger::*::address::tcpip = 127.0.0.1
 logger::*::port::tcpip = 8282
 ```
 
-This setup enables central log collection over a network. Scopes and priorities are adjustable in real-time through the [Log Observer](./logobserver.md) console application.
+This setup enables central log collection over a network. Scopes and priorities are adjustable in real-time through the [Log Observer](./04c-logobserver.md) console application.
 
 ---
 
-## Scopes and Log Priorities
+## 5. Scopes and Log Priorities
 
-AREG’s logging system supports selective logging by scope and priority, enabling efficient log filtering. Configure scopes in the `log` section using the `scope` property (`log::*::scope::*`) for initial setup.
+AREG's logging system supports selective logging by scope and priority, enabling efficient log filtering. Configure scopes in the `log` section using the `scope` property (`log::*::scope::*`) for initial setup.
 
 Scopes can be enabled, disabled, or grouped by priority. Example configurations:
 ```plaintext
@@ -106,10 +116,10 @@ Supported priorities include:
 
 For instance, `WARN | SCOPE` logs *Warnings*, *Errors*, *Fatal Errors*, and scope *Enter/Exit*, excluding *Debug* and *Information* levels. The priority `DEBUG | SCOPE` will log all messages.
 
-The AREG Framework allows runtime adjustments using the `logobserver` tool, providing real-time control over scopes and priorities. For details, see the [Log Observer documentation](./logobserver.md).
+The AREG Framework allows runtime adjustments using the `logobserver` tool, providing real-time control over scopes and priorities. For details, see the [Log Observer documentation](./04c-logobserver.md).
 
 ---
 
-## Conclusion
+## 6. Conclusion
 
 This guide highlights the flexible configuration of the AREG SDK logging system, offering efficient application monitoring and debugging. Explore additional settings for optimal performance, and refer to the AREG SDK documentation for advanced configuration insights.

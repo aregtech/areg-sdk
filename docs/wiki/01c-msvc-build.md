@@ -5,17 +5,18 @@
 This guide offers a detailed process for building the **AREG SDK** using **Microsoft Visual Studio** and **MSBuild**. It provides quick build steps and customization options, ensuring the SDK is optimized for **multithreading**, **Inter-Process Communication (IPC)**, and **Object Remote Procedure Call (Object RPC)**.
 
 ## Table of Contents
-- [Prerequisites](#prerequisites)
-- [Quick Build with MSBuild](#quick-build-with-msbuild)
-  - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
-  - [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository)
-  - [Step 3: Building the Project](#step-3-building-the-project)
-- [Customizing Your Build with MSBuild](#customizing-your-build-with-msbuild)
-  - [Examples of MSBuild Commands](#examples-of-msbuild-commands)
+1. [Prerequisites](#1-prerequisites)
+2. [Quick Build with MSBuild](#2-quick-build-with-msbuild)
+   - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
+   - [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository)
+   - [Step 3: Building the Project](#step-3-building-the-project)
+3. [Customizing Your Build with MSBuild](#3-customizing-your-build-with-msbuild)
+   - [Examples of MSBuild Commands](#examples-of-msbuild-commands)
+   - [Additional Resources](#additional-resources)
 
 ---
 
-## Prerequisites
+## 1. Prerequisites
 
 To build the AREG SDK with **MSBuild** in Microsoft Visual Studio, ensure the following tools are installed on your system:
 
@@ -28,7 +29,7 @@ To build the AREG SDK with **MSBuild** in Microsoft Visual Studio, ensure the fo
 
 ---
 
-## Quick Build with MSBuild
+## 2. Quick Build with MSBuild
 
 ### Step 1: Installing Dependencies
 
@@ -56,7 +57,7 @@ This command initiates the default configuration for AREG SDK projects.
 
 ---
 
-## Customizing Your Build with MSBuild
+## 3. Customizing Your Build with MSBuild
 
 `MSBuild` allows you to configure and optimize the build for different development needs. Below are key configurable properties:
 
@@ -89,8 +90,8 @@ MSBuild /m /property:Configuration=Release /property:Platform=Win32 /property:Ar
 
 For additional examples, see the [MSBuild Workflow](./../../.github/workflow/msbuild.yml) in the AREG SDK repository.
 
----
+### Additional Resources
 
-## Additional Resources
-
-For more information on building the AREG SDK, troubleshooting tips, or advanced setup options, see the **AREG SDK documentation** on [GitHub](https://github.com/aregtech/areg-sdk).
+- For additional setup information, refer to [Visual Studio CMake Projects](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio) or [VS Code CMake Quickstart](https://code.visualstudio.com/docs/cpp/cmake-quickstart).
+- Additionally, read [Integrating AREG Framework with Microsoft Visual Studio](./02d-msvc-integrate.md) document.
+- For more information on building the AREG SDK, troubleshooting tips, or advanced setup options, see the **AREG SDK documentation** on [GitHub](https://github.com/aregtech/areg-sdk).

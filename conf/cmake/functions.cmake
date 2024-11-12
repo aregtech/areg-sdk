@@ -167,6 +167,51 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
 endmacro(macro_parse_arguments)
 
 # ---------------------------------------------------------------------------
+# Macro ......: macro_guess_processor_architecture
+# Purpose ....: Tries to guess the CPU architecture and bitness from the given cross-compiler.
+#               For example, if cross-compiler has "arm" in the name, it could mean that
+#               it targets 32-bit ARM processor.
+# Parameters .: ${compiler_path}    [in]   -- Path of the cross-compiler.
+#               ${target_processor} [out]  -- Name of variable to store the CPU type.
+#               ${target_bitness}   [out]  -- Name of variable to store bitness.
+#
+# Usage ......: macro_guess_processor_architecture(<compiler-path> <processor-var> <bitness-var>)
+# Example ....: macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
+# ---------------------------------------------------------------------------
+macro(macro_guess_processor_architecture compiler_path target_processor target_bitness)
+    foreach(_proc "arm;32;arm" "aarch64;64;arm64")
+        list(GET _proc 0 _arch)
+        list(GET _proc 1 _bits)
+        list(GET _proc 2 _name)
+        string(FIND "${compiler_path}" ${_arch} _proc_pos)
+        if (_proc_pos GREATER -1)
+            set(${target_processor} ${_name})
+            set(${target_bitness} ${_bits})
+            break()
+        endif()
+    endforeach()
+endmacro(macro_guess_processor_architecture)
+
+# ---------------------------------------------------------------------------
+# Macro ......: macro_system_bitness
+# Purpose ....: Extracts the system default bitness.
+# Parameters  : ${var_bitness}  -- The name of variable to set the bitness.
+# Usage ......: macro_system_bitness(<var-name>)
+# Example ....: macro_system_bitness(_sys_bitness)
+# ---------------------------------------------------------------------------
+macro(macro_system_bitness var_bitness)
+    # Detect and set bitness here
+    # 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-nit (x86)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(${var_bitness} 64)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        set(${var_bitness} 32)
+    else()
+        set(${var_bitness} 0)
+    endif()
+endmacro(macro_system_bitness)
+
+# ---------------------------------------------------------------------------
 # Macro ......: macro_setup_compilers_data
 # Purpose ....: Identifies and configures compiler family, short names, and paths.
 # Note .......: Beside "gnu", "llvm", "msvc", the GNU compilers for CYGWIN are included as a "cygwin" family.
@@ -181,13 +226,21 @@ endmacro(macro_parse_arguments)
 #                                           AREG_COMPILER_FAMILY 
 #                                           AREG_COMPILER_SHORT 
 #                                           AREG_CXX_COMPILER 
-#                                           AREG_C_COMPILER 
+#                                           AREG_C_COMPILER
+#                                           AREG_PROCESSOR
+#                                           AREG_BITNESS
 #                                           _compiler_supports
 #                                         )
 # ---------------------------------------------------------------------------
-macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c is_identified)
+macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c sys_platform sys_bitness is_identified)
 
     set(${is_identified} FALSE)
+    if (DEFINED AREG_PROCESSOR)
+        set(${sys_platform} AREG_PROCESSOR)
+    endif()
+    if (DEFINED AREG_BITNESS)
+        set(${sys_bitness}  AREG_BITNESS)
+    endif()
     
     # Iterate over known compilers to identify the compiler type
     foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
@@ -196,11 +249,15 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
         list(GET _entry 2 _c_compiler)
 
         # Check if the provided compiler matches the known C++ compiler
-        string(FIND "${compiler_path}" "${_cxx_compiler}" _found_pos REVERSE)
+        string(TOLOWER "${compiler_path}" _comp_path)
+        string(FIND "${_comp_path}" "${_cxx_compiler}" _found_pos REVERSE)
         if (_found_pos GREATER -1)
             # Handle special case for CYGWIN and GNU family compilers
             if (CYGWIN AND ("${_family}" STREQUAL "gnu"))
                 set(${compiler_family} "cygwin")
+            elseif("${_family}" STREQUAL "gnu")
+                macro_guess_processor_architecture("${_comp_path}" ${sys_platform} ${sys_bitness})
+                set(${compiler_family} "${_family}")
             else()
                 set(${compiler_family} "${_family}")
             endif()
@@ -234,7 +291,7 @@ endmacro(macro_setup_compilers_data)
 #               - ${compiler_cxx}    -- Output: Variable to hold the C++ compiler name.
 #               - ${compiler_c}      -- Output: Variable to hold the corresponding C compiler name.
 #               - ${is_identified}   -- Output: Name of variable to hold Boolean indicating successful identification..
-# Usage ......: macro_setup_compilers_data(<compiler> <family-var> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
+# Usage ......: macro_setup_compilers_data_by_family(<compiler-family> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
 # Example ....: macro_setup_compilers_data_by_family("gnu"
 #                                                    AREG_COMPILER_SHORT 
 #                                                    AREG_CXX_COMPILER 
@@ -258,6 +315,14 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
                 set(${compiler_short} "clang-cl")
                 set(${compiler_cxx}   "clang-cl")
                 set(${compiler_c}     "clang-cl")
+            elseif (AREG_PROCESSOR STREQUAL "arm" AND "${_family}" STREQUAL "gnu")
+                set(${compiler_short} "g++")
+                set(${compiler_cxx}   "arm-linux-gnueabihf-g++")
+                set(${compiler_c}     "arm-linux-gnueabihf-gcc")
+            elseif (AREG_PROCESSOR STREQUAL "aarch64" AND "${_family}" STREQUAL "gnu")
+                set(${compiler_short} "g++")
+                set(${compiler_cxx}   "aarch64-linux-gnu-g++")
+                set(${compiler_c}     "aarch64-linux-gnu-gcc")
             else()
                 set(${compiler_short} "${_compiler}")
                 set(${compiler_cxx}   "${_compiler}")
@@ -628,7 +693,7 @@ endmacro(macro_add_service_interface)
 #               The generated files are placed within the ${AREG_GENERATE_DIR},
 #               with a subdirectory structure specified by ${generate_path}.
 # Parameters .: ${lib_name}         -- The name of the static library to be created for the generated Service Interface code.
-#               ${source_root}      -- The root directory containing the project’s source files.
+#               ${source_root}      -- The root directory containing the project's source files.
 #               ${siml_path}        -- Path to the Service Interface document file (.siml), relative to the specified ${source_root}.
 #               ${generate_path}    -- Subdirectory path within ${AREG_GENERATE_DIR} where the generated files will be stored.
 # Usage ......: addServiceInterfaceEx(<library-name> <source-root> <service-interface-relative-path> <relative-path-to-generate-codes>)

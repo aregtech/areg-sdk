@@ -40,7 +40,7 @@
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
-- [More than embedded](#more-than-embedded)
+- [More than Embedded](#more-than-embedded)
 - [Composition of AREG SDK](#composition-of-areg-sdk)
 - [Getting Started: Clone and Build the AREG SDK](#getting-started-clone-and-build-the-areg-sdk)
   - [Cloning Sources](#cloning-sources)
@@ -85,7 +85,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 
 ## Interface-centricity[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#interface-centricity)
 
-At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets interfaces on objects. This allows AREG to establish a **service mesh** or **service grid** where applications expose reusable services. Clients, without knowledge of the server’s network location, can request services seamlessly via method invocation.
+At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets interfaces on objects. This allows AREG to establish a **service mesh** or **service grid** where applications expose reusable services. Clients, without knowledge of the server's network location, can request services seamlessly via method invocation.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Diagram showing multiprocess communication" style="width:50%;height:50%"/></a></div>
 
@@ -93,7 +93,7 @@ This **interface-driven Object RPC** model mirrors object-oriented programming p
 * **Service Providers** (*micro-server objects*) offer reusable, accessible services.
 * **Service Consumers** (*client objects*) invoke services without needing to know the network details.
 
-AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
+AREG's design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -148,19 +148,16 @@ git clone https://github.com/aregtech/areg-sdk.git
 
 ### Build Instructions
 
-The **AREG SDK** is written in **C++17** and supports multiple platforms and compilers:
-- **Supported platforms:** Linux, Windows, Cygwin and macOS. 
-- **Supported compilers:** GNU, Clang, MSVC and Cygwin GNU. 
-- **Supported CPU:** x86, x86_64, arm, and aarch64. 
+The **AREG SDK** is written in **C++17**, supports multiple platforms, processors and compilers:
 
-The following build tools are supported:
+| Compiler  | Platforms     | Tools         | API           | CPU Architecture          |
+|-----------|---------------|---------------|---------------|---------------------------|
+| GNU       | Linux, macOS  | CMake         | POSIX         | x86, x86_64, ARM, AARCH64 |
+| Clang     | Linux, Windows| CMake, MSVS   | POSIX, Win32  | x86, x86_64               |
+| MSVC      | Windows       | CMake, MSVS   | Win32         | x86, x86_64               |
+| Cygwin GNU| Windows       | CMake         | POSIX         | x86, x86_64               |
 
-| Tool        | Solution         | Platforms              | API          | Quick actions to compile           |
-|-------------|------------------|------------------------|--------------|------------------------------------|
-| **CMake**   | `CMakeLists.txt` | Linux, Windows, Cygwin | POSIX, Win32 | Build with CMake, VSCode, or MSVS. |
-| **MSBuild** | `areg-sdk.sln`   | Windows                | Win32        | Build with MSBuild or MSVS.        |
-
-For detailed build instructions, check the **[Software Build](./docs/wiki/BUILD.md)** page.
+For detailed build instructions, check the **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)** or **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** pages.
 
 
 > [!NOTE] 
@@ -175,7 +172,8 @@ cmake -B ./build
 cmake --build ./build -j 20
 ```
 
-For custom builds, pass the options via the command line or configure the options listed in **[user.cmake](./docs/wiki/USER-CMAKE.md)** in CMake script.
+> [!TIP]
+> For **custom builds and cross-compiling** see **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)**.
 
 #### Build with Microsoft Visual Studio
 
@@ -185,12 +183,12 @@ Open `areg-sdk.sln` file in Microsoft Visual Studio and build the solution, or n
 MSBuild ./areg-sdk.sln
 ```
 
-For further details on customizing builds, visit the **[Build with MSBuild](./docs/wiki/MSVS-BUILD.md)** document.
+For further details on customizing builds, visit the **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** document.
 
 #### Additional Build Options
 
-- **IDE Support:** Includes instructions for **[Microsoft Visual Studio](./docs/wiki/MSVS-BUILD.md)** and **[Visual Studio Code](./docs/wiki/VSCODE.md)**.
-- **WSL Support:** Detailed steps for building under **[Windows Subsystem for Linux (WSL)](./docs/wiki/WSL.md)** are provided.
+- **IDE Support:** Includes instructions for **[Microsoft Visual Studio](./docs/wiki/01c-msvc-build.md)** and **[Visual Studio Code](./docs/wiki/01b-cmake-build.md)**.
+- **WSL Support:** Detailed steps for building under **[Windows Subsystem for Linux (WSL)](./docs/wiki/01d-wsl-build.md)** are provided.
 
 > [!NOTE]
 > This chapter focuses on building AREG and examples using **Microsoft Visual Studio** and **Visual Studio Code**. The other IDEs are currently not in the focus.
@@ -228,7 +226,7 @@ endif()
 include("${AREG_SDK_ROOT}/areg.cmake")
 ```
 
-This either finds or fetches the AREG SDK components from `master` branch. See the **[CMake Integration Guide](./docs/wiki/cmake-integrate.md)** for more details.
+This either finds or fetches the AREG SDK components from `master` branch. See the **[Building AREG SDK with CMake](./docs/wiki/02c-cmake-integrate.md)** page for more details.
 
 #### 2. Integrate as a project submodule
 
@@ -236,7 +234,7 @@ This either finds or fetches the AREG SDK components from `master` branch. See t
 2. Include the `*.vcxproj` files from `<areg-sdk>/framework` in your solution.
 3. Link your project with the `areg` library and set project dependencies.
 
-For full details, see the **[Visual Studio Integration Guide](./docs/wiki/MSVS-INTEGRATE.md)**.
+For full details, see the **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)**.
 
 #### 3. Integrate the `areg` Package (vcpkg)
 
@@ -267,7 +265,7 @@ Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg
    #pragma comment(lib, "areg")
    ```
 
-For details of installing and using `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/AREG-PACKAGE.md)** document.
+For details of installing and using `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/01a-areg-package.md)** document.
 
 ### Service Creation and Development
 
@@ -318,13 +316,13 @@ You can also set up multiprocess applications using same components and changing
 
 Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for the multicast router and log collector services are provided in the `areg.init` file. Both processes are designed to run as console applications or as **Operating System managed** services.
 
-For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages. *Discover how the AREG SDK’s Multicast Router and Log Collector streamline communication and logging in edge computing and real-time data transfer systems.*
+For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/05a-mcrouter.md)** and **[Log Collector Service](./docs/wiki/04d-logcollector.md)** pages. *Discover how the AREG SDK's Multicast Router and Log Collector streamline communication and logging in edge computing and real-time data transfer systems.*
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-This version is strong, but a few minor adjustments can improve flow, consistency, and readability. Here’s a refined version:
+This version is strong, but a few minor adjustments can improve flow, consistency, and readability. Here's a refined version:
 
 ---
 
@@ -333,11 +331,11 @@ This version is strong, but a few minor adjustments can improve flow, consistenc
 The AREG SDK offers hands-on examples demonstrating **Multithreading** and **Multiprocessing** applications, **Client-Server** and **Publish-Subscribe** models, **Object Remote Procedure Call (Object RPC)** and **Inter-Process Communication (IPC)**, featured **Finite-State Machines (FSM)** creation, and more. Each project highlights key features that facilitate efficient development of distributed services.
 
 **Some Featured Examples:**
-1. **[00_helloservice](./examples/00_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG’s intuitive, interface-driven approach.
+1. **[00_helloservice](./examples/00_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG's intuitive, interface-driven approach.
 
 2. **[04_trace](./examples/04_trace/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
 
-3. **[16_pubfsm](./examples/16_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG’s *Timers* and *Events* for smooth state transitions.
+3. **[16_pubfsm](./examples/16_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG's *Timers* and *Events* for smooth state transitions.
 
 4. **[19_pubwatchdog](./examples/19_pubwatchdog/)**: Implement a watchdog to monitor thread activity, restart unresponsive threads, and notify components as needed.
 
@@ -398,13 +396,13 @@ For more information on commercial licensing, commercial support, trainings, or 
 
 ## Call to action[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
-We encourage the developer community to get involved and contribute to the growth of the AREG SDK. Join AREG SDK community and collaborate with AREG developers. Here’s how you can help:
+We encourage the developer community to get involved and contribute to the growth of the AREG SDK. Join AREG SDK community and collaborate with AREG developers. Here's how you can help:
 
 - Check out our list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where assistance is needed.
 - If you have suggestions or need new features, open a [new issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).
 - For pull requests, ensure that the code adheres to our coding style and allow time for review and testing.
 
-Lastly, help us grow the AREG SDK community by **giving a star** on GitHub! Whether you’re working on **embedded applications**, **multiprocessing and multithreading applications**, **real-time data transfer**, **IoT applications**, or **microservices architecture**, your support helps us continue to improve this cutting-edge communication framework.
+Lastly, help us grow the AREG SDK community by **giving a star** on GitHub! Whether you're working on **embedded applications**, **multiprocessing and multithreading applications**, **real-time data transfer**, **IoT applications**, or **microservices architecture**, your support helps us continue to improve this cutting-edge communication framework.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

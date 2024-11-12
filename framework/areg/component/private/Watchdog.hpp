@@ -70,7 +70,7 @@ public:
     /**
      * \brief   The watchdog ID, which is generated when the watchdog is started.
      **/
-    using WATCHDOG_ID   = id_type;
+    using WATCHDOG_ID   = ptr_type;
 
     /**
      * \brief   Identifies invalid watchdog ID.
@@ -239,9 +239,9 @@ inline Watchdog::WATCHDOG_ID Watchdog::watchdogId(void)
 inline Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
 {
 #if defined(BIT64)
-    return static_cast<id_type>(MACRO_MAKE_64(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(MACRO_MAKE_64(guardId, sequence));
 #else   // !defined(BIT64)
-    return static_cast<id_type>(MACRO_MAKE_32(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(MACRO_MAKE_32(guardId, sequence));
 #endif  // defined(BIT64)
 }
 

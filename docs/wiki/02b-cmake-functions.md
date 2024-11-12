@@ -4,8 +4,8 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [CMake Macro Overview](#cmake-macro-overview)
+1. [Introduction](#1-introduction)
+2. [CMake Macro Overview](#2-cmake-macro-overview)
    - [`macro_check_fix_areg_cxx_standard`](#macro_check_fix_areg_cxx_standard)
    - [`macro_normalize_path`](#macro_normalize_path)
    - [`macro_add_service_interface`](#macro_add_service_interface)
@@ -18,7 +18,9 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
    - [`macro_declare_executable`](#macro_declare_executable)
    - [`macro_setup_compilers_data`](#macro_setup_compilers_data)
    - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
-- [CMake Functions Overview](#cmake-functions-overview)
+   - [`macro_guess_processor_architecture`](#macro_guess_processor_architecture)
+   - [`macro_system_bitness`](#macro_system_bitness)
+3. [CMake Functions Overview](#3-cmake-functions-overview)
    - [`setAppOptions`](#setappoptions)
    - [`addExecutableEx`](#addexecutableex)
    - [`addExecutable`](#addexecutable)
@@ -37,16 +39,16 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
 
 ---
 
-## Introduction
+## 1. Introduction
 
 The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable CMake utilities that simplify repetitive tasks, making project setup cleaner and more maintainable.
 
 > [!NOTE]
-> Include [areg.cmake](./../../conf/cmake/areg.cmake) (not functions.cmake) in `CMakeLists.txt` files to ensure proper AREG Framework integration after setting `AREG_SDK_ROOT` to the `<areg-sdk>` installation directory. More details can be found in the [AREG Framework Integration](./cmake-integrate.md) document in the AREG SDK Wiki.
+> Include [areg.cmake](./../../conf/cmake/areg.cmake) (not functions.cmake) in `CMakeLists.txt` files to ensure proper AREG Framework integration after setting `AREG_SDK_ROOT` to the `<areg-sdk>` installation directory. More details can be found in the [AREG Framework Integration](./02c-cmake-integrate.md) document in the AREG SDK Wiki.
 
 ---
 
-## CMake Macro Overview
+## 2. CMake Macro Overview
 
 ### `macro_check_fix_areg_cxx_standard`
 - **Syntax**: `macro_check_fix_areg_cxx_standard()`
@@ -207,9 +209,33 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
    macro_setup_compilers_data_by_family("gnu" AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _is_identified)
    ```
 
+### `macro_guess_processor_architecture`
+- **Syntax**: `macro_guess_processor_architecture(compiler_path target_processor target_bitness)`
+- **Purpose**: If possible, detects the processor architecture and bitness by given compiler path.
+- **Parameters**:
+  - `compiler_path` [in] : Compiler path.
+  - `target_processor` [out]: Name of variable to set the CPU architecture value.
+  - `target_bitness` [out]: Name of variable to set the CPU bitness value.
+- **Usage**: `macro_guess_processor_architecture(<compiler-path> <processor-var> <bitness-var>)`
+- **Example**:
+   ```cmake
+   macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
+   ```
+
+### `macro_system_bitness`
+- **Syntax**: `macro_system_bitness(var_bitness)`
+- **Purpose**: Extracts the system default bitness. Sets in variable value `32` for 32-bit, or `64` for 64-bit system.
+- **Parameters**:
+  - `var_bitness` [out]: Name of variable to set the system bitness.
+- **Usage**: `macro_system_bitness(<var-name>)`
+- **Example**:
+   ```cmake
+   macro_system_bitness(_sys_bitness)
+   ```
+
 ---
 
-## CMake Functions Overview
+## 3. CMake Functions Overview
 
 ### `setAppOptions`
 - **Syntax**: `setAppOptions(target_name library_list)`
@@ -312,7 +338,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Purpose**: A wrapper for `macro_add_service_interface`, facilitating the generation of code and header files for a Service Interface document (`.siml` file) within a specified static library. This function assumes the code generator tool is located at `${AREG_SDK_TOOLS}/codegen.jar`. The generated files are placed within the `${AREG_GENERATE_DIR}`, with a subdirectory structure specified by `${generate_path}`.
 - **Parameters**:
   - `lib_name` [in]: The name of the static library to be created for the generated Service Interface code.
-  - `source_root` [in]: The root directory containing the project’s source files.
+  - `source_root` [in]: The root directory containing the project's source files.
   - `siml_path` [in]: Path to the Service Interface document file (.siml), relative to the specified `${source_root}`.
   - `generate_path` [in]: Subdirectory path within `${AREG_GENERATE_DIR}` where the generated files will be stored.
 - **Usage**: `addServiceInterfaceEx(<library-name> <source-root> <service-interface-relative-path> <relative-path-to-generate-codes>)`

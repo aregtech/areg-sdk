@@ -20,7 +20,7 @@ The **15_pubworker** project demonstrates the use of **Worker Threads** to perfo
    - This sub-project includes a **Service Consumer** and a **Worker Thread**. The Worker Thread simulates an output device, performing tasks in the background while the service consumer interacts with the public service provider.
 
 3. **[15_pubservice](./pubservice/)**:
-   - This sub-project hosts a **Public Service Provider** along with a **Worker Thread** that processes user inputs from the console and updates the service’s attributes. Both the service and worker thread are part of the static model, which is initialized at startup and unloaded at exit.
+   - This sub-project hosts a **Public Service Provider** along with a **Worker Thread** that processes user inputs from the console and updates the service's attributes. Both the service and worker thread are part of the static model, which is initialized at startup and unloaded at exit.
 
 ## Communication
 

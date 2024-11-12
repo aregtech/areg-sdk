@@ -1,1 +1,0 @@
-Placeholder of areg packaging

@@ -1068,7 +1068,9 @@ inline void TEArrayList< VALUE >::setSize(uint32_t elemCount)
 template<typename VALUE >
 inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPosition(uint32_t index) const
 {
-    return _citer2pos(index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+    using shift_type = typename std::vector<VALUE>::difference_type;
+    auto len = mValueList.size();
+    return _citer2pos(index < static_cast<uint32_t>(len) ? mValueList.begin() + static_cast<shift_type>(index) : mValueList.end());
 }
 
 template<typename VALUE >

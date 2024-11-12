@@ -3,28 +3,28 @@
 This guide covers how to integrate the **AREG Framework** into an existing project or create a new project **using CMake** under **Windows** or **Linux** systems. There are three main methods for integration:
 
 1. **Fetch the source code** directly from the **[AREG SDK GitHub repository](https://github.com/aregtech/areg-sdk)**.
-2. **Install via `vcpkg`** as a prebuilt package.
+2. **Install via `vcpkg`** as a pre-built package.
 3. **Add AREG SDK as a Git submodule** to your project.
 
 > [!TIP]  
 > For a practical example of integrating AREG SDK libraries and tools, see the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
 
 ## Table of Contents
-- [AREG SDK General Requirements](#areg-sdk-general-requirements)
-- [General Information](#general-information)
-- [Example Code](#example-code)
-- [Integration Methods](#integration-methods)
-  - [Integrate by Fetching Sources](#integrate-by-fetching-sources)
-  - [Integrate Using `vcpkg` Package](#integrate-using-vcpkg-package)
-  - [Integrate as Git Submodule](#integrate-as-git-submodule)
-- [Advanced Integration](#advanced-integration)
-  - [Advanced CMake Options](#advanced-cmake-options)
-  - [Advanced CMake Functions](#advanced-cmake-functions)
-- [Conclusion](#conclusion)
+1. [AREG SDK General Requirements](#1-areg-sdk-general-requirements)
+2. [General Information](#2-general-information)
+3. [Example Code](#3-example-code)
+4. [Integration Methods](#4-integration-methods)
+   - [Method 1: Integrate by Fetching Sources](#method-1-integrate-by-fetching-sources)
+   - [Method 2: Integrate Using `vcpkg` Package](#method-2-integrate-using-vcpkg-package)
+   - [Method 3: Integrate as Git Submodule](#method-3-integrate-as-git-submodule)
+5. [Advanced Integration](#5-advanced-integration)
+   - [Advanced CMake Options](#advanced-cmake-options)
+   - [Advanced CMake Functions](#advanced-cmake-functions)
+6. [Conclusion](#6-conclusion)
 
 ---
 
-## AREG SDK General Requirements
+## 1. AREG SDK General Requirements
 
 Ensure the following dependencies are installed for AREG SDK integration:
 
@@ -35,7 +35,7 @@ Ensure the following dependencies are installed for AREG SDK integration:
 
 ---
 
-## General Information
+## 2. General Information
 
 The AREG SDK includes several key components:
 
@@ -51,9 +51,9 @@ These components provide a robust foundation for integrating the AREG SDK, strea
 
 ---
 
-## Example Code
+## 3. Example Code
 
-Use the following code for integration examples. Create a `main.cpp` file in a separate directory:
+Use the following code for integration examples. Create a `main.cpp` file in a separate `example` directory:
 
 ```cpp
 #include "areg/base/String.hpp"
@@ -67,9 +67,9 @@ int main() {
 
 ---
 
-## Integration Methods
+## 4. Integration Methods
 
-### Integrate by Fetching Sources
+### Method 1: Integrate by Fetching Sources
 
 1. **Declare the Project**:  
    Create a `CMakeLists.txt` file, ensuring the minimum CMake version is 3.20:
@@ -148,7 +148,7 @@ target_link_libraries(example PRIVATE areg::areg)
    ./build/example
    ```
 
-### Integrate Using `vcpkg` Package
+### Method 2: Integrate Using `vcpkg` Package
 
 > [!IMPORTANT]  
 > Starting with AREG SDK 2.0, integration via `vcpkg` is available.
@@ -158,24 +158,17 @@ target_link_libraries(example PRIVATE areg::areg)
 
 2. **Install AREG SDK Package**:  
    Use these commands:
-
-   - **Windows (64-bit)**:
      ```bash
-     vcpkg install areg:x64-windows
+     vcpkg install areg
      ```
-   - **Linux (64-bit)**:
-     ```bash
-     vcpkg install areg:x64-linux
-     ```
+   Also you can install by running commands with *triplets* like `vcpkg install areg:x64-linux` for 64-bit Linux or `vcpkg install areg:x86-windows` for 32-bit Windows. 
 
-3. **Get Toolchain File Path**:  
-   Use the following to integrate AREG SDK binaries:
-
+3. **Retrieve Toolchain File Path**:  
+   Run the following command to integrate `vcpkg` binaries with your system:
    ```bash
    vcpkg integrate install
    ```
- 
-This also displays the CMake option to use toolchain when build `areg` package. Make sure you copied the command with path to the toolchain.
+   This command displays the full path to set `CMAKE_TOOLCHAIN_FILE`, which is required to build projects with `vcpkg` packages. Copy this toolchain file path for later use during the build configuration process.
 
 4. **Integrate in CMake Script**:  
    Create a `CMakeLists.txt` file with the following content:
@@ -189,15 +182,17 @@ This also displays the CMake option to use toolchain when build `areg` package. 
    ```
 
 5. **Build with Toolchain File**:  
-   Replace `<vcpkg-root>` with the actual path, then run these command to configure, build and execute `example` application:
+   Replace `<path-to-vcpkg-root>` with the actual path, then run these command to configure, build and execute `example` application:
 
    ```bash
-   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<path-to-vcpkg-root>/scripts/buildsystems/vcpkg.cmake
    cmake --build ./build
    ./build/example
    ```
 
-### Integrate as Git Submodule
+Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-package.md) for more details.
+
+### Method 3: Integrate as Git Submodule
 
 1. **Define Submodule**:  
    Add `areg-sdk` as a submodule by creating a `.gitmodules` file:
@@ -238,11 +233,11 @@ This also displays the CMake option to use toolchain when build `areg` package. 
 
 ---
 
-## Advanced Integration
+## 5. Advanced Integration
 
 ### Advanced CMake Options
 
-The AREG SDK offers flexible configurations via CMake, allowing customization of compilation settings, output directories, and additional features. For the full list, refer to the [CMake Configuration Options for Building AREG SDK](./cmake-config.md) document.
+The AREG SDK offers flexible configurations via CMake, allowing customization of compilation settings, output directories, and additional features. For the full list, refer to the [CMake Configuration Options for Building AREG SDK](./02a-cmake-config.md) document.
 
 > [!IMPORTANT]  
 > Set options before including the `<areg-sdk>/areg.cmake` file.
@@ -270,11 +265,11 @@ addServiceInterface(coolservice "service/CoolService.siml")
 macro_declare_executable(cool coolservice main.cpp)
 ```
 
-See [AREG SDK CMake Functions and Macros](./cmake-functions.md) for details.
+See [AREG SDK CMake Functions and Macros](./02b-cmake-functions.md) for details.
 
 ---
 
-## Conclusion
+## 6. Conclusion
 
 A complete `CMakeLists.txt` might look like this:
 
@@ -295,7 +290,7 @@ if (NOT areg_FOUND)
     )
     FetchContent_MakeAvailable(areg-sdk)
 
- set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
+    set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
     include_directories("${AREG_SDK_ROOT}/framework")
 endif()
 
@@ -311,7 +306,7 @@ This file lets you set up an `example` project with AREG SDK and link necessary 
 > [!NOTE]
 > In this script, there is no need to link the `example` project with the `areg` library. It is automatically done when call `macro_declare_executable`. 
 
-If you don't want to use AREG SDK CMake macro and function, alternatively the last 2 lines can be replaced:
+If you don't want to use AREG SDK CMake macro and functions, alternatively the last 2 lines can be replaced:
 ```cmake
 add_executable(example main.cpp)
 target_link_libraries(example PRIVATE areg::areg)

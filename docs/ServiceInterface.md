@@ -249,7 +249,7 @@ To generate source code, execute `codegen.jar` with the following parameters:
 java -jar ~/projects/areg-sdk/codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
 ```
 
-For more details see [AREG SDK Code Generator (`codegen.jar`)](./wiki/code-generator.md) document.
+For more details see [AREG SDK Code Generator (`codegen.jar`)](./wiki/03a-code-generator.md) document.
 
 ---
 
