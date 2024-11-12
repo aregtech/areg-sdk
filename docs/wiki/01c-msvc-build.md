@@ -5,18 +5,18 @@
 This guide offers a detailed process for building the **AREG SDK** using **Microsoft Visual Studio** and **MSBuild**. It provides quick build steps and customization options, ensuring the SDK is optimized for **multithreading**, **Inter-Process Communication (IPC)**, and **Object Remote Procedure Call (Object RPC)**.
 
 ## Table of Contents
-- [Prerequisites](#prerequisites)
-- [Quick Build with MSBuild](#quick-build-with-msbuild)
-  - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
-  - [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository)
-  - [Step 3: Building the Project](#step-3-building-the-project)
-- [Customizing Your Build with MSBuild](#customizing-your-build-with-msbuild)
-  - [Examples of MSBuild Commands](#examples-of-msbuild-commands)
-  - [Additional Resources](#additional-resources)
+1. [Prerequisites](#1-prerequisites)
+2. [Quick Build with MSBuild](#2-quick-build-with-msbuild)
+   - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
+   - [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository)
+   - [Step 3: Building the Project](#step-3-building-the-project)
+3. [Customizing Your Build with MSBuild](#3-customizing-your-build-with-msbuild)
+   - [Examples of MSBuild Commands](#examples-of-msbuild-commands)
+   - [Additional Resources](#additional-resources)
 
 ---
 
-## Prerequisites
+## 1. Prerequisites
 
 To build the AREG SDK with **MSBuild** in Microsoft Visual Studio, ensure the following tools are installed on your system:
 
@@ -29,7 +29,7 @@ To build the AREG SDK with **MSBuild** in Microsoft Visual Studio, ensure the fo
 
 ---
 
-## Quick Build with MSBuild
+## 2. Quick Build with MSBuild
 
 ### Step 1: Installing Dependencies
 
@@ -57,7 +57,7 @@ This command initiates the default configuration for AREG SDK projects.
 
 ---
 
-## Customizing Your Build with MSBuild
+## 3. Customizing Your Build with MSBuild
 
 `MSBuild` allows you to configure and optimize the build for different development needs. Below are key configurable properties:
 

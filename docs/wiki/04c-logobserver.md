@@ -3,21 +3,21 @@
 The **AREG SDK Log Observer** is a console tool designed for real-time log monitoring, data management, and dynamic control over log entries received from multiple applications distributed in the network. Acting as a client to the [Log Collector](./04d-logcollector.md), the Log Observer allows users to save logs to text files and/or SQLite databases while dynamically adjusting scope activation and filtering log priorities during runtime.
 
 ## Table of Contents
-- [General Information](#general-information)
-- [Log Observer Setup](#log-observer-setup)
-- [Log Observer Configuration](#log-observer-configuration)
-- [Command Line Options](#command-line-options)
-- [Connection Initialization](#connection-initialization)
+1. [General Information](#1-general-information)
+2. [Log Observer Setup](#2-log-observer-setup)
+3. [Log Observer Configuration](#3-log-observer-configuration)
+4. [Command Line Options](#4-command-line-options)
+5. [Connection Initialization](#5-connection-initialization)
 
 ---
 
-## General Information
+## 1. General Information
 
 The AREG SDK Log Observer functions as a client application for the [Log Collector](./04d-logcollector.md) service, seamlessly integrating within AREG SDK's logging ecosystem. It enables centralized log storage in plain text and/or SQLite databases, providing extensive analysis capabilities for logs gathered from multiple applications distributed in the network. Through bi-directional communication with logging sources, the Log Observer lets users adjust scope activation and message priorities during runtime to optimize network traffic, ensuring only relevant log data is captured for analysis.
 
 ---
 
-## Log Observer Setup
+## 2. Log Observer Setup
 
 The Log Observer is part of the [logobserver](./../../framework/logobserver/) module in AREG SDK, using the API of the `areglogger` utility library. It compiles as a standalone executable, operable on any networked machine with a General Purpose Operating System (GPOS) like Windows or Linux.
 
@@ -25,7 +25,7 @@ To start receiving log data, launch the console application on a networked GPOS 
 
 ---
 
-## Log Observer Configuration
+## 3. Log Observer Configuration
 
 As any other application based on AREG Framework, the Log Observer configuration, managed through the configuration file like AREG SDK standard `areg.init` file, uses key-value pairs formatted as `section::(module|*)::property[::(position|*)]`. Example configurations enable applications to connect to the Log Collector:
 
@@ -73,7 +73,7 @@ In this setup, received log messages are saved in both a text file and a SQLite 
 
 ---
 
-## Command Line Options
+## 4. Command Line Options
 
 Below are the key command-line options for managing the Log Observer. Options marked **Console** can be used during active `logobserver` operation, while others initiate program actions during startup.
 
@@ -97,7 +97,7 @@ Commands may vary with version updates.
 
 ---
 
-## Connection Initialization
+## 5. Connection Initialization
 
 By default, `logobserver` loads settings from `areg.init`. To specify an alternative configuration file, use:
 

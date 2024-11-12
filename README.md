@@ -148,17 +148,14 @@ git clone https://github.com/aregtech/areg-sdk.git
 
 ### Build Instructions
 
-The **AREG SDK** is written in **C++17** and supports multiple platforms and compilers:
-- **Supported platforms:** Linux, Windows, Cygwin and macOS. 
-- **Supported compilers:** GNU, Clang, MSVC and Cygwin GNU. 
-- **Supported CPU:** x86, x86_64, arm, and aarch64. 
+The **AREG SDK** is written in **C++17**, supports multiple platforms, processors and compilers:
 
-The following build tools are supported:
-
-| Tool        | Solution         | Platforms              | API          | Quick actions to compile           |
-|-------------|------------------|------------------------|--------------|------------------------------------|
-| **CMake**   | `CMakeLists.txt` | Linux, Windows, Cygwin | POSIX, Win32 | Build with CMake, VSCode, or MSVS. |
-| **MSBuild** | `areg-sdk.sln`   | Windows                | Win32        | Build with MSBuild or MSVS.        |
+| Compiler  | Platforms     | Tools         | API           | CPU Architecture          |
+|-----------|---------------|---------------|---------------|---------------------------|
+| GNU       | Linux, macOS  | CMake         | POSIX         | x86, x86_64, ARM, AARCH64 |
+| Clang     | Linux, Windows| CMake, MSVS   | POSIX, Win32  | x86, x86_64               |
+| MSVC      | Windows       | CMake, MSVS   | Win32         | x86, x86_64               |
+| Cygwin GNU| Windows       | CMake         | POSIX         | x86, x86_64               |
 
 For detailed build instructions, check the **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)** or **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** pages.
 
@@ -175,7 +172,8 @@ cmake -B ./build
 cmake --build ./build -j 20
 ```
 
-For custom builds, pass the options via the command line or configure the options listed in **[user.cmake](./docs/wiki/02a-cmake-config.md)** in CMake script.
+> [!TIP]
+> For **custom builds and cross-compiling** see **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)**.
 
 #### Build with Microsoft Visual Studio
 

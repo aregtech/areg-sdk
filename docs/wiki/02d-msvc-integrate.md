@@ -13,19 +13,19 @@ This guide provides instructions for integrating the **AREG Framework** into an 
 
 ## Table of Contents
 
-- [AREG SDK General Requirements](#areg-sdk-general-requirements)
-- [General Information](#general-information)
-- [Example Code](#example-code)
-- [Integration Methods](#integration-methods)
-  - [Method 1: Integrate Using `vcpkg` Package](#method-1-integrate-using-vcpkg-package)
-  - [Method 2: Integrate as Git Submodule](#method-2-integrate-as-git-submodule)
-- [Advanced Integration](#advanced-integration)
-  - [Advanced MSBuild Options](#advanced-msbuild-options)
-  - [Advanced Project Settings](#advanced-project-settings)
+1. [AREG SDK General Requirements](#1-areg-sdk-general-requirements)
+2. [General Information](#2-general-information)
+3. [Example Code](#3-example-code)
+4. [Integration Methods](#4-integration-methods)
+   - [Method 1: Integrate Using `vcpkg` Package](#method-1-integrate-using-vcpkg-package)
+   - [Method 2: Integrate as Git Submodule](#method-2-integrate-as-git-submodule)
+5. [Advanced Integration](#5-advanced-integration)
+   - [Advanced MSBuild Options](#advanced-msbuild-options)
+   - [Advanced Project Settings](#advanced-project-settings)
 
 ---
 
-## AREG SDK General Requirements
+## 1. AREG SDK General Requirements
 
 To integrate the AREG SDK, ensure the following prerequisites are met:
 
@@ -35,7 +35,7 @@ To integrate the AREG SDK, ensure the following prerequisites are met:
 
 ---
 
-## General Information
+## 2. General Information
 
 The AREG SDK includes several key components:
 
@@ -51,7 +51,7 @@ These components provide a robust foundation for integrating the AREG SDK, strea
 
 ---
 
-## Example Code
+## 3. Example Code
 
 Create a new Microsoft Visual Studio solution with a console project named `example`. Add a file named `example.cpp` with the following content:
 ```cpp
@@ -70,7 +70,7 @@ This example project and source file will be used throughout the integration ste
 
 ---
 
-## Integration Methods
+## 4. Integration Methods
 
 ### Method 1: Integrate Using `vcpkg` Package
 
@@ -133,7 +133,7 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-p
 
 ---
 
-## Advanced Integration
+## 5. Advanced Integration
 
 ### Advanced MSBuild Options
 

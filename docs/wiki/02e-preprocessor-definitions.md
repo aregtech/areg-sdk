@@ -3,26 +3,26 @@
 *This document provides an overview of preprocessor definitions used in AREG SDK projects, detailing each definition's purpose and usage to aid in configuring and compiling applications effectively.*
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [Platform-Specific Defines](#platform-specific-defines)
+1. [General Information](#1-general-information)
+2. [Platform-Specific Defines](#2-platform-specific-defines)
    - [POSIX](#posix)
    - [WINDOWS](#windows)
-3. [Build Type Defines](#build-type-defines)
+3. [Build Type Defines](#3-build-type-defines)
    - [DEBUG and NDEBUG](#debug-and-ndebug)
-4. [AREG Framework Library Defines](#areg-framework-library-defines)
+4. [AREG Framework Library Defines](#4-areg-framework-library-defines)
    - [Exporting Framework Library](#exporting-framework-library)
    - [Importing Framework Library](#importing-framework-library)
-5. [AREG Log Observer API Library Defines](#areg-log-observer-api-library-defines)
+5. [AREG Log Observer API Library Defines](#5-areg-log-observer-api-library-defines)
    - [Exporting areglogger Library](#exporting-areglogger-library)
    - [Importing areglogger Library](#importing-areglogger-library)
-6. [Other Definitions](#other-definitions)
+6. [Other Definitions](#6-other-definitions)
    - [AREG_EXTENDED](#areg_extended)
    - [AREG_LOGS](#areg_logs)
    - [Application Bitness](#application-bitness)
 
 ---
 
-## Introduction
+## 1. General Information
 
 The AREG SDK uses preprocessor-defined symbols to configure framework compilation, enabling customization and control over the build process. This guide provides details on each define and instructions for configuring them across various platforms and IDEs.
 
@@ -54,7 +54,7 @@ These symbols can be set in:
 
 ---
 
-## Platform-Specific Defines
+## 2. Platform-Specific Defines
 
 ### POSIX
 
@@ -78,7 +78,7 @@ cmake -B ./build -DAREG_COMPILER_FAMILY=msvc
 
 ---
 
-## Build Type Defines
+## 3. Build Type Defines
 
 ### DEBUG and NDEBUG
 These defines specify the build configuration (`DEBUG` for Debug, `NDEBUG` for Release) and are mutually exclusive.
@@ -95,7 +95,7 @@ cmake -B ./build -DAREG_BUILD_TYPE=Debug
 
 ---
 
-## AREG Framework Library Defines
+## 4. AREG Framework Library Defines
 
 ### Exporting Framework Library
 These symbols ensure proper export of classes and functions for `areg` shared or static libraries. Relevant only when building the `areg` library.
@@ -129,7 +129,7 @@ cmake -B ./build -DAREG_BINARY=shared
 
 ---
 
-## AREG Log Observer API Library Defines
+## 5. AREG Log Observer API Library Defines
 
 ### Exporting areglogger Library
 These symbols ensure proper export of classes and functions for shared or static `areglogger` libraries. Relevant only when building the `areglogger` library.
@@ -165,7 +165,7 @@ cmake -B ./build -DIMP_LOGGER_LIB
 
 ---
 
-## Other Definitions
+## 6. Other Definitions
 
 ### AREG_EXTENDED
 The `AREG_EXTENDED` define enables additional features in the `aregextend` library. Set it in configuration files as needed. It may have additional dependencies. For example, it requires `ncurses` library dependency when compile with additional features using POSIX API.

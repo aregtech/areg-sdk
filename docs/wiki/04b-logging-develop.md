@@ -6,17 +6,17 @@ The AREG Framework features a robust, adaptable logging system ideal for monitor
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Compile-Time Log Activation](#compile-time-log-activation)
-- [Enabling \& Disabling Logs](#enabling--disabling-logs)
-  - [Activating Logs via the `Application` Class](#activating-logs-via-the-application-class)
-  - [Activating Logs via Macros](#activating-logs-via-macros)
-- [Scopes \& Logging](#scopes--logging)
-- [Logging Configuration](#logging-configuration)
+1. [General Information](#1-general-information)
+2. [Compile-Time Log Activation](#2-compile-time-log-activation)
+3. [Enabling \& Disabling Logs](#3-enabling--disabling-logs)
+   - [Activating Logs via the `Application` Class](#activating-logs-via-the-application-class)
+   - [Activating Logs via Macros](#activating-logs-via-macros)
+4. [Scopes \& Logging](#4-scopes--logging)
+5. [Logging Configuration](#5-logging-configuration)
 
 ---
 
-## Overview
+## 1. General Information
 
 The [AREG Framework](./../../framework/areg) includes a powerful [logging module](./../../framework/areg/trace) called `trace`. Key capabilities include:
    - Enabling/disabling logs at compile and runtime
@@ -26,7 +26,7 @@ This guide provides steps to compile and configure the AREG logging module effec
 
 ---
 
-## Compile-Time Log Activation
+## 2. Compile-Time Log Activation
 
 Logging can be enabled or disabled during compilation, allowing effective debugging during development while optimizing performance in production. By default, logs are enabled. To adjust this setting:
 
@@ -43,7 +43,7 @@ Logging can be enabled or disabled during compilation, allowing effective debugg
 
 ---
 
-## Enabling & Disabling Logs
+## 3. Enabling & Disabling Logs
 
 Once compiled with logging enabled (`AREG_LOGS=ON`), logging can be managed as follows:
 
@@ -76,7 +76,7 @@ int main() {
 
 ---
 
-## Scopes & Logging
+## 4. Scopes & Logging
 
 The AREG logging system uses *logging scopes* to manage logs by priority and message type. By assigning names to scopes, developers can focus on specific logging areas. For instance, in a `SomeClass` with methods `foo()` and `bar()`:
 
@@ -104,6 +104,6 @@ Activated scopes log relevant messages, enabling developers to trace method call
 
 ---
 
-## Logging Configuration
+## 5. Logging Configuration
 
 Configure logging settings via a configuration file (e.g., `areg.init`) located in the `./config` folder post-compilation. This file allows defining log files, activating specific scopes, and setting message priorities. See the [Logging Configuration guide](./04a-logging-config.md) for detailed setup instructions, which enable customized log management and integration with the [Log Collector](./04d-logcollector.md).

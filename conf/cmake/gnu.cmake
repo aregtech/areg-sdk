@@ -29,10 +29,14 @@ else()
     list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
 endif()
 
-if(${AREG_BITNESS} EQUAL 32)
-    list(APPEND AREG_COMPILER_OPTIONS -m32)
-else()
-    list(APPEND AREG_COMPILER_OPTIONS -m64)
+if (NOT ${AREG_PROCESSOR} STREQUAL "arm" AND NOT ${AREG_PROCESSOR} STREQUAL "aarch64")
+    if(${AREG_BITNESS} EQUAL 32)
+        list(APPEND AREG_COMPILER_OPTIONS -m32)
+        list(APPEND AREG_LDFLAGS -m32)
+    else()
+        list(APPEND AREG_COMPILER_OPTIONS -m64)
+        list(APPEND AREG_LDFLAGS -m64)
+    endif()
 endif()
 
 # Linker flags (-l is not necessary)
@@ -43,4 +47,8 @@ set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
         -Wno-everything
         -Wno-unused-function
+)
+
+list(APPEND AREG_OPT_DISABLE_WARN_COMMON
+        -Wno-psabi
 )

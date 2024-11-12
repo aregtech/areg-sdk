@@ -59,7 +59,7 @@ int SynchLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitable
         if ( (lockAndWait._isEmpty() == false) && lockAndWait._lock( ) )
         {
             SynchLockAndWaitIX::MapWaitIDResource & mapReousrces { SynchLockAndWaitIX::_mapWaitResourceIds() };
-            mapReousrces.registerResourceObject(reinterpret_cast<id_type>(lockAndWait.mContext), &lockAndWait);
+            mapReousrces.registerResourceObject(reinterpret_cast<ptr_type>(lockAndWait.mContext), &lockAndWait);
 
             int waitResult = ENOLCK;
             bool makeLoop = true;
@@ -75,7 +75,7 @@ int SynchLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitable
                 mapReousrces.unlock();
             }
 
-            mapReousrces.unregisterResourceObject(reinterpret_cast<id_type>(lockAndWait.mContext));
+            mapReousrces.unregisterResourceObject(reinterpret_cast<ptr_type>(lockAndWait.mContext));
 
             lockAndWait._unlock( );
         }
@@ -229,7 +229,7 @@ bool SynchLockAndWaitIX::isWaitableRegistered( IEWaitableBaseIX & synchWaitable 
 
 bool SynchLockAndWaitIX::notifyAsynchSignal( id_type threadId )
 {
-    bool result = false;
+    bool result{false};
 
     SynchResourceMapIX & mapResource { SynchLockAndWaitIX::_mapSynchResources() };
     mapResource.lock( );
@@ -237,7 +237,7 @@ bool SynchLockAndWaitIX::notifyAsynchSignal( id_type threadId )
     {
         SynchLockAndWaitIX::MapWaitIDResource & mapReousrces { SynchLockAndWaitIX::_mapWaitResourceIds() };
         mapReousrces.lock();
-        SynchLockAndWaitIX * lockAndWait = mapReousrces.findResourceObject(threadId);
+        SynchLockAndWaitIX * lockAndWait = mapReousrces.findResourceObject(static_cast<ptr_type>(threadId));
         if (lockAndWait != nullptr)
         {
             lockAndWait->mFiredEntry = NESynchTypesIX::SynchAsynchSignal;
@@ -245,7 +245,6 @@ bool SynchLockAndWaitIX::notifyAsynchSignal( id_type threadId )
         }
 
         mapReousrces.unlock();
-
     } while (false);
 
     mapResource.unlock();
@@ -282,7 +281,7 @@ SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
 
         if ( (mMatchCondition == NESynchTypesIX::eMatchCondition::MatchConditionAny ) || (mDescribe == SynchLockAndWaitIX::eWaitType::WaitSingleObject) )
         {
-            for ( int i = 0; i < count; ++ i, ++ listWaitables )
+            for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
                 IEWaitableBaseIX * synchWaitable = *listWaitables;
                 if (synchWaitable != nullptr)
@@ -320,7 +319,7 @@ SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
         {
             bool eventFired = true;
 
-            for ( int i = 0; i < count; ++ i, ++ listWaitables )
+            for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
                 IEWaitableBaseIX * synchWaitable = *listWaitables;
                 if ( synchWaitable != nullptr )
@@ -549,7 +548,7 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
     if ( firedEvent != NESynchTypesIX::SynchObjectAll )
     {
         ASSERT(mWaitingList.getSize() > static_cast<uint32_t>(firedEvent));
-        IEWaitableBaseIX *waitable = mWaitingList[static_cast<int>(firedEvent)];
+        IEWaitableBaseIX *waitable = mWaitingList[static_cast<uint32_t>(firedEvent)];
         
 #ifdef DEBUG
         if (waitable == nullptr)

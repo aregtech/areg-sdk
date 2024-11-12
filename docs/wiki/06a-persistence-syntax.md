@@ -7,21 +7,21 @@ The AREG Framework simplifies data persistence with lightweight Key-Value pairs,
 ---
 
 ## Table of Contents
-1. [General Information](#general-information)
-2. [Syntax Basics](#syntax-basics)
-3. [Property Key](#property-key)
-4. [Property Value](#property-value)
-5. [Examples](#examples)
+1. [General Information](#1-general-information)
+2. [Syntax Basics](#2-syntax-basics)
+3. [Property Key](#3-property-key)
+4. [Property Value](#4-property-value)
+5. [Examples](#5-examples)
 
 ---
 
-## General Information
+## 1. General Information
 
 The **AREG SDK** leverages simple key-value pairs, called *Properties* for data persistence. For example, the **persistence module** parses these pairs from configuration files like [areg.init](./../../framework/areg/resources/areg.init), enabling AREG SDK to handle configuration data without the complexities of structured data formats. This design focuses on simplicity and efficiency for essential configurations.
 
 ---
 
-## Syntax Basics
+## 2. Syntax Basics
 
 The parser in AREG Framework adheres to specific key-value syntax rules:
 
@@ -32,7 +32,7 @@ The parser in AREG Framework adheres to specific key-value syntax rules:
 - **Key Separator**: Uses `::` to organize the key.
 - **Value Delimiter**: Uses `|` for lists (similar to logical OR).
 
-### Example
+**Example**
 ```text
 log::myapp::scope::scope_one = DEBUG | SCOPE;  # Ends with `;`
 log::myapp::scope::scope_two = WARN  | SCOPE   # No `;`
@@ -43,7 +43,7 @@ log::myapp::scope::scope_two = WARN  | SCOPE   # No `;`
 
 ---
 
-## Property Key
+## 3. Property Key
 
 **Property Key** format: `section::(module|*)::property[::position]` with `::` separators for organization.
 
@@ -60,7 +60,7 @@ Each key must include *section*, *property*, and either a specific *module* or `
 
 ---
 
-## Property Value
+## 4. Property Value
 
 Property values begin after the `=` symbol and extend until `;`, `#`, or line end. Use `|` to separate values in lists, for instance:
 
@@ -72,7 +72,7 @@ In this case, the `location::*::files` key has a list of paths [`./config/`, `~/
 
 ---
 
-## Examples
+## 5. Examples
 
 Sample key-value pairs within the AREG SDK that specifies the format of logs:
 ```text

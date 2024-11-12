@@ -4,15 +4,15 @@ The `codegen.jar` tool in the AREG SDK is a powerful utility that automates the 
 
 # Table of Contents
 
-- [Key Advantages of `codegen.jar`](#key-advantages-of-codegenjar)
-- [How to Use `codegen.jar`](#how-to-use-codegenjar)
-- [Integration Tips](#integration-tips)
-- [Example Workflow](#example-workflow)
+1. [Key Advantages of `codegen.jar`](#1-key-advantages-of-codegenjar)
+2. [How to Use `codegen.jar`](#2-how-to-use-codegenjar)
+3. [Integration Tips](#3-integration-tips)
+4. [Example Workflow](#4-example-workflow)
    - [Workflow with Microsoft Visual Studio](#workflow-with-microsoft-visual-studio)
    - [Workflow with CMake](#workflow-with-cmake)
-- [Conclusion](#conclusion)
+5. [Conclusion](#5-conclusion)
 
-## Key Advantages of `codegen.jar`
+## 1. Key Advantages of `codegen.jar`
 
 1. **Streamlined Code Automation**: Automatically generates Service Interface code to support object-based RPC communication, minimizing manual coding and potential errors. The generated code adheres to AREG SDK standards, which improves maintainability and scalability.
 
@@ -24,7 +24,7 @@ The `codegen.jar` tool in the AREG SDK is a powerful utility that automates the 
 
 5. **Secure Outsourcing Capabilities**: Enables secure collaboration by allowing external teams to generate code from provided Service Interface documents, removing the need to share full source code.
 
-## How to Use `codegen.jar`
+## 2. How to Use `codegen.jar`
 
 1. **Define Service Interfaces**: [Specify the service interface](./ServiceInterface.md) in a `.siml` file, including data structures, attributes, and methods (requests, responses, broadcasts).
 
@@ -39,7 +39,7 @@ The `codegen.jar` tool in the AREG SDK is a powerful utility that automates the 
 > [!NOTE]
 > The tool [Lusan](https://github.com/aregtech/areg-sdk-tools/), currently under development, will soon provide a visual interface to simplify `.siml` document creation.
 
-## Integration Tips
+## 3. Integration Tips
 
 Use AREG **CMake functions** from [functions.cmake](./../../conf/cmake/functions.cmake) to automate file generation and inclusion:
 - **addServiceInterface**: Generates files in `${AREG_GENERATE_DIR}`, following a directory structure based on the `.siml` file's parent path.
@@ -48,7 +48,7 @@ Use AREG **CMake functions** from [functions.cmake](./../../conf/cmake/functions
 
 For automated code generation and inclusion **with Microsoft Visual Studio**, refer to [Integrating AREG Framework with Microsoft Visual Studio](./02d-msvc-integrate.md).
 
-## Example Workflow
+## 4. Example Workflow
 
 ### Workflow with CMake
 
@@ -77,6 +77,6 @@ For automated code generation and inclusion **with Microsoft Visual Studio**, re
 
 4. **Implement Application Logic**: Use the generated stubs and clients to manage requests, responses, broadcasts, and other events, enabling the development of core functionality.
 
-## Conclusion
+## 5. Conclusion
 
 The `codegen.jar` tool is an essential asset in the AREG SDK, automating IPC and RPC setups and promoting code consistency. It enhances productivity, modularity, and quality in distributed applications, enabling developers to build reliable, streamlined communication across components and focus on delivering high-quality software.
