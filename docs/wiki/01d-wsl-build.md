@@ -3,22 +3,22 @@
 Following these steps will guide you through setting up, troubleshooting, and running AREG SDK on WSL effectively.
 
 ## Table of Contents
-1. [General Information](#general-information)
-2. [Installing a Linux Distribution in WSL](#installing-linux-distribution-in-wsl)
-3. [Troubleshooting WSL Updates](#troubleshooting-wsl-updates)
-4. [Installing Build Tools](#installing-build-tools)
-5. [Cloning AREG SDK in WSL](#cloning-areg-sdk-in-wsl)
-6. [Compiling AREG SDK](#compiling-areg-sdk)
+1. [General Information](#1-general-information)
+2. [Installing a Linux Distribution in WSL](#2-installing-linux-distribution-in-wsl)
+3. [Troubleshooting WSL Updates](#3-troubleshooting-wsl-updates)
+4. [Installing Build Tools](#4-installing-build-tools)
+5. [Cloning AREG SDK in WSL](#5-cloning-areg-sdk-in-wsl)
+6. [Compiling AREG SDK](#6-compiling-areg-sdk)
    - [CMake with Clang](#cmake-with-clang)
    - [CMake with GCC](#cmake-with-gcc)
    - [CMake for 32-bit Build with Clang](#cmake-for-32bit-build-with-clang)
    - [CMake for 32-bit ARM Build with GNU](#cmake-for-32bit-arm-build-with-gnu)
    - [CMake for 64-bit ARM Build with GNU](#cmake-for-64bit-arm-build-with-gnu)
-7. [Running Applications](#running-applications)
+7. [Running Applications](#7-running-applications)
 
 ---
 
-## General Information
+## 1. General Information
 
 The Windows Subsystem for Linux (WSL) enables users of Windows 10 (version 2004+) and higher to install and use Linux utilities and command-line tools natively. WSL provides access to distributions like Ubuntu and OpenSUSE, removing the need to switch OS environments. 
 
@@ -26,7 +26,7 @@ The following sections provide setup, installation, and troubleshooting steps to
 
 ---
 
-## 1. Installing a Linux Distribution in WSL
+## 2. Installing a Linux Distribution in WSL
 
 Follow [Microsoft's WSL installation guide](https://learn.microsoft.com/en-us/windows/wsl/install-manual) for complete steps. To install Ubuntu, use:
 ```bash
@@ -45,7 +45,7 @@ sudo apt-get update && sudo apt-get upgrade -y
    ```
 ---
 
-## 2. Troubleshooting WSL Updates
+## 3. Troubleshooting WSL Updates
 
 Experiencing update issues? Common solutions include:
 
@@ -67,7 +67,7 @@ Experiencing update issues? Common solutions include:
     
 ---
 
-## 3. Installing Build Tools
+## 4. Installing Build Tools
 
 Install the essential tools and libraries to compile AREG SDK:
 ```bash
@@ -84,7 +84,7 @@ Refer to the **System Requirements** for Linux platforms in the [Building AREG S
 
 ---
 
-## 4. Cloning AREG SDK in WSL
+## 5. Cloning AREG SDK in WSL
 
 ### Cloning Directly in WSL
 1. Create a `projects` directory and navigate to it:

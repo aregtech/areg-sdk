@@ -3,15 +3,15 @@
 This document provides a comprehensive guide for installing the `vcpkg` package manager, setting up the `areg` package, and creating projects with CMake or Visual Studio to effectively use the AREG SDK.
 
 ## Table of Contents
-- [AREG SDK General Requirements](#areg-sdk-general-requirements)
-- [Install vcpkg](#install-vcpkg)
-- [Install and Integrate the areg Package](#install-and-integrate-the-areg-package)
-- [Setting Up a CMake Project to Use areg](#setting-up-a-cmake-project-to-use-areg)
-- [Creating a Microsoft Visual Studio Project to Use areg](#creating-a-microsoft-visual-studio-project-to-use-areg)
+1. [AREG SDK General Requirements](#1-areg-sdk-general-requirements)
+2. [Install vcpkg](#2-install-vcpkg)
+3. [Install and Integrate the areg Package](#3-install-and-integrate-the-areg-package)
+4. [Setting Up a CMake Project to Use areg](#4-setting-up-a-cmake-project-to-use-areg)
+5. [Creating a Microsoft Visual Studio Project to Use areg](#5-creating-a-microsoft-visual-studio-project-to-use-areg)
 
 ---
 
-## AREG SDK General Requirements
+## 1. AREG SDK General Requirements
 
 Ensure the following dependencies are installed to integrate the AREG SDK:
 
@@ -22,7 +22,7 @@ Ensure the following dependencies are installed to integrate the AREG SDK:
 
 ---
 
-## Install vcpkg
+## 2. Install vcpkg
 
 The [`vcpkg` package manager](https://github.com/microsoft/vcpkg) helps manage C++ libraries across multiple platforms. Follow these steps to install `vcpkg`:
 
@@ -68,7 +68,7 @@ The [`vcpkg` package manager](https://github.com/microsoft/vcpkg) helps manage C
 
 ---
 
-## Install and Integrate the areg Package
+## 3. Install and Integrate the areg Package
 
 After installing `vcpkg`, you can install the `areg` package, which provides the AREG SDK libraries, header files, CMake configurations and tools.
 
@@ -84,7 +84,7 @@ After installing `vcpkg`, you can install the `areg` package, which provides the
 
 ---
 
-## Setting Up a CMake Project to Use areg
+## 4. Setting Up a CMake Project to Use areg
 
 Once `vcpkg` and the `areg` package are installed, you can create a CMake project that links with the AREG SDK libraries.
 
@@ -135,7 +135,7 @@ This will compile the `example` project and link it with the `areg` library.
 
 ---
 
-## Creating a Microsoft Visual Studio Project to Use areg
+## 5. Creating a Microsoft Visual Studio Project to Use areg
 
 `vcpkg` also integrates seamlessly with Visual Studio, making it easy to add packages like `areg` to C++ projects.
 

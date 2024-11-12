@@ -4,25 +4,25 @@
 This guide provides step-by-step instructions for building the **AREG SDK** on Linux, Windows, and Cygwin platforms using **CMake**. It also covers IDE setups for **Microsoft Visual Studio** and **Visual Studio Code**. Follow these steps to set up your build environment and efficiently compile AREG SDK projects. For troubleshooting, refer to the [AREG SDK documentation](https://github.com/aregtech/areg-sdk).
 
 ## Table of Contents
-- [System Requirements](#system-requirements)
-  - [General Requirements](#general-requirements)
-  - [Platform-Specific Requirements](#platform-specific-requirements)
-- [Configuration and Build Steps](#configuration-and-build-steps)
-  - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
-    - [Linux](#linux)
-    - [Windows](#windows)
-    - [Cygwin](#cygwin)
-  - [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository)
-  - [Step 3: Configuring the Build](#step-3-configuring-the-build)
-  - [Step 4: Building the Project](#step-4-building-the-project)
-  - [Step 5: Running Tests and Installing](#step-5-running-tests-and-installing)
-    - [Run Unit Tests:](#run-unit-tests)
-    - [Install AREG SDK:](#install-areg-sdk)
-- [Cross-Compiling AREG SDK](#crosscompiling-areg-sdk)
-  - [Cross-Compiling for 32-bit Systems](#crosscompiling-for-32bit-systems)
-  - [Cross-Compiling for ARM Processors](#crosscompiling-for-arm-processors)
-  - [Cross-Compiling for AARCH64 (64-bit ARM)](#crosscompilingfor-aarch64-64bit-arm)
-- [Additional IDE Configurations](#additional-ide-configurations)
+1. [System Requirements](#1-system-requirements)
+   - [General Requirements](#general-requirements)
+   - [Platform-Specific Requirements](#platform-specific-requirements)
+2. [Configuration and Build Steps](#2-configuration-and-build-steps)
+   - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
+     - [Linux](#linux)
+     - [Windows](#windows)
+     - [Cygwin](#cygwin)
+   - [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository)
+   - [Step 3: Configuring the Build](#step-3-configuring-the-build)
+   - [Step 4: Building the Project](#step-4-building-the-project)
+   - [Step 5: Running Tests and Installing](#step-5-running-tests-and-installing)
+     - [Run Unit Tests:](#run-unit-tests)
+     - [Install AREG SDK:](#install-areg-sdk)
+3. [Cross-Compiling AREG SDK](#3-cross-compiling-areg-sdk)
+   - [Cross-Compiling for 32-bit Systems](#cross-compiling-for-32-bit-systems)
+   - [Cross-Compiling for ARM Processors](#cross-compiling-for-arm-processors)
+   - [Cross-Compiling for AARCH64 (64-bit ARM)](#cross-compiling-for-aarch64-64-bit-arm)
+4. [Additional IDE Configurations](#4-additional-ide-configurations)
 
 ---
 
@@ -61,6 +61,9 @@ sudo apt-get update && sudo apt-get upgrade -y
 sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
 ```
 This command installs essential tools and libraries, including `ncurses` for Linux builds.
+
+> [!NOTE]
+> You may need additional dependencies if compile for different target (**cross-compiling**). For additional information, refer to [Cross-Compiling AREG SDK](#crosscompiling-areg-sdk) section.
 
 #### Windows
 1. Download and install [Visual Studio](https://visualstudio.microsoft.com/), including packages **CMake** and **CLang compiler for Windows**.

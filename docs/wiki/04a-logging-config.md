@@ -4,16 +4,16 @@ The AREG SDK offers a highly configurable logging system via the **AREG log conf
 
 ## Table of Contents
 
-- [Key Configuration Options](#key-configuration-options)
-- [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
-- [Remote Log Collector Configuration](#remote-log-collector-configuration)
-- [Scopes and Log Priorities](#scopes-and-log-priorities)
-  - [Log Priority Levels](#log-priority-levels)
-- [Conclusion](#conclusion)
+1. [Key Configuration Options](#1-key-configuration-options)
+2. [Log Mechanisms and Destinations](#2-log-mechanisms-and-destinations)
+3. [Remote Log Collector Configuration](#3-remote-log-collector-configuration)
+4. [Scopes and Log Priorities](#4-scopes-and-log-priorities)
+   - [Log Priority Levels](#log-priority-levels)
+5. [Conclusion](#5-conclusion)
 
 ---
 
-## Key Configuration Options
+## 1. Key Configuration Options
 
 The `areg.init` file, located in the `./config` folder by default, structures logging configurations using the format `section::(module|*)::property[::position] = value`. Each entry specifies:
 
@@ -25,7 +25,7 @@ For more syntax details, see the [AREG SDK Persistence Syntax documentation](./0
 
 ---
 
-## Log Mechanisms and Destinations
+## 2. Log Mechanisms and Destinations
 
 This configuration supports various logging outputs. Currently supported:
 
@@ -36,26 +36,18 @@ This configuration supports various logging outputs. Currently supported:
 | **Debug Output**      | *debug*   | Provides real-time debugging within IDEs (for MSVS).          |
 | **Database**          | *db*      | Logs data in database for structured analysis.                |
 
-Example setup:
+**Example setup**:
 ```plaintext
 log::*::target = remote | file | debug | db
 log::*::enable::file = true
 log::*::file::location = ./logs/%appname%_%time%.log
-```- [AREG SDK Logging Configuration Guide](#areg-sdk-logging-configuration-guide)
-  - [Key Configuration Options](#key-configuration-options)
-  - [Log Mechanisms and Destinations](#log-mechanisms-and-destinations)
-  - [Configuring Log Message Layout](#configuring-log-message-layout)
-  - [Remote Log Collector Configuration](#remote-log-collector-configuration)
-  - [Scopes and Log Priorities](#scopes-and-log-priorities)
-    - [Log Priority Levels](#log-priority-levels)
-  - [Conclusion](#conclusion)
-
+```
 
 The `log::*::enable` setting manages log activation, while parameters (e.g., `log::*::remote::queue`) optimize start-up or delayed connections. The file naming mask `%appname%_%time%.log` dynamically includes the application name and timestamp.
 
 ---
 
-## Configuring Log Message Layout
+## 3. Configuring Log Message Layout
 
 Define log file formats in `areg.init` with the following:
 ```plaintext
@@ -83,7 +75,7 @@ Adjusting formats ensures clear, uniform log messages across applications.
 
 ---
 
-## Remote Log Collector Configuration
+## 4. Remote Log Collector Configuration
 
 For remote logging, configure protocol, IP, and port:
 ```plaintext
@@ -96,7 +88,7 @@ This setup enables central log collection over a network. Scopes and priorities 
 
 ---
 
-## Scopes and Log Priorities
+## 5. Scopes and Log Priorities
 
 AREG's logging system supports selective logging by scope and priority, enabling efficient log filtering. Configure scopes in the `log` section using the `scope` property (`log::*::scope::*`) for initial setup.
 
@@ -127,6 +119,6 @@ The AREG Framework allows runtime adjustments using the `logobserver` tool, prov
 
 ---
 
-## Conclusion
+## 6. Conclusion
 
 This guide highlights the flexible configuration of the AREG SDK logging system, offering efficient application monitoring and debugging. Explore additional settings for optimal performance, and refer to the AREG SDK documentation for advanced configuration insights.

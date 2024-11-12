@@ -3,12 +3,16 @@
 This document provides solutions for common issues encountered while updating the Windows Subsystem for Linux (WSL).
 
 ## Table of Contents
-- [Issue 1: Update Error Code `Wsl/Service/CreateInstance/0x80040326`](#issue-1-update-error-code-wslservicecreateinstance0x80040326)
-- [Issue 2: Network Resolution (DNS) Issues](#issue-2-network-resolution-dns-issues)
-  - [Solution: Update DNS Settings in `/etc/resolv.conf`](#solution-update-dns-settings-in-etcresolvconf)
+1. [Issue 1: Update Error Code `Wsl/Service/CreateInstance/0x80040326`](#issue-1-update-error-code-wslservicecreateinstance0x80040326)
+   - [Solution: Update WSL](#solution-update-wsl)
+2. [Issue 2: Network Resolution (DNS) Issues](#issue-2-network-resolution-dns-issues)
+   - [Solution: Update DNS Settings in `/etc/resolv.conf`](#solution-update-dns-settings-in-etcresolvconf)
 
 ## Issue 1: Update Error Code `Wsl/Service/CreateInstance/0x80040326`
-If you receive this error code when trying to update, it typically indicates an issue with the WSL service. To resolve it, run the following command in your PowerShell or Command Prompt with administrator privileges:
+If you receive this error code when trying to update, it typically indicates an issue with the WSL service. 
+
+### Solution: Update WSL
+To resolve it, run the following command in your PowerShell or Command Prompt with administrator privileges:
 ```bash
 wsl --update
 ```
@@ -19,7 +23,7 @@ If you experience network-related issues, such as the following error:
 ```plaintext
 W: Failed to fetch http://archive.ubuntu.com/ubuntu/dists/jammy/InRelease Temporary failure resolving 'archive.ubuntu.com'
 ```
-this is often due to DNS resolution errors in WSL.
+This is often happens due to DNS resolution errors in WSL.
 
 ### Solution: Update DNS Settings in `/etc/resolv.conf`
 1. **Edit `/etc/resolv.conf`**:
@@ -38,4 +42,4 @@ this is often due to DNS resolution errors in WSL.
    ```
    This command updates the `nameserver` in `/etc/resolv.conf` to Google's DNS. Once updated, retry the WSL update command. 
 
-By following these steps, most DNS-related update issues in WSL can be resolved.
+Following these steps should resolve most DNS-related update issues in WSL.

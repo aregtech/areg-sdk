@@ -16,24 +16,24 @@ The following is the list of AREG SDK specific options that needs to be set befo
 1. [AREG_COMPILER_FAMILY](#1-areg_compiler_family)
 2. [AREG_COMPILER](#2-areg_compiler)
 3. [AREG_PROCESSOR](#3-areg_processor) 
-4. [AREG_BINARY](#3-areg_binary)
-5. [AREG_LOGGER_LIB](#4-areg_logger_lib)
-6. [AREG_BUILD_TYPE](#5-areg_build_type)
-7. [AREG_BUILD_TESTS](#6-areg_build_tests)
-8. [AREG_BUILD_EXAMPLES](#7-areg_build_examples)
-9. [AREG_EXTENDED](#8-areg_extended)
-10.[AREG_LOGS](#9-areg_logs)
-11. [AREG_USE_PACKAGES](#10-areg_use_packages)
-12. [AREG_SQLITE_PACKAGE](#11-areg_sqlite_package)
-13. [AREG_GTEST_PACKAGE](#12-areg_gtest_package)
-14. [AREG_ENABLE_OUTPUTS](#13-areg_enable_outputs)
-15. [AREG_BUILD_ROOT](#14-areg_build_root)
-16. [AREG_OUTPUT_DIR](#15-areg_output_dir)
-17. [AREG_OUTPUT_BIN](#16-areg_output_bin)
-18. [AREG_OUTPUT_LIB](#17-areg_output_lib)
-19. [AREG_PACKAGES](#18-areg_packages)
-20. [AREG_INSTALL](#19-areg_install)
-21. [AREG_INSTALL_PATH](#20-areg_install_path)
+4. [AREG_BINARY](#4-areg_binary)
+5. [AREG_LOGGER_LIB](#5-areg_logger_lib)
+6. [AREG_BUILD_TYPE](#6-areg_build_type)
+7. [AREG_BUILD_TESTS](#7-areg_build_tests)
+8. [AREG_BUILD_EXAMPLES](#8-areg_build_examples)
+9. [AREG_EXTENDED](#9-areg_extended)
+10.[AREG_LOGS](#10-areg_logs)
+11. [AREG_USE_PACKAGES](#11-areg_use_packages)
+12. [AREG_SQLITE_PACKAGE](#12-areg_sqlite_package)
+13. [AREG_GTEST_PACKAGE](#13-areg_gtest_package)
+14. [AREG_ENABLE_OUTPUTS](#14-areg_enable_outputs)
+15. [AREG_BUILD_ROOT](#15-areg_build_root)
+16. [AREG_OUTPUT_DIR](#16-areg_output_dir)
+17. [AREG_OUTPUT_BIN](#17-areg_output_bin)
+18. [AREG_OUTPUT_LIB](#18-areg_output_lib)
+19. [AREG_PACKAGES](#19-areg_packages)
+20. [AREG_INSTALL](#20-areg_install)
+21. [AREG_INSTALL_PATH](#21-areg_install_path)
 
 For the quick orientation, here are the lists of AREG SDK specific options grouped by categories. See description for details. 
 
@@ -44,7 +44,7 @@ The following is the list of options to select compiler:
 |-------------------------------------------------------|---------------------------------------------------|
 | 1. [AREG_COMPILER_FAMILY](#1-areg_compiler_family)    | Select C++ compiler by family.                    |
 | 2. [AREG_COMPILER](#2-areg_compiler)                  | Select C++ compiler by name.                      |
-| 3. [AREG_PROCESSOR](#21-areg_processor)               | Select processor and bitness of target application|
+| 3. [AREG_PROCESSOR](#3-areg_processor)               | Select processor and bitness of target application|
 
 ### Options to Build Binaries
 
@@ -52,41 +52,41 @@ The following is the list of options that have impact on the build:
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 4.  [AREG_BINARY](#3-areg_binary)                     | `areg` framework shared or static library.        |
-| 5.  [AREG_LOGGER_LIB](#4-areg_logger_lib)             | `areglogger` library shared or static library.    |
-| 6.  [AREG_BUILD_TYPE](#5-areg_build_type)             | `Debug` or `Release` build.                       |
-| 7.  [AREG_BUILD_TESTS](#6-areg_build_tests)           | Build or escape unit tests.                       |
-| 8.  [AREG_BUILD_EXAMPLES](#7-areg_build_examples)     | Build or escape example.                          |
-| 9.  [AREG_EXTENDED](#8-areg_extended)                 | Build `aregextend` library with extended objects. |
-| 10. [AREG_LOGS](#9-areg_logs)                         | Build binaries with logs.
+| 4.  [AREG_BINARY](#4-areg_binary)                     | `areg` framework shared or static library.        |
+| 5.  [AREG_LOGGER_LIB](#5-areg_logger_lib)             | `areglogger` library shared or static library.    |
+| 6.  [AREG_BUILD_TYPE](#6-areg_build_type)             | `Debug` or `Release` build.                       |
+| 7.  [AREG_BUILD_TESTS](#7-areg_build_tests)           | Build or escape unit tests.                       |
+| 8.  [AREG_BUILD_EXAMPLES](#8-areg_build_examples)     | Build or escape example.                          |
+| 9.  [AREG_EXTENDED](#9-areg_extended)                 | Build `aregextend` library with extended objects. |
+| 10. [AREG_LOGS](#10-areg_logs)                         | Build binaries with logs.
 
 
 ### Options to Use Packages
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 11. [AREG_USE_PACKAGES](#10-areg_use_packages)        | Use installed packages whenever possible.         |
-| 12. [AREG_SQLITE_PACKAGE](#11-areg_sqlite_package)    | Try using installed `SQLite3` package.            |
-| 13. [AREG_GTEST_PACKAGE](#12-areg_gtest_package)      | Try using installed `GTest` package.              |
+| 11. [AREG_USE_PACKAGES](#11-areg_use_packages)        | Use installed packages whenever possible.         |
+| 12. [AREG_SQLITE_PACKAGE](#12-areg_sqlite_package)    | Try using installed `SQLite3` package.            |
+| 13. [AREG_GTEST_PACKAGE](#13-areg_gtest_package)      | Try using installed `GTest` package.              |
 
 
 ### Options to Change Output Directories
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 14. [AREG_ENABLE_OUTPUTS](#13-areg_enable_outputs)    | Allow AREG specific output directories.           |
-| 15. [AREG_BUILD_ROOT](#14-areg_build_root)            | Build directory path (binaries, packages).        |
-| 16. [AREG_OUTPUT_DIR](#15-areg_output_dir)            | Output directory path for binaries.               |
-| 17. [AREG_OUTPUT_BIN](#16-areg_output_bin)            | Output directory path for executables.            |
-| 18. [AREG_OUTPUT_LIB](#17-areg_output_lib)            | Output directory path for static libraries.       |
-| 19. [AREG_PACKAGES](#18-areg_packages)                | Directory to fetch packages (like `Google Test`). |
+| 14. [AREG_ENABLE_OUTPUTS](#14-areg_enable_outputs)    | Allow AREG specific output directories.           |
+| 15. [AREG_BUILD_ROOT](#15-areg_build_root)            | Build directory path (binaries, packages).        |
+| 16. [AREG_OUTPUT_DIR](#16-areg_output_dir)            | Output directory path for binaries.               |
+| 17. [AREG_OUTPUT_BIN](#17-areg_output_bin)            | Output directory path for executables.            |
+| 18. [AREG_OUTPUT_LIB](#18-areg_output_lib)            | Output directory path for static libraries.       |
+| 19. [AREG_PACKAGES](#19-areg_packages)                | Directory to fetch packages (like `Google Test`). |
 
 ### Options to Install AREG Binaries
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 20. [AREG_INSTALL](#19-areg_install)                  | Enable install (call `cmake --install`).          |
-| 21. [AREG_INSTALL_PATH](#20-areg_install_path)        | Location to install AREG binaries.                |
+| 20. [AREG_INSTALL](#20-areg_install)                  | Enable install (call `cmake --install`).          |
+| 21. [AREG_INSTALL_PATH](#21-areg_install_path)        | Location to install AREG binaries.                |
 
 ---
 
@@ -342,7 +342,7 @@ sudo cmake --install ./product/cache/llvm
 
 - **Compiler Configuration**: The `AREG_COMPILER_FAMILY` option allows you to specify a compiler family, such as `llvm`, which automatically selects `clang++` and `clang` as the default compilers.
 
-- **Target Processor**: `AREG_PROCESSOR` can be set to cross-compile the AREG SDK binaries. For details, check the appropriate [Cross-Compiling AREG SDK](./01b-cmake-build.md#crosscompiling-areg-sdk) chapter.
+- **Target Processor**: `AREG_PROCESSOR` can be set to cross-compile the AREG SDK binaries. For details, check the appropriate [Cross-Compiling AREG SDK](./01b-cmake-build.md#cross-compiling-areg-sdk) chapter.
 
 - **Custom Output Directories**: `AREG_BUILD_ROOT` can be used to set a specific location for all build-related binaries, aiding in project organization.
 

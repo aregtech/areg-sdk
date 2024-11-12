@@ -4,8 +4,8 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [CMake Macro Overview](#cmake-macro-overview)
+1. [Introduction](#1-introduction)
+2. [CMake Macro Overview](#2-cmake-macro-overview)
    - [`macro_check_fix_areg_cxx_standard`](#macro_check_fix_areg_cxx_standard)
    - [`macro_normalize_path`](#macro_normalize_path)
    - [`macro_add_service_interface`](#macro_add_service_interface)
@@ -20,7 +20,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
    - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
    - [`macro_guess_processor_architecture`](#macro_guess_processor_architecture)
    - [`macro_system_bitness`](#macro_system_bitness)
-- [CMake Functions Overview](#cmake-functions-overview)
+3. [CMake Functions Overview](#3-cmake-functions-overview)
    - [`setAppOptions`](#setappoptions)
    - [`addExecutableEx`](#addexecutableex)
    - [`addExecutable`](#addexecutable)
@@ -39,7 +39,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
 
 ---
 
-## Introduction
+## 1. Introduction
 
 The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable CMake utilities that simplify repetitive tasks, making project setup cleaner and more maintainable.
 
@@ -48,7 +48,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 
 ---
 
-## CMake Macro Overview
+## 2. CMake Macro Overview
 
 ### `macro_check_fix_areg_cxx_standard`
 - **Syntax**: `macro_check_fix_areg_cxx_standard()`
@@ -235,7 +235,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 
 ---
 
-## CMake Functions Overview
+## 3. CMake Functions Overview
 
 ### `setAppOptions`
 - **Syntax**: `setAppOptions(target_name library_list)`
