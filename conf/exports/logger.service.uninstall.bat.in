@@ -3,6 +3,6 @@
 rem : To uninstall the AREG Log Collector Service on local machine
 rem : run this file under Windows with Administrator rights
 
-@AREG_INSTALL_DST@/tools/@AREG_PACKAGE_NAME@/logger.exe --uninstall
+@AREG_INSTALL_DST@/tools/@AREG_PACKAGE_NAME@/logcollector.exe --uninstall
 
 exit

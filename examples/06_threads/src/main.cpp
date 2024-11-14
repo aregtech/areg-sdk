@@ -18,7 +18,7 @@
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 
 #ifdef  _WIN32
@@ -64,23 +64,23 @@ private:
 // HelloThread implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
-DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(main_HelloThread_HelloThread);
+DEF_LOG_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
     : Thread( self( ), "HelloThread" )
     , IEThreadConsumer  ( )
 {
-    TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG( "Initialized thread [ %s ]", "HelloThread" );
+    LOG_SCOPE(main_HelloThread_HelloThread);
+    LOG_DBG( "Initialized thread [ %s ]", "HelloThread" );
 }
 
 void HelloThread::onThreadRuns( void )
 {
-    TRACE_SCOPE(main_HelloThread_onThreadRuns);
+    LOG_SCOPE(main_HelloThread_onThreadRuns);
 
-    TRACE_INFO( "!!!Hello World!!! !!!Hello Tracing!!!" );
-    TRACE_INFO("The thread [ %s ] runs, going to sleep for [ %u ] ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS );
+    LOG_INFO( "!!!Hello World!!! !!!Hello Tracing!!!" );
+    LOG_INFO("The thread [ %s ] runs, going to sleep for [ %u ] ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS );
 
     Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
 }
@@ -157,11 +157,11 @@ private:
 // HelloDispatcher class implementation
 //////////////////////////////////////////////////////////////////////////
 
-// Define HelloDispatcher trace scopes to make logging
-// Trace scopes must be defined before they are used.
-DEF_TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
-DEF_TRACE_SCOPE(main_HelloDispatcher_readyForEvents );
-DEF_TRACE_SCOPE(main_HelloDispatcher_dispatchEvent);
+// Define HelloDispatcher log scopes to make logging
+// The log scopes must be defined before they are used.
+DEF_LOG_SCOPE(main_HelloDispatcher_HelloDispatcher);
+DEF_LOG_SCOPE(main_HelloDispatcher_readyForEvents );
+DEF_LOG_SCOPE(main_HelloDispatcher_dispatchEvent);
 
 HelloDispatcher::HelloDispatcher( void )
     : DispatcherThread( "HelloDispatcher" )
@@ -169,14 +169,14 @@ HelloDispatcher::HelloDispatcher( void )
 
     , mTimer            ( static_cast<IETimerConsumer &>(self()), "aTimer")
 {
-    TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
-    TRACE_DBG("Instantiated hello dispatcher");
+    LOG_SCOPE(main_HelloDispatcher_HelloDispatcher);
+    LOG_DBG("Instantiated hello dispatcher");
 }
 
 void HelloDispatcher::readyForEvents(bool isReady )
 {
-    TRACE_SCOPE( main_HelloDispatcher_readyForEvents );
-    TRACE_DBG( "The dispatcher is running. The custom business logic can be set here ..." );
+    LOG_SCOPE( main_HelloDispatcher_readyForEvents );
+    LOG_DBG( "The dispatcher is running. The custom business logic can be set here ..." );
 
     DispatcherThread::readyForEvents( isReady );
     if (isReady)
@@ -192,8 +192,8 @@ void HelloDispatcher::readyForEvents(bool isReady )
 #if AREG_LOGS
 bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
-    TRACE_SCOPE(main_HelloDispatcher_dispatchEvent);
-    TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
+    LOG_SCOPE(main_HelloDispatcher_dispatchEvent);
+    LOG_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
     return true; // break dispatching event, so that it is never called 'processTimer()' method.
 }
 #else   // AREG_LOGS
@@ -203,7 +203,7 @@ bool HelloDispatcher::dispatchEvent(Event & /*eventElem*/)
 }
 #endif  // AREG_LOGS
 
-DEF_TRACE_SCOPE(main_main);
+DEF_LOG_SCOPE(main_main);
 
 //! \brief   A Demo to create and destroy simple and dispatcher threads.
 int main()
@@ -211,42 +211,42 @@ int main()
     std::cout << "A Demo to create and destroy simple and dispatcher threads ..." << std::endl;
 
     // Force to start logging. See outputs log files in appropriate "logs" subfolder.
-    TRACER_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr );
 
     do
     {
         // After initialization, set scope declaration in the block.
-        TRACE_SCOPE(main_main);
+        LOG_SCOPE(main_main);
 
         // Start timer manager
         Application::startTimerManager( );
 
         // Create and start 'Hello Thread'.
-        TRACE_DBG("Starting Hello Thread");
+        LOG_DBG("Starting Hello Thread");
         HelloThread helloThread;
         helloThread.createThread(NECommon::WAIT_INFINITE);
-        TRACE_DBG("[ %s ] to create thread [ %s ]", helloThread.isValid() ? "SUCCEEDED" : "FAILED", helloThread.getName().getString());
+        LOG_DBG("[ %s ] to create thread [ %s ]", helloThread.isValid() ? "SUCCEEDED" : "FAILED", helloThread.getName().getString());
 
         //Create and start 'Hello Dispatcher' thread.
-        TRACE_DBG("Starting Hello Dispatcher");
+        LOG_DBG("Starting Hello Dispatcher");
         HelloDispatcher helloDispatcher;
         helloDispatcher.createThread(NECommon::WAIT_INFINITE);
-        TRACE_DBG("[ %s ] to create thread [ %s ]", helloDispatcher.isValid() ? "SUCCEEDED" : "FAILED", helloDispatcher.getName().getString());
+        LOG_DBG("[ %s ] to create thread [ %s ]", helloDispatcher.isValid() ? "SUCCEEDED" : "FAILED", helloDispatcher.getName().getString());
 
-        TRACE_DBG("Main thread sleep");
+        LOG_DBG("Main thread sleep");
         Thread::sleep( NECommon::WAIT_1_SECOND);
 
         // stop and destroy thread, clean resources. Wait until thread ends.
-        TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().getString());
+        LOG_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().getString());
         helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
 
-        TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().getString());
+        LOG_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().getString());
         helloThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 
     // Stop logging.
-    TRACER_STOP_LOGGING();
+    LOGGING_STOP();
 
     std::cout << "Exit application, check the logs for details!" << std::endl;
     return 0;

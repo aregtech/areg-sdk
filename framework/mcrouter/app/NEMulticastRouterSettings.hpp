@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/appbase/NEApplication.hpp"
 
 /**

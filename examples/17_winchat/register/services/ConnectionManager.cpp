@@ -17,14 +17,14 @@
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_CreateComponent );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_DeleteComponent );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_startupServiceInterface );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestConnect );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestRegisterConnection );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestDisconnect );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestSendMessage );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_CreateComponent );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_DeleteComponent );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_startupServiceInterface );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_requestConnect );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_requestRegisterConnection );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_requestDisconnect );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_requestSendMessage );
+DEF_LOG_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
 
 BEGIN_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
 
@@ -41,13 +41,13 @@ ConnectionManager *   ConnectionManager::sService   = nullptr;
 
 Component * ConnectionManager::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_CreateComponent );
+    LOG_SCOPE( centralapp_ConnectionManager_CreateComponent );
     return new ConnectionManager( entry, owner, entry.getComponentData() );
 }
 
 void ConnectionManager::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_DeleteComponent );
+    LOG_SCOPE( centralapp_ConnectionManager_DeleteComponent );
     delete (&compObject);
 }
 
@@ -75,7 +75,7 @@ ConnectionManager::~ConnectionManager( void )
 
 void ConnectionManager::startupServiceInterface( Component & holder )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_startupServiceInterface );
+    LOG_SCOPE( centralapp_ConnectionManager_startupServiceInterface );
     ConnectionManagerStub::startupServiceInterface( holder );
     CentralMessagerStub::startupServiceInterface( holder );
 
@@ -86,8 +86,8 @@ void ConnectionManager::startupServiceInterface( Component & holder )
 
 void ConnectionManager::requestConnect( const String & nickName, const DateTime & dateTime )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_requestConnect );
-    TRACE_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime()));
+    LOG_SCOPE( centralapp_ConnectionManager_requestConnect );
+    LOG_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime()));
 
     NEConnectionManager::sConnection connection;
     connection.nickName     = nickName;
@@ -101,7 +101,7 @@ void ConnectionManager::requestConnect( const String & nickName, const DateTime 
             if ( FindConnection(nickName, connection) == false )
             {
                 uint32_t cookie = getNextCookie();
-                TRACE_DBG( "The connection [ %s ] at time [ %s / %u] is accepted and can be registered with recommended cookie [ %u ]"
+                LOG_DBG( "The connection [ %s ] at time [ %s / %u] is accepted and can be registered with recommended cookie [ %u ]"
                         , nickName.getString()
                         , connection.connectTime.formatTime( ).getString()
                         , static_cast<uint32_t>(connection.connectTime.getTime())
@@ -110,27 +110,27 @@ void ConnectionManager::requestConnect( const String & nickName, const DateTime 
             }
             else
             {
-                TRACE_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
+                LOG_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
                 responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::eConnectionResult::ConnectionClientExist );
             }
         }
         else
         {
-            TRACE_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
+            LOG_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
             responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::eConnectionResult::ConnectionNameReserved );
         }
     }
     else
     {
-        TRACE_ERR("The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName));
+        LOG_ERR("The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName));
         responseConnect( nickName, NEConnectionManager::InvalidCookie, dateTime, NEConnectionManager::eConnectionResult::InvalidClient );
     }
 }
 
 void ConnectionManager::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_requestRegisterConnection );
-    TRACE_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.formatTime( )) );
+    LOG_SCOPE( centralapp_ConnectionManager_requestRegisterConnection );
+    LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.formatTime( )) );
 
     NEConnectionManager::sConnection connection;
     connection.nickName     = nickName;
@@ -159,7 +159,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 connection.connectedTime= DateTime::getNow( );
                 mapConnections.setAt( connection.cookie, connection );
 
-                TRACE_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
+                LOG_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
 
                 responseRegisterConnection( connection, listConnections, true );
                 broadcastClientConnected( connection );
@@ -183,31 +183,31 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 }
                 else
                 {
-                    TRACE_WARN( "The HWN [ 0x%p ] is not window, escape sending message of connected client", hWnd );
+                    LOG_WARN( "The HWN [ 0x%p ] is not window, escape sending message of connected client", hWnd );
                 }
             }
             else
             {
-                TRACE_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
+                LOG_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
                 responseRegisterConnection( connection, listConnections, false );
             }
         }
         else
         {
-            TRACE_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
+            LOG_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
             responseRegisterConnection( connection, listConnections, false );
         }
     }
     else
     {
-        TRACE_ERR( "The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName) );
+        LOG_ERR( "The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName) );
         responseRegisterConnection( connection, listConnections, false );
     }
 }
 
 void ConnectionManager::requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_requestDisconnect );
+    LOG_SCOPE( centralapp_ConnectionManager_requestDisconnect );
     NEConnectionManager::sConnection connection;
     NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
     bool found = cookie != NEConnectionManager::InvalidCookie ? mapConnections.find(cookie, connection) : FindConnection(nickName, connection);
@@ -216,7 +216,7 @@ void ConnectionManager::requestDisconnect( const String & nickName, unsigned int
     {
         if ( connection.connectTime == dateTime )
         {
-            TRACE_DBG( "Received request to disconnection client [ %s ] at time [ %s ], disconnecting client", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime( )) );
+            LOG_DBG( "Received request to disconnection client [ %s ] at time [ %s ], disconnecting client", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime( )) );
 
             VERIFY(mapConnections.removeAt(connection.cookie));
             broadcastClientDisconnected( connection );
@@ -238,7 +238,7 @@ void ConnectionManager::requestDisconnect( const String & nickName, unsigned int
         }
         else
         {
-            TRACE_WARN("Received request to disconnect client [ %s ], but the connection date-time is wrong. It is specified [ %s ], but the registered is [ %s ]. Ignoring request."
+            LOG_WARN("Received request to disconnect client [ %s ], but the connection date-time is wrong. It is specified [ %s ], but the registered is [ %s ]. Ignoring request."
                                 , static_cast<const char *>(nickName)
                                 , static_cast<const char *>(dateTime.formatTime())
                                 , static_cast<const char *>(connection.connectTime.formatTime()) );
@@ -246,20 +246,20 @@ void ConnectionManager::requestDisconnect( const String & nickName, unsigned int
     }
     else
     {
-        TRACE_DBG( "There is not connected client [ %s ] at time [ %s ]. Ignoring request to connect", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime( )) );
+        LOG_DBG( "There is not connected client [ %s ] at time [ %s ]. Ignoring request to connect", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime( )) );
     }
 }
 
 void ConnectionManager::requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_requestSendMessage );
+    LOG_SCOPE( centralapp_ConnectionManager_requestSendMessage );
 
     NEConnectionManager::sConnection connection;
     NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
     bool found = cookie != NEConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
     {
-        TRACE_DBG("Found registered client [ %s ], broadcasting to client new message [ %s ] sent at [ %s ]"
+        LOG_DBG("Found registered client [ %s ], broadcasting to client new message [ %s ] sent at [ %s ]"
                     , static_cast<const char *>(nickName)
                     , static_cast<const char *>(newMessage)
                     , static_cast<const char *>(dateTime.formatTime()) );
@@ -282,20 +282,20 @@ void ConnectionManager::requestSendMessage( const String & nickName, unsigned in
     }
     else
     {
-        TRACE_WARN("Failed to find client [ %s ] registered with cookie [ %u ], ignoring sending message", static_cast<const char *>(nickName), cookie);
+        LOG_WARN("Failed to find client [ %s ] registered with cookie [ %u ], ignoring sending message", static_cast<const char *>(nickName), cookie);
     }
 }
 
 void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
+    LOG_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
 
     NEConnectionManager::sConnection connection;
     NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
     bool found = cookie != NEConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
     {
-        TRACE_DBG( "Found registered client [ %s ], broadcasting to client typing message [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(newMessage));
+        LOG_DBG( "Found registered client [ %s ], broadcasting to client typing message [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(newMessage));
         broadcastKeyTyping( connection.nickName, cookie, newMessage );
 
         HWND hWnd = MAKE_HWND( mWnd );
@@ -314,7 +314,7 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
     }
     else
     {
-        TRACE_WARN( "Failed to find client [ %s ] registered with cookie [ %u ], ignoring typing message", static_cast<const char *>(nickName), cookie );
+        LOG_WARN( "Failed to find client [ %s ] registered with cookie [ %u ], ignoring typing message", static_cast<const char *>(nickName), cookie );
     }
 }
 

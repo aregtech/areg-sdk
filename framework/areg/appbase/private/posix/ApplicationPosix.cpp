@@ -12,7 +12,7 @@
 #include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include <dirent.h>
 #include <stdio.h>
@@ -63,18 +63,18 @@ namespace
         return pid;
     }
 
-    DEF_TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
+    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
     void _handleSignalBrokenPipe(int s)
     {
-        TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
-        TRACE_WARN("Caught SIGPIPE signal [ %d ]", s);
+        LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
+        LOG_WARN("Caught SIGPIPE signal [ %d ]", s);
     }
 
-    DEF_TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
+    DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
     void _handleSignalSegmentationFault(int s)
     {
-        TRACE_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
-        TRACE_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
+        LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
+        LOG_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
     }
 
 } // namespace

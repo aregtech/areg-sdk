@@ -12,7 +12,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "locservice/src/ServicingComponent.hpp"
 #include "locservice/src/ServiceClient.hpp"
 
@@ -68,7 +68,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(examples_10_locsvc_main);
+DEF_LOG_SCOPE(examples_10_locsvc_main);
 //! \brief   A Demo to demonstrate simple request, response and broadcast.
 int main()
 {
@@ -76,17 +76,17 @@ int main()
 
     // force to start logging with default settings
     Application::initApplication( true, true, false, true, false, nullptr );
-    TRACER_CONFIGURE_AND_START(nullptr);
+    LOGGING_CONFIGURE_AND_START(nullptr);
 
     do 
     {
-        TRACE_SCOPE( examples_10_locsvc_main );
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
+        LOG_SCOPE( examples_10_locsvc_main );
+        LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
         Application::loadModel(_modelName);
 
-        TRACE_DBG("Servicing model is loaded");
+        LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);

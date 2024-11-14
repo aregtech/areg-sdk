@@ -27,8 +27,8 @@
 #include "areg/component/private/TimerManager.hpp"
 #include "areg/component/private/WatchdogManager.hpp"
 
-#include "areg/trace/NETrace.hpp"
-#include "areg/trace/private/TraceManager.hpp"
+#include "areg/logging/NELogging.hpp"
+#include "areg/logging/private/LogManager.hpp"
 
 #include <vector>
 
@@ -64,7 +64,7 @@ void Application::initApplication(  bool startTracing   /*= true */
 
     if (startTracing)
     {
-        Application::startTracer(true);
+        Application::startLogging(true);
     }
 
     if ( startTimer )
@@ -103,13 +103,13 @@ void Application::releaseApplication(void)
     TimerManager::stopTimerManager(false);
     ComponentLoader::unloadComponentModel(false, String::EmptyString);
     ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
-    NETrace::stopLogging(false);
+    NELogging::stopLogging(false);
 
     WatchdogManager::waitWatchdogManager();
     TimerManager::waitTimerManager();
     ComponentLoader::waitModelUnload(String::EmptyString);
     ServiceManager::_waitServiceManager();
-    NETrace::waitLoggingEnd();
+    NELogging::waitLoggingEnd();
 
     Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
     Application::_osReleaseHandlers();
@@ -141,29 +141,14 @@ void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
     File::setCurrentDir(path);
 }
 
-bool Application::startTracer(bool force /*= false*/ )
+bool Application::startLogging(bool force /*= false*/ )
 {
-    return NETrace::isStarted() || NETrace::startLogging() || (force && NETrace::forceStartLogging());
+    return NELogging::isStarted() || NELogging::startLogging() || (force && NELogging::forceStartLogging());
 }
 
-void Application::stopTracer(void)
+void Application::stopLogging(void)
 {
-    NETrace::stopLogging(true);
-}
-
-bool Application::isTracerStarted(void)
-{
-    return NETrace::isStarted();
-}
-
-bool Application::isTracerEnabled(void)
-{
-    return NETrace::isEnabled();
-}
-
-bool Application::isTracerConfigured(void)
-{
-    return NETrace::isConfigured();
+    NELogging::stopLogging(true);
 }
 
 void Application::stopServiceManager( void )

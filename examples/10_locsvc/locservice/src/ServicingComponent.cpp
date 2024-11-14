@@ -11,14 +11,14 @@
  ************************************************************************/
 
 #include "locservice/src/ServicingComponent.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
 
-DEF_TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestHelloWorld);
-DEF_TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestShutdownService);
+DEF_LOG_SCOPE(examples_10_locservice_ServicingComponent_requestHelloWorld);
+DEF_LOG_SCOPE(examples_10_locservice_ServicingComponent_requestShutdownService);
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -39,7 +39,7 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
 
 void ServicingComponent::requestHelloWorld(const String & roleName)
 {
-    TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestHelloWorld);
+    LOG_SCOPE(examples_10_locservice_ServicingComponent_requestHelloWorld);
     
     std::cout
         << "\"Hello client [ "
@@ -51,18 +51,18 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     responseHelloWorld( );
     if ( mRemainRequest == 0 )
     {
-        TRACE_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
+        LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
         broadcastReachedMaximum( NEHelloWorld::MaxMessages );
     }
     else
     {
-        TRACE_WARN("Still wait [ %d ] requests to print Hello World.", mRemainRequest);
+        LOG_WARN("Still wait [ %d ] requests to print Hello World.", mRemainRequest);
     }
 }
 
 void ServicingComponent::requestShutdownService( void )
 {
-    TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestShutdownService);
-    TRACE_DBG("The local client requests to shut down.");
+    LOG_SCOPE(examples_10_locservice_ServicingComponent_requestShutdownService);
+    LOG_DBG("The local client requests to shut down.");
     Application::signalAppQuit( );
 }

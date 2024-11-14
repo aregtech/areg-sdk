@@ -13,13 +13,13 @@ This document is a developer guide and describes how to develop a service enable
 ## File structure
 
 Brief description of AREG SDK file structure:
-1. The [framework/areg](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) directory contains _AREG engine_ (`areg` library).
-2. The high level subdirectories of [framework/areg](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) contain declarations of classes, structures and types that can be used by developers to create an application.
-3. All objects in `private` subdirectories contain codes for internal use and should not be used  by developers.
-4. The [framework/mcrouter](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/) directory contains implementation of Multicast Router (or _mcrouter_).
-5. The [framework/extend](https://github.com/aregtech/areg-sdk/tree/master/framework/extend/) directory contains extended objects of _AREG framework_ and may require extra library dependency (configurable).
+1. The [`framework/areg`](./../framework/areg/) directory contains _AREG communication engine_ (`areg` library), which is the core library used by all applications.
+2. The [framework/mcrouter](./../framework/mcrouter/) directory contains implementation of Multicast Router (`mcrouter`), which runs either as console application or OS-managed Service.
+3. The [framework/logcollector](./../framework/logcollector/) directory contains implementation of Log Collector (`logcollector`), which runs either as console application or OS-managed Service.
+4. The [framework/aregextend](./../framework/aregextend/) directory contains extended objects of _AREG framework_ and may require extra library dependency (configurable).
+5. The [framework/areglogger](./../framework/areglogger/) directory contains implementation of a Log Observer library to use in applications to receive logs.
 6. The [thirdparty](https://github.com/aregtech/areg-sdk/tree/master/thirdparty) directory contains third-party modules that SDK has dependencies.
-7 The [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) directory contains working examples to demonstrate _AREG_ features.
+7. The [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) directory contains working examples to demonstrate _AREG_ features.
 8. The [tests](https://github.com/aregtech/areg-sdk/tree/master/tests/) directory contains _Unit Tests_ (planned to have benchmark tests).
 9. The [tools](https://github.com/aregtech/areg-sdk/tree/master/tools/) directory contains code generator (planed to have design tools).
 10. The [conf](https://github.com/aregtech/areg-sdk/tree/master/conf/) directory contains build configuration with `cmake`, `make` and `msbuild` tools.

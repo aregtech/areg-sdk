@@ -11,14 +11,14 @@
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #include "common/NECommon.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_TRACE_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
-DEF_TRACE_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
-DEF_TRACE_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
-DEF_TRACE_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
-DEF_TRACE_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
+DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
 Component * TrafficLightClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -39,7 +39,7 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 
 void TrafficLightClient::onTrafficSouthNorthUpdate(const NETrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
+    LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
 
     if (state == NEService::eDataStateType::DataIsOK)
     {
@@ -58,7 +58,7 @@ void TrafficLightClient::onTrafficSouthNorthUpdate(const NETrafficController::sT
 
 void TrafficLightClient::onTrafficEastWestUpdate(const NETrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
+    LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
 
     if (state == NEService::eDataStateType::DataIsOK)
     {
@@ -77,39 +77,39 @@ void TrafficLightClient::onTrafficEastWestUpdate(const NETrafficController::sTra
 
 void TrafficLightClient::broadcastSouthNorth(NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian)
 {
-    TRACE_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
+    LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
 
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", NECommon::getName(LightVehicle), NECommon::getName(LightPedestrian));
 }
 
 void TrafficLightClient::broadcastEastWest(NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian)
 {
-    TRACE_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
+    LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
 
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", NECommon::getName(LightVehicle), NECommon::getName(LightPedestrian));
 }
 
 bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    TRACE_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
+    LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
     bool result = TrafficControllerClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
         if ( mIsEastWest )
         {
-            TRACE_DBG( "The traffic light controller is connected, East-West direction" );
+            LOG_DBG( "The traffic light controller is connected, East-West direction" );
             notifyOnTrafficEastWestUpdate( true );
         }
         else
         {
-            TRACE_DBG( "The traffic light controller is connected, South-North direction" );
+            LOG_DBG( "The traffic light controller is connected, South-North direction" );
             notifyOnTrafficSouthNorthUpdate( true );
         }
     }
     else
     {
-        TRACE_WARN( "The traffic light controller is disconnected, set states OFF and close the application" );
+        LOG_WARN( "The traffic light controller is disconnected, set states OFF and close the application" );
 
         printf( "\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
                 , NECommon::getName( NETrafficController::eVehicleTrafficLight::VehicleLightOFF )

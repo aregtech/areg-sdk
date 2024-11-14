@@ -1,0 +1,22 @@
+macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
+	areg/logging/private/DatabaseLogger.cpp
+	areg/logging/private/DebugOutputLogger.cpp
+	areg/logging/private/FileLogger.cpp
+	areg/logging/private/IELogDatabaseEngine.cpp
+	areg/logging/private/LayoutManager.cpp
+	areg/logging/private/LogConfiguration.cpp
+	areg/logging/private/LogMessage.cpp
+	areg/logging/private/LoggerBase.cpp
+	areg/logging/private/Layouts.cpp
+	areg/logging/private/NELogging.cpp
+	areg/logging/private/NELogOptions.cpp
+	areg/logging/private/NetTcpLogger.cpp
+	areg/logging/private/ScopeController.cpp
+	areg/logging/private/ScopeNodeBase.cpp
+	areg/logging/private/ScopeNodes.cpp
+	areg/logging/private/LoggingEvent.cpp
+	areg/logging/private/LogEventProcessor.cpp
+	areg/logging/private/LogManager.cpp
+	areg/logging/private/ScopeMessage.cpp
+	areg/logging/private/LogScope.cpp
+)

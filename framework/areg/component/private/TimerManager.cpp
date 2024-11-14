@@ -19,12 +19,12 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(areg_component_private_TimerManager_startTimer);
-DEF_TRACE_SCOPE(areg_component_private_TimerManager_processEvent);
-DEF_TRACE_SCOPE(areg_component_private_TimerManager__registerTimer);
-DEF_TRACE_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
+DEF_LOG_SCOPE(areg_component_private_TimerManager_startTimer);
+DEF_LOG_SCOPE(areg_component_private_TimerManager_processEvent);
+DEF_LOG_SCOPE(areg_component_private_TimerManager__registerTimer);
+DEF_LOG_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class implementation
@@ -67,7 +67,7 @@ bool TimerManager::startTimer( Timer &timer )
 
 bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread)
 {
-    TRACE_SCOPE(areg_component_private_TimerManager_startTimer);
+    LOG_SCOPE(areg_component_private_TimerManager_startTimer);
 
     TimerManager & timerManager = getInstance();
 
@@ -76,19 +76,19 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
     {
         if ( timerManager._registerTimer( timer, whichThread ) )
         {
-            TRACE_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
+            LOG_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
             result = TimerManagerEvent::sendEvent( TimerManagerEventData(&timer)
                                                  , static_cast<IETimerManagerEventConsumer &>(timerManager)
                                                  , static_cast<DispatcherThread &>(timerManager) );
         }
         else
         {
-            TRACE_ERR("Failed to register timer [ %s ]", timer.getName().getString());
+            LOG_ERR("Failed to register timer [ %s ]", timer.getName().getString());
         }
     }
     else
     {
-        TRACE_ERR("The Timer manager service is not running, cannot start and process the timer.");
+        LOG_ERR("The Timer manager service is not running, cannot start and process the timer.");
     }
 
     return result;
@@ -121,7 +121,7 @@ TimerManager::~TimerManager( void )
 
 bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichThread)
 {
-    TRACE_SCOPE(areg_component_private_TimerManager__registerTimer);
+    LOG_SCOPE(areg_component_private_TimerManager__registerTimer);
 
     bool result = false;
     if (timer.isValid() && whichThread.isValid() && whichThread.isRunning() )
@@ -129,13 +129,13 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
         TIMERHANDLE timerHandle = timer.getHandle();
         ASSERT(timerHandle != nullptr);
         mTimerResource.registerResourceObject(timerHandle, &timer);
-        TRACE_DBG("Registered timer [ %s ]", timer.getName().getString());
+        LOG_DBG("Registered timer [ %s ]", timer.getName().getString());
         result = true;
     }
 #ifdef DEBUG
     else
     {
-        TRACE_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer."
+        LOG_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer."
                         , timer.getName().getString()
                         , whichThread.getName().getString());
     }
@@ -178,25 +178,25 @@ void TimerManager::_removeAllTimers( void )
 
 void TimerManager::processEvent( const TimerManagerEventData & data )
 {
-    TRACE_SCOPE(areg_component_private_TimerManager_processEvent);
+    LOG_SCOPE(areg_component_private_TimerManager_processEvent);
     Timer* timer = static_cast<Timer*>(data.getTimer());
     ASSERT(timer != nullptr);
     if ( mTimerResource.existResource(timer->getHandle( )) )
     {
-        TRACE_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName( ).getString( ), timer->getTimeout( ) );
+        LOG_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName( ).getString( ), timer->getTimeout( ) );
         TimerManager::_osSystemTimerStart( *timer );
     }
 #ifdef DEBUG
     else
     {
-        TRACE_WARN("The timer [ %s ] is not registered, ignoring to start.", timer->getName().getString());
+        LOG_WARN("The timer [ %s ] is not registered, ignoring to start.", timer->getName().getString());
     }
 #endif // DEBUG
 }
 
 void TimerManager::_processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)
 {
-    TRACE_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
+    LOG_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
 
     mTimerResource.lock();
     if (mTimerResource.existResource(handle))
@@ -206,13 +206,13 @@ void TimerManager::_processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint3
             ASSERT(timer->getHandle() == handle);
             if (timer->timerIsExpired(hiBytes, loBytes, reinterpret_cast<ptr_type>(handle)) == false)
             {
-                TRACE_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", timer->getName().getString());
+                LOG_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", timer->getName().getString());
                 _unregisterTimer(*timer);
                 timer->mStarted = false;
             }
             else
             {
-                TRACE_DBG("Send timer [ %s ] event to target [ %u ], continuing timer"
+                LOG_DBG("Send timer [ %s ] event to target [ %u ], continuing timer"
                             , timer->getName().getString()
                             , static_cast<uint32_t>(timer->mDispatchThread->getId()));
             }

@@ -23,8 +23,7 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/NEService.hpp"
-#include "areg/trace/NETrace.hpp"
-#include "areg/trace/private/NELogging.hpp"
+#include "areg/logging/NELogging.hpp"
 
 #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #include <sqlite3.h>
@@ -297,7 +296,7 @@ inline void LogSqliteDatabase::_initialize(void)
     char sql[SQL_LEN]{};
     String::formatString( sql, SQL_LEN, _fmtVersion.data()
                         , Process::getInstance().getName().getString()
-                        , NETrace::LOG_VERSION.data()
+                        , NELogging::LOG_VERSION.data()
                         , "AREG SDK database logging module. Visit https://aregtech.com for more information."
                         , "Created by AREG log observer API module."
                         , mDbPath.getString()
@@ -308,8 +307,8 @@ inline void LogSqliteDatabase::_initialize(void)
     String::formatString(sql, SQL_LEN, _fmtLog.data()
                         , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
                         , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
-                        , static_cast<uint32_t>(NETrace::eLogMessageType::LogMessageText)
-                        , static_cast<uint32_t>(NETrace::eLogPriority::PrioIgnore)
+                        , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
+                        , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
                         , static_cast<uint64_t>(threadId)
                         , "Starting database logging..."
@@ -372,8 +371,8 @@ void LogSqliteDatabase::disconnect(void)
     String::formatString( sql, SQL_LEN, _fmtLog.data()
                         , NEService::COOKIE_LOCAL
                         , NEMath::CHECKSUM_IGNORE
-                        , static_cast<uint32_t>(NETrace::eLogMessageType::LogMessageText)
-                        , static_cast<uint32_t>(NETrace::eLogPriority::PrioIgnore)
+                        , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
+                        , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
                         , static_cast<uint64_t>(threadId)
                         , "Closing database logging..."
@@ -417,7 +416,7 @@ bool LogSqliteDatabase::tablesInitialized(void) const
     return mIsInitialized;
 }
 
-bool LogSqliteDatabase::logMessage(const NETrace::sLogMessage& message, const DateTime& timestamp)
+bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const DateTime& timestamp)
 {
     char sql[SQL_LEN_MAX];
     String::formatString(sql, SQL_LEN_MAX, _fmtLog.data()
@@ -455,8 +454,8 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
     String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
                         , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
                         , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
-                        , static_cast<uint32_t>(NETrace::eLogMessageType::LogMessageText)
-                        , static_cast<uint32_t>(NETrace::eLogPriority::PrioIgnore)
+                        , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
+                        , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
                         , static_cast<uint64_t>(threadId)
                         , msg
@@ -498,8 +497,8 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
     String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
                         , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
                         , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
-                        , static_cast<uint32_t>(NETrace::eLogMessageType::LogMessageText)
-                        , static_cast<uint32_t>(NETrace::eLogPriority::PrioIgnore)
+                        , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
+                        , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
                         , static_cast<uint64_t>(threadId)
                         , msg
@@ -518,7 +517,7 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
     return (_execute(sqlLog) && _execute(sqlInst));
 }
 
-bool LogSqliteDatabase::logScopeActivate(const NETrace::sScopeInfo & scope, const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID& cookie, const DateTime& timestamp)
 {
     char sql[SQL_LEN];
     String::formatString( sql, SQL_LEN, _fmtScopes.data()
@@ -530,7 +529,7 @@ bool LogSqliteDatabase::logScopeActivate(const NETrace::sScopeInfo & scope, cons
     return _execute(sql);
 }
 
-uint32_t LogSqliteDatabase::logScopesActivate(const NETrace::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp)
+uint32_t LogSqliteDatabase::logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp)
 {
     uint32_t result{ 0 };
     char sql[SQL_LEN];

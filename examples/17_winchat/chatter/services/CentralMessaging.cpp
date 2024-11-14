@@ -13,10 +13,10 @@
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_TRACE_SCOPE( chatter_CentralMessaging_ServiceConnected );
-DEF_TRACE_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
-DEF_TRACE_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
-DEF_TRACE_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
+DEF_LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
+DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
+DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
+DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
 CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
     : CentralMessagerClientBase   ( roleName, ownerThread )
@@ -30,7 +30,7 @@ CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ow
 
 bool CentralMessaging::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE( chatter_CentralMessaging_ServiceConnected );
+    LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
     bool result = CentralMessagerClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
@@ -50,7 +50,7 @@ bool CentralMessaging::serviceConnected( NEService::eServiceConnection status, P
 
 void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
 {
-    TRACE_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
+    LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
     if ( cookie != mConnectionHandler.GetCookie() )
     {
         ASSERT(nickName != mConnectionHandler.GetNickName());
@@ -71,7 +71,7 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned i
 
 void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
 {
-    TRACE_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
+    LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
     if ( cookie != mConnectionHandler.GetCookie( ) )
     {
         ASSERT( nickName != mConnectionHandler.GetNickName( ) );
@@ -92,7 +92,7 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int
 
 void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
 {
-    TRACE_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
+    LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
     NECommon::sMessageData * data = NECommon::newData( );
     if ( data != nullptr )

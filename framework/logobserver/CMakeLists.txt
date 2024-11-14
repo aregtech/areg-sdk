@@ -10,7 +10,7 @@ endif()
 # ##################################################################
 # build log observer console application
 # ##################################################################
-if (AREG_LOGGER_LIB MATCHES "shared")
+if (AREG_LOGGER_BINARY MATCHES "shared")
     addExecutableEx(logobserver ${AREG_PACKAGE_NAME} "${logobserver_SRC}" areglogger)
     target_compile_definitions(logobserver PRIVATE IMP_LOGGER_DLL)
 else ()

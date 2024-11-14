@@ -13,7 +13,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
 #include "common/src/NECommon.hpp"

@@ -25,7 +25,7 @@
 #include "areg/base/Version.hpp"
 #include "areg/persist/NEPersistence.hpp"
 #include "areg/persist/Property.hpp"
-#include "areg/trace/NETrace.hpp"
+#include "areg/logging/NELogging.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 
 #include <vector>
@@ -417,7 +417,7 @@ public:
     Version getLogVersion(void) const;
 
     /**
-     * \brief   Returns list of logging targets specified in the NETrace::eLogingTypes.
+     * \brief   Returns list of logging targets specified in the NELogging::eLogingTypes.
      **/
     std::vector<Identifier> getLogTargets(void) const;
 
@@ -437,15 +437,15 @@ public:
     inline void setLoggingStatus(bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NETrace::eLogingTypes.
-     * \param   logType     The string value of NETrace::eLogingTypes.
+     * \brief   Returns log enable or disable state for the target defined in NELogging::eLogingTypes.
+     * \param   logType     The string value of NELogging::eLogingTypes.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     bool getLogEnabled(const String& logType) const;
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NETrace::eLogingTypes.
-     * \param   logType     The Identifier object containing NETrace::eLogingTypes value and string equivalent.
+     * \brief   Returns log enable or disable state for the target defined in NELogging::eLogingTypes.
+     * \param   logType     The Identifier object containing NELogging::eLogingTypes value and string equivalent.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     inline bool getLogEnabled(const Identifier& logType) const;
@@ -455,11 +455,11 @@ public:
      * \param   logType     The logging target to check.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
-    bool getLogEnabled(NETrace::eLogingTypes logType) const;
+    bool getLogEnabled(NELogging::eLogingTypes logType) const;
 
     /**
-     * \brief   Sets the logging state for the target defined in NETrace::eLogingTypes.
-     * \param   logType     The Identifier object containing NETrace::eLogingTypes value and string equivalent.
+     * \brief   Sets the logging state for the target defined in NELogging::eLogingTypes.
+     * \param   logType     The Identifier object containing NELogging::eLogingTypes value and string equivalent.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -467,8 +467,8 @@ public:
     inline void setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NETrace::eLogingTypes.
-     * \param   logType     The string value of NETrace::eLogingTypes.
+     * \brief   Sets the logging state for the target defined in NELogging::eLogingTypes.
+     * \param   logType     The string value of NELogging::eLogingTypes.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -476,13 +476,13 @@ public:
     inline void setLogEnabled(const String& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NETrace::eLogingTypes.
+     * \brief   Sets the logging state for the target defined in NELogging::eLogingTypes.
      * \param   logType     The logging target to set enabling flag.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setLogEnabled(NETrace::eLogingTypes logType, bool newValue, bool isTemporary = false);
+    void setLogEnabled(NELogging::eLogingTypes logType, bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the path of the log file that contains messages.

@@ -101,7 +101,7 @@ namespace NESystemService
     constexpr eServiceOption   DEFAULT_OPTION   { eServiceOption::CMD_Console };
 
     /**
-     * \brief   The default option to run the logger in verbose mode to output send and receive data rate.
+     * \brief   The default option to run the Log Collector in verbose mode to output send and receive data rate.
      */
     constexpr bool              DEFAULT_VERBOSE { true };
 

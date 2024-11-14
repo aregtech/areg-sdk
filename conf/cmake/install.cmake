@@ -14,14 +14,14 @@ set(AREG_INSTALL_DST "${CMAKE_INSTALL_PREFIX}")
 target_include_directories(areg         PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(aregextend   PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(areglogger   PUBLIC $<INSTALL_INTERFACE:include>)
-target_include_directories(logger       PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(logcollector PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(logobserver  PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(mcrouter     PUBLIC $<INSTALL_INTERFACE:include>)
 
 target_link_directories(areg            PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(aregextend      PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(areglogger      PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
-target_link_directories(logger          PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+target_link_directories(logcollector    PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(logobserver     PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(mcrouter        PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 
@@ -32,9 +32,9 @@ install(DIRECTORY framework/
     FILES_MATCHING
         PATTERN "*.h" 
         PATTERN "*.hpp"
-        PATTERN "logger"            EXCLUDE
-        PATTERN "logobserver"       EXCLUDE
-        PATTERN "mcrouter"          EXCLUDE
+        PATTERN "logcollector"  EXCLUDE
+        PATTERN "logobserver"   EXCLUDE
+        PATTERN "mcrouter"      EXCLUDE
 )
 
 # Copy compiled binaries in the bin and lib directories
@@ -88,8 +88,8 @@ install(DIRECTORY tools/
             CONFIGURATIONS Release
 )
 
-# Copy compiled AREG SDK tools: logger, logobserver and mcrouter
-install(TARGETS logger logobserver mcrouter
+# Copy compiled AREG SDK tools: logcollector, logobserver and mcrouter
+install(TARGETS logcollector logobserver mcrouter
     EXPORT ${AREG_PACKAGE_NAME}
     RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
@@ -128,13 +128,13 @@ install(FILES
 # configure and copy servicing script files.
 if ((WIN32) OR (CYGWIN))
 
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.install.bat.in"      exports/logger.service.install.bat      @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.uninstall.bat.in"    exports/logger.service.uninstall.bat    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"    exports/mcrouter.service.install.bat    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"  exports/mcrouter.service.uninstall.bat  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.install.bat.in"    exports/logcollector.service.install.bat      @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.uninstall.bat.in"  exports/logcollector.service.uninstall.bat    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"        exports/mcrouter.service.install.bat    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"      exports/mcrouter.service.uninstall.bat  @ONLY)
     install(FILES 
-            "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service.install.bat"
-            "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service.uninstall.bat"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.install.bat"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.uninstall.bat"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service.install.bat"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service.uninstall.bat"
             DESTINATION share/${AREG_PACKAGE_NAME}/service
@@ -145,10 +145,10 @@ if ((WIN32) OR (CYGWIN))
 
 else()
 
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.in"      "exports/logger.service"    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.in"      "exports/logcollector.service"    @ONLY)
     configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.in"    "exports/mcrouter.service"  @ONLY)
     install(FILES 
-            "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service"
             DESTINATION share/${AREG_PACKAGE_NAME}/service
             COMPONENT Development   COMPONENT Runtime

@@ -23,7 +23,7 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/ipc/NERemoteService.hpp"
-#include "areg/trace/TraceScope.hpp"
+#include "areg/logging/LogScope.hpp"
 
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/private/LoggerClient.hpp"
@@ -155,7 +155,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         {
             for (uint32_t i = 0; i < count; ++i)
             {
-                TraceScope scope(msgReceived);
+                LogScope scope(msgReceived);
                 sLogScope& entry{ scopes[i] };
                 entry.lsId = scope.getScopeId();
                 entry.lsPrio = scope.getPriority();
@@ -200,7 +200,7 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgRec
         {
             for (uint32_t i = 0; i < count; ++i)
             {
-                TraceScope scope(msgReceived);
+                LogScope scope(msgReceived);
                 sLogScope& entry{ scopes[i] };
                 entry.lsId = scope.getScopeId();
                 entry.lsPrio = scope.getPriority();
@@ -236,7 +236,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
     do
     {
         Lock lock(mLoggerClient.mLock);
-        const NETrace::sLogMessage* msgRemote = reinterpret_cast<const NETrace::sLogMessage*>(msgReceived.getBuffer());
+        const NELogging::sLogMessage* msgRemote = reinterpret_cast<const NELogging::sLogMessage*>(msgReceived.getBuffer());
         ASSERT(msgRemote != nullptr);
         mLoggerClient.mLogDatabase.logMessage(*msgRemote, now);
         mLoggerClient.mLogDatabase.commit(true);

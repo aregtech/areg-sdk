@@ -7,28 +7,28 @@
 #include "chatter/services/DirectConnectionService.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 #include "chatter/NEDistributedApp.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include <Windows.h>
 
-DEF_TRACE_SCOPE( chatter_DirectConnectionService_CreateComponent );
-DEF_TRACE_SCOPE( chatter_DirectConnectionService_DeleteComponent );
-DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
-DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
-DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
-DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_CreateComponent );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_DeleteComponent );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
+DEF_LOG_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
 
 DirectConnectionService * DirectConnectionService::mService = nullptr;
 
 Component * DirectConnectionService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
-    TRACE_SCOPE( chatter_DirectConnectionService_CreateComponent );
+    LOG_SCOPE( chatter_DirectConnectionService_CreateComponent );
     return new DirectConnectionService( entry, owner, entry.getComponentData() );
 }
 
 void DirectConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
-    TRACE_SCOPE( chatter_DirectConnectionService_DeleteComponent );
+    LOG_SCOPE( chatter_DirectConnectionService_DeleteComponent );
     delete (&compObject);
 }
 
@@ -104,7 +104,7 @@ uint64_t DirectConnectionService::getSession( const NEDirectConnection::ListPart
 
 void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    TRACE_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
+    LOG_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
 
     ASSERT(mNickName.isEmpty() == false);
     ASSERT(mCookie != NEDirectConnection::InvalidCookie);
@@ -118,7 +118,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
     {
         if ( exists(initiator) == false )
         {
-            TRACE_DBG("[ %s ] at time-stamps [ %s ] initiated chat with [ %d ] clients. Setting up chat."
+            LOG_DBG("[ %s ] at time-stamps [ %s ] initiated chat with [ %d ] clients. Setting up chat."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
@@ -138,7 +138,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
             }
             else
             {
-                TRACE_DBG("[ %s ] with cookie [ %u ] could not find session ID. Ignoring direct connection setup.", mNickName.getBuffer(), mCookie);
+                LOG_DBG("[ %s ] with cookie [ %u ] could not find session ID. Ignoring direct connection setup.", mNickName.getBuffer(), mCookie);
                 responseConnectoinSetup( false, participant, initiator, NEDirectConnection::ListParticipants() );
             }
         }
@@ -146,7 +146,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
         {
             const NEDirectConnection::MapParticipants &  mapParticipants = getInitiatedConnections( );
             const NEDirectConnection::ListParticipants & tempList = mapParticipants.getAt(initiator);
-            TRACE_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
+            LOG_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
                             , participant.nickName.getString()
                             , DateTime(initiator.sessionId).formatTime().getString()
                             , mapParticipants.getSize() );
@@ -156,7 +156,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
     }
     else
     {
-        TRACE_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]"
+        LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]"
                     , participant.nickName.getString()
                     , participant.cookie
                     , participant.sessionId);
@@ -166,13 +166,13 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
 
 void DirectConnectionService::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    TRACE_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
+    LOG_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
 
     if ( isInitiatorValid(initiator) )
     {
         if ( exists(initiator) == true )
         {
-            TRACE_DBG("[ %s ] at time-stamps [ %s ] is adding chat participants of [ %d ] clients."
+            LOG_DBG("[ %s ] at time-stamps [ %s ] is adding chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
@@ -188,7 +188,7 @@ void DirectConnectionService::requestAddParticipant( const NEDirectConnection::s
         }
         else
         {
-            TRACE_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to add participants."
+            LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to add participants."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer() );
             responseAddParticipant(false, NEDirectConnection::ListParticipants());
@@ -196,20 +196,20 @@ void DirectConnectionService::requestAddParticipant( const NEDirectConnection::s
     }
     else
     {
-        TRACE_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.getString(), initiator.cookie, initiator.sessionId);
+        LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.getString(), initiator.cookie, initiator.sessionId);
         responseAddParticipant( false, NEDirectConnection::ListParticipants( ) );
     }
 }
 
 void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    TRACE_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
+    LOG_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
 
     if ( isInitiatorValid(initiator) )
     {
         if ( exists(initiator) == true )
         {
-            TRACE_DBG("[ %s ] at time-stamps [ %s ] is removing chat participants of [ %d ] clients."
+            LOG_DBG("[ %s ] at time-stamps [ %s ] is removing chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
@@ -244,7 +244,7 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
         }
         else
         {
-            TRACE_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to remove participants."
+            LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to remove participants."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer() );
             responseRemoveParticipant(false, NEDirectConnection::ListParticipants());
@@ -252,14 +252,14 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
     }
     else
     {
-        TRACE_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.getBuffer(), initiator.cookie, initiator.sessionId);
+        LOG_WARN("Invalid participant with name [ %s ], cookie [ %u ] and session ID [ %llu ]", initiator.nickName.getBuffer(), initiator.cookie, initiator.sessionId);
         responseRemoveParticipant( false, NEDirectConnection::ListParticipants( ) );
     }
 }
 
 void DirectConnectionService::requestCloseConnection( const NEDirectConnection::sInitiator & initiator )
 {
-    TRACE_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
+    LOG_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
     NEDirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
     mapParticipants.removeAt(initiator);
     NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator( initiator );

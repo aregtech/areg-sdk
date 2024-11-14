@@ -17,7 +17,7 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 ClientConnection::ClientConnection( void )
     : SocketConnectionBase    ( )

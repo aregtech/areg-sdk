@@ -1,8 +1,11 @@
-# Configurations
-This document is a short introduction of folder content and configuration for different toolsets.
+# Configuration Overview
 
-## CMakeLists
-The folder [./cmake](./cmkae/) contains project common and developer specific settings. Normally, it is expected to make custom changes only in the [user.cmake](./cmake/user.cmake) file. The content of the folder has impact when build project with `cmake` tool.
+This document provides a brief overview of the configuration directory's contents and instructions for setting up configurations for various toolsets.
+
+## CMake
+The [./cmake](./cmake/) directory contains project-wide and developer-specific settings for building with CMake. Direct modifications to files within this directory are generally unnecessary. Instead, use the options in [user.cmake](./cmake/user.cmake) to customize the build configuration.
 
 ## Microsoft Visual Studio
-The folder [./msvc](./msvc/) contains Microsoft Visual Studio specific property files that are included in projects. Normally, it is expected to make custom changes only in the [./msvc/user.props](./msvc/user.props) file. The content of the foler has impact with build project with `MSBuild` build.
+The [./msvc](./msvc/) directory includes Visual Studio-specific property files referenced by the project. Directly modifying `.props` files is not recommended. To customize your build, copy the [msvc_setup.props](./../msvc_setup.props) file into your solution directory and apply necessary changes there.
+
+For further information, consult the [wiki](./../docs/wiki/README.md) documentation.

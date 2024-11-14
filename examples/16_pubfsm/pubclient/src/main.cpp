@@ -17,7 +17,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/base/NEUtilities.hpp"
 
 #include "common/NECommon.hpp"
@@ -60,7 +60,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(pubclient_src_main_main);
+DEF_LOG_SCOPE(pubclient_src_main_main);
 
 /**
  * \brief   The main method does not start the logging, enables service manager and timer.
@@ -117,8 +117,8 @@ int main()
 
     do 
     {
-        TRACE_SCOPE(pubclient_src_main_main);
-        TRACE_DBG("Starting traffic light for direction [ %s ]", isEastWest ? "East-West" : "South-North");
+        LOG_SCOPE(pubclient_src_main_main);
+        LOG_DBG("Starting traffic light for direction [ %s ]", isEastWest ? "East-West" : "South-North");
 
         // By passing nullptr, load all models to initialize components
         Application::loadModel( nullptr );

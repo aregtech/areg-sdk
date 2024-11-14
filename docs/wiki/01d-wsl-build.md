@@ -177,7 +177,7 @@ Then configure and build AREG SDK binaries:
 cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
 cmake --build ./build -j
 ```
-Check the binary with `file ./mcrouter.out`. If successful, you’ll see output like:
+Check the binary with `file ./mcrouter.out`. If successful, you'll see output like:
 > ./mcrouter.out: ELF **32-bit** LSB executable, **ARM**, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.3, BuildID[sha1]=c606ea5ce7be9cb1175fd87587b5975e235c084e, for GNU/Linux 3.2.0, not stripped
 
 ### CMake for 64-bit ARM Build with GNU

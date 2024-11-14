@@ -20,17 +20,17 @@
 #include "areg/component/NERegistry.hpp"
 #include "areg/component/private/ServerList.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include <string_view>
 
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_processEvent);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
-DEF_TRACE_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
+DEF_LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
 
 namespace
 {
@@ -88,8 +88,8 @@ void ServiceManager::queryCommunicationData( unsigned int & OUT sizeSend, unsign
 
 void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
-    TRACE_DBG("Request to register server [ %s ] of interface [ %s ]"
+    LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
+    LOG_DBG("Request to register server [ %s ] of interface [ %s ]"
                     , whichServer.getRoleName().getString()
                     , whichServer.getServiceName().getString());
 
@@ -103,9 +103,9 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
 
 void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
+    LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
 
-    TRACE_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
+    LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
                     , whichServer.getRoleName( ).getString( )
                     , whichServer.getServiceName( ).getString( ) );
     
@@ -119,9 +119,9 @@ void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, c
 
 void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
+    LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
 
-    TRACE_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
+    LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
                     , whichClient.getRoleName( ).getString( )
                     , whichClient.getServiceName( ).getString( ) );
     
@@ -135,8 +135,8 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
 
 void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
-    TRACE_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
+    LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
+    LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
                     , whichClient.getRoleName( ).getString( )
                     , whichClient.getServiceName( ).getString( ) );
     
@@ -150,8 +150,8 @@ void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, 
 
 void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
-    TRACE_DBG("Request to re-create component thread [ %s ]", whichThread.getName().getString());
+    LOG_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
+    LOG_DBG("Request to re-create component thread [ %s ]", whichThread.getName().getString());
 
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent(ServiceManagerEventData::terminateComponentThread(whichThread.getName())
@@ -238,9 +238,9 @@ ServiceManager::ServiceManager( void )
 
 void ServiceManager::processEvent( const ServiceManagerEventData & data )
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_processEvent);
+    LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
     ServiceManagerEventData::eServiceManagerCommands cmdService { data.getCommand( ) };
-    TRACE_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::getString( cmdService ) );
+    LOG_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::getString( cmdService ) );
 
     mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnectionProvider( ), getServiceRegisterProvider() );
 }
@@ -292,7 +292,7 @@ void ServiceManager::_waitServiceManagerThread(void)
 
 void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
 {
-    TRACE_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
+    LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
     Lock lock( mLock );
 
     out_listStubs.clear();
@@ -307,7 +307,7 @@ void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArr
 
         if ( server.isValid() && ((cookie == NEService::COOKIE_ANY) || (server.getCookie() == cookie)) )
         {
-            TRACE_DBG("Found stub [ %s ] of cookie [ %u ]", StubAddress::convAddressToPath(server).getString(), static_cast<uint32_t>(cookie));
+            LOG_DBG("Found stub [ %s ] of cookie [ %u ]", StubAddress::convAddressToPath(server).getString(), static_cast<uint32_t>(cookie));
             out_listStubs.add(server);
         }
 
@@ -316,13 +316,13 @@ void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArr
             const ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
             if ( proxy.isValid() && ((cookie == NEService::COOKIE_ANY) || (proxy.getCookie() == cookie)) )
             {
-                TRACE_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::convAddressToPath(proxy).getString(), cookie);
+                LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::convAddressToPath(proxy).getString(), cookie);
                 out_lisProxies.add(proxy);
             }
         }
     }
 
-    TRACE_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", out_listStubs.getSize(), out_lisProxies.getSize(), cookie);
+    LOG_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", out_listStubs.getSize(), out_lisProxies.getSize(), cookie);
 }
 
 void ServiceManager::registeredRemoteServiceProvider( const StubAddress & stub )

@@ -11,7 +11,7 @@
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Log Observer library API.
- *              The logger service connection client.
+ *              The log collector service connection client.
  ************************************************************************/
 
 /************************************************************************
@@ -20,7 +20,7 @@
 #include "areglogger/client/private/LoggerClient.hpp"
 
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/trace/LogConfiguration.hpp"
+#include "areg/logging/LogConfiguration.hpp"
 #include "areglogger/client/LogObserverApi.h"
 
 LoggerClient& LoggerClient::getInstance(void)
@@ -155,7 +155,7 @@ bool LoggerClient::requestConnectedInstances(void)
     bool result{ false };
     if (mChannel.getCookie() != NEService::COOKIE_UNKNOWN)
     {
-        result = sendMessage(NETrace::messageQueryInstances(mChannel.getCookie(), LoggerClient::TargetID));
+        result = sendMessage(NELogging::messageQueryInstances(mChannel.getCookie(), LoggerClient::TargetID));
     }
 
     return result;
@@ -167,19 +167,19 @@ bool LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::COOKIE_ANY
     Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
-        result = sendMessage(NETrace::messageQueryScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
+        result = sendMessage(NELogging::messageQueryScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
     }
 
     return result;
 }
 
-bool LoggerClient::requestChangeScopePrio(const NETrace::ScopeNames & scopes, const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+bool LoggerClient::requestChangeScopePrio(const NELogging::ScopeNames & scopes, const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
 {
     bool result{ false };
     Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
-        result = sendMessage(NETrace::messageUpdateScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target, scopes));
+        result = sendMessage(NELogging::messageUpdateScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target, scopes));
     }
 
     return result;
@@ -191,7 +191,7 @@ bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService:
     Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
-        result = sendMessage(NETrace::messageSaveConfiguration(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
+        result = sendMessage(NELogging::messageSaveConfiguration(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
     }
 
     return result;
@@ -203,7 +203,7 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     if (filePath.isEmpty())
     {
         LogConfiguration config;
-        if (config.isDatabaseLoggingEnabled() && (config.getDatabaseName() == NETrace::LOGDB_NAME_SQLITE3))
+        if (config.isDatabaseLoggingEnabled() && (config.getDatabaseName() == NELogging::LOGDB_NAME_SQLITE3))
         {
             mLogDatabase.setDatabaseLoggingEnabled(true);
             filePath = config.getDatabaseLocation();
@@ -244,8 +244,8 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     String dbLocation;
     String dbUser;
 
-    config.setLogEnabled(NETrace::eLogingTypes::LogTypeFile, true, true);
-    config.setLogEnabled(NETrace::eLogingTypes::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true, true);
+    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, false, true);
 
     do
     {
@@ -269,7 +269,7 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
 
     if (evtLogConfig != nullptr)
     {
-        evtLogConfig(config.getLogEnabled(NETrace::eLogingTypes::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
+        evtLogConfig(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
     }
 }
 
@@ -372,7 +372,7 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
         }
     } while (false);
 
-    sendMessage(NETrace::messageQueryInstances(channel.getCookie(), LoggerClient::TargetID));
+    sendMessage(NELogging::messageQueryInstances(channel.getCookie(), LoggerClient::TargetID));
     if (evtConnect != nullptr)
     {
         evtConnect(true, address.getString(), port);

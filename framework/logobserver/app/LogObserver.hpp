@@ -12,7 +12,7 @@
  * \file        logobserver/app/LogObserver.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, logger to run as a console application process or service.
+ * \brief       AREG Platform, Log Observer to run as a console application.
  ************************************************************************/
 
 /************************************************************************
@@ -49,7 +49,7 @@ class LogObserver
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The commands to handle the logger.
+     * \brief   The commands to handle the Log Observer.
      **/
     enum class eLoggerOptions : int32_t
     {
@@ -59,7 +59,7 @@ private:
         , CMD_LogPause          //!< Pause log observer
         , CMD_LogRestart        //!< Start / Restart log observer
         , CMD_LogInstances      //!< Display the list of log providers
-        , CMD_LogQuit           //!< Quit logger.
+        , CMD_LogQuit           //!< Quit Log Observer.
         , CMD_LogQueryScopes    //!< Query the list of scopes
         , CMD_LogUpdateScope    //!< Set and update the log scope priorities.
         , CMD_LogSaveConfig     //!< Save the configuration file.
@@ -77,7 +77,7 @@ private:
     };
 
     /**
-     * \brief   The setup to validate input options of the logger.
+     * \brief   The setup to validate input options of the Log Observer.
      **/
     static const OptionParser::sOptionSetup ValidOptions[];
 
@@ -159,11 +159,11 @@ private:
 
     /**
      * \brief   The callback of the event triggered when initializing and configuring the observer.
-     *          The callback indicates the IP address and port number of the logger service set
-     *          in the configuration file.
-     * \param   isEnabled       The flag, indicating whether the logging service is enabled or not.
-     * \param   address         The null-terminated string of the IP address of the logger service set in the configuration file.
-     * \param   port            The IP port number of the logger service set in the configuration file.
+     *          The callback indicates the IP address and port number of the remote log collector
+     *          service set in the configuration file.
+     * \param   isEnabled       Flag, indicating whether the logging service is enabled or not.
+     * \param   address         IP address of the remote log collector service set in the configuration file.
+     * \param   port            IP port number of the remote log collector service set in the configuration file.
      **/
     static void callbackObserverConfigured(bool isEnabled, const char * address, uint16_t port);
 
@@ -179,10 +179,11 @@ private:
     static void callbackDatabaseConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* user);
 
     /**
-     * \brief   The callback of the event triggered when the observer connects or disconnects from the logger service.
+     * \brief   The callback of the event triggered when the observer connects or disconnects
+     *          from the remote log collector service.
      * \param   isConnected     Flag, indicating whether observer is connected or disconnected.
-     * \param   address         The IP address of the logger service to connect or disconnect.
-     * \param   port            The IP port number of the logger service to connect or disconnect.
+     * \param   address         IP address of the remote log collector service to connect or disconnect.
+     * \param   port            IP port number of the remote log collector service to connect or disconnect.
      **/
     static void callbackServiceConnected(bool isConnected, const char* address, uint16_t port);
 
@@ -223,8 +224,8 @@ private:
 
     /**
      * \brief   The callback of the event triggered when receive remote message to log.
-     *          The buffer indicates to the NETrace::sLogMessage structure.
-     * \param   logBuffer   The pointer to the NETrace::sLogMessage structure to log messages.
+     *          The buffer indicates to the NELogging::sLogMessage structure.
+     * \param   logBuffer   The pointer to the NELogging::sLogMessage structure to log messages.
      * \param   size        The size of the buffer with log message.
      **/
     static void callbackLogMessageEx(const unsigned char * logBuffer, uint32_t size);

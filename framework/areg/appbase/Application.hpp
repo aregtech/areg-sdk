@@ -165,33 +165,18 @@ public:
     static void setWorkingDirectory( const char * dirPath = nullptr );
 
     /**
-     * \brief   Call to start tracing.
+     * \brief   Call to start logging.
      * param    force       If true, forces load default configuration file (NEApplication::DEFAULT_CONFIG_FILE)
       *                     or use logging default settings.
-     * \return  Returns true if succeeded to start tracing. Starting tracing may fail if
+     * \return  Returns true if succeeded to start logging. Start logging may fail if
      *          it was not configured or configuration failed.
      **/
-    static bool startTracer( bool force = false );
+    static bool startLogging( bool force = false );
 
     /**
      * \brief   Call to stop tracing.
      **/
-    static void stopTracer( void );
-
-    /**
-     * \brief   Returns true if tracing started with success.
-     **/
-    static bool isTracerStarted( void );
-
-    /**
-     * \brief   Returns true if tracing is enabled.
-     **/
-    static bool isTracerEnabled( void );
-
-    /**
-     * \brief   Returns true if tracing is configured.
-     **/
-    static bool isTracerConfigured( void );
+    static void stopLogging( void );
 
     /**
      * \brief   Call to start Service Manager thread. This will not trigger Router Service client connection.

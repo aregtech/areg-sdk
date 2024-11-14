@@ -6,7 +6,7 @@
 # 
 # How to configure logging?
 # 
-#   There are at least 4 ways to log traces.
+#   There are at least 4 ways to log messages.
 #   1. Log on File System
 #   2. Log on Remote Host (via TCP/IP connection)
 #   3. Log on Database (in planning)
@@ -16,7 +16,7 @@
 #                           and specify the file location in the 'log::*::file::location'. 
 #                           The file location can be absolute or relative, and may contain mask.
 #                           For example, the location './logs/%appname%_%time%.log' means to create
-#                           files in the subfolder 'logs' where each log file starts with the name of
+#                           files in the subdirectory 'logs' where each log file starts with the name of
 #                           the module (process) and timestamp. The path is relative.
 #                           The 'log::*::enable::file' should be enabled to save logs in the file.
 #
@@ -152,15 +152,15 @@ log::logobserver::db::name          = sqlite3                       # Logobserve
 log::logobserver::db::location      = ./logs/log_%time%.sqlite3     # Logobserver: Database location
 
 # ---------------------------------------------------------------------------
-# Messaging enable states for the logger and mcrouter services.
+# Messaging enable states for the logcollector and mcrouter services.
 # ---------------------------------------------------------------------------
-log::logger::enable::file       = false     # Logger service: do not output log messages in the file
-log::logger::enable::debug      = false     # Logger service: do not output logs in the debug output
-log::logger::enable::db         = false     # Logger service: do not output in the database
-log::mcrouter::enable::file     = false     # MC Router: File logging enable / disable flag
-log::mcrouter::enable::db       = false     # MC Router: Database logging enable / disable flag
-log::mcrouter::enable::debug    = false     # MC Router: Debug output console logging enable / disable flag
-log::mcrouter::enable::remote   = true      # MC Router: Remote logging enable / disable flag
+log::logcollector::enable::file     = false     # Log Collector service: do not output log messages in the file
+log::logcollector::enable::debug    = false     # Log Collector service: do not output logs in the debug output
+log::logcollector::enable::db       = false     # Log Collector service: do not output in the database
+log::mcrouter::enable::file         = false     # MC Router: File logging enable / disable flag
+log::mcrouter::enable::db           = false     # MC Router: Database logging enable / disable flag
+log::mcrouter::enable::debug        = false     # MC Router: Debug output console logging enable / disable flag
+log::mcrouter::enable::remote       = true      # MC Router: Remote logging enable / disable flag
 
 # ###########################################################################
 # Remote services
@@ -183,7 +183,7 @@ router::*::port::tcpip      = 8181			                # Protocol specific connect
 # ---------------------------------------------------------------------------
 # Remote logger settings
 # ---------------------------------------------------------------------------
-logger::*::service          = logger                        # The name of the log collector service (process name)
+logger::*::service          = logcollector                  # The name of the log collector service (process name)
 logger::*::connect          = tcpip			                # The list of supported communication protocols
 logger::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
 logger::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1
@@ -199,7 +199,7 @@ logger::*::port::tcpip      = 8282			                # Protocol specific connect
 
 log::*::scope::*			= DEBUG | SCOPE ;               # By default, activate and enable log scopes of all applications.
 log::mcrouter::scope::*     = WARN  | SCOPE ;               # The multicast router should output only warnings and errors.
-log::logger::scope::*       = NOTSET ;                      # No log messages from the log collector
+log::logcollector::scope::* = NOTSET ;                      # No log messages from the log collector
 log::logobserver::scope::*  = NOTSET ;                      # No log messages from the log collector
 
 # ###########################################################################

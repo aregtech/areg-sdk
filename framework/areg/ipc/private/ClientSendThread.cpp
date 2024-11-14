@@ -19,9 +19,9 @@
 #include "areg/ipc/IERemoteMessageHandler.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
+DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
 ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
     : DispatcherThread  ( namePrefix + NEConnection::CLIENT_SEND_MESSAGE_THREAD )
@@ -36,11 +36,11 @@ ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, Client
 
 void ClientSendThread::readyForEvents( bool isReady )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
+    LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
     if ( isReady )
     {
-        TRACE_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
+        LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
         SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         DispatcherThread::readyForEvents( true );
     }
@@ -49,7 +49,7 @@ void ClientSendThread::readyForEvents( bool isReady )
         DispatcherThread::readyForEvents( false );
         SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         mConnection.closeSocket( );
-        TRACE_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
+        LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
     }
 }
 

@@ -109,13 +109,13 @@ The **[03_file](./03_file/)** project shows how to handle file operations such a
 
 ---
 
-#### **[04_trace](./04_trace/)**
+#### **[04_logging](./04_logging/)**
 
-The **[04_trace](./04_trace/)** project demonstrates **tracing and logging** mechanisms to monitor and debug application activities.
+The **[04_logging](./04_logging/)** project demonstrates **method call tracing and message logging** mechanisms to monitor and debug application activities.
 
 - **Key Features**: Logs application actions for debugging and analysis.
 - **Sub-project**:  
-  - `04_trace`: Integrates AREG's logging service to trace messages during runtime.
+  - `04_logging`: Integrates AREG's logging service to log messages during runtime.
 
 ---
 

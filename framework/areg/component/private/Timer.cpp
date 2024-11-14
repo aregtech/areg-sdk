@@ -20,9 +20,9 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(areg_component_Timer_startTimer);
+DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,13 +64,13 @@ bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Ti
 
 bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread, unsigned int eventCount /*= Timer::CONTINUOUSLY*/)
 {
-    TRACE_SCOPE(areg_component_Timer_startTimer);
+    LOG_SCOPE(areg_component_Timer_startTimer);
 
     Lock lock(mLock);
 
     if (isActive())
     {
-        TRACE_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]"
+        LOG_WARN("The timer [ %s ] is still active, going to stop first. Current timeout [ %u ] ms and event count [ %d]"
                     , mName.getString()
                     , mTimeoutInMs
                     , mEventsCount);
@@ -80,7 +80,7 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
 
     if (eventCount != 0)
     {
-        TRACE_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ]", mName.getString(), timeoutInMs, eventCount);
+        LOG_DBG("Starting [ %s ] with timeout [ %u ] ms and event count [ %d ]", mName.getString(), timeoutInMs, eventCount);
 
         mTimeoutInMs    = timeoutInMs;
         mEventsCount    = eventCount;
@@ -97,7 +97,7 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     }
     else
     {
-        TRACE_WARN("Ignoring to start a timer [ %s ] with either 0 timeout or 0 event count", mName.getString());
+        LOG_WARN("Ignoring to start a timer [ %s ] with either 0 timeout or 0 event count", mName.getString());
         mTimeoutInMs = timeoutInMs;
         mEventsCount = 0;
 

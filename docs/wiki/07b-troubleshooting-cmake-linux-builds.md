@@ -13,7 +13,7 @@ This guide provides solutions for common issues encountered when compiling proje
 
 ## Issue 1: Missing `<asm/errno.h>` File
 
-If you receive an error during compilation indicating that `<asm/errno.h>` could not be found, it often means certain header files are missing or not correctly linked in the system’s include directories.
+If you receive an error during compilation indicating that `<asm/errno.h>` could not be found, it often means certain header files are missing or not correctly linked in the system's include directories.
 
 ### Solution: Create a Symbolic Link
 

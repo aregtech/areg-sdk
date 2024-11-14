@@ -297,7 +297,7 @@ private:
     bool _osRegisterService( void );
 
     /**
-     * \brief   OS specific implementation of changing the state of the logger service.
+     * \brief   OS specific implementation of changing the state of the log collector service.
      **/
     bool _osSetState( NESystemService::eSystemServiceState newState );
 

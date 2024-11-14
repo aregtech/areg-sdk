@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6CB187D2-55EC-4E1D-B431-3CB2726DBCD0}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{F4A26DC5-251A-4EAF-9947-29ED5940FD42}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{99DB0E01-9188-447D-9375-20B4E09A6797}</UniqueIdentifier>
+      <Extensions>bat;rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="logcollector\resources\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logcollector\resources\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logcollector\app\NELogCollectorSettings.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logcollector\app\LogCollector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logcollector\app\private\LogCollectorConsoleService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logcollector\service\LogCollectorServerService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logcollector\service\private\LogCollectorMessageProcessor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="logcollector\resources\logcollector.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logcollector\resources\logcollector.service.install.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logcollector\resources\logcollector.service.uninstall.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logcollector\resources\small.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logcollector\Readme.md" />
+    <None Include="logcollector\resources\logcollector.service">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logcollector\resources\logcollector_post_build.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="logcollector\app\private\LogCollector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logcollector\app\private\NELogCollectorSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logcollector\app\private\LogCollectorConsoleService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logcollector\service\private\LogCollectorServerService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logcollector\service\private\LogCollectorMessageProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logcollector\app\private\win32\LogCollectorWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logcollector\app\private\posix\LogCollectorPosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="logcollector\resources\logcollector.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="logcollector\CMakeLists.txt" />
+    <Text Include="logcollector\app\private\CMakeLists.txt" />
+    <Text Include="logcollector\resources\Readme.md" />
+    <Text Include="logcollector\service\private\CMakeLists.txt" />
+  </ItemGroup>
+</Project>

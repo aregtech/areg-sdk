@@ -20,19 +20,19 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
 
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
+DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceClientConnectionBase class implementation
@@ -75,13 +75,13 @@ ServiceClientConnectionBase::~ServiceClientConnectionBase(void)
 
 void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& msgReceived)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
 
     ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
     NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
     msgReceived >> cookie;
     msgReceived >> connection;
-    TRACE_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
+    LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
 
     switch (connection)
     {
@@ -213,14 +213,14 @@ RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const 
 
 void ServiceClientConnectionBase::onServiceReconnectTimerExpired( void )
 {
-    TRACE_SCOPE( areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired );
+    LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired );
     onServiceStart( );
 }
 
 void ServiceClientConnectionBase::onServiceStart(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
-    TRACE_DBG("Starting remove servicing");
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
+    LOG_DBG("Starting remove servicing");
 
     mChannel.setCookie( NEService::COOKIE_LOCAL );
     mChannel.setSource( NEService::SOURCE_UNKNOWN );
@@ -233,8 +233,8 @@ void ServiceClientConnectionBase::onServiceStart(void)
 
 void ServiceClientConnectionBase::onServiceStop(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
-    TRACE_DBG("Stopping remote servicing");
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
+    LOG_DBG("Stopping remote servicing");
 
     setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopping);
 
@@ -268,11 +268,11 @@ void ServiceClientConnectionBase::onServiceRestart( void )
 
 void ServiceClientConnectionBase::onServiceConnectionStarted(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
     ASSERT(isConnectionStarted());
     if ( mClientConnection.getCookie() != NEService::COOKIE_LOCAL )
     {
-        TRACE_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.getCookie());
+        LOG_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.getCookie());
 
         mChannel.setCookie( mClientConnection.getCookie() );
         mChannel.setSource( mMessageDispatcher.getId());
@@ -284,8 +284,8 @@ void ServiceClientConnectionBase::onServiceConnectionStarted(void)
 
 void ServiceClientConnectionBase::onServiceConnectionStopped(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
-    TRACE_DBG("Client service is stopped. Resetting cookie");
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
+    LOG_DBG("Client service is stopped. Resetting cookie");
 
     setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
     mTimerConnect.stopTimer( );
@@ -307,8 +307,8 @@ void ServiceClientConnectionBase::onServiceConnectionStopped(void)
 
 void ServiceClientConnectionBase::onServiceConnectionLost(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
-    TRACE_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
+    LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
                 , ServiceClientConnectionBase::getString(getConnectionState()));
 
     setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
@@ -317,7 +317,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost(void)
 
     if ( Application::isServicingReady( ) && mTimerConnect.isStopped( ) )
     {
-        TRACE_DBG( "Restarting lost connection with remote service" );
+        LOG_DBG( "Restarting lost connection with remote service" );
 
         mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
         mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
@@ -331,7 +331,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost(void)
         ASSERT( mThreadSend.isRunning( ) == false );
         ASSERT( mClientConnection.isValid( ) == false );
 
-        TRACE_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
+        LOG_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
     }
 }
 
@@ -350,7 +350,7 @@ void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & /*
 
 void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
     Lock lock(mLock);
 
     if (cookie >= NEService::COOKIE_REMOTE_SERVICE)
@@ -359,18 +359,18 @@ void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
         mChannel.setSource(mMessageDispatcher.getId());
         mChannel.setTarget(mTarget);
 
-        TRACE_DBG("Connected remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
+        LOG_DBG("Connected remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
     }
     else
     {
-        TRACE_INFO("Disconnecting remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
+        LOG_INFO("Disconnecting remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
         mChannel.invalidate();
     }
 }
 
 bool ServiceClientConnectionBase::startConnection(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
 
     ASSERT(mClientConnection.getAddress().isValid());
     ASSERT(mClientConnection.isValid() == false);
@@ -386,14 +386,14 @@ bool ServiceClientConnectionBase::startConnection(void)
         {
             VERIFY( mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
             VERIFY( mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
-            TRACE_DBG("Client service starting connection with remote routing service.");
+            LOG_DBG("Client service starting connection with remote routing service.");
             result = mClientConnection.sendMessage(createServiceConnectMessage(NEService::COOKIE_UNKNOWN, mTarget, mMessageSource));
         }
     }
 
     if ( result == false )
     {
-        TRACE_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
+        LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
         mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
         mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
         mClientConnection.closeSocket();
@@ -405,8 +405,8 @@ bool ServiceClientConnectionBase::startConnection(void)
 
 void ServiceClientConnectionBase::cancelConnection(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
-    TRACE_WARN("Canceling client service connection");
+    LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
+    LOG_WARN("Canceling client service connection");
 
     mClientConnection.closeSocket();
     mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
