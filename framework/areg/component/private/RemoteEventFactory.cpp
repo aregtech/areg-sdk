@@ -25,20 +25,20 @@
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/Channel.hpp"
 
-#include "areg/trace/GETrace.h"
-DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
-DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
-DEF_TRACE_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
+#include "areg/logging/GELog.h"
+DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
+DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
+DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
 StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage & stream, const Channel & comChannel )
 {
-    TRACE_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
+    LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 
     StreamableEvent * result = nullptr;
     Event::eEventType eventType;
     stream >> eventType;
 
-    TRACE_DBG("Going to create event [ %s ] from remote message object", Event::getString(eventType));
+    LOG_DBG("Going to create event [ %s ] from remote message object", Event::getString(eventType));
 
     switch ( eventType )
     {
@@ -63,7 +63,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     eventRequest->setTargetChannel(chTarget);
                     eventRequest->setSourceChannel(chSource);
 
-                    TRACE_DBG("Created Event::eEventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
+                    LOG_DBG("Created Event::eEventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
                 }
@@ -94,7 +94,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     eventNotify->setTargetChannel(chTarget);
                     eventNotify->setSourceChannel(chSource);
 
-                    TRACE_DBG("Created Event::eEventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
+                    LOG_DBG("Created Event::eEventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
                 }
@@ -121,7 +121,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     Channel chTarget( proxy->getProxyAddress().getChannel() );
                     eventResponse->setTargetChannel(chTarget);
 
-                    TRACE_DBG("Created Event::eEventType::EventRemoteServiceResponse for target proxy [ %s ]."
+                    LOG_DBG("Created Event::eEventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                 , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
                 }
 
@@ -161,7 +161,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
         break;
 
     default:
-        TRACE_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
+        LOG_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }
@@ -276,8 +276,8 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
 
     default:
         {
-            TRACE_SCOPE( areg_component_RemoteEventFactory_createStreamFromEvent );
-            TRACE_ERR( "Unexpected event value [ %d ]", static_cast<int>(eventStreamable.getEventType( )) );
+            LOG_SCOPE( areg_component_RemoteEventFactory_createStreamFromEvent );
+            LOG_ERR( "Unexpected event value [ %d ]", static_cast<int>(eventStreamable.getEventType( )) );
             ASSERT( false );  // unsupported remote streaming events
         }
         break;
@@ -288,13 +288,13 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
 
 StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMessage & stream, const Channel & /* comChannel */ )
 {
-    TRACE_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
+    LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
     StreamableEvent * result = nullptr;
     Event::eEventType eventType;
     stream >> eventType;
 
-    TRACE_DBG("Creating request failed event of type [ %s ] from remote message stream", Event::getString(eventType));
+    LOG_DBG("Creating request failed event of type [ %s ] from remote message stream", Event::getString(eventType));
 
     switch ( eventType )
     {
@@ -354,7 +354,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
         break;
 
     default:
-        TRACE_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
+        LOG_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }

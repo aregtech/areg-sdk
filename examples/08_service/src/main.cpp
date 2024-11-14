@@ -18,7 +18,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SynchObjects.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "src/ServicingComponent.hpp"
 
 #ifdef  _WIN32
@@ -45,22 +45,22 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
-DEF_TRACE_SCOPE(examples_08_service_main);
+DEF_LOG_SCOPE(examples_08_service_main);
 //! A Demo of loading and starting an empty service with no functionalities
 int main()
 {
     std::cout << "A Demo of loading and starting an empty service with no functionalities ..." << std::endl;
 
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr );
     Application::initApplication(true, true, false, true, true, nullptr );
 
     do 
     {
         unsigned int timeout{ NECommon::WAIT_10_SECONDS };
 
-        TRACE_SCOPE(examples_08_service_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
+        LOG_SCOPE(examples_08_service_main);
+        LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
         ASSERT( Application::findModel( _modelName ).isValid( ) );
 
         Application::loadModel(_modelName);

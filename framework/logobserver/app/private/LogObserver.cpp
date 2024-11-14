@@ -10,7 +10,7 @@
  * \file        logobserver/app/private/LogObserver.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, logger to run as a console application process or service.
+ * \brief       AREG Platform, Log Observer to run as a console application.
  ************************************************************************/
 
 /************************************************************************
@@ -169,10 +169,10 @@ void LogObserver::callbackConnectedInstances(const sLogInstance* instances, uint
 
         if (contains == false)
         {
-            NETrace::sLogMessage log{ };
-            log.logDataType = NETrace::eLogDataType::LogDataLocal;
-            log.logMsgType = NETrace::eLogMessageType::LogMessageText;
-            log.logMessagePrio = NETrace::eLogPriority::PrioAny;
+            NELogging::sLogMessage log{ };
+            log.logDataType = NELogging::eLogDataType::LogDataLocal;
+            log.logMsgType = NELogging::eLogMessageType::LogMessageText;
+            log.logMessagePrio = NELogging::eLogPriority::PrioAny;
             log.logSource = inst.liSource;
             log.logTarget = NEService::COOKIE_LOCAL;
             log.logCookie = inst.liCookie;
@@ -180,14 +180,14 @@ void LogObserver::callbackConnectedInstances(const sLogInstance* instances, uint
             log.logThreadId = 0u;
             log.logTimestamp = inst.liTimestamp;
             log.logScopeId = 0u;
-            log.logMessageLen = static_cast<uint32_t>(String::formatString(log.logMessage, NETrace::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+            log.logMessageLen = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
             log.logThreadLen = 0;
             log.logThread[0] = String::EmptyChar;
             log.logModuleId = 0;
-            log.logModuleLen = static_cast<uint32_t>(NEString::copyString(log.logModule, NETrace::LOG_NAMES_SIZE, inst.liName));
+            log.logModuleLen = static_cast<uint32_t>(NEString::copyString(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
 
             _listInstances.add(inst);
-            NETrace::logAnyMessage(log);
+            NELogging::logAnyMessage(log);
 
             ASSERT(_mapScopes.contains(inst.liCookie) == false);
             ::logObserverRequestScopes(inst.liCookie);
@@ -205,10 +205,10 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
             const sLogInstance& inst{ _listInstances[j] };
             if (inst.liCookie == cookie)
             {
-                NETrace::sLogMessage log{ };
-                log.logDataType     = NETrace::eLogDataType::LogDataLocal;
-                log.logMsgType      = NETrace::eLogMessageType::LogMessageText;
-                log.logMessagePrio  = NETrace::eLogPriority::PrioAny;
+                NELogging::sLogMessage log{ };
+                log.logDataType     = NELogging::eLogDataType::LogDataLocal;
+                log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
+                log.logMessagePrio  = NELogging::eLogPriority::PrioAny;
                 log.logSource       = inst.liSource;
                 log.logTarget       = NEService::COOKIE_LOCAL;
                 log.logCookie       = inst.liCookie;
@@ -216,16 +216,16 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
                 log.logThreadId     = 0u;
                 log.logTimestamp    = static_cast<TIME64>(DateTime::getNow());
                 log.logScopeId      = 0u;
-                log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NETrace::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+                log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
                 log.logThreadLen    = 0;
                 log.logThread[0]    = String::EmptyChar;
                 log.logModuleId     = 0;
-                log.logModuleLen    = static_cast<uint32_t>(NEString::copyString(log.logModule, NETrace::LOG_NAMES_SIZE, inst.liName));
+                log.logModuleLen    = static_cast<uint32_t>(NEString::copyString(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
 
                 _listInstances.removeAt(j, 1);
                 _mapScopes.removeAt(cookie);
 
-                NETrace::logAnyMessage(log);
+                NELogging::logAnyMessage(log);
                 break;
             }
         }
@@ -239,10 +239,10 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uin
         const sLogInstance& inst{ _listInstances[i] };
         if (cookie == inst.liCookie)
         {
-            NETrace::sLogMessage log{ };
-            log.logDataType     = NETrace::eLogDataType::LogDataLocal;
-            log.logMsgType      = NETrace::eLogMessageType::LogMessageText;
-            log.logMessagePrio  = NETrace::eLogPriority::PrioAny;
+            NELogging::sLogMessage log{ };
+            log.logDataType     = NELogging::eLogDataType::LogDataLocal;
+            log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
+            log.logMessagePrio  = NELogging::eLogPriority::PrioAny;
             log.logSource       = inst.liSource;
             log.logTarget       = NEService::COOKIE_LOCAL;
             log.logCookie       = inst.liCookie;
@@ -250,11 +250,11 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uin
             log.logThreadId     = 0u;
             log.logTimestamp    = static_cast<TIME64>(DateTime::getNow());
             log.logScopeId      = 0u;
-            log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NETrace::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
+            log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
             log.logThreadLen    = 0;
             log.logThread[0]    = String::EmptyChar;
             log.logModuleId     = 0;
-            log.logModuleLen    = static_cast<uint32_t>(NEString::copyString(log.logModule, NETrace::LOG_NAMES_SIZE, inst.liName));
+            log.logModuleLen    = static_cast<uint32_t>(NEString::copyString(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
 
             _mapScopes.setAt(cookie, ListScopes());
             ListScopes& scopeList{ _mapScopes.getAt(cookie) };
@@ -264,7 +264,7 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uin
                 scopeList[j] = scopes[j];
             }
 
-            NETrace::logAnyMessage(log);
+            NELogging::logAnyMessage(log);
             break;
         }
     }
@@ -274,9 +274,9 @@ void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t 
 {
     if (logBuffer != nullptr)
     {
-        ASSERT(size >= sizeof(NETrace::sLogMessage));
-        const NETrace::sLogMessage & log{ reinterpret_cast<const NETrace::sLogMessage &>(*logBuffer)};
-        NETrace::logAnyMessage(log);
+        ASSERT(size >= sizeof(NELogging::sLogMessage));
+        const NELogging::sLogMessage & log{ reinterpret_cast<const NELogging::sLogMessage &>(*logBuffer)};
+        NELogging::logAnyMessage(log);
     }
 }
 
@@ -726,7 +726,7 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
                 String scopeName{ key.getPosition() };
                 uint32_t scopePrio{ prop.getValue().getIndetifier(NEApplication::LogScopePriorityIndentifiers) };
                 sLogScope logScope;
-                logScope.lsId   = NETrace::makeScopeIdEx(scopeName.getString());
+                logScope.lsId   = NELogging::makeScopeIdEx(scopeName.getString());
                 logScope.lsPrio = scopePrio;
                 NEString::copyString<char>(logScope.lsName, LENGTH_SCOPE, scopeName.getString(), scopeName.getLength());
                 result = ::logObserverRequestChangeScopePrio(target, &logScope, 1);
@@ -741,9 +741,9 @@ inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable *
 {
     constexpr NEPersistence::eConfigKeys prioConfKey{ NEPersistence::eConfigKeys::EntryLogScope };
     const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
-    unsigned int prios = static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset);
-    const String prio{ NETrace::makePrioString(prios) };
+    unsigned int prios = static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset);
+    const String prio{ NELogging::makePrioString(prios) };
 
     config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-    config.setLogEnabled(NETrace::eLogingTypes::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, false, true);
 }

@@ -27,7 +27,7 @@ set(AREG_BUILD_TYPE         @AREG_BUILD_TYPE@)
 # The library type of 'areg'. Static or dynamic
 set(AREG_BINARY             @AREG_BINARY@)
 # The library type of 'areglogger'. Static or dynamic.
-set(AREG_LOGGER_LIB         @AREG_LOGGER_LIB@)
+set(AREG_LOGGER_BINARY      @AREG_LOGGER_BINARY@)
 
 # set platform specific variables.
 set(AREG_OS             @AREG_OS@)
@@ -77,7 +77,7 @@ else()
 endif()
 
 # Indicate the import flag of 'areg' library
-if (AREG_LOGGER_LIB MATCHES "shared")
+if (AREG_LOGGER_BINARY MATCHES "shared")
     add_definitions(-DIMP_LOGGER_DLL)
 else()
     add_definitions(-DIMP_LOGGER_LIB)

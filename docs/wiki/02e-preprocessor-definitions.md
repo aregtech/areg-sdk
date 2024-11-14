@@ -139,7 +139,7 @@ These symbols ensure proper export of classes and functions for shared or static
 
 **CMake Example**: Configure the library as static
 ```bash
-cmake -B ./build -DAREG_LOGGER_LIB=static
+cmake -B ./build -DAREG_LOGCOLLECTOR_LIB=static
 ```
 
 **Microsoft Visual Studio**: By default, `areglogger` is compiled as a shared library (DLL) and sets `EXP_LOGGER_DLL`. To change, manually select the library type and set `EXP_LOGGER_LIB` in the `areglogger` project property page.

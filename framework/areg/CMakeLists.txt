@@ -5,7 +5,7 @@ include("${AREG_FRAMEWORK}/areg/base/private/CMakeLists.txt")
 include("${AREG_FRAMEWORK}/areg/component/private/CMakeLists.txt")
 include("${AREG_FRAMEWORK}/areg/ipc/private/CMakeLists.txt")
 include("${AREG_FRAMEWORK}/areg/persist/private/CMakeLists.txt")
-include("${AREG_FRAMEWORK}/areg/trace/private/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/logging/private/CMakeLists.txt")
 
 if (${AREG_DEVELOP_ENV} MATCHES "Win32")
     set_source_files_properties("${AREG_FRAMEWORK}/areg/resources/areg.rc" PROPERTIES LANGUAGE RC)

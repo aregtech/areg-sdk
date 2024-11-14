@@ -13,7 +13,7 @@
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Log Observer library API.
- *              The logger service connection client.
+ *              The log collector service connection client.
  ************************************************************************/
 
 /************************************************************************
@@ -27,7 +27,7 @@
 #include "areg/ipc/IERemoteMessageHandler.hpp"
 #include "areg/persist/IEConfigurationListener.hpp"
 
-#include "areg/trace/NETrace.hpp"
+#include "areg/logging/NELogging.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 
 #include "areglogger/client/private/ObserverMessageProcessor.hpp"
@@ -41,7 +41,7 @@ struct sObserverEvents;
 // LoggerClient class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The observer as a logger client object to connect to the logger service,
+ * \brief   The observer as a log collector client object to connect to the logger service,
  *          and send-receive messages, including list of connected clients, scopes and messages.
  *          This object is instantiated as a singleton. It as well contains the pointer to the
  *          structure of callbacks to trigger when an event happens.
@@ -67,10 +67,10 @@ private:
     //!< The prefix to add to the send and receive threads.
     static constexpr std::string_view                   ThreadPrefix    { "Observer" };
 
-    //!< The ID of the target to send and receive messages. The target is the logger service cookie ID.
+    //!< The ID of the target to send and receive messages. The target is the log collector service cookie ID.
     static constexpr ITEM_ID                            TargetID        { NEService::COOKIE_LOGGER };
 
-    //!< The type of the service. It is a logger service.
+    //!< The type of the service. It is a log collector service.
     static constexpr NERemoteService::eRemoteServices   ServiceType     { NERemoteService::eRemoteServices::ServiceLogger };
 
     //!< The connection type. At the moment only TCP/IP
@@ -101,12 +101,12 @@ private:
 public:
 
     /**
-     * \brief   Call to start the send and receive threads, and establish connection to the logger service.
+     * \brief   Call to start the send and receive threads, and establish connection to the log collector service.
      *          If failed to connect, it triggers a timer and retries connection.
-     * \param   address     The IP address or the host name of the logger service to connect.
+     * \param   address     The IP address or the host name of the log collector service to connect.
      *                      If the address is empty, it uses the value set in the configuration file.
      *                      If the address is empty, the port number should be NESocket::InvalidPort.
-     * \param   portNr      The port number of the logger service to connect. If the port number is
+     * \param   portNr      The port number of the log collector service to connect. If the port number is
      *                      NESocket::InvalidPort, it uses the port number set in the configuration file.
      *                      If the port number is NESocket::InvalidPort, the address should be empty.
      * \return  Returns true if succeeded to initialize the threads and trigger the service connection.
@@ -115,7 +115,7 @@ public:
     bool startLoggerClient(const String & address = String::EmptyString, uint16_t portNr = NESocket::InvalidPort);
 
     /**
-     * \brief   Call to stop threads and disconnect logger service.
+     * \brief   Call to stop threads and disconnect log collector service.
      *          The observer will not send and receive messages.
      **/
     void stopLoggerClient(void);
@@ -131,30 +131,30 @@ public:
     void setCallbacks(const sObserverEvents * callbacks);
 
     /**
-     * \brief   Set paused flag true or false. If logger client is paused, it does not
+     * \brief   Set paused flag true or false. If log collector client is paused, it does not
      *          write logs in the file, but remain connected.
      * \param   doPause     The paused flag to set.
      **/
     void setPaused(bool doPause);
 
     /**
-     * \brief   Returns the socket address (IP address and port number) to connect to the logger service.
+     * \brief   Returns the socket address (IP address and port number) to connect to the log collector service.
      *          The connection might be not established yet.
      **/
     const NESocket::SocketAddress& getAddress(void) const;
 
     /**
-     * \brief   Returns true if the observer is configured and the logger service connection is enabled.
+     * \brief   Returns true if the observer is configured and the log collector service connection is enabled.
      **/
     bool isConfigLoggerConnectEnabled(void) const;
 
     /**
-     * \brief   Returns the IP address of logger service written in the configuration file.
+     * \brief   Returns the IP address of log collector service written in the configuration file.
      **/
     String getConfigLoggerAddress(void) const;
 
     /**
-     * \brief   Returns the IP port number of logger service written in the configuration file.
+     * \brief   Returns the IP port number of log collector service written in the configuration file.
      **/
     uint16_t getConfigLoggerPort(void) const;
 
@@ -185,7 +185,7 @@ public:
      *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
      * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    bool requestChangeScopePrio(const NETrace::ScopeNames& scopes, const ITEM_ID& target = NEService::COOKIE_ANY);
+    bool requestChangeScopePrio(const NELogging::ScopeNames& scopes, const ITEM_ID& target = NEService::COOKIE_ANY);
 
     /**
      * \brief   Generates and sends the message to request to save configuration current state,

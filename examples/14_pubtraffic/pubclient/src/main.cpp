@@ -17,7 +17,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/base/NEUtilities.hpp"
 #include "aregextend/console/Console.hpp"
 

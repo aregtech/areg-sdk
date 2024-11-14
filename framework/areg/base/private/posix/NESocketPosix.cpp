@@ -19,7 +19,7 @@
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/GEMacros.h"
 #include "areg/base/NEMemory.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include <unistd.h>
 #include <sys/socket.h>

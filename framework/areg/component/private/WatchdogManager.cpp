@@ -20,9 +20,9 @@
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/ComponentThread.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
+DEF_LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 
 //////////////////////////////////////////////////////////////////////////
 // WatchdogManager class implementation
@@ -139,14 +139,14 @@ void WatchdogManager::processEvent(const TimerManagerEventData & data)
 
 void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
 {
-    TRACE_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
+    LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 
     mWatchdogResource.lock();
 
     Watchdog::SEQUENCE_ID sequence  = Watchdog::makeSequenceId(watchdogId);
     if ((watchdog != nullptr) && (watchdog->getSequence() == sequence))
     {
-        TRACE_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]"
+        LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]"
                         , watchdog->getName().getString()
                         , watchdog->getComponentThread().getName().getString());
 

@@ -7,8 +7,8 @@
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_TRACE_SCOPE(chatter_ConnectionList_serviceConnected);
-DEF_TRACE_SCOPE(chatter_ConnectionList_responseRegisterConnection);
+DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
+DEF_LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
 
 ConnectionList::ConnectionList( const char * roleName, Component & owner, ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase ( roleName, owner.getMasterThread() )
@@ -26,16 +26,16 @@ ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispTh
 
 bool ConnectionList::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE(chatter_ConnectionList_serviceConnected);
+    LOG_SCOPE(chatter_ConnectionList_serviceConnected);
     bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
-        TRACE_DBG("The service is connected, posting NEDistributedApp::eWndCommands::CmdServiceConnection message");
+        LOG_DBG("The service is connected, posting NEDistributedApp::eWndCommands::CmdServiceConnection message");
         DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
     }
     else
     {
-        TRACE_DBG("The service is disconnected, posting NEDistributedApp::eWndCommands::CmdServiceConnection message");
+        LOG_DBG("The service is disconnected, posting NEDistributedApp::eWndCommands::CmdServiceConnection message");
         DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 0, 0 );
     }
 
@@ -62,8 +62,8 @@ void ConnectionList::broadcastClientConnected( const NEConnectionManager::sConne
 
 void ConnectionList::responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, bool success )
 {
-    TRACE_SCOPE(chatter_ConnectionList_responseRegisterConnection);
-    TRACE_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.getString());
+    LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
+    LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.getString());
 
     if ( success )
     {

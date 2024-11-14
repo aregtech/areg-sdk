@@ -24,18 +24,18 @@ BEGIN_MODEL(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT)
 
 END_MODEL(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT)
 
-DEF_TRACE_SCOPE( chatter_ConnectionService_CreateComponent );
-DEF_TRACE_SCOPE( chatter_ConnectionService_DeleteComponent );
+DEF_LOG_SCOPE( chatter_ConnectionService_CreateComponent );
+DEF_LOG_SCOPE( chatter_ConnectionService_DeleteComponent );
 
 Component * ConnectionService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
-    TRACE_SCOPE( chatter_ConnectionService_CreateComponent );
+    LOG_SCOPE( chatter_ConnectionService_CreateComponent );
     return new ConnectionService( entry, owner );
 }
 
 void ConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
-    TRACE_SCOPE( chatter_ConnectionService_DeleteComponent );
+    LOG_SCOPE( chatter_ConnectionService_DeleteComponent );
     delete (&compObject);
 }
 

@@ -10,7 +10,7 @@
   ************************************************************************/
 
 #include "pubservice/src/PowerControllerClient.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS
@@ -20,11 +20,11 @@
 #endif  // _WINDOWS
 
 
-DEF_TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_processEvent);
-DEF_TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
-DEF_TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStartTrafficLight);
-DEF_TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
-DEF_TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
+DEF_LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_processEvent);
+DEF_LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
+DEF_LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStartTrafficLight);
+DEF_LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
+DEF_LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
 PowerControllerClient::PowerControllerClient(const char* roleName, Component & owner)
     : PowerManagerClientBase        (roleName, owner)
@@ -37,19 +37,19 @@ PowerControllerClient::PowerControllerClient(const char* roleName, Component & o
 
 void PowerControllerClient::responseStartTrafficLight(bool Success)
 {
-    TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStartTrafficLight);
-    TRACE_DBG("[ %s ] to start the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
+    LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStartTrafficLight);
+    LOG_DBG("[ %s ] to start the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
 void PowerControllerClient::responseStopTrafficLight(bool Success)
 {
-    TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
-    TRACE_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
+    LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
+    LOG_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
 void PowerControllerClient::onThreadRuns(void)
 {
-    TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
+    LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
     bool loop = true;
 
@@ -78,32 +78,32 @@ void PowerControllerClient::onThreadRuns(void)
         if ((NEString::compareIgnoreCase<char, char>(command, "off") == NEMath::eCompare::Equal) || 
             (NEString::compareIgnoreCase<char, char>(command, "1") == NEMath::eCompare::Equal))
         {
-            TRACE_DBG("User requested command to power OFF the traffic lights");
+            LOG_DBG("User requested command to power OFF the traffic lights");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionPowerOff) );
         }
         else if ((NEString::compareIgnoreCase<char, char>(command, "on") == NEMath::eCompare::Equal) || 
                  (NEString::compareIgnoreCase<char, char>(command, "2") == NEMath::eCompare::Equal))
         {
-            TRACE_DBG("User requested command to power ON the traffic lights");
+            LOG_DBG("User requested command to power ON the traffic lights");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionPowerOn) );
         }
         else if ((NEString::compareIgnoreCase<char, char>(command, "stop") == NEMath::eCompare::Equal) || 
                  (NEString::compareIgnoreCase<char, char>(command, "3") == NEMath::eCompare::Equal))
         {
-            TRACE_DBG("User requested command to stop the traffic light controller.");
+            LOG_DBG("User requested command to stop the traffic light controller.");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionStopLight) );
         }
         else if ((NEString::compareIgnoreCase<char, char>(command, "start") == NEMath::eCompare::Equal) || 
                  (NEString::compareIgnoreCase<char, char>(command, "4") == NEMath::eCompare::Equal))
         {
-            TRACE_DBG("User requested command to start the traffic light controller.");
+            LOG_DBG("User requested command to start the traffic light controller.");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionStartLight) );
         }
         else if ((NEString::compareIgnoreCase<char, char>(command, "quit") == NEMath::eCompare::Equal) || 
                  (NEString::compareIgnoreCase<char, char>(command, "q") == NEMath::eCompare::Equal) || 
                  (NEString::compareIgnoreCase<char, char>(command, "5") == NEMath::eCompare::Equal))
         {
-            TRACE_DBG("User requested command to quit the traffic light controller application.");
+            LOG_DBG("User requested command to quit the traffic light controller application.");
             loop = false;
         }
 
@@ -116,8 +116,8 @@ void PowerControllerClient::onThreadRuns(void)
 
 void PowerControllerClient::processEvent(const PowerControllerEventData & data)
 {
-    TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_processEvent);
-    TRACE_DBG("The power controller client is going to process command [ %s ]", PowerControllerEventData::getString(data.getAction()));
+    LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_processEvent);
+    LOG_DBG("The power controller client is going to process command [ %s ]", PowerControllerEventData::getString(data.getAction()));
 
     switch (data.getAction())
     {
@@ -145,18 +145,18 @@ void PowerControllerClient::processEvent(const PowerControllerEventData & data)
 
 bool PowerControllerClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
+    LOG_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
 
     bool result = PowerManagerClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
-        TRACE_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
+        LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
         PowerControllerEvent::addListener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.getProxyDispatcherThread( ) );
         mConsole.createThread( NECommon::WAIT_INFINITE );
     }
     else
     {
-        TRACE_DBG( "Remove listener and stop worker thread" );
+        LOG_DBG( "Remove listener and stop worker thread" );
         mConsole.shutdownThread( NECommon::WAIT_INFINITE );
         PowerControllerEvent::removeListener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }

@@ -10,12 +10,12 @@
  * Include files.
  ************************************************************************/
 #include "locservice/src/ServiceClient.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
-DEF_TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_responseStartSleep);
+DEF_LOG_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
+DEF_LOG_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
+DEF_LOG_SCOPE(examples_18_locwatchdog_ServiceClient_responseStartSleep);
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -38,7 +38,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 
 bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
+    LOG_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
     bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
 
     if (isConnected())
@@ -48,20 +48,20 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
             // dynamic subscribe on messages.
             notifyOnServiceStateUpdate( true );
             mSleepTimeout   = NEHelloWatchdog::InitialSleepTimeout;
-            TRACE_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
+            LOG_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
 
             requestStartSleep( mSleepTimeout );
         }
         else
         {
-            TRACE_DBG("Reached maximum number of service restarts, exit application");
+            LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, exit application ...\n");
             Application::signalAppQuit();
         }
     }
     else
     {
-        TRACE_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
+        LOG_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
         // clear all subscriptions.
         clearAllNotifications();
     }
@@ -73,8 +73,8 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
 void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
 {
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
-    TRACE_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
 }
 
 #else  // AREG_LOGS
@@ -87,8 +87,8 @@ void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState /*ServiceState
 
 void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
 {
-    TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_responseStartSleep);
-    TRACE_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
+    LOG_SCOPE(examples_18_locwatchdog_ServiceClient_responseStartSleep);
+    LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
 
     ASSERT( timeoutSleep == mSleepTimeout);
     mSleepTimeout += NEHelloWatchdog::TimeoutStep;

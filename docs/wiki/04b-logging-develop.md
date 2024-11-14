@@ -18,7 +18,7 @@ The AREG Framework features a robust, adaptable logging system ideal for monitor
 
 ## 1. General Information
 
-The [AREG Framework](./../../framework/areg) includes a powerful [logging module](./../../framework/areg/trace) called `trace`. Key capabilities include:
+The [AREG Framework](./../../framework/areg) includes a powerful [logging module](./../../framework/areg/logging). Key capabilities include:
    - Enabling/disabling logs at compile and runtime
    - Customizing logs by scope and priority for precise control
 
@@ -55,19 +55,19 @@ To initialize logging, use the `Application::initApplication()` method:
 Application::initApplication(startTracing, startServicing, startRouting, startTimer, startWatchdog, configFile, listener);
 ```
 
-For specific configurations, use `Application::startTracer(configFile, force)`, where `configFile` specifies the configuration file path. To deactivate logging, use `Application::stopTracer()` or `Application::releaseApplication()`.
+For specific configurations, use `Application::startLogging(configFile, force)`, where `configFile` specifies the configuration file path. To deactivate logging, use `Application::stopLogging()` or `Application::releaseApplication()`.
 
 ### Activating Logs via Macros
 
-For macro-based control, `GETrace.h` includes macros to activate and manage logging. Use `TRACER_CONFIGURE_AND_START(configFile)` or `TRACER_FORCE_LOGGING()` to start logging and `TRACER_STOP_LOGGING()` to stop it.
+For macro-based control, `GELog.h` includes macros to activate and manage logging. Use `LOGGING_CONFIGURE_AND_START(configFile)` or `LOGGING_FORCE_START()` to start logging and `LOGGING_STOP()` to stop it.
 
 ```cpp
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 int main() {
-    TRACER_CONFIGURE_AND_START("./config/areg.init");
+    LOGGING_CONFIGURE_AND_START("./config/areg.init");
     // Code here
-    TRACER_STOP_LOGGING();
+    LOGGING_STOP();
 }
 ```
 
@@ -82,25 +82,25 @@ The AREG logging system uses *logging scopes* to manage logs by priority and mes
 
 ```cpp
 #include "source/some/classes/SomeClass.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 // Define scopes
-DEF_TRACE_SCOPE(source_some_classes_SomeClass_foo);
-DEF_TRACE_SCOPE(source_some_classes_SomeClass_bar);
+DEF_LOG_SCOPE(source_some_classes_SomeClass_foo);
+DEF_LOG_SCOPE(source_some_classes_SomeClass_bar);
 
 void SomeClass::foo() {
-    TRACE_SCOPE(source_some_classes_SomeClass_foo);
-    TRACE_DBG("DEBUG message");
-    TRACE_INFO("INFO message");
+    LOG_SCOPE(source_some_classes_SomeClass_foo);
+    LOG_DBG("DEBUG message");
+    LOG_INFO("INFO message");
 }
 
 void SomeClass::bar() {
-    TRACE_SCOPE(source_some_classes_SomeClass_bar);
-    TRACE_ERR("ERROR message");
+    LOG_SCOPE(source_some_classes_SomeClass_bar);
+    LOG_ERR("ERROR message");
 }
 ```
 
-Activated scopes log relevant messages, enabling developers to trace method calls and monitor execution times effectively.
+Activated log scope enables developers to trace method calls and monitor execution times effectively.
 
 ---
 

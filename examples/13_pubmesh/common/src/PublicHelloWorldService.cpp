@@ -11,14 +11,14 @@
   ************************************************************************/
 
 #include "common/src/PublicHelloWorldService.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include <stdlib.h>
 
 
-DEF_TRACE_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_startupServiceInterface );
-DEF_TRACE_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestRegister );
-DEF_TRACE_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestUnregister );
-DEF_TRACE_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
+DEF_LOG_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_startupServiceInterface );
+DEF_LOG_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestRegister );
+DEF_LOG_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestUnregister );
+DEF_LOG_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 
 PublicHelloWorldService::PublicHelloWorldService( Component & masterComp )
     : PublicHelloWorldStub  ( masterComp )
@@ -29,8 +29,8 @@ PublicHelloWorldService::PublicHelloWorldService( Component & masterComp )
 
 void PublicHelloWorldService::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
-    TRACE_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestRegister );
-    TRACE_DBG( "Received request to register client [ %s ] with service address [ %s ] and owner thread [ %s ] of process [ %s ]"
+    LOG_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestRegister );
+    LOG_DBG( "Received request to register client [ %s ] with service address [ %s ] and owner thread [ %s ] of process [ %s ]"
         , name.getString( )
         , ServiceAddress::convAddressToPath( service ).getString( )
         , thread.getString( )
@@ -43,7 +43,7 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
         const NEPublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
         if ( (client.crName == name) && (client.crService == service) && (client.crThread == thread) )
         {
-            TRACE_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
             theClient = client;
             break;
         }
@@ -53,7 +53,7 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
     {
         theClient = NEPublicHelloWorld::sClientRegister( NEUtilities::generateUniqueId( ), name, service, thread, process );
         mClientList.pushFirst( theClient );
-        TRACE_DBG( "Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
+        LOG_DBG( "Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
             , theClient.crID
             , theClient.crName.getString( )
             , ServiceAddress::convAddressToPath( theClient.crService ).getString( )
@@ -66,8 +66,8 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
 
 void PublicHelloWorldService::requestUnregister( const NEPublicHelloWorld::sClientRegister & client )
 {
-    TRACE_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestUnregister );
-    TRACE_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString( ), client.crID );
+    LOG_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestUnregister );
+    LOG_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString( ), client.crID );
 
     for ( ClientList::LISTPOS pos = mClientList.firstPosition( ); mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
@@ -75,7 +75,7 @@ void PublicHelloWorldService::requestUnregister( const NEPublicHelloWorld::sClie
         if ( entry == client )
         {
             mClientList.removeAt( pos );
-            TRACE_DBG( "Removed entry, there are still [ %d ] registered clients", mClientList.getSize( ) );
+            LOG_DBG( "Removed entry, there are still [ %d ] registered clients", mClientList.getSize( ) );
             break;
         }
     }
@@ -83,7 +83,7 @@ void PublicHelloWorldService::requestUnregister( const NEPublicHelloWorld::sClie
 
 void PublicHelloWorldService::requestHelloWorld( unsigned int clientID )
 {
-    TRACE_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
+    LOG_SCOPE( examples_13_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 
     NEPublicHelloWorld::sClientRegister theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition( );
@@ -92,7 +92,7 @@ void PublicHelloWorldService::requestHelloWorld( unsigned int clientID )
         const NEPublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
         if ( clientID == client.crID )
         {
-            TRACE_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
             theClient = client;
             break;
         }

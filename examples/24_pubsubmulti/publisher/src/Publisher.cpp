@@ -13,19 +13,19 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Log scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_clientConnected);
-DEF_TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_start);
-DEF_TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_stop);
-DEF_TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_invalidate);
-DEF_TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_quit);
-DEF_TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_processTimer);
+DEF_LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_clientConnected);
+DEF_LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_start);
+DEF_LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_stop);
+DEF_LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_invalidate);
+DEF_LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_quit);
+DEF_LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_processTimer);
 
 
 namespace
@@ -121,12 +121,12 @@ void Publisher::shutdownComponent(ComponentThread & comThread)
 
 bool Publisher::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
 {
-    TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_clientConnected);
+    LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_clientConnected);
     bool result = PubSubStub::clientConnected(client, status);
 
-    TRACE_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::getString(status), ProxyAddress::convAddressToPath(client).getString());
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::getString(status), ProxyAddress::convAddressToPath(client).getString());
     mClientCount += (NEService::isServiceConnected(status) ? 1 : -1);
-    TRACE_DBG("There are [ %d ] connected service consumers", mClientCount);
+    LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
     if (isServiceProviderStateValid() == false)
     {
@@ -138,10 +138,10 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::eService
 
 void Publisher::start(void)
 {
-    TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_start);
+    LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_start);
 
     Lock lock(mLock);
-    TRACE_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
+    LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
@@ -166,10 +166,10 @@ void Publisher::start(void)
 
 void Publisher::stop(void)
 {
-    TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_stop);
+    LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_stop);
 
     Lock lock(mLock);
-    TRACE_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
+    LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
@@ -179,10 +179,10 @@ void Publisher::stop(void)
 
 void Publisher::invalidate(void)
 {
-    TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_invalidate);
+    LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_invalidate);
 
     Lock lock(mLock);
-    TRACE_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
+    LOG_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
 
     mCountString = 0;
     mCountInteger = 0;
@@ -197,10 +197,10 @@ void Publisher::invalidate(void)
 
 void Publisher::quit(void)
 {
-    TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_quit);
+    LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_quit);
 
     Lock lock(mLock);
-    TRACE_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
+    LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
@@ -211,7 +211,7 @@ void Publisher::quit(void)
 
 void Publisher::processTimer(Timer & timer)
 {
-    TRACE_SCOPE(examples_24_pubsubmulti_publisher_Publisher_processTimer);
+    LOG_SCOPE(examples_24_pubsubmulti_publisher_Publisher_processTimer);
 
     if (&timer == &mTimerAlways)
     {
@@ -222,7 +222,7 @@ void Publisher::processTimer(Timer & timer)
             mCountInteger = 0;
         }
 
-        TRACE_DBG("Timer \'Update Always\' has expired, Integer sequence number is [ %u ], the data should be updated", mSeqInteger);
+        LOG_DBG("Timer \'Update Always\' has expired, Integer sequence number is [ %u ], the data should be updated", mSeqInteger);
         setIntegerAlways(mSeqInteger);
     }
     else if (&timer == &mTimerOnChange)
@@ -235,7 +235,7 @@ void Publisher::processTimer(Timer & timer)
         }
 
         String data(generateString(mSeqString));
-        TRACE_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
+        LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
         setStringOnChange(data);
     }
     else

@@ -16,15 +16,15 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
 
 //////////////////////////////////////////////////////////////////////////
-// Traces.
+// Log Scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE( utilities_service_base_SystemServiceBase_serviceMain );
+DEF_LOG_SCOPE( areg_aregextend_service_SystemServiceBase_serviceMain );
 
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class implementation
@@ -160,18 +160,18 @@ int SystemServiceBase::serviceMain( int argc, char ** argv )
     int result{ RESULT_SUCCEEDED };
     if (serviceInitialize(argc, argv))
     {
-        TRACE_SCOPE( utilities_service_base_SystemServiceBase_serviceMain );
-        TRACE_DBG( "Starting logger service. There are [ %d ] arguments in the list...", argc );
+        LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);
+        LOG_DBG( "Starting log collector service. There are [ %d ] arguments in the list...", argc );
         setState(NESystemService::eSystemServiceState::ServiceStarting);
 
 #ifdef  DEBUG
     for ( int i = 0; i < argc; ++ i )
-        TRACE_DBG( "... Command argument [ %d ]: [ %s ]", i, argv[ i ] );
+        LOG_DBG( "... Command argument [ %d ]: [ %s ]", i, argv[ i ] );
 #endif  // DEBUG
 
         if (registerService() || (mSystemServiceOption == NESystemService::eServiceOption::CMD_Console))
         {
-            TRACE_DBG("Starting service");
+            LOG_DBG("Starting service");
             serviceStart();
         }
 
@@ -189,7 +189,7 @@ int SystemServiceBase::serviceMain( int argc, char ** argv )
         }
 
         serviceStop();
-        TRACE_WARN("Service Stopped and not running anymore");
+        LOG_WARN("Service Stopped and not running anymore");
     }
     else
     {

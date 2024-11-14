@@ -294,7 +294,7 @@ TEST(TEMapTest, TestMerging)
     // Step 2:  
     //  - create empty map object `map`
     //  - merge [0 .. 1] entries with `map`.
-    // Result: the source object is empty, all entries are extraced and merged
+    // Result: the source object is empty, all entries are extracted and merged
     Map map;
     map.merge(map1);
     EXPECT_TRUE(map1.isEmpty());

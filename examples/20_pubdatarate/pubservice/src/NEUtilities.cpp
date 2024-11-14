@@ -10,17 +10,17 @@
 
 #include "areg/base/Containers.hpp"
 #include "areg/base/String.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_parseCommand);
-DEF_TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_setValue);
+DEF_LOG_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_parseCommand);
+DEF_LOG_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_setValue);
 
 bool NEUtilities::sOptionData::parseCommand(const String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
 
-    TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_parseCommand);
-    TRACE_DBG("Parsing command [ $s ]", cmd.getString());
+    LOG_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_parseCommand);
+    LOG_DBG("Parsing command [ $s ]", cmd.getString());
 
     Tokenizer tokens(cmd, _delimiter, false);
     const StringArray& list = tokens.getList();
@@ -65,8 +65,8 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
 
 bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t whichValue)
 {
-    TRACE_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_setValue);
-    TRACE_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
+    LOG_SCOPE(examples_20_pubservice_NEUtilities_sOptionData_setValue);
+    LOG_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
                     , NEUtilities::getString(whichOpt.cmdValue)
                     , whichValue
                     , whichOpt.minValue

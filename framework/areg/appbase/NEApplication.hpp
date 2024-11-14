@@ -22,7 +22,7 @@
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/NEPersistence.hpp"
 #include "areg/ipc/NERemoteService.hpp"
-#include "areg/trace/NETrace.hpp"
+#include "areg/logging/NELogging.hpp"
 
 #include <string_view>
 #include <vector>
@@ -65,25 +65,25 @@ namespace NEApplication
 
     /**
      * \brief   NEApplication::LOGGER_SERVICE_NAME_ASCII
-     *          ASCII version of logger service name.
+     *          ASCII version of log collector service name.
      **/
     extern AREG_API char        LOGGER_SERVICE_NAME_ASCII[];
 
     /**
      * \brief   NEApplication::LOGGER_SERVICE_NAME_WIDE
-     *          Unicode version of logger service name.
+     *          Unicode version of log collector service name.
      **/
     extern AREG_API wchar_t     LOGGER_SERVICE_NAME_WIDE[];
 
     /**
      * \brief   NEApplication::LOGGER_SERVICE_EXECUTABLE_ASCII
-     *          ASCII version of logger service executable.
+     *          ASCII version of log collector service executable.
      **/
     extern AREG_API char        LOGGER_SERVICE_EXECUTABLE_ASCII[];
 
     /**
      * \brief   NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE
-     *          Unicode version of logger service executable.
+     *          Unicode version of log collector service executable.
      **/
     extern AREG_API wchar_t     LOGGER_SERVICE_EXECUTABLE_WIDE[];
 
@@ -109,7 +109,7 @@ namespace NEApplication
      * \brief   NEApplication::DEFAULT_LOGGER_SERVICE_NAME
      *          The default name of Log Collector.
      **/
-    constexpr std::string_view  DEFAULT_LOGGER_SERVICE_NAME { "logger" };
+    constexpr std::string_view  DEFAULT_LOGGER_SERVICE_NAME { "logcollector" };
 
     /**
      * \brief   NEApplication::DEFAULT_LOGGER_HOST
@@ -160,7 +160,7 @@ namespace NEApplication
       * \brief  NEApplication::DEFAULT_LOG_FILE
       *         The default file name to log.
       **/
-    constexpr std::string_view  DEFAULT_LOG_FILE            { "./logs/trace_%time%.log" };
+    constexpr std::string_view  DEFAULT_LOG_FILE            { "./logs/logs_%time%.log" };
 
     /**
      * \brief  NEApplication::DEFAULT_LOG_QUEUE_SIZE
@@ -203,11 +203,11 @@ namespace NEApplication
      **/
     constexpr sEntryTypesEnabling DefaultLogTypes []
         {
-              { static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeUndefined)  , {"unknown"}, false }
-            , { static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeRemote)     , {"remote" }, false }
-            , { static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeFile)       , {"file"   }, true  }
-            , { static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeDebug)      , {"debug"  }, false }
-            , { static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeDatabase)   , {"db"     }, false}
+              { static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined)  , {"unknown"}, false }
+            , { static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeRemote)     , {"remote" }, false }
+            , { static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeFile)       , {"file"   }, true  }
+            , { static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeDebug)      , {"debug"  }, false }
+            , { static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeDatabase)   , {"db"     }, false}
         };
 
     /**
@@ -232,7 +232,11 @@ namespace NEApplication
         {
               { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown) , {"unknown"}, false }
             , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceRouter)  , {"router" }, true  }
+#ifdef DEBUG
+            , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceLogger)  , {"logger" }, true  }
+#else   // DEBUG
             , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceLogger)  , {"logger" }, false }
+#endif  // DEBUG
         };
 
     /**
@@ -244,7 +248,7 @@ namespace NEApplication
         {
               { {"config"   , "*"   , "version" , ""        }, NEPersistence::CONFIG_VERSION    }   //!< The configuration version.
 
-            , { {"log"      , "*"   , "version" , ""        }, NETrace::LOG_VERSION             }   //!< The logging version.
+            , { {"log"      , "*"   , "version" , ""        }, NELogging::LOG_VERSION             }   //!< The logging version.
             , { {"log"      , "*"   , "target"  , ""        }, "remote | file | debug | db"     }   //!< The logging types.
             , { {"log"      , "*"   , "enable"  , ""        }, "true"                           }   //!< The logging enabled / disabled status.
             , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                           }   //!< The logging in remote log collector enabled / disabled flag.
@@ -267,7 +271,7 @@ namespace NEApplication
             , { {"router"   , "*"   , "address" , "tcpip"   }, DEFAULT_ROUTER_HOST              }   //!< The TCP/IP connection address of the 'router' service.
             , { {"router"   , "*"   , "port"    , "tcpip"   }, "8181"                           }   //!< The TCP/IP connection port number of the 'router' service.
 
-            , { {"logger"   , "*"   , "service" , ""        }, "logger"                         }   //!< The process name of the 'logger' service.
+            , { {"logger"   , "*"   , "service" , ""        }, "logcollector"                   }   //!< The process name of the 'logger' service.
             , { {"logger"   , "*"   , "connect" , ""        }, "tcpip"                          }   //!< The list of connection type of the 'logger' service.
             , { {"logger"   , "*"   , "enable"  , "tcpip"   }, "true"                           }   //!< The TCP/IP connection enable / disable flag of the 'logger' service
             , { {"logger"   , "*"   , "address" , "tcpip"   }, DEFAULT_ROUTER_HOST              }   //!< The TCP/IP connection address of the 'logger' service.
@@ -284,13 +288,13 @@ namespace NEApplication
      **/
     constexpr NEPersistence::sProperty DefaultLogScopesConfig[]
         {
-              { {"log", "mcrouter"  , "scope"   , "*"       }, "NOTSET"                         }   //!< The 'mcrouter' service scopes to enable / disable.
-            , { {"log", "logger"    , "scope"   , "*"       }, "NOTSET"                         }   //!< The 'logger' service scopes to enable / disable.
+              { {"log", "mcrouter"      , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'mcrouter' service scopes to enable / disable.
+            , { {"log", "logcollector"  , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'logcollector' service scopes to enable / disable.
         };
 
     /**
      * \brief   NEApplication::LogTypeIdentifiers
-     *          The list of logging type identifiers to convert to string or NETrace::eLogingTypes types
+     *          The list of logging type identifiers to convert to string or NELogging::eLogingTypes types
      **/
     extern AREG_API const std::vector<Identifier> LogTypeIdentifiers;
 
@@ -308,7 +312,7 @@ namespace NEApplication
 
     /**
      * \brief   NEApplication::LogScopePriorityIndentifiers
-     *          The list of logging priority type identifiers to convert to string or NETrace::eLogPriority types
+     *          The list of logging priority type identifiers to convert to string or NELogging::eLogPriority types
      **/
     extern AREG_API const std::vector<Identifier> LogScopePriorityIndentifiers;
 

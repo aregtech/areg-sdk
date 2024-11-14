@@ -7,10 +7,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        logger/private/app/LogObserverPosix.cpp
+ * \file        logobserver/private/app/posix/LogObserverPosix.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Logger Observer, POSIX specific implementation
+ * \brief       Log Observer, POSIX specific implementation
  ************************************************************************/
 
 /************************************************************************

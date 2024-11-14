@@ -11,15 +11,15 @@
 #include "subscriber/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
 #include <string_view>
 
-DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_serviceConnected);
-DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_onStringOnChangeUpdate);
-DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_onIntegerAlwaysUpdate);
-DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(examples_22_subscriber_Subscriber_serviceConnected);
+DEF_LOG_SCOPE(examples_22_subscriber_Subscriber_onStringOnChangeUpdate);
+DEF_LOG_SCOPE(examples_22_subscriber_Subscriber_onIntegerAlwaysUpdate);
+DEF_LOG_SCOPE(examples_22_subscriber_Subscriber_onServiceProviderStateUpdate);
 
 namespace
 {
@@ -63,10 +63,10 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 
 bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE(examples_22_subscriber_Subscriber_serviceConnected);
+    LOG_SCOPE(examples_22_subscriber_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
 
-    TRACE_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
 
     bool connected = NEService::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
@@ -95,24 +95,24 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
 
 void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_subscriber_Subscriber_onStringOnChangeUpdate);
+    LOG_SCOPE(examples_22_subscriber_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
     if (state == NEService::eDataStateType::DataIsOK)
     {
-        TRACE_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
+        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
         console.outputMsg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.getString(), StringOnChange.getString());
         mOldString = StringOnChange;
     }
     else
     {
-        TRACE_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
+        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
 
         console.outputMsg(_coordString, "%s%s => INVALID { invalid }", _txtString.data(), mOldString.getString());
         mOldString = _invalid;
 
         if (isServiceProviderStateValid() == false)
         {
-            TRACE_WARN("Provider state is invalid, unsubscribe on data { StringOnChange } update");
+            LOG_WARN("Provider state is invalid, unsubscribe on data { StringOnChange } update");
             notifyOnStringOnChangeUpdate(false);
         }
     }
@@ -122,12 +122,12 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
 
 void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_subscriber_Subscriber_onIntegerAlwaysUpdate);
+    LOG_SCOPE(examples_22_subscriber_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
     if (state == NEService::eDataStateType::DataIsOK)
     {
-        TRACE_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
+        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
         console.outputMsg(_coordInteger, "%s%s => %u { %s }"
                           , _txtInteger.data()
                           , oldInt.getString()
@@ -138,7 +138,7 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
     }
     else
     {
-        TRACE_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
+        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
 
         console.outputMsg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.getString());
         mOldInteger = 0;
@@ -146,7 +146,7 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
 
         if (isServiceProviderStateValid() == false)
         {
-            TRACE_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
+            LOG_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
             notifyOnIntegerAlwaysUpdate(false);
         }
     }
@@ -156,18 +156,18 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
 
 void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_subscriber_Subscriber_onServiceProviderStateUpdate);
+    LOG_SCOPE(examples_22_subscriber_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::eDataStateType::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {
-            TRACE_DBG("The integer to update ALWAYS is not valid, subscribe on data");
+            LOG_DBG("The integer to update ALWAYS is not valid, subscribe on data");
             notifyOnIntegerAlwaysUpdate(true);
         }
 
         if (isStringOnChangeValid() == false)
         {
-            TRACE_DBG("The string to update ON CHANGE is not valid, subscribe on data");
+            LOG_DBG("The string to update ON CHANGE is not valid, subscribe on data");
             notifyOnStringOnChangeUpdate(true);
         }
 

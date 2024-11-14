@@ -22,19 +22,19 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE( areg_component_StubBase_startupServiceInterface );
-DEF_TRACE_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
-DEF_TRACE_SCOPE( areg_component_StubBase_errorAllRequests );
-DEF_TRACE_SCOPE( areg_component_StubBase_sendUpdateEvent);
-DEF_TRACE_SCOPE( areg_component_StubBase_sendBusyRespone );
-DEF_TRACE_SCOPE( areg_component_StubBase_clientConnected );
-DEF_TRACE_SCOPE( areg_component_StubBase_addNotificationListener );
+DEF_LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
+DEF_LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
+DEF_LOG_SCOPE( areg_component_StubBase_errorAllRequests );
+DEF_LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
+DEF_LOG_SCOPE( areg_component_StubBase_sendBusyRespone );
+DEF_LOG_SCOPE( areg_component_StubBase_clientConnected );
+DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase class statics
@@ -272,23 +272,23 @@ StubBase* StubBase::findStubByAddress( const StubAddress& address )
 
 void StubBase::startupServiceInterface( Component&  holder )
 {
-    TRACE_SCOPE( areg_component_StubBase_startupServiceInterface );
-    TRACE_DBG( "Service with role [ %s ] and interface [ %s ] is started", getServiceRole( ).getString( ), getServiceName( ).getString( ) );
+    LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
+    LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", getServiceRole( ).getString( ), getServiceName( ).getString( ) );
 
     StubConnectEvent::addListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
 void StubBase::shutdownServiceIntrface( Component & holder )
 {
-    TRACE_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
-    TRACE_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );
+    LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
+    LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );
     StubConnectEvent::removeListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
 void StubBase::errorAllRequests( void )
 {
-    TRACE_SCOPE( areg_component_StubBase_errorAllRequests );
-    TRACE_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", getServiceRole().getString(), getServiceName().getString() );
+    LOG_SCOPE( areg_component_StubBase_errorAllRequests );
+    LOG_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", getServiceRole().getString(), getServiceName().getString() );
 
     unsigned int i;
 
@@ -337,12 +337,12 @@ void StubBase::invalidateAttribute( unsigned int attrId )
 
 void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const
 {
-    TRACE_SCOPE( areg_component_StubBase_sendUpdateEvent);
+    LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
     StubBase::StubListenerList listeners;
     if (findListeners(msgId, listeners) > 0)
     {
         const ProxyAddress & proxy = listeners.firstEntry( ).mProxy;
-        TRACE_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::convAddressToPath( proxy).getString(), msgId);
+        LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::convAddressToPath( proxy).getString(), msgId);
 
         ResponseEvent* eventElem = createResponseEvent(proxy, msgId, result, data);
         if (eventElem != nullptr)
@@ -378,11 +378,11 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
 
 void StubBase::sendBusyRespone( const Listener & whichListener )
 {
-    TRACE_SCOPE(areg_component_StubBase_sendBusyRespone);
+    LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
     ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::eResultType::RequestBusy, EventDataStream::EmptyData);
     if (eventElem != nullptr)
     {
-        TRACE_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
+        LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
                     , whichListener.mMessageId
                     , whichListener.mProxy.getTarget()
                     , whichListener.mProxy.getSource()
@@ -430,7 +430,7 @@ bool StubBase::existNotificationListener( unsigned int msgId, const ProxyAddress
 
 bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & notifySource)
 {
-    TRACE_SCOPE(areg_component_StubBase_addNotificationListener);
+    LOG_SCOPE(areg_component_StubBase_addNotificationListener);
 
     bool result { false };
     if (notifySource.isValid())
@@ -447,7 +447,7 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
 
         if ( hasEntry == false)
         {
-            TRACE_DBG("For the message [ %u ] new listener [ %s ] is added"
+            LOG_DBG("For the message [ %u ] new listener [ %s ] is added"
                         , msgId
                         , ProxyAddress::convAddressToPath(notifySource).getString());
 
@@ -457,7 +457,7 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
 #if AREG_LOGS
         else
         {
-            TRACE_WARN("For the message [ %u ] there is already registered client [ %s ]"
+            LOG_WARN("For the message [ %u ] there is already registered client [ %s ]"
                        , msgId
                        , ProxyAddress::convAddressToPath(notifySource).getString());
         }
@@ -485,8 +485,8 @@ bool StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceC
     bool result{ false };
     if (mAddress == client)
     {
-        TRACE_SCOPE(areg_component_StubBase_clientConnected);
-        TRACE_DBG("Service consumer [ %s ] connection event with status [ %s ]"
+        LOG_SCOPE(areg_component_StubBase_clientConnected);
+        LOG_DBG("Service consumer [ %s ] connection event with status [ %s ]"
                   , ProxyAddress::convAddressToPath(client).getString()
                   , NEService::getString(status));
 

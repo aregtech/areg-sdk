@@ -12,7 +12,7 @@
 #   2. AREG_COMPILER        -- Sets a specific compiler for both C++ and C projects.
 #   3. AREG_PROCESSOR       -- The processor architect. Ignore if need to use system default.
 #   4. AREG_BINARY          -- Specifies the library type for the AREG Framework ('shared' or 'static'). Defaults to 'shared'.
-#   5. AREG_LOGGER_LIB      -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to 'shared'.
+#   5. AREG_LOGGER_BINARY   -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to 'shared'.
 #   6. AREG_BUILD_TYPE      -- Specifies the build configuration ('Debug' or 'Release').
 #   7. AREG_BUILD_TESTS     -- Enables or disables building unit tests for the AREG Framework.
 #   8. AREG_BUILD_EXAMPLES  -- Enables or disables building examples for the AREG Framework.
@@ -35,7 +35,7 @@
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
 #   3. AREG_PROCESSOR       = System    (possible values: x86, x64 (x86_64, amd64), arm (arm32), aarch64 (arm64))
 #   4. AREG_BINARY          = shared    (possible values: shared, static)
-#   5. AREG_LOGGER_LIB      = shared    (possible values: shared, static)
+#   5. AREG_LOGGER_BINARY   = shared    (possible values: shared, static)
 #   6. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
 #   7. AREG_BUILD_TESTS     = ON        (possible values: ON, OFF)
 #   8. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
@@ -97,12 +97,7 @@ if (DEFINED AREG_PROCESSOR)
         set(AREG_BITNESS    64)
     else()
         set(CMAKE_SYSTEM_PROCESSOR ${AREG_PROCESSOR})
-        if (NOT DEFINED AREG_BITNESS)
-            macro_system_bitness(AREG_BITNESS)
-        endif()
     endif()
-elseif(NOT DEFINED AREG_BITNESS)
-    macro_system_bitness(AREG_BITNESS)
 endif()
 
 # If CMake compilers are specified, use them
@@ -221,14 +216,14 @@ elseif (NOT "${AREG_BINARY}" STREQUAL "static")
 endif()
 
 # Set the areg log observer API library type.
-if (NOT DEFINED AREG_LOGGER_LIB)
+if (NOT DEFINED AREG_LOGGER_BINARY)
     if (DEFINED VCPKG_LIBRARY_LINKAGE AND "${VCPKG_LIBRARY_LINKAGE}" STREQUAL "static")
-        set(AREG_LOGGER_LIB "static")
+        set(AREG_LOGGER_BINARY "static")
     else()
-        set(AREG_LOGGER_LIB "shared")
+        set(AREG_LOGGER_BINARY "shared")
     endif()
-elseif (NOT "${AREG_LOGGER_LIB}" STREQUAL "static")
-    set(AREG_LOGGER_LIB "shared")
+elseif (NOT "${AREG_LOGGER_BINARY}" STREQUAL "static")
+    set(AREG_LOGGER_BINARY "shared")
 endif()
 
 # Build tests. By default it is disabled. To enable, set ON

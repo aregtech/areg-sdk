@@ -18,11 +18,11 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/private/ExitEvent.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExit);
+DEF_LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
+DEF_LOG_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
+DEF_LOG_SCOPE( areg_component_private_DispatcherThread_triggerExit);
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -225,8 +225,8 @@ bool DispatcherThread::postEvent( Event& eventElem )
 
 void DispatcherThread::triggerExit( void )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExit );
-    TRACE_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
+    LOG_SCOPE( areg_component_private_DispatcherThread_triggerExit );
+    LOG_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
                , getName( ).getString( )
                , static_cast<id_type>(getId( ))
                , mHasStarted ? "STARTED" : "NOT STARTED" );
@@ -244,8 +244,8 @@ void DispatcherThread::triggerExit( void )
 
 Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
-    TRACE_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
+    LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
+    LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
                 , getName().getString( )
                 , static_cast<id_type>(getId( ))
                 , isRunning() ? "RUNNING" : "NOT RUNNING" );

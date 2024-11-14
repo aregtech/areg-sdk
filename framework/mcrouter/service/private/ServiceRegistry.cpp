@@ -14,19 +14,19 @@
  ************************************************************************/
 #include "mcrouter/service/private/ServiceRegistry.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceProxy);
-DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceProxy);
-DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceStub);
-DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceStub);
-DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceList);
-DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceSources);
-DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_disconnectProxy);
+DEF_LOG_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceProxy);
+DEF_LOG_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceProxy);
+DEF_LOG_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceStub);
+DEF_LOG_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceStub);
+DEF_LOG_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceList);
+DEF_LOG_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceSources);
+DEF_LOG_SCOPE(mcrouter_service_private_ServiceRegistry_disconnectProxy);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry statics
@@ -79,7 +79,7 @@ NEService::eServiceConnection ServiceRegistry::getServiceStatus(const ProxyAddre
 
 const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
-    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceProxy);
+    LOG_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceProxy);
     std::pair<MAPPOS, bool> pos = addIfUnique(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
 
@@ -87,7 +87,7 @@ const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & a
     ListServiceProxies& proxies = valueAtPosition(pos.first);
     if ( pos.second )
     {
-        TRACE_DBG("Proxy [ %s ] registers new entry and wait for service"
+        LOG_DBG("Proxy [ %s ] registers new entry and wait for service"
                     , ProxyAddress::convAddressToPath(addrProxy).getString());
 
         out_proxyService = proxies.registerService( addrProxy );
@@ -96,7 +96,7 @@ const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & a
     {
         out_proxyService = proxies.registerService(addrProxy, result);
 
-        TRACE_DBG("Proxy [ %s ] is registered for service with status [ %s ]"
+        LOG_DBG("Proxy [ %s ] is registered for service with status [ %s ]"
                         , ProxyAddress::convAddressToPath(addrProxy).getString()
                         , NEService::getString(result.getServiceStatus()));
     }
@@ -106,7 +106,7 @@ const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & a
 
 const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
-    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceProxy);
+    LOG_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceProxy);
 
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );
     if ( isValidPosition(pos) )
@@ -116,7 +116,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
         out_proxyService = proxies.unregisterService(addrProxy);
         if ( proxies.isEmpty() && (stub.isValid() == false) )
         {
-            TRACE_INFO("Proxy [ %s ] is unregistered, remove empty and invalid service entry with status [ %s ]"
+            LOG_INFO("Proxy [ %s ] is unregistered, remove empty and invalid service entry with status [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , NEService::getString(stub.getServiceStatus()));
 
@@ -125,7 +125,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
         }
         else
         {
-            TRACE_INFO("Unregistered proxy [ %s ], there are [ %d ] proxies left, service status [ %s ]"
+            LOG_INFO("Unregistered proxy [ %s ], there are [ %d ] proxies left, service status [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , proxies.getSize()
                             , NEService::getString(stub.getServiceStatus()));
@@ -133,7 +133,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
     }
     else
     {
-        TRACE_WARN("The proxy [ %s ] is not in registration list, ignore unregistering"
+        LOG_WARN("The proxy [ %s ] is not in registration list, ignore unregistering"
                     , ProxyAddress::convAddressToPath(addrProxy).getString() );
     }
 
@@ -142,7 +142,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
 
 const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
-    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceStub);
+    LOG_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceStub);
 
     std::pair<MAPPOS, bool> pos = addIfUnique( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
@@ -151,7 +151,7 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
 
     if ( pos.second )
     {
-        TRACE_DBG("Registered new service [ %s ], there are no proxies yet waiting for service"
+        LOG_DBG("Registered new service [ %s ], there are no proxies yet waiting for service"
                     , StubAddress::convAddressToPath(addrStub).getString());
 
         result.setServiceStatus( NEService::eServiceConnection::ServiceConnected );
@@ -163,7 +163,7 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
         proxies.stubServiceAvailable(addrStub);
         out_listProxies = proxies;
 
-        TRACE_DBG("Registered service [ %s ] availability, [ %d ] proxies will be notified"
+        LOG_DBG("Registered service [ %s ] availability, [ %d ] proxies will be notified"
                     , StubAddress::convAddressToPath(addrStub).getString()
                     , out_listProxies.getSize());
     }
@@ -173,7 +173,7 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
 
 const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
-    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceStub);
+    LOG_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceStub);
 
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrStub) );
     if ( isValidPosition(pos) )
@@ -185,7 +185,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & a
         proxies.stubServiceUnavailable( );
         if ( proxies.isEmpty() )
         {
-            TRACE_INFO("Service [ %s ] is unregistered and has no proxies, deleting registry entry"
+            LOG_INFO("Service [ %s ] is unregistered and has no proxies, deleting registry entry"
                         , StubAddress::convAddressToPath(addrStub).getString());
 
             removePosition(pos);
@@ -195,14 +195,14 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & a
         else
         {
             out_listProxies = proxies;
-            TRACE_INFO("Service [ %s ] is unregistered, there are [ %d ] service clients"
+            LOG_INFO("Service [ %s ] is unregistered, there are [ %d ] service clients"
                         , StubAddress::convAddressToPath(addrStub).getString()
                         , out_listProxies.getSize());
         }
     }
     else
     {
-        TRACE_WARN("Service [ %s ] was not in registered list, ignoring"
+        LOG_WARN("Service [ %s ] was not in registered list, ignoring"
                     , StubAddress::convAddressToPath(addrStub).getString());
     }
 
@@ -216,8 +216,8 @@ ServiceRegistry::MAPPOS ServiceRegistry::findService( const ServiceAddress & add
 
 void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAddress> & OUT out_stubServiceList, TEArrayList<ProxyAddress> & OUT out_proxyServiceList ) const
 {
-    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceList);
-    TRACE_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
+    LOG_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceList);
+    LOG_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
 
     for (ServiceRegistryBase::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
@@ -227,7 +227,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
 
         if ( svcStub.isValid() && ((cookie == NEService::COOKIE_ANY) || (addrStub.getCookie() == cookie)) )
         {
-            TRACE_INFO("The cookie [ %u ] of service [ %s ] with status [ %s ] match criteria."
+            LOG_INFO("The cookie [ %u ] of service [ %s ] with status [ %s ] match criteria."
                         , static_cast<unsigned int>(addrStub.getCookie())
                         , StubAddress::convAddressToPath(addrStub).getString()
                         , NEService::getString(svcStub.getServiceStatus()));
@@ -236,7 +236,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
         }
         else
         {
-            TRACE_DBG("Ignore stub [ %s ] with cookie [ %u ] and status [ %s ]"
+            LOG_DBG("Ignore stub [ %s ] with cookie [ %u ] and status [ %s ]"
                         , StubAddress::convAddressToPath(addrStub).getString()
                         , static_cast<unsigned int>(addrStub.getCookie())
                         , NEService::getString(svcStub.getServiceStatus()));
@@ -248,7 +248,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
             const ProxyAddress & addrProxy  = svcProxy.getServiceAddress();
             if ( svcProxy.isValid() && ((cookie == NEService::COOKIE_ANY) || (addrProxy.getCookie() == cookie)) )
             {
-                TRACE_INFO("The cookie [ %u ] of proxy [ %s ] with status [ %s ] match criteria."
+                LOG_INFO("The cookie [ %u ] of proxy [ %s ] with status [ %s ] match criteria."
                             , static_cast<unsigned int>(addrProxy.getCookie())
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , NEService::getString(svcProxy.getServiceStatus()));
@@ -257,7 +257,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
             }
             else
             {
-                TRACE_DBG("Ignore proxy [ %s ] with cookie [ %u ] and status [ %s ]"
+                LOG_DBG("Ignore proxy [ %s ] with cookie [ %u ] and status [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , static_cast<unsigned int>(addrProxy.getCookie())
                             , NEService::getString(svcProxy.getServiceStatus()));
@@ -268,8 +268,8 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
 
 void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources)
 {
-    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceSources);
-    TRACE_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));
+    LOG_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceSources);
+    LOG_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));
 
     for (ServiceRegistry::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
@@ -279,12 +279,12 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<Stub
 
         if (svcStub.isValid() && (cookie == addrStub.getSource()))
         {
-            TRACE_INFO("Found stub [ %s ] of source [ %u ]", addrStub.convToString().getString(), static_cast<unsigned int>(cookie));
+            LOG_INFO("Found stub [ %s ] of source [ %u ]", addrStub.convToString().getString(), static_cast<unsigned int>(cookie));
             stubSource.add(addrStub);
         }
         else
         {
-            TRACE_DBG("Ignore stub [ %s ], it is either invalid or different source than [ %u ]"
+            LOG_DBG("Ignore stub [ %s ], it is either invalid or different source than [ %u ]"
                         , addrStub.convToString().getString()
                         , static_cast<unsigned int>(cookie));
         }
@@ -296,12 +296,12 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<Stub
 
             if (svcProxy.isValid() && (cookie == addrProxy.getSource()))
             {
-                TRACE_INFO("Found proxy [ %s ] of source [ %u ]", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
+                LOG_INFO("Found proxy [ %s ] of source [ %u ]", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
                 proxySources.add(addrProxy);
             }
             else
             {
-                TRACE_DBG("Ignore proxy [ %s ], it is either invalid or has different source than [ %u ]", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
+                LOG_DBG("Ignore proxy [ %s ], it is either invalid or has different source than [ %u ]", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
             }
         }
     }
@@ -309,7 +309,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<Stub
 
 const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & IN addrProxy)
 {
-    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_disconnectProxy);
+    LOG_SCOPE(mcrouter_service_private_ServiceRegistry_disconnectProxy);
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );
     if ( isValidPosition(pos) )
     {
@@ -317,17 +317,17 @@ const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & IN add
         ServiceProxy * svcProxy = proxies.getService(addrProxy);
         if ((svcProxy != nullptr) && svcProxy->isValid())
         {
-            TRACE_INFO("Found service of proxy [ %s ] to disconnect, current state [ %s ]", addrProxy.convToString().getString(), NEService::getString(svcProxy->getServiceStatus()));
+            LOG_INFO("Found service of proxy [ %s ] to disconnect, current state [ %s ]", addrProxy.convToString().getString(), NEService::getString(svcProxy->getServiceStatus()));
             svcProxy->stubUnavailable();
         }
         else
         {
-            TRACE_DBG("Nor service of proxy [ %s ] found, ignore disconnect", addrProxy.convToString().getString());
+            LOG_DBG("Nor service of proxy [ %s ] found, ignore disconnect", addrProxy.convToString().getString());
         }
     }
     else
     {
-        TRACE_WARN("No proxy [ %s ] is in registration list, ignore disconnect", addrProxy.convToString().getString() );
+        LOG_WARN("No proxy [ %s ] is in registration list, ignore disconnect", addrProxy.convToString().getString() );
     }
 
     return ( isValidPosition(pos) ? keyAtPosition(pos) : ServiceRegistry::InvalidStubService);

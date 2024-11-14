@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "src/ServicingComponent.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 
@@ -25,9 +25,9 @@ void ServicingComponent::DeleteComponent(Component & compObject, const NERegistr
     delete (&compObject);
 }
 
-DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_startupServiceInterface);
-DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface);
-DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_processTimer);
+DEF_LOG_SCOPE(examples_09_svcmulti_ServicingComponent_startupServiceInterface);
+DEF_LOG_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface);
+DEF_LOG_SCOPE(examples_09_svcmulti_ServicingComponent_processTimer);
 
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT /* data */)
     : Component ( entry, ownerThread )
@@ -40,8 +40,8 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
 
 void ServicingComponent::startupServiceInterface(Component & holder)
 {
-    TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_startupServiceInterface);
-    TRACE_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_SCOPE(examples_09_svcmulti_ServicingComponent_startupServiceInterface);
+    LOG_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
     StubBase::startupServiceInterface(holder);
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
@@ -51,8 +51,8 @@ void ServicingComponent::startupServiceInterface(Component & holder)
 
 void ServicingComponent::shutdownServiceIntrface(Component & holder)
 {
-    TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface);
-    TRACE_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface);
+    LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
@@ -62,15 +62,15 @@ void ServicingComponent::shutdownServiceIntrface(Component & holder)
 
 void ServicingComponent::processTimer(Timer & timer)
 {
-    TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_processTimer);
-    TRACE_DBG("The timer [ %s ] has expired", timer.getName().getString());
+    LOG_SCOPE(examples_09_svcmulti_ServicingComponent_processTimer);
+    LOG_DBG("The timer [ %s ] has expired", timer.getName().getString());
 
     ASSERT(&timer == &mTimer);
 
     ++ mCount; // increase timer count.
     ASSERT(mCount <= TIMER_EVENTS);
 
-    TRACE_DBG("Timer timeout [ %u ] ms, the timer state [ %s ], triggered [ %d ] times, remain [ %d ] times before complete"
+    LOG_DBG("Timer timeout [ %u ] ms, the timer state [ %s ], triggered [ %d ] times, remain [ %d ] times before complete"
                 , timer.getTimeout()
                 , timer.isActive() ? "ACTIVE" : "INACTIVE"
                 , mCount
@@ -86,7 +86,7 @@ void ServicingComponent::processTimer(Timer & timer)
         std::cout << "Goodbye Service!" << std::endl;
         ASSERT(mCount == TIMER_EVENTS);
 
-        TRACE_INFO("The timer is not active anymore, signaling quit event");
+        LOG_INFO("The timer is not active anymore, signaling quit event");
         Application::signalAppQuit();
     }
 }

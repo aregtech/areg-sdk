@@ -11,12 +11,12 @@
 #include "subscribermulti/src/SubscriberBase.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "subscribermulti/src/NECommon.hpp"
 
-DEF_TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
-DEF_TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
-DEF_TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
+DEF_LOG_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
+DEF_LOG_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
 
 
 SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr)
@@ -33,13 +33,13 @@ SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Compon
 
 void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
+    LOG_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
     ++ mStrEventCount;
 
     Console & console = Console::getInstance();
     if (state == NEService::eDataStateType::DataIsOK)
     {
-        TRACE_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
+        LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
         console.outputMsg(mCoordString, "%s%s => %s { changed }, event count: %u"
                           , NECommon::TxtString.data()
                           , mOldString.getString()
@@ -49,7 +49,7 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
     }
     else
     {
-        TRACE_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
+        LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
 
         console.outputMsg( mCoordString, "%s%s => INVALID { invalid }, event count: %u"
                          , NECommon::TxtString.data()
@@ -59,7 +59,7 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
 
         if (isServiceProviderStateValid() == false)
         {
-            TRACE_WARN("Provider state is invalid, unsubscribe on data { StringOnChange } update");
+            LOG_WARN("Provider state is invalid, unsubscribe on data { StringOnChange } update");
             notifyOnStringOnChangeUpdate(false);
         }
     }
@@ -69,14 +69,14 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
 
 void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
+    LOG_SCOPE(example_24_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
     ++ mIntEventCount;
 
     Console & console = Console::getInstance();
     String oldInt = mOldState ? String::makeString(mOldInteger) : NECommon::StrInvalid;
     if (state == NEService::eDataStateType::DataIsOK)
     {
-        TRACE_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
+        LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
         console.outputMsg( mCoordInteger, "%s%s => %u { %s }, event count: %u"
                          , NECommon::TxtInteger.data()
                          , oldInt.getString()
@@ -88,7 +88,7 @@ void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService
     }
     else
     {
-        TRACE_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
+        LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
 
         console.outputMsg( mCoordInteger, "%s%s => INVALID { invalid }, event count %u"
                          , NECommon::TxtInteger.data()
@@ -99,7 +99,7 @@ void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService
 
         if (isServiceProviderStateValid() == false)
         {
-            TRACE_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
+            LOG_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
             notifyOnIntegerAlwaysUpdate(false);
         }
     }

@@ -10,15 +10,15 @@
  * Include files.
  ************************************************************************/
 #include "pubclient/src/ServiceClient.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_TRACE_SCOPE(examples_19_pubclient_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_19_pubclient_ServiceClient_onServiceStateUpdate);
-DEF_TRACE_SCOPE(examples_19_pubclient_ServiceClient_responseStartSleep);
-DEF_TRACE_SCOPE(examples_19_pubclient_ServiceClient_requestStartSleepFailed );
-DEF_TRACE_SCOPE(examples_19_pubclient_ServiceClient_requestStopServiceFailed);
-DEF_TRACE_SCOPE(examples_19_pubclient_ServiceClient_requestShutdownServiceFailed);
+DEF_LOG_SCOPE(examples_19_pubclient_ServiceClient_serviceConnected);
+DEF_LOG_SCOPE(examples_19_pubclient_ServiceClient_onServiceStateUpdate);
+DEF_LOG_SCOPE(examples_19_pubclient_ServiceClient_responseStartSleep);
+DEF_LOG_SCOPE(examples_19_pubclient_ServiceClient_requestStartSleepFailed );
+DEF_LOG_SCOPE(examples_19_pubclient_ServiceClient_requestStopServiceFailed);
+DEF_LOG_SCOPE(examples_19_pubclient_ServiceClient_requestShutdownServiceFailed);
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -41,7 +41,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 
 bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    TRACE_SCOPE(examples_19_pubclient_ServiceClient_serviceConnected);
+    LOG_SCOPE(examples_19_pubclient_ServiceClient_serviceConnected);
     bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
 
     if (isConnected())
@@ -51,20 +51,20 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
         if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
         {
             mSleepTimeout   = NEHelloWatchdog::InitialSleepTimeout;
-            TRACE_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
+            LOG_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
 
             requestStartSleep( mSleepTimeout );
         }
         else
         {
-            TRACE_DBG("Reached maximum number of service restarts, exit application");
+            LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, stopping service to shutdown ...\n");
             requestStopService();
         }
     }
     else
     {
-        TRACE_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
+        LOG_DBG( "Completing watchdog test with final sleep timeout [ %u ] ms", mSleepTimeout );
         // clear all subscriptions.
         clearAllNotifications();
     }
@@ -74,8 +74,8 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
 void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
 {
-    TRACE_SCOPE(examples_19_pubclient_ServiceClient_onServiceStateUpdate);
-    TRACE_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_SCOPE(examples_19_pubclient_ServiceClient_onServiceStateUpdate);
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
     if (state == NEService::eDataStateType::DataIsOK)
     {
         if (ServiceState == NEHelloWatchdog::eState::Stopped)
@@ -89,8 +89,8 @@ void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, 
 
 void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
 {
-    TRACE_SCOPE(examples_19_pubclient_ServiceClient_responseStartSleep);
-    TRACE_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
+    LOG_SCOPE(examples_19_pubclient_ServiceClient_responseStartSleep);
+    LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
 
     if (timeoutSleep != 0)
     {
@@ -101,7 +101,7 @@ void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
     }
     else
     {
-        TRACE_INFO("The service didn't sleep");
+        LOG_INFO("The service didn't sleep");
         printf("The service didn't sleep.\n");
     }
 }
@@ -110,20 +110,20 @@ void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
 
 void ServiceClient::requestStartSleepFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE( examples_19_pubclient_ServiceClient_requestStartSleepFailed );
-    TRACE_WARN("Request to sleep service failed with reason [ %s ]", NEService::getString(FailureReason));
+    LOG_SCOPE( examples_19_pubclient_ServiceClient_requestStartSleepFailed );
+    LOG_WARN("Request to sleep service failed with reason [ %s ]", NEService::getString(FailureReason));
 }
 
 void ServiceClient::requestStopServiceFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE( examples_19_pubclient_ServiceClient_requestStopServiceFailed );
-    TRACE_WARN( "Request to stop the service failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    LOG_SCOPE( examples_19_pubclient_ServiceClient_requestStopServiceFailed );
+    LOG_WARN( "Request to stop the service failed with reason [ %s ]", NEService::getString( FailureReason ) );
 }
 
 void ServiceClient::requestShutdownServiceFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE( examples_19_pubclient_ServiceClient_requestShutdownServiceFailed );
-    TRACE_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    LOG_SCOPE( examples_19_pubclient_ServiceClient_requestShutdownServiceFailed );
+    LOG_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::getString( FailureReason ) );
 }
 
 #endif  // AREG_LOGS

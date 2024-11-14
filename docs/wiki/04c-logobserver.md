@@ -30,7 +30,7 @@ To start receiving log data, launch the console application on a networked GPOS 
 As any other application based on AREG Framework, the Log Observer configuration, managed through the configuration file like AREG SDK standard `areg.init` file, uses key-value pairs formatted as `section::(module|*)::property[::(position|*)]`. Example configurations enable applications to connect to the Log Collector:
 
 ```plaintext
-logger::*::service          = logger        # Log Collector process name
+logger::*::service          = logcollector  # Log Collector process name
 logger::*::connect          = tcpip         # Protocol for communication
 logger::*::enable::tcpip    = true          # Enable TCP/IP
 logger::*::address::tcpip   = 172.23.96.1   # Network IP address
@@ -93,7 +93,7 @@ Below are the key command-line options for managing the Log Observer. Options ma
 Commands may vary with version updates.
 
 > [!NOTE]
-> On start, the Log Observer does not start immediately receiving log data. Type command `-r` or `-restart` in the console of Log Obsercer to start receiving log data. And type `-x` or `--stop` to stop receiving.
+> On start, the Log Observer does not start immediately receiving log data. Type command `-r` or `-restart` in the console of Log Observer to start receiving log data. And type `-x` or `--stop` to stop receiving.
 
 ---
 
@@ -106,8 +106,8 @@ logobserver --load="./my/config/file.init"
 ```
 
 > [!NOTE]
-> In `areg.init`, default settings may disable `logger` and `logobserver` logging with:
+> In `areg.init`, default settings may disable `logcollector` and `logobserver` logging with:
 > ```plaintext
-> log::logger::scope::* = NOTSET
-> log::logobserver::scope::* = NOTSET
+> log::logcollector::scope::* = NOTSET
+> log::logobserver::scope::*  = NOTSET
 > ```

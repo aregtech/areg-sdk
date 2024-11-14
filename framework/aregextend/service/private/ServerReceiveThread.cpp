@@ -18,13 +18,13 @@
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include "aregextend/service/IEServiceConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 
 
-DEF_TRACE_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
+DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler & remoteService, ServerConnection & connection )
     : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD )
@@ -38,8 +38,8 @@ ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHa
 
 bool ServerReceiveThread::runDispatcher(void)
 {
-    TRACE_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
-    TRACE_DBG("Starting dispatcher [ %s ]", getName().getString());
+    LOG_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
+    LOG_DBG("Starting dispatcher [ %s ]", getName().getString());
 
     readyForEvents(true);
     int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
@@ -61,7 +61,7 @@ bool ServerReceiveThread::runDispatcher(void)
 
                 if (mConnection.isValid() == false)
                 {
-                    TRACE_WARN("The server socket is not valid anymore, should quit receive thread!");
+                    LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
                     if (NESocket::isSocketHandleValid(hSocket))
                     {
                         NESocket::socketClose(hSocket);
@@ -71,7 +71,7 @@ bool ServerReceiveThread::runDispatcher(void)
                 }
                 else if (hSocket == NESocket::FailedSocketHandle)
                 {
-                    TRACE_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
+                    LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
                     if (++retryCount >= RETRY_COUNT)
                     {
                         mConnectHandler.connectionFailure();
@@ -86,7 +86,7 @@ bool ServerReceiveThread::runDispatcher(void)
                     if (mConnection.isConnectionAccepted(hSocket) )
                     {
                         clientSocket = mConnection.getClientByHandle( hSocket );
-                        TRACE_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
+                        LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
                                             , clientSocket.getAddress().getHostAddress().getString()
                                             , clientSocket.getAddress().getHostPort());
@@ -96,7 +96,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         clientSocket = SocketAccepted(hSocket, addrAccepted);
                         if ( mConnectHandler.canAcceptConnection(clientSocket)  )
                         {
-                            TRACE_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
+                            LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
                                             , addrAccepted.getHostAddress().getString()
                                             , addrAccepted.getHostPort());
@@ -105,7 +105,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         }
                         else if ( clientSocket.isAlive() )
                         {
-                            TRACE_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
+                            LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
                                             , addrAccepted.getHostAddress().getString()
                                             , addrAccepted.getHostPort());
@@ -116,7 +116,7 @@ bool ServerReceiveThread::runDispatcher(void)
                         }
                         else
                         {
-                            TRACE_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
+                            LOG_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
                                         , hSocket
                                         , addrAccepted.getHostAddress( ).getString( )
                                         , addrAccepted.getHostPort( ) );
@@ -136,7 +136,7 @@ bool ServerReceiveThread::runDispatcher(void)
                             mBytesReceive += static_cast<uint32_t>(sizeReceived);
                         }
 
-                        TRACE_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
+                        LOG_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
                                     , static_cast<id_type>(msgReceived.getMessageId())
                                     , static_cast<id_type>(msgReceived.getSource())
                                     , addSocket.getHostAddress().getString()
@@ -146,7 +146,7 @@ bool ServerReceiveThread::runDispatcher(void)
                     }
                     else
                     {
-                        TRACE_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
+                        LOG_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
                                         , addSocket.getHostAddress().getString()
                                         , addSocket.getHostPort()
                                         , clientSocket.getHandle());
@@ -169,6 +169,6 @@ bool ServerReceiveThread::runDispatcher(void)
     readyForEvents(false);
     removeAllEvents();
 
-    TRACE_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
+    LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }

@@ -20,7 +20,7 @@
 
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include <string.h>
 #include <cstddef>
