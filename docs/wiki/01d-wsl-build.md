@@ -55,11 +55,15 @@ Experiencing update issues? Common solutions include:
    wsl --update
    ```
 
-- **Network Resolution Issues**: DNS issues can cause update failures. You may see errors like `W: Failed to fetch http://archive.ubuntu.com/ubuntu/dists/jammy/InRelease Temporary failure resolving 'archive.ubuntu.com'`. This can stem from an incorrect DNS in `/etc/resolv.conf`. Open `/etc/resolv.conf` in the WSL Terminal and change the *nameserver* to *Google DNS*:
+- **Network Resolution Issues**: DNS issues can cause update failures. You may see errors like `W: Failed to fetch http://archive.ubuntu.com/ubuntu/dists/jammy/InRelease Temporary failure resolving 'archive.ubuntu.com'`. This can stem from an incorrect DNS in `/etc/resolv.conf`. Run following command to check:
+  ```bash
+  cat /etc/resolv.conf
+  ```
+  If it displays wrong DNS server, like `nameserver 172.23.112.1`, which indicates, for example, the IP-address of your DSL, open `/etc/resolv.conf` in the WSL Terminal and change the *nameserver* to *Google DNS*. If you're using `vim`, press the `i` key to enter insert mode and make the necessary changes:
    ```bash
    sudo vim /etc/resolv.conf
    ```
-   Update `nameserver` to `8.8.8.8`, save the file, and retry the update.<br/>
+   Update `nameserver` to `8.8.8.8`, save the file, and retry the update. If you're using `vim`, press the `Esc` key, then type `:wq` and press `Enter`.<br/>
    Alternatively, execute this command in WSL Terminal to set the *nameserver* in `/etc/resolv.conf`:
    ```bash
    sudo sh -c "echo nameserver 8.8.8.8 > /etc/resolv.conf"

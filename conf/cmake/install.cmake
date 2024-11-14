@@ -128,10 +128,10 @@ install(FILES
 # configure and copy servicing script files.
 if ((WIN32) OR (CYGWIN))
 
-    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.install.bat.in"    exports/logcollector.service.install.bat      @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.uninstall.bat.in"  exports/logcollector.service.uninstall.bat    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"        exports/mcrouter.service.install.bat    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"      exports/mcrouter.service.uninstall.bat  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.install.bat.in"    exports/logcollector.service.install.bat    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.uninstall.bat.in"  exports/logcollector.service.uninstall.bat  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"        exports/mcrouter.service.install.bat        @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"      exports/mcrouter.service.uninstall.bat      @ONLY)
     install(FILES 
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.install.bat"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.uninstall.bat"
@@ -145,8 +145,8 @@ if ((WIN32) OR (CYGWIN))
 
 else()
 
-    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.in"      "exports/logcollector.service"    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.in"    "exports/mcrouter.service"  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.in"    "exports/logcollector.service"  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.in"        "exports/mcrouter.service"      @ONLY)
     install(FILES 
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service"
