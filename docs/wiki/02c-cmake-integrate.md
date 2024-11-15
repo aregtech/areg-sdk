@@ -235,6 +235,9 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-p
 
 ## 5. Advanced Integration
 
+> [!IMPORTANT]  
+> To utilize AREG SDK-specific CMake variables such as `AREG_COMPILER`, `AREG_COMPILER_FAMILY`, or `AREG_BUILD_TYPE`, ensure that `<areg-sdk>/areg.cmake` is included in your project's `CMakeLists.txt` file *before* the first invocation of `project()`. Otherwise, the values of these variables are ignored and overwritten by values of CMake variables `CMAKE_CXX_COMPILER` and `CMAKE_BUILD_TYPE`. Alternatively, you can directly use the `CMAKE_XXX` variables to specify the compiler or build type.
+
 ### Advanced CMake Options
 
 The AREG SDK offers flexible configurations via CMake, allowing customization of compilation settings, output directories, and additional features. For the full list, refer to the [CMake Configuration Options for Building AREG SDK](./02a-cmake-config.md) document.

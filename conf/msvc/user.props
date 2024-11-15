@@ -111,15 +111,6 @@
     <!-- ********************************************************************************************************************************** -->
     <ItemGroup>
         
-        <BuildMacro Include="AregGenerateDir">
-            <Value>$(AregGenerateDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="AregPackages">
-            <Value>$(AregPackages)</Value>
-        </BuildMacro>
-        <BuildMacro Include="AregFramewor">
-            <Value>$(AregFramewor)</Value>
-        </BuildMacro>
         <BuildMacro Include="AregFrameworkResources">
             <Value>$(AregFrameworkResources)</Value>
         </BuildMacro>

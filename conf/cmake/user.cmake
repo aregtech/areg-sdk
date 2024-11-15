@@ -49,7 +49,7 @@
 #  16. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>'
 #  17. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'
 #  18. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
-#  19. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'
+#  19. AREG_PACKAGES        = '${CMAKE_BINARY_DIR}/packages'
 #  20. AREG_INSTALL         = ON        (possible values: ON, OFF)
 #  21. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset)
 #
@@ -68,6 +68,9 @@
 #
 # Example Command with AREG_BUILD_ROOT to output binaries in custom directory:
 # $ cmake -B ./build -DAREG_BUILD_ROOT="/home/developer/projects/my_project/product"
+#
+# Hint:
+# To use AREG SDK cmake options in other project, the 'user.cmake' file should be included before first call of "project()". Otherwise, AREG SDK settings uses cmake options CMAKE_CXX_COMPILER and CMAKE_BUILD_TYPE options.
 #
 # Integration:
 #   - Visit https://github.com/aregtech/areg-sdk-demo repository to see various ways of AREG Framework integration.
@@ -271,7 +274,7 @@ if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
     endif()
 
     if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
-        set(AREG_PACKAGES "${AREG_BUILD_ROOT}/packages")
+        set(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages")
     endif()
 else()
     option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
