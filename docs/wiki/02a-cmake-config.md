@@ -295,8 +295,8 @@ The following are the available CMake options to configure the AREG SDK build. O
 ---
 
 ### 19. **AREG_PACKAGES**
-   - **Description**: Defines where third-party packages are stored. By default, this is set to a `packages` subdirectory within `AREG_BUILD_ROOT`.
-   - **Default**: `{AREG_BUILD_ROOT}/packages`
+   - **Description**: Defines where third-party packages are stored. By default, this is set to a `packages` subdirectory within `CMAKE_BINARY_DIR`.
+   - **Default**: `{CMAKE_BINARY_DIR}/packages`
    - **Example**: `cmake -B ./build -DAREG_PACKAGES=/path/to/packages`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
