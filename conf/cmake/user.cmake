@@ -69,6 +69,9 @@
 # Example Command with AREG_BUILD_ROOT to output binaries in custom directory:
 # $ cmake -B ./build -DAREG_BUILD_ROOT="/home/developer/projects/my_project/product"
 #
+# Hint:
+# To use AREG SDK cmake options in other project, the 'user.cmake' file should be included before first call of "project()". Otherwise, AREG SDK settings uses cmake options CMAKE_CXX_COMPILER and CMAKE_BUILD_TYPE options.
+#
 # Integration:
 #   - Visit https://github.com/aregtech/areg-sdk-demo repository to see various ways of AREG Framework integration.
 # ---------------------------------------------------------------------------
