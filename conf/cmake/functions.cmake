@@ -236,10 +236,10 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
 
     set(${is_identified} FALSE)
     if (DEFINED AREG_PROCESSOR)
-        set(${sys_platform} AREG_PROCESSOR)
+        set(${sys_platform} ${AREG_PROCESSOR})
     endif()
     if (DEFINED AREG_BITNESS)
-        set(${sys_bitness}  AREG_BITNESS)
+        set(${sys_bitness}  ${AREG_BITNESS})
     endif()
     
     # Iterate over known compilers to identify the compiler type

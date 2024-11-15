@@ -13,6 +13,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcrouter", "framework\mcrou
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD549A95-E734-4E26-A5B2-2330FC310C8D}"
 	ProjectSection(SolutionItems) = preProject
+		areg.cmake = areg.cmake
 		CMakeLists.txt = CMakeLists.txt
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		CONTRIBUTING.md = CONTRIBUTING.md

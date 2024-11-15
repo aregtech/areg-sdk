@@ -31,16 +31,24 @@
         <!-- ********************************************************************************************************************************** -->
         <AregSdkRoot>$(SolutionDir)</AregSdkRoot>
         <!-- ********************************************************************************************************************************** -->
+        <!-- Property to set the location of MS Visual Studio configuration files for AREG SDK. Normally, it is in '$(AregSdkRoot)conf\msvc\'   -->
+        <!-- Only 'msvc_setup.props' file should be located in the $(SolutionDir). Other files should be in 'AregConfigDir'                     -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregConfigDir>$(AregSdkRoot)conf\msvc\</AregConfigDir>
+        <!-- ********************************************************************************************************************************** -->
         <!-- Property to set the root directory for build and generated codes outputs. Change if integrate in your project.                     -->
         <!-- Example to set the directory: <my project path>\product                                                                            -->
         <!-- By default, the output is in '$(SolutionDir)product'                                                                               -->
         <!-- ********************************************************************************************************************************** -->
         <AregOutputRoot>$(SolutionDir)product\</AregOutputRoot>
         <!-- ********************************************************************************************************************************** -->
-        <!-- Property to set the location of MS Visual Studio configuration files for AREG SDK. Normally, it is in '$(AregSdkRoot)conf\msvc\'   -->
-        <!-- Only 'msvc_setup.props' file should be located in the $(SolutionDir). Other files should be in 'AregConfigDir'                     -->
+        <!-- Set the directory for generated source files.                                                                                      -->
         <!-- ********************************************************************************************************************************** -->
-        <AregConfigDir>$(AregSdkRoot)conf\msvc\</AregConfigDir>
+        <AregGenerateDir>$(AregOutputRoot)generate\</AregGenerateDir>
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Set the directory to download thirdparty packages. If change, also change the location in nuget.config file.                       -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregPackages>$(AregOutputRoot)packages\</AregPackages>
         <!-- ********************************************************************************************************************************** -->
         <!-- Property to set the location of AREG Framework header.                                                                             -->
         <!-- ********************************************************************************************************************************** -->
@@ -91,11 +99,17 @@
         <BuildMacro Include="AregSdkRoot">
             <Value>$(AregSdkRoot)</Value>
         </BuildMacro>
+        <BuildMacro Include="AregConfigDir">
+            <Value>$(AregConfigDir)</Value>
+        </BuildMacro>
         <BuildMacro Include="AregOutputRoot">
             <Value>$(AregOutputRoot)</Value>
         </BuildMacro>
-        <BuildMacro Include="AregConfigDir">
-            <Value>$(AregConfigDir)</Value>
+        <BuildMacro Include="AregGenerateDir">
+            <Value>$(AregGenerateDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregPackages">
+            <Value>$(AregPackages)</Value>
         </BuildMacro>
         <BuildMacro Include="AregFramework">
             <Value>$(AregFramework)</Value>
