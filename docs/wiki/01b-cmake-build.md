@@ -153,6 +153,8 @@ Cross-compiling allows building applications for architectures different from th
 | MSVC      | Windows       | Win32         | x86, x86_64               |
 | Cygwin GNU| Windows       | POSIX         | x86, x86_64               |
 
+> [!IMPORTANT]  
+> The AREG SDK itself does not require any external libraries. However, the extended library, `aregextend`, may have dependencies. When cross-compiling, it is recommended to set `AREG_EXTENDED` to `OFF` if you are unsure whether all required libraries are available for the target platform. Alternatively, ensure that dependencies such as `ncurses` or `sqlite3` (if the SQLite3 package is used) are accessible for the target. Otherwise, the build of AREG SKD sources will fail.
 
 ### Cross-Compiling for 32-bit Systems
 

@@ -11,6 +11,10 @@ This guide provides solutions for common issues encountered when compiling proje
 2. [Issue 2: Values of `AREG_XXX` Variables are Ignored](#issue-2-values-of-areg_xxx-variables-are-ignored)
    - [Solution 1: Fetch Sources Before Project Declaration](#solution-fetch-sources-before-project-declaration)
    - [Solution 2: Use Standard CMake Variables](#solution-2-use-standard-cmake-variables)
+3. [Issue 3: Failure to Cross-Compile with Extended Objects Enabled](#issue-3-failure-to-cross-compile-with-extended-objects-enabled)
+   - [Solution 1: Use Target-Compatible Libraries](#solution-1-use-target-compatible-libraries)
+   - [Solution 2: Pre-Build Required Libraries](#solution*2-pre-build-required-libraries)
+   - [Solution 3: Disable Extended Objects](#solution-3-disable-extended-objects)
 
 ---
 
@@ -53,5 +57,29 @@ Fetch the AREG SDK sources *before* calling `project()`. Additionally, you can s
 ### Solution 2: Use Standard CMake Variables
 
 Alternatively, use standard CMake variables such as `CMAKE_CXX_COMPILER` to specify the compiler and `CMAKE_BUILD_TYPE` to define the build type. These variables are compatible with AREG-specific CMake configurations and help avoid conflicts.
+
+---
+
+## Issue 3: Failure to Cross-Compile with Extended Objects Enabled
+
+The build process fails during cross-compilation when AREG SDK extended objects are enabled (option `-DAREG_EXTENDED=ON`). The error message typically states: `cannot find -lncurses: No such file or directory`, even when `ncurses` library is installed. Similar may happend with `sqlite3` library, wich is not connected to extended objects.
+
+This issue occurs when the system lacks target-compatible libraries. For example, if your host system runs on an `x86_64` platform but you are cross-compiling for 32-bit ARM, this error will appear due to missing ARM-compatible versions of the required libraries.  
+
+### Solution 1: Use Target-Compatible Libraries
+
+Ensure that the necessary libraries are available for your target platform. You can install them directly or use a package manager, such as `vcpkg`, to compile the dependencies for your target architecture. For example, to install `sqlite3` for an ARM Linux target, use the following command:  
+```bash  
+vcpkg install sqlite3:linux-arm  
+```  
+For `ncurses`, similarly ensure you compile or install the library for the target platform.  
+
+### Solution 2: Pre-Build Required Libraries
+
+Manually build and install the required libraries (`ncurses`, `sqlite3`, etc.) for the target platform using your cross-compilation toolchain. Ensure the paths to these libraries are correctly set in your build environment. For simplicity and portability, consider building statically linked versions of `ncurses` and `sqlite3` for your target platform. This approach avoids runtime dependency issues on the target system.
+
+### Solution 3: Disable Extended Objects
+
+If the extended features of the AREG SDK are not required for your application, you can disable them by setting `-DAREG_EXTENDED=OFF`. This removes dependencies on `ncurses` library. And for `sqlite3` library, use AREG SDK built-in SQLite3 sources available in the `thirdparty` subdirectory.  
 
 ---

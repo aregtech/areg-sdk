@@ -20,6 +20,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
    - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
    - [`macro_guess_processor_architecture`](#macro_guess_processor_architecture)
    - [`macro_system_bitness`](#macro_system_bitness)
+   - [`macro_get_processor`](#macro_get_processor)
 3. [CMake Functions Overview](#3-cmake-functions-overview)
    - [`setAppOptions`](#setappoptions)
    - [`addExecutableEx`](#addexecutableex)
@@ -231,6 +232,22 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Example**:
    ```cmake
    macro_system_bitness(_sys_bitness)
+   ```
+
+### `macro_get_processor`
+- **Syntax**: `macro_get_processor(processor_name var_processor var_bitness var_found)`
+- **Purpose**: Identifies and validates the processor architecture based on a provided name. If a match is found in the supported processor list, it extracts:
+  - The canonical architecture name.
+  - The bitness (e.g., 32 or 64 bits).
+- **Parameters**:
+  - `processor_name` [in]: Input processor architecture name to search for.
+  - `var_processor` [out]: Variable to store the canonical processor architecture name.
+  - `var_bitness`   [out]: Variable to store the bitness (32/64) of the processor.
+  - `var_found`     [out]: Variable to indicate if the processor is supported (TRUE/FALSE).
+- **Usage**: `macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_entry_found>)`
+- **Example**:
+   ```cmake
+   macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
    ```
 
 ---

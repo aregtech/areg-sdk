@@ -233,23 +233,23 @@ endmacro(macro_system_bitness)
 #               If a match is found in the supported processor list, it extracts:
 #                 - The canonical architecture name.
 #                 - The bitness (e.g., 32 or 64 bits).
-# Parameters ..: ${var_processor} [in]   -- Input processor architecture name to search for.
-#                ${name_processor}[out]  -- Variable to store the canonical processor architecture name.
-#                ${name_bitness}  [out]  -- Variable to store the bitness (32/64) of the processor.
-#                ${name_found}    [out]  -- Variable to indicate if the processor is supported (TRUE/FALSE).
-# Usage .......: macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_is_found>)
-# Example .....: macro_get_processor("aarch64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+# Parameters ..: ${processor_name} [in]   -- Input processor architecture name to search for.
+#                ${var_processor}  [out]  -- Variable to store the canonical processor architecture name.
+#                ${var_bitness}    [out]  -- Variable to store the bitness (32/64) of the processor.
+#                ${var_found}      [out]  -- Variable to indicate if the processor is supported (TRUE/FALSE).
+# Usage .......: macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_entry_found>)
+# Example .....: macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
 # ---------------------------------------------------------------------------
-macro(macro_get_processor var_processor name_processor name_bitness name_found)
-    set(${name_found} FALSE)
+macro(macro_get_processor processor_name var_processor var_bitness var_found)
+    set(${var_found} FALSE)
     foreach(_entry "x86;${_proc_x86};32" "x64;${_proc_x64};64" "x86_64;${_proc_x64};64" "amd64;${_proc_x64};64" "arm;${_proc_arm32};32" "arm32;${_proc_arm32};32" "arm64;${_proc_arm64};64" "aarch64;${_proc_arm64};64")
         list(GET _entry 0 _proc)
         list(GET _entry 1 _arch)
         list(GET _entry 2 _bits)
-        if (${_proc} STREQUAL ${var_processor})
-            set(${name_processor}   ${_arch})
-            set(${name_bitness}     ${_bits})
-            set(${name_found} TRUE)
+        if (${_proc} STREQUAL ${processor_name})
+            set(${var_processor}   ${_arch})
+            set(${var_bitness}     ${_bits})
+            set(${var_found} TRUE)
             break()
         endif()
     endforeach()
