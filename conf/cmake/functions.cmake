@@ -167,6 +167,29 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
 endmacro(macro_parse_arguments)
 
 # ---------------------------------------------------------------------------
+# Macro ......: macro_parse_arguments
+# Purpose ....: Helper macro to output warning message if read-only variable is changed
+# ---------------------------------------------------------------------------
+macro(macro_readonly_guard var_name access value current_list_file stack)
+  if ("${access}" STREQUAL "MODIFIED_ACCESS")
+    message(WARNING "Attempt to change read-only variable '${var_name}'!")
+  endif()
+endmacro(macro_readonly_guard)
+
+# Read-only variable of 32-bit 'x86' processor name
+set(_proc_x86   "x86")
+variable_watch(_proc_x86 macro_readonly_guard)
+# Read-only variable of 64-bit 'x64' processor name
+set(_proc_x64   "x86_64")
+variable_watch(_proc_x64 macro_readonly_guard)
+# Read-only variable of 32-bit 'arm' processor name
+set(_proc_arm32 "ARM")
+variable_watch(_proc_arm32 macro_readonly_guard)
+# Read-only variable of 64-bit 'aarch64' processor name
+set(_proc_arm64 "AARCH64")
+variable_watch(_proc_arm64 macro_readonly_guard)
+
+# ---------------------------------------------------------------------------
 # Macro ......: macro_guess_processor_architecture
 # Purpose ....: Tries to guess the CPU architecture and bitness from the given cross-compiler.
 #               For example, if cross-compiler has "arm" in the name, it could mean that
@@ -179,17 +202,20 @@ endmacro(macro_parse_arguments)
 # Example ....: macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
 # ---------------------------------------------------------------------------
 macro(macro_guess_processor_architecture compiler_path target_processor target_bitness)
-    foreach(_proc "arm;32;arm" "aarch64;64;arm64")
-        list(GET _proc 0 _arch)
+    foreach(_proc "arm;32;${_proc_arm}" "aarch64;64;${_proc_arm64}")
+        list(GET _proc 0 _proc)
         list(GET _proc 1 _bits)
-        list(GET _proc 2 _name)
-        string(FIND "${compiler_path}" ${_arch} _proc_pos)
+        list(GET _proc 2 _arch)
+        string(FIND "${compiler_path}" ${_proc} _proc_pos)
         if (_proc_pos GREATER -1)
-            set(${target_processor} ${_name})
+            set(${target_processor} ${_arch})
             set(${target_bitness} ${_bits})
             break()
         endif()
     endforeach()
+    unset(_proc)
+    unset(_arch)
+    unset(_bits)
 endmacro(macro_guess_processor_architecture)
 
 # ---------------------------------------------------------------------------
@@ -210,6 +236,37 @@ macro(macro_system_bitness var_bitness)
         set(${var_bitness} 0)
     endif()
 endmacro(macro_system_bitness)
+
+# ---------------------------------------------------------------------------
+# Macro ......: macro_get_processor
+# Purpose ....: Identifies and validates the processor architecture based on a provided name.
+#               If a match is found in the supported processor list, it extracts:
+#                 - The canonical architecture name.
+#                 - The bitness (e.g., 32 or 64 bits).
+# Parameters ..: ${var_processor} [in]   -- Input processor architecture name to search for.
+#                ${name_processor}[out]  -- Variable to store the canonical processor architecture name.
+#                ${name_bitness}  [out]  -- Variable to store the bitness (32/64) of the processor.
+#                ${name_found}    [out]  -- Variable to indicate if the processor is supported (TRUE/FALSE).
+# Usage .......: macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_is_found>)
+# Example .....: macro_get_processor("aarch64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+# ---------------------------------------------------------------------------
+macro(macro_get_processor var_processor name_processor name_bitness name_found)
+    set(${name_found} FALSE)
+    foreach(_entry "x86;${_proc_x86};32" "x64;${_proc_x64};64" "x86_64;${_proc_x64};64" "amd64;${_proc_x64};64" "arm;${_proc_arm32};32" "arm32;${_proc_arm32};32" "arm64;${_proc_arm64};64" "aarch64;${_proc_arm64};64")
+        list(GET _entry 0 _proc)
+        list(GET _entry 1 _arch)
+        list(GET _entry 2 _bits)
+        if (${_proc} STREQUAL ${var_processor})
+            set(${name_processor}   ${_arch})
+            set(${name_bitness}     ${_bits})
+            set(${name_found} TRUE)
+            break()
+        endif()
+    endforeach()
+    unset(_proc)
+    unset(_arch)
+    unset(_bits)
+endmacro(macro_get_processor)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_setup_compilers_data
@@ -315,11 +372,11 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
                 set(${compiler_short} "clang-cl")
                 set(${compiler_cxx}   "clang-cl")
                 set(${compiler_c}     "clang-cl")
-            elseif (AREG_PROCESSOR STREQUAL "arm" AND "${_family}" STREQUAL "gnu")
+            elseif (AREG_PROCESSOR STREQUAL ${_proc_arm32} AND "${_family}" STREQUAL "gnu")
                 set(${compiler_short} "g++")
                 set(${compiler_cxx}   "arm-linux-gnueabihf-g++")
                 set(${compiler_c}     "arm-linux-gnueabihf-gcc")
-            elseif (AREG_PROCESSOR STREQUAL "aarch64" AND "${_family}" STREQUAL "gnu")
+            elseif (AREG_PROCESSOR STREQUAL ${_proc_arm64} AND "${_family}" STREQUAL "gnu")
                 set(${compiler_short} "g++")
                 set(${compiler_cxx}   "aarch64-linux-gnu-g++")
                 set(${compiler_c}     "aarch64-linux-gnu-gcc")
