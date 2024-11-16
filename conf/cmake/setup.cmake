@@ -63,7 +63,6 @@ include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 # Check whether the CMake CXX-compiler is set
 if (NOT "${AREG_CXX_COMPILER}" STREQUAL "")
     if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
-        # set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}" CACHE INTERNAL "Set CXX compiler")
         set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
     else()
         # Force to set existing compiler
@@ -74,7 +73,6 @@ endif()
 # Check whether the CMake C-compiler is set
 if (NOT "${AREG_C_COMPILER}" STREQUAL "")
     if ("${CMAKE_C_COMPILER}" STREQUAL "")
-        # set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}" CACHE INTERNAL "Set C compiler")
         set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
     else()
         # Force to set existing compiler

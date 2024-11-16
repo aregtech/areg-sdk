@@ -91,7 +91,7 @@ endif()
 if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "" OR NOT "${CMAKE_C_COMPILER}" STREQUAL ""))
 
     # Determine the system compiler based on the available CMake variables
-    if (DEFINED CMAKE_CXX_COMPILER AND NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
+    if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
         set(_sys_compiler "${CMAKE_CXX_COMPILER}")
     else()
         set(_sys_compiler "${CMAKE_C_COMPILER}")
@@ -104,12 +104,12 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
 
     if (_compiler_found)
         # Check for existing compiler family or specific compiler and issue warnings if necessary
-        if (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "" AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "${_compiler_family}")
+        if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "" AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "${_compiler_family}")
             message(WARNING "AREG: Selected compiler family '${AREG_COMPILER_FAMILY}' is ignored; using '${_compiler_family}'")
         endif()
 
         # Only if AREG_COMPILER is defined, compare the short compiler name to the full path
-        if (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
+        if (NOT "${AREG_COMPILER}" STREQUAL "")
             string(FIND "${AREG_COMPILER}" "${_compiler_short}" _found_pos)
             if (_found_pos LESS 0)
                 message(WARNING "AREG: Selected compiler '${AREG_COMPILER}' is ignored; using '${_compiler_short}'")
@@ -122,8 +122,8 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_sys_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
-        set(CMAKE_CXX_COMPILER  "")
-        set(CMAKE_C_COMPILER    "")
+        set(CMAKE_CXX_COMPILER      "${AREG_CXX_COMPILER}")
+        set(CMAKE_C_COMPILER        "${AREG_C_COMPILER}")
         if (NOT "${_sys_process}" STREQUAL "")
             set(AREG_PROCESSOR ${_sys_process})
             set(AREG_BITNESS   ${_sys_bitness})
