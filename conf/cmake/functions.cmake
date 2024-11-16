@@ -172,22 +172,33 @@ endmacro(macro_parse_arguments)
 # ---------------------------------------------------------------------------
 macro(macro_readonly_guard var_name access value current_list_file stack)
   if ("${access}" STREQUAL "MODIFIED_ACCESS")
-    message(WARNING "Attempt to change read-only variable '${var_name}'!")
+    message(WARNING "Attempt to change read-only variable '${var_name}' to set value \'${value}\'!")
   endif()
 endmacro(macro_readonly_guard)
 
 # Read-only variable of 32-bit 'x86' processor name
-set(_proc_x86   "x86")
-variable_watch(_proc_x86 macro_readonly_guard)
+if (NOT DEFINED _proc_x86)
+    set(_proc_x86   "x86")
+    variable_watch(_proc_x86 macro_readonly_guard)
+endif()
+
 # Read-only variable of 64-bit 'x64' processor name
-set(_proc_x64   "x86_64")
-variable_watch(_proc_x64 macro_readonly_guard)
+if (NOT DEFINED _proc_x64)
+    set(_proc_x64   "x86_64")
+    variable_watch(_proc_x64 macro_readonly_guard)
+endif()
+
 # Read-only variable of 32-bit 'arm' processor name
-set(_proc_arm32 "ARM")
-variable_watch(_proc_arm32 macro_readonly_guard)
+if (NOT DEFINED _proc_arm32)
+    set(_proc_arm32 "ARM")
+    variable_watch(_proc_arm32 macro_readonly_guard)
+endif()
+
 # Read-only variable of 64-bit 'aarch64' processor name
-set(_proc_arm64 "AARCH64")
-variable_watch(_proc_arm64 macro_readonly_guard)
+if (NOT DEFINED _proc_arm64)
+    set(_proc_arm64 "AARCH64")
+    variable_watch(_proc_arm64 macro_readonly_guard)
+endif()
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_guess_processor_architecture
@@ -202,10 +213,10 @@ variable_watch(_proc_arm64 macro_readonly_guard)
 # Example ....: macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
 # ---------------------------------------------------------------------------
 macro(macro_guess_processor_architecture compiler_path target_processor target_bitness)
-    foreach(_proc "arm;32;${_proc_arm}" "aarch64;64;${_proc_arm64}")
-        list(GET _proc 0 _proc)
-        list(GET _proc 1 _bits)
-        list(GET _proc 2 _arch)
+    foreach(_entry "arm;32;${_proc_arm}" "aarch64;64;${_proc_arm64}")
+        list(GET _entry 0 _proc)
+        list(GET _entry 1 _bits)
+        list(GET _entry 2 _arch)
         string(FIND "${compiler_path}" ${_proc} _proc_pos)
         if (_proc_pos GREATER -1)
             set(${target_processor} ${_arch})
@@ -213,9 +224,13 @@ macro(macro_guess_processor_architecture compiler_path target_processor target_b
             break()
         endif()
     endforeach()
+
+    unset(_entry)
     unset(_proc)
     unset(_arch)
     unset(_bits)
+    unset(_proc_pos)
+
 endmacro(macro_guess_processor_architecture)
 
 # ---------------------------------------------------------------------------
@@ -263,6 +278,7 @@ macro(macro_get_processor var_processor name_processor name_bitness name_found)
             break()
         endif()
     endforeach()
+    unset(_entry)
     unset(_proc)
     unset(_arch)
     unset(_bits)
@@ -337,6 +353,12 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
         endif()
     endforeach()
 
+    unset(_entry)
+    unset(_cxx_compiler)
+    unset(_family)
+    unset(_c_compiler)
+    unset(_found_pos)
+
 endmacro(macro_setup_compilers_data)
 
 # ---------------------------------------------------------------------------
@@ -393,6 +415,11 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
             break()
         endif()
     endforeach()
+
+    unset(_entry)
+    unset(_compiler)
+    unset(_family)
+    unset(_c_compiler)
 
 endmacro(macro_setup_compilers_data_by_family)
 
