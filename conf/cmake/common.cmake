@@ -28,18 +28,15 @@ elseif("${AREG_COMPILER_SHORT}" STREQUAL "")
 
 endif()
 
+# Set identified OS
+set(AREG_OS ${CMAKE_SYSTEM_NAME})
+# Set processor, if not identified yet.
 if ("${AREG_PROCESSOR}" STREQUAL "")
     set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 endif()
+# Set bitness, if not identified yet.
 if ("${AREG_BITNESS}" STREQUAL "" OR AREG_BITNESS EQUAL 0)
     macro_system_bitness(AREG_BITNESS)
-endif()
-
-# Identify the OS
-set(AREG_OS ${CMAKE_SYSTEM_NAME})
-# Identify CPU platform
-if ("${AREG_PROCESSOR}" STREQUAL "")
-    set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 
 # -----------------------------------------------------

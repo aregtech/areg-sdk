@@ -6,7 +6,7 @@
 if (AREG_BUILD_TESTS)
 
     # Disable unit tests post-build for ARM processor
-    if (${AREG_PROCESSOR} STREQUAL "arm" OR ${AREG_PROCESSOR} STREQUAL "aarch64")
+    if (${AREG_PROCESSOR} STREQUAL ${_proc_arm32} OR ${AREG_PROCESSOR} STREQUAL ${_proc_arm64})
         set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
     endif()
 
