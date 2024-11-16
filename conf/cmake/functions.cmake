@@ -955,7 +955,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
 
     # Print detailed configuration status, each with the defined prefix
     message(STATUS "${var_prefix}: >>> CMAKE_SOURCE_DIR    = '${CMAKE_SOURCE_DIR}', build type '${CMAKE_BUILD_TYPE}'")
-    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit platform, '${AREG_PROCESSOR}' CPU")
+    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit platform, '${AREG_PROCESSOR}' CPU, Environment '${AREG_DEVELOP_ENV}'")
     message(STATUS "${var_prefix}: >>> Compiler ...........: '${CMAKE_CXX_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}'")
     message(STATUS "${var_prefix}: >>> AREG SDK Root ......: '${AREG_SDK_ROOT}'")
