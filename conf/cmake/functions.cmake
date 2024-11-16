@@ -188,7 +188,7 @@ set(_proc_arm64 "AARCH64")
 # Example ....: macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
 # ---------------------------------------------------------------------------
 macro(macro_guess_processor_architecture compiler_path target_processor target_bitness)
-    foreach(_entry "arm;${_proc_arm};32" "aarch64;${_proc_arm64};64")
+    foreach(_entry "arm;${_proc_arm32};32" "aarch64;${_proc_arm64};64")
         list(GET _entry 0 _proc)
         list(GET _entry 1 _arch)
         list(GET _entry 2 _bits)
@@ -945,7 +945,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
 
     # Print detailed configuration status, each with the defined prefix
     message(STATUS "${var_prefix}: >>> CMAKE_SOURCE_DIR    = '${CMAKE_SOURCE_DIR}', build type '${CMAKE_BUILD_TYPE}'")
-    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit platform, '${AREG_PROCESSOR}' CPU, Environment '${AREG_DEVELOP_ENV}'")
+    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit '${AREG_PROCESSOR}' platform, Env '${AREG_DEVELOP_ENV}'")
     message(STATUS "${var_prefix}: >>> Compiler ...........: '${CMAKE_CXX_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}'")
     message(STATUS "${var_prefix}: >>> AREG SDK Root ......: '${AREG_SDK_ROOT}'")
