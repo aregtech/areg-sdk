@@ -59,6 +59,7 @@
     <ClCompile Include="units\TERingStackTest.cpp" />
     <ClCompile Include="units\TESortedLinkedListTest.cpp" />
     <ClCompile Include="units\TEStackTest.cpp" />
+    <ClCompile Include="units\StringTest.cpp"/>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />
