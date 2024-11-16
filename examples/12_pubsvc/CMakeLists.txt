@@ -1,6 +1,6 @@
 
 # add service interface
-addServiceInterface(12_generated res HelloWorld)
+addServiceInterface(12_generated examples/12_pubsvc/services/HelloWorld.siml)
 
 # add project
 macro_declare_executable(12_pubclient   12_generated 

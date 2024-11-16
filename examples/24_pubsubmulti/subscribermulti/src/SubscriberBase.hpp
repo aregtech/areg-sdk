@@ -12,7 +12,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "generate/examples/24_pubsubmulti/PubSubClientBase.hpp"
+#include "examples/24_pubsubmulti/services/PubSubClientBase.hpp"
 
 #include "areg/base/NEMath.hpp"
 

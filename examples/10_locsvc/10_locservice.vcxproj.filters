@@ -34,7 +34,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\HelloWorld.siml">
+    <None Include="services\HelloWorld.siml">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -15,101 +15,101 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\LocalHelloWorld.siml" />
-    <None Include="res\PublicHelloWorld.siml" />
-    <None Include="res\SystemShutdown.siml" />
+    <None Include="services\LocalHelloWorld.siml" />
+    <None Include="services\PublicHelloWorld.siml" />
+    <None Include="services\SystemShutdown.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\LocalHelloWorldClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\LocalHelloWorldEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\LocalHelloWorldProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\LocalHelloWorldStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\NELocalHelloWorld.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\NELocalHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\NEPublicHelloWorld.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\NEPublicHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\NESystemShutdown.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\NESystemShutdown.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\PublicHelloWorldClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\PublicHelloWorldEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\PublicHelloWorldProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\PublicHelloWorldStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\SystemShutdownClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\SystemShutdownEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\SystemShutdownProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_pubmesh\services\private\SystemShutdownStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\private\LocalHelloWorldEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\LocalHelloWorldProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\private\LocalHelloWorldProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\private\PublicHelloWorldEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\PublicHelloWorldProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\private\PublicHelloWorldProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\private\SystemShutdownEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\private\SystemShutdownProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\private\SystemShutdownProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\LocalHelloWorldClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\LocalHelloWorldClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\LocalHelloWorldStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\LocalHelloWorldStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\NELocalHelloWorld.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\NELocalHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\NEPublicHelloWorld.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\NEPublicHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\NESystemShutdown.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\NESystemShutdown.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\PublicHelloWorldClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\PublicHelloWorldClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\PublicHelloWorldStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\PublicHelloWorldStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\SystemShutdownClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\SystemShutdownClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\SystemShutdownStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_pubmesh\services\SystemShutdownStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

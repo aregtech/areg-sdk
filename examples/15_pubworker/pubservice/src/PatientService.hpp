@@ -13,7 +13,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/15_pubworker/PatientInformationStub.hpp"
+#include "examples/15_pubworker/services/PatientInformationStub.hpp"
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include <string_view>

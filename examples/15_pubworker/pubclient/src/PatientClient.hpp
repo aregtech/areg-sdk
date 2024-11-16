@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/15_pubworker/PatientInformationClientBase.hpp"
+#include "examples/15_pubworker/services/PatientInformationClientBase.hpp"
 
 #include "pubclient/src/HardwareWorkerConsumer.hpp"
 #include <string_view>

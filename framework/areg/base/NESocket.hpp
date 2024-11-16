@@ -228,7 +228,7 @@ namespace NESocket
          * \brief   Copies user name and password from the given source.
          **/
         NESocket::UserData& operator = (const NESocket::UserData& source);
-        NESocket::UserData& operator = (NESocket::UserData&& source);
+        NESocket::UserData& operator = (NESocket::UserData&& source) noexcept;
 
         /**
          * \brief   Compares 2 user name and password elements

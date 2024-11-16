@@ -1,6 +1,6 @@
 
 # add service interface
-addServiceInterface(19_generated res HelloWatchdog)
+addServiceInterface(19_generated examples/19_pubwatchdog/services/HelloWatchdog.siml)
 
 # add projects
 macro_declare_executable(19_pubclient   19_generated

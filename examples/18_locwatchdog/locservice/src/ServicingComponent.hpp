@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/18_locwatchdog/HelloWatchdogStub.hpp"
+#include "examples/18_locwatchdog/services/HelloWatchdogStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration

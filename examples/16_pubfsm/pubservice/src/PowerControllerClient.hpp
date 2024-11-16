@@ -12,7 +12,7 @@
   ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generate/examples/16_pubfsm/PowerManagerClientBase.hpp"
+#include "examples/16_pubfsm/services/PowerManagerClientBase.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
 
 #include "areg/base/Thread.hpp"

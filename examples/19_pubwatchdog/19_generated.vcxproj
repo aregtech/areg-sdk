@@ -4,7 +4,7 @@
     <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F6570975-AE13-41EB-8465-066A6766C211}</ProjectGuid>
@@ -17,7 +17,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -42,21 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\HelloWatchdog.siml" />
+    <None Include="services\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\NEHelloWatchdog.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\services\private\HelloWatchdogClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\services\private\HelloWatchdogEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\services\private\HelloWatchdogProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\services\private\HelloWatchdogStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\services\private\NEHelloWatchdog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\HelloWatchdogClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\HelloWatchdogStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\NEHelloWatchdog.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\services\HelloWatchdogClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\services\HelloWatchdogStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\services\NEHelloWatchdog.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\services\private\HelloWatchdogEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\services\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

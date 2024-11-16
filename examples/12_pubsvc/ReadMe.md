@@ -14,13 +14,13 @@ The **12_pubsvc** project demonstrates the implementation of a *Public Service* 
 ## Sub-Projects
 
 1. **12_generated**:
-   - Contains code is generated from the [HelloWorld.siml](./res/HelloWorld.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** message creation and dispatching, improving efficiency in communication between the *Service Provider* and *Service Consumer*. Object RPC is used for **IPC**, ensuring seamless remote interaction between processes.
+   - Contains code is generated from the [HelloWorld.siml](./services/HelloWorld.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** message creation and dispatching, improving efficiency in communication between the *Service Provider* and *Service Consumer*. Object RPC is used for **IPC**, ensuring seamless remote interaction between processes.
 
 2. **[12_pubservice](./pubservice/)**:
    - An application acting as a network-discoverable *Public Service* provider. It listens for remote requests from consumers and processes them. Multiple *Service Consumers* can connect to the provider simultaneously, sending requests to be handled.
 
 3. **[12_pubclient](./pubclient/)**:
-   - An application that acts as a *Public Service* consumer. The client application automatically discovers the *Public Service* provider using AREG Frameworks’s built-in service discovery. It periodically sends remote request calls using a timer, simulating real-world use cases where a service might need regular interactions with the provider.
+   - An application that acts as a *Public Service* consumer. The client application automatically discovers the *Public Service* provider using AREG Frameworks's built-in service discovery. It periodically sends remote request calls using a timer, simulating real-world use cases where a service might need regular interactions with the provider.
 
 ## Communication
 
@@ -31,7 +31,7 @@ The **12_pubsvc** project demonstrates the implementation of a *Public Service* 
 
 - **Automatic Service Discovery**: AREG Framework automates the discovery of the *Public Service*, so *Service Consumers* can easily connect to the provider without needing explicit configuration. This ensures smooth communication even when the processes are started in any order.
   
-- **Fault Tolerance**: The AREG SDK ensures fault tolerance in service communication, meaning if a service fails, it can recover or restart without affecting the overall system’s operation.
+- **Fault Tolerance**: The AREG SDK ensures fault tolerance in service communication, meaning if a service fails, it can recover or restart without affecting the overall system's operation.
   
 - **Efficient Communication**: By using **Object RPC** for communication, the system reduces overhead and simplifies the development process. It ensures that requests and responses between the provider and consumers are dispatched efficiently.
 

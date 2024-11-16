@@ -17,7 +17,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/TEEvent.hpp"
-#include "generate/examples/20_pubdatarate/LargeDataStub.hpp"
+#include "examples/20_pubdatarate/services/LargeDataStub.hpp"
 
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/Thread.hpp"

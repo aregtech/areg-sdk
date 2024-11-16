@@ -1,8 +1,8 @@
 # 10_locsvc Project Overview
 
-The **10_locsvc** project demonstrates creating and managing a **Local Service** within the AREG Framework, using the Service Interface document and AREG SDK’s code generator. This example shows how to build a service provider and consumer that communicate asynchronously within a single, multithreaded process, without external visibility.
+The **10_locsvc** project demonstrates creating and managing a **Local Service** within the AREG Framework, using the Service Interface document and AREG SDK's code generator. This example shows how to build a service provider and consumer that communicate asynchronously within a single, multithreaded process, without external visibility.
 
-The **Local Service** interface is defined in the [HelloWorld.siml](./res/HelloWorld.siml) file, and the corresponding source code is automatically generated during the build process via `codegen.jar`.
+The **Local Service** interface is defined in the [HelloWorld.siml](./services/HelloWorld.siml) file, and the corresponding source code is automatically generated during the build process via `codegen.jar`.
 
 ## Key Concepts
 
@@ -14,7 +14,7 @@ The **Local Service** interface is defined in the [HelloWorld.siml](./res/HelloW
 ## Sub-Projects
 
 1. **10_generated**:
-   - Contains code generated from the [HelloWorld.siml](./res/HelloWorld.siml) interface file during CMake configuration or pre-build action in Visual Studio. This includes files essential for defining the local service functionality.
+   - Contains code generated from the [HelloWorld.siml](./services/HelloWorld.siml) interface file during CMake configuration or pre-build action in Visual Studio. This includes files essential for defining the local service functionality.
 
 2. **[10_locservice](./locservice/)**:
    - Implements both the **service provider** and **service consumer**. Communication between these objects relies on **RPC messages**, and is event-driven and asynchronous. Key components include:

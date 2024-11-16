@@ -15,41 +15,41 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\private\NESimpleTrafficLight.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\services\private\NESimpleTrafficLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\private\SimpleTrafficLightClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\services\private\SimpleTrafficLightClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\private\SimpleTrafficLightEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\services\private\SimpleTrafficLightEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\private\SimpleTrafficLightProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\services\private\SimpleTrafficLightProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\private\SimpleTrafficLightStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_pubtraffic\services\private\SimpleTrafficLightStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\private\SimpleTrafficLightEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\services\private\SimpleTrafficLightEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\private\SimpleTrafficLightProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\services\private\SimpleTrafficLightProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\NESimpleTrafficLight.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\services\NESimpleTrafficLight.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\SimpleTrafficLightClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\services\SimpleTrafficLightClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\SimpleTrafficLightStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_pubtraffic\services\SimpleTrafficLightStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\SimpleTrafficLight.siml">
+    <None Include="services\SimpleTrafficLight.siml">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

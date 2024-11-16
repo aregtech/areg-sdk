@@ -8,7 +8,7 @@ include(CMakeFindDependencyMacro)
 # Root folder of the SDK
 set(AREG_SDK_ROOT           "@CMAKE_INSTALL_PREFIX@")
 # Location of 'areg', 'aregextend' and 'areglogger' header files
-set(AREG_FRAMEWORK               "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
+set(AREG_FRAMEWORK          "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
 # Location of configuration, initialization and other shared files of AREG SDK
 set(AREG_SHARE_DIR          "@CMAKE_INSTALL_PREFIX@/share/@AREG_PACKAGE_NAME@")
 # Location of initialization file to copy as a template in the processes
@@ -23,16 +23,17 @@ set(AREG_TOOL_CODEGEN       "${AREG_SDK_TOOLS}/codegen.jar")
 set(AREG_CMAKE_EXPORTS      "${AREG_CMAKE_CONFIG_DIR}/areg.cmake")
 
 # The build type of AREG libraries.
-set(AREG_BUILD_TYPE         "@AREG_BUILD_TYPE@")
+set(AREG_BUILD_TYPE         @AREG_BUILD_TYPE@)
 # The library type of 'areg'. Static or dynamic
-set(AREG_BINARY             "@AREG_BINARY@")
+set(AREG_BINARY             @AREG_BINARY@)
 # The library type of 'areglogger'. Static or dynamic.
-set(AREG_LOGGER_LIB         "@AREG_LOGGER_LIB@")
+set(AREG_LOGGER_LIB         @AREG_LOGGER_LIB@)
 
 # set platform specific variables.
-set(AREG_OS             "@AREG_OS@")
-set(AREG_DEVELOP_ENV    "@AREG_DEVELOP_ENV@")
+set(AREG_OS             @AREG_OS@)
+set(AREG_DEVELOP_ENV    @AREG_DEVELOP_ENV@)
 set(AREG_BITNESS        @AREG_BITNESS@)
+set(AREG_PROCESSOR      @AREG_PROCESSOR@)
 
 # Specify whether 'aregextend' is compiled with enabled extended objects flag
 option(AREG_EXTENDED        "AREG Extended object flag"         @AREG_EXTENDED@)
@@ -104,4 +105,10 @@ if (AREG_DEVELOP_ENV STREQUAL "Win32")
     endif()
 else()
     add_definitions(-DPOSIX)
+endif()
+
+if (AREG_BITNESS EQUAL 32)
+    add_definitions(-DBIT32)
+else()
+    add_definitions(-DBIT64)
 endif()

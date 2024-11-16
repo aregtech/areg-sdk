@@ -11,7 +11,7 @@ The **18_locwatchdog** project showcases the use of a **Watchdog** in a **Local 
 ## Project Structure
 
 1. **18_generated**:
-   - This library contains code generated from the [HelloWatchdog.siml](./res/HelloWatchdog.siml) service interface document during CMake configuration or as a pre-build action in Visual Studio. The generated files provide the necessary infrastructure to define and manage the watchdog and its related services.
+   - This library contains code generated from the [HelloWatchdog.siml](./services/HelloWatchdog.siml) service interface document during CMake configuration or as a pre-build action in Visual Studio. The generated files provide the necessary infrastructure to define and manage the watchdog and its related services.
 
 2. **[18_locservice](./locservice/)**:
    - This sub-project implements the **Local Service** application, which is multithreaded and operates entirely within the same process. It includes:

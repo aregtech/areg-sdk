@@ -15,7 +15,7 @@ The **17_winchat** project is a Windows-exclusive GUI application that demonstra
 ## Sub-Projects
 
 1. **17_generated**:
-   - Contains codes generated from [CentralMessager.siml](./res/CentralMessager.siml), [ConnectionManager.siml](./res/ConnectionManager.siml), [DirectConnection.siml](./res/DirectConnection.siml), and [DirectMessager.siml](./res/DirectMessager.siml). These service interfaces define the interactions between various components, creating all necessary code for seamless communication. The code is generated automatically during the CMake build process or as a pre-build action in Visual Studio. The generated code handles **Remote Procedure Calls (RPC)**, simplifying the communication between processes.
+   - Contains codes generated from [CentralMessager.siml](./services/CentralMessager.siml), [ConnectionManager.siml](./services/ConnectionManager.siml), [DirectConnection.siml](./services/DirectConnection.siml), and [DirectMessager.siml](./services/DirectMessager.siml). These service interfaces define the interactions between various components, creating all necessary code for seamless communication. The code is generated automatically during the CMake build process or as a pre-build action in Visual Studio. The generated code handles **Remote Procedure Calls (RPC)**, simplifying the communication between processes.
 
 2. **[17_register](./register/)**:
    - This application hosts a *Public Service* that other applications can utilize. Upon startup, users input the IP address of the `mcrouter` for network communication.

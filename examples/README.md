@@ -3,7 +3,7 @@
 
 ```
 This document is part of the AREG SDK and describes its examples.
-Copyright © 2017-2023, Aregtech
+Copyright (c) 2017-2023, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
@@ -42,7 +42,7 @@ cmake --build ./build -j 20
 > cmake -B ./build -DAREG_EXAMPLES:BOOL=OFF
 > ```
 
-For more details, refer to the [Build Documentation](./../docs/wiki/BUILD.md), also see the list of default CMake variable settings in the [user.cmake](./../conf/cmake/user.cmake) file.
+For more details, refer to the [Building AREG SDK with CMake](./../docs/wiki/01b-cmake-build.md), also see the list of default CMake variable settings in the [user.cmake](./../conf/cmake/user.cmake) file.
 
 ### 3. Build with Microsoft Visual Studio
 

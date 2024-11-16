@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generate/examples/12_pubsvc/HelloWorldStub.hpp"
+#include "examples/12_pubsvc/services/HelloWorldStub.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration

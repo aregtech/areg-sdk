@@ -80,6 +80,14 @@ if (NOT "${AREG_C_COMPILER}" STREQUAL "")
     endif()
 endif()
 
+if (WIN32)
+    if (AREG_BITNESS EQUAL 32)
+        set(CMAKE_GENERATOR_PLATFORM Win32 CACHE INTERNAL "Force 32-bit compilation")
+    elseif (AREG_BITNESS EQUAL 64)
+        set(CMAKE_GENERATOR_PLATFORM x64 CACHE INTERNAL "Force 64-bit compilation")
+    endif()
+endif()
+
 # check and fix CXX standard for AREG Framework sources.
 macro_check_fix_areg_cxx_standard()
 

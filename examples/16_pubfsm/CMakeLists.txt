@@ -1,7 +1,7 @@
 
 # add service interfaces
-addServiceInterface(16_generated res PowerManager)
-addServiceInterface(16_generated res TrafficController)
+addServiceInterface(16_generated examples/16_pubfsm/services/PowerManager.siml)
+addServiceInterface(16_generated examples/16_pubfsm/services/TrafficController.siml)
 
 # add projects
 macro_declare_executable(16_pubclient   16_generated

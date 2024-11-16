@@ -3,10 +3,10 @@ set(CMAKE_MFC_FLAG PRIVATE 2)
 
 # ####################################
 # add service interfaces
-addServiceInterface(17_generated res CentralMessager)
-addServiceInterface(17_generated res ConnectionManager)
-addServiceInterface(17_generated res DirectConnection)
-addServiceInterface(17_generated res DirectMessager)
+addServiceInterface(17_generated examples/17_winchat/services/CentralMessager.siml)
+addServiceInterface(17_generated examples/17_winchat/services/ConnectionManager.siml)
+addServiceInterface(17_generated examples/17_winchat/services/DirectConnection.siml)
+addServiceInterface(17_generated examples/17_winchat/services/DirectMessager.siml)
 
 # Set MFC DLL and other Windows flags.
 list(APPEND MFC_DEFINES _AFXDLL _BIND_TO_CURRENT_CRT_VERSION _BIND_TO_CURRENT_MFC_VERSION)

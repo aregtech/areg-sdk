@@ -14,7 +14,7 @@ The **00_helloservice** project is a foundational example from the AREG SDK, des
 ## Project Structure
 
 1. **00_generated**: 
-   - This library contains files automatically created from the [HelloService.siml](./res/HelloService.siml) Service Interface. The files are generated during CMake setup or as a pre-build step in Visual Studio. The generated code simplifies and automates the process of creating and managing **RPC** based communication between multiple threads and processes.
+   - This library contains files automatically created from the [HelloService.siml](./services/HelloService.siml) Service Interface. The files are generated during CMake setup or as a pre-build step in Visual Studio. The generated code simplifies and automates the process of creating and managing **RPC** based communication between multiple threads and processes.
 
 2. **[common](./common/)**:
    - This directory holds shared implementations of both the **Service Provider** and **Service Consumer** components. These shared components are reused across different sub-projects, allowing developers to build multithreaded or multiprocessing applications by modifying the *Application Model* definition.

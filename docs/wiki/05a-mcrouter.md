@@ -3,23 +3,23 @@
 The **Multicast Router (mcrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
 
 ## Table of Contents
-1. [General Information](#general-information)
-2. [Router Setup](#router-setup)
-3. [Router Configuration](#router-configuration)
-4. [Command Line Options](#command-line-options)
-5. [Connection Initialization](#connection-initialization)
+1. [General Information](#1-general-information)
+2. [Router Setup](#2-router-setup)
+3. [Router Configuration](#3-router-configuration)
+4. [Command Line Options](#4-command-line-options)
+5. [Connection Initialization](#5-connection-initialization)
    - [mcrouter Initialization](#mcrouter-initialization)
    - [Application Setup](#application-setup)
 
 ---
 
-## General Information
+## 1. General Information
 
 The AREG Framework utilizes an **Object Remote Procedure Call (Object RPC)** protocol to facilitate seamless data exchange between software components. The **Multicast Message Router** (or **Router**) establishes a communication network, efficiently routing messages to the correct destinations. This guide outlines configuration and setup instructions for the Multicast Router.
 
 ---
 
-## Router Setup
+## 2. Router Setup
 
 The Router is implemented in the [mcrouter](./../../framework/mcrouter) module and compiled as a standalone executable. It can run either as a console application or as a service managed by Windows or Linux. The router can be deployed on any networked machine with a **General Purpose Operating System (GPOS)**.
 
@@ -44,7 +44,7 @@ Regardless AREG SDK is fault-tolerant and order of starting process plays no rol
 
 ---
 
-## Router Configuration
+## 3. Router Configuration
 
 The **mcrouter** uses a configuration file, typically [areg.init](./../../framework/areg/resources/areg.init), with settings defined as key-value pairs. Each setting uses the format `section::(module|*)::property[::(position|*)] = value`. Below is a sample configuration for `mcrouter` in `areg.init`:
 
@@ -67,14 +67,14 @@ Bellow is the explanation of each setting:
 | `router::*::service`          | Specifies the message router process name.                |
 | `router::*::connect`          | Lists supported protocols (**TCP/IP** in this example).   |
 | `router::*::enable::tcpip`    | Enables or disables the protocol.                         |
-| `router::*::address::tcpip`   | Provides the router’s network-accessible IP.              |
+| `router::*::address::tcpip`   | Provides the router's network-accessible IP.              |
 | `router::*::port::tcpip`      | Assigns the port number.                                  |
 
-For further details, refer to the [AREG SDK Persistence Syntax](./persistence-syntax.md).
+For further details, refer to the [AREG SDK Persistence Syntax](./06a-persistence-syntax.md).
 
 ---
 
-## Command Line Options
+## 4. Command Line Options
 
 The `mcrouter` can be run as either a console application or an OS-managed service. It has various commands for starting, configuring, and controlling its operation. Some commands are entered while `mcrouter` is running in the console, marked as **Console** in the options list. All others are command-line options to start the program.
 
@@ -97,7 +97,7 @@ Commands may vary with version updates.
 
 ---
 
-## Connection Initialization
+## 5. Connection Initialization
 
 ### mcrouter Initialization
 

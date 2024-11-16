@@ -15,8 +15,6 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/trace/GETrace.h"
 
-
-#include "common/NECommon.hpp"
 #include "ServiceClient.hpp"
 
 #ifdef WINDOWS
@@ -24,7 +22,8 @@
     #pragma comment(lib, "12_generated.lib")
 #endif // WINDOWS
 
-constexpr char const _modelName[]= { "HelloModel" };  //!< The name of model
+constexpr char const _modelName[]  { "HelloModel" };    //!< The name of model
+constexpr char const _serviceName[]{ "HelloService" };  //!< The name of provided service
 const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,7 +42,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient.getString(), ServiceClient )
             // register service dependency
-            REGISTER_DEPENDENCY(NECommon::ServiceHelloName)
+            REGISTER_DEPENDENCY(_serviceName)
         // end of component description
         END_REGISTER_COMPONENT( _serviceClient.getString() )
     // end of thread description

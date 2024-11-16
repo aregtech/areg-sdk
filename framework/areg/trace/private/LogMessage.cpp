@@ -28,7 +28,8 @@
 LogMessage::LogMessage(NETrace::eLogMessageType msgType, const TraceScope & traceScope )
     : NETrace::sLogMessage( msgType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), static_cast<uint32_t>(traceScope.getScopeName( ).getLength()) )
 {
-    ASSERT( (msgType == NETrace::eLogMessageType::LogMessageScopeEnter) || (msgType == NETrace::eLogMessageType::LogMessageScopeExit) );
+    ASSERT( ((static_cast<uint8_t>(NETrace::eLogMessageType::LogMessageScopeEnter) & static_cast<uint8_t>(msgType)) != 0) || 
+            ((static_cast<uint8_t>(NETrace::eLogMessageType::LogMessageScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
 }
 
 void LogMessage::setMessage(const char * message, int msgLen )

@@ -1135,6 +1135,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="areg\resources\areg.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="areg\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
@@ -1146,22 +1151,41 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
-    <Text Include="areg\CMakeLists.txt" />
-    <Text Include="areg\appbase\private\CMakeLists.txt" />
-    <Text Include="areg\base\private\CMakeLists.txt" />
-    <Text Include="areg\base\private\posix\CMakeLists.txt" />
-    <Text Include="areg\base\private\win32\CMakeLists.txt" />
-    <Text Include="areg\component\private\CMakeLists.txt" />
-    <Text Include="areg\ipc\private\CMakeLists.txt" />
-    <Text Include="areg\persist\private\CMakeLists.txt" />
-    <Text Include="areg\trace\private\CMakeLists.txt" />
-    <Text Include="areg\component\private\posix\CMakeLists.txt" />
-    <Text Include="areg\component\private\win32\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="areg\resources\areg.rc">
+    <Text Include="CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    </Text>    
+    <Text Include="areg\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\appbase\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\base\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\base\private\posix\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\base\private\win32\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\component\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\ipc\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\persist\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\trace\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\component\private\posix\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
+    <Text Include="areg\component\private\win32\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>    
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 
 # add service interface
-addServiceInterface(24_generated res PubSub)
+addServiceInterface(24_generated examples/24_pubsubmulti/services/PubSub.siml)
 
 # add projects
 macro_declare_executable(24_publisher  24_generated

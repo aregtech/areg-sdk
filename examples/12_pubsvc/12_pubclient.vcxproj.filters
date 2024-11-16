@@ -26,8 +26,5 @@
     <ClInclude Include="pubclient\src\ServiceClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\NECommon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

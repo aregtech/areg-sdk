@@ -15,40 +15,40 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\services\private\HelloServiceClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\services\private\HelloServiceEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\services\private\HelloServiceProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\services\private\HelloServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\private\NEHelloService.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\00_helloservice\services\private\NEHelloService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\services\private\HelloServiceEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\private\HelloServiceProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\services\private\HelloServiceProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\HelloServiceClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\services\HelloServiceClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\HelloServiceStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\services\HelloServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\NEHelloService.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\00_helloservice\services\NEHelloService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\HelloService.siml" />
+    <None Include="services\HelloService.siml" />
   </ItemGroup>
 </Project>

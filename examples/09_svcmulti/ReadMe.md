@@ -17,7 +17,7 @@ The **09_svcmulti** project builds upon the concepts from the [08_service](./../
 ## Project Structure
 
 - **Service Instantiation**: The project shows how to define and instantiate multiple instances of the same service, each with a unique role.
-- **Application Model**: The services are defined in the application’s model, which controls their roles and behavior during runtime.
+- **Application Model**: The services are defined in the application's model, which controls their roles and behavior during runtime.
 - **Multithreading**: The services are executed in separate threads, providing a clear example of how to handle multiple service providers concurrently.
 
 ## Use Cases

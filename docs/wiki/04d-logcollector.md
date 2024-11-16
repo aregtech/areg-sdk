@@ -3,23 +3,23 @@
 The **AREG SDK Log Collector** is a centralized service designed to gather, manage, and route log data from distributed applications within the AREG SDK environment. It forwards collected log entries to designated log observers for streamlined analysis and handling, enabling real-time monitoring, troubleshooting, and performance optimization in complex multiprocess systems.
 
 ## Table of Contents
-1. [General Information](#general-information)
-2. [Log Collector Setup](#log-collector-setup)
-3. [Log Collector Configuration](#log-collector-configuration)
-4. [Command Line Options](#command-line-options)
-5. [Connection Initialization](#connection-initialization)
+1. [General Information](#1-general-information)
+2. [Log Collector Setup](#2-log-collector-setup)
+3. [Log Collector Configuration](#3-log-collector-configuration)
+4. [Command Line Options](#4-command-line-options)
+5. [Connection Initialization](#5-connection-initialization)
    - [Logger Initialization](#logger-initialization)
    - [Application Setup](#application-setup)
 
 ---
 
-## General Information
+## 1. General Information
 
-The AREG SDK Log Collector acts as a networking service within the AREG SDK's logging ecosystem. It facilitates centralized log collection by receiving logs from multiple applications, making them accessible to log observers for in-depth analysis and management. This service enables tailored log configurations, including specific scopes and priority levels, promoting efficient tracking and debugging across distributed applications. By integrating with the AREG SDK’s logging tools, the Log Collector enhances monitoring capabilities and provides an efficient pathway for real-time diagnostics in complex multiprocess scenarios.
+The AREG SDK Log Collector acts as a networking service within the AREG SDK's logging ecosystem. It facilitates centralized log collection by receiving logs from multiple applications, making them accessible to log observers for in-depth analysis and management. This service enables tailored log configurations, including specific scopes and priority levels, promoting efficient tracking and debugging across distributed applications. By integrating with the AREG SDK's logging tools, the Log Collector enhances monitoring capabilities and provides an efficient pathway for real-time diagnostics in complex multiprocess scenarios.
 
 ---
 
-## Log Collector Setup
+## 2. Log Collector Setup
 
 The Log Collector is implemented within the AREG SDK [logger module](./../../framework/logger/) and compiled as a standalone executable that can run as a console application or a managed service on Windows and Linux. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
 
@@ -39,7 +39,7 @@ To stop the service:
 
 ---
 
-## Log Collector Configuration
+## 3. Log Collector Configuration
 
 The **logger** settings are managed within a configuration file, typically found as [areg.init](./../../framework/areg/resources/areg.init). Settings use key-value pairs in the format `section::(module|*)::property[::(position|*)]`. Example configurations for the Log Collector:
 
@@ -62,17 +62,17 @@ Setting descriptions:
 | `logger::*::service`          | Specifies the log collector process name.             |
 | `logger::*::connect`          | Lists supported protocols (TCP/IP in this example).   |
 | `logger::*::enable::tcpip`    | Activates or deactivates the protocol.                |
-| `logger::*::address::tcpip`   | Specifies the Log Collector’s network-accessible IP.  |
+| `logger::*::address::tcpip`   | Specifies the Log Collector's network-accessible IP.  |
 | `logger::*::port::tcpip`      | Assigns the port number.                              |
 
-For further details, refer to the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
+For further details, refer to the [AREG SDK Persistence Syntax documentation](./06a-persistence-syntax.md).
 
 > [!NOTE]
-> AREG SDK includes a console tool application, `logobserver`, for capturing logs, adjusting log scopes, filtering priorities, and saving logs to a file or SQLite database. More details are available in the [logobserver documentation](./logobserver.md).
+> AREG SDK includes a console tool application, `logobserver`, for capturing logs, adjusting log scopes, filtering priorities, and saving logs to a file or SQLite database. More details are available in the [logobserver documentation](./04c-logobserver.md).
 
 ---
 
-## Command Line Options
+## 4. Command Line Options
 
 The Log Collector can run as a console application or OS-managed service. Key command-line options are listed below for starting, configuring, and controlling its operation. Some options, marked as **Console**, can be entered while `logger` is active; others start the program.
 
@@ -100,7 +100,7 @@ Commands may vary with version updates.
 
 ---
 
-## Connection Initialization
+## 5. Connection Initialization
 
 ### Logger Initialization
 

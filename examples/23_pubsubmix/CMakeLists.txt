@@ -1,6 +1,6 @@
 
 # add service interface
-addServiceInterface(23_generated res PubSubMix)
+addServiceInterface(23_generated examples/23_pubsubmix/services/PubSubMix.siml)
 
 # add projects
 

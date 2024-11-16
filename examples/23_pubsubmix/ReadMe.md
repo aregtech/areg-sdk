@@ -16,7 +16,7 @@ Using **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Proces
 ## Sub-Projects
 
 1. **23_generated**:
-   - Contains code generated from the [PubSubMix.siml](./res/PubSubMix.siml) Service Interface document, either during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, simplifying communication across processes.
+   - Contains code generated from the [PubSubMix.siml](./services/PubSubMix.siml) Service Interface document, either during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, simplifying communication across processes.
 
 2. **[23_common](./common/)**:
    - A static library containing shared objects and functions used by other project processes. This common library promotes modular design and reuse of core components.
@@ -36,7 +36,7 @@ Using **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Proces
 
 - **Hybrid Communication**: The Pub/Sub system supports both local and remote subscribers, allowing any process to function as both a **Publisher** and **Subscriber** simultaneously.
 - **Network Resilience**: All **Publishers** and **Subscribers** within the same process receive updates regardless of network connectivity, ensuring uninterrupted service.
-- **Immediate Data Updates**: Subscribers automatically receive the latest data upon connecting, ensuring they’re always up-to-date even if no recent updates have been published.
+- **Immediate Data Updates**: Subscribers automatically receive the latest data upon connecting, ensuring they're always up-to-date even if no recent updates have been published.
 - **Dynamic Subscription and Publishing**: Both *23_pubsubctrl* and *23_pubsubdyn* can seamlessly switch between publisher and subscriber roles, making the system highly adaptable in dynamic, multi-process environments.
 - **Fault-Tolerant Communication**: With `mcrouter` and the AREG SDK, the system remains fault-tolerant, supporting automatic service discovery and recovery, ensuring reliable Pub/Sub functionality even during failures.
 
