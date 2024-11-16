@@ -177,28 +177,13 @@ macro(macro_readonly_guard var_name access value current_list_file stack)
 endmacro(macro_readonly_guard)
 
 # Read-only variable of 32-bit 'x86' processor name
-if (NOT DEFINED _proc_x86)
-    set(_proc_x86   "x86")
-    variable_watch(_proc_x86 macro_readonly_guard)
-endif()
-
+set(_proc_x86   "x86")
 # Read-only variable of 64-bit 'x64' processor name
-if (NOT DEFINED _proc_x64)
-    set(_proc_x64   "x86_64")
-    variable_watch(_proc_x64 macro_readonly_guard)
-endif()
-
+set(_proc_x64   "x86_64")
 # Read-only variable of 32-bit 'arm' processor name
-if (NOT DEFINED _proc_arm32)
-    set(_proc_arm32 "ARM")
-    variable_watch(_proc_arm32 macro_readonly_guard)
-endif()
-
+set(_proc_arm32 "ARM")
 # Read-only variable of 64-bit 'aarch64' processor name
-if (NOT DEFINED _proc_arm64)
-    set(_proc_arm64 "AARCH64")
-    variable_watch(_proc_arm64 macro_readonly_guard)
-endif()
+set(_proc_arm64 "AARCH64")
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_guess_processor_architecture
