@@ -236,10 +236,10 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
 
     set(${is_identified} FALSE)
     if (DEFINED AREG_PROCESSOR)
-        set(${sys_platform} AREG_PROCESSOR)
+        set(${sys_platform} ${AREG_PROCESSOR})
     endif()
     if (DEFINED AREG_BITNESS)
-        set(${sys_bitness}  AREG_BITNESS)
+        set(${sys_bitness}  ${AREG_BITNESS})
     endif()
     
     # Iterate over known compilers to identify the compiler type
@@ -893,7 +893,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}'")
     message(STATUS "${var_prefix}: >>> Generated Files Dir : '${AREG_GENERATE_DIR}'")
     message(STATUS "${var_prefix}: >>> Packages Dir .......: '${FETCHCONTENT_BASE_DIR}'")
-    message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_LIB}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+    message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_BINARY}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SQLITE_PACKAGE}', GTest package use = '${AREG_GTEST_PACKAGE}'")
     message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}', AREG Extended = '${AREG_EXTENDED}', Logs = '${AREG_LOGS}'")

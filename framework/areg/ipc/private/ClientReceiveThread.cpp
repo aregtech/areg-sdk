@@ -19,9 +19,9 @@
 #include "areg/ipc/IERemoteMessageHandler.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
+DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
 ClientReceiveThread::ClientReceiveThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
     : DispatcherThread  (namePrefix + NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD )
@@ -34,8 +34,8 @@ ClientReceiveThread::ClientReceiveThread(IERemoteMessageHandler& remoteService, 
 
 bool ClientReceiveThread::runDispatcher(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
-    TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
+    LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
+    LOG_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
     
     readyForEvents( true );
 
@@ -80,7 +80,7 @@ bool ClientReceiveThread::runDispatcher(void)
     readyForEvents(false);
     removeAllEvents( );
 
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
+    LOG_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
                 , getName().getString()
                 , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
 

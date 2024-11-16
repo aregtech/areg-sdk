@@ -11,11 +11,11 @@
   ************************************************************************/
 
 #include "common/src/LocalHelloWorldService.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include <stdlib.h>
 
 
-DEF_TRACE_SCOPE( examples_13_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
+DEF_LOG_SCOPE( examples_13_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 
 LocalHelloWorldService::LocalHelloWorldService( Component & masterComp )
     : LocalHelloWorldStub( masterComp )
@@ -26,7 +26,7 @@ LocalHelloWorldService::LocalHelloWorldService( Component & masterComp )
 
 void LocalHelloWorldService::requestHelloWorld( const String & roleName )
 {
-    TRACE_SCOPE( examples_13_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
+    LOG_SCOPE( examples_13_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 
     NELocalHelloWorld::sConnectedClient theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition( );
@@ -35,7 +35,7 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
         const NELocalHelloWorld::sConnectedClient & client = mClientList.valueAtPosition( pos );
         if ( roleName == client.ccName )
         {
-            TRACE_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString( ), client.ccID );
+            LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString( ), client.ccID );
             theClient = client;
             break;
         }
@@ -45,7 +45,7 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
     {
         theClient = NELocalHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
         mClientList.pushLast( theClient );
-        TRACE_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
+        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }
     else
     {

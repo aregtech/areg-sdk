@@ -99,13 +99,13 @@
     <ClCompile Include="areg\persist\private\NEPersistence.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\Layouts.cpp">
+    <ClCompile Include="areg\logging\private\Layouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\NELogging.cpp">
+    <ClCompile Include="areg\logging\private\NELogOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\NETrace.cpp">
+    <ClCompile Include="areg\logging\private\NELogging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\IESynchObject.cpp">
@@ -438,31 +438,31 @@
     <ClCompile Include="areg\persist\private\PropertyValue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\DebugOutputLogger.cpp">
+    <ClCompile Include="areg\logging\private\DebugOutputLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\FileLogger.cpp">
+    <ClCompile Include="areg\logging\private\FileLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\LayoutManager.cpp">
+    <ClCompile Include="areg\logging\private\LayoutManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\LoggerBase.cpp">
+    <ClCompile Include="areg\logging\private\LoggerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\LogMessage.cpp">
+    <ClCompile Include="areg\logging\private\LogMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\TraceEvent.cpp">
+    <ClCompile Include="areg\logging\private\LoggingEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\TraceManager.cpp">
+    <ClCompile Include="areg\logging\private\LogManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\TraceMessage.cpp">
+    <ClCompile Include="areg\logging\private\ScopeMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\TraceScope.cpp">
+    <ClCompile Include="areg\logging\private\LogScope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\IETimerConsumer.cpp">
@@ -486,7 +486,7 @@
     <ClCompile Include="areg\base\private\win32\NEDebugWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\LogConfiguration.cpp">
+    <ClCompile Include="areg\logging\private\LogConfiguration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\Watchdog.cpp">
@@ -516,25 +516,25 @@
     <ClCompile Include="areg\component\private\TimerManagerEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\NetTcpLogger.cpp">
+    <ClCompile Include="areg\logging\private\NetTcpLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\SortedEventStack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\ScopeController.cpp">
+    <ClCompile Include="areg\logging\private\ScopeController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\TraceEventProcessor.cpp">
+    <ClCompile Include="areg\logging\private\LogEventProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\ScopeNodeBase.cpp">
+    <ClCompile Include="areg\logging\private\ScopeNodeBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\ScopeNodes.cpp">
+    <ClCompile Include="areg\logging\private\ScopeNodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\IEServiceRegisterProvider.cpp">
@@ -564,10 +564,10 @@
     <ClCompile Include="areg\persist\private\IEDatabaseEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\DatabaseLogger.cpp">
+    <ClCompile Include="areg\logging\private\DatabaseLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\IELogDatabaseEngine.cpp">
+    <ClCompile Include="areg\logging\private\IELogDatabaseEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -713,16 +713,16 @@
     <ClInclude Include="areg\persist\NEPersistence.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\Layouts.hpp">
+    <ClInclude Include="areg\logging\private\Layouts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\NELogging.hpp">
+    <ClInclude Include="areg\logging\private\NELogOptions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\GETrace.h">
+    <ClInclude Include="areg\logging\GELog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\NETrace.hpp">
+    <ClInclude Include="areg\logging\NELogging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\system\posix\GEPosix.h">
@@ -998,31 +998,31 @@
     <ClInclude Include="areg\persist\PropertyKey.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\DebugOutputLogger.hpp">
+    <ClInclude Include="areg\logging\private\DebugOutputLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\FileLogger.hpp">
+    <ClInclude Include="areg\logging\private\FileLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\LayoutManager.hpp">
+    <ClInclude Include="areg\logging\private\LayoutManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\LoggerBase.hpp">
+    <ClInclude Include="areg\logging\private\LoggerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\LogMessage.hpp">
+    <ClInclude Include="areg\logging\private\LogMessage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\TraceEvent.hpp">
+    <ClInclude Include="areg\logging\private\LoggingEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\TraceManager.hpp">
+    <ClInclude Include="areg\logging\private\LogManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\TraceMessage.hpp">
+    <ClInclude Include="areg\logging\ScopeMessage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\TraceScope.hpp">
+    <ClInclude Include="areg\logging\LogScope.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\IETimerConsumer.hpp">
@@ -1052,7 +1052,7 @@
     <ClInclude Include="areg\base\WideString.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\LogConfiguration.hpp">
+    <ClInclude Include="areg\logging\LogConfiguration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\Watchdog.hpp">
@@ -1073,25 +1073,25 @@
     <ClInclude Include="areg\base\TEMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\NetTcpLogger.hpp">
+    <ClInclude Include="areg\logging\private\NetTcpLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\SortedEventStack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\ScopeController.hpp">
+    <ClInclude Include="areg\logging\private\ScopeController.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ServiceManagerEventProcessor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\TraceEventProcessor.hpp">
+    <ClInclude Include="areg\logging\private\LogEventProcessor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\ScopeNodeBase.hpp">
+    <ClInclude Include="areg\logging\private\ScopeNodeBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\ScopeNodes.hpp">
+    <ClInclude Include="areg\logging\private\ScopeNodes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\IEServiceRegisterProvider.hpp">
@@ -1124,10 +1124,10 @@
     <ClInclude Include="areg\persist\IEDatabaseEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\DatabaseLogger.hpp">
+    <ClInclude Include="areg\logging\private\DatabaseLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\IELogDatabaseEngine.hpp">
+    <ClInclude Include="areg\logging\IELogDatabaseEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\resources\resource.h">
@@ -1153,39 +1153,39 @@
   <ItemGroup>
     <Text Include="CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\appbase\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\base\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\base\private\posix\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\base\private\win32\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\component\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\ipc\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\persist\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
-    <Text Include="areg\trace\private\CMakeLists.txt">
+    </Text>
+    <Text Include="areg\logging\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\component\private\posix\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
     <Text Include="areg\component\private\win32\CMakeLists.txt">
       <Filter>Resource Files</Filter>
-    </Text>    
+    </Text>
   </ItemGroup>
 </Project>

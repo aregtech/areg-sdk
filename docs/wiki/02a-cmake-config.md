@@ -17,7 +17,7 @@ The following is the list of AREG SDK specific options that needs to be set befo
 2. [AREG_COMPILER](#2-areg_compiler)
 3. [AREG_PROCESSOR](#3-areg_processor) 
 4. [AREG_BINARY](#4-areg_binary)
-5. [AREG_LOGGER_LIB](#5-areg_logger_lib)
+5. [AREG_LOGGER_BINARY](#5-areg_logger_binary)
 6. [AREG_BUILD_TYPE](#6-areg_build_type)
 7. [AREG_BUILD_TESTS](#7-areg_build_tests)
 8. [AREG_BUILD_EXAMPLES](#8-areg_build_examples)
@@ -53,7 +53,7 @@ The following is the list of options that have impact on the build:
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
 | 4.  [AREG_BINARY](#4-areg_binary)                     | `areg` framework shared or static library.        |
-| 5.  [AREG_LOGGER_LIB](#5-areg_logger_lib)             | `areglogger` library shared or static library.    |
+| 5.  [AREG_LOGGER_BINARY](#5-areg_logger_binary)       | `areglogger` library shared or static library.    |
 | 6.  [AREG_BUILD_TYPE](#6-areg_build_type)             | `Debug` or `Release` build.                       |
 | 7.  [AREG_BUILD_TESTS](#7-areg_build_tests)           | Build or escape unit tests.                       |
 | 8.  [AREG_BUILD_EXAMPLES](#8-areg_build_examples)     | Build or escape example.                          |
@@ -104,6 +104,9 @@ The following are the available CMake options to configure the AREG SDK build. O
    - **Default**: `gnu` on Linux and Cygwin, `msvc` on Windows
    - **Example**: `cmake -B ./build -DAREG_COMPILER_FAMILY=llvm`
  
+> [!NOTE]  
+> The value of `AREG_COMPILER_FAMILY` variable is ignored and overridden by the value of the standard CMake variable `CMAKE_CXX_COMPILER` if the `<areg-sdk-config>/user.cmake` file is included in the project *after* the first invocation of `project()`.
+
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
 
 ---
@@ -114,16 +117,22 @@ The following are the available CMake options to configure the AREG SDK build. O
    - **Defaults**: System default compiler.
    - **Example**: `cmake -B ./build -DAREG_COMPILER=g++`
 
+> [!NOTE]  
+> The value of `AREG_COMPILER` variable is ignored and overridden by the value of the standard CMake variable `CMAKE_CXX_COMPILER` if the `<areg-sdk-config>/user.cmake` file is included in the project *after* the first invocation of `project()`.
+
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 3. **AREG_PROCESSOR**
 
-   - **Description**: Specifies the target processor architecture and bitness for the compiled application. By default, it uses the system’s processor architecture and bitness.
+   - **Description**: Specifies the target processor architecture and bitness for the compiled application. By default, it uses the system's processor architecture and bitness.
    - **Possible Values**: `x86`, `x64` (`x86_x64`, `amd64`), `arm` (`arm32`), `aarch64` (`arm64`)
    - **Default**: *System-Defined*
    - **Example**: `cmake -B ./build -DAREG_PROCESSOR=x86`
+
+> [!NOTE]  
+> The value of `AREG_PROCESSOR` may be ignored depending on the selected compiler and the inclusion timing of `<areg-sdk-config>/user.cmake`. For instance, if `AREG_PROCESSOR` is set to `arm`, the `AREG_COMPILER_FAMILY` is `gnu` and `user.cmake` is included *after* the first invocation of `project()`, the sources will be built for the host processor (like `x86_x64` using the default compiler settings.
 
 > [!TIP]  
 > To check if an application has been compiled for a 32-bit or 64-bit system, navigate to the build binary directory and run:
@@ -158,11 +167,11 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 5. **AREG_LOGGER_LIB**
+### 5. **AREG_LOGGER_BINARY**
    - **Description**: Sets the library type for the Log Observer API.
    - **Possible Values**: `shared`, `static`
    - **Default**: `shared`
-   - **Example**: `cmake -B ./build -DAREG_LOGGER_LIB=static`
+   - **Example**: `cmake -B ./build -DAREG_LOGGER_BINARY=static`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
 
@@ -173,6 +182,9 @@ The following are the available CMake options to configure the AREG SDK build. O
    - **Possible Values**: `Release`, `Debug`
    - **Default**: `Release`
    - **Example**: `cmake -B ./build -DAREG_BUILD_TYPE=Debug`
+
+> [!NOTE]  
+> The value of `AREG_BUILD_TYPE` variable is ignored and overridden by the value of the standard CMake variable `CMAKE_BUILD_TYPE` if the `<areg-sdk-config>/user.cmake` file is included in the project *after* the first invocation of `project()`.
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
 
@@ -295,8 +307,8 @@ The following are the available CMake options to configure the AREG SDK build. O
 ---
 
 ### 19. **AREG_PACKAGES**
-   - **Description**: Defines where third-party packages are stored. By default, this is set to a `packages` subdirectory within `AREG_BUILD_ROOT`.
-   - **Default**: `{AREG_BUILD_ROOT}/packages`
+   - **Description**: Defines where third-party packages are stored. By default, this is set to a `packages` subdirectory within `CMAKE_BINARY_DIR`.
+   - **Default**: `{CMAKE_BINARY_DIR}/packages`
    - **Example**: `cmake -B ./build -DAREG_PACKAGES=/path/to/packages`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>

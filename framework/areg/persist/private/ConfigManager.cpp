@@ -631,19 +631,19 @@ bool ConfigManager::getLogEnabled(const String& logType) const
     return result;
 }
 
-bool ConfigManager::getLogEnabled(NETrace::eLogingTypes logType) const
+bool ConfigManager::getLogEnabled(NELogging::eLogingTypes logType) const
 {
     String id = Identifier::convToString( static_cast<unsigned int>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeUndefined));
+                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
     return getLogEnabled(id);
 }
 
-void ConfigManager::setLogEnabled(NETrace::eLogingTypes logType, bool newValue, bool isTemporary /*= false*/)
+void ConfigManager::setLogEnabled(NELogging::eLogingTypes logType, bool newValue, bool isTemporary /*= false*/)
 {
     String id = Identifier::convToString( static_cast<unsigned int>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeUndefined));
+                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
     setLogEnabled(id, newValue, isTemporary);
 }
 

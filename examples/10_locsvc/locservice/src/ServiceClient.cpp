@@ -10,12 +10,12 @@
  * Include files.
  ************************************************************************/
 #include "locservice/src/ServiceClient.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum);
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_processTimer);
+DEF_LOG_SCOPE(examples_10_locservice_ServiceClient_serviceConnected);
+DEF_LOG_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum);
+DEF_LOG_SCOPE(examples_10_locservice_ServiceClient_responseHelloWorld);
+DEF_LOG_SCOPE(examples_10_locservice_ServiceClient_processTimer);
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -38,7 +38,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 
 bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_serviceConnected);
+    LOG_SCOPE(examples_10_locservice_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );
     // subscribe when service connected and un-subscribe when disconnected.
     if ( isConnected( ) )
@@ -57,15 +57,15 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
 void ServiceClient::responseHelloWorld( void )
 {
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Received response on request to print greetings from the client");
+    LOG_SCOPE(examples_10_locservice_ServiceClient_responseHelloWorld);
+    LOG_DBG("Received response on request to print greetings from the client");
 }
 
 #if AREG_LOGS
 void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
-    TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
+    LOG_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
+    LOG_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     requestShutdownService( );
 }
 #else   // AREG_LOGS
@@ -77,9 +77,9 @@ void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
 
 void ServiceClient::processTimer(Timer & timer)
 {
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_processTimer);
+    LOG_SCOPE(examples_10_locservice_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
 
-    TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
+    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
     requestHelloWorld(getRoleName());
 }

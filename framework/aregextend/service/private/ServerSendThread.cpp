@@ -17,11 +17,11 @@
 #include "areg/component/NEService.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "aregextend/service/ServerConnection.hpp"
 
 
-DEF_TRACE_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
+DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(IERemoteMessageHandler& remoteService, ServerConnection & connection)
     : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD )
@@ -51,7 +51,7 @@ void ServerSendThread::readyForEvents( bool isReady )
 
 void ServerSendThread::processEvent( const SendMessageEventData & data )
 {
-    TRACE_SCOPE( areg_aregextend_service_ServerSendThread_processEvent );
+    LOG_SCOPE( areg_aregextend_service_ServerSendThread_processEvent );
     if (data.isForwardMessage())
     {
         const RemoteMessage & msgSend = data.getRemoteMessage( );
@@ -60,7 +60,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         const ITEM_ID & target{ msgSend.getTarget() };
         SocketAccepted client{ mConnection.getClientByCookie(target) };
 
-        TRACE_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
+        LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , NEService::getString(static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()))
                     , static_cast<unsigned int>(msgSend.getMessageId())
                     , client.getAddress().getHostAddress().getString()
@@ -72,7 +72,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         int sentBytes = 0;
         if ((client.isAlive() == false) || ((sentBytes = mConnection.sendMessage(msgSend, client)) <= 0))
         {
-            TRACE_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
+            LOG_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
                         , msgSend.getMessageId()
                         , static_cast<unsigned int>(msgSend.getTarget())
                         , client.isAlive() ? "ALIVE" : "DEAD");
@@ -86,12 +86,12 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
                 mBytesSend += static_cast<uint32_t>(sentBytes);
             }
 
-            TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
+            LOG_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }
     else if (data.isExitThreadMessage() )
     {
-        TRACE_DBG("Going to quite send message thread");
+        LOG_DBG("Going to quite send message thread");
         mConnection.closeAllConnections( );
         mConnection.closeSocket( );
         triggerExit( );

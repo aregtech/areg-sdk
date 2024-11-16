@@ -30,16 +30,16 @@
 #include "areg/ipc/IEServiceConnectionConsumer.hpp"
 #include "areg/ipc/IEServiceRegisterProvider.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
-DEF_TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
+DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
 
 ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & serviceManager )
@@ -280,7 +280,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
 void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, IEServiceRegisterProvider& registerProvider)
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
 
     if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
     {
@@ -291,7 +291,7 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
 
 #if AREG_LOGS
     const ServerInfo & server = mServerList.registerServer( whichServer, clientList );
-    TRACE_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
+    LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
                , NEService::getString( server.getConnectionStatus( ) )
                , clientList.getSize( ) );
@@ -311,7 +311,7 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
 
 void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider)
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
     if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
     {
@@ -322,7 +322,7 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
 
 #if AREG_LOGS
     ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
-    TRACE_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
+    LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
                , NEService::getString( reason )
                , NEService::getString( server.getConnectionStatus( ) )
@@ -347,7 +347,7 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
 
 void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, IEServiceRegisterProvider& registerProvider)
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
 
     if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
     {
@@ -357,7 +357,7 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     ClientInfo client;
     const ServerInfo & server = mServerList.registerClient( whichClient, client );
 
-    TRACE_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
+    LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
                , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
                , NEService::getString( client.getConnectionStatus( ) ) );
@@ -368,13 +368,13 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     }
     else
     {
-        TRACE_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
     }
 }
 
 void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider)
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 
     if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
     {
@@ -384,7 +384,7 @@ void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & which
     ClientInfo client;
 
     ServerInfo server = mServerList.unregisterClient( whichClient, client );
-    TRACE_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
+    LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
                , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
                , NEService::getString( client.getConnectionStatus( ) ) );
@@ -396,16 +396,16 @@ void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & which
     }
     else
     {
-        TRACE_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
     }
 }
 
 void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
     if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
     {
-        TRACE_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
+        LOG_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
                    , StubAddress::convAddressToPath( server ).getString( )
                    , ProxyAddress::convAddressToPath( client ).getString( ) );
 
@@ -418,7 +418,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
 
     if ( client.isLocalAddress( ) && client.getSource( ) != NEService::SOURCE_UNKNOWN )
     {
-        TRACE_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
+        LOG_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
                    , ProxyAddress::convAddressToPath( client ).getString( )
                    , StubAddress::convAddressToPath( server ).getString( ) );
 
@@ -434,11 +434,11 @@ void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddres
                                                              , const StubAddress & server
                                                              , const NEService::eServiceConnection status ) const
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
 
     if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
     {
-        TRACE_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
+        LOG_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
                    , StubAddress::convAddressToPath( server ).getString( )
                    , ProxyAddress::convAddressToPath( client ).getString( ) );
 
@@ -451,7 +451,7 @@ void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddres
 
     if ( client.isLocalAddress( ) )
     {
-        TRACE_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
+        LOG_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
                    , ProxyAddress::convAddressToPath( client ).getString( )
                    , StubAddress::convAddressToPath( server ).getString( ) );
 
@@ -465,7 +465,7 @@ void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddres
 
 bool ServiceManagerEventProcessor::_terminateComponentThread( const String & threadName )
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
 
     bool result{ false };
 
@@ -473,13 +473,13 @@ bool ServiceManagerEventProcessor::_terminateComponentThread( const String & thr
     ComponentThread * compThread = RUNTIME_CAST( thread, ComponentThread );
     if ( compThread != nullptr )
     {
-        TRACE_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );
+        LOG_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );
         result = true;
         compThread->terminateSelf( );
     }
     else
     {
-        TRACE_INFO( "Was not able to find component thread [ %s ] to terminate", threadName.getString( ) );
+        LOG_INFO( "Was not able to find component thread [ %s ] to terminate", threadName.getString( ) );
     }
 
     return result;
@@ -487,7 +487,7 @@ bool ServiceManagerEventProcessor::_terminateComponentThread( const String & thr
 
 void ServiceManagerEventProcessor::_startComponentThread( const String & threadName )
 {
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
+    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
     const NERegistry::ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
     Thread * thread = Thread::findThreadByName( threadName );
@@ -496,15 +496,15 @@ void ServiceManagerEventProcessor::_startComponentThread( const String & threadN
         ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
         if ( (compThread != nullptr) && compThread->createThread( NECommon::WAIT_INFINITE ) )
         {
-            TRACE_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );
+            LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );
         }
         else
         {
-            TRACE_WARN( "Failed to create and start component thread [ %s ]", threadName.getString( ) );
+            LOG_WARN( "Failed to create and start component thread [ %s ]", threadName.getString( ) );
         }
     }
     else
     {
-        TRACE_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.getString( ) );
+        LOG_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.getString( ) );
     }
 }

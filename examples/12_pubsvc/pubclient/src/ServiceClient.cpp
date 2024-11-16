@@ -10,13 +10,13 @@
  * Include files.
  ************************************************************************/
 #include "pubclient/src/ServiceClient.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/appbase/Application.hpp"
 
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_processTimer);
+DEF_LOG_SCOPE(examples_12_pubclient_ServiceClient_serviceConnected);
+DEF_LOG_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
+DEF_LOG_SCOPE(examples_12_pubclient_ServiceClient_responseHelloWorld);
+DEF_LOG_SCOPE(examples_12_pubclient_ServiceClient_processTimer);
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -40,7 +40,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 
 bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE( examples_12_pubclient_ServiceClient_serviceConnected );
+    LOG_SCOPE( examples_12_pubclient_ServiceClient_serviceConnected );
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );
 
     // subscribe when service connected and un-subscribe when disconnected.
@@ -51,12 +51,12 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     }
     else if ( NEService::isServiceConnectionLost( status ) )
     {
-        TRACE_WARN( "The connection is lost! Waiting for connection recovery!" );
+        LOG_WARN( "The connection is lost! Waiting for connection recovery!" );
         mTimer.stopTimer( );
     }
     else
     {
-        TRACE_WARN("Shutting down application!");
+        LOG_WARN("Shutting down application!");
         mTimer.stopTimer( );
         Application::signalAppQuit();
     }
@@ -66,8 +66,8 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
 void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
 {
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
+    LOG_SCOPE(examples_12_pubclient_ServiceClient_responseHelloWorld);
+    LOG_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
     ASSERT(clientInfo.ccName == getRoleName());
     mID = clientInfo.ccID;
 }
@@ -75,8 +75,8 @@ void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & cl
 #if AREG_LOGS
 void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
-    TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
+    LOG_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
+    LOG_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     requestShutdownService(mID, getRoleName());
     mID = 0;
 }
@@ -90,9 +90,9 @@ void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
 
 void ServiceClient::processTimer(Timer & timer)
 {
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_processTimer);
+    LOG_SCOPE(examples_12_pubclient_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
 
-    TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
+    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
     requestHelloWorld(getRoleName());
 }

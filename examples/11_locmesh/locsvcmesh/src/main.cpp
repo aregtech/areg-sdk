@@ -21,7 +21,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include "locsvcmesh/src/ClientComponent.hpp"
 #include "locsvcmesh/src/ServicingComponents.hpp"
@@ -102,20 +102,20 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_11_locsvcmesh_main);
+DEF_LOG_SCOPE(example_11_locsvcmesh_main);
 //! \brief   A Demo of mesh of local services and clients.
 int main()
 {
     std::cout << "A Demo of mesh of local services and clients ..." << std::endl;
 
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr );
     Application::initApplication( true, true, false, true, true, nullptr );
 
     do
     {
-        TRACE_SCOPE( example_11_locsvcmesh_main );
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
+        LOG_SCOPE( example_11_locsvcmesh_main );
+        LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         NEMemory::uAlign data;
         data.alignBool.mElement = true;
@@ -123,7 +123,7 @@ int main()
 
         // load model to initialize components
         Application::loadModel(_modelName);
-        TRACE_DBG("Servicing model is loaded");
+        LOG_DBG("Servicing model is loaded");
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
         // stop and unload components

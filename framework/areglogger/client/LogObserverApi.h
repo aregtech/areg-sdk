@@ -177,11 +177,11 @@ enum eObserverStates
 
 /**
  * \brief   The callback of the event triggered when initializing and configuring the observer.
- *          The callback indicates the IP address and port number of the logger service set
+ *          The callback indicates the IP address and port number of the log collector service set
  *          in the configuration file.
  *          isEnabled       The flag, indicating whether the logging service is enabled or not.
- *          address         The null-terminated string of the IP address of the logger service set in the configuration file.
- *          port            The IP port number of the logger service set in the configuration file.
+ *          address         The null-terminated string of the IP address of the log collector service set in the configuration file.
+ *          port            The IP port number of the log collector service set in the configuration file.
  **/
 typedef void (*FuncObserverConfigured)(bool /*isEnabled*/, const char* /*address*/, uint16_t /*port*/);
 
@@ -197,10 +197,10 @@ typedef void (*FuncObserverConfigured)(bool /*isEnabled*/, const char* /*address
 typedef void (*FuncLogDbConfigured)(bool /*isEnabled*/, const char* /*dbName*/, const char* /*dbLocation*/, const char* /*dbUser*/);
 
 /**
- * \brief   The callback of the event triggered when the observer connects or disconnects from the logger service.
+ * \brief   The callback of the event triggered when the observer connects or disconnects from the log collector service.
  *          isConnected     Flag, indicating whether observer is connected or disconnected.
- *          address         The IP address of the logger service to connect or disconnect.
- *          port            The IP port number of the logger service to connect or disconnect.
+ *          address         The IP address of the log collector service to connect or disconnect.
+ *          port            The IP port number of the log collector service to connect or disconnect.
  **/
 typedef void (*FuncServiceConnected)(bool /*isConnected*/, const char * /*address*/, uint16_t /*port*/);
 
@@ -255,8 +255,8 @@ typedef void (*FuncLogMessage)(const sLogMessage * /*logMessage*/);
 
 /**
  * \brief   The callback of the event triggered when receive remote message to log.
- *          The buffer indicates to the NETrace::sLogMessage structure.
- *          logBuffer   The pointer to the NETrace::sLogMessage structure to log messages.
+ *          The buffer indicates to the NELogging::sLogMessage structure.
+ *          logBuffer   The pointer to the NELogging::sLogMessage structure to log messages.
  *          size        The size of the buffer with log message.
  **/
 typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*size*/);
@@ -266,11 +266,11 @@ typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*
  **/
 struct sObserverEvents
 {
-    /* The callback to the trigger when the observer is initialized and configured, and the information of the logger is available. */
+    /* The callback to the trigger when the observer is initialized and configured, and the information of the log collector is available. */
     FuncObserverConfigured  evtObserverConfigured;
     /* The callback to trigger when the observer is initialized and configured, and the information of logging database is available. */
     FuncLogDbConfigured     evtLogDbConfigured;
-    /* The callback to trigger when connect or disconnect logger service. */
+    /* The callback to trigger when connect or disconnect log collector service. */
     FuncServiceConnected    evtServiceConnected;
     /* The callback to trigger when log observer is started or paused. */
     FuncObserverStarted     evtLoggingStarted;
@@ -308,11 +308,11 @@ LOGGER_API bool logObserverInitialize(const sObserverEvents * callbacks, const c
 LOGGER_API void logObserverRelease();
 
 /**
- * \brief   Call to trigger TCP/IP connection with the logger service. Either specify the IP address and the port number
- *          of the logger service to connect, or pass NULL to use settings indicated in the LOGconfiguration file.
+ * \brief   Call to trigger TCP/IP connection with the log collector service. Either specify the IP address and the port number
+ *          of the log collector service to connect, or pass NULL to use settings indicated in the LOGconfiguration file.
  * \param   dbPath      The path to the logging database file. If NULL, uses the path specified in the config file.
  *                      The file path may as well contain masking like "./log/log_%time%.db".
- * \param   ipAddress   The IP address or the host name of the logger service. If NULL, uses IP address indicated in the config file.
+ * \param   ipAddress   The IP address or the host name of the log collector service. If NULL, uses IP address indicated in the config file.
  *                      If NULL, the port number is ignored and the value in the configuration file is used.
  * \param   portNr      The port number to connect. If 0, uses port number indicated in the config file.
  *                      If 0, the IP address is ignore and the value in the configuration file is used.
@@ -324,7 +324,7 @@ LOGGER_API void logObserverRelease();
 LOGGER_API bool logObserverConnectLogger(const char * dbPath /* = NULL */, const char* ipAddress /* = NULL */, uint16_t portNr /* = NULL */);
 
 /**
- * \brief   Call to trigger disconnect from logger service.
+ * \brief   Call to trigger disconnect from log collector service.
  *          After disconnecting the callback of FuncServiceConnected type is triggered.
  **/
 LOGGER_API void logObserverDisconnectLogger();
@@ -344,14 +344,14 @@ LOGGER_API bool logObserverPauseLogging(bool doPause);
 LOGGER_API eObserverStates logObserverCurrentState();
 
 /**
- * \brief   Returns true if log observer is initialized and the logger service connection is triggered.
+ * \brief   Returns true if log observer is initialized and the log collector service connection is triggered.
  *          Otherwise, it returns false.
- *          The method does not indicate whether the observer is connected to the logger service or not.
+ *          The method does not indicate whether the observer is connected to the log collector service or not.
  **/
 LOGGER_API bool logObserverIsInitialized();
 
 /**
- * \brief   Returns true if log observer is initialize and connected to the logger service.
+ * \brief   Returns true if log observer is initialize and connected to the log collector service.
  *          Otherwise, it returns false.
  **/
 LOGGER_API bool logObserverIsConnected();
@@ -363,25 +363,25 @@ LOGGER_API bool logObserverIsConnected();
 LOGGER_API bool logObserverIsStarted();
 
 /**
- * \brief   Returns the current IP address of the logger service to connect.
+ * \brief   Returns the current IP address of the log collector service to connect.
  *          Returns empty string, if not configured or the IP address is unknown
  **/
 LOGGER_API const char * logObserverLoggerAddress();
 
 /**
- * \brief   Returns the current IP port of the logger service to connect.
+ * \brief   Returns the current IP port of the log collector service to connect.
  *          Return 0 (invalid port), if not configured or the port number is unknown
  **/
 LOGGER_API uint16_t logObserverLoggerPort();
 
 /**
- * \brief   Return true if logger TCP/IP connection is enabled in the configuration file.
+ * \brief   Return true if log collector TCP/IP connection is enabled in the configuration file.
  *          Otherwise, returns false.
  **/
 LOGGER_API bool logObserverConfigLoggerEnabled();
 
 /**
- * \brief   On exit, the addrBuffer contains the IP address of the logger registered in the configuration file.
+ * \brief   On exit, the addrBuffer contains the IP address of the log collector registered in the configuration file.
  * \param   addrBuffer  Should be valid pointer of the buffer to write the IP address, the minimum size should be 16 bytes.
  * \param   space       The length of the buffer to write the IP address, inclusive the null-terminated character at the end.
  * \return  Returns true, if succeeds to write the address. Returns false, if the log observer is not configured,
@@ -390,7 +390,7 @@ LOGGER_API bool logObserverConfigLoggerEnabled();
 LOGGER_API bool logObserverConfigLoggerAddress(char * addrBuffer, uint32_t space);
 
 /**
- * \brief   Returns the configured IP port of the logger service to connect,
+ * \brief   Returns the configured IP port of the log collector service to connect,
  *          i.e. the IP port saved in configuration file. Returns 0 (invalid port),
  *          if the log observer is not configured or the port number is not specified in configuration.
  **/

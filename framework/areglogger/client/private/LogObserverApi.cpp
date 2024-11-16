@@ -304,10 +304,10 @@ LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLo
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState) && (target != ID_IGNORE))
     {
-        NETrace::ScopeNames scopeList(count);
+        NELogging::ScopeNames scopeList(count);
         for (uint32_t i = 0; i < count; ++i)
         {
-            scopeList.add(NETrace::sScopeInfo(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
+            scopeList.add(NELogging::sScopeInfo(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
         }
 
         result = LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);

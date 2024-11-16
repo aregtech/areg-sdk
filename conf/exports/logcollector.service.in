@@ -1,0 +1,20 @@
+﻿[Unit]
+Description=AREG TCP/IP Logging Service to collect application logs
+StartLimitIntervalSec=1
+
+[Service]
+# Set the full path to logcollector.out file and start with option '--service'
+ExecStart=@AREG_INSTALL_DST@/tools/@AREG_PACKAGE_NAME@/logcollector.out --service
+Type=simple
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+Alias=logcollector.service
+
+# Run this file under Linux with admin rights to enable, start or stop AREG Log Collector Service.
+# Example:
+# Enable service: sudo systemctl enable logcollector.service
+# Start  service: sudo systemctl start  logcollector.service
+# Stop   service: sudo systemctl stop   logcollector.service

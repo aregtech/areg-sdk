@@ -13,17 +13,17 @@
 #include "pubservice/src/ServicingComponent.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
 #include <chrono>
 
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_startupServiceInterface);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_shutdownServiceIntrface);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onOptionEvent);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onThreadRuns);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runInputThread);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runImageThread);
+DEF_LOG_SCOPE(examples_20_pubservice_ServicingComponent_startupServiceInterface);
+DEF_LOG_SCOPE(examples_20_pubservice_ServicingComponent_shutdownServiceIntrface);
+DEF_LOG_SCOPE(examples_20_pubservice_ServicingComponent_onOptionEvent);
+DEF_LOG_SCOPE(examples_20_pubservice_ServicingComponent_onThreadRuns);
+DEF_LOG_SCOPE(examples_20_pubservice_ServicingComponent__runInputThread);
+DEF_LOG_SCOPE(examples_20_pubservice_ServicingComponent__runImageThread);
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent::OptionConsumer class implementation
@@ -93,7 +93,7 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
 
 void ServicingComponent::startupServiceInterface( Component & holder )
 {
-    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_startupServiceInterface);
+    LOG_SCOPE(examples_20_pubservice_ServicingComponent_startupServiceInterface);
 
     unsigned int sizeSend{ 0 }, sizeReceive{ 0 };
     mQuitThread = false;
@@ -127,7 +127,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 
 void ServicingComponent::shutdownServiceIntrface(Component& holder)
 {
-    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_shutdownServiceIntrface);
+    LOG_SCOPE(examples_20_pubservice_ServicingComponent_shutdownServiceIntrface);
 
     mQuitThread = true;
     mOptionChanged = true;
@@ -186,11 +186,11 @@ void ServicingComponent::onTimerExpired( void )
 
 void ServicingComponent::onOptionEvent(const OptionData& data)
 {
-    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onOptionEvent);
+    LOG_SCOPE(examples_20_pubservice_ServicingComponent_onOptionEvent);
     
     if (data.hasError())
     {
-        TRACE_WARN("Error input of command");
+        LOG_WARN("Error input of command");
         Console& console = Console::getInstance();
 
         console.saveCursorPosition();
@@ -199,7 +199,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
     else if (data.hasQuit())
     {
-        TRACE_WARN("Reqeusted to quit application");
+        LOG_WARN("Reqeusted to quit application");
         
         mQuitThread = true;
         mOptionChanged = true;
@@ -213,7 +213,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
     else if (data.hasStart())
     {
-        TRACE_INFO("Requested to start the generating data");
+        LOG_INFO("Requested to start the generating data");
 
         mQuitThread = false;
         mOptionChanged = true;
@@ -224,7 +224,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
     else if (data.hasStop())
     {
-        TRACE_INFO("Requested to stop generating data");
+        LOG_INFO("Requested to stop generating data");
 
         mQuitThread = false;
         mOptionChanged = true;
@@ -235,17 +235,17 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
     else if (data.hasPrintHelp())
     {
-        TRACE_INFO("Requested to print help");
+        LOG_INFO("Requested to print help");
         _printHelp();
     }
     else if (data.hasPrintInfo())
     {
-        TRACE_INFO("Requested to print info");
+        LOG_INFO("Requested to print info");
         _printInfo();
     }
     else
     {
-        TRACE_INFO("Requested to change the generating data parameter(s)");
+        LOG_INFO("Requested to change the generating data parameter(s)");
 
         bool isRunning = mOptions.hasStart();
         mOptions.update(data);
@@ -272,17 +272,17 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
 void ServicingComponent::onThreadRuns(void)
 {
-    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onThreadRuns);
+    LOG_SCOPE(examples_20_pubservice_ServicingComponent_onThreadRuns);
 
     const String& threadName = Thread::getCurrentThreadName();
     if (threadName == THREAD_WAITINPUT )
     {
-        TRACE_DBG("Started console input thread.");
+        LOG_DBG("Started console input thread.");
         _runInputThread();
     }
     else if (threadName == THREAD_GENERATE )
     {
-        TRACE_DBG("Started generate image thread.");
+        LOG_DBG("Started generate image thread.");
         _runImageThread();
     }
 }
@@ -294,8 +294,8 @@ void ServicingComponent::_runInputThread(void)
     bool cmdQuit{ false };
     while ((cmdQuit == false) && (mQuitThread == false))
     {
-        TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runInputThread);
-        TRACE_DBG("Waiting to enter option command ...");
+        LOG_SCOPE(examples_20_pubservice_ServicingComponent__runInputThread);
+        LOG_DBG("Waiting to enter option command ...");
 
         console.outputTxt(COORD_OPTIONS, MSG_INPUT_OPTION);
         console.refreshScreen();
@@ -306,13 +306,13 @@ void ServicingComponent::_runInputThread(void)
         cmdQuit = newData.hasQuit();
         EventOption::sendEvent(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), getComponentThread());
 
-        TRACE_DBG("Have go the option command [ %s ]", cmd.getString());
+        LOG_DBG("Have go the option command [ %s ]", cmd.getString());
     }
 }
 
 void ServicingComponent::_runImageThread(void)
 {
-    TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runImageThread);
+    LOG_SCOPE(examples_20_pubservice_ServicingComponent__runImageThread);
 
     uint32_t seqNr = 0;
     std::chrono::nanoseconds nsPerBlock{ mOptions.nsPerBlock() };

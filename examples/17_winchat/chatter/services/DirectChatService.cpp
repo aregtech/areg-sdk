@@ -12,12 +12,12 @@
 #include "chatter/ui/PageChat.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-DEF_TRACE_SCOPE( chatter_DirectChatService_StartupComponent );
-DEF_TRACE_SCOPE( chatter_DirectChatService_ShutdownComponent );
-DEF_TRACE_SCOPE( chatter_DirectChatService_RequestChatJoin );
-DEF_TRACE_SCOPE( chatter_DirectChatService_RequestMessageSend );
-DEF_TRACE_SCOPE( chatter_DirectChatService_RequestMessageType );
-DEF_TRACE_SCOPE( chatter_DirectChatService_RequestChatLeave );
+DEF_LOG_SCOPE( chatter_DirectChatService_StartupComponent );
+DEF_LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
+DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
+DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
+DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
+DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
 
 NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticipant & initiator
                                              , const NEDirectMessager::ListParticipants & listParticipants
@@ -74,7 +74,7 @@ DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, 
 
 void DirectChatService::startupComponent( ComponentThread & comThread )
 {
-    TRACE_SCOPE( chatter_DirectChatService_StartupComponent );
+    LOG_SCOPE( chatter_DirectChatService_StartupComponent );
     Component::startupComponent(comThread);
     mPaticipantsHandler.SetConnectionService( this );
 
@@ -93,7 +93,7 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
 
 void DirectChatService::shutdownComponent( ComponentThread & comThread )
 {
-    TRACE_SCOPE( chatter_DirectChatService_ShutdownComponent );
+    LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
     mPaticipantsHandler.SetConnectionService( nullptr );
 
     for (uint32_t i = 0; i < mListClients.getSize(); ++ i )
@@ -114,7 +114,7 @@ void DirectChatService::startupServiceInterface( Component & holder )
 
 void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
-    TRACE_SCOPE( chatter_DirectChatService_RequestChatJoin );
+    LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
     if ( mPaticipantsHandler.ParticipantExist(participant) )
     {
         bool newParticipant = false;
@@ -140,7 +140,7 @@ void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & 
 
 void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & timeSent )
 {
-    TRACE_SCOPE( chatter_DirectChatService_RequestMessageSend );
+    LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
     const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
     if ( chatParticipants.contains(participant, 0) )
     {
@@ -151,7 +151,7 @@ void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant
 
 void DirectChatService::requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText )
 {
-    TRACE_SCOPE( chatter_DirectChatService_RequestMessageType );
+    LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
     const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
     if ( chatParticipants.contains( participant, 0 ) )
     {
@@ -161,7 +161,7 @@ void DirectChatService::requestMessageType( const NEDirectMessager::sParticipant
 
 void DirectChatService::requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave )
 {
-    TRACE_SCOPE( chatter_DirectChatService_RequestChatLeave );
+    LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
     NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
     if ( chatParticipants.removeElem( participant, 0 ) )
     {

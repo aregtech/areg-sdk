@@ -18,7 +18,7 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/NEMemory.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
 {

@@ -13,7 +13,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include "subscribermulti/src/Subscriber.hpp"
 
@@ -55,7 +55,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_main);
+DEF_LOG_SCOPE(example_24_pubsubmulti_subscribermulti_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -64,20 +64,20 @@ int main()
 {
     printf("Testing PubSub service consumer...\n");
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     Application::initApplication( );
 
     do
     {
-        TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
+        LOG_SCOPE(example_24_pubsubmulti_subscribermulti_main);
+        LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
         Application::loadModel(_modelName);
 
-        TRACE_DBG("Servicing model is loaded");
+        LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);

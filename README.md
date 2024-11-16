@@ -122,7 +122,7 @@ The fault-tolerant design of AREG offers key advantages, such as:
 The **AREG SDK** consists of several modules to streamline distributed, real-time applications development:
 - **[AREG Communication Engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
 - **[Multicast Router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
-- **[Log Collector (*logger*)](./framework/logger/):** Collects logs from various applications and forwards them to log observers.
+- **[Log Collector (*logcollector*)](./framework/logcollector/):** Collects logs from  applications and forwards them to log observers.
 - **[Log observer Library (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
 - **[Log observer (*logobserver*)](./framework/logobserver/):** In real-time mode monitors, saves and dynamically controls logs.
 - **[AREG Extended Library (*aregextend*)](./framework/aregextend/):** Offers additional objects with extended features.
@@ -314,7 +314,7 @@ You can also set up multiprocess applications using same components and changing
 
 ### Multicast Router and Log Collector
 
-Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for the multicast router and log collector services are provided in the `areg.init` file. Both processes are designed to run as console applications or as **Operating System managed** services.
+Both **mcrouter** and **logcollector** are essential components for communication and log collection. Configuration templates for the multicast router and log collector services are provided in the `areg.init` file. Both processes are designed to run as console applications or as **Operating System managed** services.
 
 For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/05a-mcrouter.md)** and **[Log Collector Service](./docs/wiki/04d-logcollector.md)** pages. *Discover how the AREG SDK's Multicast Router and Log Collector streamline communication and logging in edge computing and real-time data transfer systems.*
 
@@ -333,7 +333,7 @@ The AREG SDK offers hands-on examples demonstrating **Multithreading** and **Mul
 **Some Featured Examples:**
 1. **[00_helloservice](./examples/00_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG's intuitive, interface-driven approach.
 
-2. **[04_trace](./examples/04_trace/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
+2. **[04_logging](./examples/04_logging/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
 
 3. **[16_pubfsm](./examples/16_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG's *Timers* and *Events* for smooth state transitions.
 

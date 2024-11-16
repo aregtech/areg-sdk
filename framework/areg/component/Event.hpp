@@ -36,19 +36,19 @@
  *          Do not use them directly, instead use DECLARE_RUNTIME_EVENT
  **/
 #define DECLARE_EVENT_STATIC_REGISTRATION(EventClass)                                                                   \
-    public:                                                                                                             \
-        /*  Declare static function to add/register event consumer to start processing event.       */                  \
-        static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());      \
-        /*  Declare static function to add/register event consumer to start processing event.       */                  \
-        static bool addListener(IEEventConsumer& eventConsumer, id_type whichThread);                                   \
-        /*  Declare static function to add/register event consumer to start processing event.       */                  \
-        static bool addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);                         \
-        /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
-        static bool removeListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());   \
-        /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
-        static bool removeListener(IEEventConsumer& eventConsumer, id_type whichThread);                                \
-        /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
-        static bool removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);
+public:                                                                                                                 \
+    /*  Declare static function to add/register event consumer to start processing event.       */                      \
+    static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());     \
+    /*  Declare static function to add/register event consumer to start processing event.       */                      \
+    static bool addListener(IEEventConsumer& eventConsumer, id_type whichThread);                                       \
+    /*  Declare static function to add/register event consumer to start processing event.       */                      \
+    static bool addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);                             \
+    /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
+    static bool removeListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());  \
+    /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
+    static bool removeListener(IEEventConsumer& eventConsumer, id_type whichThread);                                    \
+    /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
+    static bool removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);
 
 /**
  * \brief   MACRO, implements static functions to add and remove

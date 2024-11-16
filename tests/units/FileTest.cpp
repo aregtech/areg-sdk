@@ -19,8 +19,8 @@
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
-#include "areg/trace/GETrace.h"
-#include "areg/trace/NETrace.hpp"
+#include "areg/logging/GELog.h"
+#include "areg/logging/NELogging.hpp"
 
 #include <fstream>
 #include <filesystem>

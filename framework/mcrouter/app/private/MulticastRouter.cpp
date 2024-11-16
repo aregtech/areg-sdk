@@ -21,7 +21,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include "aregextend/console/Console.hpp"
 
@@ -76,17 +76,17 @@ namespace
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Traces.
+// Scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_servicePause);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_servicePause);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
+DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_setState);
 
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class implementation

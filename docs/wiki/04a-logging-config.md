@@ -18,7 +18,7 @@ The AREG SDK offers a highly configurable logging system via the **AREG log conf
 
 The `areg.init` file, located in the `./config` folder by default, structures logging configurations using the format `section::(module|*)::property[::position] = value`. Each entry specifies:
 
-- **section**: The log area (e.g., `log`, `logger`).
+- **section**: The log area (e.g., `log`, `logcollector`).
 - **module**: Targets specific applications or globally (`*`).
 - **property & position**: Defines settings like file paths, destinations, and logging levels.
 
@@ -107,7 +107,7 @@ Supported priorities include:
 | Priority:  |  Explanation:                        |
 |------------|--------------------------------------|
 | **NOTSET** | No logging.                          |
-| **SCOPE**  | Logs only scope *enter* and *exit*.  |
+| **SCOPE**  | Logs only *enter* and *exit* scopes. |
 | **DEBUG**  | Logs debug and higher.               |
 | **INFO**   | Logs informational and higher.       |
 | **WARN**   | Logs warnings and higher.            |

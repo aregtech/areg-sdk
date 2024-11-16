@@ -11,7 +11,7 @@
  ************************************************************************/
 
 #include "locsvcmesh/src/ServicingComponents.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 

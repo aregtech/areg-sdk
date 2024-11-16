@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}</ProjectGuid>
+    <ProjectName>logcollector</ProjectName>
+    <RootNamespace>logcollector</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>$(AregFramewor)logcollector\resources\logcollector_post_build.bat "$(AregFramewor)logcollector\resources\" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy  Log Collector service install and uninstall scripts to the config directory.</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="logcollector\app\private\LogCollectorConsoleService.cpp" />
+    <ClCompile Include="logcollector\app\private\LogCollector.cpp" />
+    <ClCompile Include="logcollector\app\private\NELogCollectorSettings.cpp" />
+    <ClCompile Include="logcollector\app\private\posix\LogCollectorPosix.cpp" />
+    <ClCompile Include="logcollector\app\private\win32\LogCollectorWin32.cpp" />
+    <ClCompile Include="logcollector\service\private\LogCollectorMessageProcessor.cpp" />
+    <ClCompile Include="logcollector\service\private\LogCollectorServerService.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="logcollector\app\LogCollector.hpp" />
+    <ClInclude Include="logcollector\app\NELogCollectorSettings.hpp" />
+    <ClInclude Include="logcollector\app\private\LogCollectorConsoleService.hpp" />
+    <ClInclude Include="logcollector\service\LogCollectorServerService.hpp" />
+    <ClInclude Include="logcollector\service\private\LogCollectorMessageProcessor.hpp" />
+    <ClInclude Include="logcollector\resources\resource.h" />
+    <ClInclude Include="logcollector\resources\targetver.h" />
+    <ResourceCompile Include="logcollector\resources\logcollector.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="logcollector\Readme.md" />
+    <None Include="logcollector\resources\logcollector.ico" />
+    <None Include="logcollector\resources\logcollector.service" />
+    <None Include="logcollector\resources\logcollector_post_build.bat" />
+    <None Include="logcollector\resources\small.ico" />
+    <None Include="logcollector\resources\logcollector.service.install.bat" />
+    <None Include="logcollector\resources\logcollector.service.uninstall.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="logcollector\app\private\CMakeLists.txt" />
+    <Text Include="logcollector\CMakeLists.txt" />
+    <Text Include="logcollector\resources\Readme.md" />
+    <Text Include="logcollector\service\private\CMakeLists.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

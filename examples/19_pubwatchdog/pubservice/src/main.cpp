@@ -10,7 +10,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include "examples/19_pubwatchdog/services/NEHelloWatchdog.hpp"
 #include "common/NECommon.hpp"
@@ -51,7 +51,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_19_pubservice_main_main);
+DEF_LOG_SCOPE(example_19_pubservice_main_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -61,20 +61,20 @@ int main()
     printf("Testing simple remote servicing, run as a ultra-small Server...\n");
 
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     Application::initApplication( );
 
     do
     {
-        TRACE_SCOPE(example_19_pubservice_main_main);
-        TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
+        LOG_SCOPE(example_19_pubservice_main_main);
+        LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
         Application::loadModel(_modelName);
 
-        TRACE_DBG("Servicing model is loaded");
+        LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);

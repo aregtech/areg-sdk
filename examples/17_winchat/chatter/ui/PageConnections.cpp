@@ -10,15 +10,15 @@
 #include "chatter/services/ConnectionList.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/GEGlobal.h"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "common/NECommon.hpp"
 
-DEF_TRACE_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
-DEF_TRACE_SCOPE( chatter_ui_PageConnections_LoadModel );
-DEF_TRACE_SCOPE( chatter_ui_PageConnections_AddConnection );
-DEF_TRACE_SCOPE( chatter_ui_PageConnections_OnServiceConnection );
-DEF_TRACE_SCOPE( chatter_ui_PageConnections_OnServiceNetwork );
-DEF_TRACE_SCOPE( chatter_ui_PageConnections_OnClientConnection );
+DEF_LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
+DEF_LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
+DEF_LOG_SCOPE( chatter_ui_PageConnections_AddConnection );
+DEF_LOG_SCOPE( chatter_ui_PageConnections_OnServiceConnection );
+DEF_LOG_SCOPE( chatter_ui_PageConnections_OnServiceNetwork );
+DEF_LOG_SCOPE( chatter_ui_PageConnections_OnClientConnection );
 
 // PageConnections dialog
 
@@ -68,11 +68,11 @@ void PageConnections::OnServiceStartup( bool isStarted, Component * owner )
 
 void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread )
 {
-    TRACE_SCOPE(chatter_ui_PageConnections_OnServiceNetwork);
+    LOG_SCOPE(chatter_ui_PageConnections_OnServiceNetwork);
 #if AREG_LOGS
     uint32_t cookie = mConnectionHandler.GetCookie();
     const String& nickName = mConnectionHandler.GetNickName();
-    TRACE_DBG("Handling network service: is [ %s ], owning thread [ %s ], connection handler [ %s ] (cookie = %s, nick name = %s), connection handler [ %s ], the connection SI [ %s ] ..."
+    LOG_DBG("Handling network service: is [ %s ], owning thread [ %s ], connection handler [ %s ] (cookie = %s, nick name = %s), connection handler [ %s ], the connection SI [ %s ] ..."
                 , isConnected ? "CONNECTED" : "DISCONNECTED"
                 , ownerThread != nullptr ? "VALID" : "NULL"
                 , mConnectionHandler.IsValid() ? "VALID" : "INVALID"
@@ -86,7 +86,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
     {
         if ( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) && (mClientConnections == nullptr) )
         {
-            TRACE_DBG("Create client object to get connections");
+            LOG_DBG("Create client object to get connections");
             mClientConnections = DEBUG_NEW ConnectionList( NECommon::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
         }
     }
@@ -94,12 +94,12 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
 
 void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * ownerThread )
 {
-    TRACE_SCOPE(chatter_ui_PageConnections_OnServiceConnection);
-    TRACE_DBG("[ %s ] to the service", isConnected ? "CONNECTED" : "DISCONNECTED");
+    LOG_SCOPE(chatter_ui_PageConnections_OnServiceConnection);
+    LOG_DBG("[ %s ] to the service", isConnected ? "CONNECTED" : "DISCONNECTED");
 
     if ( isConnected && (ownerThread != nullptr) )
     {
-        TRACE_DBG("Sends request to register the connection");
+        LOG_DBG("Sends request to register the connection");
         ASSERT( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) );
         const DateTime & dateTime = mConnectionHandler.GetTimeConnect();
         mClientConnections->notifyOnBroadcastClientConnected( true );
@@ -116,14 +116,14 @@ void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * 
 
 void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *dispThread )
 {
-    TRACE_SCOPE(chatter_ui_PageConnections_OnClientConnection);
-    TRACE_DBG("A client is [ %s ]", isConnected ? "CONNECTED" : "DISCONNECTED");
+    LOG_SCOPE(chatter_ui_PageConnections_OnClientConnection);
+    LOG_DBG("A client is [ %s ]", isConnected ? "CONNECTED" : "DISCONNECTED");
 
     if ( isConnected )
     {
         if ( mClientConnections == nullptr )
         {
-            TRACE_DBG("There is no connection client, creates one");
+            LOG_DBG("There is no connection client, creates one");
             ASSERT( mConnectionHandler.IsValid() == true );
             ASSERT( mConnectionHandler.GetRegistered() == false );
             mClientConnections = DEBUG_NEW ConnectionList( NECommon::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler );
@@ -141,14 +141,14 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
 
 void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread * dispThread )
 {
-    TRACE_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
+    LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
     if ( isRegistered )
     {
         ASSERT(mClientConnections != nullptr);
         const String & nickname   = mConnectionHandler.GetNickName();
         const uint32_t cookie       = mConnectionHandler.GetCookie();
 
-        TRACE_DBG("The client with nickName [ %s ] and cookie [ %u ] is registered with success, the existing service name is [ %s ]."
+        LOG_DBG("The client with nickName [ %s ] and cookie [ %u ] is registered with success, the existing service name is [ %s ]."
                     , nickname.getString()
                     , cookie
                     , mDirectConnectService.getString() );
@@ -167,7 +167,7 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
     }
     else
     {
-        TRACE_WARN("Client [ %s ] is unregistered", mConnectionHandler.GetNickName().getString());
+        LOG_WARN("Client [ %s ] is unregistered", mConnectionHandler.GetNickName().getString());
     }
 }
 
@@ -248,10 +248,10 @@ uint32_t PageConnections::GetRegisteredCookie( void ) const
 
 inline void PageConnections::addConnection( const NEConnectionManager::sConnection & connection )
 {
-    TRACE_SCOPE( chatter_ui_PageConnections_AddConnection );
+    LOG_SCOPE( chatter_ui_PageConnections_AddConnection );
     if ( mConnectionHandler.GetNickName() != connection.nickName )
     {
-        TRACE_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.getString( ), connection.cookie );
+        LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.getString( ), connection.cookie );
         int pos = mCtrlConnections.GetItemCount( );
         CString nickName( connection.nickName.getString() );
         CString timeConnect( DateTime( connection.connectTime ).formatTime( ).getBuffer( ) );
@@ -273,7 +273,7 @@ inline void PageConnections::addConnection( const NEConnectionManager::sConnecti
     }
     else
     {
-        TRACE_WARN("Ignoring adding new connection. Existing connection nickName [ %s ] cookie [ %u ], add connection nickaName [ %s ] cookie [ %u ]"
+        LOG_WARN("Ignoring adding new connection. Existing connection nickName [ %s ] cookie [ %u ], add connection nickaName [ %s ] cookie [ %u ]"
                     , mConnectionHandler.GetNickName().getString()
                     , mConnectionHandler.GetCookie()
                     , connection.nickName.getString()
@@ -398,7 +398,7 @@ inline void PageConnections::unloadModel( void )
 
 inline bool PageConnections::loadModel( const String & nickName, const uint32_t cookie )
 {
-    TRACE_SCOPE( chatter_ui_PageConnections_LoadModel );
+    LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
 
     bool result = false;
 
@@ -411,7 +411,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
         compData.alignClsPtr.mElement = reinterpret_cast<NEMemory::_EmptyClass *>(this);
         NERegistry::Model model = DirectConnectionService::GetModel( nickName, cookie, compData );
 
-        TRACE_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().getString(), serviceName.getString() );
+        LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().getString(), serviceName.getString() );
 
         if ( ComponentLoader::addModelUnique( model ) )
         {
@@ -422,7 +422,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
     }
     else
     {
-        TRACE_WARN( "The service [ %s ] is already running, ignoring creating new model for nick name [ %s ] with cookie [ %u ]", serviceName.getString( ), nickName.getString( ), cookie );
+        LOG_WARN( "The service [ %s ] is already running, ignoring creating new model for nick name [ %s ] with cookie [ %u ]", serviceName.getString( ), nickName.getString( ), cookie );
         ASSERT( mConnectionHandler.GetNickName( ).isEmpty( ) == false );
         ASSERT( mConnectionHandler.GetCookie( ) != NEDirectConnection::InvalidCookie );
         result = true;

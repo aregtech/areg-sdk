@@ -12,16 +12,16 @@
 #include "common/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 #include "common/src/NECommon.hpp"
 
 #include <string_view>
 
-DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_serviceConnected);
-DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
-DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
-DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_serviceConnected);
+DEF_LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
+DEF_LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
+DEF_LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
 
 Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & owner, int position)
     : PubSubMixClientBase   ( entry, owner )
@@ -37,10 +37,10 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
 
 bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_serviceConnected);
+    LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_serviceConnected);
     PubSubMixClientBase::serviceConnected( status, proxy );
 
-    TRACE_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
 
     bool connected = NEService::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
@@ -77,7 +77,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
 
 void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnChange, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
+    LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
@@ -87,7 +87,7 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
 
         bool isChanged{ StringOnChange != mOldString };
 
-        TRACE_INFO("The [ %s ] names STRING (on change) data is OK, old is [ %s ], new [ %s ]"
+        LOG_INFO("The [ %s ] names STRING (on change) data is OK, old is [ %s ], new [ %s ]"
                    , StringOnChange.name.getString()
                    , mOldString.value.getString()
                    , StringOnChange.value.getString()
@@ -104,7 +104,7 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
     }
     else
     {
-        TRACE_INFO("The [ %s ] names STRING is invalidated, old is [ %s ], new [ %s ]"
+        LOG_INFO("The [ %s ] names STRING is invalidated, old is [ %s ], new [ %s ]"
                    , StringOnChange.name.getString()
                    , mOldString.value.getString()
                    , StringOnChange.value.getString());
@@ -120,7 +120,7 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
 
         if (isServiceProviderStateValid() == false)
         {
-            TRACE_WARN("Publisher state is invalid, unsubscribe on data { StringOnChange } update");
+            LOG_WARN("Publisher state is invalid, unsubscribe on data { StringOnChange } update");
             notifyOnStringOnChangeUpdate(false);
         }
     }
@@ -132,7 +132,7 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
 
 void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
+    LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     String oldInt = mOldState ? String::makeString(mOldInteger.value) : NECommon::Invalid;
@@ -140,7 +140,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
     if (state == NEService::eDataStateType::DataIsOK)
     {
         bool isChanged = mOldInteger == IntegerAlways;
-        TRACE_INFO("The [ %s ] names INTEGER (Always) data is OK, old is [ %s ], new [ %u ], { %s }"
+        LOG_INFO("The [ %s ] names INTEGER (Always) data is OK, old is [ %s ], new [ %u ], { %s }"
                    , IntegerAlways.name.getString()
                    , oldInt.getString()
                    , IntegerAlways.value
@@ -158,7 +158,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
     }
     else
     {
-        TRACE_INFO("The [ %s ] names INTEGER is invalidated, old is [ %s ], new [ %s ]"
+        LOG_INFO("The [ %s ] names INTEGER is invalidated, old is [ %s ], new [ %s ]"
                    , IntegerAlways.name.getString()
                    , oldInt.getString()
                    , NECommon::Invalid.data());
@@ -176,7 +176,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
 
         if (isServiceProviderStateValid() == false)
         {
-            TRACE_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
+            LOG_WARN("Provider state is invalid, unsubscribe on data { IntegerAlways } update");
             notifyOnIntegerAlwaysUpdate(false);
         }
     }
@@ -188,18 +188,18 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
 
 void Subscriber::onServiceProviderStateUpdate(NEPubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
+    LOG_SCOPE(examples_23_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::eDataStateType::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {
-            TRACE_DBG("The integer to update ALWAYS is not valid, subscribe on data");
+            LOG_DBG("The integer to update ALWAYS is not valid, subscribe on data");
             notifyOnIntegerAlwaysUpdate(true);
         }
 
         if (isStringOnChangeValid() == false)
         {
-            TRACE_DBG("The string to update ON CHANGE is not valid, subscribe on data");
+            LOG_DBG("The string to update ON CHANGE is not valid, subscribe on data");
             notifyOnStringOnChangeUpdate(true);
         }
 

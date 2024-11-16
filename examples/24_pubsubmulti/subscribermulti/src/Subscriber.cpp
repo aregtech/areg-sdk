@@ -11,11 +11,11 @@
 #include "subscribermulti/src/Subscriber.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "subscribermulti/src/NECommon.hpp"
 
-DEF_TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
-DEF_TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
+DEF_LOG_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
+DEF_LOG_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
 Component * Subscriber::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
@@ -37,10 +37,10 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 
 bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
+    LOG_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
 
-    TRACE_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
 
     bool connected = NEService::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
@@ -71,12 +71,12 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
 
 void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
+    LOG_SCOPE(example_24_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
     String publisherState = state == NEService::eDataStateType::DataIsOK ? NEPubSub::getString(ServiceProviderState) : NECommon::StrInvalid.data();
 
-    TRACE_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
+    LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
     Console & console = Console::getInstance();    
     String stateConnect = NECommon::TxtConnected;
@@ -98,13 +98,13 @@ void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServicePro
 
         if (isIntegerAlwaysValid() == false)
         {
-            TRACE_DBG("The integer to update ALWAYS is not valid, subscribe on data");
+            LOG_DBG("The integer to update ALWAYS is not valid, subscribe on data");
             notifyOnIntegerAlwaysUpdate(true);
         }
 
         if (isStringOnChangeValid() == false)
         {
-            TRACE_DBG("The string to update ON CHANGE is not valid, subscribe on data");
+            LOG_DBG("The string to update ON CHANGE is not valid, subscribe on data");
             notifyOnStringOnChangeUpdate(true);
         }
 

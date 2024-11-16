@@ -27,7 +27,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
 
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
 #include <chrono>
 
@@ -107,24 +107,24 @@ public:
     SynchEvent  mQuit;  //!< Event, signaled when thread completes job.
 };
 
-DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
-DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(main_HelloThread_HelloThread);
+DEF_LOG_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
     : Thread( self( ), "HelloThread" )
     , IEThreadConsumer  ( )
     , mQuit             (true, true)
 {
-    TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG( "Initialized thread [ %s ]", getName().getString() );
+    LOG_SCOPE(main_HelloThread_HelloThread);
+    LOG_DBG( "Initialized thread [ %s ]", getName().getString() );
 }
 
 void HelloThread::onThreadRuns( void )
 {
-    TRACE_SCOPE(main_HelloThread_onThreadRuns);
+    LOG_SCOPE(main_HelloThread_onThreadRuns);
 
-    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", getName( ).getString( ) );
+    LOG_INFO("The thread [ %s ] runs, going to output message", getName().getString());
+    LOG_INFO("!!!Hello World!!! from thread [ %s ]", getName( ).getString( ) );
 
     // reset events
     mQuit.resetEvent();
@@ -132,7 +132,7 @@ void HelloThread::onThreadRuns( void )
 
     // lock, to wait auto-reset event
     gEventRun.lock(NECommon::WAIT_INFINITE);
-    TRACE_INFO("Auto-reset event \'gEventRun\' is signaled, locking again");
+    LOG_INFO("Auto-reset event \'gEventRun\' is signaled, locking again");
 
     // This multi-lock uses 3 synchronization events and one mutex
     IESynchObject * synchObjects[]  = {&gEventExit, &gMutexWait, &gEventRun};
@@ -150,7 +150,7 @@ void HelloThread::onThreadRuns( void )
         if (waitResult == MultiLock::LOCK_INDEX_ALL)
         {
             std::cout << "All synchronization objects are signaled, exiting thread." << std::endl;
-            TRACE_DBG("All waiting objects of thread [ %s ] are signaled, exit the job.", getName( ).getString( ) );
+            LOG_DBG("All waiting objects of thread [ %s ] are signaled, exit the job.", getName( ).getString( ) );
             break;  // exit loop
         }
         else if ( waitResult == MultiLock::LOCK_INDEX_TIMEOUT )
@@ -158,14 +158,14 @@ void HelloThread::onThreadRuns( void )
             Lock lock( gMutexDummy );
 
             std::cout << "Wait multi-lock timeout expired, continue the job." << std::endl;
-            TRACE_DBG("Thread [ %s ] waiting timeout expired, continuing the job", getName( ).getString( ) );
+            LOG_DBG("Thread [ %s ] waiting timeout expired, continuing the job", getName( ).getString( ) );
             Thread::sleep(waitTimeout);
-            TRACE_DBG("Thread [ %s ] continues to wait", getName( ).getString( ) );
+            LOG_DBG("Thread [ %s ] continues to wait", getName( ).getString( ) );
         }
         else
         {
             std::cerr << "Unexpected waiting result, breaking the loop" << std::endl;
-            TRACE_ERR("Unexpected waiting result, breaking the loop");
+            LOG_ERR("Unexpected waiting result, breaking the loop");
         }
 
     } while (true);
@@ -181,24 +181,24 @@ void HelloThread::onThreadRuns( void )
 // GoodbyeThread implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(main_GoodbyeThread_GoodbyeThread);
-DEF_TRACE_SCOPE(main_GoodbyeThread_onThreadRuns);
+DEF_LOG_SCOPE(main_GoodbyeThread_GoodbyeThread);
+DEF_LOG_SCOPE(main_GoodbyeThread_onThreadRuns);
 
 GoodbyeThread::GoodbyeThread( void )
     : Thread( self( ), "GoodbyeThread" )
     , IEThreadConsumer  ( )
     , mQuit             (false, true)
 {
-    TRACE_SCOPE(main_GoodbyeThread_GoodbyeThread);
-    TRACE_DBG("Initialized thread [ %s ]", getName( ).getString( ) );
+    LOG_SCOPE(main_GoodbyeThread_GoodbyeThread);
+    LOG_DBG("Initialized thread [ %s ]", getName( ).getString( ) );
 }
 
 void GoodbyeThread::onThreadRuns( void )
 {
-    TRACE_SCOPE(main_GoodbyeThread_onThreadRuns);
+    LOG_SCOPE(main_GoodbyeThread_onThreadRuns);
 
-    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", getName( ).getString( ) );
+    LOG_INFO("The thread [ %s ] runs, going to output message", getName().getString());
+    LOG_INFO("!!!Hello World!!! from thread [ %s ]", getName( ).getString( ) );
 
     mQuit.resetEvent();
 
@@ -209,7 +209,7 @@ void GoodbyeThread::onThreadRuns( void )
     // This multi-lock uses 1 synchronization event and 1 mutex, waits for any is signaled.
     int waitResult = multiLock.lock( NECommon::WAIT_INFINITE, false, false );
     std::cout << "Multi-lock is signaled the elem " << waitResult << " is unlocked" << std::endl;
-    TRACE_DBG( "Lock finished with result [ %d ]", waitResult );
+    LOG_DBG( "Lock finished with result [ %d ]", waitResult );
 
     multiLock.unlock( waitResult );
     Thread::sleep( NECommon::WAIT_500_MILLISECONDS );
@@ -218,21 +218,21 @@ void GoodbyeThread::onThreadRuns( void )
     mQuit.setEvent();
 }
 
-DEF_TRACE_SCOPE(main_main);
+DEF_LOG_SCOPE(main_main);
 //! \brief   A Demo of synchronization objects, use of various synchronization objects in multi-lock.
 int main()
 {
     std::cout << "A Demo of synchronization objects, use of various synchronization objects in multi-lock ..." << std::endl;
 
     // Force to start logging. See outputs log files in appropriate "logs" sub-folder.
-    TRACER_CONFIGURE_AND_START( nullptr );
+    LOGGING_CONFIGURE_AND_START( nullptr );
 
     do
     {
         // set this part of code in a block (for example, 'do-while' block).
         // otherwise, the logs will not be visible, since in the time when
         // scope is initialized, the logging is not active yet.
-        TRACE_SCOPE(main_main);
+        LOG_SCOPE(main_main);
 
         // initialize synchronization object states
         gMutexWait.lock();
@@ -240,11 +240,11 @@ int main()
         gEventExit.resetEvent();
 
         // Hello thread.
-        TRACE_DBG("Starting Hello Thread");
+        LOG_DBG("Starting Hello Thread");
         HelloThread helloThread;
         helloThread.createThread( NECommon::DO_NOT_WAIT);
 
-        TRACE_INFO( "Sleep main thread for [ %d ] ms, to signal \'gEventRun\' auto-reset event.", NECommon::WAIT_500_MILLISECONDS );
+        LOG_INFO( "Sleep main thread for [ %d ] ms, to signal \'gEventRun\' auto-reset event.", NECommon::WAIT_500_MILLISECONDS );
         Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
         gEventRun.setEvent();                           // signal auto-reset event to let hello thread to run
 
@@ -253,7 +253,7 @@ int main()
         Thread::sleep( NECommon::WAIT_1_SECOND);        // sleep for no reason
 
         // Goodbye thread
-        TRACE_DBG("Starting Goodbye Thread");
+        LOG_DBG("Starting Goodbye Thread");
         GoodbyeThread goodbyeThread;
         goodbyeThread.createThread(NECommon::WAIT_INFINITE);
 
@@ -269,12 +269,12 @@ int main()
         std::cout << "All synchronization objects are unlocked. Completing all threads." << std::endl;
 
         // stop and destroy thread, clean resources. Wait until thread ends.
-        TRACE_INFO("The threads completed jobs, wait threads to shutdown to exit application");
+        LOG_INFO("The threads completed jobs, wait threads to shutdown to exit application");
         helloThread.shutdownThread(NECommon::WAIT_INFINITE);
         goodbyeThread.shutdownThread(NECommon::WAIT_INFINITE);
 
         constexpr uint32_t eventTimeout{ 1000 };
-        TRACE_INFO("Testing event synchronization object with event waiting timeout  [ %u ] ms", eventTimeout);
+        LOG_INFO("Testing event synchronization object with event waiting timeout  [ %u ] ms", eventTimeout);
         std::cout << "Testing event synchronization object with event waiting timeout " << eventTimeout << " ms" << std::endl;
 
         DateTime start{ DateTime::getNow() };
@@ -288,13 +288,13 @@ int main()
         std::chrono::nanoseconds ns{ end.getTime() - start.getTime() };
         std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns)};
         std::cout << "End at: " << end.formatTime().getData() << std::endl;
-        TRACE_INFO("The lock timeout it [ %llu ]", ms.count());
+        LOG_INFO("The lock timeout it [ %llu ]", ms.count());
         std::cout << "The event was locked for " << ms.count() << " ms" << std::endl;
         ASSERT(eventTimeout <= ms.count());
     } while (false);
 
     // Stop logging.
-    TRACER_STOP_LOGGING();
+    LOGGING_STOP();
 
     std::cout << "Exit application, check the logs for details!" << std::endl;
     return 0;

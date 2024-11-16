@@ -6,7 +6,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"

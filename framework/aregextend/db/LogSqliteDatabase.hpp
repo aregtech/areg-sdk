@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/trace/IELogDatabaseEngine.hpp"
+#include "areg/logging/IELogDatabaseEngine.hpp"
 #include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ public:
      * \param   timestamp   The timestamp to register when the message is logged.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    virtual bool logMessage(const NETrace::sLogMessage & message, const DateTime & timestamp) override;
+    virtual bool logMessage(const NELogging::sLogMessage & message, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -148,7 +148,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    virtual bool logScopeActivate(const NETrace::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    virtual bool logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -168,7 +168,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    virtual uint32_t logScopesActivate(const NETrace::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
+    virtual uint32_t logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.

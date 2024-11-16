@@ -21,13 +21,13 @@
 #include "aregextend/service/ServiceCommunicatonBase.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
-DEF_TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
-DEF_TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
-DEF_TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
-DEF_TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
+DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
 
 ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicatonBase& commBase)
     : SystemServiceBase         ( commBase )
@@ -127,8 +127,8 @@ bool ServiceApplicationBase::serviceOpen(void)
 
 bool ServiceApplicationBase::serviceStart(void)
 {
-    TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
-    TRACE_DBG("Starting [ %s ] system service", getServiceNameA());
+    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
+    LOG_DBG("Starting [ %s ] system service", getServiceNameA());
     bool result{ false };
     NERemoteService::eRemoteServices serviceType = getServiceType();
     NERemoteService::eConnectionTypes connectType = getConnectionType();
@@ -150,8 +150,8 @@ bool ServiceApplicationBase::serviceStart(void)
 
 void ServiceApplicationBase::servicePause(void)
 {
-    TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
-    TRACE_DBG("Pausing [ %s ] system service", getServiceNameA());
+    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
+    LOG_DBG("Pausing [ %s ] system service", getServiceNameA());
 
     setState(NESystemService::eSystemServiceState::ServicePausing);
     mCommunication.disconnectServiceHost();
@@ -161,8 +161,8 @@ void ServiceApplicationBase::servicePause(void)
 
 bool ServiceApplicationBase::serviceContinue(void)
 {
-    TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
-    TRACE_DBG("Resume and continuing paused [ %s ] system service", getServiceNameA());
+    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
+    LOG_DBG("Resume and continuing paused [ %s ] system service", getServiceNameA());
 
     bool result = false;
     setState(NESystemService::eSystemServiceState::ServiceContinuing);
@@ -173,7 +173,7 @@ bool ServiceApplicationBase::serviceContinue(void)
     }
     else
     {
-        TRACE_ERR("Failed to resume [ %s ] system service", getServiceNameA());
+        LOG_ERR("Failed to resume [ %s ] system service", getServiceNameA());
         Application::signalAppQuit();
     }
 
@@ -182,8 +182,8 @@ bool ServiceApplicationBase::serviceContinue(void)
 
 void ServiceApplicationBase::serviceStop(void)
 {
-    TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
-    TRACE_WARN("Stopping [ %s ] system service", getServiceNameA());
+    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
+    LOG_WARN("Stopping [ %s ] system service", getServiceNameA());
     setState(NESystemService::eSystemServiceState::ServiceStopping);
     mCommunication.disconnectServiceHost();
     mCommunication.waitToComplete();
@@ -197,8 +197,8 @@ void ServiceApplicationBase::serviceShutdown(void)
 
 bool ServiceApplicationBase::setState(NESystemService::eSystemServiceState newState)
 {
-    TRACE_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
-    TRACE_DBG( "Changing [ %s ] system service state. Old state [ %s ], new state [ %s ]"
+    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
+    LOG_DBG( "Changing [ %s ] system service state. Old state [ %s ], new state [ %s ]"
                 , getServiceNameA()
                 , NESystemService::getString( mSystemServiceState )
                 , NESystemService::getString( newState ) );

@@ -10,15 +10,15 @@
  * Include files.
  ************************************************************************/
 #include "ServiceClient.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 
-DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
-DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_processTimer);
-DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_ServiceClient);
+DEF_LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_serviceConnected);
+DEF_LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
+DEF_LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_responseHelloWorld);
+DEF_LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_processTimer);
+DEF_LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_ServiceClient);
 
 ServiceClient::ServiceClient(const String & roleName, Component & owner)
     : HelloWorldClientBase  ( roleName, owner )
@@ -27,19 +27,19 @@ ServiceClient::ServiceClient(const String & roleName, Component & owner)
     , mTimer                ( static_cast<IETimerConsumer &>(self()), timerName( owner ) )
     , mID                   ( 0 )
 {
-    TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_ServiceClient);
-    TRACE_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ]"
+    LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_ServiceClient);
+    LOG_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ]"
                     , roleName.getString()
                     , getServiceName().getString()
                     , owner.getRoleName().getString()
                     , owner.getMasterThread().getName().getString()
                     , mTimer.getName().getString());
-    TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
+    LOG_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
 bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_serviceConnected);
+    LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
@@ -57,25 +57,25 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
 void ServiceClient::responseHelloWorld( const String & clientName, unsigned int clientId )
 {
-    TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientName.getString(), clientId);
+    LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_responseHelloWorld);
+    LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientName.getString(), clientId);
     ASSERT(clientName == mTimer.getName());
     mID = clientId;
 }
 
 void ServiceClient::broadcastReachedMaximum( int /* maxNumber */ )
 {
-    TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
-    TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
+    LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
+    LOG_WARN("Service notify reached message output maximum, starting shutdown procedure");
     requestShutdownService(mID, mTimer.getName());
 }
 
 void ServiceClient::processTimer(Timer & timer)
 {
-    TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_processTimer);
+    LOG_SCOPE(examples_11_locsvcmesh_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
 
-    TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
+    LOG_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
     requestHelloWorld(timer.getName());
 }
 

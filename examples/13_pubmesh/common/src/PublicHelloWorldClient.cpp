@@ -17,14 +17,14 @@
 #include "areg/component/Component.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 
-DEF_TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseRegister);
-DEF_TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_broadcastServiceUnavailable);
-DEF_TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
-DEF_TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_processTimer);
+DEF_LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_serviceConnected);
+DEF_LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseRegister);
+DEF_LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
+DEF_LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_broadcastServiceUnavailable);
+DEF_LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
+DEF_LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_processTimer);
 
 PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout)
     : PublicHelloWorldClientBase( dependency, owner )
@@ -39,7 +39,7 @@ PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntr
 
 bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_serviceConnected);
+    LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_serviceConnected);
     bool result{ true };
 
     // Since this class is using multiple proxies and client base classes, check for each of that class.
@@ -49,12 +49,12 @@ bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection sta
         mClient.crID = 0;
         if ( PublicHelloWorldClientBase::isConnected() )
         {
-            TRACE_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.getName().getString());
+            LOG_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.getName().getString());
             requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), Process::getInstance().getAppName());
         }
         else
         {
-            TRACE_DBG( "Disconnected [ %s : %s ]"
+            LOG_DBG( "Disconnected [ %s : %s ]"
                     , proxy.getStubAddress( ).isSourcePublic( ) ? "LOCAL PUBLIC" : "REMOTE PUBLIC"
                     , StubAddress::convAddressToPath( proxy.getStubAddress()).getString());
             printf("----- Disconnected %s service consumer -----\n", proxy.getStubAddress().isSourcePublic() ? "LOCAL PUBLIC" : "REMOTE PUBLIC");
@@ -64,7 +64,7 @@ bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection sta
     else if (SystemShutdownClientBase::serviceConnected(status, proxy))
     {
         bool connected = SystemShutdownClientBase::isConnected();
-        TRACE_DBG("Consumer [ %p : %s ] is [ %s ]"
+        LOG_DBG("Consumer [ %p : %s ] is [ %s ]"
                   , this
                   , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
                   , connected ? "CONNECTED" : "DISCONNECTED");
@@ -80,13 +80,13 @@ bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection sta
 
 void PublicHelloWorldClient::responseRegister( const NEPublicHelloWorld::sClientRegister & client )
 {
-    TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseRegister);
+    LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseRegister);
 
     if (client.crID != 0)
     {
         ASSERT(client.crName == mTimer.getName());
 
-        TRACE_INFO("The client [ %s ] is registered and got ID [ %d ], can use services", client.crName.getString(), client.crID);
+        LOG_INFO("The client [ %s ] is registered and got ID [ %d ], can use services", client.crName.getString(), client.crID);
         mClient = client;
         if ( (mClient.crID != 0) && (mTimer.isActive( ) == false) )
         {
@@ -95,21 +95,21 @@ void PublicHelloWorldClient::responseRegister( const NEPublicHelloWorld::sClient
     }
     else
     {
-        TRACE_ERR("Failed to register, cannot use service!");
+        LOG_ERR("Failed to register, cannot use service!");
     }
 }
 
 void PublicHelloWorldClient::responseHelloWorld(unsigned int clientID)
 {
-    TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
+    LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
     if ( (clientID != 0) && (mClient.crID == clientID) )
     {
-        TRACE_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.getString(), PublicHelloWorldClientBase::getServiceRole().getString());
+        LOG_DBG("Client [ %s ] SUCCEEDED to make output on remote service [ %s ]", mClient.crName.getString(), PublicHelloWorldClientBase::getServiceRole().getString());
         printf( "..... public greetings succeeded .....\n" );
     }
     else
     {
-        TRACE_ERR("Client [ %s ] FAILED to make output on remote service [ %s ]", mClient.crName.getString(), PublicHelloWorldClientBase::getServiceRole().getString());
+        LOG_ERR("Client [ %s ] FAILED to make output on remote service [ %s ]", mClient.crName.getString(), PublicHelloWorldClientBase::getServiceRole().getString());
         printf( ">>> ERROR: Unexpected client ID!....\n" );
         mTimer.stopTimer();
         requestUnregister(mClient);
@@ -120,8 +120,8 @@ void PublicHelloWorldClient::responseHelloWorld(unsigned int clientID)
 
 void PublicHelloWorldClient::onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state )
 {
-    TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
-    TRACE_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
+    LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
+    LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
                , NESystemShutdown::getString(ServiceState)
                , NEService::getString(state)
                , mClient.crID
@@ -134,7 +134,7 @@ void PublicHelloWorldClient::onServiceStateUpdate( NESystemShutdown::eServiceSta
             if ( SystemShutdownClientBase::getProxy()->getStubAddress( ).isSourcePublic( ) )
             {
                 mTimer.stopTimer( );
-                TRACE_DBG( "External source of message, going to shutdown the application" );
+                LOG_DBG( "External source of message, going to shutdown the application" );
                 // disable assign on notification if the service is in the same process.
                 printf( ">>>>>>>>>> Shutting down the application <<<<<<<<<<\n" );
                 mTimer.stopTimer( );
@@ -150,31 +150,31 @@ void PublicHelloWorldClient::onServiceStateUpdate( NESystemShutdown::eServiceSta
             }
             else
             {
-                TRACE_DBG( "Internal source of message, ignoring to shutdown the application" );
+                LOG_DBG( "Internal source of message, ignoring to shutdown the application" );
             }
         }
         else if ( (mClient.crID != 0) && (mTimer.isActive() == false) )
         {
-            TRACE_DBG( "Starting timer to send requests" );
+            LOG_DBG( "Starting timer to send requests" );
             mTimer.startTimer(mMsTimeout);
         }
         else
         {
-            TRACE_WARN( "Ignoring the message, either the client is [ %d ] or timer is [ %s ]", mClient.crID, mTimer.isActive( ) ? "ACTIVE" : "INACTIVE" );
+            LOG_WARN( "Ignoring the message, either the client is [ %d ] or timer is [ %s ]", mClient.crID, mTimer.isActive( ) ? "ACTIVE" : "INACTIVE" );
         }
     }
     else
     {
-        TRACE_DBG( "Ignoring the system state change, the data is unavailable" );
+        LOG_DBG( "Ignoring the system state change, the data is unavailable" );
     }
 }
 
 void PublicHelloWorldClient::processTimer(Timer & timer)
 {
-    TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_processTimer);
+    LOG_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_processTimer);
     ASSERT(&timer == &mTimer);
 
-    TRACE_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
+    LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
 
     NEService::eDataStateType dataState { NEService::eDataStateType::DataIsUndefined };
     NESystemShutdown::eServiceState serviceState = getServiceState( dataState );
@@ -182,17 +182,17 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
     {
         if ( serviceState == NESystemShutdown::eServiceState::ServiceReady )
         {
-            TRACE_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldClientBase::getServiceRole( ).getString( ) );
+            LOG_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldClientBase::getServiceRole( ).getString( ) );
             requestHelloWorld( mClient.crID );
         }
         else
         {
-            TRACE_WARN( "Ignored sending request, the service state is [ %s ]", NESystemShutdown::getString( serviceState ) );
+            LOG_WARN( "Ignored sending request, the service state is [ %s ]", NESystemShutdown::getString( serviceState ) );
         }
     }
     else
     {
-        TRACE_WARN( "Ignored sending request, the data state is [ %s ]", NEService::getString( dataState ) );
+        LOG_WARN( "Ignored sending request, the data state is [ %s ]", NEService::getString( dataState ) );
     }
 }
 

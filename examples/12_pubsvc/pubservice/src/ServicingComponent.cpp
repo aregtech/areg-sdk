@@ -11,14 +11,14 @@
  ************************************************************************/
 
 #include "pubservice/src/ServicingComponent.hpp"
-#include "areg/trace/GETrace.h"
+#include "areg/logging/GELog.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
 
-DEF_TRACE_SCOPE(examples_12_pubservice_ServicingComponent_requestHelloWorld);
-DEF_TRACE_SCOPE(examples_12_pubservice_ServicingComponent_requestShutdownService);
+DEF_LOG_SCOPE(examples_12_pubservice_ServicingComponent_requestHelloWorld);
+DEF_LOG_SCOPE(examples_12_pubservice_ServicingComponent_requestShutdownService);
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -40,7 +40,7 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
 
 void ServicingComponent::requestHelloWorld(const String & roleName)
 {
-    TRACE_SCOPE(examples_12_pubservice_ServicingComponent_requestHelloWorld);
+    LOG_SCOPE(examples_12_pubservice_ServicingComponent_requestHelloWorld);
 
     NEHelloWorld::sConnectedClient theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition();
@@ -49,7 +49,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
         const NEHelloWorld::sConnectedClient & client = mClientList.valueAtPosition(pos);
         if (roleName == client.ccName)
         {
-            TRACE_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString(), client.ccID);
+            LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString(), client.ccID);
             theClient = client;
             break;
         }
@@ -59,7 +59,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     {
         theClient = NEHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
         mClientList.pushFirst( theClient );
-        TRACE_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
+        LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }
 
     std::cout
@@ -72,20 +72,20 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     responseHelloWorld( theClient );
     if ( mRemainRequest == 0 )
     {
-        TRACE_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
+        LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
         broadcastReachedMaximum( NEHelloWorld::MaxMessages );
     }
     else
     {
-        TRACE_WARN("Still wait [ %d ] requests to print Hello World.", mRemainRequest);
+        LOG_WARN("Still wait [ %d ] requests to print Hello World.", mRemainRequest);
     }
 }
 
 #if AREG_LOGS
 void ServicingComponent::requestShutdownService(unsigned int clientID, const String & roleName)
 {
-    TRACE_SCOPE(examples_12_pubservice_ServicingComponent_requestShutdownService);
-    TRACE_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
+    LOG_SCOPE(examples_12_pubservice_ServicingComponent_requestShutdownService);
+    LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
     Application::signalAppQuit( );
 }
 #else   // AREG_LOGS

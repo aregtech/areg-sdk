@@ -43,7 +43,7 @@ The AREG SDK includes several key components:
 2. **AREG Framework Extension (`aregextend` library)**: An optional library with additional utilities.
 3. **AREG Log Observer API (`areglogger` library)**: Allows applications to receive and manage log messages.
 4. **AREG Multicast Router (`mcrouter` executable)**: An OS-managed service that routes RPC messages.
-5. **AREG Log Collector (`logger` executable)**: An OS-managed service for remote log collection.
+5. **AREG Log Collector (`logcollector` executable)**: An OS-managed service for remote log collection.
 6. **AREG Log Observer (`logobserver` executable)**: A stand-alone application for managing logs.
 7. **AREG Code Generator (`codegen.jar` runnable)**: A Java tool for generating Service Interface source code.
 
@@ -234,6 +234,9 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-p
 ---
 
 ## 5. Advanced Integration
+
+> [!IMPORTANT]  
+> To utilize AREG SDK-specific CMake variables such as `AREG_COMPILER`, `AREG_COMPILER_FAMILY`, or `AREG_BUILD_TYPE`, ensure that `<areg-sdk>/areg.cmake` is included in your project's `CMakeLists.txt` file *before* the first invocation of `project()`. Otherwise, the values of these variables are ignored and overwritten by values of CMake variables `CMAKE_CXX_COMPILER` and `CMAKE_BUILD_TYPE`. Alternatively, you can directly use the `CMAKE_XXX` variables to specify the compiler or build type.
 
 ### Advanced CMake Options
 

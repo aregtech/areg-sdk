@@ -13,6 +13,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcrouter", "framework\mcrou
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD549A95-E734-4E26-A5B2-2330FC310C8D}"
 	ProjectSection(SolutionItems) = preProject
+		areg.cmake = areg.cmake
 		CMakeLists.txt = CMakeLists.txt
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		CONTRIBUTING.md = CONTRIBUTING.md
@@ -147,7 +148,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03_file", "examples\03_file
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04_trace", "examples\04_trace\04_trace.vcxproj", "{18F81610-018F-4FE9-9B33-D2060E0F2CB6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04_logging", "examples\04_logging\04_logging.vcxproj", "{18F81610-018F-4FE9-9B33-D2060E0F2CB6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 	EndProjectSection
@@ -530,7 +531,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{C4
 		examples\21_pubunblock\services\HelloUnblock.siml = examples\21_pubunblock\services\HelloUnblock.siml
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.vcxproj", "{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logcollector", "framework\logcollector.vcxproj", "{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
@@ -672,9 +673,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "exports", "exports", "{60EE
 		conf\exports\aregextend.pc.in = conf\exports\aregextend.pc.in
 		conf\exports\areglogger.pc.in = conf\exports\areglogger.pc.in
 		conf\exports\config.cmake.in = conf\exports\config.cmake.in
-		conf\exports\logger.service.in = conf\exports\logger.service.in
-		conf\exports\logger.service.install.bat.in = conf\exports\logger.service.install.bat.in
-		conf\exports\logger.service.uninstall.bat.in = conf\exports\logger.service.uninstall.bat.in
+		conf\exports\logcollector.service.in = conf\exports\logcollector.service.in
+		conf\exports\logcollector.service.install.bat.in = conf\exports\logcollector.service.install.bat.in
+		conf\exports\logcollector.service.uninstall.bat.in = conf\exports\logcollector.service.uninstall.bat.in
 		conf\exports\mcrouter.service.in = conf\exports\mcrouter.service.in
 		conf\exports\mcrouter.service.install.bat.in = conf\exports\mcrouter.service.install.bat.in
 		conf\exports\mcrouter.service.uninstall.bat.in = conf\exports\mcrouter.service.uninstall.bat.in

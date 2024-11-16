@@ -489,9 +489,9 @@ namespace NEService
         , RequestServiceProviderConnection
         //!< Sent by service manager to targets (client or stub) to notify connection status update.
         , ResponseServiceProviderConnection
-        //!< Called by service manager when connecting Remove Service like message router or logger (handshake procedure)
+        //!< Called by service manager when connecting Remove Service like message router or log collector (handshake procedure)
         , SystemServiceConnect
-        //!< Called by service manager when disconnecting Remove Service like message router or logger (graceful shutdown procedure)
+        //!< Called by service manager when disconnecting Remove Service like message router or log collector (graceful shutdown procedure)
         , SystemServiceDisconnect
         //!< Sent by System Service executable to notify the connection status
         , SystemServiceNotifyConnection
@@ -503,19 +503,19 @@ namespace NEService
         , SystemServiceRequestRegister
         //!< Sent by Routing Service as a reply to register service and notifies the registered service availability
         , SystemServiceNotifyRegister
-        //!< Sent by logger service or client applications to register the scopes. This resets and overwrites all scope states.
+        //!< Sent by log collector service or client applications to register the scopes. This resets and overwrites all scope states.
         , ServiceLogRegisterScopes
-        //!< Sent by observer, logger service or client applications to update the scopes. This updates only given scopes.
+        //!< Sent by observer, log collector service or client applications to update the scopes. This updates only given scopes.
         , ServiceLogUpdateScopes
-        //!< Sent by observer or logger service to the client application to query the list of scopes
+        //!< Sent by observer or log collector service to the client application to query the list of scopes
         , ServiceLogQueryScopes
         //!< Sent by log source clients to notify that the log scopes have been updated.
         , ServiceLogScopesUpdated
-        //!< Sent by observer or logger service to the client application to save the log configuration file.
+        //!< Sent by observer or log collector service to the client application to save the log configuration file.
         , ServiceSaveLogConfiguration
         //!< Sent by log source to notify that the configuration file is saved.
         , ServiceLogConfigurationSaved
-        //!< Sent by logger service or client applications to log the messages.
+        //!< Sent by log collector service or client applications to log the messages.
         , ServiceLogMessage
         //!< The last ID of service calls.
         , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
