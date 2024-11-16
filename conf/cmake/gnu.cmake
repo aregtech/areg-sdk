@@ -16,10 +16,10 @@ add_definitions(-DPOSIX)
 set(AREG_DEVELOP_ENV "Posix")
 # GNU compile options
 if (CYGWIN)
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -fPIC -MMD ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
     set(AREG_COMPILER_VERSION  -std=gnu++17)
 else()
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -fPIC -MMD ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
     set(AREG_COMPILER_VERSION -std=c++17)
 endif()
 

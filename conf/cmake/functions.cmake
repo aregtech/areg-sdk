@@ -166,16 +166,6 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
     endforeach()
 endmacro(macro_parse_arguments)
 
-# ---------------------------------------------------------------------------
-# Macro ......: macro_parse_arguments
-# Purpose ....: Helper macro to output warning message if read-only variable is changed
-# ---------------------------------------------------------------------------
-macro(macro_readonly_guard var_name access value current_list_file stack)
-  if ("${access}" STREQUAL "MODIFIED_ACCESS")
-    message(WARNING "Attempt to change read-only variable '${var_name}' to set value \'${value}\'!")
-  endif()
-endmacro(macro_readonly_guard)
-
 # Read-only variable of 32-bit 'x86' processor name
 set(_proc_x86   "x86")
 # Read-only variable of 64-bit 'x64' processor name
@@ -198,10 +188,10 @@ set(_proc_arm64 "AARCH64")
 # Example ....: macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
 # ---------------------------------------------------------------------------
 macro(macro_guess_processor_architecture compiler_path target_processor target_bitness)
-    foreach(_entry "arm;32;${_proc_arm}" "aarch64;64;${_proc_arm64}")
+    foreach(_entry "arm;${_proc_arm};32" "aarch64;${_proc_arm64};64")
         list(GET _entry 0 _proc)
-        list(GET _entry 1 _bits)
-        list(GET _entry 2 _arch)
+        list(GET _entry 1 _arch)
+        list(GET _entry 2 _bits)
         string(FIND "${compiler_path}" ${_proc} _proc_pos)
         if (_proc_pos GREATER -1)
             set(${target_processor} ${_arch})
@@ -302,13 +292,13 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
     
     # Iterate over known compilers to identify the compiler type
     foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
-        list(GET _entry 0 _cxx_compiler)
+        list(GET _entry 0 _cxx_comp)
         list(GET _entry 1 _family)
-        list(GET _entry 2 _c_compiler)
+        list(GET _entry 2 _cc_comp)
 
         # Check if the provided compiler matches the known C++ compiler
         string(TOLOWER "${compiler_path}" _comp_path)
-        string(FIND "${_comp_path}" "${_cxx_compiler}" _found_pos REVERSE)
+        string(FIND "${_comp_path}" "${_cxx_comp}" _found_pos REVERSE)
         if (_found_pos GREATER -1)
             # Handle special case for CYGWIN and GNU family compilers
             if (CYGWIN AND ("${_family}" STREQUAL "gnu"))
@@ -320,14 +310,14 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
                 set(${compiler_family} "${_family}")
             endif()
 
-            set(${compiler_short} "${_cxx_compiler}")
+            set(${compiler_short} "${_cxx_comp}")
             set(${compiler_cxx}   "${compiler_path}")
 
             # Determine the corresponding C compiler path or name
-            if ("${_cxx_compiler}" STREQUAL "${_c_compiler}")
+            if ("${_cxx_comp}" STREQUAL "${_cc_comp}")
                 set(${compiler_c} "${compiler_path}")
             else()
-                string(REPLACE "${_cxx_compiler}" "${_c_compiler}" ${compiler_c} "${compiler_path}")
+                string(REPLACE "${_cxx_comp}" "${_cc_comp}" ${compiler_c} "${compiler_path}")
             endif()
 
             # Mark compiler as found
@@ -339,9 +329,9 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
     endforeach()
 
     unset(_entry)
-    unset(_cxx_compiler)
+    unset(_cxx_comp)
     unset(_family)
-    unset(_c_compiler)
+    unset(_cc_comp)
     unset(_found_pos)
 
 endmacro(macro_setup_compilers_data)
@@ -369,9 +359,9 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
     
     # Iterate over known compilers and match the family
     foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc")
-        list(GET _entry 0 _compiler)
+        list(GET _entry 0 _cxx_comp)
         list(GET _entry 1 _family)
-        list(GET _entry 2 _c_compiler)
+        list(GET _entry 2 _cc_comp)
 
         if ("${_family}" STREQUAL "${compiler_family}")
             # Special case for Windows
@@ -379,18 +369,18 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
                 set(${compiler_short} "clang-cl")
                 set(${compiler_cxx}   "clang-cl")
                 set(${compiler_c}     "clang-cl")
-            elseif (AREG_PROCESSOR STREQUAL ${_proc_arm32} AND "${_family}" STREQUAL "gnu")
+            elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
                 set(${compiler_short} "g++")
                 set(${compiler_cxx}   "arm-linux-gnueabihf-g++")
                 set(${compiler_c}     "arm-linux-gnueabihf-gcc")
-            elseif (AREG_PROCESSOR STREQUAL ${_proc_arm64} AND "${_family}" STREQUAL "gnu")
+            elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}" AND "${_family}" STREQUAL "gnu")
                 set(${compiler_short} "g++")
                 set(${compiler_cxx}   "aarch64-linux-gnu-g++")
                 set(${compiler_c}     "aarch64-linux-gnu-gcc")
             else()
-                set(${compiler_short} "${_compiler}")
-                set(${compiler_cxx}   "${_compiler}")
-                set(${compiler_c}     "${_c_compiler}")
+                set(${compiler_short} "${_cxx_comp}")
+                set(${compiler_cxx}   "${_cxx_comp}")
+                set(${compiler_c}     "${_cc_comp}")
             endif()
 
             # Mark compiler as found
@@ -402,9 +392,9 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
     endforeach()
 
     unset(_entry)
-    unset(_compiler)
+    unset(_cxx_comp)
     unset(_family)
-    unset(_c_compiler)
+    unset(_cc_comp)
 
 endmacro(macro_setup_compilers_data_by_family)
 
