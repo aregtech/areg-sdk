@@ -117,7 +117,7 @@ The following are the available CMake options to configure the AREG SDK build. O
    - **Defaults**: System default compiler.
    - **Example**: `cmake -B ./build -DAREG_COMPILER=g++`
 
-> [!NOTE]  
+> [!NOTE]
 > The value of `AREG_COMPILER` variable is ignored and overridden by the value of the standard CMake variable `CMAKE_CXX_COMPILER` if the `<areg-sdk-config>/user.cmake` file is included in the project *after* the first invocation of `project()`.
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
@@ -183,7 +183,7 @@ The following are the available CMake options to configure the AREG SDK build. O
    - **Default**: `Release`
    - **Example**: `cmake -B ./build -DAREG_BUILD_TYPE=Debug`
 
-> [!NOTE]  
+> [!NOTE]
 > The value of `AREG_BUILD_TYPE` variable is ignored and overridden by the value of the standard CMake variable `CMAKE_BUILD_TYPE` if the `<areg-sdk-config>/user.cmake` file is included in the project *after* the first invocation of `project()`.
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>

@@ -1,6 +1,6 @@
 # Integration Troubleshooting
 
-This guide provides solutions for common issues encountered when integrating AREG SDK in the projects, helping to ensure a smooth and successful build process.
+This guide provides solutions for common issues encountered when integrating the AREG SDK into projects, ensuring a smooth and successful build process.
 
 ---
 
@@ -20,38 +20,38 @@ This guide provides solutions for common issues encountered when integrating ARE
 
 ## Issue 1: Values of `AREG_XXX` Variables are Ignored
 
-During the build process, the values of AREG-specific variables such as `AREG_COMPILER_FAMILY`, `AREG_COMPILER`, `AREG_BUILD_TYPE`, and `AREG_PROCESSOR` might be ignored. This issue typically arises if the AREG SDK is integrated *after* the first invocation of `project()`. In such cases, these variables are overwritten by CMake's standard variables (`CMAKE_CXX_COMPILER`, `CMAKE_C_COMPILER`, `CMAKE_BUILD_TYPE`, etc.).
+During the build process, values of AREG-specific variables such as `AREG_COMPILER_FAMILY`, `AREG_COMPILER`, `AREG_BUILD_TYPE`, and `AREG_PROCESSOR` might be ignored. This typically happens when the AREG SDK is integrated *after* the first call to `project()`, causing these variables to be overwritten by CMake's standard variables (`CMAKE_CXX_COMPILER`, `CMAKE_C_COMPILER`, `CMAKE_BUILD_TYPE`, etc.).
 
 ### Solution 1: Integrate AREG SDK Before Project Declaration
 
-To prevent this issue, ensure the AREG SDK is fetched and integrated into your project *before* the first call to `project()`. Additionally, set the values of AREG-specific CMake variables before fetching the AREG SDK sources to ensure they are recognized.
+Ensure the AREG SDK is integrated into your project *before* the first call to `project()`. Additionally, set the values of AREG-specific CMake variables before fetching the SDK sources to avoid conflicts.
 
-### Solution 2: Use Standard CMake Variables  
+### Solution 2: Use Standard CMake Variables
 
-If you cannot integrate the AREG SDK *before* the `project()` call, you can rely on CMake's standard variables to configure the build. These variables can be specified via the command line when running `cmake`:  
+If integrating the AREG SDK before the `project()` call is not possible, rely on standard CMake variables to configure the build. Pass these variables via the command line when running `cmake`:
 
-- **`CMAKE_CXX_COMPILER`** and **`CMAKE_C_COMPILER`**: Explicitly define the C++ and C compilers.  
-- **`CMAKE_BUILD_TYPE`**: Specify the desired build configuration, such as `Debug` or `Release`.  
+- **`CMAKE_CXX_COMPILER`** and **`CMAKE_C_COMPILER`**: Explicitly define the compilers for C++ and C.
+- **`CMAKE_BUILD_TYPE`**: Specify the build configuration, such as `Debug` or `Release`.
 
-These standard variables are fully compatible with the AREG SDK specific variables and help avoid potential conflicts or overrides.  
+These standard variables are fully compatible with the AREG SDK and help avoid potential conflicts.
 
-**Example: Setting up a cross-compiler**  
-```bash  
-cmake -B ./product/cache/gnu-arm32 -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc  
-cmake --build ./product/cache/gnu-arm32 -j20  
-```  
+**Example: Cross-Compiler Setup**
+```bash
+cmake -B ./product/cache/gnu-arm32 -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc
+cmake --build ./product/cache/gnu-arm32 -j20
+```
 
-This approach is **equally effective** as specifying `AREG_COMPILER` variable when AREG SDK is integrated *before* the `project()` call:  
-```bash  
-cmake -B ./product/cache/gnu-arm32 -DAREG_COMPILER=arm-linux-gnueabihf-g++  
-```  
+Alternatively, when integrating AREG SDK *before* the `project()` call, the `AREG_COMPILER` variable can be used similarly:
+```bash
+cmake -B ./product/cache/gnu-arm32 -DAREG_COMPILER=arm-linux-gnueabihf-g++
+```
 
-> [!IMPORTANT]  
-> If you include the AREG SDK sources in your project and they are fetched *after* the first call to `project()`, make sure to set both `CMAKE_CXX_COMPILER` and `CMAKE_C_COMPILER`. This is particularly important if you are building the `sqlite3` library from the sources in the `thirdparty` directory of the AREG SDK, instead of using a pre-built `sqlite3` package. Not setting the C compiler alongside the C++ compiler may result in build errors.
+> [!IMPORTANT]
+> When fetching AREG SDK sources after the first `project()` call, set both `CMAKE_CXX_COMPILER` and `CMAKE_C_COMPILER`. This is especially critical if you are building the `sqlite3` library from sources in the `thirdparty` directory of AREG SDK instead of using a pre-built `sqlite3` package. Not setting both compilers may result in build errors.
 
 ### Solution 3: Manually Include `<areg-sdk>/areg.cmake`
 
-If you use AREG SDK repository as a submodule, ensure that `<areg-sdk>/areg.cmake` is explicitly included in your project's `CMakeLists.txt` *before* the `project()` call. This guarantees that AREG-specific variables are initialized and take precedence. Example:
+If using the AREG SDK as a submodule, explicitly include `<areg-sdk>/areg.cmake` in your `CMakeLists.txt` file *before* the `project()` call. This ensures AREG-specific variables are properly initialized:
 ```cmake
 include(<path-to-areg-sdk>/areg.cmake)
 project(MyProject)
@@ -59,69 +59,64 @@ project(MyProject)
 
 ---
 
-Yes, here are additional suggestions to enhance the troubleshooting section for the issue `Relocations in generic ELF (EM: 62)`:
+## Issue 2: Error Message `Relocations in generic ELF (EM: 62)`
 
----
+When cross-compiling, you might encounter the error `Relocations in generic ELF (EM: 62)` during the linking process. This issue typically arises when source files are compiled using mismatched compilers or for different target platforms. For instance, the `sqlite3` library might be compiled with `gcc` while the rest of the project is compiled with `arm-linux-gnueabihf-g++`.
 
-## Issue 2: Error Message `Relocations in generic ELF (EM: 62)`  
-
-When cross-compiling, you may encounter the error `Relocations in generic ELF (EM: 62)` during the linking process. This issue typically arises when source files are compiled with mismatched compilers or for different target platforms. For instance, the `sqlite3` library might have been compiled with the `gcc` compiler while the rest of the project was compiled with `arm-linux-gnueabihf-g++`.  
-
-To verify whether different compilers are being used for C and C++ sources, utilize the `printAregConfigStatus()` function, defined in the `functions.cmake` file. This function provides a detailed configuration report, including the compilers in use.
+To confirm whether mismatched compilers are being used, utilize the `printAregConfigStatus()` function in the `functions.cmake` file. This function provides a configuration report, including details of the compilers in use.
 
 ### Solution 1: Clear the CMake Cache
 
-If you previously built the project with different settings and later switched to cross-compiling, residual data in the CMake cache may cause this error. To resolve the issue:  
+Residual settings in the CMake cache can cause this issue, especially when switching from a native build to cross-compiling.
 
-1. **Clear the Cache**: Delete the contents of the build directory, including the `CMakeCache.txt` file.  
-   ```bash  
-   rm -rf ./product/cache/*  
-   ```  
-2. **Reconfigure and Build**: Reconfigure the project and retry the build process.  
+1. **Clear the Cache**: Remove the contents of the build directory, including the `CMakeCache.txt` file:
+   ```bash
+   rm -rf ./product/cache/*
+   ```
+2. **Reconfigure and Build**: Reconfigure the project and retry the build.
 
-### Solution 2: Explicitly Specify C and C++ Compilers  
+### Solution 2: Explicitly Specify C and C++ Compilers
 
-Ensure that both C and C++ compilers are explicitly specified for the target platform. Instead of relying solely on AREG SDK-specific variables, pass the appropriate compilers directly via the CMake command line:  
-```bash  
-cmake -B ./product/cache/gnu-arm32 \
-      -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-      -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc  
-cmake --build ./product/cache/gnu-arm32 -j20  
-```  
-
-This ensures consistency in the compilers used for all source files, preventing mismatched binaries and linkage errors.
-
-### Solution 3: Use Prebuilt Toolchain-Compatible Libraries  
-
-If rebuilding dependencies is not feasible, check for prebuilt versions of the required libraries compatible with your target platform and toolchain. Package managers such as `vcpkg` or `conan` may provide suitable binaries. For example:  
-```bash  
-vcpkg install sqlite3:linux-arm  
+Ensure both the C and C++ compilers are explicitly specified for the target platform. Pass these compilers directly via the command line when running `cmake`:
+```bash
+cmake -B ./product/cache/gnu-arm32 -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc
+cmake --build ./product/cache/gnu-arm32 -j20
 ```
 
-Then you compile the sources giving instructions to use the pre-build package:
+This ensures consistency across all source files, preventing mismatched binaries.
+
+### Solution 3: Use Prebuilt Toolchain-Compatible Libraries
+
+If rebuilding third-party dependencies like `sqlite3` is not feasible, use prebuilt versions of these libraries compatible with your target platform and toolchain. For example, package managers such as `vcpkg` or `conan` can provide suitable binaries:
+```bash
+vcpkg install sqlite3:linux-arm
+```
+
+Configure the project to use prebuilt packages:
 ```bash
 cmake ./build -DAREG_USE_PACKAGES:BOOL=TRUE -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++
 cmake --build ./build -j20
 ```
 
-### Solution 4: Cross-Compilation Toolchain File  
+### Solution 4: Cross-Compilation Toolchain File
 
-Create a dedicated CMake toolchain file to define the cross-compilation environment, including the target platform, compilers, and paths to dependencies. Example toolchain file (`toolchain-arm.cmake`):  
-```cmake  
-set(CMAKE_SYSTEM_NAME Linux)  
-set(CMAKE_SYSTEM_PROCESSOR arm)  
-set(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)  
-set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)  
-set(CMAKE_FIND_ROOT_PATH /path/to/sysroot)  
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)  
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)  
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)  
-```  
-Use it during configuration:  
-```bash  
-cmake -B ./product/cache/gnu-arm32 -DCMAKE_TOOLCHAIN_FILE=toolchain-arm.cmake  
-```  
+Define a cross-compilation environment using a dedicated CMake toolchain file. Example (`toolchain-arm.cmake`):
+```cmake
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+set(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)
+set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
+set(CMAKE_FIND_ROOT_PATH /path/to/sysroot)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+```
 
-This ensures a consistent environment for cross-compiling, minimizing errors.
+Use the toolchain file during configuration:
+```bash
+cmake -B ./product/cache/gnu-arm32 -DCMAKE_TOOLCHAIN_FILE=toolchain-arm.cmake
+```
+
+This approach provides a consistent cross-compilation environment and minimizes errors.
 
 ---

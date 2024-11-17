@@ -122,8 +122,6 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_sys_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
-        set(CMAKE_CXX_COMPILER      "${AREG_CXX_COMPILER}" CACHE INTERNAL "CXX Compiler")
-        set(CMAKE_C_COMPILER        "${AREG_C_COMPILER}"   CACHE INTERNAL "C Compiler")
         if (NOT "${_sys_process}" STREQUAL "")
             set(AREG_PROCESSOR ${_sys_process})
             set(AREG_BITNESS   ${_sys_bitness})

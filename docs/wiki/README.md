@@ -42,6 +42,7 @@ The following sections guide you through installing, configuring, and using the 
 7. **Troubleshootings**
    - **[Troubleshooting WSL Updates](./07a-troubleshooting-wsl-update.md)**: Provides solutions for common issues encountered while updating the WSL.
    - **[Troubleshooting CMake Builds on Linux](./07b-troubleshooting-cmake-linux-builds.md)**: Provides solutions for common errors encountered during the CMake compilation process on Linux.
+   - **[Integration Troubleshooting](./07c-troubshooting-integration.md)**: Provides solutions for common errors encountered during integration of AREG SDK sources or binaries in the projects.
 
 ```
 Help us to make docs greater.

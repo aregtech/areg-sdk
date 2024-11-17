@@ -27,7 +27,7 @@ This is often happens due to DNS resolution errors in WSL. To check it, see the 
 ```bash
 cat /etc/resolv.conf
 ```
-If the `nameserver` entry indicates, for example, the IP-address of your DSL, like `nameserver 172.23.112.1`,  you need to change.
+If the `nameserver` entry indicates, for example, the IP-address of your DSL, like `nameserver 172.23.112.1`, you need to change.
 
 ### Solution: Update DNS Settings in `/etc/resolv.conf`
 
