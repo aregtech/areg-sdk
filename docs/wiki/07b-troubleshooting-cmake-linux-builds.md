@@ -7,12 +7,12 @@ This guide provides solutions for common issues encountered when compiling proje
 ## Table of Contents
 
 1. [Issue 1: Missing `<asm/errno.h> File` File](#issue-1-missing-asmerrnoh-file)
-   - [Solution: Create a Symbolic Link](#solution-create-a-symbolic-link)
+   - [Solution 1: Create a Symbolic Link](#solution-1-create-a-symbolic-link)
    - [Solution 2: Install Missing Libraries](#solution-2-install-missing-libraries)
    - [Solution 3: Check Toolchain and Cross-Compilation Settings](#solution-3-check-toolchain-and-cross-compilation-settings)
 2. [Issue 2: Failure to Cross-Compile with Extended Objects Enabled](#issue-3-failure-to-cross-compile-with-extended-objects-enabled)
    - [Solution 1: Use Target-Compatible Libraries](#solution-1-use-target-compatible-libraries)
-   - [Solution 2: Pre-Build Required Libraries](#solution*2-pre-build-required-libraries)
+   - [Solution 2: Pre-Build Required Libraries](#solution-2-pre-build-required-libraries)
    - [Solution 3: Disable Extended Objects](#solution-3-disable-extended-objects)
 
 ---
