@@ -195,7 +195,7 @@ link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUT
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
-    set(CMAKE_EXECUTABLE_SUFFIX ".out")
+    set(CMAKE_EXECUTABLE_SUFFIX ".elf")
 endif()
 
 set(COMMON_COMPILE_DEF)

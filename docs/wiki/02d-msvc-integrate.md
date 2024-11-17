@@ -5,10 +5,10 @@ This guide provides instructions for integrating the **AREG Framework** into an 
 1. **Install via `vcpkg`** as a prebuilt package.
 2. **Add AREG SDK as a Git submodule** in your project.
 
-> [!TIP]  
+> [!TIP]
 > For a practical example of integrating AREG SDK libraries and tools, refer to the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
 
-> [!NOTE]  
+> [!NOTE]
 > Alternatively, you can learn how to [integrate AREG Framework in a project with CMake](./02c-cmake-integrate.md).
 
 ## Table of Contents
@@ -74,32 +74,32 @@ This example project and source file will be used throughout the integration ste
 
 ### Method 1: Integrate Using `vcpkg` Package
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > As of AREG SDK 2.0, integration via `vcpkg` is supported.
 
-1. **Install `vcpkg`**:  
+1. **Install `vcpkg`**:
    Follow the instructions on the [vcpkg GitHub page](https://github.com/microsoft/vcpkg). Ensure `vcpkg` is updated to the latest package version. If you are installing `vcpkg` for the first time, close Microsoft Visual Studio to allow proper integration.
 
-2. **Install the AREG SDK Package for Windows**:  
+2. **Install the AREG SDK Package for Windows**:
    Run the following command in PowerShell to install the AREG SDK package for Windows:
    ```bash
    vcpkg install areg
    ```
 
-3. **Integrate Installed Package**:  
+3. **Integrate Installed Package**:
    Run the following command to integrate the AREG SDK binaries and headers with Visual Studio:
    ```bash
    vcpkg integrate install
    ```
 
-4. **Build the `example` Project**:  
+4. **Build the `example` Project**:
    Since the example code includes a direct link to the `areg` library (`#pragma comment(lib, "areg")`), no additional configuration is needed. Build the `example` project and run it.
 
 Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-package.md) for more details.
 
 ### Method 2: Integrate as Git Submodule
 
-1. **Define Submodule**:  
+1. **Define Submodule**:
    Add the `areg-sdk` as a submodule by creating a `.gitmodules` file in your project:
    ```plaintext
    [submodule "areg-sdk"]
@@ -107,7 +107,7 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-p
      url = https://github.com/aregtech/areg-sdk.git
    ```
 
-2. **Download AREG SDK Sources**:  
+2. **Download AREG SDK Sources**:
    Run these commands to initialize and update the submodule:
    ```bash
    git submodule update --init --recursive
@@ -128,7 +128,7 @@ Also see [Installing and Using AREG SDK with vcpkg Package Manager](./01a-areg-p
    - Under **C/C++** -> **Preprocessor Definitions**, add either `IMPORT_SHARED_SYMBOLS` (for DLL) or `IMPORT_STATIC_SYMBOLS` (for static library).
    - Since the `example.cpp` contains a linker instruction `#pragma comment(lib, "areg")`, there is no need to link `areg.lib` anymore. But if you don't like using `pragma` in your code, in **Project** -> **Properties** for the `example` project navigate to **Linker** -> **Input** -> **Additional Dependencies**, add `areg.lib`. Update **Additional Library Directories** in **Linker** -> **General** if necessary.
 
-4. **Build the Solution**:  
+4. **Build the Solution**:
    After configuring these settings, you should be able to build all projects in the solution.
 
 ---

@@ -30,11 +30,11 @@ This guide provides steps to compile and configure the AREG logging module effec
 
 Logging can be enabled or disabled during compilation, allowing effective debugging during development while optimizing performance in production. By default, logs are enabled. To adjust this setting:
 
-1. **Using `cmake`:**  
+1. **Using `cmake`:**
    - Enable: `cmake -B ./build -DAREG_LOGS=ON`
    - Disable: `cmake -B ./build -DAREG_LOGS=OFF`
    
-2. **Using `MSBuild`:**  
+2. **Using `MSBuild`:**
    - Enable: `MSBuild /m /property:AregLogs=1 ./areg-sdk.sln`
    - Disable: `MSBuild /m /property:AregLogs=0 ./areg-sdk.sln`
 

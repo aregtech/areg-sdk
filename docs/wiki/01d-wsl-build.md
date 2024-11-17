@@ -49,7 +49,7 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 Experiencing update issues? Common solutions include:
 
-- **Error Code**: `Wsl/Service/CreateInstance/0x80040326`  
+- **Error Code**: `Wsl/Service/CreateInstance/0x80040326`
    Run:
    ```bash
    wsl --update
@@ -221,5 +221,5 @@ A Demo to demonstrate simple request, response, and broadcast ...
 Exit application; check logs for details.
 ```
 
-> [!NOTE]  
+> [!NOTE]
 > For a list of examples and detailed run instructions, see the [README](./../../examples/README.md) in the AREG SDK `examples` directory.
