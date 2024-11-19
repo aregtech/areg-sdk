@@ -83,7 +83,7 @@ endif()
 if (WIN32)
 
     if ("${AREG_COMPILER_FAMILY}" STREQUAL "llvm")
-        set(CMAKE_GENERATOR_TOOLSET ClangCL)
+        set(CMAKE_GENERATOR_TOOLSET ClangCL INTERNAL "Force ClangCL tool-set")
     endif()
 
     if (AREG_BITNESS EQUAL 32)
