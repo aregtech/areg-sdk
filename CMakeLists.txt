@@ -33,9 +33,6 @@ project("${PROJECT_NAME}"
 # The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 
-message(STATUS "<<<<<< AREG Defined : AREG_COMPILER_FAMILY = ${AREG_COMPILER_FAMILY}, AREG_BITNESS = ${AREG_BITNESS}")
-message(STATUS "<<<<<< CMake changes: CMAKE_GENERATOR_TOOLSET = ${CMAKE_GENERATOR_TOOLSET}, CMAKE_GENERATOR_PLATFORM = ${CMAKE_GENERATOR_PLATFORM}")
-
 # add a custom command to create output build folders if they are not existing.
 # create a dummy project to add as a dependency in all other projects.
 # this ensures that the commands to create directories are called first.
