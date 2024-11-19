@@ -3,8 +3,8 @@ Description=AREG TCP/IP Multicast Router Service to automate messaging
 StartLimitIntervalSec=1
 
 [Service]
-# Set the full path to mcrouter.out file and start with option '--service'
-ExecStart=/usr/local/bin/mcrouter.out --service
+# Set the full path to mcrouter.elf file and start with option '--service'
+ExecStart=/usr/local/bin/mcrouter.elf --service
 Type=simple
 Restart=on-failure
 RestartSec=1

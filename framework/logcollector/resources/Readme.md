@@ -14,7 +14,7 @@ logcollector --service
 
 Before installing `logcollector` under the Linux, make sure that the location of the `logcollector` executable
 is properly set in the `logcollector.service` file.
-Check the script `ExecStart=/usr/local/bin/logcollector.out --service`.
+Check the script `ExecStart=/usr/local/bin/logcollector.elf --service`.
 Change the path if you have another location. Make sure that `config/areg.init` is
 in the same directory with `logcollector`.
 

@@ -3,8 +3,8 @@ Description=AREG TCP/IP Logging Service to collect application logs
 StartLimitIntervalSec=1
 
 [Service]
-# Set the full path to logcollector.out file and start with option '--service'
-ExecStart=/usr/local/bin/logcollector.out --service
+# Set the full path to logcollector.elf file and start with option '--service'
+ExecStart=/usr/local/bin/logcollector.elf --service
 Type=simple
 Restart=on-failure
 RestartSec=1

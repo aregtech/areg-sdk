@@ -137,10 +137,10 @@ The following are the available CMake options to configure the AREG SDK build. O
 > [!TIP]  
 > To check if an application has been compiled for a 32-bit or 64-bit system, navigate to the build binary directory and run:
 > ```bash
-> file ./mcrouter.out
+> file ./mcrouter.elf
 > ```
 > This command displays the binary's architecture. For example, the output for a 32-bit `mcrouter` binary may appear as:
-> > ./mcrouter.out: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
+> > ./mcrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
 
 > Alternatively, use the following command to check specific details in the ELF header:
 > ```bash
@@ -372,7 +372,7 @@ sudo cmake --install ./product/cache/llvm
   -- AREG: >>> Binary Output Dir ..: '/mnt/c/projects/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-release-shared/bin'
   -- AREG: >>> Generated Files Dir : '/mnt/c/projects/areg-sdk/product/generate'
   -- AREG: >>> Packages Dir .......: '/mnt/c/projects/areg-sdk/product/packages'
-  -- AREG: >>> Build Modules ......: areg = 'shared', aregextend = static, areglogger = 'shared', executable extension '.out'
+  -- AREG: >>> Build Modules ......: areg = 'shared', aregextend = static, areglogger = 'shared', executable extension '.elf'
   -- AREG: >>> Java Version .......: '17.0.12', Java executable = '/usr/bin/java', minimum version required = 17
   -- AREG: >>> Packages Use .......: SQLite3 package use = 'ON', GTest package use = 'ON'
   -- AREG: >>> Other Options ......: Examples = 'OFF', Unit Tests = 'OFF', AREG Extended = 'OFF', Logs = 'ON'

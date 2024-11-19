@@ -7,7 +7,7 @@ mcrouter --service
 
 ## Install under Linux
 
-Before installing `mcrouter` under the Linux, make sure that the location of the `mcrouter` executable is properly set in the `mcrouter.service` file. Check the script `ExecStart=/usr/local/bin/mcrouter.out --service`. Change the path if you have another location. Make sure that `config/areg.init` is in the same directory with `mcrouter`.
+Before installing `mcrouter` under the Linux, make sure that the location of the `mcrouter` executable is properly set in the `mcrouter.service` file. Check the script `ExecStart=/usr/local/bin/mcrouter.elf --service`. Change the path if you have another location. Make sure that `config/areg.init` is in the same directory with `mcrouter`.
 
 To install the `mcrouter` under Linux, use `mcrouter.service` file and perform following steps:
 1. Copy `mcrouter.service` to the `/etc/systemd/system/` directory. For example, run this script:

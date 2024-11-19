@@ -178,10 +178,10 @@ To compile AREG SDK for a 32-bit system, you need to specify the target bitness 
 
 To verify that a binary is 32-bit, navigate to the build directory and run:
 ```bash
-file ./mcrouter.out
+file ./mcrouter.elf
 ```
 This command should output something like:
-> ./mcrouter.out: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
+> ./mcrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
 
 Alternatively, you can run:
 ```bash
@@ -218,7 +218,7 @@ Cross-compiling for ARM processors requires an ARM-compatible toolchain and conf
 
 Verify the architecture of the compiled binary with:
 ```bash
-file ./mcrouter.out
+file ./mcrouter.elf
 ```
 This should output message `ELF 32-bit LSB executable, ARM, ...`.
 
@@ -244,7 +244,7 @@ For AARCH64 architecture, install the 64-bit ARM toolchain and configure CMake a
 
 Verify the binary architecture:
 ```bash
-file ./mcrouter.out
+file ./mcrouter.elf
 ```
 This should output message `ELF 64-bit LSB executable, ARM aarch64, ...`.
 
