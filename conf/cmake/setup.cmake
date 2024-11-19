@@ -92,6 +92,11 @@ if (WIN32)
         set(CMAKE_GENERATOR_PLATFORM x64 CACHE INTERNAL "Force 64-bit compilation")
     endif()
 
+    message("<<<<<< AREG Defined : AREG_COMPILER_FAMILY = ${AREG_COMPILER_FAMILY}, AREG_BITNESS = ${AREG_BITNESS}")
+    message("<<<<<< CMake changes: CMAKE_GENERATOR_TOOLSET = ${CMAKE_GENERATOR_TOOLSET}, CMAKE_GENERATOR_PLATFORM = ${CMAKE_GENERATOR_PLATFORM}")
+
+else()
+    message(WARNING "Not Windows!!!")
 endif()
 
 # check and fix CXX standard for AREG Framework sources.
