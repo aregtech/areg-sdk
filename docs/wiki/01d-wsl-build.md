@@ -144,10 +144,10 @@ cmake --build ./build -j
 > [!TIP]  
 > To verify if an application is compiled for a 32-bit system, navigate to the build binary directory and use:
 > ```bash
-> file ./mcrouter.out
+> file ./mcrouter.elf
 > ```
 > This command shows the binary's architecture. Example output for a 32-bit `mcrouter` binary:
-> > ./mcrouter.out: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
+> > ./mcrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
 > 
 > Alternatively, run:
 > ```bash
@@ -181,8 +181,8 @@ Then configure and build AREG SDK binaries:
 cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
 cmake --build ./build -j
 ```
-Check the binary with `file ./mcrouter.out`. If successful, you'll see output like:
-> ./mcrouter.out: ELF **32-bit** LSB executable, **ARM**, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.3, BuildID[sha1]=c606ea5ce7be9cb1175fd87587b5975e235c084e, for GNU/Linux 3.2.0, not stripped
+Check the binary with `file ./mcrouter.elf`. If successful, you'll see output like:
+> ./mcrouter.elf: ELF **32-bit** LSB executable, **ARM**, EABI5 version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.3, BuildID[sha1]=c606ea5ce7be9cb1175fd87587b5975e235c084e, for GNU/Linux 3.2.0, not stripped
 
 ### CMake for 64-bit ARM Build with GNU
 To compile for a 64-bit ARM system, install the appropriate toolchain:
@@ -194,8 +194,8 @@ Then configure and build AREG SDK binaries:
 cmake -B ./build -DAREG_PROCESSOR=aarch64 -DAREG_COMPILER_FAMILY=gnu
 cmake --build ./build -j
 ```
-Check the binary with `file ./mcrouter.out`. Successful output will look like:
-> ./mcrouter.out: ELF **64-bit** LSB pie executable, **ARM aarch64**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=bcf786a8c893b950868addecbc347d24518a25cd, for GNU/Linux 3.7.0, not stripped
+Check the binary with `file ./mcrouter.elf`. Successful output will look like:
+> ./mcrouter.elf: ELF **64-bit** LSB pie executable, **ARM aarch64**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=bcf786a8c893b950868addecbc347d24518a25cd, for GNU/Linux 3.7.0, not stripped
 
 For more information, refer to the **[AREG SDK Build Guide](./01b-cmake-build.md)**.
 
@@ -208,9 +208,9 @@ Navigate to the SDK root directory, e.g.,:
 cd /mnt/c/projects/areg-sdk/
 ```
 
-Run applications located in the `bin` directory, such as `10_locservice.out`:
+Run applications located in the `bin` directory, such as `10_locservice.elf`:
 ```bash
-./product/build/llvm-clang++/linux-64-x86_64-release/bin/10_locservice.out
+./product/build/llvm-clang++/linux-64-x86_64-release/bin/10_locservice.elf
 ```
 
 Sample output:

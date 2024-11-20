@@ -17,10 +17,6 @@ include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 # set CMake tool settings
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
 
-if (${AREG_COMPILER_FAMILY} MATCHES "llvm" AND WIN32)
-    set(CMAKE_GENERATOR_TOOLSET ClangCL)
-endif()
-
 # AREG SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
 set(AREG_PROJECT_VERSION "1.9.99.111")
