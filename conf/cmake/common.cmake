@@ -42,9 +42,6 @@ endif()
 # -----------------------------------------------------
 # areg specific internal variable settings
 # -----------------------------------------------------
-# The toolchain
-set(AREG_CXX_TOOLCHAIN "${CMAKE_CXX_COMPILER}")
-set(AREG_CC_TOOLCHAIN  "${CMAKE_CC_COMPILER}")
 
 # The development environment -- POSIX or Win32 API
 set(AREG_DEVELOP_ENV)
@@ -107,10 +104,19 @@ else()
 endif()
 
 if (AREG_EXTENDED)
-    add_definitions(-DAREG_EXTENDED=1)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        list(APPEND AREG_EXTENDED_LIBS ncurses)
-        set(AREG_EXTENDED_LIBS_STR "-lncurses")
+        macro_find_ncurses_package(${AREG_PROCESSOR} ${AREG_BITNESS} _ncurses_includes _ncurses_lib _ncurses_found )
+        if (_ncurses_found)
+            add_definitions(-DAREG_EXTENDED=1)
+            list(APPEND AREG_EXTENDED_LIBS ncurses)
+            set(AREG_EXTENDED_LIBS_STR "-lncurses")
+        else()
+            message("AREG: >>> No suitable 'ncurses' library found for '${AREG_PROCESSOR}' processor, force to disable extended objects.")
+            set(AREG_EXTENDED OFF)
+            add_definitions(-DAREG_EXTENDED=0)
+        endif()
+    else()
+        add_definitions(-DAREG_EXTENDED=1)
     endif()
 else()
     add_definitions(-DAREG_EXTENDED=0)

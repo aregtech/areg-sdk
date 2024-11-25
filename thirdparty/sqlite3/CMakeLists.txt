@@ -6,9 +6,17 @@
 set(AREG_SQLITE_INCLUDES)
 set(AREG_SQLITE_LIBRARY)
 
+message(STATUS "<<< AREG_SQLITE_PACKAGE = ${AREG_SQLITE_PACKAGE}")
 if (AREG_SQLITE_PACKAGE)
     # search installed SQLite3 package in the system.
-    macro_find_package(SQLite3 AREG_SQLITE_FOUND AREG_SQLITE_INCLUDES AREG_SQLITE_LIBRARY)
+    macro_find_sqlite_package(${AREG_PROCESSOR} ${AREG_BITNESS} AREG_SQLITE_INCLUDES AREG_SQLITE_LIBRARY AREG_SQLITE_FOUND)
+    if (AREG_SQLITE_FOUND)
+        message(STATUS "AREG: >>> Found SQLile pre-compiled library '${AREG_SQLITE_LIBRARY}', include '${AREG_SQLITE_INCLUDES}'")
+    else()
+        message(STATUS "AREG: >>> Could not find SQLile pre-compiled library  Builds from sources.")
+    endif()
+else()
+    set(AREG_SQLITE_FOUND FALSE)
 endif()
 
 if (AREG_SQLITE_FOUND)

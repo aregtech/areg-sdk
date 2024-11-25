@@ -13,30 +13,29 @@
 macro(macro_check_fix_areg_cxx_standard)
 
     # Ensure that the required 'AREG_CXX_STANDARD' variable is defined.
-    if (NOT DEFINED AREG_CXX_STANDARD)
+    if (DEFINED AREG_CXX_STANDARD)
+        # If 'CMAKE_CXX_STANDARD' is not set, assign 'AREG_CXX_STANDARD' to it.
+        if (NOT DEFINED CMAKE_CXX_STANDARD)
+            set(CMAKE_CXX_STANDARD          ${AREG_CXX_STANDARD})
+
+            # ###################################################################
+            # Do not disable extensions if googletest compilation is included.
+            # It causes googletest compilation due to using non-standard POSIX API use
+            # like 'fileno', 'fdopen' and 'mkstemp' method calls.
+            # ###################################################################
+            # set(CMAKE_CXX_EXTENSIONS        OFF)
+            # set(CMAKE_CXX_STANDARD_REQUIRED ON)    
+            # ###################################################################
+
+            # If the current C++ standard is less than the required 'AREG_CXX_STANDARD', issue a warning.
+        elseif(${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
+            message(WARNING "AREG: >>> AREG requires C++${AREG_CXX_STANDARD} or higher, \
+                            current version is C++${CMAKE_CXX_STANDARD}. \
+                            To avoid compilation errors, set 'CMAKE_CXX_STANDARD' to ${AREG_CXX_STANDARD}. \
+                            Example: 'set(CMAKE_CXX_STANDARD ${AREG_CXX_STANDARD})'")
+        endif()
+    else()
         message(WARNING "AREG: >>> Cannot check and set C++ standard, variable 'AREG_CXX_STANDARD' is not defined.")
-        return()
-    endif()
-
-    # If 'CMAKE_CXX_STANDARD' is not set, assign 'AREG_CXX_STANDARD' to it.
-    if (NOT DEFINED CMAKE_CXX_STANDARD)
-        set(CMAKE_CXX_STANDARD          ${AREG_CXX_STANDARD})
-
-        # ###################################################################
-        # Do not disable extensions if googletest compilation is included.
-        # It causes googletest compilation due to using non-standard POSIX API use
-        # like 'fileno', 'fdopen' and 'mkstemp' method calls.
-        # ###################################################################
-        # set(CMAKE_CXX_EXTENSIONS        OFF)
-        # set(CMAKE_CXX_STANDARD_REQUIRED ON)    
-        # ###################################################################
-
-        # If the current C++ standard is less than the required 'AREG_CXX_STANDARD', issue a warning.
-    elseif(${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
-        message(WARNING "AREG: >>> AREG requires C++${AREG_CXX_STANDARD} or higher, \
-                        current version is C++${CMAKE_CXX_STANDARD}. \
-                        To avoid compilation errors, set 'CMAKE_CXX_STANDARD' to ${AREG_CXX_STANDARD}. \
-                        Example: 'set(CMAKE_CXX_STANDARD ${AREG_CXX_STANDARD})'")
     endif()
 
 endmacro(macro_check_fix_areg_cxx_standard)
@@ -82,6 +81,148 @@ macro(macro_find_package package_name package_found package_includes package_lib
         set(${package_libraries} "")
     endif()
 endmacro(macro_find_package)
+
+macro(macro_find_ncurses_package target_architect target_bitness var_include_dir var_library var_found)
+    set(${var_found}    FALSE)
+    set(${var_include_dir})
+    set(${var_library})
+
+    if (NOT MSVC)
+        macro_get_processor(${target_architect} _processor _bitness _found)
+        find_path(${var_include_dir} NAMES ncurses.h)
+        find_library(${var_library} NAMES ncurses)
+
+        if (${var_include_dir} AND ${var_library})
+            macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
+        endif()
+    endif()
+
+endmacro(macro_find_ncurses_package)
+
+macro(macro_find_gtest_package target_architect target_bitness var_include_dir var_library var_found)
+
+    set(${var_found} FALSE)
+    include(FindGTest)
+    if (GTest_FOUND)
+        set(${var_found} TRUE)
+        set(${var_library} "${GTEST_LIBRARIES}")
+        set(${var_include_dir} "${GTEST_INCLUDE_DIRS}")
+        if (NOT MSVC)
+            macro_get_processor(${target_architect} _processor _bitness _found)
+            macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
+        endif()
+    endif()
+
+endmacro(macro_find_gtest_package)
+
+macro(macro_find_sqlite_package target_architect target_bitness var_include_dir var_library var_found)
+    set(${var_found}    FALSE)
+    set(${var_include_dir})
+    set(${var_library})
+
+    macro_get_processor(${target_architect} _processor _bitness _found)
+    find_path(${var_include_dir} NAMES sqlite3.h)
+    if (MSVC)
+        find_library(${var_library} NAMES sqlite3 sqlite REGISTRY_VIEW ${target_bitness})
+    else()
+        find_library(${var_library} NAMES sqlite3 sqlite)
+    endif()
+
+    if (${var_include_dir} AND ${var_library})
+        if (MSVC)
+            set(${var_found} TRUE)
+        else()
+            macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
+        endif()
+
+        if (${var_found} AND NOT TARGET SQLite::SQLite3)
+            add_library(SQLite::SQLite3 UNKNOWN IMPORTED)
+            set_target_properties(SQLite::SQLite3 PROPERTIES
+                IMPORTED_LOCATION             "${${var_library}}"
+                INTERFACE_INCLUDE_DIRECTORIES "${${var_include_dir}}")
+        endif()
+    endif()
+
+endmacro(macro_find_sqlite_package)
+
+macro(macro_check_module_architect path_module target_architect is_compatible)
+    message(STATUS "AREG: >>> Checking '${path_module}' compatibility with '${target_architect}' processor architecture")
+    # Initialize variables
+    set(${is_compatible} FALSE)
+    # Execute the command and search for the architecture
+    if (EXISTS "${path_module}")
+        set(_objdump)
+        set(_srch)
+        file(REAL_PATH "${path_module}" _target_module)
+        if (IS_SYMLINK "${_target_module}")
+            file(READ_SYMLINK "${_target_module}" _target_module)
+        endif()
+
+        # Map architecture to appropriate objdump tool and search string
+        if ("${target_architect}" STREQUAL "${_proc_arm64}")
+            set(_objdump "aarch64-linux-gnu-objdump")
+            set(_srch "aarch64")
+        elseif("${target_architect}" STREQUAL "${_proc_arm32}")
+            find_program(_objdump NAMES "arm-linux-gnueabihf-objdump" "arm-linux-gnueabi-objdump" HINTS /usr)
+            if (NOT _objdump)
+                set(_objdump "objdump")
+            endif()
+            set(_srch "arm")
+        elseif("${target_architect}" STREQUAL "${_proc_x64}")
+            set(_objdump "x86_64-linux-gnu-objdump")
+            set(_srch "x86-64")
+        elseif("${target_architect}" STREQUAL "${_proc_x86}")
+            set(_objdump "x86_64-linux-gnu-objdump")
+            set(_srch "i386")
+        else()
+            set(_objdump "objdump")
+            set(_srch "${target_architect}")
+        endif()
+
+        message("<<< Executing '${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u'")
+
+        execute_process(
+            COMMAND bash -c "${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+            OUTPUT_VARIABLE _data
+            ERROR_QUIET
+        )
+
+        if ("${_data}" STREQUAL "")
+            cmake_path(GET _target_module EXTENSION LAST_ONLY _ext)
+            message("<<< Unknown architecture of '${_target_module}', tries to check alternative binary.")
+            if ("${_ext}" STREQUAL ".so")
+                string(REPLACE ".so" ".a" _target_module "${_target_module}")
+                execute_process(
+                    COMMAND bash -c "${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+                    OUTPUT_VARIABLE _data
+                    ERROR_QUIET
+                )
+            endif()
+        endif()
+
+        message("<<< Searching '${_srch}' keyword in the string '${_data}'")
+        if ("${_srch}" STREQUAL "i386")
+            string(FIND "${_data}" "x86-64" _pos)
+            if (_pos GREATER -1)
+                set(_pos -1)
+            else()
+                string(FIND "${_data}" "i386" _pos)
+            endif()
+        else()
+            string(FIND "${_data}" "${_srch}" _pos)
+        endif()
+
+        if (_pos GREATER -1)
+            set(${is_compatible} TRUE)
+        else()
+            message(STATUS "AREG: >>> '${_target_module}' is NOT compatible for '${target_architect}' target architecture")
+            set(${is_compatible} FALSE)
+        endif()
+    else()
+        message(WARNING "AREG: The module '${path_module}' does not exist, cannot check compatibility")
+    endif()
+
+endmacro(macro_check_module_architect)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_create_option
@@ -167,7 +308,7 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
 endmacro(macro_parse_arguments)
 
 # Read-only variable of 32-bit 'x86' processor name
-set(_proc_x86   "x86")
+set(_proc_x86   "i386")
 # Read-only variable of 64-bit 'x64' processor name
 set(_proc_x64   "x86_64")
 # Read-only variable of 32-bit 'arm' processor name
@@ -244,21 +385,33 @@ endmacro(macro_system_bitness)
 # ---------------------------------------------------------------------------
 macro(macro_get_processor processor_name var_processor var_bitness var_found)
     set(${var_found} FALSE)
-    foreach(_entry "x86;${_proc_x86};32" "x64;${_proc_x64};64" "x86_64;${_proc_x64};64" "amd64;${_proc_x64};64" "arm;${_proc_arm32};32" "arm32;${_proc_arm32};32" "arm64;${_proc_arm64};64" "aarch64;${_proc_arm64};64")
+    string(TOLOWER "${processor_name}" _proc_name)
+    list(APPEND _arch_list  "x86|${_proc_x86}|32"
+                            "i386|${_proc_x86}|32"
+                            "i486|${_proc_x86}|32"
+                            "i686|${_proc_x86}|32"
+                            "x64|${_proc_x64}|64"
+                            "x86_64|${_proc_x64}|64"
+                            "x86-64|${_proc_x64}|64"
+                            "amd64|${_proc_x64}|64"
+                            "ia64|${_proc_x64}|64"
+                            "arm|${_proc_arm32}|32"
+                            "arm32|${_proc_arm32}|32"
+                            "armv7|${_proc_arm32}|32"
+                            "arm64|${_proc_arm64}|64"
+                            "aarch64|${_proc_arm64}|64"
+    )
+
+    foreach(_entry IN LISTS _arch_list)
+        string(REPLACE "|" ";" _entry "${_entry}")
         list(GET _entry 0 _proc)
-        list(GET _entry 1 _arch)
-        list(GET _entry 2 _bits)
-        if (${_proc} STREQUAL ${processor_name})
-            set(${var_processor}   ${_arch})
-            set(${var_bitness}     ${_bits})
+        if ("${_proc}" STREQUAL "${_proc_name}")
+            list(GET _entry 1 ${var_processor})
+            list(GET _entry 2 ${var_bitness})
             set(${var_found} TRUE)
             break()
         endif()
     endforeach()
-    unset(_entry)
-    unset(_proc)
-    unset(_arch)
-    unset(_bits)
 endmacro(macro_get_processor)
 
 # ---------------------------------------------------------------------------
@@ -295,7 +448,6 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
         set(${sys_bitness}  ${AREG_BITNESS})
     elseif(NOT ${sys_platform} STREQUAL "")
         macro_get_processor(${sys_platform} ${sys_platform} ${sys_bitness} _ignore)
-        unset(_ignore)
     else()
         macro_system_bitness(${sys_bitness})
     endif()

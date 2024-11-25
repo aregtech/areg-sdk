@@ -18,7 +18,9 @@ if (AREG_BUILD_TESTS)
 
     if (AREG_GTEST_PACKAGE)
         # Check whether the Google Test sources exist.
-        macro_find_package(GTest AREG_GTEST_FOUND AREG_GTEST_INCLUDES AREG_GTEST_LIBRARY)
+        macro_find_gtest_package(${AREG_PROCESSOR} ${AREG_BITNESS} AREG_GTEST_INCLUDES AREG_GTEST_LIBRARY AREG_GTEST_FOUND)
+    else(AREG_GTEST_PACKAGE)
+        option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
     endif(AREG_GTEST_PACKAGE)
 
     if (AREG_GTEST_FOUND)
