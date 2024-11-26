@@ -3,16 +3,16 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
+# local variables
+set(AREG_GTEST_INCLUDES)
+set(AREG_GTEST_LIBRARY)
+
 if (AREG_BUILD_TESTS)
 
     # Disable unit tests post-build for ARM processor
     if (${AREG_PROCESSOR} STREQUAL ${_proc_arm32} OR ${AREG_PROCESSOR} STREQUAL ${_proc_arm64})
         set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
     endif()
-
-    # local variables
-    set(AREG_GTEST_INCLUDES)
-    set(AREG_GTEST_LIBRARY)
 
     enable_testing()
 
@@ -72,4 +72,7 @@ if (AREG_BUILD_TESTS)
     include_directories(${AREG_TESTS})
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
+else()
+    set(AREG_GTEST_PACKAGE OFF)
+    set(AREG_GTEST_FOUND   FALSE)
 endif()
