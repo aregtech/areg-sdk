@@ -26,7 +26,7 @@ if (AREG_SQLITE_PACKAGE)
 
         message(STATUS "AREG: >>> Could not find SQLile pre-compiled library  Builds 'aregsqlite3' library from sources.")
         # The SQLite3 package did not find, compile from available sources.
-        set(AREG_SQLITE_PACKAGE OFF CACHE GLOBAL "Use SQLite3 installed package" FORCE)
+        set(AREG_SQLITE_PACKAGE OFF CACHE INTERNAL "Use SQLite3 installed package")
         set(sqlite_BASE "${AREG_THIRDPARTY}/sqlite3")
         list(APPEND sqlite_SRC
             ${sqlite_BASE}/amalgamation/sqlite3.c

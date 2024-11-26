@@ -36,7 +36,7 @@ if (AREG_BUILD_TESTS)
         option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
         message(STATUS "AREG: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
         # Google Test package did not find, fetch sources from repository.
-        set(AREG_GTEST_PACKAGE OFF CACHE BOOL "Use GTest installed package" FORCE)
+        set(AREG_GTEST_PACKAGE OFF CACHE INTERNAL "Use GTest installed package")
         include(FetchContent)
         # Fetch the latest sources from googletest repository.
         FetchContent_Declare( googletest
