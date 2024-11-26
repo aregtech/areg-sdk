@@ -102,6 +102,9 @@ endmacro(macro_find_ncurses_package)
 macro(macro_find_gtest_package target_architect target_bitness var_include_dir var_library var_found)
 
     set(${var_found} FALSE)
+    set(${var_include_dir})
+    set(${var_library})
+
     include(FindGTest)
     if (GTest_FOUND)
         set(${var_found} TRUE)
@@ -120,33 +123,21 @@ macro(macro_find_sqlite_package target_architect target_bitness var_include_dir 
     set(${var_include_dir})
     set(${var_library})
 
-    macro_get_processor(${target_architect} _processor _bitness _found)
-    find_path(${var_include_dir} NAMES sqlite3.h)
-    if (MSVC)
-        find_library(${var_library} NAMES sqlite3 sqlite REGISTRY_VIEW ${target_bitness})
-    else()
-        find_library(${var_library} NAMES sqlite3 sqlite)
-    endif()
-
-    if (${var_include_dir} AND ${var_library})
-        if (MSVC)
-            set(${var_found} TRUE)
-        else()
+    include(FindSQLite3)
+    if (SQLite3_FOUND)
+        set(${var_found} TRUE)
+        set(${var_library} "${SQLite3_LIBRARIES}")
+        set(${var_include_dir} "${SQLite3_INCLUDE_DIRS}")
+        if (NOT MSVC)
+            macro_get_processor(${target_architect} _processor _bitness _found)
             macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
-        endif()
-
-        if (${var_found} AND NOT TARGET SQLite::SQLite3)
-            add_library(SQLite::SQLite3 UNKNOWN IMPORTED)
-            set_target_properties(SQLite::SQLite3 PROPERTIES
-                IMPORTED_LOCATION             "${${var_library}}"
-                INTERFACE_INCLUDE_DIRECTORIES "${${var_include_dir}}")
         endif()
     endif()
 
 endmacro(macro_find_sqlite_package)
 
 macro(macro_check_module_architect path_module target_architect is_compatible)
-    message(STATUS "AREG: >>> Checking '${path_module}' compatibility with '${target_architect}' processor architecture")
+    message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_architect}' processor")
     # Initialize variables
     set(${is_compatible} FALSE)
     # Execute the command and search for the architecture
@@ -179,8 +170,6 @@ macro(macro_check_module_architect path_module target_architect is_compatible)
             set(_srch "${target_architect}")
         endif()
 
-        message("<<< Executing '${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u'")
-
         execute_process(
             COMMAND bash -c "${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
             OUTPUT_VARIABLE _data
@@ -189,7 +178,6 @@ macro(macro_check_module_architect path_module target_architect is_compatible)
 
         if ("${_data}" STREQUAL "")
             cmake_path(GET _target_module EXTENSION LAST_ONLY _ext)
-            message("<<< Unknown architecture of '${_target_module}', tries to check alternative binary.")
             if ("${_ext}" STREQUAL ".so")
                 string(REPLACE ".so" ".a" _target_module "${_target_module}")
                 execute_process(
@@ -200,7 +188,6 @@ macro(macro_check_module_architect path_module target_architect is_compatible)
             endif()
         endif()
 
-        message("<<< Searching '${_srch}' keyword in the string '${_data}'")
         if ("${_srch}" STREQUAL "i386")
             string(FIND "${_data}" "x86-64" _pos)
             if (_pos GREATER -1)
@@ -215,11 +202,11 @@ macro(macro_check_module_architect path_module target_architect is_compatible)
         if (_pos GREATER -1)
             set(${is_compatible} TRUE)
         else()
-            message(STATUS "AREG: >>> '${_target_module}' is NOT compatible for '${target_architect}' target architecture")
+            message(STATUS "AREG: >>> '${_target_module}' binary is NOT compatible with '${target_architect}' target architecture")
             set(${is_compatible} FALSE)
         endif()
     else()
-        message(WARNING "AREG: The module '${path_module}' does not exist, cannot check compatibility")
+        message(WARNING "AREG: >>> The module '${path_module}' does not exist, cannot check the compatibility")
     endif()
 
 endmacro(macro_check_module_architect)
@@ -994,7 +981,7 @@ macro(macro_declare_static_library lib_name)
 
     # Ensure the source list is not empty
     if (NOT _sources)
-        message(FATAL_ERROR "AREG: >>> Source list for executable \'${exe_name}\' is empty")
+        message(FATAL_ERROR "AREG: >>> Source list to build static library \'${exe_name}\' is empty")
     endif()
 
     # Declare the static library using gathered sources and libraries
@@ -1027,7 +1014,7 @@ macro(macro_declare_shared_library lib_name)
 
     # Ensure the source list is not empty
     if (NOT _sources)
-        message(FATAL_ERROR "AREG: >>> Source list for executable \'${exe_name}\' is empty")
+        message(FATAL_ERROR "AREG: >>> Source list to build shared library \'${exe_name}\' is empty")
     endif()
 
     # Declare the shared library using gathered sources and libraries
@@ -1061,7 +1048,7 @@ macro(macro_declare_executable exe_name)
 
     # Ensure the source list is not empty
     if (NOT _sources)
-        message(FATAL_ERROR "AREG: >>> Source list for executable \'${exe_name}\' is empty")
+        message(FATAL_ERROR "AREG: >>> Source list to build executable \'${exe_name}\' is empty")
     endif()
 
     # Declare the executable using gathered sources and libraries
