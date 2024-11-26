@@ -94,6 +94,8 @@ macro(macro_find_ncurses_package target_architect target_bitness var_include_dir
 
         if (${var_include_dir} AND ${var_library})
             macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
+        else()
+            message(STATUS "AREG: >>> Could not find the ncurses, library = '${${var_library}}', include = '${${var_include_dir}}'")
         endif()
     endif()
 
