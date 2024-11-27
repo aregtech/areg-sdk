@@ -770,8 +770,8 @@ function(setSharedLibOptions target_name library_list)
 
     # Additional compile options for non-Windows platforms
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code for shared libraries
         target_compile_options(${target_name} PRIVATE "-Bdynamic") # Ensure dynamic linking
+        target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code for shared libraries
     endif()
 
 endfunction(setSharedLibOptions)

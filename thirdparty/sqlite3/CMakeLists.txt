@@ -5,6 +5,7 @@
 
 set(AREG_SQLITE_INCLUDES)
 set(AREG_SQLITE_LIBRARY)
+set(USE_SQLITE_PACKAGE 0)
 
 if (AREG_SQLITE_PACKAGE)
     # search installed SQLite3 package in the system.
@@ -16,6 +17,7 @@ if (AREG_SQLITE_PACKAGE)
         # If SQLite3 package found set appropriate preprocessor option to include right header.
         set(AREG_SQLITE_LIB_REF SQLite::SQLite3)
         set(AREG_SQLITE_LIB     sqlite3)
+        set(USE_SQLITE_PACKAGE  1)
         add_definitions(-DUSE_SQLITE_PACKAGE=1)
     
         if (NOT "${AREG_SQLITE_INCLUDES}" STREQUAL "")

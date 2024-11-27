@@ -39,6 +39,8 @@ set(AREG_PROCESSOR      @AREG_PROCESSOR@)
 option(AREG_EXTENDED        "AREG Extended object flag"         @AREG_EXTENDED@)
 # Specify whether the libraries where compiled with enabled logging.
 option(AREG_LOGS            "AREG logging enable flag"          @AREG_LOGS@)
+# Specify whether to use installed or compiled SQLite3 package
+option(AREG_SQLITE_PACKAGE  "Use installed SQLite3 library"     @AREG_SQLITE_PACKAGE@)
 
 # include the exported targets
 include("${CMAKE_CURRENT_LIST_DIR}/@AREG_PACKAGE_NAME@-targets.cmake")
@@ -96,6 +98,10 @@ if (AREG_LOGS)
 else()
     add_definitions(-DAREG_LOGS=0)
 endif()
+
+set(AREG_SQLITE_LIB_REF @AREG_SQLITE_LIB_REF@)
+set(AREG_SQLITE_LIB     @AREG_SQLITE_LIB@)
+add_definitions(-DUSE_SQLITE_PACKAGE=@USE_SQLITE_PACKAGE@)
 
 # Set the Platform API and the platform bitness.
 if (AREG_DEVELOP_ENV STREQUAL "Win32")

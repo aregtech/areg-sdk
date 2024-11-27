@@ -3,6 +3,33 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
+macro(macro_setup_find_library)
+# AREG SDK project name and version
+set(CMAKE_FIND_PACKAGE_RESOLVE_SYMLINKS TRUE)
+if (NOT MSVC)
+    if ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}")
+        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
+            set(CMAKE_CXX_COMPILER_TARGET aarch64-linux-gnu)
+        endif()
+    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}")
+        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
+            set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
+        endif()
+    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_x86}")
+        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
+            set(CMAKE_CXX_COMPILER_TARGET i386-linux-gnu)
+        endif()
+    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_x64}")
+        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
+            set(CMAKE_CXX_COMPILER_TARGET x86_64-linux-gnu)
+        endif()
+    endif()
+    set(CMAKE_LIBRARY_ARCHITECTURE ${CMAKE_CXX_COMPILER_TARGET})
+endif()
+
+endmacro(macro_setup_find_library)
+
+
 cmake_minimum_required(VERSION 3.20.0)
 
 # Areg root directory
@@ -17,7 +44,6 @@ include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 # set CMake tool settings
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
 
-# AREG SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
 set(AREG_PROJECT_VERSION "1.9.99.111")
 
@@ -30,51 +56,8 @@ project("${PROJECT_NAME}"
         HOMEPAGE_URL "https://aregtech.com" 
         LANGUAGES CXX C)
 
-set(CMAKE_FIND_PACKAGE_RESOLVE_SYMLINKS TRUE)
-set(CMAKE_FIND_PACKAGE_PREFER_CONFIG    FALSE)
 
-if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib;.a")
-else()
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.so")
-endif()
-
-
-if (DEFINED AREG_BITNESS)
-    message("<<< AREG_BITNESS = ${AREG_BITNESS}, CMAKE_CXX_COMPILER_TARGET = ${CMAKE_CXX_COMPILER_TARGET}, CMAKE_FIND_ROOT_PATH = ${CMAKE_FIND_ROOT_PATH}")
-    if (${AREG_BITNESS} EQUAL 64)
-        set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
-        set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS OFF)
-    else()
-        set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
-        set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS ON)
-    endif()
-endif()
-
-if (NOT MSVC)
-    if ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET aarch64-linux-gnu)
-        endif()
-        list(APPEND CMAKE_FIND_ROOT_PATH "/usr/aarch64-linux-gnu" "/usr/lib/aarch64-linux-gnu" "/usr/aarch64-linux-gnu/include" "/usr/lib/aarch64-linux-gnu/include")
-    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
-        endif()
-        list(APPEND CMAKE_FIND_ROOT_PATH "/usr/arm-linux-gnueabihf" "/usr/lib/arm-linux-gnueabihf" "/usr/arm-linux-gnueabihf/include" "/usr/lib/arm-linux-gnueabihf/include")
-    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_x86}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET i386-linux-gnu)
-        endif()
-        list(APPEND CMAKE_FIND_ROOT_PATH "/usr/lib/i386-linux-gnu" "/usr/i386-linux-gnu" "/usr/include" "/usr/lib/i386-linux-gnu/include" "/usr/i386-linux-gnu/include")
-    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_x64}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET x86_64-linux-gnu)
-        endif()
-        list(APPEND CMAKE_FIND_ROOT_PATH "/usr/lib/x86_64-linux-gnu" "/usr/x86_64-linux-gnu" "/usr/lib" "/usr/include" "/usr/x86_64-linux-gnu/include")
-    endif()
-endif()
-
+macro_setup_find_library()
 # The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 
