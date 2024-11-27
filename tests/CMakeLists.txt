@@ -73,6 +73,6 @@ if (AREG_BUILD_TESTS)
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
 else()
-    set(AREG_GTEST_PACKAGE OFF)
+    option(AREG_GTEST_PACKAGE "Use Google Tests package" OFF)
     set(AREG_GTEST_FOUND   FALSE)
 endif()

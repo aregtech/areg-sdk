@@ -92,7 +92,7 @@ include_directories(${AREG_THIRDPARTY})
 
 # build AREG Framework thirdparty software
 include(${AREG_THIRDPARTY}/CMakeLists.txt)
-if (NOT ${AREG_SQLITE_FOUND})
+if (NOT AREG_SQLITE_FOUND)
     add_dependencies(aregsqlite3 areg-dummy)
 endif()
 
@@ -109,16 +109,17 @@ endif()
 if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
     if (NOT AREG_GTEST_FOUND)
+        # Set dependency of 'areg-dummy' to make sure
+        # the build directories are created before the
+        # 'gtest' libraries are built
         add_dependencies(areg-unit-tests areg-dummy)
     endif()
 else()
-    option(AREG_GTEST_PACKAGE "Use google test package" OFF)
+    option(AREG_GTEST_PACKAGE "Use Google Tests package" OFF)
 endif()
 
-if (AREG_INSTALL AND AREG_SQLITE_FOUND)
+if (AREG_INSTALL)
     include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
-elseif(AREG_INSTALL)
-    option(AREG_INSTALL "Enable install AREG SDK" OFF)
 endif()
 
 # Print the configuration status
