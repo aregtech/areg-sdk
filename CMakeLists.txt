@@ -97,8 +97,6 @@ if(AREG_BUILD_TESTS)
         # 'gtest' libraries are built
         add_dependencies(areg-unit-tests areg-dummy)
     endif()
-else()
-    option(AREG_GTEST_PACKAGE "Use Google Tests package" OFF)
 endif()
 
 if (AREG_INSTALL)

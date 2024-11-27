@@ -104,5 +104,5 @@ else()
 endif()
 
 if (NOT AREG_BUILD_TESTS)
-    option(AREG_GTEST_PACKAGE "Use Google Tests package" OFF)
+    set(AREG_GTEST_PACKAGE OFF)
 endif()

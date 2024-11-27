@@ -6,6 +6,7 @@
 # local variables
 set(AREG_GTEST_INCLUDES)
 set(AREG_GTEST_LIBRARY)
+option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
 if (AREG_BUILD_TESTS)
 
@@ -19,24 +20,18 @@ if (AREG_BUILD_TESTS)
     if (AREG_GTEST_PACKAGE)
         # Check whether the Google Test sources exist.
         macro_find_gtest_package(${AREG_PROCESSOR} ${AREG_BITNESS} AREG_GTEST_INCLUDES AREG_GTEST_LIBRARY AREG_GTEST_FOUND)
-    else(AREG_GTEST_PACKAGE)
-        option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
-    endif(AREG_GTEST_PACKAGE)
+    endif()
 
     if (AREG_GTEST_FOUND)
         # Google Test package found, make no actions on it, the libraries can be used.
-        option(AREG_GTEST_FOUND  "GTest package found flag"   TRUE)
         message(STATUS "AREG: >>> Will use existing in the system googletest package")
         if (NOT "${AREG_GTEST_INCLUDES}" STREQUAL "")
             include_directories("${AREG_GTEST_INCLUDES}")
         endif()
-
-    else(AREG_GTEST_FOUND)
-
-        option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
+    else()
         message(STATUS "AREG: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
         # Google Test package did not find, fetch sources from repository.
-        set(AREG_GTEST_PACKAGE OFF CACHE INTERNAL "Use GTest installed package")
+        set(AREG_GTEST_PACKAGE OFF)
         include(FetchContent)
         # Fetch the latest sources from googletest repository.
         FetchContent_Declare( googletest
@@ -72,7 +67,4 @@ if (AREG_BUILD_TESTS)
     include_directories(${AREG_TESTS})
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
-else()
-    option(AREG_GTEST_PACKAGE "Use Google Tests package" OFF)
-    set(AREG_GTEST_FOUND   FALSE)
 endif()
