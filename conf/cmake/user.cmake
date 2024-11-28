@@ -99,20 +99,26 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
 
     message(STATUS "AREG: >>> Using CMake specified C++ compiler '${_sys_compiler}'")
 
+    if (DEFINED AREG_PROCESSOR AND NOT "${AREG_PROCESSOR}" STREQUAL "")
+        set(_sys_process ${AREG_PROCESSOR})
+    elseif(DEFINED CMAKE_SYSTEM_PROCESSOR AND NOT "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "")
+        set(_sys_process ${CMAKE_SYSTEM_PROCESSOR})
+    endif()
+
     # Setup compiler details based on the identified system compiler
     macro_setup_compilers_data("${_sys_compiler}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_process _sys_bitness _compiler_found)
 
     if (_compiler_found)
         # Check for existing compiler family or specific compiler and issue warnings if necessary
         if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "" AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "${_compiler_family}")
-            message(WARNING "AREG: Selected compiler family '${AREG_COMPILER_FAMILY}' is ignored; using '${_compiler_family}'")
+            message(WARNING "AREG: >>> Selected compiler family '${AREG_COMPILER_FAMILY}' is ignored; using '${_compiler_family}'")
         endif()
 
         # Only if AREG_COMPILER is defined, compare the short compiler name to the full path
         if (NOT "${AREG_COMPILER}" STREQUAL "")
             string(FIND "${AREG_COMPILER}" "${_compiler_short}" _found_pos)
             if (_found_pos LESS 0)
-                message(WARNING "AREG: Selected compiler '${AREG_COMPILER}' is ignored; using '${_compiler_short}'")
+                message(WARNING "AREG: >>> Selected compiler '${AREG_COMPILER}' is ignored; using '${_compiler_short}'")
             endif()
         endif()
 
@@ -128,7 +134,7 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
             set(CMAKE_SYSTEM_PROCESSOR ${AREG_PROCESSOR})
         endif()
     else()
-        message(WARNING "AREG: Unknown C++ compiler '${_sys_compiler}'; results may be unpredictable")
+        message(WARNING "AREG: >>> Unknown C++ compiler '${_sys_compiler}'; results may be unpredictable")
     endif()
 
     unset(_sys_compiler)
@@ -148,7 +154,7 @@ elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL 
         set(AREG_CXX_COMPILER       "${_cxx_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
     else()
-        message(WARNING "AREG: Unknown compiler family '${AREG_COMPILER_FAMILY}'; results may be unpredictable")
+        message(WARNING "AREG: >>> Unknown compiler family '${AREG_COMPILER_FAMILY}'; results may be unpredictable")
     endif()
 
 # If a specific compiler is set, use that to determine compilers
@@ -170,7 +176,7 @@ elseif (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
             set(CMAKE_SYSTEM_PROCESSOR ${AREG_PROCESSOR})
         endif()
     else()
-        message(WARNING "AREG: Unknown compiler '${AREG_COMPILER}'; results may be unpredictable")
+        message(WARNING "AREG: >>> Unknown compiler '${AREG_COMPILER}'; results may be unpredictable")
     endif()
 
     unset(_sys_compiler)

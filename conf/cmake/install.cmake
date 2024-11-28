@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing AREG SDK installation settings, Package name = '${CMAKE_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")
+message(STATUS "AREG: >>> Preparing AREG SDK installation settings, Package name = '${AREG_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -37,16 +37,38 @@ install(DIRECTORY framework/
         PATTERN "mcrouter"      EXCLUDE
 )
 
-# Copy compiled binaries in the bin and lib directories
-install(TARGETS areg aregextend areglogger
-    EXPORT ${AREG_PACKAGE_NAME}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  COMPONENT Development  COMPONENT Runtime
-            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
-            PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
-            PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-)
+if (AREG_SQLITE_FOUND)
+    # Copy compiled binaries in the bin and lib directories
+    install(TARGETS areg aregextend areglogger
+        EXPORT ${AREG_PACKAGE_NAME}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  COMPONENT Development  COMPONENT Runtime
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
+                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
+                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
+    )
+else()
+    target_include_directories(aregsqlite3     PUBLIC $<INSTALL_INTERFACE:include>)
+    target_include_directories(aregsqlite3     PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+    # Copy all header files of AREG Framework
+    install(DIRECTORY thirdparty/sqlite3/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development
+        CONFIGURATIONS Release
+        FILES_MATCHING
+            PATTERN "*.h" 
+    )
+    # Copy compiled binaries in the bin and lib directories
+    install(TARGETS areg aregextend areglogger aregsqlite3
+        EXPORT ${AREG_PACKAGE_NAME}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  COMPONENT Development  COMPONENT Runtime
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
+                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
+                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
+    )
+endif()
 
 # Copy AREG configuration file
 install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
@@ -97,12 +119,21 @@ install(TARGETS logcollector logobserver mcrouter
             CONFIGURATIONS Release
 )
 
-# Copy additionally areg and areglogger dynamic libraries
-install(TARGETS areg areglogger
-    LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
-            COMPONENT Development   COMPONENT Runtime
-            CONFIGURATIONS Release
-)
+if (AREG_SQLITE_FOUND)
+    # Copy additionally areg and areglogger dynamic libraries
+    install(TARGETS areg areglogger
+        LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
+                COMPONENT Development   COMPONENT Runtime
+                CONFIGURATIONS Release
+    )
+else()
+    # Copy additionally areg and areglogger dynamic libraries
+    install(TARGETS areg areglogger
+        LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
+                COMPONENT Development   COMPONENT Runtime
+                CONFIGURATIONS Release
+    )
+endif()
 
 # Copy AREG configuration file
 install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
@@ -164,11 +195,19 @@ configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in"
                               "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config.cmake" 
                               INSTALL_DESTINATION share/${AREG_PACKAGE_NAME})
 
-export(TARGETS areg aregextend areglogger
-            NAMESPACE ${AREG_PACKAGE_NAME}::
-            FILE ${AREG_PACKAGE_NAME}-targets.cmake
-            EXPORT_LINK_INTERFACE_LIBRARIES
-)
+if (AREG_SQLITE_FOUND)
+    export(TARGETS areg aregextend areglogger
+                NAMESPACE ${AREG_PACKAGE_NAME}::
+                FILE ${AREG_PACKAGE_NAME}-targets.cmake
+                EXPORT_LINK_INTERFACE_LIBRARIES
+    )
+else()
+    export(TARGETS areg aregextend areglogger aregsqlite3
+                NAMESPACE ${AREG_PACKAGE_NAME}::
+                FILE ${AREG_PACKAGE_NAME}-targets.cmake
+                EXPORT_LINK_INTERFACE_LIBRARIES
+    )
+endif()
 
 install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config-version.cmake"

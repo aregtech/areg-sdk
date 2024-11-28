@@ -25,10 +25,10 @@ set(AREG_PROJECT_VERSION "1.9.99.111")
 set(PROJECT_NAME ${AREG_PROJECT_NAME})
 set(PROJECT_VERSION ${AREG_PROJECT_VERSION})
 project("${PROJECT_NAME}" 
-        VERSION "${PROJECT_VERSION}" 
-        DESCRIPTION "AREG Communication Framework and Tools" 
+        VERSION      "${PROJECT_VERSION}" 
+        DESCRIPTION  "AREG Communication Framework and Tools" 
         HOMEPAGE_URL "https://aregtech.com" 
-        LANGUAGES CXX C)
+        LANGUAGES    CXX C)
 
 # The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
@@ -64,16 +64,15 @@ endif()
 if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
     if (NOT AREG_GTEST_FOUND)
+        # Set dependency of 'areg-dummy' to make sure
+        # the build directories are created before the
+        # 'gtest' libraries are built
         add_dependencies(areg-unit-tests areg-dummy)
     endif()
-else()
-    option(AREG_GTEST_PACKAGE "Use google test package" OFF)
 endif()
 
-if (AREG_INSTALL AND AREG_SQLITE_FOUND)
+if (AREG_INSTALL)
     include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
-elseif(AREG_INSTALL)
-    option(AREG_INSTALL "Enable install AREG SDK" OFF)
 endif()
 
 # Print the configuration status

@@ -9,6 +9,11 @@ if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
 endif()
 
+# Set processor, if not identified yet.
+if ("${AREG_PROCESSOR}" STREQUAL "")
+    set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+endif()
+
 # Identify compiler short name
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
@@ -30,21 +35,26 @@ endif()
 
 # Set identified OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
-# Set processor, if not identified yet.
-if ("${AREG_PROCESSOR}" STREQUAL "")
-    set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
-endif()
 # Set bitness, if not identified yet.
 if ("${AREG_BITNESS}" STREQUAL "" OR AREG_BITNESS EQUAL 0)
     macro_system_bitness(AREG_BITNESS)
 endif()
 
+# Setup for find_xxx() calls
+set(CMAKE_FIND_PACKAGE_RESOLVE_SYMLINKS TRUE)
+if (NOT MSVC AND "${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
+    macro_find_compiler_target(${AREG_PROCESSOR} ${AREG_BITNESS} _compiler_target)
+    if (_compiler_target)
+        set(CMAKE_CXX_COMPILER_TARGET   ${_compiler_target})
+        set(CMAKE_C_COMPILER_TARGET     ${_compiler_target})
+        set(CMAKE_LIBRARY_ARCHITECTURE  ${_compiler_target})
+    endif()
+    unset(_compiler_target)
+endif()
+
 # -----------------------------------------------------
 # areg specific internal variable settings
 # -----------------------------------------------------
-# The toolchain
-set(AREG_CXX_TOOLCHAIN "${CMAKE_CXX_COMPILER}")
-set(AREG_CC_TOOLCHAIN  "${CMAKE_CC_COMPILER}")
 
 # The development environment -- POSIX or Win32 API
 set(AREG_DEVELOP_ENV)
@@ -107,10 +117,19 @@ else()
 endif()
 
 if (AREG_EXTENDED)
-    add_definitions(-DAREG_EXTENDED=1)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        list(APPEND AREG_EXTENDED_LIBS ncurses)
-        set(AREG_EXTENDED_LIBS_STR "-lncurses")
+        macro_find_ncurses_package(_ncurses_includes _ncurses_lib _ncurses_found)
+        if (_ncurses_found)
+            add_definitions(-DAREG_EXTENDED=1)
+            list(APPEND AREG_EXTENDED_LIBS ncurses)
+            set(AREG_EXTENDED_LIBS_STR "-lncurses")
+        else()
+            message(STATUS "AREG: >>> No suitable 'ncurses' library found for '${AREG_PROCESSOR}' processor, force to disable extended objects.")
+            set(AREG_EXTENDED OFF CACHE INTERNAL "Disable AREG Extended objects")
+            add_definitions(-DAREG_EXTENDED=0)
+        endif()
+    else()
+        add_definitions(-DAREG_EXTENDED=1)
     endif()
 else()
     add_definitions(-DAREG_EXTENDED=0)

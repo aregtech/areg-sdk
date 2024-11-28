@@ -3,6 +3,11 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
+# local variables
+set(AREG_GTEST_INCLUDES)
+set(AREG_GTEST_LIBRARY)
+option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
+
 if (AREG_BUILD_TESTS)
 
     # Disable unit tests post-build for ARM processor
@@ -10,31 +15,23 @@ if (AREG_BUILD_TESTS)
         set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
     endif()
 
-    # local variables
-    set(AREG_GTEST_INCLUDES)
-    set(AREG_GTEST_LIBRARY)
-
     enable_testing()
 
     if (AREG_GTEST_PACKAGE)
         # Check whether the Google Test sources exist.
-        macro_find_package(GTest AREG_GTEST_FOUND AREG_GTEST_INCLUDES AREG_GTEST_LIBRARY)
-    endif(AREG_GTEST_PACKAGE)
+        macro_find_gtest_package(AREG_GTEST_INCLUDES AREG_GTEST_LIBRARY AREG_GTEST_FOUND)
+    endif()
 
     if (AREG_GTEST_FOUND)
         # Google Test package found, make no actions on it, the libraries can be used.
-        option(AREG_GTEST_FOUND  "GTest package found flag"   TRUE)
         message(STATUS "AREG: >>> Will use existing in the system googletest package")
         if (NOT "${AREG_GTEST_INCLUDES}" STREQUAL "")
             include_directories("${AREG_GTEST_INCLUDES}")
         endif()
-
-    else(AREG_GTEST_FOUND)
-
-        option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
+    else()
         message(STATUS "AREG: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
         # Google Test package did not find, fetch sources from repository.
-        set(AREG_GTEST_PACKAGE OFF CACHE BOOL "Use GTest installed package" FORCE)
+        set(AREG_GTEST_PACKAGE OFF)
         include(FetchContent)
         # Fetch the latest sources from googletest repository.
         FetchContent_Declare( googletest
