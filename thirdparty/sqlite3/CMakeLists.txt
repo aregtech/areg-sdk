@@ -8,7 +8,7 @@ set(USE_SQLITE_PACKAGE 0)
 
 if (AREG_SQLITE_PACKAGE)
     # search installed SQLite3 package in the system.
-    macro_find_sqlite_package("" AREG_SQLITE_INCLUDES AREG_SQLITE_LIBRARY AREG_SQLITE_FOUND)
+    macro_find_sqlite_package(AREG_SQLITE_INCLUDES AREG_SQLITE_LIBRARY AREG_SQLITE_FOUND)
 
     if (AREG_SQLITE_FOUND)
 

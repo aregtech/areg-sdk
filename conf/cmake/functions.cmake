@@ -118,7 +118,7 @@ endmacro(macro_get_processor)
 #                                          Ignores the checkup if empty or compiled for MSVC.
 #               ${var_include}  [out]   -- Variable holding the package's include directories.
 #               ${var_library}  [out]   -- Variable holding the package's libraries.
-#               ${var_found}    [out]   -- Name of variable indicating if the package was found.
+#               ${var_found}    [out]   -- Name of variable indicating if the package could find.
 # Usage ......: macro_find_package(<package-name> <target-architect> <includes-var> <libraries-var> <found-flag-var>)
 # Example ....: 
 #   set(SQLITE_FOUND FALSE)
@@ -143,47 +143,37 @@ endmacro(macro_find_package)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_find_ncurses_package
-# Purpose ....: Finds the 'ncurses' library build for specified target architecture,
-#               and returns path to its include and library if found.
-# Parameters .: ${target_arch}  [in]    -- Target architecture of the 'ncurses' library to check.
-#                                          Ignores the checkup if empty or compiled for MSVC.
-#               ${var_include}  [out]   -- Variable holding the include directory of 'ncurses.h' header file.
-#               ${var_library}  [out]   -- Variable holding the full path to the 'ncurses' library.
-#               ${var_found}    [out]   -- Name of variable indicating if 'ncurses' library of the specified architecture found.
-# Usage ......: macro_find_ncurses_package(<target-architect> <ncurses-include-var> <ncurses-library-var> <found-flag-var>)
+# Purpose ....: Finds the 'ncurses' library and header files.
+# Parameters .: ${var_include}  [out] -- Variable holding the include directory of 'ncurses.h' header file.
+#               ${var_library}  [out] -- Variable holding the full path to the 'ncurses' library.
+#               ${var_found}    [out] -- Name of variable indicating if the 'ncurses' library and include could find.
+# Usage ......: macro_find_ncurses_package(<ncurses-include-var> <ncurses-library-var> <found-flag-var>)
 # Example ....: 
-#   macro_find_ncurses_package(i386 NCURSES_INCLUDE NCURSES_LIB NCURSES_FOUND)
+#   macro_find_ncurses_package(NCURSES_INCLUDE NCURSES_LIB NCURSES_FOUND)
 # ---------------------------------------------------------------------------
-macro(macro_find_ncurses_package target_arch var_include var_library var_found)
-    set(${var_found}    FALSE)
+macro(macro_find_ncurses_package var_include var_library var_found)
+    set(${var_found} FALSE)
     set(${var_include})
     set(${var_library})
 
-    if (NOT MSVC)
-        find_path(${var_include}    NAMES ncurses.h)
-        find_library(${var_library} NAMES ncurses)
-        if (${var_include} AND ${var_library} AND NOT "${target_arch}" STREQUAL "")
-            macro_get_processor(${target_arch} _processor _bitness _found)
-            macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
-        endif()
+    find_path(${var_include}    NAMES ncurses.h)
+    find_library(${var_library} NAMES ncurses)
+    if (${var_include} AND ${var_library})
+        set(${var_found} TRUE)
     endif()
 endmacro(macro_find_ncurses_package)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_find_gtest_package
-# Purpose ....: Finds the GTest package build for specified target architecture,
-#               and returns path to its include and library if found.
-# Parameters .: ${target_arch}  [in]    -- Target architecture of the GTest package to check.
-#                                          Ignores the checkup if empty or compiled for MSVC.
-#               ${var_include}  [out]   -- Variable holding the include directory of GTest header files.
-#               ${var_library}  [out]   -- Variable holding the GTest libraries with full path.
-#               ${var_found}    [out]   -- Name of variable indicating if GTest package of the specified architecture found.
-# Usage ......: macro_find_gtest_package(<target-architect> <ncurses-include-var> <ncurses-library-var> <found-flag-var>)
+# Purpose ....: Finds the GTest package. On output, returns paths to package's include and library.
+# Parameters .: ${var_include} [out] -- Variable holding the include directory of GTest header files.
+#               ${var_library} [out] -- Variable holding the GTest libraries with full path.
+#               ${var_found}   [out] -- Name of variable indicating if GTest package could find.
+# Usage ......: macro_find_gtest_package(<gtest-include-var> <gtest-library-var> <gtest-found-flag-var>)
 # Example ....: 
-#   macro_find_gtest_package(i386 GTEST_INCLUDE GTEST_LIB GTEST_FOUND)
+#   macro_find_gtest_package(GTEST_INCLUDE GTEST_LIB GTEST_FOUND)
 # ---------------------------------------------------------------------------
-macro(macro_find_gtest_package target_arch var_include var_library var_found)
-
+macro(macro_find_gtest_package var_include var_library var_found)
     set(${var_found} FALSE)
     set(${var_include})
     set(${var_library})
@@ -193,27 +183,20 @@ macro(macro_find_gtest_package target_arch var_include var_library var_found)
         set(${var_found} TRUE)
         set(${var_library} "${GTEST_LIBRARIES}")
         set(${var_include} "${GTEST_INCLUDE_DIRS}")
-        if (NOT MSVC AND NOT "${target_arch}" STREQUAL "")
-            macro_get_processor(${target_arch} _processor _bitness _found)
-            macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
-        endif()
     endif()
 endmacro(macro_find_gtest_package)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_find_sqlite_package
-# Purpose ....: Finds the SQLite3 package build for specified target architecture,
-#               and returns path to its include and library if found.
-# Parameters .: ${target_arch}  [in]    -- Target architecture of the SQLite3 package to check.
-#                                          Ignores the checkup if empty or compiled for MSVC.
-#               ${var_include}  [out]   -- Variable holding the include directory of SQLite3 header files.
-#               ${var_library}  [out]   -- Variable holding the SQLite3 libraries with full path.
-#               ${var_found}    [out]   -- Name of variable indicating if SQLite3 package of the specified architecture found.
-# Usage ......: macro_find_sqlite_package(<target-architect> <ncurses-include-var> <ncurses-library-var> <found-flag-var>)
+# Purpose ....: Finds the SQLite3 package. On output, returns paths to package's include and library.
+# Parameters .: ${var_include} [out] -- Variable holding the include directory of SQLite3 header files.
+#               ${var_library} [out] -- Variable holding the SQLite3 libraries with full path.
+#               ${var_found}   [out] -- Name of variable indicating if GTest package could find.
+# Usage ......: macro_find_sqlite_package(<sqlite3-include-var> <sqlite3-library-var> <sqlite3-found-flag-var>)
 # Example ....: 
-#   macro_find_sqlite_package(i386 SQLITE_INCLUDE SQLITE_LIB SQLITE_FOUND)
+#   macro_find_sqlite_package(SQLITE_INCLUDE SQLITE_LIB SQLITE_FOUND)
 # ---------------------------------------------------------------------------
-macro(macro_find_sqlite_package target_arch var_include var_library var_found)
+macro(macro_find_sqlite_package var_include var_library var_found)
     set(${var_found}    FALSE)
     set(${var_include})
     set(${var_library})
@@ -223,15 +206,21 @@ macro(macro_find_sqlite_package target_arch var_include var_library var_found)
         set(${var_found} TRUE)
         set(${var_library} "${SQLite3_LIBRARIES}")
         set(${var_include} "${SQLite3_INCLUDE_DIRS}")
-        if (NOT MSVC AND NOT "${target_arch}" STREQUAL "")
-            macro_get_processor(${target_arch} _processor _bitness _found)
-            macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
-        endif()
     endif()
-
 endmacro(macro_find_sqlite_package)
 
-macro(macro_check_module_architect path_module target_arch is_compatible)
+# ---------------------------------------------------------------------------
+# Macro ......: macro_check_module_architect
+# Purpose ....: Checks if the specified binary module is build for specified processor architecture or not.
+#               This macro checks compatibility only for binaries build under Linux or Cygwin platform.
+# Parameters .: ${path_module}    [in]  -- Full path to the binary module (executable, shared or static library) to check.
+#               ${target_arch}    [in]  -- The target architecture. The valid values are 'i386', 'x86_64', 'ARM', 'AARCH64'.
+#               ${var_compatible} [out] -- Name of variable indicating if the module is compatible or not.
+# Usage ......: macro_check_module_architect(<path-to-binary> <target-architectur> <compatible-flag-var>)
+# Example ....: 
+#   macro_check_module_architect("/usr/lib/ncurses.so" i386 _out_is_compatible)
+# ---------------------------------------------------------------------------
+macro(macro_check_module_architect path_module target_arch var_compatible)
     message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_arch}' processor")
     # Initialize variables
     set(${is_compatible} FALSE)
@@ -303,9 +292,19 @@ macro(macro_check_module_architect path_module target_arch is_compatible)
     else()
         message(WARNING "AREG: >>> The module '${path_module}' does not exist, cannot check the compatibility")
     endif()
-
 endmacro(macro_check_module_architect)
 
+# ---------------------------------------------------------------------------
+# Macro ......: macro_find_compiler_target
+# Purpose ....: Based on the processor architecture and the target bitness, sets the
+#               compiler target, which can be used to set 'CMAKE_CXX_COMPILER_TARGET'
+#               and 'CMAKE_C_COMPILER_TARGET' variables.
+# Parameters .: ${target_arch}    [in] -- Target processor architecture.
+#               ${target_bitness} [in] -- Target bitness.
+#               ${var_name_target}[in] -- Name of variable to set the compiler target.
+# Usage ......: macro_find_compiler_target(<target-architecure> <target-bitness> <compiler-target-var>)
+# Example ....: macro_find_compiler_target(ARM 32 CMAKE_CXX_COMPILER_TARGET)
+# ---------------------------------------------------------------------------
 macro(macro_find_compiler_target target_arch target_bitness var_name_target)
     if ("${target_arch}" STREQUAL "${_proc_arm64}")
         set(${var_name_target} aarch64-linux-gnu)
@@ -334,10 +333,8 @@ endmacro(macro_find_compiler_target)
 macro(macro_create_option var_name var_value var_describe)
     if (NOT DEFINED ${var_name})
         option(${var_name} "${var_describe}" ${var_value})
-        # set(${var_name} ${var_value} CACHE BOOL "${var_describe}" FORCE)
     else()
         option(${var_name} "${${var_name}}" ${var_value})
-        # set(${var_name} ${${var_name}} CACHE BOOL "${var_describe}" FORCE)
     endif()
 endmacro(macro_create_option)
 
