@@ -40,6 +40,13 @@ if ("${AREG_BITNESS}" STREQUAL "" OR AREG_BITNESS EQUAL 0)
     macro_system_bitness(AREG_BITNESS)
 endif()
 
+# Setup for find_xxx() calls
+set(CMAKE_FIND_PACKAGE_RESOLVE_SYMLINKS TRUE)
+if (NOT MSVC AND "${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
+    macro_find_compiler_target(${AREG_PROCESSOR} ${AREG_BITNESS} CMAKE_CXX_COMPILER_TARGET)
+    set(CMAKE_LIBRARY_ARCHITECTURE ${CMAKE_CXX_COMPILER_TARGET})
+endif()
+
 # -----------------------------------------------------
 # areg specific internal variable settings
 # -----------------------------------------------------
@@ -106,7 +113,7 @@ endif()
 
 if (AREG_EXTENDED)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        macro_find_ncurses_package(${AREG_PROCESSOR} ${AREG_BITNESS} _ncurses_includes _ncurses_lib _ncurses_found )
+        macro_find_ncurses_package("" _ncurses_includes _ncurses_lib _ncurses_found )
         if (_ncurses_found)
             add_definitions(-DAREG_EXTENDED=1)
             list(APPEND AREG_EXTENDED_LIBS ncurses)

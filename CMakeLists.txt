@@ -3,33 +3,6 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-macro(macro_setup_find_library)
-# AREG SDK project name and version
-set(CMAKE_FIND_PACKAGE_RESOLVE_SYMLINKS TRUE)
-if (NOT MSVC)
-    if ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET aarch64-linux-gnu)
-        endif()
-    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
-        endif()
-    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_x86}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET i386-linux-gnu)
-        endif()
-    elseif("${AREG_PROCESSOR}" STREQUAL "${_proc_x64}")
-        if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-            set(CMAKE_CXX_COMPILER_TARGET x86_64-linux-gnu)
-        endif()
-    endif()
-    set(CMAKE_LIBRARY_ARCHITECTURE ${CMAKE_CXX_COMPILER_TARGET})
-endif()
-
-endmacro(macro_setup_find_library)
-
-
 cmake_minimum_required(VERSION 3.20.0)
 
 # Areg root directory
@@ -44,6 +17,7 @@ include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 # set CMake tool settings
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
 
+# AREG SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
 set(AREG_PROJECT_VERSION "1.9.99.111")
 
@@ -51,13 +25,11 @@ set(AREG_PROJECT_VERSION "1.9.99.111")
 set(PROJECT_NAME ${AREG_PROJECT_NAME})
 set(PROJECT_VERSION ${AREG_PROJECT_VERSION})
 project("${PROJECT_NAME}" 
-        VERSION "${PROJECT_VERSION}" 
-        DESCRIPTION "AREG Communication Framework and Tools" 
+        VERSION      "${PROJECT_VERSION}" 
+        DESCRIPTION  "AREG Communication Framework and Tools" 
         HOMEPAGE_URL "https://aregtech.com" 
-        LANGUAGES CXX C)
+        LANGUAGES    CXX C)
 
-
-macro_setup_find_library()
 # The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 

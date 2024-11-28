@@ -57,89 +57,182 @@ macro(macro_normalize_path normal_path os_path)
     endif()
 endmacro(macro_normalize_path)
 
+# Read-only variable of 32-bit 'x86' processor name
+set(_proc_x86   "i386")
+# Read-only variable of 64-bit 'x64' processor name
+set(_proc_x64   "x86_64")
+# Read-only variable of 32-bit 'arm' processor name
+set(_proc_arm32 "ARM")
+# Read-only variable of 64-bit 'aarch64' processor name
+set(_proc_arm64 "AARCH64")
+
+# ---------------------------------------------------------------------------
+# Macro ......: macro_get_processor
+# Purpose ....: Identifies and validates the processor architecture based on a provided name.
+#               If a match is found in the supported processor list, it extracts:
+#                 - The canonical architecture name.
+#                 - The bitness (e.g., 32 or 64 bits).
+# Parameters ..: ${processor_name} [in]   -- Input processor architecture name to search for.
+#                ${var_processor}  [out]  -- Variable to store the canonical processor architecture name.
+#                ${var_bitness}    [out]  -- Variable to store the bitness (32/64) of the processor.
+#                ${var_found}      [out]  -- Variable to indicate if the processor is supported (TRUE/FALSE).
+# Usage .......: macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_entry_found>)
+# Example .....: macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+# ---------------------------------------------------------------------------
+macro(macro_get_processor processor_name var_processor var_bitness var_found)
+    set(${var_found} FALSE)
+    string(TOLOWER "${processor_name}" _proc_name)
+    list(APPEND _arch_list  "x86|${_proc_x86}|32"
+                            "i386|${_proc_x86}|32"
+                            "i486|${_proc_x86}|32"
+                            "i686|${_proc_x86}|32"
+                            "x64|${_proc_x64}|64"
+                            "x86_64|${_proc_x64}|64"
+                            "x86-64|${_proc_x64}|64"
+                            "amd64|${_proc_x64}|64"
+                            "ia64|${_proc_x64}|64"
+                            "arm|${_proc_arm32}|32"
+                            "arm32|${_proc_arm32}|32"
+                            "armv7|${_proc_arm32}|32"
+                            "arm64|${_proc_arm64}|64"
+                            "aarch64|${_proc_arm64}|64"
+    )
+
+    foreach(_entry IN LISTS _arch_list)
+        string(REPLACE "|" ";" _entry "${_entry}")
+        list(GET _entry 0 _proc)
+        if ("${_proc}" STREQUAL "${_proc_name}")
+            list(GET _entry 1 ${var_processor})
+            list(GET _entry 2 ${var_bitness})
+            set(${var_found} TRUE)
+            break()
+        endif()
+    endforeach()
+endmacro(macro_get_processor)
+
 # ---------------------------------------------------------------------------
 # Macro ......: macro_find_package
 # Purpose ....: Finds a package and returns paths to its includes and libraries if found.
-# Parameters .: ${package_name}      [in]   -- Name of the package to search for.
-#               ${package_found}     [out]  -- Name of variable indicating if the package was found.
-#               ${package_includes}  [out]  -- Variable holding the package's include directories.3
-#               ${package_libraries} [out]  -- Variable holding the package's libraries.
-# Usage ......: macro_find_package(<package-name> <found-flag-var> <includes-var> <libraries-var>)
+# Parameters .: ${package_name} [in]    -- Name of the package to search for.
+#               ${target_arch}  [in]    -- Target architecture of the libraries.
+#                                          Ignores the checkup if empty or compiled for MSVC.
+#               ${var_include}  [out]   -- Variable holding the package's include directories.
+#               ${var_library}  [out]   -- Variable holding the package's libraries.
+#               ${var_found}    [out]   -- Name of variable indicating if the package was found.
+# Usage ......: macro_find_package(<package-name> <target-architect> <includes-var> <libraries-var> <found-flag-var>)
 # Example ....: 
 #   set(SQLITE_FOUND FALSE)
-#   macro_find_package(SQLite3 SQLITE_FOUND SQLITE_INCLUDE SQLITE_LIB)
+#   macro_find_package(SQLite3 i386 SQLITE_INCLUDE SQLITE_LIB SQLITE_FOUND)
 # ---------------------------------------------------------------------------
-macro(macro_find_package package_name package_found package_includes package_libraries)
+macro(macro_find_package package_name target_arch var_include var_library var_found)
     find_package(${package_name})
     if (${package_name}_FOUND)
-        set(${package_found} TRUE)
-        set(${package_includes}  "${${package_name}_INCLUDE_DIRS}")
-        set(${package_libraries} "${${package_name}_LIBRARIES}")
+        set(${var_found} TRUE)
+        set(${var_include} "${${package_name}_INCLUDE_DIRS}")
+        set(${var_library} "${${package_name}_LIBRARIES}")
+        if (NOT MSVC AND NOT "${target_arch}" STREQUAL "")
+            macro_get_processor(${target_arch} _processor _bitness _found)
+            macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
+        endif()
     else()
-        set(${package_found} FALSE)
+        set(${package_found}     FALSE)
         set(${package_includes}  "")
         set(${package_libraries} "")
     endif()
 endmacro(macro_find_package)
 
-macro(macro_find_ncurses_package target_architect target_bitness var_include_dir var_library var_found)
+# ---------------------------------------------------------------------------
+# Macro ......: macro_find_ncurses_package
+# Purpose ....: Finds the 'ncurses' library build for specified target architecture,
+#               and returns path to its include and library if found.
+# Parameters .: ${target_arch}  [in]    -- Target architecture of the 'ncurses' library to check.
+#                                          Ignores the checkup if empty or compiled for MSVC.
+#               ${var_include}  [out]   -- Variable holding the include directory of 'ncurses.h' header file.
+#               ${var_library}  [out]   -- Variable holding the full path to the 'ncurses' library.
+#               ${var_found}    [out]   -- Name of variable indicating if 'ncurses' library of the specified architecture found.
+# Usage ......: macro_find_ncurses_package(<target-architect> <ncurses-include-var> <ncurses-library-var> <found-flag-var>)
+# Example ....: 
+#   macro_find_ncurses_package(i386 NCURSES_INCLUDE NCURSES_LIB NCURSES_FOUND)
+# ---------------------------------------------------------------------------
+macro(macro_find_ncurses_package target_arch var_include var_library var_found)
     set(${var_found}    FALSE)
-    set(${var_include_dir})
+    set(${var_include})
     set(${var_library})
 
     if (NOT MSVC)
-        macro_get_processor(${target_architect} _processor _bitness _found)
-        find_path(${var_include_dir} NAMES ncurses.h)
+        find_path(${var_include}    NAMES ncurses.h)
         find_library(${var_library} NAMES ncurses)
-
-        if (${var_include_dir} AND ${var_library})
+        if (${var_include} AND ${var_library} AND NOT "${target_arch}" STREQUAL "")
+            macro_get_processor(${target_arch} _processor _bitness _found)
             macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
-        else()
-            message(STATUS "AREG: >>> Could not find the ncurses, library = '${${var_library}}', include = '${${var_include_dir}}'")
         endif()
     endif()
-
 endmacro(macro_find_ncurses_package)
 
-macro(macro_find_gtest_package target_architect target_bitness var_include_dir var_library var_found)
+# ---------------------------------------------------------------------------
+# Macro ......: macro_find_gtest_package
+# Purpose ....: Finds the GTest package build for specified target architecture,
+#               and returns path to its include and library if found.
+# Parameters .: ${target_arch}  [in]    -- Target architecture of the GTest package to check.
+#                                          Ignores the checkup if empty or compiled for MSVC.
+#               ${var_include}  [out]   -- Variable holding the include directory of GTest header files.
+#               ${var_library}  [out]   -- Variable holding the GTest libraries with full path.
+#               ${var_found}    [out]   -- Name of variable indicating if GTest package of the specified architecture found.
+# Usage ......: macro_find_gtest_package(<target-architect> <ncurses-include-var> <ncurses-library-var> <found-flag-var>)
+# Example ....: 
+#   macro_find_gtest_package(i386 GTEST_INCLUDE GTEST_LIB GTEST_FOUND)
+# ---------------------------------------------------------------------------
+macro(macro_find_gtest_package target_arch var_include var_library var_found)
 
     set(${var_found} FALSE)
-    set(${var_include_dir})
+    set(${var_include})
     set(${var_library})
 
     include(FindGTest)
     if (GTest_FOUND)
         set(${var_found} TRUE)
         set(${var_library} "${GTEST_LIBRARIES}")
-        set(${var_include_dir} "${GTEST_INCLUDE_DIRS}")
-        if (NOT MSVC)
-            macro_get_processor(${target_architect} _processor _bitness _found)
+        set(${var_include} "${GTEST_INCLUDE_DIRS}")
+        if (NOT MSVC AND NOT "${target_arch}" STREQUAL "")
+            macro_get_processor(${target_arch} _processor _bitness _found)
             macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
         endif()
     endif()
-
 endmacro(macro_find_gtest_package)
 
-macro(macro_find_sqlite_package target_architect target_bitness var_include_dir var_library var_found)
+# ---------------------------------------------------------------------------
+# Macro ......: macro_find_sqlite_package
+# Purpose ....: Finds the SQLite3 package build for specified target architecture,
+#               and returns path to its include and library if found.
+# Parameters .: ${target_arch}  [in]    -- Target architecture of the SQLite3 package to check.
+#                                          Ignores the checkup if empty or compiled for MSVC.
+#               ${var_include}  [out]   -- Variable holding the include directory of SQLite3 header files.
+#               ${var_library}  [out]   -- Variable holding the SQLite3 libraries with full path.
+#               ${var_found}    [out]   -- Name of variable indicating if SQLite3 package of the specified architecture found.
+# Usage ......: macro_find_sqlite_package(<target-architect> <ncurses-include-var> <ncurses-library-var> <found-flag-var>)
+# Example ....: 
+#   macro_find_sqlite_package(i386 SQLITE_INCLUDE SQLITE_LIB SQLITE_FOUND)
+# ---------------------------------------------------------------------------
+macro(macro_find_sqlite_package target_arch var_include var_library var_found)
     set(${var_found}    FALSE)
-    set(${var_include_dir})
+    set(${var_include})
     set(${var_library})
 
     include(FindSQLite3)
     if (SQLite3_FOUND)
         set(${var_found} TRUE)
         set(${var_library} "${SQLite3_LIBRARIES}")
-        set(${var_include_dir} "${SQLite3_INCLUDE_DIRS}")
-        if (NOT MSVC)
-            macro_get_processor(${target_architect} _processor _bitness _found)
+        set(${var_include} "${SQLite3_INCLUDE_DIRS}")
+        if (NOT MSVC AND NOT "${target_arch}" STREQUAL "")
+            macro_get_processor(${target_arch} _processor _bitness _found)
             macro_check_module_architect("${${var_library}}" ${_processor} ${var_found})
         endif()
     endif()
 
 endmacro(macro_find_sqlite_package)
 
-macro(macro_check_module_architect path_module target_architect is_compatible)
-    message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_architect}' processor")
+macro(macro_check_module_architect path_module target_arch is_compatible)
+    message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_arch}' processor")
     # Initialize variables
     set(${is_compatible} FALSE)
     # Execute the command and search for the architecture
@@ -152,24 +245,24 @@ macro(macro_check_module_architect path_module target_architect is_compatible)
         endif()
 
         # Map architecture to appropriate objdump tool and search string
-        if ("${target_architect}" STREQUAL "${_proc_arm64}")
+        if ("${target_arch}" STREQUAL "${_proc_arm64}")
             set(_objdump "aarch64-linux-gnu-objdump")
             set(_srch "aarch64")
-        elseif("${target_architect}" STREQUAL "${_proc_arm32}")
+        elseif("${target_arch}" STREQUAL "${_proc_arm32}")
             find_program(_objdump NAMES "arm-linux-gnueabihf-objdump" "arm-linux-gnueabi-objdump" HINTS /usr)
             if (NOT _objdump)
                 set(_objdump "objdump")
             endif()
             set(_srch "arm")
-        elseif("${target_architect}" STREQUAL "${_proc_x64}")
+        elseif("${target_arch}" STREQUAL "${_proc_x64}")
             set(_objdump "x86_64-linux-gnu-objdump")
             set(_srch "x86-64")
-        elseif("${target_architect}" STREQUAL "${_proc_x86}")
+        elseif("${target_arch}" STREQUAL "${_proc_x86}")
             set(_objdump "x86_64-linux-gnu-objdump")
             set(_srch "i386")
         else()
             set(_objdump "objdump")
-            set(_srch "${target_architect}")
+            set(_srch "${target_arch}")
         endif()
 
         execute_process(
@@ -204,7 +297,7 @@ macro(macro_check_module_architect path_module target_architect is_compatible)
         if (_pos GREATER -1)
             set(${is_compatible} TRUE)
         else()
-            message(STATUS "AREG: >>> '${_target_module}' binary is NOT compatible with '${target_architect}' target architecture")
+            message(STATUS "AREG: >>> '${_target_module}' binary is NOT compatible with '${target_arch}' target architecture")
             set(${is_compatible} FALSE)
         endif()
     else()
@@ -212,6 +305,22 @@ macro(macro_check_module_architect path_module target_architect is_compatible)
     endif()
 
 endmacro(macro_check_module_architect)
+
+macro(macro_find_compiler_target target_arch target_bitness var_name_target)
+    if ("${target_arch}" STREQUAL "${_proc_arm64}")
+        set(${var_name_target} aarch64-linux-gnu)
+    elseif("${target_arch}" STREQUAL "${_proc_arm32}")
+        set(${var_name_target} arm-linux-gnueabihf)
+    elseif("${target_arch}" STREQUAL "${_proc_x86}")
+        set(${var_name_target} i386-linux-gnu)
+    elseif("${target_arch}" STREQUAL "${_proc_x64}")
+        set(${var_name_target} x86_64-linux-gnu)
+    elseif(${target_bitness} EQUAL 64)
+        set(${var_name_target} x64)
+    elseif(${target_bitness} EQUAL 32)
+        set(${var_name_target} x86)
+    endif()
+endmacro(macro_find_compiler_target)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_create_option
@@ -298,15 +407,6 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
     endforeach()
 endmacro(macro_parse_arguments)
 
-# Read-only variable of 32-bit 'x86' processor name
-set(_proc_x86   "i386")
-# Read-only variable of 64-bit 'x64' processor name
-set(_proc_x64   "x86_64")
-# Read-only variable of 32-bit 'arm' processor name
-set(_proc_arm32 "ARM")
-# Read-only variable of 64-bit 'aarch64' processor name
-set(_proc_arm64 "AARCH64")
-
 # ---------------------------------------------------------------------------
 # Macro ......: macro_guess_processor_architecture
 # Purpose ....: Tries to guess the CPU architecture and bitness from the given cross-compiler.
@@ -360,50 +460,6 @@ macro(macro_system_bitness var_bitness)
         endif()
     endif()
 endmacro(macro_system_bitness)
-
-# ---------------------------------------------------------------------------
-# Macro ......: macro_get_processor
-# Purpose ....: Identifies and validates the processor architecture based on a provided name.
-#               If a match is found in the supported processor list, it extracts:
-#                 - The canonical architecture name.
-#                 - The bitness (e.g., 32 or 64 bits).
-# Parameters ..: ${processor_name} [in]   -- Input processor architecture name to search for.
-#                ${var_processor}  [out]  -- Variable to store the canonical processor architecture name.
-#                ${var_bitness}    [out]  -- Variable to store the bitness (32/64) of the processor.
-#                ${var_found}      [out]  -- Variable to indicate if the processor is supported (TRUE/FALSE).
-# Usage .......: macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_entry_found>)
-# Example .....: macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
-# ---------------------------------------------------------------------------
-macro(macro_get_processor processor_name var_processor var_bitness var_found)
-    set(${var_found} FALSE)
-    string(TOLOWER "${processor_name}" _proc_name)
-    list(APPEND _arch_list  "x86|${_proc_x86}|32"
-                            "i386|${_proc_x86}|32"
-                            "i486|${_proc_x86}|32"
-                            "i686|${_proc_x86}|32"
-                            "x64|${_proc_x64}|64"
-                            "x86_64|${_proc_x64}|64"
-                            "x86-64|${_proc_x64}|64"
-                            "amd64|${_proc_x64}|64"
-                            "ia64|${_proc_x64}|64"
-                            "arm|${_proc_arm32}|32"
-                            "arm32|${_proc_arm32}|32"
-                            "armv7|${_proc_arm32}|32"
-                            "arm64|${_proc_arm64}|64"
-                            "aarch64|${_proc_arm64}|64"
-    )
-
-    foreach(_entry IN LISTS _arch_list)
-        string(REPLACE "|" ";" _entry "${_entry}")
-        list(GET _entry 0 _proc)
-        if ("${_proc}" STREQUAL "${_proc_name}")
-            list(GET _entry 1 ${var_processor})
-            list(GET _entry 2 ${var_bitness})
-            set(${var_found} TRUE)
-            break()
-        endif()
-    endforeach()
-endmacro(macro_get_processor)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_setup_compilers_data
