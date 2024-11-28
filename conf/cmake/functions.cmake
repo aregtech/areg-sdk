@@ -410,11 +410,11 @@ endmacro(macro_get_processor)
 # Purpose ....: Identifies and configures compiler family, short names, and paths.
 # Note .......: Beside "gnu", "llvm", "msvc", the GNU compilers for CYGWIN are included as a "cygwin" family.
 # Parameters .: - ${compiler_path}   -- Input:  Path to the C++ compiler.
-#               - ${compiler_family} -- Output: Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
-#               - ${compiler_short}  -- Output: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
-#               - ${compiler_cxx}    -- Output: Name of variable to hold the C++ compiler path (usually same as ${compiler_path}).
-#               - ${compiler_c}      -- Output: Name of variable to hold the corresponding C compiler name or path.
-#               - ${is_identified}   -- Output: Name of variable to hold Boolean indicating successful identification.
+#               - ${var_name_family} -- Output: Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+#               - ${var_name_short}  -- Output: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
+#               - ${var_name_cxx}    -- Output: Name of variable to hold the C++ compiler path (usually same as ${compiler_path}).
+#               - ${var_name_c}      -- Output: Name of variable to hold the corresponding C compiler name or path.
+#               - ${var_name_found}  -- Output: Name of variable to hold Boolean indicating successful identification.
 # Usage ......: macro_setup_compilers_data(<compiler> <family-var> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
 # Example ....: macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" 
 #                                           AREG_COMPILER_FAMILY 
@@ -426,22 +426,13 @@ endmacro(macro_get_processor)
 #                                           _compiler_supports
 #                                         )
 # ---------------------------------------------------------------------------
-macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c sys_platform sys_bitness is_identified)
+macro(macro_setup_compilers_data compiler_path var_name_family var_name_short var_name_cxx var_name_c var_name_arch var_name_bitness var_name_found)
 
-    set(${is_identified} FALSE)
-    if (DEFINED AREG_PROCESSOR AND NOT "${AREG_PROCESSOR}" STREQUAL "")
-        set(${sys_platform} ${AREG_PROCESSOR})
-    elseif(DEFINED CMAKE_SYSTEM_PROCESSOR AND NOT "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "")
-        set(${sys_platform} ${CMAKE_SYSTEM_PROCESSOR})
-    endif()
-
-    if (DEFINED AREG_BITNESS)
-        set(${sys_bitness}  ${AREG_BITNESS})
-    endif()
-    if(NOT "${sys_platform}" STREQUAL "")
-        macro_get_processor(${sys_platform} ${sys_platform} ${sys_bitness} _ignore)
-    else()
-        macro_system_bitness(${sys_bitness})
+    set(${var_name_found} FALSE)
+    if(NOT "${${var_name_arch}}" STREQUAL "")
+        macro_get_processor("${${var_name_arch}}" ${var_name_arch} ${var_name_bitness} _ignore)
+    elseif()
+        macro_system_bitness(${var_name_bitness})
     endif()
     
     # Iterate over known compilers to identify the compiler type
@@ -456,26 +447,26 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
         if (_found_pos GREATER -1)
             # Handle special case for CYGWIN and GNU family compilers
             if (CYGWIN AND ("${_family}" STREQUAL "gnu"))
-                set(${compiler_family} "cygwin")
+                set(${var_name_family} "cygwin")
             elseif("${_family}" STREQUAL "gnu")
-                macro_guess_processor_architecture("${_comp_path}" ${sys_platform} ${sys_bitness})
-                set(${compiler_family} "${_family}")
+                macro_guess_processor_architecture("${_comp_path}" ${var_name_arch} ${var_name_bitness})
+                set(${var_name_family} "${_family}")
             else()
-                set(${compiler_family} "${_family}")
+                set(${var_name_family} "${_family}")
             endif()
 
-            set(${compiler_short} "${_cxx_comp}")
-            set(${compiler_cxx}   "${compiler_path}")
+            set(${var_name_short} "${_cxx_comp}")
+            set(${var_name_cxx}   "${compiler_path}")
 
             # Determine the corresponding C compiler path or name
             if ("${_cxx_comp}" STREQUAL "${_cc_comp}")
-                set(${compiler_c} "${compiler_path}")
+                set(${var_name_c} "${compiler_path}")
             else()
-                string(REPLACE "${_cxx_comp}" "${_cc_comp}" ${compiler_c} "${compiler_path}")
+                string(REPLACE "${_cxx_comp}" "${_cc_comp}" ${var_name_c} "${compiler_path}")
             endif()
 
             # Mark compiler as found
-            set(${is_identified} TRUE)
+            set(${var_name_found} TRUE)
 
             # break the loop, we have found
             break()
@@ -495,10 +486,10 @@ endmacro(macro_setup_compilers_data)
 # Purpose ....: Configures compiler names based on family (e.g., gnu, msvc, llvm, cygwin).
 # Note .......: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
 # Parameters .: - ${compiler_family} -- Input: Compiler family  name (e.g., "gnu", "msvc").
-#               - ${compiler_short}  -- Output: Variable to hold the short name of the compiler (e.g., "gcc", "clang").
-#               - ${compiler_cxx}    -- Output: Variable to hold the C++ compiler name.
-#               - ${compiler_c}      -- Output: Variable to hold the corresponding C compiler name.
-#               - ${is_identified}   -- Output: Name of variable to hold Boolean indicating successful identification..
+#               - ${var_name_short}  -- Output: Variable to hold the short name of the compiler (e.g., "gcc", "clang").
+#               - ${var_name_cxx}    -- Output: Variable to hold the C++ compiler name.
+#               - ${var_name_c}      -- Output: Variable to hold the corresponding C compiler name.
+#               - ${var_name_found}   -- Output: Name of variable to hold Boolean indicating successful identification..
 # Usage ......: macro_setup_compilers_data_by_family(<compiler-family> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
 # Example ....: macro_setup_compilers_data_by_family("gnu"
 #                                                    AREG_COMPILER_SHORT 
@@ -507,9 +498,9 @@ endmacro(macro_setup_compilers_data)
 #                                                    _compiler_supports
 #                                                   )
 # ---------------------------------------------------------------------------
-macro(macro_setup_compilers_data_by_family compiler_family compiler_short compiler_cxx compiler_c is_identified)
+macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_name_cxx var_name_c var_name_found)
 
-    set(${is_identified} FALSE)
+    set(${var_name_found} FALSE)
     
     # Iterate over known compilers and match the family
     foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc")
@@ -520,25 +511,25 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
         if ("${_family}" STREQUAL "${compiler_family}")
             # Special case for Windows
             if (WIN32 AND "${_family}" STREQUAL "llvm")
-                set(${compiler_short} "clang-cl")
-                set(${compiler_cxx}   "clang-cl")
-                set(${compiler_c}     "clang-cl")
+                set(${var_name_short} "clang-cl")
+                set(${var_name_cxx}   "clang-cl")
+                set(${var_name_c}     "clang-cl")
             elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
-                set(${compiler_short} "g++")
-                set(${compiler_cxx}   "arm-linux-gnueabihf-g++")
-                set(${compiler_c}     "arm-linux-gnueabihf-gcc")
+                set(${var_name_short} "g++")
+                set(${var_name_cxx}   "arm-linux-gnueabihf-g++")
+                set(${var_name_c}     "arm-linux-gnueabihf-gcc")
             elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}" AND "${_family}" STREQUAL "gnu")
-                set(${compiler_short} "g++")
-                set(${compiler_cxx}   "aarch64-linux-gnu-g++")
-                set(${compiler_c}     "aarch64-linux-gnu-gcc")
+                set(${var_name_short} "g++")
+                set(${var_name_cxx}   "aarch64-linux-gnu-g++")
+                set(${var_name_c}     "aarch64-linux-gnu-gcc")
             else()
-                set(${compiler_short} "${_cxx_comp}")
-                set(${compiler_cxx}   "${_cxx_comp}")
-                set(${compiler_c}     "${_cc_comp}")
+                set(${var_name_short} "${_cxx_comp}")
+                set(${var_name_cxx}   "${_cxx_comp}")
+                set(${var_name_c}     "${_cc_comp}")
             endif()
 
             # Mark compiler as found
-            set(${is_identified} TRUE)
+            set(${var_name_found} TRUE)
 
             # break the loop, we have found
             break()

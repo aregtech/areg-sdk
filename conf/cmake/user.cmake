@@ -99,6 +99,12 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
 
     message(STATUS "AREG: >>> Using CMake specified C++ compiler '${_sys_compiler}'")
 
+    if (DEFINED AREG_PROCESSOR AND NOT "${AREG_PROCESSOR}" STREQUAL "")
+        set(_sys_process ${AREG_PROCESSOR})
+    elseif(DEFINED CMAKE_SYSTEM_PROCESSOR AND NOT "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "")
+        set(_sys_process ${CMAKE_SYSTEM_PROCESSOR})
+    endif()
+
     # Setup compiler details based on the identified system compiler
     macro_setup_compilers_data("${_sys_compiler}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_process _sys_bitness _compiler_found)
 

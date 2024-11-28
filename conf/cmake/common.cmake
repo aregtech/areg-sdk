@@ -9,6 +9,11 @@ if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
 endif()
 
+# Set processor, if not identified yet.
+if ("${AREG_PROCESSOR}" STREQUAL "")
+    set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+endif()
+
 # Identify compiler short name
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
@@ -30,10 +35,6 @@ endif()
 
 # Set identified OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
-# Set processor, if not identified yet.
-if ("${AREG_PROCESSOR}" STREQUAL "")
-    set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
-endif()
 # Set bitness, if not identified yet.
 if ("${AREG_BITNESS}" STREQUAL "" OR AREG_BITNESS EQUAL 0)
     macro_system_bitness(AREG_BITNESS)
