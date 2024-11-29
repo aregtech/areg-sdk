@@ -1678,12 +1678,11 @@ void NEString::trimAll( CharType * strBuffer, NEString::CharCount strLen /*= NES
 
             if (strLen != NEString::COUNT_ALL)
             {
-                NEString::copyStringFast<CharType>(buf, next, NEString::COUNT_ALL);
+                while (*next != static_cast<CharType>(NEString::EndOfString))
+                    *buf ++ = *next ++;
             }
-            else
-            {
-                *buf = static_cast<CharType>(NEString::EndOfString);
-            }
+
+            *buf = static_cast<CharType>(NEString::EndOfString);
         }
     }
 }
@@ -1749,7 +1748,10 @@ void NEString::trimRight( CharType * strBuffer, NEString::CharCount strLen /*= N
             }
             else
             {
-                NEString::copyStringFast<CharType>(NEString::isWhitespace<CharType>(*end) ? end : ++end, next, NEString::COUNT_ALL);
+                CharType * dst = NEString::isWhitespace<CharType>(*end) ? end : ++end;
+                while(*next != static_cast<CharType>(NEString::EndOfString))
+                    *dst ++ = *next ++;
+                *(dst) = static_cast<CharType>(NEString::EndOfString);
             }
         }
     }
@@ -1805,14 +1807,14 @@ void NEString::trimLeft( CharType * strBuffer, NEString::CharCount strLen /*= NE
                 while ( begin < end)
                     *buf ++ = *begin ++;
 
-                if (strLen == NEString::COUNT_ALL)
+                if (strLen != NEString::COUNT_ALL)
                 {
-                    *buf = static_cast<CharType>(NEString::EndOfString);
+                    const CharType* src = strBuffer + strLen;
+                    while (*src != static_cast<CharType>(NEString::EndOfString))
+                        *buf ++ = *src ++;
                 }
-                else
-                {
-                    NEString::copyStringFast<CharType>(buf, strBuffer + strLen, NEString::COUNT_ALL);
-                }
+
+                *buf = static_cast<CharType>(NEString::EndOfString);
             }
         }
     }
