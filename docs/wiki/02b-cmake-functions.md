@@ -9,7 +9,6 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
    - [`macro_check_fix_areg_cxx_standard`](#macro_check_fix_areg_cxx_standard)
    - [`macro_normalize_path`](#macro_normalize_path)
    - [`macro_add_service_interface`](#macro_add_service_interface)
-   - [`macro_find_package`](#macro_find_package)
    - [`macro_create_option`](#macro_create_option)
    - [`macro_add_source`](#macro_add_source)
    - [`macro_parse_arguments`](#macro_parse_arguments)
@@ -80,21 +79,6 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
    ```cmkae
    macro_add_service_interface(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
    macro_add_service_interface(funlib "/home/dev/fun/src/service/WeHaveFun.siml"  "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
-   ```
-
-### `macro_find_package`
-- **Syntax**: `macro_find_package(package_name package_found package_includes package_libraries)`
-- **Purpose**: Finds a package and returns paths to its includes and libraries if found.
-- **Parameters**:
-  - `package_name` [in]: Name of the package to search for.
-  - `package_found` [out]: Variable indicating if the package was found.
-  - `package_includes` [out]: Variable holding the package's include directories.
-  - `package_libraries` [out]: Variable holding the package's libraries.
-- **Usage**: `macro_find_package(<package-name> <found-flag-var> <includes-var> <libraries-var>)`
-- **Example**:
-   ```cmake
-   set(SQLITE_FOUND FALSE)
-   macro_find_package(SQLite3 SQLITE_FOUND SQLITE_INCLUDE SQLITE_LIB)
    ```
 
 ### `macro_create_option`

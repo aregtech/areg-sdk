@@ -10,6 +10,7 @@
 # Available Options:
 #   1. AREG_COMPILER_FAMILY -- A quick way to set the C++ and C compilers (CMAKE_CXX_COMPILER and CMAKE_C_COMPILER).
 #   2. AREG_COMPILER        -- Sets a specific compiler for both C++ and C projects.
+#   3. AREG_TARGET          -- Sets a specific compiler and the library architecture target. Default is compiler and system defined.
 #   3. AREG_PROCESSOR       -- The processor architect. Ignore if need to use system default.
 #   4. AREG_BINARY          -- Specifies the library type for the AREG Framework ('shared' or 'static'). Defaults to 'shared'.
 #   5. AREG_LOGGER_BINARY   -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to 'shared'.
@@ -33,7 +34,8 @@
 # Default Values:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
-#   3. AREG_PROCESSOR       = System    (possible values: x86, x64 (x86_64, amd64), arm (arm32), aarch64 (arm64))
+#   3. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
+#   3. AREG_PROCESSOR       = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
 #   4. AREG_BINARY          = shared    (possible values: shared, static)
 #   5. AREG_LOGGER_BINARY   = shared    (possible values: shared, static)
 #   6. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
@@ -106,7 +108,7 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
     endif()
 
     # Setup compiler details based on the identified system compiler
-    macro_setup_compilers_data("${_sys_compiler}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_process _sys_bitness _compiler_found)
+    macro_setup_compilers_data("${_sys_compiler}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_target _sys_process _sys_bitness _compiler_found)
 
     if (_compiler_found)
         # Check for existing compiler family or specific compiler and issue warnings if necessary
@@ -128,6 +130,9 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_sys_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
+        if("${AREG_TARGET}" STREQUAL "")
+            set(AREG_TARGET         "${_sys_target}")
+        endif()
         if (NOT "${_sys_process}" STREQUAL "")
             set(AREG_PROCESSOR ${_sys_process})
             set(AREG_BITNESS   ${_sys_bitness})
@@ -140,12 +145,17 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
     unset(_sys_compiler)
     unset(_sys_process)
     unset(_sys_bitness)
+    unset(_sys_target)
+    unset(_compiler_found)
 
 # If a specific compiler family is set, use that to determine compilers
 elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
 
     message(STATUS "AREG: >>> Using user-specified C/C++ compiler family '${AREG_COMPILER_FAMILY}'")
-    macro_setup_compilers_data_by_family("${AREG_COMPILER_FAMILY}" _compiler_short _cxx_compiler _c_compiler _compiler_found)
+    if ("${AREG_PROCESSOR}" STREQUAL "")
+        set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+    endif()
+    macro_setup_compilers_data_by_family("${AREG_COMPILER_FAMILY}" _compiler_short _cxx_compiler _c_compiler _compiler_target _compiler_found)
 
     if (_compiler_found)
         # Set the relevant variables for the chosen compiler family
@@ -153,16 +163,25 @@ elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL 
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_cxx_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
+        if("${AREG_TARGET}" STREQUAL "")
+            set(AREG_TARGET         "${_compiler_target}")
+        endif()
     else()
         message(WARNING "AREG: >>> Unknown compiler family '${AREG_COMPILER_FAMILY}'; results may be unpredictable")
     endif()
+
+    unset(_compiler_short)
+    unset(_cxx_compiler)
+    unset(_c_compiler)
+    unset(_compiler_target)
+    unset(_compiler_found)
 
 # If a specific compiler is set, use that to determine compilers
 elseif (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
 
     message(STATUS "AREG: >>> Using user-specified C/C++ compiler '${AREG_COMPILER}'")
     # Set both C and C++ compilers based on AREG_COMPILER
-    macro_setup_compilers_data("${AREG_COMPILER}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_process _sys_bitness _compiler_found)
+    macro_setup_compilers_data("${AREG_COMPILER}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_target _sys_process _sys_bitness _compiler_found)
 
     if (_compiler_found)
         # Set the relevant variables for the chosen compiler
@@ -170,6 +189,9 @@ elseif (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_cxx_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
+        if("${AREG_TARGET}" STREQUAL "")
+            set(AREG_TARGET         "${_sys_target}")
+        endif()
         if (NOT "${_sys_process}" STREQUAL "")
             set(AREG_PROCESSOR ${_sys_process})
             set(AREG_BITNESS   ${_sys_bitness})
@@ -182,6 +204,8 @@ elseif (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
     unset(_sys_compiler)
     unset(_sys_process)
     unset(_sys_bitness)
+    unset(_sys_target)
+    unset(_compiler_found)
 
 # If no specific compiler or family is set, use the system default
 else()

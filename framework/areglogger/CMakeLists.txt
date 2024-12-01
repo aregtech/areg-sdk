@@ -19,7 +19,7 @@ if (AREG_LOGGER_BINARY MATCHES "shared")
     endif()
 
     # build log observer API shared library
-    addSharedLibEx(areglogger ${AREG_PACKAGE_NAME} "${areglogger_SRC}" ${AREG_SQLITE_LIB_REF})
+    addSharedLibEx(areglogger ${AREG_PACKAGE_NAME} "${areglogger_SRC}" "${AREG_SQLITE_LIB_REF}")
     target_compile_options(areglogger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
     # log observer API shared library
     target_compile_definitions(areglogger PRIVATE EXP_LOGGER_DLL)
