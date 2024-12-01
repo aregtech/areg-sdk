@@ -152,6 +152,9 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
 elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
 
     message(STATUS "AREG: >>> Using user-specified C/C++ compiler family '${AREG_COMPILER_FAMILY}'")
+    if ("${AREG_PROCESSOR}" STREQUAL "")
+        set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+    endif()
     macro_setup_compilers_data_by_family("${AREG_COMPILER_FAMILY}" _compiler_short _cxx_compiler _c_compiler _compiler_target _compiler_found)
 
     if (_compiler_found)

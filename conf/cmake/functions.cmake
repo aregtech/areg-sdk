@@ -320,12 +320,11 @@ endmacro(macro_system_bitness)
 # Purpose ....: Based on the target processor architecture, sets the default compiler target.
 #               The compiler target also is used to set find library architecture.
 # Parameters  : ${target_processor} [in]  -- Value of the target processor.
-#               ${target_bitness}   [in]  -- Value of target bitness.
 #               ${var_name_target}  [out] -- The name of variable to set the compiler target.
-# Usage ......: macro_default_target(<target-processor> <target-bitness> <compiler-target-var>)
+# Usage ......: macro_default_target(<target-processor> <compiler-target-var>)
 # Example ....: macro_system_bitness(AARCH64 64 AREG_TARGET)
 # ---------------------------------------------------------------------------
-macro(macro_default_target target_processor target_bitness var_name_target)
+macro(macro_default_target target_processor var_name_target)
     if (UNIX)
         if (${target_processor} MATCHES "${_proc_x64}")
             set(${var_name_target} x86_64-linux-gnu)
@@ -408,7 +407,7 @@ macro(macro_setup_compilers_data
             if (${_family} STREQUAL gnu)
                 if (CYGWIN)
                     set(${var_name_family} "cygwin")
-                    macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+                    macro_default_target(${${var_name_arch}} ${var_name_target})
                 else()
                     set(${var_name_family} "gnu")
                     macro_guess_processor_architecture("${_comp_path}" ${var_name_arch} ${var_name_bitness})
@@ -417,18 +416,18 @@ macro(macro_setup_compilers_data
                         cmake_path(GET _comp_path FILENAME _file_name)
                         string(REPLACE "-${_cxx_comp}" "" ${var_name_target} "${_file_name}")
                     else()
-                        macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+                        macro_default_target(${${var_name_arch}} ${var_name_target})
                     endif()
                 endif()
             elseif (${_family} STREQUAL llvm)
                 set(${var_name_family} "llvm")
-                macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+                macro_default_target(${${var_name_arch}} ${var_name_target})
             elseif (${_family} STREQUAL msvc)
                 set(${var_name_family} "msvc")
-                macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+                macro_default_target(${${var_name_arch}} ${var_name_target})
             else()
                 set(${var_name_family} "${_family}")
-                macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+                macro_default_target(${${var_name_arch}} ${var_name_target})
             endif()
 
             set(${var_name_short} "${_cxx_comp}")
@@ -498,7 +497,7 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
                     set(${var_name_cxx}   "${_cxx_comp}")
                     set(${var_name_c}     "${_cc_comp}")
                 endif()
-                macro_default_target(${AREG_PROCESSOR} ${AREG_BITNESS} ${var_name_target})
+                macro_default_target("${AREG_PROCESSOR}" ${var_name_target})
             elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
                 set(${var_name_short}  g++)
                 set(${var_name_cxx}    arm-linux-gnueabihf-g++)
@@ -513,7 +512,7 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
                 set(${var_name_short} "${_cxx_comp}")
                 set(${var_name_cxx}   "${_cxx_comp}")
                 set(${var_name_c}     "${_cc_comp}")
-                macro_default_target(${AREG_PROCESSOR} ${AREG_BITNESS} ${var_name_target})
+                macro_default_target("${AREG_PROCESSOR}" ${var_name_target})
             endif()
 
             # Mark compiler as found

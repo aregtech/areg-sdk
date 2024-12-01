@@ -43,7 +43,7 @@ endif()
 
 # Setup for find_xxx() calls
 if ("${AREG_TARGET}" STREQUAL "")
-    macro_default_target(${AREG_PROCESSOR} ${AREG_BITNESS} AREG_TARGET)
+    macro_default_target(${AREG_PROCESSOR} AREG_TARGET)
 endif()
 
 set(CMAKE_FIND_PACKAGE_RESOLVE_SYMLINKS TRUE)
