@@ -295,33 +295,6 @@ macro(macro_check_module_architect path_module target_arch var_compatible)
 endmacro(macro_check_module_architect)
 
 # ---------------------------------------------------------------------------
-# Macro ......: macro_find_compiler_target
-# Purpose ....: Based on the processor architecture and the target bitness, sets the
-#               compiler target, which can be used to set 'CMAKE_CXX_COMPILER_TARGET'
-#               and 'CMAKE_C_COMPILER_TARGET' variables.
-# Parameters .: ${target_arch}    [in] -- Target processor architecture.
-#               ${target_bitness} [in] -- Target bitness.
-#               ${var_name_target}[in] -- Name of variable to set the compiler target.
-# Usage ......: macro_find_compiler_target(<target-architecure> <target-bitness> <compiler-target-var>)
-# Example ....: macro_find_compiler_target(ARM 32 CMAKE_CXX_COMPILER_TARGET)
-# ---------------------------------------------------------------------------
-macro(macro_find_compiler_target target_arch target_bitness var_name_target)
-    if ("${target_arch}" STREQUAL "${_proc_arm64}")
-        set(${var_name_target} aarch64-linux-gnu)
-    elseif("${target_arch}" STREQUAL "${_proc_arm32}")
-        set(${var_name_target} arm-linux-gnueabihf)
-    elseif("${target_arch}" STREQUAL "${_proc_x86}")
-        set(${var_name_target} i386-linux-gnu)
-    elseif("${target_arch}" STREQUAL "${_proc_x64}")
-        set(${var_name_target} x86_64-linux-gnu)
-    elseif(${target_bitness} EQUAL 64)
-        set(${var_name_target} x64)
-    elseif(${target_bitness} EQUAL 32)
-        set(${var_name_target} x86)
-    endif()
-endmacro(macro_find_compiler_target)
-
-# ---------------------------------------------------------------------------
 # Macro ......: macro_create_option
 # Purpose ....: Creates a boolean cache variable with a default value.
 # Parameters .: ${var_name}     [out]   -- Name of the boolean variable.
@@ -458,28 +431,67 @@ macro(macro_system_bitness var_bitness)
     endif()
 endmacro(macro_system_bitness)
 
+macro(macro_default_target target_processor target_bitness var_name_target)
+    if (UNIX)
+        if (${target_processor} MATCHES "${_proc_x64}")
+            set(${var_name_target} x86_64-linux-gnu)
+        elseif (${target_processor} MATCHES "${_proc_x86}")
+            set(${var_name_target} i386-linux-gnu)
+        elseif (${target_processor} MATCHES "${_proc_arm64}")
+            set(${var_name_target} aarch64-linux-gnu)
+        elseif (${target_processor} MATCHES "${_proc_arm32}")
+            set(${var_name_target} arm-linux-gnueabihf)
+        endif()
+    elseif (MSVC)
+        if (${target_processor} MATCHES "${_proc_x64}")
+            set(${var_name_target} x64)
+        elseif (${target_processor} MATCHES "${_proc_x86}")
+            set(${var_name_target} "win32")
+        endif()
+    elseif(CYGWIN)
+        if (${target_processor} MATCHES "${_proc_x64}")
+            set(${var_name_target} x86_64-pc-cygwin)
+        elseif (${target_processor} MATCHES "${_proc_x86}")
+            set(${var_name_target} i386-pc-cygwin)
+        endif()
+    endif()
+endmacro(macro_default_target)
+
 # ---------------------------------------------------------------------------
 # Macro ......: macro_setup_compilers_data
 # Purpose ....: Identifies and configures compiler family, short names, and paths.
 # Note .......: Beside "gnu", "llvm", "msvc", the GNU compilers for CYGWIN are included as a "cygwin" family.
-# Parameters .: - ${compiler_path}   -- Input:  Path to the C++ compiler.
-#               - ${var_name_family} -- Output: Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
-#               - ${var_name_short}  -- Output: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
-#               - ${var_name_cxx}    -- Output: Name of variable to hold the C++ compiler path (usually same as ${compiler_path}).
-#               - ${var_name_c}      -- Output: Name of variable to hold the corresponding C compiler name or path.
-#               - ${var_name_found}  -- Output: Name of variable to hold Boolean indicating successful identification.
-# Usage ......: macro_setup_compilers_data(<compiler> <family-var> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
+# Parameters .: - ${compiler_path}   [in]       -- Path to the C++ compiler.
+#               - ${var_name_family} [out]      -- Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+#               - ${var_name_short}  [out]      -- Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
+#               - ${var_name_cxx}    [out]      -- Name of variable to hold the C++ compiler path (usually same as ${compiler_path}).
+#               - ${var_name_c}      [out]      -- Name of variable to hold the corresponding C compiler name or path.
+#               - ${var_name_target} [out]      -- Nave of variable to hold compiler target value.
+#               - ${var_name_arch}   [in, out]  -- Name of variable that contains the processor architecture value.
+#               - ${var_name_bitness}[out]      -- Name of variable to hold the application bitness value.
+#               - ${var_name_found}  [out]      -- Name of variable to hold Boolean indicating successful identification.
+# Usage ......: macro_setup_compilers_data(<compiler> <family-var[> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
 # Example ....: macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" 
 #                                           AREG_COMPILER_FAMILY 
 #                                           AREG_COMPILER_SHORT 
 #                                           AREG_CXX_COMPILER 
 #                                           AREG_C_COMPILER
+#                                           AREG_TARGET_NAME
 #                                           AREG_PROCESSOR
 #                                           AREG_BITNESS
 #                                           _compiler_supports
 #                                         )
 # ---------------------------------------------------------------------------
-macro(macro_setup_compilers_data compiler_path var_name_family var_name_short var_name_cxx var_name_c var_name_arch var_name_bitness var_name_found)
+macro(macro_setup_compilers_data 
+        compiler_path 
+        var_name_family 
+        var_name_short 
+        var_name_cxx 
+        var_name_c 
+        var_name_target 
+        var_name_arch 
+        var_name_bitness 
+        var_name_found)
 
     set(${var_name_found} FALSE)
     if(NOT "${${var_name_arch}}" STREQUAL "")
@@ -491,21 +503,38 @@ macro(macro_setup_compilers_data compiler_path var_name_family var_name_short va
     # Iterate over known compilers to identify the compiler type
     foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_comp)
-        list(GET _entry 1 _family)
-        list(GET _entry 2 _cc_comp)
 
         # Check if the provided compiler matches the known C++ compiler
         string(TOLOWER "${compiler_path}" _comp_path)
         string(FIND "${_comp_path}" "${_cxx_comp}" _found_pos REVERSE)
         if (_found_pos GREATER -1)
+            list(GET _entry 1 _family)
+            list(GET _entry 2 _cc_comp)
             # Handle special case for CYGWIN and GNU family compilers
-            if (CYGWIN AND ("${_family}" STREQUAL "gnu"))
-                set(${var_name_family} "cygwin")
-            elseif("${_family}" STREQUAL "gnu")
-                macro_guess_processor_architecture("${_comp_path}" ${var_name_arch} ${var_name_bitness})
-                set(${var_name_family} "${_family}")
+            if (${_family} STREQUAL gnu)
+                if (CYGWIN)
+                    set(${var_name_family} "cygwin")
+                    macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+                else()
+                    set(${var_name_family} "gnu")
+                    macro_guess_processor_architecture("${_comp_path}" ${var_name_arch} ${var_name_bitness})
+                    string(FIND "${_comp_path}" "-${_cxx_comp}" _found_pos REVERSE)
+                    if (_found_pos GREATER -1)
+                        cmake_path(GET _comp_path FILENAME _file_name)
+                        string(REPLACE "-${_cxx_comp}" "" ${var_name_target} "${_file_name}")
+                    else()
+                        macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+                    endif()
+                endif()
+            elseif (${_family} STREQUAL llvm)
+                set(${var_name_family} "llvm")
+                macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
+            elseif (${_family} STREQUAL msvc)
+                set(${var_name_family} "msvc")
+                macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
             else()
                 set(${var_name_family} "${_family}")
+                macro_default_target(${var_name_arch} ${var_name_bitness} ${var_name_target})
             endif()
 
             set(${var_name_short} "${_cxx_comp}")
@@ -551,7 +580,7 @@ endmacro(macro_setup_compilers_data)
 #                                                    _compiler_supports
 #                                                   )
 # ---------------------------------------------------------------------------
-macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_name_cxx var_name_c var_name_found)
+macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_name_cxx var_name_c var_name_target var_name_found)
 
     set(${var_name_found} FALSE)
     
@@ -563,22 +592,32 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
 
         if ("${_family}" STREQUAL "${compiler_family}")
             # Special case for Windows
-            if (WIN32 AND "${_family}" STREQUAL "llvm")
-                set(${var_name_short} "clang-cl")
-                set(${var_name_cxx}   "clang-cl")
-                set(${var_name_c}     "clang-cl")
+            if ("${_family}" STREQUAL "llvm")
+                if (MSVC)
+                    set(${var_name_short} "clang-cl")
+                    set(${var_name_cxx}   "clang-cl")
+                    set(${var_name_c}     "clang-cl")
+                else()
+                    set(${var_name_short} "${_cxx_comp}")
+                    set(${var_name_cxx}   "${_cxx_comp}")
+                    set(${var_name_c}     "${_cc_comp}")
+                endif()
+                macro_default_target(${AREG_PROCESSOR} ${AREG_BITNESS} ${var_name_target})
             elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm32}" AND "${_family}" STREQUAL "gnu")
-                set(${var_name_short} "g++")
-                set(${var_name_cxx}   "arm-linux-gnueabihf-g++")
-                set(${var_name_c}     "arm-linux-gnueabihf-gcc")
+                set(${var_name_short}  g++)
+                set(${var_name_cxx}    arm-linux-gnueabihf-g++)
+                set(${var_name_c}      arm-linux-gnueabihf-gcc)
+                set(${var_name_target} arm-linux-gnueabihf)
             elseif ("${AREG_PROCESSOR}" STREQUAL "${_proc_arm64}" AND "${_family}" STREQUAL "gnu")
-                set(${var_name_short} "g++")
-                set(${var_name_cxx}   "aarch64-linux-gnu-g++")
-                set(${var_name_c}     "aarch64-linux-gnu-gcc")
+                set(${var_name_short}  g++)
+                set(${var_name_cxx}    aarch64-linux-gnu-g++)
+                set(${var_name_c}      aarch64-linux-gnu-gcc)
+                set(${var_name_target} aarch64-linux-gnu)
             else()
                 set(${var_name_short} "${_cxx_comp}")
                 set(${var_name_cxx}   "${_cxx_comp}")
                 set(${var_name_c}     "${_cc_comp}")
+                macro_default_target(${AREG_PROCESSOR} ${AREG_BITNESS} ${var_name_target})
             endif()
 
             # Mark compiler as found
@@ -1146,7 +1185,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit '${AREG_PROCESSOR}' platform, Env '${AREG_DEVELOP_ENV}'")
     message(STATUS "${var_prefix}: >>> Used CXX-Compiler ..: '${CMAKE_CXX_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Used C-Compiler ....: '${CMAKE_C_COMPILER}'")
-    message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}'")
+    message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}', target '${CMAKE_CXX_COMPILER_TARGET}'")
     message(STATUS "${var_prefix}: >>> AREG SDK Root ......: '${AREG_SDK_ROOT}'")
     message(STATUS "${var_prefix}: >>> CMake Build Dir ....: '${CMAKE_BINARY_DIR}'")
     message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}'")
