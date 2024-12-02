@@ -114,37 +114,50 @@ macro(macro_get_processor processor_name var_processor var_bitness var_found)
     endforeach()
 endmacro(macro_get_processor)
 
-macro(macro_check_module_architect path_module target_name target_processor var_compatible)
-    message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_processor}' processor")
-    # Execute the command and search for the architecture
-    set(_prog "${target_name}-objdump")
-    find_program(_objdump NAMES ${_prog})
-    message("<<< _objdump = ${_objdump}, CMAKE_OBJDUMP = ${CMAKE_OBJDUMP}")
-    if (NOT _objdump OR NOT EXISTS "${_objdump}")
-        if (NOT "${CMAKE_OBJDUMP}" STREQUAL "")
-            set(_objdump "${CMAKE_OBJDUMP}")
-        else()
-            set(_objdump "objdump")
-        endif()
+# ---------------------------------------------------------------------------
+# Macro ........: macro_check_module_architect
+# Purpose ......: Validates whether a given binary module (executable or library) 
+#                 matches the specified processor architecture. The validation 
+#                 uses object dumping tools to analyze the module. Typically, 
+#                 this macro is invoked after identifying a package or library.
+#
+# Parameters ...: ${path_module}    [in]  -- Full path to the binary module (executable, shared, or static library).
+#                 ${target_name}    [in]  -- Target name, typically the same as AREG_TARGET.
+#                 ${target_proc}    [in]  -- Target processor architecture to validate.
+#                 ${var_compatible} [out] -- Boolean variable set to TRUE if the binary is compatible with the target processor, FALSE otherwise.
+#
+# Usage ........: macro_check_module_architect(<path_to_binary> <target_name> <target_processor> <output_compatibility_var>)
+# Example ......: 
+#   macro_check_module_architect("/usr/lib/i386-linux-gnu/sqlite3.so" "i386-linux-gnu" i386 _is_compatible)
+# ---------------------------------------------------------------------------
+macro(macro_check_module_architect path_module target_name target_proc var_compatible)
+    message(STATUS "AREG: >>> Validating binary '${path_module}' for compatibility with processor '${target_proc}'")
+    
+    # Determine the appropriate objdump command
+    if (NOT "${CMAKE_OBJDUMP}" STREQUAL "")
+        set(_objdump "${CMAKE_OBJDUMP}")
+    else()
+        set(_objdump "${target_name}-objdump")
     endif()
 
+    # Check existence of the binary and objdump tool
     if (EXISTS "${path_module}" AND EXISTS "${_objdump}")
+        macro_get_processor(${target_proc} _proc _bitness _found)
 
-        message("<<< Executing: ${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u")
-
-        macro_get_processor(${target_processor} _proc _bitness _found)
         execute_process(
             COMMAND bash -c "${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
             OUTPUT_VARIABLE _data
+            OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_QUIET
         )
 
+        # Match the processor type with extracted architecture
         if (${_proc} STREQUAL ${_proc_x86})
             string(FIND "${_data}" "x86-64" _pos)
-            if (_pos GREATER -1)
-                set(_pos -1)
-            else()
+            if (_pos EQUAL -1)
                 string(FIND "${_data}" "i386" _pos)
+			else()
+				set(_pos -1)
             endif()
         elseif (${_proc} STREQUAL ${_proc_x64})
             string(FIND "${_data}" "x86-64" _pos)
@@ -156,14 +169,14 @@ macro(macro_check_module_architect path_module target_name target_processor var_
             string(FIND "${_data}" "${_proc}" _pos)
         endif()
 
+        # Set compatibility flag based on architecture match
         if (_pos GREATER -1)
             set(${var_compatible} TRUE)
         else()
-            message(STATUS "AREG: >>> '${path_module}' binary is NOT compatible with '${target_processor}' target architecture")
+            message(WARNING "AREG: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'")
             set(${var_compatible} FALSE)
         endif()
-
-    elseif(${AREG_OS} STREQUAL Windows)
+    elseif (${AREG_OS} STREQUAL Windows)
         set(${var_compatible} TRUE)
     else()
         set(${var_compatible} FALSE)
