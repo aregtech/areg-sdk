@@ -47,6 +47,7 @@ endmacro(macro_check_fix_areg_cxx_standard)
 # Parameters .: ${normal_path} [out] -- Name of variable to hold normalized path.
 #               ${os_path}     [in]  -- The Windows-specific path to normalize.
 # Usage ......: macro_normalize_path(<out-var> <windows-path>)
+# Example ....: macro_normalize_path(_norm_path "c:\path\to\my\directory")
 # ---------------------------------------------------------------------------
 macro(macro_normalize_path normal_path os_path)
     if (CYGWIN)
@@ -67,41 +68,44 @@ set(_proc_arm32 "ARM")
 set(_proc_arm64 "AARCH64")
 
 # ---------------------------------------------------------------------------
-# Macro ......: macro_get_processor
-# Purpose ....: Identifies and validates the processor architecture based on a provided name.
-#               If a match is found in the supported processor list, it extracts:
-#                 - The canonical architecture name.
-#                 - The bitness (e.g., 32 or 64 bits).
-# Parameters ..: ${processor_name} [in]   -- Input processor architecture name to search for.
-#                ${var_processor}  [out]  -- Variable to store the canonical processor architecture name.
-#                ${var_bitness}    [out]  -- Variable to store the bitness (32/64) of the processor.
-#                ${var_found}      [out]  -- Variable to indicate if the processor is supported (TRUE/FALSE).
-# Usage .......: macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_entry_found>)
-# Example .....: macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+# Macro .......: macro_get_processor
+# Purpose .....: Detects and validates a processor architecture from an input name.
+#                Matches the provided name against a predefined list of supported
+#                architectures and retrieves:
+#                  - The canonical architecture name.
+#                  - The bitness (32-bit or 64-bit).
+# Parameters ...: ${processor_name} [in]   -- The input processor architecture name to validate.
+#                 ${var_processor}  [out]  -- The canonical name of the processor architecture (if supported).
+#                 ${var_bitness}    [out]  -- The bitness (32/64) of the processor.
+#                 ${var_found}      [out]  -- Boolean flag indicating whether the processor is supported (TRUE/FALSE).
+# Usage ........: macro_get_processor(<processor_name> <var_processor> <var_bitness> <var_found>)
+# Example ......: 
+#   macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
 # ---------------------------------------------------------------------------
 macro(macro_get_processor processor_name var_processor var_bitness var_found)
     set(${var_found} FALSE)
     string(TOLOWER "${processor_name}" _proc_name)
-    list(APPEND _arch_list  "x86|${_proc_x86}|32"
-                            "i386|${_proc_x86}|32"
-                            "i486|${_proc_x86}|32"
-                            "i686|${_proc_x86}|32"
-                            "x64|${_proc_x64}|64"
-                            "x86_64|${_proc_x64}|64"
-                            "x86-64|${_proc_x64}|64"
-                            "amd64|${_proc_x64}|64"
-                            "ia64|${_proc_x64}|64"
-                            "arm|${_proc_arm32}|32"
-                            "arm32|${_proc_arm32}|32"
-                            "armv7|${_proc_arm32}|32"
-                            "arm64|${_proc_arm64}|64"
-                            "aarch64|${_proc_arm64}|64"
+    set(_arch_list  "x86|${_proc_x86}|32"
+                    "i386|${_proc_x86}|32"
+                    "i486|${_proc_x86}|32"
+                    "i686|${_proc_x86}|32"
+                    "x64|${_proc_x64}|64"
+                    "x86_64|${_proc_x64}|64"
+                    "x86-64|${_proc_x64}|64"
+                    "amd64|${_proc_x64}|64"
+                    "ia64|${_proc_x64}|64"
+                    "arm|${_proc_arm32}|32"
+                    "arm32|${_proc_arm32}|32"
+                    "armv7|${_proc_arm32}|32"
+                    "arm64|${_proc_arm64}|64"
+                    "aarch64|${_proc_arm64}|64"
     )
 
     foreach(_entry IN LISTS _arch_list)
         string(REPLACE "|" ";" _entry "${_entry}")
-        list(GET _entry 0 _proc)
-        if ("${_proc}" STREQUAL "${_proc_name}")
+        list(GET _entry 0 _arch)
+        if ("${_arch}" STREQUAL "${_proc_name}")
+            # If a match is found, extract processor details
             list(GET _entry 1 ${var_processor})
             list(GET _entry 2 ${var_bitness})
             set(${var_found} TRUE)
@@ -110,14 +114,60 @@ macro(macro_get_processor processor_name var_processor var_bitness var_found)
     endforeach()
 endmacro(macro_get_processor)
 
+macro(macro_check_module_architect path_module target_name target_processor var_compatible)
+    message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_arch}' processor")
+    # Execute the command and search for the architecture
+    set(_objdump "${target_name}-objdump")
+    if (NOT EXISTS "${_objdump}")
+        if (NOT "${CMAKE_OBJDUMP}" STREQUAL "")
+            set(_objdump "${CMAKE_OBJDUMP}")
+        else()
+            set(_objdump "objdump")
+        endif()
+    endif()
+
+    if (EXISTS "${path_module}" AND EXISTS "${_objdump}")
+        macro_get_processor(${target_processor} _proc)
+        execute_process(
+            COMMAND bash -c "${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+            OUTPUT_VARIABLE _data
+            ERROR_QUIET
+        )
+
+        if (${_proc} STREQUAL "i386")
+            string(FIND "${_data}" "x86-64" _pos)
+            if (_pos GREATER -1)
+                set(_pos -1)
+            else()
+                string(FIND "${_data}" "i386" _pos)
+            endif()
+        else()
+            string(FIND "${_data}" "${_srch}" _pos)
+        endif()
+
+        if (_pos GREATER -1)
+            set(${is_compatible} TRUE)
+        else()
+            message(STATUS "AREG: >>> '${_target_module}' binary is NOT compatible with '${target_arch}' target architecture")
+            set(${is_compatible} FALSE)
+        endif()
+
+    elseif(${AREG_OS} STREQUAL Windows)
+        set(${is_compatible} TRUE)
+    else()
+        set(${is_compatible} FALSE)
+    endif()
+endmacro(macro_check_module_architect)
+
 # ---------------------------------------------------------------------------
-# Macro ......: macro_find_ncurses_package
-# Purpose ....: Finds the 'ncurses' library and header files.
-# Parameters .: ${var_include}  [out] -- Variable holding the include directory of 'ncurses.h' header file.
-#               ${var_library}  [out] -- Variable holding the full path to the 'ncurses' library.
-#               ${var_found}    [out] -- Name of variable indicating if the 'ncurses' library and include could find.
-# Usage ......: macro_find_ncurses_package(<ncurses-include-var> <ncurses-library-var> <found-flag-var>)
-# Example ....: 
+# Macro .......: macro_find_ncurses_package
+# Purpose .....: Locates the 'ncurses' library and its associated header files on the system.
+#                Sets output variables with the include directory and library path if found.
+# Parameters ...: ${var_include}  [out] -- Variable to store the path to the directory containing the 'ncurses.h' header file.
+#                 ${var_library}  [out] -- Variable to store the full path to the 'ncurses' library file.
+#                 ${var_found}    [out] -- Variable to indicate whether the 'ncurses' library and headers were successfully located (TRUE/FALSE).
+# Usage ........: macro_find_ncurses_package(<ncurses-include-var> <ncurses-library-var> <found-flag-var>)
+# Example ......: 
 #   macro_find_ncurses_package(NCURSES_INCLUDE NCURSES_LIB NCURSES_FOUND)
 # ---------------------------------------------------------------------------
 macro(macro_find_ncurses_package var_include var_library var_found)
@@ -128,18 +178,19 @@ macro(macro_find_ncurses_package var_include var_library var_found)
     find_path(${var_include}    NAMES ncurses.h)
     find_library(${var_library} NAMES ncurses)
     if (${var_include} AND ${var_library})
-        set(${var_found} TRUE)
+        macro_check_module_architect("${var_library}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
     endif()
 endmacro(macro_find_ncurses_package)
 
 # ---------------------------------------------------------------------------
-# Macro ......: macro_find_gtest_package
-# Purpose ....: Finds the GTest package. On output, returns paths to package's include and library.
-# Parameters .: ${var_include} [out] -- Variable holding the include directory of GTest header files.
-#               ${var_library} [out] -- Variable holding the GTest libraries with full path.
-#               ${var_found}   [out] -- Name of variable indicating if GTest package could find.
-# Usage ......: macro_find_gtest_package(<gtest-include-var> <gtest-library-var> <gtest-found-flag-var>)
-# Example ....: 
+# Macro .......: macro_find_gtest_package
+# Purpose .....: Locates the Google Test (GTest) package, including its header files and libraries.
+#                Sets output variables with the include directory and library paths if found.
+# Parameters ...: ${var_include} [out] -- Variable to store the path to the directory containing GTest header files.
+#                 ${var_library} [out] -- Variable to store the full paths to the GTest libraries.
+#                 ${var_found}   [out] -- Variable to indicate whether the GTest package was successfully located (TRUE/FALSE).
+# Usage ........: macro_find_gtest_package(<gtest-include-var> <gtest-library-var> <gtest-found-flag-var>)
+# Example ......: 
 #   macro_find_gtest_package(GTEST_INCLUDE GTEST_LIB GTEST_FOUND)
 # ---------------------------------------------------------------------------
 macro(macro_find_gtest_package var_include var_library var_found)
@@ -149,20 +200,21 @@ macro(macro_find_gtest_package var_include var_library var_found)
 
     include(FindGTest)
     if (GTest_FOUND)
-        set(${var_found} TRUE)
         set(${var_library} "${GTEST_LIBRARIES}")
         set(${var_include} "${GTEST_INCLUDE_DIRS}")
+        macro_check_module_architect("${var_library}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
     endif()
 endmacro(macro_find_gtest_package)
 
 # ---------------------------------------------------------------------------
-# Macro ......: macro_find_sqlite_package
-# Purpose ....: Finds the SQLite3 package. On output, returns paths to package's include and library.
-# Parameters .: ${var_include} [out] -- Variable holding the include directory of SQLite3 header files.
-#               ${var_library} [out] -- Variable holding the SQLite3 libraries with full path.
-#               ${var_found}   [out] -- Name of variable indicating if GTest package could find.
-# Usage ......: macro_find_sqlite_package(<sqlite3-include-var> <sqlite3-library-var> <sqlite3-found-flag-var>)
-# Example ....: 
+# Macro .......: macro_find_sqlite_package
+# Purpose .....: Locates the SQLite3 package, including its header files and libraries.
+#                Sets output variables with the include directory and library paths if found.
+# Parameters ...: ${var_include} [out] -- Variable to store the path to the directory containing SQLite3 header files.
+#                 ${var_library} [out] -- Variable to store the full path to the SQLite3 library file(s).
+#                 ${var_found}   [out] -- Variable to indicate whether the SQLite3 package was successfully located (TRUE/FALSE).
+# Usage ........: macro_find_sqlite_package(<sqlite3-include-var> <sqlite3-library-var> <sqlite3-found-flag-var>)
+# Example ......: 
 #   macro_find_sqlite_package(SQLITE_INCLUDE SQLITE_LIB SQLITE_FOUND)
 # ---------------------------------------------------------------------------
 macro(macro_find_sqlite_package var_include var_library var_found)
@@ -172,18 +224,18 @@ macro(macro_find_sqlite_package var_include var_library var_found)
 
     include(FindSQLite3)
     if (SQLite3_FOUND)
-        set(${var_found} TRUE)
         set(${var_library} "${SQLite3_LIBRARIES}")
         set(${var_include} "${SQLite3_INCLUDE_DIRS}")
+        macro_check_module_architect("${var_library}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
     endif()
 endmacro(macro_find_sqlite_package)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_create_option
 # Purpose ....: Creates a boolean cache variable with a default value.
-# Parameters .: ${var_name}     [out]   -- Name of the boolean variable.
-#               ${var_value}    [in]    -- Default value if the variable is not yet defined.
-#               ${var_describe} [in]    -- Description of the variable for the CMake cache.
+# Parameters .: ${var_name}     [out] -- Name of the boolean variable.
+#               ${var_value}    [in]  -- Default value if the variable is not yet defined.
+#               ${var_describe} [in]  -- Description of the variable for the CMake cache.
 # Usage ......: macro_create_option(<name-var> <default-value> <describe>)
 # Example ....: macro_create_option(AREG_LOGS ON "Compile with logs")
 # ---------------------------------------------------------------------------
@@ -234,7 +286,8 @@ endmacro(macro_add_source)
 #               ${ARGN}          [in]   -- List of files, libraries, or resources to categorize.
 #
 # Usage ......: macro_parse_arguments(<sources-var> <libs-var> <resources-var> <sources-targets-resources>)
-# Example ....: macro_parse_arguments(src_files lib_targets res_files my_lib src/main.cpp src/object.cpp res/resource.rc)
+# Example ....: 
+#   macro_parse_arguments(src_files lib_targets res_files my_lib src/main.cpp src/object.cpp res/resource.rc)
 # ---------------------------------------------------------------------------
 macro(macro_parse_arguments res_sources res_libs res_resources)
     set(_list "${ARGN}")
@@ -263,15 +316,14 @@ endmacro(macro_parse_arguments)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_guess_processor_architecture
-# Purpose ....: Tries to guess the CPU architecture and bitness from the given cross-compiler.
-#               For example, if cross-compiler has "arm" in the name, it could mean that
-#               it targets 32-bit ARM processor.
+# Purpose ....: If possible, detects the processor architecture and bitness by given compiler path.
 # Parameters .: ${compiler_path}    [in]   -- Path of the cross-compiler.
 #               ${target_processor} [out]  -- Name of variable to store the CPU type.
 #               ${target_bitness}   [out]  -- Name of variable to store bitness.
 #
 # Usage ......: macro_guess_processor_architecture(<compiler-path> <processor-var> <bitness-var>)
-# Example ....: macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
+# Example ....: 
+#   macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
 # ---------------------------------------------------------------------------
 macro(macro_guess_processor_architecture compiler_path target_processor target_bitness)
     foreach(_entry "arm;${_proc_arm32};32" "aarch64;${_proc_arm64};64")
@@ -299,7 +351,8 @@ endmacro(macro_guess_processor_architecture)
 # Purpose ....: Extracts the system default bitness.
 # Parameters  : ${var_bitness} [out] -- The name of variable to set the bitness.
 # Usage ......: macro_system_bitness(<var-name>)
-# Example ....: macro_system_bitness(_sys_bitness)
+# Example ....: 
+#   macro_system_bitness(_sys_bitness)
 # ---------------------------------------------------------------------------
 macro(macro_system_bitness var_bitness)
     # Detect and set bitness here
@@ -316,66 +369,72 @@ macro(macro_system_bitness var_bitness)
 endmacro(macro_system_bitness)
 
 # ---------------------------------------------------------------------------
-# Macro ......: macro_default_target
-# Purpose ....: Based on the target processor architecture, sets the default compiler target.
-#               The compiler target also is used to set find library architecture.
-# Parameters  : ${target_processor} [in]  -- Value of the target processor.
-#               ${var_name_target}  [out] -- The name of variable to set the compiler target.
-# Usage ......: macro_default_target(<target-processor> <compiler-target-var>)
-# Example ....: macro_system_bitness(AARCH64 64 AREG_TARGET)
+# Macro .......: macro_default_target
+# Purpose .....: Configures the default compiler target based on the specified processor architecture.
+#                The configured target is also used to determine the library architecture for linking.
+# Parameters ...: ${target_processor} [in]  -- The target processor architecture (e.g., AARCH64, X86_64).
+#                 ${var_name_target}  [out] -- Variable to store the determined compiler target.
+# Usage ........: macro_default_target(<target-processor> <compiler-target-var>)
+# Example ......: 
+#   macro_default_target(AARCH64 AREG_TARGET)
 # ---------------------------------------------------------------------------
 macro(macro_default_target target_processor var_name_target)
-    if ("${target_processor}" STREQUAL "")
-        set(${var_name_target} "")
+    macro_get_processor("${target_processor}" _proc)
+    if ("${_proc}" STREQUAL "")
+        set(${var_name_target})
     elseif (UNIX)
-        if (${target_processor} MATCHES "${_proc_x64}")
+        if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} x86_64-linux-gnu)
-        elseif (${target_processor} MATCHES "${_proc_x86}")
+        elseif (${_proc} MATCHES "${_proc_x86}")
             set(${var_name_target} i386-linux-gnu)
-        elseif (${target_processor} MATCHES "${_proc_arm64}")
+        elseif (${_proc} MATCHES "${_proc_arm64}")
             set(${var_name_target} aarch64-linux-gnu)
-        elseif (${target_processor} MATCHES "${_proc_arm32}")
+        elseif (${_proc} MATCHES "${_proc_arm32}")
             set(${var_name_target} arm-linux-gnueabihf)
         endif()
     elseif (MSVC)
-        if (${target_processor} MATCHES "${_proc_x64}")
+        if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} x64)
-        elseif (${target_processor} MATCHES "${_proc_x86}")
+        elseif (${_proc} MATCHES "${_proc_x86}")
             set(${var_name_target} "win32")
         endif()
     elseif(CYGWIN)
-        if (${target_processor} MATCHES "${_proc_x64}")
+        if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} "x86_64-pc-cygwin")
-        elseif (${target_processor} MATCHES "${_proc_x86}")
+        elseif (${_proc} MATCHES "${_proc_x86}")
             set(${var_name_target} "i386-pc-cygwin")
         endif()
     endif()
 endmacro(macro_default_target)
 
 # ---------------------------------------------------------------------------
-# Macro ......: macro_setup_compilers_data
-# Purpose ....: Identifies and configures compiler family, short names, and paths.
-# Note .......: Beside "gnu", "llvm", "msvc", the GNU compilers for CYGWIN are included as a "cygwin" family.
-# Parameters .: - ${compiler_path}   [in]       -- Path to the C++ compiler.
-#               - ${var_name_family} [out]      -- Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
-#               - ${var_name_short}  [out]      -- Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
-#               - ${var_name_cxx}    [out]      -- Name of variable to hold the C++ compiler path (usually same as ${compiler_path}).
-#               - ${var_name_c}      [out]      -- Name of variable to hold the corresponding C compiler name or path.
-#               - ${var_name_target} [out]      -- Nave of variable to hold compiler target value.
-#               - ${var_name_arch}   [in, out]  -- Name of variable that contains the processor architecture value.
-#               - ${var_name_bitness}[out]      -- Name of variable to hold the application bitness value.
-#               - ${var_name_found}  [out]      -- Name of variable to hold Boolean indicating successful identification.
-# Usage ......: macro_setup_compilers_data(<compiler> <family-var[> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
-# Example ....: macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" 
-#                                           AREG_COMPILER_FAMILY 
-#                                           AREG_COMPILER_SHORT 
-#                                           AREG_CXX_COMPILER 
-#                                           AREG_C_COMPILER
-#                                           AREG_TARGET
-#                                           AREG_PROCESSOR
-#                                           AREG_BITNESS
-#                                           _compiler_supports
-#                                         )
+# Macro .......: macro_setup_compilers_data
+# Purpose .....: Detects and configures compiler attributes including family, short name, paths, 
+#                target, processor architecture, and application bitness. 
+# Note ........: In addition to "gnu", "llvm", and "msvc", GNU compilers used in CYGWIN are 
+#                categorized under the "cygwin" family.
+# Parameters ...: ${compiler_path}    [in]       -- Path to the C++ compiler.
+#                 ${var_name_family}  [out]      -- Variable to store the compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+#                 ${var_name_short}   [out]      -- Variable to store the short name of the compiler (e.g., "gcc", "clang", "cl").
+#                 ${var_name_cxx}     [out]      -- Variable to store the path to the C++ compiler (typically same as ${compiler_path}).
+#                 ${var_name_c}       [out]      -- Variable to store the corresponding C compiler name or path.
+#                 ${var_name_target}  [out]      -- Variable to store the compiler target value.
+#                 ${var_name_arch}    [in, out]  -- Variable containing the processor architecture (input) and updated with the determined architecture (output).
+#                 ${var_name_bitness} [out]      -- Variable to store the application bitness value (e.g., 32 or 64).
+#                 ${var_name_found}   [out]      -- Variable to indicate whether the compiler was successfully identified (TRUE/FALSE).
+# Usage ........: macro_setup_compilers_data(<compiler-path> <family-var> <short-var> 
+#                                            <CXX-compiler-var> <C-compiler-var> 
+#                                            <compiler-target-var> <processor-architecture-var> 
+#                                            <target-bitness-var> <found-flag-var>)
+# Example ......: macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" 
+#                                             AREG_COMPILER_FAMILY 
+#                                             AREG_COMPILER_SHORT 
+#                                             AREG_CXX_COMPILER 
+#                                             AREG_C_COMPILER 
+#                                             AREG_TARGET 
+#                                             AREG_PROCESSOR 
+#                                             AREG_BITNESS 
+#                                             _compiler_supports)
 # ---------------------------------------------------------------------------
 macro(macro_setup_compilers_data 
         compiler_path 
@@ -460,14 +519,14 @@ endmacro(macro_setup_compilers_data)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_setup_compilers_data_by_family
-# Purpose ....: Configures compiler names based on family (e.g., gnu, msvc, llvm, cygwin).
+# Purpose ....: Configures compiler names based on family (e.g., gnu, msvc, llvm, cygwin), and compiler target.
 # Note .......: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
-# Parameters .: - ${compiler_family} [in]  -- Compiler family  name (e.g., "gnu", "msvc").
-#               - ${var_name_short}  [out] -- Variable to hold the short name of the compiler (e.g., "gcc", "clang").
-#               - ${var_name_cxx}    [out] -- Variable to hold the C++ compiler name.
-#               - ${var_name_c}      [out] -- Variable to hold the corresponding C compiler name.
-#               - ${var_name_target} [out] -- Variable to hold the compiler default target name.
-#               - ${var_name_found}  [out] -- Name of variable to hold Boolean indicating successful identification.
+# Parameters .: ${compiler_family} [in]  -- Compiler family  name (e.g., "gnu", "msvc").
+#               ${var_name_short}  [out] -- Variable to hold the short name of the compiler (e.g., "gcc", "clang").
+#               ${var_name_cxx}    [out] -- Variable to hold the C++ compiler name.
+#               ${var_name_c}      [out] -- Variable to hold the corresponding C compiler name.
+#               ${var_name_target} [out] -- Variable to hold the compiler default target name.
+#               ${var_name_found}  [out] -- Name of variable to hold Boolean indicating successful identification.
 # Usage ......: macro_setup_compilers_data_by_family(<compiler-family> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)
 # Example ....: macro_setup_compilers_data_by_family("gnu"
 #                                                    AREG_COMPILER_SHORT 
@@ -603,8 +662,8 @@ endfunction(addExecutableEx)
 # Function ...: addExecutable
 # Purpose ....: Wrapper for addExecutableEx, assuming there is not list of libraries to link with.
 #               The AREG library is automatically linked, no need to specify it.
-# Parameters .: ${target_name}      -- Name of the executable to build.
-#               ${source_list}      -- List of source files used to build the executable.
+# Parameters .: ${target_name}  -- Name of the executable to build.
+#               ${source_list}  -- List of source files used to build the executable.
 # Usage ......: addExecutable(<target-name> <source-list>)
 # ---------------------------------------------------------------------------
 function(addExecutable target_name source_list)
@@ -679,8 +738,8 @@ endfunction(addStaticLibEx)
 # Purpose ....: Wrapper of addStaticLibEx, assuming there is no list of libraries to link.
 #               Creates a static library, setting sources and options, importing, 
 #               and auto-linking the AREG Framework library.
-# Parameters .: ${target_name}      -- Name of the static library to build.
-#               ${source_list}      -- List of source files to build the static library.
+# Parameters .: ${target_name}  -- Name of the static library to build.
+#               ${source_list}  -- List of source files to build the static library.
 # Usage ......: addStaticLib(<target-name> <source-list>)
 # ---------------------------------------------------------------------------
 function(addStaticLib target_name source_list)
@@ -726,8 +785,8 @@ endfunction(addStaticLibEx_C)
 # Purpose ....: Wrapper for addStaticLibEx_C, assuming there is no aliasing and 
 #               list of libraries for linking. Creates a static library compiled with C,
 #               setting sources, importing, and auto-linking the AREG Framework library.
-# Parameters .: ${target_name}      -- Name of the static library to build.
-#               ${source_list}      -- List of C-source files to build the static library.
+# Parameters .: ${target_name}  -- Name of the static library to build.
+#               ${source_list}  -- List of C-source files to build the static library.
 # Usage ......: addStaticLib_C(<target-name> <C-source-list>)
 # ---------------------------------------------------------------------------
 function(addStaticLib_C target_name source_list)
@@ -799,8 +858,8 @@ endfunction(addSharedLibEx)
 # Purpose ....: Wrapper for addSharedLibEx, assuming there is no aliasing and no list for linking.
 #               Creates a shared library with specified sources, options, imports,
 #               and auto-linking the AREG Framework library.
-# Parameters .: ${target_name}      -- Name of the shared library to build.
-#               ${source_list}      -- List of source files to build the shared library.
+# Parameters .: ${target_name}  -- Name of the shared library to build.
+#               ${source_list}  -- List of source files to build the shared library.
 # Usage ......: addSharedLib(<target-name> <source-list>)
 # ---------------------------------------------------------------------------
 function(addSharedLib target_name target_source_list)
@@ -890,7 +949,8 @@ endmacro(macro_add_service_interface)
 #               ${siml_path}        -- Path to the Service Interface document file (.siml), relative to the specified ${source_root}.
 #               ${generate_path}    -- Subdirectory path within ${AREG_GENERATE_DIR} where the generated files will be stored.
 # Usage ......: addServiceInterfaceEx(<library-name> <source-root> <service-interface-relative-path> <relative-path-to-generate-codes>)
-# Example ....: addServiceInterfaceEx(fun_library "/home/dev/project/fun/src" "fun/service/interfaces/FunService.siml" "fun/service/interfaces")
+# Example ....: 
+#   addServiceInterfaceEx(fun_library "/home/dev/project/fun/src" "fun/service/interfaces/FunService.siml" "fun/service/interfaces")
 # ---------------------------------------------------------------------------
 function(addServiceInterfaceEx lib_name source_root siml_path generate_path)
     if ("${generate_path}" STREQUAL "")
@@ -920,7 +980,8 @@ endfunction(addServiceInterfaceEx)
 # Parameters .: ${lib_name}     -- The name of the static library to be created for the Service Interface.
 #               ${siml_path}    -- The path to the Service Interface document file (.siml), relative to PROJECT_SOURCE_DIR.
 # Usage ......: addServiceInterface(<library-name> <service-interface-file-relative-path>)
-# Example ....: addServiceInterface(fun_library fun/service/interface/FunService.siml)
+# Example ....: 
+#   addServiceInterface(fun_library fun/service/interface/FunService.siml)
 # ---------------------------------------------------------------------------
 function(addServiceInterface lib_name siml_path)
     addServiceInterfaceEx(${lib_name} "${PROJECT_SOURCE_DIR}" "${siml_path}" "")
@@ -957,7 +1018,8 @@ endfunction(removeEmptyDirs)
 # Parameters .: ${lib_name}  -- Name of the static library.
 #               ${ARGN}      -- List of source files, libraries, and resources.
 # Usage ......: macro_declare_static_library(<lib-name> <sources-targets-resources>)
-# Example ....: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
+# Example ....: 
+#   macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
 macro(macro_declare_static_library lib_name)
 
@@ -990,7 +1052,8 @@ endmacro(macro_declare_static_library)
 # Parameters .: ${lib_name}  -- Name of the shared library.
 #               ${ARGN}      -- List of source files, libraries, and resources.
 # Usage ......: macro_declare_shared_library(<lib-name> <sources-targets-resources>)
-# Example ....: macro_declare_shared_library(mySharedLib src/main.cpp src/resource.rc libSomeDependency)
+# Example ....: 
+#   macro_declare_shared_library(mySharedLib src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
 macro(macro_declare_shared_library lib_name)
 
@@ -1024,7 +1087,8 @@ endmacro(macro_declare_shared_library)
 # Parameters  : ${exe_name}  -- Name of the target executable.
 #               ${ARGN}      -- List of source files, libraries, and resources.
 # Usage ......: macro_declare_executable(<executable-name> <sources-targets-resources>)
-# Example ....: macro_declare_executable(myApplication src/main.cpp src/resource.rc libSomeDependency)
+# Example ....: 
+#   macro_declare_executable(myApplication src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
 macro(macro_declare_executable exe_name)
 
