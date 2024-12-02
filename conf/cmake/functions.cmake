@@ -117,8 +117,10 @@ endmacro(macro_get_processor)
 macro(macro_check_module_architect path_module target_name target_processor var_compatible)
     message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_processor}' processor")
     # Execute the command and search for the architecture
-    set(_objdump "${target_name}-objdump")
-    if (NOT EXISTS "${_objdump}")
+    set(_prog "${target_name}-objdump")
+    find_program(_objdump NAMES ${_prog})
+    message("<<< _objdump = ${_objdump}, CMAKE_OBJDUMP = ${CMAKE_OBJDUMP}")
+    if (NOT _objdump OR NOT EXISTS "${_objdump}")
         if (NOT "${CMAKE_OBJDUMP}" STREQUAL "")
             set(_objdump "${CMAKE_OBJDUMP}")
         else()
@@ -127,35 +129,44 @@ macro(macro_check_module_architect path_module target_name target_processor var_
     endif()
 
     if (EXISTS "${path_module}" AND EXISTS "${_objdump}")
+
+        message("<<< Executing: ${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u")
+
         macro_get_processor(${target_processor} _proc _bitness _found)
         execute_process(
-            COMMAND bash -c "${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+            COMMAND bash -c "${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
             OUTPUT_VARIABLE _data
             ERROR_QUIET
         )
 
-        if (${_proc} STREQUAL "i386")
+        if (${_proc} STREQUAL ${_proc_x86})
             string(FIND "${_data}" "x86-64" _pos)
             if (_pos GREATER -1)
                 set(_pos -1)
             else()
                 string(FIND "${_data}" "i386" _pos)
             endif()
+        elseif (${_proc} STREQUAL ${_proc_x64})
+            string(FIND "${_data}" "x86-64" _pos)
+        elseif (${_proc} STREQUAL ${_proc_arm32})
+            string(FIND "${_data}" "ARM" _pos)
+        elseif (${_proc} STREQUAL ${_proc_arm64})
+            string(FIND "${_data}" "AARCH64" _pos)
         else()
-            string(FIND "${_data}" "${_srch}" _pos)
+            string(FIND "${_data}" "${_proc}" _pos)
         endif()
 
         if (_pos GREATER -1)
             set(${var_compatible} TRUE)
         else()
-            message(STATUS "AREG: >>> '${_target_module}' binary is NOT compatible with '${target_arch}' target architecture")
+            message(STATUS "AREG: >>> '${path_module}' binary is NOT compatible with '${target_processor}' target architecture")
             set(${var_compatible} FALSE)
         endif()
 
     elseif(${AREG_OS} STREQUAL Windows)
         set(${var_compatible} TRUE)
     else()
-        set(${is_compatible} FALSE)
+        set(${var_compatible} FALSE)
     endif()
 endmacro(macro_check_module_architect)
 
