@@ -115,7 +115,7 @@ macro(macro_get_processor processor_name var_processor var_bitness var_found)
 endmacro(macro_get_processor)
 
 macro(macro_check_module_architect path_module target_name target_processor var_compatible)
-    message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_arch}' processor")
+    message(STATUS "AREG: >>> Checking existing '${path_module}' binary compatibility with '${target_processor}' processor")
     # Execute the command and search for the architecture
     set(_objdump "${target_name}-objdump")
     if (NOT EXISTS "${_objdump}")
@@ -127,7 +127,7 @@ macro(macro_check_module_architect path_module target_name target_processor var_
     endif()
 
     if (EXISTS "${path_module}" AND EXISTS "${_objdump}")
-        macro_get_processor(${target_processor} _proc)
+        macro_get_processor(${target_processor} _proc _bitness _found)
         execute_process(
             COMMAND bash -c "${_objdump} -f ${_target_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
             OUTPUT_VARIABLE _data
@@ -146,14 +146,14 @@ macro(macro_check_module_architect path_module target_name target_processor var_
         endif()
 
         if (_pos GREATER -1)
-            set(${is_compatible} TRUE)
+            set(${var_compatible} TRUE)
         else()
             message(STATUS "AREG: >>> '${_target_module}' binary is NOT compatible with '${target_arch}' target architecture")
-            set(${is_compatible} FALSE)
+            set(${var_compatible} FALSE)
         endif()
 
     elseif(${AREG_OS} STREQUAL Windows)
-        set(${is_compatible} TRUE)
+        set(${var_compatible} TRUE)
     else()
         set(${is_compatible} FALSE)
     endif()
@@ -178,7 +178,7 @@ macro(macro_find_ncurses_package var_include var_library var_found)
     find_path(${var_include}    NAMES ncurses.h)
     find_library(${var_library} NAMES ncurses)
     if (${var_include} AND ${var_library})
-        macro_check_module_architect("${var_library}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
     endif()
 endmacro(macro_find_ncurses_package)
 
@@ -202,7 +202,7 @@ macro(macro_find_gtest_package var_include var_library var_found)
     if (GTest_FOUND)
         set(${var_library} "${GTEST_LIBRARIES}")
         set(${var_include} "${GTEST_INCLUDE_DIRS}")
-        macro_check_module_architect("${var_library}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
     endif()
 endmacro(macro_find_gtest_package)
 
@@ -226,7 +226,7 @@ macro(macro_find_sqlite_package var_include var_library var_found)
     if (SQLite3_FOUND)
         set(${var_library} "${SQLite3_LIBRARIES}")
         set(${var_include} "${SQLite3_INCLUDE_DIRS}")
-        macro_check_module_architect("${var_library}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
+        macro_check_module_architect("${${var_library}}" ${AREG_TARGET} ${AREG_PROCESSOR} ${var_found})
     endif()
 endmacro(macro_find_sqlite_package)
 
@@ -379,7 +379,7 @@ endmacro(macro_system_bitness)
 #   macro_default_target(AARCH64 AREG_TARGET)
 # ---------------------------------------------------------------------------
 macro(macro_default_target target_processor var_name_target)
-    macro_get_processor("${target_processor}" _proc)
+    macro_get_processor("${target_processor}" _proc _bitness _found)
     if ("${_proc}" STREQUAL "")
         set(${var_name_target})
     elseif (UNIX)

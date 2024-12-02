@@ -170,8 +170,6 @@ elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL 
         message(WARNING "AREG: >>> Unknown compiler family '${AREG_COMPILER_FAMILY}'; results may be unpredictable")
     endif()
 
-    message("<<< AREG_CXX_COMPILER = ${AREG_CXX_COMPILER}, AREG_TARGET = ${AREG_TARGET}, AREG_PROCESSOR = ${AREG_PROCESSOR}")
-
     unset(_compiler_short)
     unset(_cxx_compiler)
     unset(_c_compiler)

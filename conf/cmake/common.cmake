@@ -66,8 +66,6 @@ else()
     set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIBX32_PATHS OFF)
 endif()
 
-message("<<< CMAKE_LIBRARY_ARCHITECTURE = ${CMAKE_LIBRARY_ARCHITECTURE}, AREG_TARGET = ${AREG_TARGET}, CMAKE_CXX_COMPILER_TARGET = ${CMAKE_C_COMPILER_TARGET}")
-
 # -----------------------------------------------------
 # areg specific internal variable settings
 # -----------------------------------------------------
