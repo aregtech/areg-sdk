@@ -239,7 +239,19 @@ macro(macro_find_gtest_package var_include var_library var_found)
             endif()
         endif()
 
+        if(NOT CMAKE_PROPERTY_LIST)
+            execute_process(COMMAND cmake --help-property-list OUTPUT_VARIABLE CMAKE_PROPERTY_LIST)
+    
+            # Convert command output into a CMake list
+            string(REGEX REPLACE ";" "\\\\;" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
+            string(REGEX REPLACE "\n" ";" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
+            list(REMOVE_DUPLICATES CMAKE_PROPERTY_LIST)
+        endif()
+
+        message("<<< CMAKE_PROPERTY_LIST = ${CMAKE_PROPERTY_LIST}")
+        
         foreach(_prop ${CMAKE_PROPERTY_LIST})
+            string(REPLACE "<CONFIG>" "${CMAKE_BUILD_TYPE}" property ${_prop})
             get_property(was_set TARGET GTest::gtest PROPERTY ${_prop} SET)
             if (was_set)
                 get_target_property(_val GTest::gtest ${_prop})
