@@ -1,10 +1,10 @@
 name: MSBuild
 
-on:
-  push:         # Keep empty to run on each branch when push the code. Otherwise, use branches: [ master ]
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+#on:
+#  push:         # Keep empty to run on each branch when push the code. Otherwise, use branches: [ master ]
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
 
 env:
   # Path to the solution file relative to the root of the project.
