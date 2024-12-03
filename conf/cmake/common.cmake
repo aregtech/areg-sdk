@@ -56,6 +56,15 @@ if ("${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
 else()
     set(AREG_TARGET ${CMAKE_CXX_COMPILER_TARGET})
 endif()
+if (AREG_BITNESS EQUAL 32)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS ON)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIBX32_PATHS ON)
+else()
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS OFF)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIBX32_PATHS OFF)
+endif()
 
 # -----------------------------------------------------
 # areg specific internal variable settings
