@@ -245,7 +245,7 @@ macro(macro_find_gtest_package var_include var_library var_found)
                 get_target_property(_val GTest::gtest ${_prop})
                 message("<<< GTest::gtest: ${_prop} = ${_val}")
             endif()
-        endif()
+        endforeach()
 
 
         if (EXISTS "${_gtest_location}")
