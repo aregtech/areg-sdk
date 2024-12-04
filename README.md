@@ -153,15 +153,27 @@ The **AREG SDK** is written in **C++17**, supports multiple platforms, processor
 | Compiler  | Platforms     | Tools         | API           | CPU Architecture          |
 |-----------|---------------|---------------|---------------|---------------------------|
 | GNU       | Linux, macOS  | CMake         | POSIX         | x86, x86_64, ARM, AARCH64 |
-| Clang     | Linux, Windows| CMake, MSVS   | POSIX, Win32  | x86, x86_64               |
+| Clang     | Linux, Windows| CMake, MSVS   | POSIX, Win32  | x86, x86_64, ARM, AARCH64 |
 | MSVC      | Windows       | CMake, MSVS   | Win32         | x86, x86_64               |
 | Cygwin GNU| Windows       | CMake         | POSIX         | x86, x86_64               |
 
 For detailed build instructions, check the **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)** or **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** pages.
 
-
 > [!NOTE] 
 > Other POSIX-compliant operating systems and compilers have not been tested yet.
+
+**General Requirements**: Ensure your system includes the following:
+- **CMake** (version 3.20+)
+- **Git** for repository cloning
+- **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer
+- **Java** (version 17+ for code generation tools)
+
+**Platform-Specific Requirements**:
+- **Linux**: Install optional **ncurses** required by `aregextend` library when build with extended objects (option `AREG_EXTEMDED=ON`).
+- **Windows**: Requires Microsoft Visual C++, including packages **CMake** and **CLang compiler for Windows**, and **MFC** for GUI examples.
+- **Optional Libraries**:
+  - **Google Test (GTest)** for unit tests (or build from sources).
+  - **SQLite3** (optional, or use the version in AREG SDK's `thirdparty` directory).
 
 #### Build with CMake
 

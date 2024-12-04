@@ -19,10 +19,12 @@ This guide provides step-by-step instructions for building the **AREG SDK** on L
      - [Run Unit Tests:](#run-unit-tests)
      - [Install AREG SDK:](#install-areg-sdk)
 3. [Cross-Compiling AREG SDK](#3-cross-compiling-areg-sdk)
+   - [Supported Compilers,[ Platforms, and Architectures](#supported-compilers-platforms-and-architectures)
    - [Cross-Compiling for 32-bit Systems](#cross-compiling-for-32-bit-systems)
    - [Cross-Compiling for ARM Processors](#cross-compiling-for-arm-processors)
    - [Cross-Compiling for AARCH64 (64-bit ARM)](#cross-compiling-for-aarch64-64-bit-arm)
 4. [Additional IDE Configurations](#4-additional-ide-configurations)
+5. [Troubleshooting](#5-Troubleshooting)
 
 ---
 
@@ -143,22 +145,39 @@ Install AREG SDK binaries and headers to develop multithreaded and multiprocessi
 
 ## 3. Cross-Compiling AREG SDK
 
-Cross-compiling allows building applications for architectures different from the native environment. Here are instructions for configuring AREG SDK to compile for 32-bit systems, as well as ARM and AARCH64 (64-bit ARM) processors.
+Cross-compiling enables building applications for architectures different from the native environment. Below are instructions for configuring AREG SDK to target 32-bit systems, as well as ARM and AARCH64 (64-bit ARM) processors.
 
-**Supported Compilers, Platforms and Architectures**
-| Compiler  | Platform      |API            | CPU Architecture          |
-|-----------|---------------|---------------|---------------------------|
-| GNU       | Linux, macOS  | POSIX         | x86, x86_64, arm, aarch64 |
-| Clang     | Linux, Windows| POSIX, Win32  | x86, x86_64               |
-| MSVC      | Windows       | Win32         | x86, x86_64               |
-| Cygwin GNU| Windows       | POSIX         | x86, x86_64               |
+### Supported Compilers, Platforms, and Architectures
 
-> [!IMPORTANT]  
-> The AREG SDK itself does not require any external libraries. However, the extended library, `aregextend`, may have dependencies. When cross-compiling, it is recommended to set `AREG_EXTENDED` to `OFF` if you are unsure whether all required libraries are available for the target platform. Alternatively, ensure that dependencies such as `ncurses` or `sqlite3` (if the SQLite3 package is used) are accessible for the target. Otherwise, the build of AREG SKD sources will fail.
+| **Compiler** | **Platform**    | **API**        | **CPU Architecture**      |
+|--------------|-----------------|----------------|---------------------------|
+| GNU          | Linux, macOS    | POSIX          | x86, x86_64, arm, aarch64 |
+| Clang        | Linux, Windows  | POSIX, Win32   | x86, x86_64, arm, aarch64 |
+| MSVC         | Windows         | Win32          | x86, x86_64               |
+| Cygwin GNU   | Windows         | POSIX          | x86, x86_64               |
+
+> [!NOTE]
+> Compilation with **Clang** compiler for all specified processors where tested only under Linux platform.
+
+**Important Notes**
+
+- **Dependencies:**  
+  While the core AREG SDK has no external dependencies, the extended library `aregextend` may require additional libraries. When cross-compiling, consider the following:  
+  - If unsure about the availability of required libraries on the target platform, set `AREG_EXTENDED` to `OFF`:
+    ```bash
+    cmake -DAREG_EXTENDED=OFF <source-dir>
+    ```
+  - Ensure that dependencies like `ncurses` or `sqlite3` (if SQLite3 is used) are available for the target platform. Missing dependencies will cause the build to fail.  
+
+- **Binary Compatibility:**  
+  Use the `macro_check_module_architect` macro in your CMake script to validate the compatibility of dependent libraries with the target processor architecture. Provide the full path to the library (static or shared), the target name, and the processor architecture as arguments. For detailed usage, see the [macro_check_module_architect documentation](./02b-cmake-functions.md#macro_check_module_architect).
+
+> [!TIP]
+> To simplify cross-compilation, create or use pre-existing toolchain files. Examples of toolchain files are available in the [toolchain directory](../../conf/export/example/toolchains/) for reference. These files help configure the compiler and architecture settings for the desired target platform.
 
 ### Cross-Compiling for 32-bit Systems
 
-To compile AREG SDK for a 32-bit system, you need to specify the target bitness and ensure you have the correct 32-bit libraries installed.
+To compile AREG SDK for a 32-bit system, you need to specify the target processor and ensure you have the correct 32-bit libraries installed.
 
 **Steps**
 
@@ -173,7 +192,7 @@ To compile AREG SDK for a 32-bit system, you need to specify the target bitness 
   ```
 3. **Build AREG SDK**
   ```bash
-  cmake --build ./build -j 20
+  cmake --build ./build -j20
   ```
 
 To verify that a binary is 32-bit, navigate to the build directory and run:
@@ -259,3 +278,11 @@ For **Microsoft Visual Studio** or **Visual Studio Code**:
 
 **Further Resources**:
 For additional setup information, refer to [Visual Studio CMake Projects](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio) or [VS Code CMake Quickstart](https://code.visualstudio.com/docs/cpp/cmake-quickstart).
+
+---
+
+## 5. Troubleshooting
+
+If you have difficulties to compile AREG SDK binaries or integrate in your project, refer to the [Troubleshooting CMake Builds on Linux](./07b-troubleshooting-cmake-linux-builds.md) or [Integration Troubleshooting](./07c-troubleshooting-integration.md) documents. If your problem is not listed or you could not solve the problem, open a [topic for discussion](https://github.com/aregtech/areg-sdk/discussions) at `areg-sdk` repository.
+
+---

@@ -15,6 +15,12 @@ This guide provides solutions for common issues encountered when integrating the
    - [Solution 2: Explicitly Specify C and C++ Compilers](#solution-2-explicitly-specify-c-and-c-compilers)
    - [Solution 3: Use Prebuilt Toolchain-Compatible Libraries](#solution-3-use-prebuilt-toolchain-compatible-libraries)
    - [Solution 4: Cross-Compilation Toolchain File](#solution-4-cross-compilation-toolchain-file)
+3. [Issue 3: Error Message `File wrong format`](#issue-3-error-message-file-wrong-format)
+   - [Solution 1: Set the Correct Compiler Target](#solution-1-set-the-correct-compiler-target)
+   - [Solution 2: Use `macro_check_module_architect` to Verify Compatibility](#solution-2-use-macro_check_module_architect-to-verify-compatibility)
+   - [Solution 3: Control Library Search Order](#solution-3-control-library-search-order)
+   - [Solution 4: Verify the Library Path](#solution-4-verify-the-library-path)
+   - [Solution 5: Use Toolchain Files](#solution-5-use-toolchain-files)
 
 ---
 
@@ -102,14 +108,17 @@ cmake --build ./build -j20
 
 Define a cross-compilation environment using a dedicated CMake toolchain file. Example (`toolchain-arm.cmake`):
 ```cmake
-set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR arm)
-set(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)
-set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
-set(CMAKE_FIND_ROOT_PATH /path/to/sysroot)
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_SYSTEM_NAME Linux)                        # Specify platform
+set(CMAKE_SYSTEM_PROCESSOR arm)                     # Specify processor architecture
+set(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)       # Specify C-compiler
+set(CMAKE_C_COMPILER_TARGET arm-linux-gnueabihf)    # Specify C-target
+set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)     # Specify C++-compiler
+set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)  # Specify C++-target
+set(CMAKE_FIND_ROOT_PATH /path/to/sysroot)          # This is normally path "/usr"
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)        # Find modes, see CMake docs for details.
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_LIBRARY_ARCHITECTURE arm-linux-gnueabihf) # Specify the library architecture to search packages
 ```
 
 Use the toolchain file during configuration:
@@ -118,5 +127,54 @@ cmake -B ./product/cache/gnu-arm32 -DCMAKE_TOOLCHAIN_FILE=toolchain-arm.cmake
 ```
 
 This approach provides a consistent cross-compilation environment and minimizes errors.
+
+> [!TIP]
+> Working examples of toolchain files you can find in the [`toolchains`](../../conf/exports/example/toolchains/) directory or visit [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository.
+
+---
+
+## Issue 3: Error Message `File wrong format`
+
+This error occurs when `find_package()` or `find_library()` successfully locates a library, but the library is incompatible with the target platform. For example, this issue arises when the build target is set for the `i386` processor architecture, but the located library is built for `x86_64`.
+
+By applying these solutions, you can resolve the `File wrong format` error and ensure your build uses libraries that are compatible with the specified target platform.
+
+### Solution 1: Set the Correct Compiler Target
+
+Ensure that the `CMAKE_CXX_COMPILER_TARGET` or `AREG_TARGET` variables are configured to match the desired processor architecture:  
+```bash
+cmake -DAREG_TARGET=i386-linux-gnu <source-dir>
+```
+
+### Solution 2: Use `macro_check_module_architect` to Verify Compatibility  
+
+In your CMake script, use the `macro_check_module_architect` macro from the `functions.cmake` file to verify the architecture of the located library before linking:  
+```cmake
+macro_check_module_architect("/path/to/library.so" ${AREG_TARGET} ${AREG_PROCESSOR} _is_compatible)
+if (_is_compatible)
+    target_link_libraries(my_target "/path/to/library.so")
+else()
+    message(FATAL_ERROR "Incompatible library detected for target architecture")
+endif()
+```
+
+### Solution 3: Control Library Search Order  
+
+Restrict the library search scope using the `NO_DEFAULT_PATH` option in `find_package()` or `find_library()` to ensure only compatible libraries are located:  
+```cmake
+find_library(MyLib mylib PATHS /path/to/compatible/libs NO_DEFAULT_PATH)
+```
+
+### Solution 4: Verify the Library Path
+
+Ensure that the correct version of the library is being linked by explicitly specifying the library path.  
+Use the `CMAKE_PREFIX_PATH` variable to define the directory containing the compatible libraries:  
+```bash
+cmake -DCMAKE_PREFIX_PATH=/path/to/compatible/libs <source-dir>
+```
+
+### Solution 5: Use Toolchain Files
+
+When cross-compiling, leverage toolchain files to enforce the correct target architecture. These files help define essential compiler and architecture settings. Refer to example [toolchain files](../../conf/exports/example/toolchains/) or visit the [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository for guidance.
 
 ---
