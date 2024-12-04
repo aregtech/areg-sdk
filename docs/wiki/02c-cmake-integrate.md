@@ -7,7 +7,7 @@ This guide covers how to integrate the **AREG Framework** into an existing proje
 3. **Add AREG SDK as a Git submodule** to your project.
 
 > [!TIP]
-> For a practical example of integrating AREG SDK libraries and tools, see the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
+> For a practical example of integrating and cross-compiling AREG SDK libraries and tools, see the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
 
 ## Table of Contents
 1. [AREG SDK General Requirements](#1-areg-sdk-general-requirements)
@@ -20,6 +20,7 @@ This guide covers how to integrate the **AREG Framework** into an existing proje
 5. [Advanced Integration](#5-advanced-integration)
    - [Advanced CMake Options](#advanced-cmake-options)
    - [Advanced CMake Functions](#advanced-cmake-functions)
+   - [Cross-compiling with CMake](#cross-compiling-with-cmake)
 6. [Conclusion](#6-conclusion)
 
 ---
@@ -269,6 +270,16 @@ macro_declare_executable(cool coolservice main.cpp)
 ```
 
 See [AREG SDK CMake Functions and Macros](./02b-cmake-functions.md) for details.
+
+### Cross-Compiling with CMake
+
+To cross-compile sources with AREG SDK, you can use CMake toolchain files. These files define CMake-specific values that influence AREG SDK's compile settings. For instance, specifying `CMAKE_CXX_COMPILER` or `CMAKE_CXX_COMPILER_TARGET` will automatically set the corresponding `AREG_COMPILER` and `AREG_TARGET` values.
+
+You can find example toolchain files in the [`toolchains`](../../conf/exports/example/toolchains/) directory of in the [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository. An example of using toolchain file:
+```bash
+cmake -B ./product/cache/gnu-linux-arm32 -DCMAKE_TOOLCHAIN_FILE=/full/path/to/gnu-linux-arm32.cmake
+cmake --build ./product/cache/gnu-linux-arm32 -j20
+```
 
 ---
 

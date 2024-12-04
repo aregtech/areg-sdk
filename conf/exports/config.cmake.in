@@ -5,6 +5,14 @@ include(CMakeFindDependencyMacro)
 # Set AREG SDK essentials
 # ##################################################
 
+# Set C and CXX compiler targets
+if (NOT DEFINED CMAKE_CXX_COMPILER_TARGET OR "${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
+    set(CMAKE_CXX_COMPILER_TARGET @CMAKE_CXX_COMPILER_TARGET@)
+endif()
+if (NOT DEFINED CMAKE_C_COMPILER_TARGET OR "${CMAKE_C_COMPILER_TARGET}" STREQUAL "")
+    set(CMAKE_C_COMPILER_TARGET   @CMAKE_C_COMPILER_TARGET@)
+endif()
+
 # Root folder of the SDK
 set(AREG_SDK_ROOT           "@CMAKE_INSTALL_PREFIX@")
 # Location of 'areg', 'aregextend' and 'areglogger' header files
@@ -20,7 +28,7 @@ set(AREG_SDK_TOOLS          "@CMAKE_INSTALL_PREFIX@/tools/@AREG_PACKAGE_NAME@")
 # Location of the AREG SDK code generator
 set(AREG_TOOL_CODEGEN       "${AREG_SDK_TOOLS}/codegen.jar")
 # Full path to 'areg.cmake' to include in projects
-set(AREG_CMAKE_EXPORTS      "${AREG_CMAKE_CONFIG_DIR}/areg.cmake")
+set(AREG_CMAKE_EXPORTS      "${AREG_SDK_ROOT}/areg.cmake")
 
 # The build type of AREG libraries.
 set(AREG_BUILD_TYPE         @AREG_BUILD_TYPE@)
@@ -64,10 +72,10 @@ option(AREG_BUILD_EXAMPLES  "No AREG Examples"      OFF)
 # set to 'CMAKE_CURRENT_BINARY_DIR' if it should be in the compiled binaries directory
 set(AREG_BUILD_ROOT         "${CMAKE_SOURCE_DIR}/product")
 
-# Add '${AREG_FRAMEWORK}' path in the includes
-include_directories(${AREG_FRAMEWORK})
-# Pass the path to the shared 'areg.init' file to the source codes.
-
+# initialize SQLite3 library reference and type
+set(AREG_SQLITE_LIB_REF @AREG_SQLITE_LIB_REF@)
+set(AREG_SQLITE_LIB     @AREG_SQLITE_LIB@)
+add_definitions(-DUSE_SQLITE_PACKAGE=@USE_SQLITE_PACKAGE@)
 # Pass path to the 'areg.init' file as a preprocessor definition
 add_definitions(-DAREG_SHARE_INIT="${AREG_SHARE_INIT}")
 
@@ -99,10 +107,6 @@ else()
     add_definitions(-DAREG_LOGS=0)
 endif()
 
-set(AREG_SQLITE_LIB_REF @AREG_SQLITE_LIB_REF@)
-set(AREG_SQLITE_LIB     @AREG_SQLITE_LIB@)
-add_definitions(-DUSE_SQLITE_PACKAGE=@USE_SQLITE_PACKAGE@)
-
 # Set the Platform API and the platform bitness.
 if (AREG_DEVELOP_ENV STREQUAL "Win32")
     add_definitions(-DWINDOWS -DWIN32)
@@ -118,3 +122,6 @@ if (AREG_BITNESS EQUAL 32)
 else()
     add_definitions(-DBIT64)
 endif()
+
+# Add '${AREG_FRAMEWORK}' path in the includes
+include_directories(${AREG_FRAMEWORK})

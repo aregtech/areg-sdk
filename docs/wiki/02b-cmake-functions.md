@@ -8,18 +8,23 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file in AREG SDK conta
 2. [CMake Macro Overview](#2-cmake-macro-overview)
    - [`macro_check_fix_areg_cxx_standard`](#macro_check_fix_areg_cxx_standard)
    - [`macro_normalize_path`](#macro_normalize_path)
-   - [`macro_add_service_interface`](#macro_add_service_interface)
+   - [`macro_get_processor`](#macro_get_processor)
+   - [`macro_check_module_architect`](#macro_check_module_architect)
+   - [`macro_find_ncurses_package`](#macro_find_ncurses_package)
+   - [`macro_find_gtest_package`](#macro_find_gtest_package)
+   - [`macro_find_sqlite_package`](#macro_find_sqlite_package)
    - [`macro_create_option`](#macro_create_option)
    - [`macro_add_source`](#macro_add_source)
    - [`macro_parse_arguments`](#macro_parse_arguments)
+   - [`macro_guess_processor_architecture`](#macro_guess_processor_architecture)
+   - [`macro_system_bitness`](#macro_system_bitness)
+   - [`macro_default_target`](#macro_default_target)
+   - [`macro_setup_compilers_data`](#macro_setup_compilers_data)
+   - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
+   - [`macro_add_service_interface`](#macro_add_service_interface)
    - [`macro_declare_static_library`](#macro_declare_static_library)
    - [`macro_declare_shared_library`](#macro_declare_shared_library)
    - [`macro_declare_executable`](#macro_declare_executable)
-   - [`macro_setup_compilers_data`](#macro_setup_compilers_data)
-   - [`macro_setup_compilers_data_by_family`](#macro_setup_compilers_data_by_family)
-   - [`macro_guess_processor_architecture`](#macro_guess_processor_architecture)
-   - [`macro_system_bitness`](#macro_system_bitness)
-   - [`macro_get_processor`](#macro_get_processor)
 3. [CMake Functions Overview](#3-cmake-functions-overview)
    - [`setAppOptions`](#setappoptions)
    - [`addExecutableEx`](#addexecutableex)
@@ -64,21 +69,79 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
   - `normal_path` [out]: Name of variable to hold normalized path.
   - `os_path` [in]: The Windows-specific path to normalize.
 - **Usage**: `macro_normalize_path(<out-var> <windows-path>)`
-
-### `macro_add_service_interface`
-- **Syntax**: `macro_add_service_interface(lib_name interface_doc codegen_root output_path codegen_tool)`
-- **Purpose**: Generates and adds service-specific files to a static library based on a given Service Interface document (`*.siml`).
-- **Parameters**:
-  - `lib_name` [in]: Name of the static library.
-  - `interface_doc` [in]: Full path to the Service Interface document file (`.siml`).
-  - `codegen_root` [in]: Root directory for file generation.
-  - `output_path` [in]: Relative path from `${codegen_root}` to the directory where generated files will be placed.
-  - `codegen_tool` [in]: Full path to the code generation tool (`codegen.jar`) used to generate the necessary source and header files.
-- **Usage**: `macro_add_service_interface(<library-name> <full-path-to-siml> <codegen-root> <relative-output-path> <codegen-tool-path>)`
 - **Example**:
-   ```cmkae
-   macro_add_service_interface(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
-   macro_add_service_interface(funlib "/home/dev/fun/src/service/WeHaveFun.siml"  "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
+   ```cmake
+   macro_normalize_path(_norm_path "c:\path\to\my\directory")
+   ```
+
+### `macro_get_processor`
+- **Syntax**: `macro_get_processor(processor_name var_processor var_bitness var_found)`
+- **Purpose**: Detects and validates a processor architecture from an input name. Matches the provided name against a predefined list of supported architectures and retrieves: the canonical architecture name, the bitness (32-bit or 64-bit).
+- **Parameters**:
+  - `processor_name` [in]: The input processor architecture name to validate.
+  - `var_processor` [out]: The canonical name of the processor architecture (if supported).
+  - `var_bitness` [out]: The bitness (32/64) of the processor.
+  - `var_found` [out]: Boolean flag indicating whether the processor is supported (TRUE/FALSE).
+- **Usage**: `macro_get_processor(<processor_name> <var_processor> <var_bitness> <var_found>)`
+- **Example**:
+   ```cmake
+   macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
+   ```
+
+### `macro_check_module_architect`
+- **Syntax**: `macro_check_module_architect(path_module target_name target_proc var_compatible)`
+- **Purpose**: Validates whether a given binary module (executable or library) matches the specified processor architecture. The validation uses object dumping tools to analyze the module. Typically, this macro is invoked after identifying a package or library..
+- **Parameters**:
+  - `path_module` [in]: Full path to the binary module (executable, shared, or static library).
+  - `target_name` [in]: Target name, typically the same as AREG_TARGET
+  - `target_proc` [in]: Target processor architecture to validate.
+  - `var_compatible` [out]: Boolean variable set to TRUE if the binary is compatible with the target processor, FALSE otherwise.
+- **Usage**: `macro_check_module_architect(<path_to_binary> <target_name> <target_processor> <output_compatibility_var>)`
+- **Example**:
+   ```cmake
+   find_library(_library NAMES ncurses)
+   if (_library)
+       macro_check_module_architect("${_library}" ${AREG_TARGET} ${AREG_PROCESSOR} _found)
+   endif()
+   ```
+
+### `macro_find_ncurses_package`
+- **Syntax**: `macro_find_ncurses_package(var_include var_library var_found)`
+- **Purpose**: Locates the 'ncurses' library and its associated header files on the system. Sets output variables with the include directory and library path if found.
+- **Parameters**:
+  - `var_include` [out]: Variable to store the path to the directory containing the 'ncurses.h' header file.
+  - `var_library` [out]: Variable to store the full path to the 'ncurses' library file.
+  - `var_found` [out]: Variable to indicate whether the 'ncurses' library and headers were successfully located (TRUE/FALSE).
+- **Usage**: `macro_find_ncurses_package(<ncurses-include-var> <ncurses-library-var> <found-flag-var>)`
+- **Example**:
+   ```cmake
+   macro_find_ncurses_package(NCURSES_INCLUDE NCURSES_LIB NCURSES_FOUND)
+   ```
+
+### `macro_find_gtest_package`
+- **Syntax**: `macro_find_gtest_package(var_include var_library var_found)`
+- **Purpose**: Locates the Google Test (GTest) package, including its header files and libraries. Sets output variables with the include directory and library paths if found.
+- **Parameters**:
+  - `var_include` [out]: Variable to store the path to the directory containing GTest header files.
+  - `var_library` [out]: Variable to store the full paths to the GTest libraries.
+  - `var_found` [out]: Variable to indicate whether the GTest package was successfully located (TRUE/FALSE).
+- **Usage**: `macro_find_gtest_package(<gtest-include-var> <gtest-library-var> <gtest-found-flag-var>)`
+- **Example**:
+   ```cmake
+   macro_find_gtest_package(GTEST_INCLUDE GTEST_LIB GTEST_FOUND)
+   ```
+
+### `macro_find_sqlite_package`
+- **Syntax**: `macro_find_sqlite_package(var_include var_library var_found)`
+- **Purpose**: Locates the SQLite3 package, including its header files and libraries. Sets output variables with the include directory and library paths if found.
+- **Parameters**:
+  - `var_include` [out]: Variable to store the path to the directory containing SQLite3 header files.
+  - `var_library` [out]: Variable to store the full path to the SQLite3 library file(s).
+  - `var_found` [out]: Variable to indicate whether the SQLite3 package was successfully located (TRUE/FALSE).
+- **Usage**: `macro_find_sqlite_package(<sqlite3-include-var> <sqlite3-library-var> <sqlite3-found-flag-var>)`
+- **Example**:
+   ```cmake
+   macro_find_sqlite_package(SQLITE_INCLUDE SQLITE_LIB SQLITE_FOUND)
    ```
 
 ### `macro_create_option`
@@ -125,6 +188,104 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
    macro_parse_arguments(src_files lib_targets res_files my_lib src/main.cpp src/object.cpp res/resource.rc)
    ```
 
+### `macro_guess_processor_architecture`
+- **Syntax**: `macro_guess_processor_architecture(compiler_path target_processor target_bitness)`
+- **Purpose**: If possible, detects the processor architecture and bitness by given compiler path.
+- **Parameters**:
+  - `compiler_path` [in] : Compiler path.
+  - `target_processor` [out]: Name of variable to set the CPU architecture value.
+  - `target_bitness` [out]: Name of variable to set the CPU bitness value.
+- **Usage**: `macro_guess_processor_architecture(<compiler-path> <processor-var> <bitness-var>)`
+- **Example**:
+   ```cmake
+   macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
+   ```
+
+### `macro_system_bitness`
+- **Syntax**: `macro_system_bitness(var_bitness)`
+- **Purpose**: Extracts the system default bitness. Sets in variable value `32` for 32-bit, or `64` for 64-bit system.
+- **Parameters**:
+  - `var_bitness` [out]: Name of variable to set the system bitness.
+- **Usage**: `macro_system_bitness(<var-name>)`
+- **Example**:
+   ```cmake
+   macro_system_bitness(_sys_bitness)
+   ```
+
+### `macro_default_target`
+- **Syntax**: `macro_default_target(target_processor var_name_target)`
+- **Purpose**: Configures the default compiler target based on the specified processor architecture. The configured target is also used to determine the library architecture for linking.
+- **Parameters**:
+  - `target_processor` [in]: The target processor architecture (e.g., AARCH64, X86_64).
+  - `var_name_target` [out]: Variable to store the determined compiler target.
+- **Usage**: `macro_default_target(<target-processor> <compiler-target-var>)`
+- **Example**:
+  ```cmake
+   macro_default_target(AARCH64 AREG_TARGET)
+   ```
+
+### `macro_setup_compilers_data`
+- **Syntax**: `macro_setup_compilers_data(compiler_path compiler_family compiler_short compiler_cxx compiler_c var_name_target var_name_arch var_name_bitness is_identified)`
+- **Purpose**: Identifies and configures compiler family, short names, and paths.
+- **Note**: Beside "gnu", "llvm", "msvc", the GNU compilers for CYGWIN are included as a "cygwin" family.
+- **Parameters**:
+  - `compiler_path` [in]: Path to the C++ compiler.
+  - `compiler_family` [out]: Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+  - `compiler_short` [out]: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
+  - `compiler_cxx` [out]: Name of variable to hold C++ compiler name, usually same as `compiler_path`.
+  - `compiler_c` [out]: Name of variable to hold C compiler path.
+  - `var_name_target` [out]: Nave of variable to hold compiler target value.
+  - `var_name_arch` [in, out]: Name of variable that contains the processor architecture value.
+  - `var_name_bitness` [out]: Name of variable to hold the application bitness value.
+  - `is_identified` [out]: Name of variable to hold Boolean indicating successful identification.
+- **Usage**: `macro_setup_compilers_data(<compiler-path> <family-var> <short-var> <CXX-compiler-var> <C-compiler-var> <compiler-target-var> <processor-architecture-var> <target-bitness-var> <found-flag-var>)`
+- **Example**:
+   ```cmake
+   macro_setup_compilers_data("${CMAKE_CXX_COMPILER}"
+                              AREG_COMPILER_FAMILY 
+                              AREG_COMPILER_SHORT 
+                              AREG_CXX_COMPILER 
+                              AREG_C_COMPILER 
+                              AREG_TARGET 
+                              AREG_PROCESSOR 
+                              AREG_BITNESS 
+                              _compiler_supports)
+
+   ```
+
+### `macro_setup_compilers_data_by_family`
+- **Syntax**: `macro_setup_compilers_data_by_family(compiler_family compiler_short compiler_cxx compiler_c is_identified)`
+- **Purpose**: Configures compiler names based on family (e.g., gnu, msvc, llvm, cygwin).
+- **Note**: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
+- **Parameters**:
+  - `compiler_family` [in]: Compiler family name (e.g., "gnu", "msvc").
+  - `compiler_short` [out]: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
+  - `compiler_cxx` [out]: Name of variable to hold C++ compiler path.
+  - `compiler_c` [out]: Name of variable to hold C compiler path.
+  - `var_name_target` [out]: Variable to hold the compiler default target name.
+  - `is_identified` [out]: Name of variable to hold Boolean indicating successful identification.
+- **Usage**: `macro_setup_compilers_data_by_family(<compiler-family> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
+- **Example**:
+   ```cmake
+   macro_setup_compilers_data_by_family("gnu" AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER AREG_TARGET _is_identified)
+   ```
+
+### `macro_add_service_interface`
+- **Syntax**: `macro_add_service_interface(lib_name interface_doc codegen_root output_path codegen_tool)`
+- **Purpose**: Generates and adds service-specific files to a static library based on a given Service Interface document (`*.siml`).
+- **Parameters**:
+  - `lib_name` [in]: Name of the static library.
+  - `interface_doc` [in]: Full path to the Service Interface document file (`.siml`).
+  - `codegen_root` [in]: Root directory for file generation.
+  - `output_path` [in]: Relative path from `${codegen_root}` to the directory where generated files will be placed.
+  - `codegen_tool` [in]: Full path to the code generation tool (`codegen.jar`) used to generate the necessary source and header files.
+- **Usage**: `macro_add_service_interface(<library-name> <full-path-to-siml> <codegen-root> <relative-output-path> <codegen-tool-path>)`
+- **Example**:
+   ```cmkae
+   macro_add_service_interface(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
+   macro_add_service_interface(funlib "/home/dev/fun/src/service/WeHaveFun.siml"  "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
+   ```
+
 ### `macro_declare_static_library`
 - **Syntax**: `macro_declare_static_library(lib_name ...)`
 - **Purpose**: Declares a static library with categorized sources, libraries, and resources using **[macro_parse_arguments](#macro_parse_arguments)**.
@@ -159,79 +320,6 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Example**:
    ```cmake
    macro_declare_executable(myApplication src/main.cpp src/resource.rc libSomeDependency)
-   ```
-
-### `macro_setup_compilers_data`
-- **Syntax**: `macro_setup_compilers_data(compiler_path compiler_family compiler_short compiler_cxx compiler_c is_identified)`
-- **Purpose**: Identifies and configures compiler family, short names, and paths.
-- **Note**: Beside "gnu", "llvm", "msvc", the GNU compilers for CYGWIN are included as a "cygwin" family.
-- **Parameters**:
-  - `compiler_path` [in]: Path to the C++ compiler.
-  - `compiler_family` [out]: Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
-  - `compiler_short` [out]: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
-  - `compiler_cxx` [out]: Name of variable to hold C++ compiler name, usually same as `compiler_path`.
-  - `compiler_c` [out]: Name of variable to hold C compiler path.
-  - `is_identified` [out]: Name of variable to hold Boolean indicating successful identification.
-- **Usage**: `macro_setup_compilers_data(<compiler> <family-var> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
-- **Example**:
-   ```cmakr
-   macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _is_identified)
-   ```
-
-### `macro_setup_compilers_data_by_family`
-- **Syntax**: `macro_setup_compilers_data_by_family(compiler_family compiler_short compiler_cxx compiler_c is_identified)`
-- **Purpose**: Configures compiler names based on family (e.g., gnu, msvc, llvm, cygwin).
-- **Note**: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
-- **Parameters**:
-  - `compiler_family` [in]: Compiler family name (e.g., "gnu", "msvc").
-  - `compiler_short` [out]: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
-  - `compiler_cxx` [out]: Name of variable to hold C++ compiler path.
-  - `compiler_c` [out]: Name of variable to hold C compiler path.
-  - `is_identified` [out]: Name of variable to hold Boolean indicating successful identification.
-- **Usage**: `macro_setup_compilers_data_by_family(<compiler-family> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
-- **Example**:
-   ```cmake
-   macro_setup_compilers_data_by_family("gnu" AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _is_identified)
-   ```
-
-### `macro_guess_processor_architecture`
-- **Syntax**: `macro_guess_processor_architecture(compiler_path target_processor target_bitness)`
-- **Purpose**: If possible, detects the processor architecture and bitness by given compiler path.
-- **Parameters**:
-  - `compiler_path` [in] : Compiler path.
-  - `target_processor` [out]: Name of variable to set the CPU architecture value.
-  - `target_bitness` [out]: Name of variable to set the CPU bitness value.
-- **Usage**: `macro_guess_processor_architecture(<compiler-path> <processor-var> <bitness-var>)`
-- **Example**:
-   ```cmake
-   macro_guess_processor_architecture("arm-linux-gnueabihf-g++" cpu_architect cpu_bitness)
-   ```
-
-### `macro_system_bitness`
-- **Syntax**: `macro_system_bitness(var_bitness)`
-- **Purpose**: Extracts the system default bitness. Sets in variable value `32` for 32-bit, or `64` for 64-bit system.
-- **Parameters**:
-  - `var_bitness` [out]: Name of variable to set the system bitness.
-- **Usage**: `macro_system_bitness(<var-name>)`
-- **Example**:
-   ```cmake
-   macro_system_bitness(_sys_bitness)
-   ```
-
-### `macro_get_processor`
-- **Syntax**: `macro_get_processor(processor_name var_processor var_bitness var_found)`
-- **Purpose**: Identifies and validates the processor architecture based on a provided name. If a match is found in the supported processor list, it extracts:
-  - The canonical architecture name.
-  - The bitness (e.g., 32 or 64 bits).
-- **Parameters**:
-  - `processor_name` [in]: Input processor architecture name to search for.
-  - `var_processor` [out]: Variable to store the canonical processor architecture name.
-  - `var_bitness`   [out]: Variable to store the bitness (32/64) of the processor.
-  - `var_found`     [out]: Variable to indicate if the processor is supported (TRUE/FALSE).
-- **Usage**: `macro_get_processor(<processor-name> <var_processor> <var_bitness> <var_entry_found>)`
-- **Example**:
-   ```cmake
-   macro_get_processor("arm64" AREG_PROCESSOR AREG_BITNESS _entry_found)
    ```
 
 ---

@@ -15,25 +15,26 @@ The following is the list of AREG SDK specific options that needs to be set befo
 
 1. [AREG_COMPILER_FAMILY](#1-areg_compiler_family)
 2. [AREG_COMPILER](#2-areg_compiler)
-3. [AREG_PROCESSOR](#3-areg_processor) 
-4. [AREG_BINARY](#4-areg_binary)
-5. [AREG_LOGGER_BINARY](#5-areg_logger_binary)
-6. [AREG_BUILD_TYPE](#6-areg_build_type)
-7. [AREG_BUILD_TESTS](#7-areg_build_tests)
-8. [AREG_BUILD_EXAMPLES](#8-areg_build_examples)
-9. [AREG_EXTENDED](#9-areg_extended)
-10.[AREG_LOGS](#10-areg_logs)
-11. [AREG_USE_PACKAGES](#11-areg_use_packages)
-12. [AREG_SQLITE_PACKAGE](#12-areg_sqlite_package)
-13. [AREG_GTEST_PACKAGE](#13-areg_gtest_package)
-14. [AREG_ENABLE_OUTPUTS](#14-areg_enable_outputs)
-15. [AREG_BUILD_ROOT](#15-areg_build_root)
-16. [AREG_OUTPUT_DIR](#16-areg_output_dir)
-17. [AREG_OUTPUT_BIN](#17-areg_output_bin)
-18. [AREG_OUTPUT_LIB](#18-areg_output_lib)
-19. [AREG_PACKAGES](#19-areg_packages)
-20. [AREG_INSTALL](#20-areg_install)
-21. [AREG_INSTALL_PATH](#21-areg_install_path)
+3. [AREG_TARGET](#3-areg_target)
+4. [AREG_PROCESSOR](#4-areg_processor) 
+5. [AREG_BINARY](#5-areg_binary)
+6. [AREG_LOGGER_BINARY](#6-areg_logger_binary)
+7. [AREG_BUILD_TYPE](#7-areg_build_type)
+8. [AREG_BUILD_TESTS](#8-areg_build_tests)
+9. [AREG_BUILD_EXAMPLES](#9-areg_build_examples)
+10. [AREG_EXTENDED](#10-areg_extended)
+11. [AREG_LOGS](#11-areg_logs)
+12. [AREG_USE_PACKAGES](#12-areg_use_packages)
+13. [AREG_SQLITE_PACKAGE](#13-areg_sqlite_package)
+14. [AREG_GTEST_PACKAGE](#14-areg_gtest_package)
+15. [AREG_ENABLE_OUTPUTS](#15-areg_enable_outputs)
+16. [AREG_BUILD_ROOT](#16-areg_build_root)
+17. [AREG_OUTPUT_DIR](#17-areg_output_dir)
+18. [AREG_OUTPUT_BIN](#18-areg_output_bin)
+19. [AREG_OUTPUT_LIB](#19-areg_output_lib)
+20. [AREG_PACKAGES](#20-areg_packages)
+21. [AREG_INSTALL](#21-areg_install)
+22. [AREG_INSTALL_PATH](#22-areg_install_path)
 
 For the quick orientation, here are the lists of AREG SDK specific options grouped by categories. See description for details. 
 
@@ -44,7 +45,8 @@ The following is the list of options to select compiler:
 |-------------------------------------------------------|---------------------------------------------------|
 | 1. [AREG_COMPILER_FAMILY](#1-areg_compiler_family)    | Select C++ compiler by family.                    |
 | 2. [AREG_COMPILER](#2-areg_compiler)                  | Select C++ compiler by name.                      |
-| 3. [AREG_PROCESSOR](#3-areg_processor)               | Select processor and bitness of target application|
+| 3. [AREG_TARGET](#3-areg_target)                      | Specifies the compiler architecture target.       |
+| 3. [AREG_PROCESSOR](#4-areg_processor)                | Select processor and bitness of target application|
 
 ### Options to Build Binaries
 
@@ -52,41 +54,41 @@ The following is the list of options that have impact on the build:
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 4.  [AREG_BINARY](#4-areg_binary)                     | `areg` framework shared or static library.        |
-| 5.  [AREG_LOGGER_BINARY](#5-areg_logger_binary)       | `areglogger` library shared or static library.    |
-| 6.  [AREG_BUILD_TYPE](#6-areg_build_type)             | `Debug` or `Release` build.                       |
-| 7.  [AREG_BUILD_TESTS](#7-areg_build_tests)           | Build or escape unit tests.                       |
-| 8.  [AREG_BUILD_EXAMPLES](#8-areg_build_examples)     | Build or escape example.                          |
-| 9.  [AREG_EXTENDED](#9-areg_extended)                 | Build `aregextend` library with extended objects. |
-| 10. [AREG_LOGS](#10-areg_logs)                         | Build binaries with logs.
+| 4.  [AREG_BINARY](#5-areg_binary)                     | `areg` framework shared or static library.        |
+| 5.  [AREG_LOGGER_BINARY](#6-areg_logger_binary)       | `areglogger` library shared or static library.    |
+| 6.  [AREG_BUILD_TYPE](#7-areg_build_type)             | `Debug` or `Release` build.                       |
+| 7.  [AREG_BUILD_TESTS](#8-areg_build_tests)           | Build or escape unit tests.                       |
+| 8.  [AREG_BUILD_EXAMPLES](#9-areg_build_examples)     | Build or escape example.                          |
+| 9.  [AREG_EXTENDED](#10-areg_extended)                 | Build `aregextend` library with extended objects. |
+| 10. [AREG_LOGS](#11-areg_logs)                         | Build binaries with logs.
 
 
 ### Options to Use Packages
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 11. [AREG_USE_PACKAGES](#11-areg_use_packages)        | Use installed packages whenever possible.         |
-| 12. [AREG_SQLITE_PACKAGE](#12-areg_sqlite_package)    | Try using installed `SQLite3` package.            |
-| 13. [AREG_GTEST_PACKAGE](#13-areg_gtest_package)      | Try using installed `GTest` package.              |
+| 11. [AREG_USE_PACKAGES](#12-areg_use_packages)        | Use installed packages whenever possible.         |
+| 12. [AREG_SQLITE_PACKAGE](#13-areg_sqlite_package)    | Try using installed `SQLite3` package.            |
+| 13. [AREG_GTEST_PACKAGE](#14-areg_gtest_package)      | Try using installed `GTest` package.              |
 
 
 ### Options to Change Output Directories
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 14. [AREG_ENABLE_OUTPUTS](#14-areg_enable_outputs)    | Allow AREG specific output directories.           |
-| 15. [AREG_BUILD_ROOT](#15-areg_build_root)            | Build directory path (binaries, packages).        |
-| 16. [AREG_OUTPUT_DIR](#16-areg_output_dir)            | Output directory path for binaries.               |
-| 17. [AREG_OUTPUT_BIN](#17-areg_output_bin)            | Output directory path for executables.            |
-| 18. [AREG_OUTPUT_LIB](#18-areg_output_lib)            | Output directory path for static libraries.       |
-| 19. [AREG_PACKAGES](#19-areg_packages)                | Directory to fetch packages (like `Google Test`). |
+| 14. [AREG_ENABLE_OUTPUTS](#15-areg_enable_outputs)    | Allow AREG specific output directories.           |
+| 15. [AREG_BUILD_ROOT](#16-areg_build_root)            | Build directory path (binaries, packages).        |
+| 16. [AREG_OUTPUT_DIR](#17-areg_output_dir)            | Output directory path for binaries.               |
+| 17. [AREG_OUTPUT_BIN](#18-areg_output_bin)            | Output directory path for executables.            |
+| 18. [AREG_OUTPUT_LIB](#19-areg_output_lib)            | Output directory path for static libraries.       |
+| 19. [AREG_PACKAGES](#20-areg_packages)                | Directory to fetch packages (like `Google Test`). |
 
 ### Options to Install AREG Binaries
 
 | Options                                               | Short description                                 |
 |-------------------------------------------------------|---------------------------------------------------|
-| 20. [AREG_INSTALL](#20-areg_install)                  | Enable install (call `cmake --install`).          |
-| 21. [AREG_INSTALL_PATH](#21-areg_install_path)        | Location to install AREG binaries.                |
+| 20. [AREG_INSTALL](#21-areg_install)                  | Enable install (call `cmake --install`).          |
+| 21. [AREG_INSTALL_PATH](#22-areg_install_path)        | Location to install AREG binaries.                |
 
 ---
 
@@ -124,7 +126,19 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 3. **AREG_PROCESSOR**
+### 3. **AREG_TARGET**
+
+   - **Description**: Specifies the target compiler and library architecture. Defaults to the compiler and processor architecture defined by the system.
+   - **Possible Values**: `i386-linux-gnu`, `x86_64-linux-gnu`, `arm-linux-gnueabihf`, `arm-linux-gnueabi`, `aarch64-linux-gnu`, and other compiler-specific targets.
+   - **Default**: *System-Defined Compiler and Processor*
+   - **Example**: `cmake -B ./build -DAREG_TARGET=arm-linux-gnueabi -DAREG_PROCESSOR=arm`
+
+> [!NOTE]
+> This target is also used to specify the architecture for locating packages and libraries. The `AREG_TARGET` value is identical to `CMAKE_CXX_COMPILER_TARGET`.
+
+---
+
+### 4. **AREG_PROCESSOR**
 
    - **Description**: Specifies the target processor architecture and bitness for the compiled application. By default, it uses the system's processor architecture and bitness.
    - **Possible Values**: `x86`, `x64` (`x86_x64`, `amd64`), `arm` (`arm32`), `aarch64` (`arm64`)
@@ -157,7 +171,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 4. **AREG_BINARY**
+### 5. **AREG_BINARY**
    - **Description**: Specifies the type of library for the AREG Framework.
    - **Possible Values**: `shared`, `static`
    - **Default**: `shared`
@@ -167,7 +181,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 5. **AREG_LOGGER_BINARY**
+### 6. **AREG_LOGGER_BINARY**
    - **Description**: Sets the library type for the Log Observer API.
    - **Possible Values**: `shared`, `static`
    - **Default**: `shared`
@@ -177,7 +191,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 6. **AREG_BUILD_TYPE**
+### 7. **AREG_BUILD_TYPE**
    - **Description**: Defines the build configuration type, equivalent to the CMake option `CMAKE_BUILD_TYPE`. If `AREG_BUILD_TYPE` is set, it will override `CMAKE_BUILD_TYPE`. Otherwise, it takes the value of `CMAKE_BUILD_TYPE` if set, or `Release` if not set.
    - **Possible Values**: `Release`, `Debug`
    - **Default**: `Release`
@@ -190,7 +204,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 7. **AREG_BUILD_TESTS**
+### 8. **AREG_BUILD_TESTS**
    - **Description**: Enables or disables building unit tests for the AREG SDK. If enabled (`ON`), the tests build will require an additional dependency on `GTest`.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -200,7 +214,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 8. **AREG_BUILD_EXAMPLES**
+### 9. **AREG_BUILD_EXAMPLES**
    - **Description**: Controls whether to build example applications for the AREG SDK. Enabling this option (`ON`) may require additional dependencies, such as MFC (Microsoft Foundation Classes) for GUI projects on Windows.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -210,7 +224,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 9. **AREG_EXTENDED**
+### 10. **AREG_EXTENDED**
    - **Description**: Specifies if `aregextend` additional library should be build with extended features, adding specialized library support for advanced functionality. Enabling this option (`ON`) may introduce dependencies such as `ncurses` on Linux or Cygwin platforms, which are required to support these features.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `OFF`
@@ -220,7 +234,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 10. **AREG_LOGS**
+### 11. **AREG_LOGS**
    - **Description**: Controls whether the AREG Framework is compiled with logging capabilities. Disabling logging (`OFF`) prevents applications from generating log messages, which may be useful for reducing overhead in production builds.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -230,7 +244,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 11. **AREG_USE_PACKAGES**
+### 12. **AREG_USE_PACKAGES**
    - **Description**: Enables the use of pre-installed third-party packages, such as **Google Test** or **SQLite3**. If disabled (`OFF`), the build process will download or compile the required third-party libraries from source.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -240,7 +254,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 12. **AREG_SQLITE_PACKAGE**
+### 13. **AREG_SQLITE_PACKAGE**
    - **Description**: Controls whether the build uses a system-installed SQLite3 package or compiles SQLite3 from the `thirdparty` directory. If set to `ON`, it first attempts to locate a system installation; if not found, it falls back to compiling from source.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -250,7 +264,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 13. **AREG_GTEST_PACKAGE**
+### 14. **AREG_GTEST_PACKAGE**
    - **Description**: Determines whether the system-installed Google Test package is used or fetched and compiled directly from the Google repository. If enabled (`ON`), it will attempt to use the system package; otherwise, it fetches from the repository if the package isn't found.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -260,7 +274,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 14. **AREG_ENABLE_OUTPUTS**
+### 15. **AREG_ENABLE_OUTPUTS**
    - **Description**: Controls whether output directories use the CMake binary directory or AREG SDK-specific defaults. When disabled (`OFF`), AREG-specific settings are ignored in favor of CMake's default outputs, useful when integrating AREG into third-party builds.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -270,7 +284,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 15. **AREG_BUILD_ROOT**
+### 16. **AREG_BUILD_ROOT**
    - - **Description**: Defines the main directory for all build binary files, which also manages third-party dependencies and generated code files. This directory with the content can be safely deleted as needed without affecting codes.
    - **Default**: `<areg-sdk>/product`
    - **Example**: `cmake -B ./build -DAREG_BUILD_ROOT=/path/to/custom/build`
@@ -279,7 +293,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 16. **AREG_OUTPUT_DIR**
+### 17. **AREG_OUTPUT_DIR**
    - **Description**: Sets the directory for all build outputs, including binaries and libraries. The subdirectories `bin` and `lib` are used for runtime binaries and libraries, respectively.
    - **Default**: `'{AREG_BUILD_ROOT}/build/<compiler-family>/<os>-<bitness>-<cpu>-<build-type><areg-lib-type>'`
    - **Example**: `cmake -B ./build -DAREG_OUTPUT_DIR=/custom/output`
@@ -288,7 +302,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 17. **AREG_OUTPUT_BIN**
+### 18. **AREG_OUTPUT_BIN**
    - **Description**: Defines the output directory for runtime binaries and shared libraries, aligning with CMake's `CMAKE_RUNTIME_OUTPUT_DIRECTORY` and `CMAKE_LIBRARY_OUTPUT_DIRECTORY`.
    - **Default**: `{AREG_OUTPUT_DIR}/bin`
    - **Example**: `cmake -B ./build -DAREG_OUTPUT_BIN=/custom/output/bin`
@@ -297,7 +311,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 18. **AREG_OUTPUT_LIB**
+### 19. **AREG_OUTPUT_LIB**
    - **Description**: Specifies the output directory for static libraries, corresponding to the CMake setting `CMAKE_ARCHIVE_OUTPUT_DIRECTORY`.
    - **Default**: `{AREG_OUTPUT_DIR}/lib`
    - **Example**: `cmake -B ./build -DAREG_OUTPUT_LIB=/custom/output/lib`
@@ -306,7 +320,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 19. **AREG_PACKAGES**
+### 20. **AREG_PACKAGES**
    - **Description**: Defines where third-party packages are stored. By default, this is set to a `packages` subdirectory within `CMAKE_BINARY_DIR`.
    - **Default**: `{CMAKE_BINARY_DIR}/packages`
    - **Example**: `cmake -B ./build -DAREG_PACKAGES=/path/to/packages`
@@ -315,7 +329,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 20. **AREG_INSTALL**
+### 21. **AREG_INSTALL**
    - **Description**: Specifies if the SDK installation process should be enabled. When set to `ON`, all necessary components will be prepared for installation on the specified system.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
@@ -325,7 +339,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ---
 
-### 21. **AREG_INSTALL_PATH**
+### 22. **AREG_INSTALL_PATH**
    - **Description**: Specifies the directory for installing all AREG SDK build components.
    - **Default**: `<user-profile>/areg-sdk`
    - **Example**: `cmake -B ./build -DAREG_INSTALL_PATH=/install/location`
@@ -388,4 +402,4 @@ These options allow you to customize AREG SDK to align with specific project nee
 
 ## Integration Example
 
-For integration examples, visit the [AREG SDK Demo Repository](https://github.com/aregtech/areg-sdk-demo) for practical implementations across various projects. Additionally, read [Integrating AREG Framework with CMake](./cmake-integration.md) document.
+For integration and cross-compiling examples, visit the [AREG SDK Demo Repository](https://github.com/aregtech/areg-sdk-demo) for practical implementations across various projects. Additionally, read [Integrating AREG Framework with CMake](./cmake-integration.md) document.
