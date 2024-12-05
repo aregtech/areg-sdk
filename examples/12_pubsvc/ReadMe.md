@@ -30,15 +30,12 @@ The **12_pubsvc** project demonstrates the implementation of a *Public Service* 
 ## Key Features
 
 - **Automatic Service Discovery**: AREG Framework automates the discovery of the *Public Service*, so *Service Consumers* can easily connect to the provider without needing explicit configuration. This ensures smooth communication even when the processes are started in any order.
-  
 - **Fault Tolerance**: The AREG SDK ensures fault tolerance in service communication, meaning if a service fails, it can recover or restart without affecting the overall system's operation.
-  
 - **Efficient Communication**: By using **Object RPC** for communication, the system reduces overhead and simplifies the development process. It ensures that requests and responses between the provider and consumers are dispatched efficiently.
 
 ## Use Cases
 
 - **Multiprocess Applications**: The **12_pubsvc** project is ideal for scenarios where multiple clients need to communicate with a single service provider in a network of distributed services.
-  
 - **Public Services**: It is well-suited for applications where a network-accessible service needs to process requests from multiple consumers and maintain high availability and reliability.
 
 ## Conclusion

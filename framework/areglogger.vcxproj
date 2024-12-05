@@ -55,6 +55,7 @@
     <ResourceCompile Include="areglogger\resources\areglogger.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="areglogger\Readme.md" />
     <None Include="areglogger\resources\areglogger.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

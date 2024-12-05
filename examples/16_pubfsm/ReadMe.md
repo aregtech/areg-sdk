@@ -22,7 +22,7 @@ The **16_pubfsm** project demonstrates how to build and manage a *Finite-State M
 
    This feature allows users to observe and interact with different data updates from the *Service Provider* in real time.
 
-3. **[16_pubservice](./pubservice/)**:  
+3. **[16_pubservice](./pubservice/)**:
    - This sub-project defines a *Public Service* that implements a **Finite-State Machine (FSM)** and imitates a traffic-light controller. The FSM model can be controlled using various commands, such as:
      - `on`: Turn the FSM on.
      - `start`: Start the FSM.

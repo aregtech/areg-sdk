@@ -101,7 +101,7 @@ AREG's design integrates **Client-Server (Request-Reply)** and **Publish-Subscri
 
 ## More than Embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
 
-The architecture of AREG is ideal for embedded applications, but its capabilities extend far beyond. AREG offers distributed and scalable solutions for **multithreading**, **multiprocessing**, and **internet**  communications, making it a versatile choice for a wide range of applications. Services in AREG are categorized into three types: **Local**, **Public**, and **Internet**, enabling flexible and efficient remote communication across diverse environments.
+The architecture of AREG is ideal for embedded applications, but its capabilities extend far beyond. AREG offers distributed and scalable solutions for **multithreading**, **multiprocessing**, and **internet** communications, making it a versatile choice for a wide range of applications. Services in AREG are categorized into three types: **Local**, **Public**, and **Internet**, enabling flexible and efficient remote communication across diverse environments.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Diagram showing Services and AREG Framework message handling" style="width:70%;height:70%"/></a></div>
 
@@ -121,14 +121,14 @@ The fault-tolerant design of AREG offers key advantages, such as:
 
 The **AREG SDK** consists of several modules to streamline distributed, real-time applications development:
 - **[AREG Communication Engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
-- **[Multicast Router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
-- **[Log Collector (*logcollector*)](./framework/logcollector/):** Collects logs from  applications and forwards them to log observers.
+- **[Multicast Router (*mcrouter*)](./framework/mcrouter/):** Facilitates message routing between services.
+- **[Log Collector (*logcollector*)](./framework/logcollector/):** Collects logs from applications and forwards them to log observers.
 - **[Log observer Library (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
 - **[Log observer (*logobserver*)](./framework/logobserver/):** In real-time mode monitors, saves and dynamically controls logs.
 - **[AREG Extended Library (*aregextend*)](./framework/aregextend/):** Offers additional objects with extended features.
-- **[Code generator](./master/tools/):** Generates Service **Provider** and **Consumer** objects from Service Interface documents.
+- **[Code generator (*codegen.jar*)](./master/tools/):** Generates Service **Provider** and **Consumer** objects from Service Interface documents.
 - **[Examples](./examples/):** Illustrates the features of AREG Framework and use of the AREG SDK components.
-- **[*Lusan* UI Tool](https://github.com/aregtech/areg-sdk-tools):** Simplifies and visualizes service design, log views.
+- **[UI Tool (*lusan*)](https://github.com/aregtech/areg-sdk-tools):** Simplifies and visualizes service design, log views.
 
 > [!NOTE]
 > The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It is supposed to provide multiple features like Service Interface design, log viewing, and runtime testing. We call to join this open source project to develop the tool.
@@ -255,7 +255,7 @@ For full details, see the **[Building the AREG SDK with Microsoft Visual Studio 
 
 Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg)** repository to clone and install the `vcpkg` package manager tool in your PC.
 
-1. **Install and integrate the `areg` package:** Example of the AREG SDK components, headers and its dependencies installation under Linux:  
+1. **Install and integrate the `areg` package:** Example of the AREG SDK components, headers and its dependencies installation under Linux:
    ```bash
    ./vcpkg install areg:linux-64
    ./vcpkg integrate install

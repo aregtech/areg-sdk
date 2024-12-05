@@ -8,4 +8,7 @@ The [./cmake](./cmake/) directory contains project-wide and developer-specific s
 ## Microsoft Visual Studio
 The [./msvc](./msvc/) directory includes Visual Studio-specific property files referenced by the project. Directly modifying `.props` files is not recommended. To customize your build, copy the [msvc_setup.props](./../msvc_setup.props) file into your solution directory and apply necessary changes there.
 
+## Expoerts
+The [./exports](./exports) directory contains list of files that are required by packaging, required to install and uninstall OS-manages services and examples of creating toolchain files.
+
 For further information, consult the [wiki](./../docs/wiki/README.md) documentation.

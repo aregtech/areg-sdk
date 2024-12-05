@@ -141,7 +141,7 @@ cmake -B ./build -DAREG_PROCESSOR=x86 -DAREG_COMPILER_FAMILY=llvm
 cmake --build ./build -j
 ```
 
-> [!TIP]  
+> [!TIP]
 > To verify if an application is compiled for a 32-bit system, navigate to the build binary directory and use:
 > ```bash
 > file ./mcrouter.elf

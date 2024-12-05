@@ -4,7 +4,9 @@ The **AREG SDK Log Collector** is a centralized service designed to gather, mana
 
 ## Table of Contents
 1. [General Information](#1-general-information)
-2. [Log Collector Setup](#2-log-collector-setup)
+2. [Running Log Collector as a Service](#2-running-log-collector-as-a-service)
+   - [Linux Service](#linux-service)
+   - [Windows Service](#windows-service)
 3. [Log Collector Configuration](#3-log-collector-configuration)
 4. [Command Line Options](#4-command-line-options)
 5. [Connection Initialization](#5-connection-initialization)
@@ -19,23 +21,77 @@ The AREG SDK Log Collector acts as a networking service within the AREG SDK's lo
 
 ---
 
-## 2. Log Collector Setup
+## 2. Running Log Collector as a Service
 
-The Log Collector is implemented within the AREG SDK [Log Collector module](./../../framework/logcollector/) and compiled as a standalone executable that can run as a console application or a managed service on Windows and Linux. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
+The Log Collector (`logcollector`) is implemented within the AREG SDK [Log Collector module](./../../framework/logcollector/) and compiled as a standalone executable that can operate as either a console application or an OS-managed service on Windows and Linux platforms. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
 
-**Running as a Service:**
+### Linux Service
 
-- **On Windows:**
-  - Execute `logcollectorlogger.service.install.bat`, ensuring the correct path to `logcollector`, and restart if needed.
-  - Alternatively, use `logcollector.exe --install` in Terminal or PowerShell.
+To configure and run the `logcollector` application as a Linux-managed service, follow these steps:
 
-- **On Linux:**
-  - Configure the `logcollector.service` file with the correct `ExecStart` path.
-  - Use `sudo systemctl enable logcollector.service` and `sudo systemctl start logcollector.service` to enable and start the service.
+1. **Copy Service Configuration File**:
+   - Copy the `logcollector.service` file to the `/etc/systemd/system/` directory.
 
-To stop the service:
-- **On Windows:** Run `logcollector.service.uninstall.bat`, or use `logcollector.exe --uninstall`, and restart or manage through the Services menu.
-- **On Linux:** Run `sudo systemctl stop logcollector.service` and `sudo systemctl disable logcollector.service`.
+2. **Copy the Executable**:
+   - Copy the built `logcollector.elf` executable to the desired location, such as `/usr/local/bin`.
+
+3. **Ensure Library Access (if applicable)**:
+   - If the AREG Framework was built as a shared library, ensure that `logcollector` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
+
+4. **Edit the Service Configuration**:
+   - Open the `logcollector.service` file and verify that the `ExecStart` path points to the correct location of the `logcollector.elf` executable. For example:
+     ```plaintext
+     ExecStart=/usr/local/bin/logcollector.elf --service
+     ```
+   - Ensure the `ExecStart` line includes the `--service` (or `-s`) as a command line option.
+
+5. **Enable and Start the Service**:
+   - Enable the service to start automatically at boot:
+     ```bash
+     sudo systemctl enable logcollector.service
+     ```
+   - Start the service:
+     ```bash
+     sudo systemctl start logcollector.service
+     ```
+
+6. **Stop or Disable the Service**:
+   - To stop the service:
+     ```bash
+     sudo systemctl stop logcollector.service
+     ```
+   - To disable the service from starting at boot:
+     ```bash
+     sudo systemctl disable logcollector.service
+     ```
+
+### Windows Service
+
+To configure and run the `logcollector` application as a Windows-managed service, follow these steps:
+
+1. **Copy the Binaries**:
+   - Copy the `logcollector.exe` and `areg.dll` binaries to the desired location.
+
+2. **Install the Service**:
+   - Open **PowerShell** as the Administrator.
+   - Register the executable as a service by running:
+     ```powershell
+     .\logcollector.exe --install
+     ```
+   - Alternatively, you can execute `logcollector.service.install.bat` as **Administrator**, ensuring the correct path to `logcollector.exe`.
+
+3. **Start the Service**:
+   - Open the **Services** application (or run `services.msc` in the Command Prompt).
+   - Locate the service named **AREG Log Collector Service**.
+   - Start the service by right-clicking it and selecting **Start**.
+
+4. **Stop and Uninstall the Service**:
+   - Stop the service using the **Services** application or the `services.msc` command.
+   - Uninstall the service by running the following command in PowerShell:
+     ```powershell
+     .\logcollector.exe --uninstall
+     ```
+   - Alternatively, you can execute `logcollector.service.uninstall.bat` as **Administrator**, ensuring the correct path to `logcollector.exe`.
 
 ---
 

@@ -1,13 +1,35 @@
-# Content
+# Directory Overview: AREG Framework
 
-AREG engine source codes. The content of this folder:
+This directory contains the source code for the AREG Framework, also known as the AREG communication engine. It is built as the `areg` library, available in both shared and static configurations. Below is an overview of the directory's contents:
 
-* [appbase](./appbase)      -- The base class to create applications. Mainly contain the API to call to initialize the services and load models.
-* [base](./base)            -- The collection of base helper objects.
-* [component](./component)  -- The business logic of the engine to create service components and provide automations.
-* [ipc](./ipc)              -- The objects to provide IPC (inter-process communication).
-* [persist](./persist)      -- The objects to use to persist data in the files. Saves key and value pairs.
-* [resources](./resources)  -- The folder with resources for AREG engine.
-* [logging](./logging)      -- The logging service of AREG engine.
+### Directory Contents
 
-The objects may differ by POSIX and Win32 API, but the behavior of objects for all platforms are the same. The header files declared in `private` subdirectory are considered only for internal use and project should not include them in their files.
+- **[appbase](./appbase)**
+  Provides base classes for initializing and managing application lifecycles.
+
+- **[base](./base)**
+  Contains foundational helper objects for general-purpose functionality.
+
+- **[component](./component)**
+  Implements the core business logic of the communication engine, enabling the creation of service components and automation processes.
+
+- **[ipc](./ipc)**
+  Includes components for inter-process communication (IPC).
+
+- **[logging](./logging)**
+  Manages the logging functionality of the AREG engine.
+
+- **[persist](./persist)**
+  Provides utilities for persisting data as key-value pairs in files.
+
+- **[resources](./resources)**
+  Contains resources utilized by the AREG engine.
+
+- **[system](./system)**
+  Houses platform-dependent preprocessor definitions.
+
+### Platform Support and Usage
+While the implementation of certain objects varies between POSIX and Win32 APIs, their behavior is consistent across platforms.
+
+### Internal Headers
+Header files located in the `private` subdirectories are for internal use only and should not be included directly in external projects.

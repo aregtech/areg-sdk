@@ -57,6 +57,9 @@
   <ItemGroup>
     <ResourceCompile Include="logobserver\resources\logobserver.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="logobserver\Readme.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

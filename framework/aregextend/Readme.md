@@ -1,7 +1,29 @@
-# Content
+# Directory Overview: AREG Extend Library
 
-This folder contains the AREG extended library that can is compiled with or without extended features, which may require additional libraries and resources, which are considered additional and optional features. The extensions are compiled as `aregextend` static library to link with projects that may use them. To compile project with the additional features, define `AREG_EXTENDED=1`. Otherwise, ignore or specify `AREG_EXTENDED=0`. If specify `AREG_EXTENDED=0`, the project is compiled as a static library, which can be linked, but no guarantee that all extended features will be available or will work as it is initially designed.
+This directory contains the source code for the AREG Extend library (`aregextend`), which provides optional extended features. These features may depend on additional libraries and resources, enabling enhanced functionality. The library is compiled as a static library to link with projects requiring these extensions.
 
-This project contains following folders:
+### Compilation Options
+To include extended features, define `AREG_EXTENDED=1` during compilation (CMake option `-DAREG_EXTENDED=ON`). If omitted or set to `AREG_EXTENDED=0` (CMake option `-DAREG_EXTENDED=OFF`), the library will be compiled with limited functionality. In this case, while the library can be linked, extended features may not function as originally intended.
 
-* [console](./console)      -- The console extension to output messages on the certain positions and manipulate the cursor positions. For Linux platform it can be compiled with `ncurses` library to have better manipulation of cursors. For Windows platform it can be compiled with `Win32 API` to have better manipulation of cursor. If `AREG_EXTENDED=0` is set, the implementation is based on ANSI C API and ANSI escape code sequences. The behavior may differ in multithreading environment when simultaneously wait for user input and query the cursor position. Be careful to query position. Instead, try saving and restoring cursor position.
+### Directory Contents
+- **[console](./console)**
+  Implements console extensions for advanced cursor manipulation and message output at specific positions.
+  - **Linux**: Uses `ncurses` for enhanced cursor management.
+  - **Windows**: Uses cursor positioning `Win32 API` for better control over cursor behavior.
+  - **Fallback**: If `AREG_EXTENDED=0` (or `-DAREG_EXTENDED=OFF`), the implementation relies on ANSI C APIs and escape codes. 
+  > [!NOTE]
+  > Concurrent querying of cursor position and waiting for user input in a multithreaded environment may result in unpredictable behavior. Use cursor save/restore functions to mitigate issues.
+
+- **[db](./db)**
+  Provides basic objects for creating and managing SQLite databases.
+
+- **[service](./service)**
+  Includes objects for creating and running operating system-managed services.
+
+- **[resources](./resources)**
+  Contains resources specific to the `aregextend` library.
+
+### Platform Support and Internal Headers
+While the implementations for `Win32` and `POSIX` systems differ, the behavior of objects is consistent across platforms.
+
+Header files located in the `private` subdirectories are intended for internal use only and should not be included directly in external projects.

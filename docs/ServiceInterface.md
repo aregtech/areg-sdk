@@ -1,45 +1,42 @@
-﻿Here's the revised document with improved readability, formatting, and wording:
-
----
-
-# Service Interface
+﻿# Service Interface
 
 ```
-This file is part of AREG SDK  
-Copyright (c) 2021-2023, Aregtech  
-Contact: info[at]aregtech.com  
-Website: https://www.aregtech.com  
+This file is part of AREG SDK
+Copyright (c) 2021-2023, Aregtech
+Contact: info[at]aregtech.com
+Website: https://www.aregtech.com
 ```
 
 ## Table of Contents
 
 - [General Information](#general-information)
 - [Service Interface Prototype](#service-interface-prototype)
-- [Public and Local Services](#public-and-local-services)
-- [Data Types](#data-types)
+  - [Overview: Public and Local Services](#overview-public-and-local-services)
+  - [Data Types](#data-types)
     - [Structures](#structures)
     - [Enumerations](#enumerations)
     - [Imported Types](#imported-types)
     - [Containers](#containers)
-- [Attributes](#attributes)
-- [Requests, Responses, and Broadcasts](#requests-responses-and-broadcasts)
+  - [Attributes](#attributes)
+  - [Requests, Responses, and Broadcasts](#requests-responses-and-broadcasts)
     - [Requests](#requests)
     - [Responses](#responses)
     - [Broadcasts](#broadcasts)
-- [Constants](#constants)
-- [Includes](#includes)
+  - [Constants](#constants)
+  - [Includes](#includes)
 - [Code Generator](#code-generator)
-- [Generated Codes](#generated-codes)
+  - [Generated Codes](#generated-codes)
+  - [Benefits of Using the Service Interface and Code Generator](#benefits-of-using-the-service-interface-and-code-generator)
 
 ---
 
 ## General Information
 
-The AREG (*Automated Real-time Event Grid*) SDK provides a robust, interface-based real-time communication engine. AREG enables seamless communication between interconnected components, known as Things, which can act as microservers within a distributed network. This simplifies discovering, connecting, and interacting with services, automating the exchange between providers and consumers. Service providers handle requests and deliver data, while clients receive responses and can dynamically subscribe to data updates.
+The **Service Interface** in the AREG SDK enables the seamless definition and automation of service communication between providers and consumers in distributed systems. The AREG SDK provides an XML-based **Service Interface Prototype** that specifies the structure of service APIs, including data types, attributes, methods (requests, responses, broadcasts), and constants.
 
-To streamline the creation of Service Interfaces and reduce the need for manual coding, the AREG SDK offers a Service Interface Prototype XML document structure, along with a code generator. This setup allows developers to define Service Interfaces efficiently, generating the required code artifacts automatically.
+To streamline development, the SDK includes a **Code Generator** that uses this XML prototype to create the necessary code artifacts for service providers and consumers. These artifacts ensure efficiency, consistency, and alignment with AREG's real-time communication framework.
 
-This guide outlines the structure and syntax of the Service Interface Prototype XML document, detailing how to define Service Interfaces and use the code generator effectively within the AREG framework.
+This guide explains the structure and components of the Service Interface Prototype and how to use the code generator effectively to simplify development.
 
 ---
 
@@ -56,11 +53,9 @@ The Service Interface Prototype is an XML document that specifies a service API'
 
 Developers can use this XML document as input to the code generator, creating base objects that can then be extended to incorporate specific business logic. A sample XML document is available in [Sample.siml](./Sample.siml).
 
----
+### Overview: Public and Local Services
 
-### Public and Local Services
-
-Below is an example defining a _Public_ interface for Inter-Process Communication (IPC):
+Defines the high-level service properties such as its name, version, and scope (Public for IPC or Local for multithreading).
 
 ```xml
 <Overview ID="1" Name="Sample" Version="1.0.0" isRemote="true">
@@ -73,13 +68,13 @@ Below is an example defining a _Public_ interface for Inter-Process Communicatio
 
 ---
 
-## Data Types
+### Data Types
 
-Service interfaces may define custom data types to specify variables, attributes, and parameters. The `<DataTypeList>` section organizes service-specific data types. These types should be streamable.
+Specifies custom data types, including structures, enumerations, imported types, and containers like arrays or hash maps. The `<DataTypeList>` section organizes service-specific data types. These types should be streamable.
 
-### Structures
+#### Structures
 
-Structures are defined with the `<DataType>` tag and `Type="Structure"`, listing fields and supporting serialization/deserialization.
+Structures are defined with the `<DataType>` tag and `Type="Structure"`, listing fields and supporting serialization/de-serialization.
 
 **Example:**
 ```xml
@@ -97,7 +92,7 @@ Structures are defined with the `<DataType>` tag and `Type="Structure"`, listing
 </DataType>
 ```
 
-### Enumerations
+#### Enumerations
 
 Enumerations use `<DataType Type="Enumerate">` and list possible values.
 
@@ -119,7 +114,7 @@ Enumerations use `<DataType Type="Enumerate">` and list possible values.
 </DataType>
 ```
 
-### Imported Types
+#### Imported Types
 
 Imported types are predefined types from external headers, marked with `Type="Imported"`.
 
@@ -131,7 +126,7 @@ Imported types are predefined types from external headers, marked with `Type="Im
 </DataType>
 ```
 
-### Containers
+#### Containers
 
 Containers are composite types, defined with `Type="DefinedType"`. Types include arrays, linked lists, and hash maps.
 
@@ -152,9 +147,7 @@ Containers are composite types, defined with `Type="DefinedType"`. Types include
 </DataType>
 ```
 
----
-
-## Attributes
+### Attributes
 
 Attributes are exchangeable data elements between the service provider and clients. Clients can subscribe to receive notifications when data changes. Attributes are listed in the `<AttributeList>` section.
 
@@ -165,13 +158,11 @@ Attributes are exchangeable data elements between the service provider and clien
 </Attribute>
 ```
 
----
-
-## Requests, Responses, and Broadcasts
+### Requests, Responses, and Broadcasts
 
 Service methods are categorized as requests, responses, or broadcasts.
 
-### Requests
+#### Requests
 
 Requests are client-initiated actions. They can have a linked response, causing the server to reply after execution.
 
@@ -180,7 +171,7 @@ Requests are client-initiated actions. They can have a linked response, causing 
 <Method ID="17" MethodType="request" Name="SomeRequest1" Response="SomeResponse1"/>
 ```
 
-### Responses
+#### Responses
 
 Responses are server replies to requests, automatically triggering a callback on the client side.
 
@@ -193,7 +184,7 @@ Responses are server replies to requests, automatically triggering a callback on
 </Method>
 ```
 
-### Broadcasts
+#### Broadcasts
 
 Broadcasts are server-initiated events with no linked requests. Clients must subscribe manually to receive them.
 
@@ -207,9 +198,7 @@ Broadcasts are server-initiated events with no linked requests. Clients must sub
 </Method>
 ```
 
----
-
-## Constants
+### Constants
 
 Constants define read-only values, shared between providers and consumers.
 
@@ -220,9 +209,7 @@ Constants define read-only values, shared between providers and consumers.
 </Constant>
 ```
 
----
-
-## Includes
+### Includes
 
 The `<IncludeList>` section specifies additional files required by the service.
 
@@ -246,13 +233,20 @@ To generate source code, execute `codegen.jar` with the following parameters:
 
 **Example**:
 ```bash
-java -jar ~/projects/areg-sdk/codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
+java -jar <areg-sdk-root>/tools/codegen.jar --root=<project-root> --target=product/generated --doc=services/MyService.siml
 ```
 
 For more details see [AREG SDK Code Generator (`codegen.jar`)](./wiki/03a-code-generator.md) document.
 
----
-
-## Generated Codes
+### Generated Codes
 
 The code generator simplifies development by creating classes for **Service Providers** (servers) and **Service Consumers** (clients). It also generates a namespace prefixed with `NE`. Extend classes with `Stub` for servers and `ClientBase` for clients, as required.
+
+### Benefits of Using the Service Interface and Code Generator
+
+- **Efficiency**: Automates repetitive tasks, reducing manual coding.
+- **Consistency**: Ensures uniformity across service definitions and implementations.
+- **Flexibility**: Allows developers to focus on business logic by extending generated classes.
+- **Scalability**: Supports public (IPC) and local (multithreading) services, enabling seamless communication in diverse setups.
+
+---

@@ -90,6 +90,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{07BFF46A-D4BC-4FAD-9727-D959755BFBAC}"
 	ProjectSection(SolutionItems) = preProject
 		examples\CMakeLists.txt = examples\CMakeLists.txt
+		examples\examples_generate.bat = examples\examples_generate.bat
 		examples\README.md = examples\README.md
 	EndProjectSection
 EndProject
