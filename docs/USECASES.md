@@ -2,6 +2,15 @@
 
 **AREG** (*Automated Real-time Event Grid*) communication engine can be used in a very large scope of multithreading and multiprocessing application development. This document showcases several examples of how the communication engine can be utilized to develop intelligent devices.
 
+## Table of contents
+- [Distributed solution](#distributed-solution)
+- [Driverless devices](#driverless-devices)
+- [Real-time solutions](#real-time-solutions)
+- [Digital twins](#digital-twins)
+- [Simulation and tests](#simulation-and-tests)
+
+---
+
 ## Distributed solution
 
 <details open><summary> Click to show / hide <code>distributed solution</code>.</summary><br/>
@@ -64,6 +73,8 @@ The developers should create `SystemShutdownService` and `RemoteRegistryService`
 An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) guide. As well there are multiple [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) of multiprocessing and multithreading applications.
 </details>
 
+---
+
 ## Driverless devices
 
 <details open><summary> Click to show / hide <code>driverless devices</code>.</summary><br/>
@@ -79,6 +90,8 @@ Proposed are driverless service-enabled devices that do not require installation
 The services, described in the interface prototype documents, are faster and easier to develop than drivers, as they do not require special techniques and can be developed like user mode applications. Service development reduces risks and the code generator simplifies client object generation from a service interface document.
 </details>
 
+---
+
 ## Real-time solutions
 
 <details open><summary> Click to show / hide <code>real-time solutions</code>.</summary><br/>
@@ -88,6 +101,8 @@ AREG engine automatically generates and delivers messages to the target and invo
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a></div>
 </details>
 
+---
+
 ## Digital twins
 
 <details open><summary> Click to show / hide <code>digital twin</code>.</summary><br/>
@@ -95,6 +110,8 @@ AREG engine automatically generates and delivers messages to the target and invo
 AREG framework's event-driven and service-oriented architecture, coupled with real-time communication, offers a robust solution for digital twin applications. This framework allows for visualization, monitoring, and control of external devices, while also enabling immediate reaction to changes in the environment or device state. AREG's approach eliminates the need for additional communication layers, making it an ideal solution for emergency, security, and safety applications.
 
 </details>
+
+---
 
 ## Simulation and tests
 
@@ -108,3 +125,5 @@ The distributed and service-oriented solution of AREG engine eases application t
 
 The same technique of simulating data can be used to create API-driven test automations.
 </details>
+
+---

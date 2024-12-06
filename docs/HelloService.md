@@ -22,11 +22,11 @@ This document provides a practical example of creating applications with distrib
 - [Service Interface](#service-interface)
 - [Code Generation](#code-generation)
 - [Model](#model)
-  - [Declaring Static Models](#declaring-static-models)
+    - [Declaring Static Models](#declaring-static-models)
 - [Project Examples](#project-examples)
-  - [`onethread`](#onethread)
-  - [`twothreads`](#twothreads)
-  - [`multiprocess`](#multiprocess)
+    - [`onethread`](#onethread)
+    - [`twothreads`](#twothreads)
+    - [`multiprocess`](#multiprocess)
 - [Testing `multiprocess`](#testing-multiprocess)
 
 ## Introduction
