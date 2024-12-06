@@ -4,7 +4,9 @@ The **Multicast Router (mcrouter)** in AREG SDK enables efficient communication 
 
 ## Table of Contents
 1. [General Information](#1-general-information)
-2. [Router Setup](#2-router-setup)
+2. [Running Router as a Service](#2-running-router-as-a-service)
+   - [Linux Service](#linux-service)
+   - [Windows Service](#windows-service)
 3. [Router Configuration](#3-router-configuration)
 4. [Command Line Options](#4-command-line-options)
 5. [Connection Initialization](#5-connection-initialization)
@@ -19,28 +21,77 @@ The AREG Framework utilizes an **Object Remote Procedure Call (Object RPC)** pro
 
 ---
 
-## 2. Router Setup
+## 2. Running Router as a Service
 
-The Router is implemented in the [mcrouter](./../../framework/mcrouter) module and compiled as a standalone executable. It can run either as a console application or as a service managed by Windows or Linux. The router can be deployed on any networked machine with a **General Purpose Operating System (GPOS)**.
+The Multicast Router (`mcrouter`) is implemented within the AREG SDK [Multicast Router module](./../../framework/mcrouter/) and compiled as a standalone executable that can operate as either a console application or an OS-managed service on Windows and Linux platforms. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
 
-**To run as a service:**
+### Linux Service
 
-- **On Windows:** 
-  - Run `mcrouter.service.install.bat`, ensure the correct `mcrouter` path, and restart the system if needed.
-  - Alternatively, run `mcrouter.exe --install` in the Terminal or PowerShell.
+To configure and run the `mcrouter` application as a Linux-managed service, follow these steps:
 
-- **On Linux:**
-  - Use `mcrouter.service` file, ensuring the correct path in `ExecStart`.
-  - Run `sudo systemctl enable mcrouter.service` and `sudo systemctl start mcrouter.service`.
+1. **Copy Service Configuration File**:
+   - Copy the `mcrouter.service` file to the `/etc/systemd/system/` directory.
 
-  To stop running the service:
-- **On Windows**: run `mcrouter.service.uninstall.bat` or `mcrouter --uninstall`, and restart system or stop service in the Service List.
-- **On Linux**: run `sudo systemctl stop mcrouter.service` and `sudo systemctl disable mcrouter.service`.
- 
-Regardless AREG SDK is fault-tolerant and order of starting process plays no role, starting the Multicast Router before other applications is recommended for immediate connection establishment and efficient **Inter-Process Communication (IPC)**.
+2. **Copy the Executable**:
+   - Copy the built `mcrouter.elf` executable to the desired location, such as `/usr/local/bin`.
 
-> [!NOTE]
-> The Multicast Router is only needed for applications requiring **IPC** for *Public* services. It is not necessary for *Local* (intra-process) services.
+3. **Ensure Library Access (if applicable)**:
+   - If the AREG Framework was built as a shared library, ensure that `mcrouter` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
+
+4. **Edit the Service Configuration**:
+   - Open the `mcrouter.service` file and verify that the `ExecStart` path points to the correct location of the `mcrouter.elf` executable. For example:
+     ```plaintext
+     ExecStart=/usr/local/bin/mcrouter.elf --service
+     ```
+   - Ensure the `ExecStart` line includes the `--service` (or `-s`) as a command line option.
+
+5. **Enable and Start the Service**:
+   - Enable the service to start automatically at boot:
+     ```bash
+     sudo systemctl enable mcrouter.service
+     ```
+   - Start the service:
+     ```bash
+     sudo systemctl start mcrouter.service
+     ```
+
+6. **Stop or Disable the Service**:
+   - To stop the service:
+     ```bash
+     sudo systemctl stop mcrouter.service
+     ```
+   - To disable the service from starting at boot:
+     ```bash
+     sudo systemctl disable mcrouter.service
+     ```
+
+### Windows Service
+
+To configure and run the `mcrouter` application as a Windows-managed service, follow these steps:
+
+1. **Copy the Binaries**:
+   - Copy the `mcrouter.exe` and `areg.dll` binaries to the desired location.
+
+2. **Install the Service**:
+   - Open **PowerShell** as the Administrator.
+   - Register the executable as a service by running:
+     ```powershell
+     .\mcrouter.exe --install
+     ```
+   - Alternatively, you can execute `mcrouter.service.install.bat` as **Administrator**, ensuring the correct path to `mcrouter.exe`.
+
+3. **Start the Service**:
+   - Open the **Services** application (or run `services.msc` in the Command Prompt).
+   - Locate the service named **AREG Log Collector Service**.
+   - Start the service by right-clicking it and selecting **Start**.
+
+4. **Stop and Uninstall the Service**:
+   - Stop the service using the **Services** application or the `services.msc` command.
+   - Uninstall the service by running the following command in PowerShell:
+     ```powershell
+     .\mcrouter.exe --uninstall
+     ```
+   - Alternatively, you can execute `mcrouter.service.uninstall.bat` as **Administrator**, ensuring the correct path to `mcrouter.exe`.
 
 ---
 

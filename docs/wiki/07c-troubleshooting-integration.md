@@ -141,14 +141,14 @@ By applying these solutions, you can resolve the `File wrong format` error and e
 
 ### Solution 1: Set the Correct Compiler Target
 
-Ensure that the `CMAKE_CXX_COMPILER_TARGET` or `AREG_TARGET` variables are configured to match the desired processor architecture:  
+Ensure that the `CMAKE_CXX_COMPILER_TARGET` or `AREG_TARGET` variables are configured to match the desired processor architecture:
 ```bash
 cmake -DAREG_TARGET=i386-linux-gnu <source-dir>
 ```
 
-### Solution 2: Use `macro_check_module_architect` to Verify Compatibility  
+### Solution 2: Use `macro_check_module_architect` to Verify Compatibility
 
-In your CMake script, use the `macro_check_module_architect` macro from the `functions.cmake` file to verify the architecture of the located library before linking:  
+In your CMake script, use the `macro_check_module_architect` macro from the `functions.cmake` file to verify the architecture of the located library before linking:
 ```cmake
 macro_check_module_architect("/path/to/library.so" ${AREG_TARGET} ${AREG_PROCESSOR} _is_compatible)
 if (_is_compatible)
@@ -158,17 +158,17 @@ else()
 endif()
 ```
 
-### Solution 3: Control Library Search Order  
+### Solution 3: Control Library Search Order
 
-Restrict the library search scope using the `NO_DEFAULT_PATH` option in `find_package()` or `find_library()` to ensure only compatible libraries are located:  
+Restrict the library search scope using the `NO_DEFAULT_PATH` option in `find_package()` or `find_library()` to ensure only compatible libraries are located:
 ```cmake
 find_library(MyLib mylib PATHS /path/to/compatible/libs NO_DEFAULT_PATH)
 ```
 
 ### Solution 4: Verify the Library Path
 
-Ensure that the correct version of the library is being linked by explicitly specifying the library path.  
-Use the `CMAKE_PREFIX_PATH` variable to define the directory containing the compatible libraries:  
+Ensure that the correct version of the library is being linked by explicitly specifying the library path.
+Use the `CMAKE_PREFIX_PATH` variable to define the directory containing the compatible libraries:
 ```bash
 cmake -DCMAKE_PREFIX_PATH=/path/to/compatible/libs <source-dir>
 ```

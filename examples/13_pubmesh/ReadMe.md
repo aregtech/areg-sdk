@@ -11,7 +11,7 @@ The **13_pubmesh** project demonstrates the AREG Framework's capability to manag
 - **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
 - **IPC (Inter-Process Communication)**: Explore scenarios where service providers and consumers communicate across multiple processes.
 - **Service Discovery**: Both **Public** and **Local Services** are automatically discovered and connected within a process or across the network, ensuring real-time interaction and fault tolerance.
-  
+
 ## Sub-Projects
 
 1. **13_generated**:

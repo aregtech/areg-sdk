@@ -158,7 +158,6 @@ write
 wmove
 wrefresh
 wgetnstr
-wscanw -- del
 ```
 
 Make sure that the target platform supports all of these functions and macro.

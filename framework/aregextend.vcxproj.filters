@@ -83,7 +83,9 @@
     <Text Include="aregextend\console\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="aregextend\db\private\CMakeLists.txt" />
+    <Text Include="aregextend\db\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aregextend\console\Console.hpp">

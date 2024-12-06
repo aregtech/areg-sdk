@@ -13,77 +13,63 @@ This document replies to several **howto** questions, which are listed in the _T
 
 ## Table of contents
 
-1. [How to use preprocessor defines](#how-to-use-preprocessor-defines)
-2. [How to build](#how-to-build)
-3. [How to debug in IDE](#how-to-debug-in-ide)
-    - [Debug with Visual Studio Code](#debug-with-visual-studio-code)
-    - [Debug with Microsoft Visual Studio](#debug-with-microsoft-visual-studio)
-4. [How to create a new project](#how-to-create-a-new-project)
-5. [How to integrate in a project](#how-to-integrate-in-a-project)
-6. [How to use logging](#how-to-use-logging)
-    - [Enable logging](#enable-logging)
-    - [Configure logging](#configure-logging)
-7. [How to use multicast router](#how-to-use-multicast-router)
+- [1. How to use preprocessor defines](#1-how-to-use-preprocessor-defines)
+- [2. How to build](#2-how-to-build)
+- [3. How to create a project or integrate in project](#3-how-to-create-a-project-or-integrate-in-project)
+- [4. How to use logging](#4-how-to-use-logging)
+- [5. How to use multicast router](#5-how-to-use-multicast-router)
 
 ---
 
-## How to use preprocessor defines
+## 1. How to use preprocessor defines
 
-The AREG SDK provides a range of preprocessor defines that developers can utilize during the code compilation process. These defines enable developers to customize the SDK's behavior according to their specific requirements. The [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki serves as a comprehensive guide, offering detailed explanations and examples on how to modify these defines during compilation.
+The AREG SDK provides a range of preprocessor defines that developers can utilize during the code compilation process. These defines enable developers to customize the SDK's behavior according to their specific requirements. The [AREG SDK Preprocessor Definitions Guide](./wiki/02e-preprocessor-definitions.md) page in the AREG SDK Wiki document is a comprehensive guide, offering detailed explanations and examples on how to modify these defines during compilation.
 
 By modifying the preprocessor defines, developers can enable or disable features, configure behaviors, and customize the SDK to suit their application's needs. The Wiki page acts as a valuable reference, ensuring a clear understanding of each define's purpose.
 
-To utilize the preprocessor defines effectively, developers can follow these steps:
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
-1. Refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki to become familiar with the available defines and their functionalities.
+---
 
-2. Identify the specific preprocessor define(s) that require modification to achieve the desired behavior or feature configuration.
+## 2. How to build
 
-3. Depending on the build system being used (such as CMake, Make, Microsoft Visual Studio, or Visual Studio Code), update the corresponding configuration files or build commands to set the desired values for the preprocessor defines.
+The AREG SDK source codes have a minimum requirement of **C++17**, CMake 3.20 or Microsoft Visual Studio, and Java 17 or higher for the code generator. They can be compiled using tools such as `cmake` or `msbuild`. The codes are compatible with **Windows** and **Linux** platforms, including compilation within **WSL** (_Windows Subsystem for Linux_), and can be build for x86, x86_64, arm32 and aarch64 (arm64) processors.
 
-4. Rebuild the AREG SDK components using the updated preprocessor defines.
-
-By effectively utilizing the preprocessor defines, developers can tailor the AREG SDK to their project's specific requirements, achieving the desired functionality and behavior.
-
-It is highly recommended to refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki for a comprehensive understanding of each define and its usage. This will enable developers to leverage the full potential of the SDK and make the most of its capabilities.
+- The [Building AREG SDK with CMake](./wiki/01b-cmake-build.md) page provides a detailed explanation and examples on how to compile sources and build applications using CMake.
+- The [Building the AREG SDK with Microsoft Visual Studio and MSBuild](./wiki/01c-msvc-build.md) page provides a detailed explanation and examples on how to compile sources and build applications using Microsoft Visual Studio.
+- The [Building AREG SDK on Windows Subsystem for Linux (WSL)](./wiki/01d-wsl-build.md) page provides a detailed explanation and examples on how to compile sources and build applications using CMake in Windows Subsystem for Linux (WSL).
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
-## How to build
+## 3. How to create a project or integrate in project
 
-The AREG SDK source codes have a minimum requirement of **C++17**. They can be compiled using tools such as `cmake`, `make`, `cygwin`, or `msbuild`. The codes are compatible with **Windows**, **Linux**, and **macOS** environments, including compilation within **WSL** (_Windows Subsystem for Linux_).
-
-The [Software Build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile sources and build applications using various tools and IDEs.
+You can setup your own project and easily integrate AREG SDK builds in your project. To integrate using CMake, refer to the [Integrating AREG Framework with CMake](./../docs/wiki/02c-cmake-integrate.md) document. To integrate using MSBuild (Microsoft Visual Studio), refer to the [Integrating AREG Framework with Microsoft Visual Studio](./../docs/wiki/02d-msvc-integrate.md) document. As a working example of integrated project, see [AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo) repository.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
-## How to create a project or integrate in project
-
-The [Setup a project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) page of AREG SDK Wiki provides a detailed explanation and examples on how to create a project based on AREG framework, as well as how to include AREG framework in your build environment.
-
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
-
----
-
-## How to use logging
+## 4. How to use logging
 
 The projects based on AREG SDK can be compiled with or without logs. If a projects are compiled with logs, the logs, log scopes and group of scopes can be activated or deactivated during runtime.
 
-The [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Logging-System) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile source codes with logs, as well as hot to create logging scopes, log messages and configure the logging.
+- The [AREG SDK Logging Configuration Guide](./wiki/04a-logging-config.md) page of AREG SDK Wiki provides a detailed explanation and examples on how to configure the logs.
+- The [Developing with AREG Logging System](./wiki/04b-logging-develop.md) page of AREG SDK Wiki provides a detailed explanation and examples on how to develop with logs.
+- Other logging related documents are:
+  - [AREG SDK Log Observer Application](./wiki/04c-logobserver.md)
+  - [AREG SDK Log Collector Service](./wiki/04d-logcollector.md)
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
-## How to use multicast router
+## 5. How to use multicast router
 
-Multicast Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The multicast router can run as a stand-alone application or as a service managed by operating system. The multicast should be configured and all applications should contain [areg.init](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/areg.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
+Multicast Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The multicast router can run as a stand-alone application or as a service managed by operating system. The multicast should be configured and all applications should contain [areg.init](./../framework/areg/resources/areg.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
 
-The [Message-Router](https://github.com/aregtech/areg-sdk/wiki/06.-Message-Router) page of the AREG SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
+The [AREG SDK Multicast Router](./wiki/05a-mcrouter.md) page of the AREG SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 

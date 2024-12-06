@@ -1,31 +1,39 @@
 # Tools
 
 ```
-This file is part of AREG SDK, the multi-tasking application development platform.
-Copyright (c) Aregtech, 2017-2023
-Contact: info[at]aregtech.com
-```
-To run a code generator:
-1. Create a Service Interface XML file ( _.siml_ ) in your project;
-2. Include code genrator **codegen.jar** library to your _Java path_.
-3. Call from command line:
-If `codegen.jar` is in `CLASSPATH` run it calling
-```bash
-$ java -jar codegen.jar --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
-```
-or
-```bash
-$ java com.aregtech.CMFMain --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
-```
-If `codegen.jar` is not in `CLASSPATH` excplicitly specify the path of `codegen.jar`
-```bash
-$ java -jar <areg-sdk-root>/tools/codegen.jar --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
+This file is part of AREG SDK, the multitasking application development platform.  
+Copyright (c) Aregtech, 2017-2023  
+Contact: info[at]aregtech.com  
 ```
 
-Where:
-- `<project_root>` if the path of your project, for example `~/aregtech/areg-sdk/examples`;
-- `<relative_path_to_siml>` the service interface prototype file path relative to the project root, for example `12_pubsvc/services/SystemShutdown.siml`
-- `<relative_path_to_target_location>` the generated code output folder path relative to the project root, for example `12_pubsvc/generated`
-- `<areg-sdk-root>` is the path to `areg-sdk` sources.
+## Running the Code Generator
 
-We recommend include generated files in a static library, so that all projects can link. For example: if an applicatios consists of 2 processes (2 separate project), create third static library project called, for instance, `generated` that is linked in these two processes.
+To generate service interface code using the **AREG SDK Code Generator**, follow these steps:
+
+1. **Create the Service Interface XML File**  
+   Prepare a `.siml` file (Service Interface Prototype) in your project directory.
+
+2. **Include the Code Generator Library**  
+   Add the `codegen.jar` library to your Java path.
+
+3. **Run the Code Generator**  
+   Execute the following command from the command line:  
+   ```bash
+   $ java -jar <areg-sdk-root>/tools/codegen.jar --root=<project_root> --doc=<relative_path_to_siml> --target=<relative_path_to_target_location>
+   ```
+
+### Parameters:
+- `<areg-sdk-root>`: The root directory of the AREG SDK source code.  
+- `<project_root>`: The root directory of your project.  
+- `<relative_path_to_siml>`: The path to the `.siml` file relative to the project root (e.g., `sources/services/SystemShutdown.siml`).  
+- `<relative_path_to_target_location>`: The path to the folder where the generated files will be stored, relative to the project root (e.g., `product/generated`).
+
+---
+
+## Best Practices for Managing Generated Files
+
+It is recommended to include the generated files in a static library for better modularity and reuse. For example:  
+
+If your application consists of two processes (two separate projects), create a third static library project (e.g., `generated`) that includes the generated files. This library can then be linked to both processes, ensuring consistent access to the shared service interface.
+
+--- 

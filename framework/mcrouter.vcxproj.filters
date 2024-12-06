@@ -62,7 +62,6 @@
     <None Include="mcrouter\resources\small.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
@@ -70,6 +69,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="mcrouter\resources\mcrouter_post_build.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="mcrouter\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -111,8 +113,14 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="mcrouter\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\CMakeLists.txt" />
-    <Text Include="mcrouter\service\private\CMakeLists.txt" />
+    <Text Include="mcrouter\app\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="mcrouter\service\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="mcrouter\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

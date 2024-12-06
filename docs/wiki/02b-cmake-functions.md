@@ -183,7 +183,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
   - `res_resources` [out]: Name of variable that on output will contain the List of resource files (`*.rc`).
   - `${ARGN}` [in]: List of files, libraries, or resources to categorize.
 - **Usage**: `macro_parse_arguments(<sources-var> <libs-var> <resources-var> <sources-targets-resources>)`
-- **Example**:    
+- **Example**:
    ```cmake
    macro_parse_arguments(src_files lib_targets res_files my_lib src/main.cpp src/object.cpp res/resource.rc)
    ```

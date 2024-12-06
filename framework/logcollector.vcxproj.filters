@@ -50,11 +50,13 @@
     <None Include="logcollector\resources\small.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="logcollector\Readme.md" />
     <None Include="logcollector\resources\logcollector.service">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="logcollector\resources\logcollector_post_build.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logcollector\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -87,9 +89,17 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="logcollector\CMakeLists.txt" />
-    <Text Include="logcollector\app\private\CMakeLists.txt" />
-    <Text Include="logcollector\resources\Readme.md" />
-    <Text Include="logcollector\service\private\CMakeLists.txt" />
+    <Text Include="logcollector\app\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="logcollector\service\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="logcollector\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="logcollector\resources\Readme.md">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

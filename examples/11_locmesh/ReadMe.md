@@ -9,7 +9,7 @@ The **11_locmesh** project builds on the [10_locsvc](./../10_locsvc) example, de
 - **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
 - **Multithreading**: Each service instance runs in a separate thread, demonstrating how services operate concurrently in a multithreaded system.
 - **Service Provider and Consumer Interaction**: The project highlights how multiple service providers and consumers asynchronously interact in real-time, showcasing dynamic service-to-service communication.
-  
+
 ## Sub-Projects
 
 1. **11_generated**:

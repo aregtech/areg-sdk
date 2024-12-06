@@ -161,15 +161,15 @@ Cross-compiling enables building applications for architectures different from t
 
 **Important Notes**
 
-- **Dependencies:**  
-  While the core AREG SDK has no external dependencies, the extended library `aregextend` may require additional libraries. When cross-compiling, consider the following:  
+- **Dependencies:**
+  While the core AREG SDK has no external dependencies, the extended library `aregextend` may require additional libraries. When cross-compiling, consider the following:
   - If unsure about the availability of required libraries on the target platform, set `AREG_EXTENDED` to `OFF`:
     ```bash
     cmake -DAREG_EXTENDED=OFF <source-dir>
     ```
-  - Ensure that dependencies like `ncurses` or `sqlite3` (if SQLite3 is used) are available for the target platform. Missing dependencies will cause the build to fail.  
+  - Ensure that dependencies like `ncurses` or `sqlite3` (if SQLite3 is used) are available for the target platform. Missing dependencies will cause the build to fail.
 
-- **Binary Compatibility:**  
+- **Binary Compatibility:**
   Use the `macro_check_module_architect` macro in your CMake script to validate the compatibility of dependent libraries with the target processor architecture. Provide the full path to the library (static or shared), the target name, and the processor architecture as arguments. For detailed usage, see the [macro_check_module_architect documentation](./02b-cmake-functions.md#macro_check_module_architect).
 
 > [!TIP]
