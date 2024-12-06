@@ -99,7 +99,7 @@ bool ServiceApplicationBase::serviceInstall(void)
 {
     if (_osOpenService() == false)
     {
-        _osCcreateService();
+        _osCreateService();
     }
 
     return _osIsValid();

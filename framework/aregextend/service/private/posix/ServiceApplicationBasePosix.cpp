@@ -50,7 +50,7 @@ bool ServiceApplicationBase::_osOpenService(void)
     return true;
 }
 
-bool ServiceApplicationBase::_osCcreateService(void)
+bool ServiceApplicationBase::_osCreateService(void)
 {
     return true;
 }

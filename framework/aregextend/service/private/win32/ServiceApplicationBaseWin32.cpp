@@ -105,7 +105,7 @@ bool ServiceApplicationBase::_osOpenService(void)
     return (mSvcHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osCcreateService(void)
+bool ServiceApplicationBase::_osCreateService(void)
 {
     if (mSeMHandle == nullptr)
     {
@@ -153,19 +153,19 @@ bool ServiceApplicationBase::_osCcreateService(void)
                 failures.lpsaActions    = actions;
 
                 // first failure
-                actions[0].Delay        = NECommon::WAIT_1_SECOND;
+                actions[0].Delay        = NECommon::WAIT_10_SECONDS;
                 actions[0].Type         = SC_ACTION_RESTART;
 
                 // first second
-                actions[1].Delay        = NECommon::WAIT_1_SECOND;
+                actions[1].Delay        = NECommon::WAIT_10_SECONDS;
                 actions[1].Type         = SC_ACTION_RESTART;
 
                 // third failure
-                actions[2].Delay        = NECommon::WAIT_1_SECOND;
+                actions[2].Delay        = NECommon::WAIT_10_SECONDS;
                 actions[2].Type         = SC_ACTION_RESTART;
 
                 // fourth failure
-                actions[3].Delay        = NECommon::WAIT_1_SECOND;
+                actions[3].Delay        = NECommon::WAIT_10_SECONDS;
                 actions[3].Type         = SC_ACTION_RESTART;
 
                 actions[count - 1].Delay= NECommon::DO_NOT_WAIT;

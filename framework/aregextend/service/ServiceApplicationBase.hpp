@@ -283,7 +283,7 @@ private:
     /**
      * \brief   OS specific implementation to create service.
      **/
-    bool _osCcreateService( void );
+    bool _osCreateService( void );
 
     /**
      * \brief   OS specific implementation of deleting service.
