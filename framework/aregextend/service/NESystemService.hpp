@@ -36,13 +36,13 @@ namespace NESystemService
     enum class eServiceOption   : int32_t
     {
           CMD_Undefined     //!< Option is undefined.
-        , CMD_Console       //!< Option is to execute process as console application.
         , CMD_Help          //!< Option is to display help on console.
         , CMD_Load          //!< Option is to start the process and load configuration from specified file
+        , CMD_Verbose       //!< Option is to display the data rate when execute process as console application.
+        , CMD_Uninstall     //!< Option is to uninstall (unregister) service in the system.
         , CMD_Install       //!< Option is to install (register) service in the system.
         , CMD_Service       //!< Option is to execute process as a system service (in background).
-        , CMD_Uninstall     //!< Option is to uninstall (unregister) service in the system.
-        , CMD_Verbose       //!< Option is to display the data rate when execute process as console application.
+        , CMD_Console       //!< Option is to execute process as console application.
 
         , CMD_Custom        //!< No option, reserved for the custom options.
     };

@@ -73,6 +73,12 @@ public:
     static constexpr int        RESULT_FAILED_RUN       { 3 };
 
     /**
+     * \brief   SystemServiceBase::RESULT_IGNORED
+     *          Returns value indicating that the operation was ignored.
+     **/
+    static constexpr int        RESULT_IGNORED          { 4 };
+
+    /**
      * \brief   SystemServiceBase::eServiceControl
      *          The control constants of the service.
      **/
@@ -141,12 +147,23 @@ public:
     virtual bool prepareOptions(const OptionParser::InputOptionList& opts);
 
     /**
-     * \brief   Called from main to start execution of  message router service.
-     * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
-     * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
-     * \return  Returns the result to return in main function.
+     * \brief   Dispatches the option, makes basic initialization like setting configuration file or set verbose flag.
+     * \param   opt     The option to dispatch.
+     * \return  If operation succeeded, returns true. Otherwise, if the option is not recognized or value is unexpected,
+     *          returns false.
      **/
-    virtual int serviceMain( int argc, char ** argv );
+    virtual bool dispatchOption(const OptionParser::sOption& opt);
+
+    /**
+     * \brief   Is the main entry point to install, uninstall, register and start service.
+     *          Normally, called from the main() method.
+     * \param   optStartup  Option that is set to start service. Can be eServiceOption::CMD_Undefined
+     *                      if need to run with default option.
+     * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
+     *                      or need to use default value.
+     * \return  The result of execution.
+     **/
+    virtual int serviceMain(NESystemService::eServiceOption optStartup, const char* argument);
 
     /**
      * \brief   Sends remote message to the target specified in the message structure.
@@ -155,13 +172,14 @@ public:
     virtual void sendMessageToTarget(const RemoteMessage& message);
 
     /**
-     * \brief   Triggered when need to initialize the service application.
-     * \param   argc        The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
-     * \param   argv        The 'argv' parameter passed from 'main', indicated parameters passed to executable.
-     * \return  Returns true if succeeded to initialize application and the application can continue run.
+     * \brief   Triggered to initialize the service application.
+     * \param   option      The option that was set to run. Can be eServiceOption::CMD_Undefined if unknown or should be ignored.
+     * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
+     * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
+     * \return  Returns true if succeeded to initialize application and the application can run.
      *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
      **/
-    virtual bool serviceInitialize(int argc, char** argv) = 0;
+    virtual bool serviceInitialize(NESystemService::eServiceOption option, const char* value, const char* fileConfig) = 0;
 
     /**
      * \brief   Triggered when service application is going to exit.
@@ -220,6 +238,15 @@ public:
      * \brief   Sets the state of the system service.
      **/
     virtual bool setState( NESystemService::eSystemServiceState newState ) = 0;
+
+    /**
+     * \brief   Called to setup service and start service dispatcher.
+     * \return  Returns value indicating the successful state of the operation.
+     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
+     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
+     *          In all other cases it should return RESULT_FAILED_INIT.
+     **/
+    virtual int startServiceDispatcher( void ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

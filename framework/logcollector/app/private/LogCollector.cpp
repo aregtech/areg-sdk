@@ -112,7 +112,7 @@ const OptionParser::sOptionSetup LogCollector::ValidOptions[ ]
     , { "-p", "--pause"     , static_cast<int>(eLoggerOptions::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-q", "--quit"      , static_cast<int>(eLoggerOptions::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-r", "--restart"   , static_cast<int>(eLoggerOptions::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int>(eLoggerOptions::CMD_LogService)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int>(eLoggerOptions::CMD_LogService)      , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
     , { "-t", "--silent"    , static_cast<int>(eLoggerOptions::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-u", "--uninstall" , static_cast<int>(eLoggerOptions::CMD_LogUninstall)    , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-v", "--verbose"   , static_cast<int>(eLoggerOptions::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }

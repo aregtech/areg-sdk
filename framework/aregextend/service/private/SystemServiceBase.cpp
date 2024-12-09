@@ -79,8 +79,9 @@ bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::
     if (argc > 1)
     {
         OptionParser parser(optSetup, optCount);
-        if (parser.parseCommandLine(argv, argc > 1 ? static_cast<uint32_t>(argc) : 0))
+        if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
         {
+            parser.sort();
             result = prepareOptions(parser.getOptions());
         }
         else
@@ -100,50 +101,59 @@ bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::
 
 bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
 {
-    bool result{ false };
-    bool outHelp{ false };
+    bool result{ true };
 
     for (uint32_t i = 0; i < opts.getSize(); ++i)
     {
         const OptionParser::sOption& opt = opts[i];
-        switch (static_cast<NESystemService::eServiceOption>(opt.inCommand))
+        result &= dispatchOption(opt);
+    }
+
+    return result;
+}
+
+bool SystemServiceBase::dispatchOption(const OptionParser::sOption& opt)
+{
+    bool result{ false };
+    bool outHelp{ false };
+
+    switch (static_cast<NESystemService::eServiceOption>(opt.inCommand))
+    {
+    case NESystemService::eServiceOption::CMD_Install:  // fall through
+    case NESystemService::eServiceOption::CMD_Uninstall:// fall through
+    case NESystemService::eServiceOption::CMD_Service:  // fall through
+    case NESystemService::eServiceOption::CMD_Console:
+        result = true;
+        setCurrentOption(static_cast<NESystemService::eServiceOption>(opt.inCommand));
+        break;
+
+    case NESystemService::eServiceOption::CMD_Load:
+    {
+        String filePath(opt.inString[0]);
+        result = File::existFile(filePath);
+        if (result)
         {
-        case NESystemService::eServiceOption::CMD_Install:  // fall through
-        case NESystemService::eServiceOption::CMD_Uninstall:// fall through
-        case NESystemService::eServiceOption::CMD_Service:  // fall through
-        case NESystemService::eServiceOption::CMD_Console:
-            result = true;
-            setCurrentOption(static_cast<NESystemService::eServiceOption>(opt.inCommand));
-            break;
-
-        case NESystemService::eServiceOption::CMD_Load:
-            {
-                result = true;
-                String filePath(opt.inString[0]);
-                if (File::existFile(filePath))
-                {
-                    mFileConfig = filePath;
-                }
-            }
-            break;
-
-        case NESystemService::eServiceOption::CMD_Verbose:
-            mCommunication.enableCalculateDataRate(true);
-            setCurrentOption(NESystemService::eServiceOption::CMD_Console);
-            result = true;
-            break;
-
-        case NESystemService::eServiceOption::CMD_Help:
-            outHelp = true;
-            break;
-
-        case NESystemService::eServiceOption::CMD_Undefined:// fall through
-        case NESystemService::eServiceOption::CMD_Custom:   // fall through
-        default:
-            setCurrentOption(NESystemService::eServiceOption::CMD_Undefined);
-            outHelp = true;
-            break;
+            mFileConfig = filePath;
         }
+    }
+    break;
+
+    case NESystemService::eServiceOption::CMD_Verbose:
+        mCommunication.enableCalculateDataRate(true);
+        setCurrentOption(NESystemService::eServiceOption::CMD_Console);
+        result = true;
+        break;
+
+    case NESystemService::eServiceOption::CMD_Help:
+        outHelp = true;
+        break;
+
+    case NESystemService::eServiceOption::CMD_Undefined:// fall through
+    case NESystemService::eServiceOption::CMD_Custom:   // fall through
+    default:
+        setCurrentOption(NESystemService::eServiceOption::CMD_Undefined);
+        outHelp = true;
+        break;
     }
 
     if (outHelp)
@@ -155,37 +165,43 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
     return result;
 }
 
-int SystemServiceBase::serviceMain( int argc, char ** argv )
+int SystemServiceBase::serviceMain(NESystemService::eServiceOption optStartup, const char* argument)
 {
     int result{ RESULT_SUCCEEDED };
-    if (serviceInitialize(argc, argv))
+    if (serviceInitialize(optStartup, argument, nullptr))
     {
         LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);
-        LOG_DBG( "Starting log collector service. There are [ %d ] arguments in the list...", argc );
+        LOG_DBG( "Starting log collector service, the current option [ %s ]", NESystemService::getString(optStartup) );
         setState(NESystemService::eSystemServiceState::ServiceStarting);
 
-#ifdef  DEBUG
-    for ( int i = 0; i < argc; ++ i )
-        LOG_DBG( "... Command argument [ %d ]: [ %s ]", i, argv[ i ] );
-#endif  // DEBUG
-
-        if (registerService() || (mSystemServiceOption == NESystemService::eServiceOption::CMD_Console))
+        if (registerService())
         {
-            LOG_DBG("Starting service");
+            LOG_DBG("Registered service, starting service");
+            serviceStart();
+        }
+        else if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Console)
+        {
+            LOG_DBG("Starting in console mode, starting service");
             serviceStart();
         }
 
         if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Service)
         {
+            LOG_DBG("Starts to run service...");
             runService();
         }
         else if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Console)
         {
+            LOG_DBG("Entering console mode...");
 #if AREG_EXTENDED
             runConsoleInputExtended();
 #else   // !AREG_EXTENDED
             runConsoleInputSimple();
 #endif  // !AREG_EXTENDED
+        }
+        else
+        {
+            LOG_DBG("Unexpected option [ %s ]", NESystemService::getString(mSystemServiceOption));
         }
 
         serviceStop();

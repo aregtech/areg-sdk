@@ -30,20 +30,17 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
 
 ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicatonBase& commBase)
-    : SystemServiceBase         ( commBase )
+    : SystemServiceBase ( commBase )
+    , mServiceSetup     (false)
 {
 }
 
-int ServiceApplicationBase::serviceMain(int argc, char** argv)
+int ServiceApplicationBase::serviceMain(NESystemService::eServiceOption optStartup, const char* argument)
 {
     int result{ RESULT_SUCCEEDED };
     Application::setWorkingDirectory(nullptr);
-    if (parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
-    {
-        resetDefaultOptions();
-    }
-
-    switch (getCurrentOption())
+    mSystemServiceOption = optStartup;
+    switch (optStartup)
     {
     case NESystemService::eServiceOption::CMD_Install:
         if (serviceInstall() == false)
@@ -56,11 +53,19 @@ int ServiceApplicationBase::serviceMain(int argc, char** argv)
         serviceUninstall();
         break;
 
-    case NESystemService::eServiceOption::CMD_Service:  // fall through
+    case NESystemService::eServiceOption::CMD_Service:
+        result = startServiceDispatcher( );
+        if (result == RESULT_IGNORED)
+        {
+            result = SystemServiceBase::serviceMain(optStartup, argument);
+            mCommunication.waitToComplete();
+        }
+        break;
+
     case NESystemService::eServiceOption::CMD_Load:     // fall through
     case NESystemService::eServiceOption::CMD_Console:  // fall through
     case NESystemService::eServiceOption::CMD_Custom:
-        result = SystemServiceBase::serviceMain(static_cast<int>(argc), argv);
+        result = SystemServiceBase::serviceMain(optStartup, argument);
         mCommunication.waitToComplete();
         break;
 
@@ -77,15 +82,27 @@ int ServiceApplicationBase::serviceMain(int argc, char** argv)
     return result;
 }
 
-bool ServiceApplicationBase::serviceInitialize(int /* argc */, char** /* argv */)
+bool ServiceApplicationBase::serviceInitialize(NESystemService::eServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
 {
     // Start only tracing and timer manager.
+    if (NEString::isEmpty(fileConfig))
+    {
+        if (mFileConfig.isEmpty())
+        {
+            fileConfig = NEApplication::DEFAULT_CONFIG_FILE.data();
+        }
+        else
+        {
+            fileConfig = mFileConfig.getString();
+        }
+    }
+
     Application::initApplication( true
                                 , true
                                 , false
                                 , true
                                 , false
-                                , mFileConfig.isEmpty() ? NEApplication::DEFAULT_CONFIG_FILE.data() : mFileConfig.getString()
+                                , fileConfig
                                 , static_cast<IEConfigurationListener*>(this));
     return _osInitializeService();
 }
@@ -99,7 +116,7 @@ bool ServiceApplicationBase::serviceInstall(void)
 {
     if (_osOpenService() == false)
     {
-        _osCcreateService();
+        _osCreateService();
     }
 
     return _osIsValid();
@@ -129,6 +146,7 @@ bool ServiceApplicationBase::serviceStart(void)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
     LOG_DBG("Starting [ %s ] system service", getServiceNameA());
+
     bool result{ false };
     NERemoteService::eRemoteServices serviceType = getServiceType();
     NERemoteService::eConnectionTypes connectType = getConnectionType();
@@ -208,6 +226,19 @@ bool ServiceApplicationBase::setState(NESystemService::eSystemServiceState newSt
 void ServiceApplicationBase::runService(void)
 {
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
+}
+
+int ServiceApplicationBase::startServiceDispatcher( void )
+{
+    int result{ RESULT_IGNORED };
+    if (mServiceSetup == false)
+    {
+        mServiceSetup = true;
+        result = _osStartServiceDispatcher();
+        mServiceSetup = (result == RESULT_SUCCEEDED) || (result == RESULT_IGNORED);
+    }
+
+    return result;
 }
 
 void ServiceApplicationBase::prepareSaveConfiguration(ConfigManager& /* config */)

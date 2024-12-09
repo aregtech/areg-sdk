@@ -185,6 +185,15 @@ public:
     template <typename V>
     friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList< V > & output);
 
+    /**
+     * \brief   Sorts the array, compares the elements by given Compare functionality.
+     * \param   list    Array object to sort.
+     * \param   comp    The comparing method, similar to the method  std::greater()
+     * \return  Sorts and returns the 'list' object.
+     **/
+    template <typename V, class Compare>
+    friend TEArrayList< V >& sortArray(TEArrayList< V >& list, Compare comp);
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
@@ -1108,6 +1117,13 @@ IEOutStream & operator << ( IEOutStream& stream, const TEArrayList< V >& output 
     }
 
     return stream;
+}
+
+template <typename V, class Compare>
+TEArrayList< V >& sortArray(TEArrayList< V >& list, Compare comp)
+{
+    std::sort(list.mValueList.begin(), list.mValueList.end(), comp);
+    return list;
 }
 
 #endif  // AREG_BASE_TEARRAYLIST_HPP

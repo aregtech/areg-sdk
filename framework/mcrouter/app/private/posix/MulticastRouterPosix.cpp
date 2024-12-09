@@ -30,7 +30,9 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    return MulticastRouter::getInstance().serviceMain(argc, argv);
+    MulticastRouter& router = MulticastRouter::getInstance();
+    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
+    return router.serviceMain(router.getCurrentOption(), nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

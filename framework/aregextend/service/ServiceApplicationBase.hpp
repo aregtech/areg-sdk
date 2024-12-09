@@ -138,20 +138,25 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Called from main to start execution of  message router service.
-     * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
-     * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
+     * \brief   Is the main entry point to install, uninstall, register and start service.
+     *          Normally, called from the main() method.
+     * \param   optStartup  Option that is set to start service. Can be eServiceOption::CMD_Undefined
+     *                      if need to run with default option.
+     * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
+     *                      or need to use default value.
+     * \return  The result of execution.
      **/
-    virtual int serviceMain( int argc, char ** argv ) override;
+    virtual int serviceMain(NESystemService::eServiceOption optStartup, const char* argument) override;
 
     /**
-     * \brief   Triggered when need to initialize the service application.
-     * \param   argc        The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
-     * \param   argv        The 'argv' parameter passed from 'main', indicated parameters passed to executable.
-     * \return  Returns true if succeeded to initialize application and the application can continue run.
+     * \brief   Triggered to initialize the service application.
+     * \param   option      The option that was set to run. Can be eServiceOption::CMD_Undefined if unknown or should be ignored.
+     * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
+     * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
+     * \return  Returns true if succeeded to initialize application and the application can run.
      *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
      **/
-    virtual bool serviceInitialize(int argc, char** argv) override;
+    virtual bool serviceInitialize(NESystemService::eServiceOption option, const char* value, const char* fileConfig) override;
 
     /**
      * \brief   Triggered when application is going to exit.
@@ -215,6 +220,15 @@ public:
      * \brief   Run application as a background process without input or output on console.
      **/
     virtual void runService(void) override;
+
+    /**
+     * \brief   Called to setup service and start service dispatcher.
+     * \return  Returns value indicating the successful state of the operation.
+     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
+     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
+     *          In all other cases it should return RESULT_FAILED_INIT.
+     **/
+    virtual int startServiceDispatcher( void ) override;
 
 protected:
 
@@ -283,7 +297,7 @@ private:
     /**
      * \brief   OS specific implementation to create service.
      **/
-    bool _osCcreateService( void );
+    bool _osCreateService( void );
 
     /**
      * \brief   OS specific implementation of deleting service.
@@ -308,6 +322,21 @@ private:
      * \return  Returns true if succeeded to get user input.
      **/
     bool _osWaitUserInput(char* buffer, unsigned int bufSize);
+
+    /**
+     * \brief   OS specific implementation to setup the service and start the dispatcher.
+     * \return  Returns value indicating the successful state of the operation.
+     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
+     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
+     *          In all other cases it should return RESULT_FAILED_INIT.
+     **/
+    int _osStartServiceDispatcher( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
+    bool    mServiceSetup;  //!< Flag, indicating whether service si setup or not.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.

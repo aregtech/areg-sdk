@@ -50,7 +50,7 @@ bool ServiceApplicationBase::_osOpenService(void)
     return true;
 }
 
-bool ServiceApplicationBase::_osCcreateService(void)
+bool ServiceApplicationBase::_osCreateService(void)
 {
     return true;
 }
@@ -105,6 +105,11 @@ bool ServiceApplicationBase::_osWaitUserInput(char* buffer, unsigned int bufSize
 #else   // __STDC_WANT_LIB_EXT1__
     return (fgets(buffer, bufSize, stdin) != nullptr);
 #endif  // __STDC_WANT_LIB_EXT1__
+}
+
+int ServiceApplicationBase::_osStartServiceDispatcher(void)
+{
+    return RESULT_IGNORED;
 }
 
 #endif  // _POSIX

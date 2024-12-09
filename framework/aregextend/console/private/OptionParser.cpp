@@ -404,6 +404,15 @@ uint32_t OptionParser::findOption(int optId) const
     return result;
 }
 
+void OptionParser::sort(void)
+{
+    ::sortArray(mInputOptions, [](const OptionParser::sOption& opt1, const OptionParser::sOption& opt2)
+                                {
+                                    return (opt1.inCommand > opt2.inCommand);
+                                }
+               );
+}
+
 OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, uint32_t refSetup )
 {
     ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize()) );
