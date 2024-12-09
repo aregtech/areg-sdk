@@ -94,18 +94,18 @@ DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_setState);
 
 const OptionParser::sOptionSetup MulticastRouter::ValidOptions[ ]
 {
-      { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int>(eRouterOptions::CMD_RouterInstall)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int>(eRouterOptions::CMD_RouterLoad)      , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int>(eRouterOptions::CMD_RouterService)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-t", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int>(eRouterOptions::CMD_RouterUninstall) , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA , {}, {}, {} }
+      { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int>(eRouterOptions::CMD_RouterInstall)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int>(eRouterOptions::CMD_RouterLoad)      , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int>(eRouterOptions::CMD_RouterService)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int>(eRouterOptions::CMD_RouterUninstall) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 MulticastRouter & MulticastRouter::getInstance(void)

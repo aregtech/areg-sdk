@@ -441,6 +441,14 @@ public:
     uint32_t findOption(int optId) const;
 
     /**
+     * \brief   Sort the entries of options by the ID (value) of commands.
+     *          The method is useful if the command has multiple options and they need to be
+     *          executed by certain priority. Here the priority is set based on command ID,
+     *          so that the command with the lowest ID is listed and can be executed first.
+     **/
+    void sort(void);
+
+    /**
      * \ brief  Returns the list of parsed options.
      **/
     inline const InputOptionList & getOptions( void ) const;

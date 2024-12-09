@@ -30,8 +30,8 @@
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
-VOID WINAPI _win32ServiceMain(DWORD argc, LPTSTR * argv);
-VOID WINAPI _win32ServiceCtrlHandler(DWORD);
+extern VOID WINAPI _win32ServiceMain(DWORD argc, LPTSTR * argv);
+extern VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 
 #ifdef UNICODE
     #define     getServiceName          getServiceNameW
@@ -48,7 +48,7 @@ namespace
 {
     SERVICE_STATUS          _serviceStatus{ };
     SERVICE_STATUS_HANDLE   _statusHandle{ nullptr };
-    // SERVICE_TABLE_ENTRY     _serviceTable[]{ {nullptr, &::_win32ServiceMain}, {nullptr, nullptr} };
+    SERVICE_TABLE_ENTRY     _serviceTable[2]{ };
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,7 +197,7 @@ bool ServiceApplicationBase::_osRegisterService(void)
 {
     if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Service)
     {
-        _statusHandle = ::RegisterServiceCtrlHandler(getServiceName(), _win32ServiceCtrlHandler);
+        _statusHandle = ::RegisterServiceCtrlHandler(getServiceName(), &::_win32ServiceCtrlHandler);
     }
 
     return (_statusHandle != nullptr);
@@ -270,6 +270,15 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
 bool ServiceApplicationBase::_osWaitUserInput(char* buffer, unsigned int bufSize)
 {
     return(gets_s(buffer, bufSize) != nullptr);
+}
+
+int ServiceApplicationBase::_osStartServiceDispatcher(void)
+{
+    _serviceTable[0].lpServiceName = getServiceName();
+    _serviceTable[0].lpServiceProc = &::_win32ServiceMain;
+    _serviceTable[1].lpServiceName = nullptr;
+    _serviceTable[1].lpServiceProc = nullptr;
+    return (::StartServiceCtrlDispatcher(_serviceTable) ? RESULT_SUCCEEDED : RESULT_FAILED_INIT);
 }
 
 #endif // WINDOWS

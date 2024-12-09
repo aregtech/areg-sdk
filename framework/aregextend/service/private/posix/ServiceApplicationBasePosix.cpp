@@ -107,4 +107,9 @@ bool ServiceApplicationBase::_osWaitUserInput(char* buffer, unsigned int bufSize
 #endif  // __STDC_WANT_LIB_EXT1__
 }
 
+int ServiceApplicationBase::_osStartServiceDispatcher(void)
+{
+    return RESULT_IGNORED;
+}
+
 #endif  // _POSIX

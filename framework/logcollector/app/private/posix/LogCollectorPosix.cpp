@@ -30,7 +30,9 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    return LogCollector::getInstance().serviceMain( static_cast<int>(argc), argv);
+    LogCollector& logger = LogCollector::getInstance();
+    logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
+    return logger.serviceMain(logger.getCurrentOption(), nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

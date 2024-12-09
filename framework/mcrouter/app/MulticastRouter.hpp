@@ -52,13 +52,13 @@ private:
     enum class eRouterOptions : int32_t
     {
           CMD_RouterUndefined   = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Undefined)  //!< Undefined command.
-        , CMD_RouterConsole     = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option
         , CMD_RouterPrintHelp   = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Help)       //!< Print help.
         , CMD_RouterLoad        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_RouterVerbose     = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features
+        , CMD_RouterUninstall   = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS
         , CMD_RouterInstall     = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS
         , CMD_RouterService     = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Service)    //!< Start router as a service. Valid only as a command line option in Windows OS
-        , CMD_RouterUninstall   = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS
-        , CMD_RouterVerbose     = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features
+        , CMD_RouterConsole     = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option
         , CMD_RouterPause       = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Custom)     //!< Pause router.
         , CMD_RouterRestart                                                                             //!< Start / Restart router.
         , CMD_RouterInstances                                                                           //!< Display list of connected instances.
