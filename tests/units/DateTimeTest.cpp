@@ -23,6 +23,7 @@
 #include "areg/base/NEMath.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/Thread.hpp"
 
 #ifdef WINDOWS
     #include <Windows.h>
@@ -164,6 +165,23 @@ TEST( DateTimeTest, TestNow )
 
     date.getDateTime( sysTime );
     _checkTimeStruct( sysTime, "UTC " );
+}
+
+TEST( DateTimeTest, TestOperators)
+{
+    using namespace std::chrono_literals;
+
+    DateTime dateOld( DateTime::getNow( ) );
+
+    Thread::sleep( NECommon::WAIT_100_MILLISECONDS );
+
+    DateTime dateNew( DateTime::getNow( ) );
+
+    ASSERT_TRUE( dateOld < dateNew);
+    ASSERT_TRUE( dateOld <= dateNew);
+    ASSERT_TRUE( dateOld != dateNew);
+    ASSERT_TRUE( dateNew > dateOld);
+    ASSERT_TRUE( dateNew >= dateOld);
 }
 
 /**
