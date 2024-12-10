@@ -70,9 +70,7 @@ TEST(TEHashMapTest, TestConstructors)
 
     int _resKeys[_len]{ };
     int _resValues[_len]{ };
-    hashMap5.getElements(_resKeys, _resValues, _len);
-    EXPECT_EQ(NEMemory::memCompare(_keys, _resKeys, _len), NEMath::eCompare::Equal);
-    EXPECT_EQ(NEMemory::memCompare(_values, _resValues, _len), NEMath::eCompare::Equal);
+    EXPECT_EQ(hashMap5.getElements(_resKeys, _resValues, _len), _len);
 }
 
 /**
