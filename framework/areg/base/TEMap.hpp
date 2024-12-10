@@ -77,6 +77,7 @@ class TEMap : protected Constless< std::map<KEY, VALUE> >
 public:
     //! Position in the sorted map
     using MAPPOS    = typename std::map<KEY, VALUE>::iterator;
+    using Compare   = typename std::map<KEY, VALUE>::key_compare;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -91,7 +92,6 @@ public:
     /**
      * \brief	Creates empty map and using comparison function object 'comp'.
      **/
-    template<class Compare>
     TEMap(Compare comp);
 
     /**
@@ -531,10 +531,9 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template<typename KEY, typename VALUE>
-template<class Compare>
 inline TEMap<KEY, VALUE>::TEMap(Compare comp)
     : Constless< std::map<KEY, VALUE> >()
-    , mValueList(static_cast<std::map<KEY, VALUE>::key_compare>(comp))
+    , mValueList(comp)
 {
 }
 
