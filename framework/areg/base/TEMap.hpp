@@ -26,6 +26,7 @@
 #include "areg/base/NEMemory.hpp"
 
 #include <map>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////
 // TEMap<KEY, VALUE> class template declaration
@@ -76,6 +77,7 @@ class TEMap : protected Constless< std::map<KEY, VALUE> >
 public:
     //! Position in the sorted map
     using MAPPOS    = typename std::map<KEY, VALUE>::iterator;
+    using Compare   = typename std::map<KEY, VALUE>::key_compare;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -88,6 +90,11 @@ public:
     TEMap( void ) = default;
 
     /**
+     * \brief	Creates empty map and using comparison function object 'comp'.
+     **/
+    TEMap(Compare comp);
+
+    /**
      * \brief   Copies entries from given source.
      * \param   src     The source to copy data.
      **/
@@ -98,6 +105,17 @@ public:
      * \param   src     The source to move data.
      **/
     TEMap( TEMap<KEY, VALUE> && src ) noexcept = default;
+
+    /**
+     * \brief   Compiles entries from the given array of keys and values,
+     *          where the amount of key and value entries are equal.
+     *          If any key is repeating in the list, it will be replaced by new value.
+     *          The number of entries in the map is equal to 'count' only if all keys are unique.
+     * \param   keys    The list of keys to copy.
+     * \param   values  The list of values to pair with keys.
+     * \param   count   The number of entries in the key and value entries.
+     **/
+    TEMap(const KEY* keys, const VALUE* values, uint32_t count);
 
     /**
      * \brief   Destructor.
@@ -479,6 +497,21 @@ public:
      **/
     inline bool nextEntry(MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue ) const;
 
+     /**
+      * \brief   Copies elements from the map into the provided pre-allocated buffer of keys and values.
+      *          If `elemCount` is less than the number of elements in the map,
+      *          only the first `elemCount` elements are copied. Otherwise, all elements
+      *          in the map are copied. No elements are copied if `elemCount` is 0.
+      * \param   keys [in, out]     A pre-allocated buffer where the keys of the map elements will be copied.
+      *                             Must be large enough to hold at least `elemCount` elements.
+      * \param   values [in, out]   A pre-allocated buffer where the values of the map elements will be copied.
+      *                             Must be large enough to hold at least `elemCount` elements.
+      * \param   elemCount [in]  The maximum number of elements to copy into the keys and values buffer.
+      *                          If set to 0, no elements are copied.
+      * \return  The number of elements successfully copied.
+      **/
+    inline uint32_t getElements(KEY * keys, VALUE * values, uint32_t elemCount);
+
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
 //////////////////////////////////////////////////////////////////////////
@@ -496,6 +529,24 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // TEMap<KEY, VALUE> class template Implement
 //////////////////////////////////////////////////////////////////////////
+
+template<typename KEY, typename VALUE>
+inline TEMap<KEY, VALUE>::TEMap(Compare comp)
+    : Constless< std::map<KEY, VALUE> >()
+    , mValueList(comp)
+{
+}
+
+template<typename KEY, typename VALUE>
+TEMap<KEY, VALUE>::TEMap(const KEY* keys, const VALUE* values, uint32_t count)
+    : Constless< std::map<KEY, VALUE> >()
+    , mValueList()
+{
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        mValueList[keys[i]] = values[i];
+    }
+}
 
 template < typename KEY, typename VALUE >
 inline bool TEMap<KEY, VALUE>::operator == (const TEMap<KEY, VALUE>& other) const
@@ -906,6 +957,28 @@ inline bool TEMap<KEY, VALUE>::nextEntry(TEMap<KEY, VALUE>::MAPPOS & IN OUT in_o
         out_NextKey     = in_out_NextPosition->first;
         out_NextValue   = in_out_NextPosition->second;
         result = true;
+    }
+
+    return result;
+}
+
+template<typename KEY, typename VALUE>
+inline uint32_t TEMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint32_t elemCount)
+{
+    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    if (result > 0)
+    {
+        uint32_t i = 0;
+        for (const auto& elem : mValueList)
+        {
+            keys[i] = elem.first;
+            values[i] = elem.second;
+
+            if (++i == result)
+            {
+                break;
+            }
+        }
     }
 
     return result;

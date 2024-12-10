@@ -453,3 +453,41 @@ TEST(TEStackTest, TestLockAndNolockStackStreaming)
     EXPECT_FALSE(nolock.isEmpty());
     EXPECT_EQ(lock, nolock);
 }
+
+/**
+ * \brief   Tests ascending sorting of stack.
+ **/
+TEST(TEStackTest, TestSortAscending)
+{
+    using Stack = TENolockStack<int>;
+
+    constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+    constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+
+    Stack arr1(_arr1, _len), res1(_res1, _len);
+    arr1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
+
+    EXPECT_NE(arr1, Stack(_arr1, _len));
+    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1, res1);
+}
+
+/**
+ * \brief   Tests descending sorting of fixed array.
+ **/
+TEST(TEStackTest, TestSortDescending)
+{
+    using Stack = TENolockStack<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+
+    Stack arr1(_arr1, _len), res1(_res1, _len);
+    arr1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });
+
+    EXPECT_NE(arr1, Stack(_arr1, _len));
+    EXPECT_EQ(arr1.getSize(), _len);
+    EXPECT_EQ(arr1, res1);
+}

@@ -69,6 +69,9 @@ if(AREG_BUILD_TESTS)
         # 'gtest' libraries are built
         add_dependencies(areg-unit-tests areg-dummy)
     endif()
+else()
+    option(AREG_GTEST_PACKAGE   "Use GTest package"         FALSE)
+    option(AREG_GTEST_FOUND     "GTest package found flag"  FALSE)
 endif()
 
 if (AREG_INSTALL)

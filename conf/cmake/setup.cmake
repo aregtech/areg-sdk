@@ -102,7 +102,3 @@ if (NOT "${AREG_PACKAGES}" STREQUAL "")
 else()
     set(AREG_PACKAGES "${FETCHCONTENT_BASE_DIR}")
 endif()
-
-if (NOT AREG_BUILD_TESTS)
-    set(AREG_GTEST_PACKAGE OFF)
-endif()

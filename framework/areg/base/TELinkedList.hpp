@@ -78,6 +78,13 @@ public:
     TELinkedList( TELinkedList<VALUE> && src ) noexcept = default;
 
     /**
+     * \brief   Compiles entries from the given array of objects.
+     * \param   list    The list of entries to copy.
+     * \param   count   The number of entries in the array.
+     **/
+    TELinkedList(const VALUE* list, uint32_t count);
+
+    /**
      * \brief   Destructor.
      **/
     ~TELinkedList( void ) = default;
@@ -579,6 +586,27 @@ public:
     inline void merge(TELinkedList<VALUE> & source);
     inline void merge(TELinkedList<VALUE> && source);
 
+    /**
+     * \brief   Sorts the linked list, compares the elements by given Compare functionality.
+     * \param   comp    The comparing method, similar to the method  std::greater()
+     * \return  Sorts and returns the linked list object.
+     **/
+    template <class Compare>
+    inline TELinkedList< VALUE >& sort(Compare comp);
+
+    /**
+     * \brief   Copies elements from the linked list into the provided pre-allocated buffer.
+     *          If `elemCount` is less than the number of elements in the linked list,
+     *          only the first `elemCount` elements are copied. Otherwise, all elements
+     *          in the linked list are copied. No elements are copied if `elemCount` is 0.
+     * \param   list [in, out]  A pre-allocated buffer where the linked list elements will be copied.
+     *                          Must be large enough to hold at least `elemCount` elements.
+     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
+     *                          If set to 0, no elements are copied.
+     * \return  The number of elements successfully copied into the `list` buffer.
+     **/
+    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
+
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
 //////////////////////////////////////////////////////////////////////////
@@ -615,6 +643,17 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // TELinkedList<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
+
+template<typename VALUE>
+TELinkedList<VALUE>::TELinkedList(const VALUE* list, uint32_t count)
+    : Constless<std::list<VALUE>>()
+    , mValueList()
+{
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        mValueList.push_back(list[i]);
+    }
+}
 
 template <typename VALUE >
 inline TELinkedList<VALUE>& TELinkedList<VALUE>::operator = (const TELinkedList<VALUE>& src)
@@ -1218,6 +1257,23 @@ inline void TELinkedList<VALUE>::merge(TELinkedList<VALUE>&& source)
     mValueList.merge(std::move(source.mValueList));
 }
 
+template<typename VALUE>
+inline uint32_t TELinkedList<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+{
+    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    uint32_t i = 0;
+    for (const auto& entry : mValueList)
+    {
+        list[i++] = entry;
+        if (i == result)
+        {
+            break;
+        }
+    }
+
+    return result;
+}
+
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index) const
 {
@@ -1228,6 +1284,14 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(ui
     }
 
     return _citer2pos(pos);
+}
+
+template<typename VALUE>
+template<class Compare>
+inline TELinkedList<VALUE>& TELinkedList<VALUE>::sort(Compare comp)
+{
+    mValueList.sort(comp);
+    return (*this);
 }
 
 template<typename VALUE>

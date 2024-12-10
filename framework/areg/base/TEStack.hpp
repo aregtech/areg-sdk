@@ -90,6 +90,14 @@ protected:
     TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept;
 
     /**
+     * \brief   Compiles entries from the given array of objects.
+     * \param   synchObject     The instance of synchronization object
+     * \param   list            The list of entries to copy.
+     * \param   count           The number of entries in the array.
+     **/
+    TEStack(IEResourceLock& synchObject, const VALUE* list, uint32_t count);
+
+    /**
      * \brief   Destructor. Public
      **/
     ~TEStack( void );
@@ -219,7 +227,7 @@ public:
     inline bool checkPosition(const STACKPOS pos) const;
 
     /**
-     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     * \brief	Checks whether given element exist in the stack or not. The elements of type
      *          VALUE should have comparing operators.
      * \param	elemSearch  The element to search.
      * \return	Returns true if could find element starting at given position.
@@ -227,7 +235,7 @@ public:
     inline bool contains(const VALUE& elemSearch) const;
 
     /**
-     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     * \brief	Checks whether given element exist in the stack or not. The elements of type
      *          VALUE should have comparing operators.
      * \param	elemSearch  The element to search.
      * \param	startAt	    The position to start searching.
@@ -354,7 +362,7 @@ public:
      *          to search at the beginning of stack.
      * \param   Value       The element value to search in the stack.
      * \param	searchAfter	If valid position, the searching starts from next element specified by position.
-     *                      If invalid position, the searching starts from the beginning of the linked list.
+     *                      If invalid position, the searching starts from the beginning of the stack.
      * \return  If found element, returns valid position. Otherwise, it returns invalid position.
      **/
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
@@ -375,7 +383,7 @@ public:
 
     /**
      * \brief   Returns value of element at the give position.
-     * \param   atPosition  The valid position in Linked List
+     * \param   atPosition  The valid position in stack
      **/
     inline const VALUE& valueAtPosition( const STACKPOS atPosition ) const;
     inline VALUE& valueAtPosition( STACKPOS atPosition );
@@ -388,6 +396,27 @@ public:
      *          Otherwise, it returns nullptr.
      **/
     inline STACKPOS nextPosition( STACKPOS pos ) const;
+
+    /**
+     * \brief   Sorts the stack, compares the elements by given Compare functionality.
+     * \param   comp    The comparing method, similar to the method  std::greater()
+     * \return  Sorts and returns the Stack object.
+     **/
+    template <class Compare>
+    inline TEStack< VALUE >& sort(Compare comp);
+
+    /**
+     * \brief   Copies elements from the stack into the provided pre-allocated buffer.
+     *          If `elemCount` is less than the number of elements in the stack,
+     *          only the first `elemCount` elements are copied. Otherwise, all elements
+     *          in the stack are copied. No elements are copied if `elemCount` is 0.
+     * \param   list [in, out]  A pre-allocated buffer where the stack elements will be copied.
+     *                          Must be large enough to hold at least `elemCount` elements.
+     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
+     *                          If set to 0, no elements are copied.
+     * \return  The number of elements successfully copied into the `list` buffer.
+     **/
+    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -451,6 +480,13 @@ public:
      * \param   source  The source to move data.
      **/
     TELockStack( TELockStack<VALUE> && source ) noexcept;
+
+    /**
+     * \brief   Compiles entries from the given array of objects.
+     * \param   list    The list of entries to copy.
+     * \param   count   The number of entries in the array.
+     **/
+    TELockStack(const VALUE* list, uint32_t count);
 
     /**
      * \brief   Destructor
@@ -549,6 +585,13 @@ public:
     TENolockStack( TENolockStack<VALUE> && source ) noexcept;
 
     /**
+     * \brief   Compiles entries from the given array of objects.
+     * \param   list    The list of entries to copy.
+     * \param   count   The number of entries in the array.
+     **/
+    TENolockStack(const VALUE* list, uint32_t count);
+
+    /**
      * \brief   Destructor
      **/
     ~TENolockStack( void ) = default;
@@ -633,6 +676,19 @@ TEStack<VALUE>::TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source 
 {
     Lock lock(source.mSynchObject);
     mValueList = std::move(source.mValueList);
+}
+
+template<typename VALUE>
+TEStack<VALUE>::TEStack(IEResourceLock& synchObject, const VALUE* list, uint32_t count)
+    : Constless<std::deque<VALUE>>()
+    , mValueList()
+    , mSynchObject(synchObject)
+{
+    mValueList.resize(count);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        mValueList[i] = list[i];
+    }
 }
 
 template <typename VALUE>
@@ -952,6 +1008,31 @@ inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::nextPosition( STACKPOS 
     return (++pos);
 }
 
+template<typename VALUE>
+inline uint32_t TEStack<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+{
+    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    uint32_t i = 0;
+    for (const auto& entry : mValueList)
+    {
+        list[i++] = entry;
+        if (i == result)
+        {
+            break;
+        }
+    }
+
+    return result;
+}
+
+template<typename VALUE>
+template<class Compare>
+inline TEStack<VALUE>& TEStack<VALUE>::sort(Compare comp)
+{
+    std::sort(mValueList.begin(), mValueList.end(), comp);
+    return (*this);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // TELockStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
@@ -988,6 +1069,13 @@ template <typename VALUE>
 TELockStack<VALUE>::TELockStack( TELockStack<VALUE> && source ) noexcept
     : TEStack<VALUE>( mLock, static_cast<TEStack<VALUE> &&>(source) )
     , mLock ( )
+{
+}
+
+template<typename VALUE>
+TELockStack<VALUE>::TELockStack(const VALUE* list, uint32_t count)
+    : TEStack<VALUE>(mLock, list, count)
+    , mLock()
 {
 }
 
@@ -1055,6 +1143,13 @@ template <typename VALUE>
 TENolockStack<VALUE>::TENolockStack( TENolockStack<VALUE> && source ) noexcept
     : TEStack<VALUE>( mNoLock, static_cast<TEStack<VALUE> &&>(source) )
     , mNoLock   ( )
+{
+}
+
+template<typename VALUE>
+TENolockStack<VALUE>::TENolockStack(const VALUE* list, uint32_t count)
+    : TEStack<VALUE>(mNoLock, list, count)
+    , mNoLock()
 {
 }
 

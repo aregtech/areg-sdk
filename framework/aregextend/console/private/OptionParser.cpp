@@ -406,11 +406,11 @@ uint32_t OptionParser::findOption(int optId) const
 
 void OptionParser::sort(void)
 {
-    ::sortArray(mInputOptions, [](const OptionParser::sOption& opt1, const OptionParser::sOption& opt2)
-                                {
-                                    return (opt1.inCommand > opt2.inCommand);
-                                }
-               );
+    mInputOptions.sort([](const OptionParser::sOption& opt1, const OptionParser::sOption& opt2)
+                        {
+                            // sort ascending
+                            return (opt1.inCommand < opt2.inCommand);
+                         });
 }
 
 OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, uint32_t refSetup )

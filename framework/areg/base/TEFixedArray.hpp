@@ -27,6 +27,8 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/IEIOStream.hpp"
 
+#include <algorithm>
+
 //////////////////////////////////////////////////////////////////////////
 // TEFixedArray<VALUE> class template declaration.
 //////////////////////////////////////////////////////////////////////////
@@ -89,6 +91,12 @@ public:
      * \param   src     The source to move data.
      **/
     TEFixedArray( TEFixedArray<VALUE> && src ) noexcept;
+    /**
+     * \brief   Compiles entries from the given array of objects.
+     * \param   list    The list of entries to copy.
+     * \param   count   The number of entries in the array.
+     **/
+    TEFixedArray(const VALUE* list, uint32_t count);
     /**
      * \brief   Destructor.
      **/
@@ -289,6 +297,28 @@ public:
     inline const VALUE & lastEntry( void ) const;
     inline VALUE & lastEntry( void );
 
+    /**
+     * \brief   Sorts the array, compares the elements by given Compare functionality.
+     * \param   comp    The comparing method, similar to the method  std::greater()
+     * \return  Sorts and returns the fixed array object.
+     **/
+    template <class Compare>
+    inline TEFixedArray< VALUE >& sort(Compare comp);
+
+    /**
+     * \brief   Copies elements from the array into the provided pre-allocated buffer.
+     *          If `elemCount` is less than the number of elements in the array,
+     *          only the first `elemCount` elements are copied. Otherwise, all elements
+     *          in the array are copied. No elements are copied if `elemCount` is 0
+     * \param   list [in, out]  A pre-allocated buffer where the array elements
+     *                          will be copied. Must be large enough to hold at least
+     *                          `elemCount` elements.
+     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
+     *                          If set to 0, no elements are copied.
+     * \return  The number of elements successfully copied into the `list` buffer.
+     **/
+    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
+
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
 //////////////////////////////////////////////////////////////////////////
@@ -333,6 +363,14 @@ TEFixedArray<VALUE>::TEFixedArray( TEFixedArray<VALUE> && src ) noexcept
 {
     src.mValueList  = nullptr;
     src.mElemCount  = 0;
+}
+
+template<typename VALUE>
+TEFixedArray<VALUE>::TEFixedArray(const VALUE* list, uint32_t count)
+    : mValueList(count ? DEBUG_NEW VALUE[count] : nullptr)
+    , mElemCount(mValueList != nullptr ? count : 0)
+{
+    NEMemory::copyElems<VALUE>(mValueList, list, mElemCount);
 }
 
 template< typename VALUE >
@@ -553,6 +591,30 @@ inline VALUE & TEFixedArray<VALUE>::lastEntry( void )
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ mElemCount - 1 ];
+}
+
+template<typename VALUE>
+template<class Compare>
+inline TEFixedArray<VALUE>& TEFixedArray<VALUE>::sort(Compare comp)
+{
+    if (mValueList != nullptr)
+    {
+        std::sort(mValueList, mValueList + mElemCount, comp);
+    }
+
+    return (*this);
+}
+
+template<typename VALUE>
+inline uint32_t TEFixedArray<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+{
+    uint32_t result{ MACRO_MIN(mElemCount, elemCount) };
+    for (uint32_t i = 0; i < result; ++i)
+    {
+        list[i] = mValueList[i];
+    }
+
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////////

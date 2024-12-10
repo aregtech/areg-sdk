@@ -59,6 +59,18 @@ TEST(TEHashMapTest, TestConstructors)
     EXPECT_TRUE(hashMap1.isEmpty());
     EXPECT_EQ(hashMap3, hashMap4);
     EXPECT_EQ(hashMap1, hashMap2);
+
+    // Step 3: initialize from array
+    constexpr int _keys[]  {  1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    constexpr int _values[]{ 10, 9, 8, 7, 6, 5, 4, 3, 2,  1 };
+    constexpr uint32_t _len{ MACRO_ARRAYLEN(_keys) };
+    HashMap hashMap5(_keys, _values, _len);
+
+    EXPECT_EQ(hashMap5.getSize(), _len);
+
+    int _resKeys[_len]{ };
+    int _resValues[_len]{ };
+    EXPECT_EQ(hashMap5.getElements(_resKeys, _resValues, _len), _len);
 }
 
 /**

@@ -109,6 +109,17 @@ public:
     TEHashMap( TEHashMap<KEY, VALUE> && src ) noexcept = default;
 
     /**
+     * \brief   Compiles entries from the given array of keys and values,
+     *          where the amount of key and value entries are equal.
+     *          If any key is repeating in the list, it will be replaced by new value.
+     *          The number of entries in the hash-map is equal to 'count' only if all keys are unique.
+     * \param   keys    The list of keys to copy.
+     * \param   values  The list of values to pair with keys.
+     * \param   count   The number of entries in the key and value entries.
+     **/
+    TEHashMap(const KEY* keys, const VALUE * values, uint32_t count);
+
+    /**
      * \brief   Destructor.
      **/
     ~TEHashMap( void );
@@ -487,6 +498,21 @@ public:
      **/
     inline bool nextEntry(MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue ) const;
 
+     /**
+      * \brief   Copies elements from the hash-map into the provided pre-allocated buffer of keys and values.
+      *          If `elemCount` is less than the number of elements in the hash-map,
+      *          only the first `elemCount` elements are copied. Otherwise, all elements
+      *          in the hash-map are copied. No elements are copied if `elemCount` is 0.
+      * \param   keys [in, out]     A pre-allocated buffer where the keys of the hash-map elements will be copied.
+      *                             Must be large enough to hold at least `elemCount` elements.
+      * \param   values [in, out]   A pre-allocated buffer where the values of the hash-map elements will be copied.
+      *                             Must be large enough to hold at least `elemCount` elements.
+      * \param   elemCount [in]  The maximum number of elements to copy into the keys and values buffer.
+      *                          If set to 0, no elements are copied.
+      * \return  The number of elements successfully copied.
+      **/
+    inline uint32_t getElements(KEY * keys, VALUE * values, uint32_t elemCount);
+
 //////////////////////////////////////////////////////////////////////////
 //Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -522,6 +548,18 @@ TEHashMap<KEY, VALUE>::TEHashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HA
     : Constless<std::unordered_map<KEY, VALUE>>( )
     , mValueList(hashSize)
 {
+}
+
+template<typename KEY, typename VALUE>
+TEHashMap<KEY, VALUE>::TEHashMap(const KEY* keys, const VALUE* values, uint32_t count)
+    : Constless<std::unordered_map<KEY, VALUE>>()
+    , mValueList()
+{
+    mValueList.reserve(count);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        mValueList[keys[i]] = values[i];
+    }
 }
 
 template < typename KEY, typename VALUE >
@@ -936,6 +974,28 @@ inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & IN 
         out_NextKey     = in_out_NextPosition->first;
         out_NextValue   = in_out_NextPosition->second;
         result = true;
+    }
+
+    return result;
+}
+
+template<typename KEY, typename VALUE>
+inline uint32_t TEHashMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint32_t elemCount)
+{
+    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount)};
+    if (result > 0)
+    {
+        uint32_t i = 0;
+        for (const auto & elem : mValueList)
+        {
+            keys[i]     = elem.first;
+            values[i]   = elem.second;
+
+            if (++i == result)
+            {
+                break;
+            }
+        }
     }
 
     return result;

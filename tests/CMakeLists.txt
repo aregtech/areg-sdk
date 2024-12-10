@@ -67,4 +67,6 @@ if (AREG_BUILD_TESTS)
     include_directories(${AREG_TESTS})
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 
-endif()
+else(AREG_BUILD_TESTS)
+    option(AREG_GTEST_PACKAGE  "Use GTest package" FALSE)
+endif(AREG_BUILD_TESTS)
