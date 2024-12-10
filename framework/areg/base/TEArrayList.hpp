@@ -185,15 +185,6 @@ public:
     template <typename V>
     friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList< V > & output);
 
-    /**
-     * \brief   Sorts the array, compares the elements by given Compare functionality.
-     * \param   list    Array object to sort.
-     * \param   comp    The comparing method, similar to the method  std::greater()
-     * \return  Sorts and returns the 'list' object.
-     **/
-    template <typename V, class Compare>
-    friend TEArrayList< V >& sortArray(TEArrayList< V >& list, Compare comp);
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
@@ -423,6 +414,28 @@ public:
      **/
     inline const VALUE & lastEntry( void ) const;
     inline VALUE & lastEntry( void );
+
+    /**
+     * \brief   Sorts the array, compares the elements by given Compare functionality.
+     * \param   comp    The comparing method, similar to the method  std::greater()
+     * \return  Sorts and returns the array object.
+     **/
+    template <class Compare>
+    inline TEArrayList< VALUE >& sort(Compare comp);
+
+    /**
+     * \brief   Copies elements from the array into the provided pre-allocated buffer.
+     *          If `elemCount` is less than the number of elements in the array,
+     *          only the first `elemCount` elements are copied. Otherwise, all elements
+     *          in the array are copied. No elements are copied if `elemCount` is 0.
+     * \param   list [in, out]  A pre-allocated buffer where the array elements
+     *                          will be copied. Must be large enough to hold at least
+     *                          `elemCount` elements.
+     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
+     *                          If set to 0, no elements are copied.
+     * \return  The number of elements successfully copied into the `list` buffer.
+     **/
+    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -1068,6 +1081,26 @@ inline VALUE & TEArrayList<VALUE>::lastEntry( void )
     return mValueList[ mValueList.size( ) - 1 ];
 }
 
+template<typename VALUE>
+template<class Compare>
+inline TEArrayList<VALUE>& TEArrayList<VALUE>::sort(Compare comp)
+{
+    std::sort(mValueList.begin(), mValueList.end(), comp);
+    return (*this);
+}
+
+template<typename VALUE>
+inline uint32_t TEArrayList<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+{
+    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    for (uint32_t i = 0; i < result; ++i)
+    {
+        list[i] = mValueList[i];
+    }
+
+    return result;
+}
+
 template<typename VALUE >
 inline void TEArrayList< VALUE >::setSize(uint32_t elemCount)
 {
@@ -1119,11 +1152,5 @@ IEOutStream & operator << ( IEOutStream& stream, const TEArrayList< V >& output 
     return stream;
 }
 
-template <typename V, class Compare>
-TEArrayList< V >& sortArray(TEArrayList< V >& list, Compare comp)
-{
-    std::sort(list.mValueList.begin(), list.mValueList.end(), comp);
-    return list;
-}
-
 #endif  // AREG_BASE_TEARRAYLIST_HPP
+

@@ -550,10 +550,23 @@ public:
      *          The elements from `*this` always precede the elements from `source`, 
      *          and the order of elements do not change, which means that the order 
      *          of elements in the result list remain either ascending or descending.
-     * \param   source  The source of linked list to merge.
+     * \param   source  The source of sorted linked list to merge.
      **/
     inline void merge(TESortedLinkedList<VALUE> & source);
     inline void merge(TESortedLinkedList<VALUE> && source);
+
+    /**
+     * \brief   Copies elements from the sorted linked list into the provided pre-allocated buffer.
+     *          If `elemCount` is less than the number of elements in the sorted linked list,
+     *          only the first `elemCount` elements are copied. Otherwise, all elements
+     *          in the sorted linked list are copied. No elements are copied if `elemCount` is 0.
+     * \param   list [in, out]  A pre-allocated buffer where the sorted linked list elements will be copied.
+     *                          Must be large enough to hold at least `elemCount` elements.
+     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
+     *                          If set to 0, no elements are copied.
+     * \return  The number of elements successfully copied into the `list` buffer.
+     **/
+    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -1156,6 +1169,23 @@ inline void TESortedLinkedList<VALUE>::merge(TESortedLinkedList<VALUE>&& source)
     {
         source.mSorting = mSorting;
     }
+}
+
+template<typename VALUE>
+inline uint32_t TESortedLinkedList<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+{
+    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    uint32_t i = 0;
+    for (const auto& entry : mValueList)
+    {
+        list[i++] = entry;
+        if (i == result)
+        {
+            break;
+        }
+    }
+
+    return result;
 }
 
 template <typename VALUE >
