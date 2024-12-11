@@ -98,9 +98,9 @@ Initialize build configurations with default settings:
 ```bash
 cmake -B ./build
 ```
-To customize the build, modify options as needed:
+To customize the build, modify options as needed. Below is an example of configuring and building the AREG SDK sources in Debug mode, without Unit Tests and Examples:
 ```bash
-cmake -B ./build -DAREG_BUILD_TYPE=Debug -DAREG_EXAMPLES=ON -DAREG_TESTS=ON
+cmake -B ./build -DAREG_BUILD_TYPE=Debug -DAREG_EXAMPLES=OFF -DAREG_TESTS=OFF
 ```
 For additional configurations, refer to the [CMake Configuration Guide](./02a-cmake-config.md).
 

@@ -45,14 +45,8 @@
 - [Getting Started: Clone and Build the AREG SDK](#getting-started-clone-and-build-the-areg-sdk)
   - [Cloning Sources](#cloning-sources)
   - [Build Instructions](#build-instructions)
-    - [Build with CMake](#build-with-cmake)
-    - [Build with Microsoft Visual Studio](#build-with-microsoft-visual-studio)
-    - [Additional Build Options](#additional-build-options)
 - [Integration and Development](#integration-and-development)
   - [AREG SDK Integration Methods](#areg-sdk-integration-methods)
-    - [1. Integrate by Fetching sources](#1-integrate-by-fetching-sources)
-    - [2. Integrate as a project submodule](#2-integrate-as-a-project-submodule)
-    - [3. Integrate the `areg` Package (vcpkg)](#3-integrate-the-areg-package-vcpkg)
   - [Service Creation and Development](#service-creation-and-development)
   - [Example: Application Model Setup](#example-application-model-setup)
   - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
@@ -123,10 +117,10 @@ The **AREG SDK** consists of several modules to streamline distributed, real-tim
 - **[AREG Communication Engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
 - **[Multicast Router (*mcrouter*)](./framework/mcrouter/):** Facilitates message routing between services.
 - **[Log Collector (*logcollector*)](./framework/logcollector/):** Collects logs from applications and forwards them to log observers.
-- **[Log observer Library (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
-- **[Log observer (*logobserver*)](./framework/logobserver/):** In real-time mode monitors, saves and dynamically controls logs.
+- **[Log Observer Library (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
+- **[Log Observer (*logobserver*)](./framework/logobserver/):** In real-time mode monitors, saves and dynamically controls logs.
 - **[AREG Extended Library (*aregextend*)](./framework/aregextend/):** Offers additional objects with extended features.
-- **[Code generator (*codegen.jar*)](./master/tools/):** Generates Service **Provider** and **Consumer** objects from Service Interface documents.
+- **[Code Generator (*codegen.jar*)](./master/tools/):** Generates Service **Provider** and **Consumer** objects from Service Interface.
 - **[Examples](./examples/):** Illustrates the features of AREG Framework and use of the AREG SDK components.
 - **[UI Tool (*lusan*)](https://github.com/aregtech/areg-sdk-tools):** Simplifies and visualizes service design, log views.
 
@@ -138,6 +132,17 @@ The **AREG SDK** consists of several modules to streamline distributed, real-tim
 ---
 
 ## Getting Started: Clone and Build the AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started-clone-and-build-the-areg-sdk)
+
+### General Requirements
+Ensure your system includes the following:
+- **CMake** (version 3.20+).
+- **Git** for repository cloning.
+- **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer.
+- **Java** (version 17+ for code generation tools).
+- **Optionally**, you may install following packages:
+  - `ncurses` library to support optional objects with extended features in Linux or Cygwin;
+  - **CMake**, **Clang** and **MFC** packages of Microsoft Visual Studio;
+  - **SQLite** and **GTest** packages.
 
 ### Cloning Sources
 
@@ -162,19 +167,6 @@ For detailed build instructions, check the **[Building AREG SDK with CMake](./do
 > [!NOTE] 
 > Other POSIX-compliant operating systems and compilers have not been tested yet.
 
-**General Requirements**: Ensure your system includes the following:
-- **CMake** (version 3.20+)
-- **Git** for repository cloning
-- **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer
-- **Java** (version 17+ for code generation tools)
-
-**Platform-Specific Requirements**:
-- **Linux**: Install optional **ncurses** required by `aregextend` library when build with extended objects (option `AREG_EXTEMDED=ON`).
-- **Windows**: Requires Microsoft Visual C++, including packages **CMake** and **CLang compiler for Windows**, and **MFC** for GUI examples.
-- **Optional Libraries**:
-  - **Google Test (GTest)** for unit tests (or build from sources).
-  - **SQLite3** (optional, or use the version in AREG SDK's `thirdparty` directory).
-
 #### Build with CMake
 
 To compile the **AREG SDK** using **CMake**, follow these steps:
@@ -185,7 +177,15 @@ cmake --build ./build -j 20
 ```
 
 > [!TIP]
-> For **custom builds and cross-compiling** see **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)**.
+> By default, AREG SDK sources are built with Examples and Unit Tests. To exclude **AREG Unit Tests** from the build process, set the `AREG_BUILD_TESTS` CMake option to `OFF`. Similarly, to exclude **AREG Examples**, set the `AREG_BUILD_EXAMPLES` CMake option to `OFF`.
+> 
+> Below is an example of configuring and building the AREG SDK sources without Unit Tests and Examples:
+> ```bash
+> cmake -B ./build -DAREG_BUILD_TESTS=OFF -DAREG_BUILD_EXAMPLES=OFF
+> cmake --build ./build
+> ```
+
+For **custom builds and cross-compiling** see **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)**.
 
 #### Build with Microsoft Visual Studio
 
