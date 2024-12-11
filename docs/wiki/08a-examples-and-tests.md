@@ -13,7 +13,10 @@ The AREG SDK provides a comprehensive set of examples and unit tests to demonstr
   - [Excluding Examples and Unit Tests](#excluding-examples-and-unit-tests)
 - [Building the AREG SDK](#building-the-areg-sdk)
 - [Running AREG SDK Examples](#running-areg-sdk-examples)
-- [Running AREG SDK Unit Tests](#running-areg-sdk-unit-tests)
+- [Running AREG SDK Google Unit Tests](#running-areg-sdk-google-unit-tests)
+- [Running AREG SDK Tests with CTest](#running-areg-sdk-tests-with-ctest)
+  - [Running Tests with `ctest`](#running-tests-with-ctest)
+  - [Running Tests with `make test`](#running-tests-with-make-test)
 - [Notes](#notes)
 
 ---
@@ -108,7 +111,7 @@ To execute Examples:
 
 ---
 
-## Running AREG SDK Unit Tests
+## Running AREG SDK Google Unit Tests
 
 To execute Unit Tests:
 
@@ -149,6 +152,54 @@ Note: Google Test filter = *DateTimeTest*
 ```
 
 For additional options, refer to [Google Test Documentation](https://google.github.io/googletest/advanced.html#running-test-programs-advanced-options).
+
+---
+
+## Running AREG SDK Tests with CTest
+
+In addition to running tests directly through the test binaries, you can use `ctest` or `make test` for an organized and versatile testing experience. These tools simplify the process of running specific tests or suites and provide structured output for analysis.
+
+### Running Tests with `ctest`
+
+The `ctest` tool allows you to execute tests directly from the build directory. For instance, to run only the `DateTimeTest` suite, use the following command:
+
+```bash
+ctest --test-dir ./build -R DateTimeTest
+```
+
+**Example of Successful Test Output**
+
+```plaintext
+Internal ctest changing into directory: <areg-sdk-root>/build
+<areg-sdk-root>/build
+    Start 3: DateTimeTest.TestNow
+1/5 Test #3: DateTimeTest.TestNow ..............   Passed    0.41 sec
+    Start 4: DateTimeTest.TestOperators
+2/5 Test #4: DateTimeTest.TestOperators ........   Passed    0.52 sec
+    Start 5: DateTimeTest.TestLocalTimeWin32
+3/5 Test #5: DateTimeTest.TestLocalTimeWin32 ...   Passed    0.47 sec
+    Start 6: DateTimeTest.TestLocalTime
+4/5 Test #6: DateTimeTest.TestLocalTime ........   Passed    0.54 sec
+    Start 7: DateTimeTest.TestFormatISO8601
+5/5 Test #7: DateTimeTest.TestFormatISO8601 ....   Passed    0.44 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   2.84 sec
+```
+
+### Running Tests with `make test`
+
+Alternatively, if using a `make`-based build system, you can run tests with the `make test` command. To execute a specific test suite like `DateTimeTest`, use the following:
+
+```bash
+cd ./build
+make test ARGS="-R 'DateTimeTest'"
+```
+
+Both methods offer flexibility and provide a detailed report on test results, including pass/fail statuses and execution times. Choose the one that fits best with your workflow.
+
+For additional options, refer to [CTest Documentation](https://cmake.org/cmake/help/latest/manual/ctest.1.html).
 
 ---
 
