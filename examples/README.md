@@ -52,25 +52,26 @@ MSBuild ./areg-sdk.sln
 
 ---
 
-## AREG SDK Examples Overview
+## Important Notes
 
-The AREG SDK includes a comprehensive set of examples that demonstrate **multithreading**, **IPC**, **service discovery**, **fault-tolerance**, and more.
-
-### Important Notes:
-
-- **IPC Examples**: Projects that use **inter-process communication (IPC)** require the **mcrouter** service to facilitate communication between different processes. Run **mcrouter** from the build directory for testing.
+- **IPC Examples**: Projects that use **inter-process communication (IPC)** require the **mcrouter** service to facilitate communication between different processes. The classification of such projects is described in the **Multitasking** section of example description. Run **mcrouter** from the build directory for testing.
 - **Fault-Tolerance**: The AREG SDK is designed with fault-tolerance in mind. The system works reliably as long as the **Service Provider**, **Service Consumer**, and **mcrouter** are running, regardless of their startup order.
 - **Generated projects:** All **xx_generate** projects are generated from **Service Interface** document files (`.siml`). For CMake build these projects and source files are generated during configuration. For Microsoft Visual Studio, these projects are predefined and the sources are generated as a pre-build event of `dummy` project, which exists in this `example` directory.
 - **MFC based projects:** The project [17_winchat](./17_winchat/) is build only under Windows system with Microsoft Compilers (*MSVC* and *ClangCL*) and it requires *Microsoft Foundation Classes (MFC)*.
 
-### Example Projects:
-
 ---
+
+## AREG SDK Examples Overview
+
+The AREG SDK includes a comprehensive set of examples that demonstrate **multithreading**, **IPC**, **service discovery**, **fault-tolerance**, and more.
+
+### Example Projects:
 
 #### **[00_helloservice](./00_helloservice/)**
 
 The **[00_helloservice](./00_helloservice/)** project introduces core concepts of creating **service** (*micro-server*) and **client** objects, showcasing how to switch between **multithreading** and **multiprocessing** by modifying the *Application Model*.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Single-thread, multi-thread, and multi-process service/client interactions.
 - **Sub-projects**:
   - `00_onethread`: Service provider and client in the same thread.
@@ -83,6 +84,7 @@ The **[00_helloservice](./00_helloservice/)** project introduces core concepts o
 
 The **[01_hello](./01_hello/)** is a simple **multithreading** project that demonstrates the basics of creating and managing threads.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Demonstrates thread creation and basic thread synchronization.
 - **Sub-project**:
   - `01_hello`: Starts a thread that prints "Hello World!" and manages its lifecycle.
@@ -93,6 +95,7 @@ The **[01_hello](./01_hello/)** is a simple **multithreading** project that demo
 
 The **[02_buffer](./02_buffer/)** project demonstrates **shared memory** and **data serialization** between threads in a **multithreading** environment.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Shared buffer for passing serialized data between threads.
 - **Sub-project**:
   - `02_buffer`: Serializes data, passes it via shared memory buffer, and deserializes it in a separate thread.
@@ -103,6 +106,7 @@ The **[02_buffer](./02_buffer/)** project demonstrates **shared memory** and **d
 
 The **[03_file](./03_file/)** project shows how to handle file operations such as reading, writing, copying, and deleting files in both text and binary formats.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: File handling in **multithreading** environments.
 - **Sub-project**:
   - `03_file`: Performs file operations using relative/absolute paths and filename masks.
@@ -113,6 +117,7 @@ The **[03_file](./03_file/)** project shows how to handle file operations such a
 
 The **[04_logging](./04_logging/)** project demonstrates **method call tracing and message logging** mechanisms to monitor and debug application activities.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Logs application actions for debugging and analysis.
 - **Sub-project**:
   - `04_logging`: Integrates AREG's logging service to log messages during runtime.
@@ -123,6 +128,7 @@ The **[04_logging](./04_logging/)** project demonstrates **method call tracing a
 
 The **[05_timer](./05_timer/)** project is a demonstration of timers for handling **real-time** events in **multithreaded** applications.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Implements one-time, periodic and continues timers.
 - **Sub-project**:
   - `05_timer`: Uses timers to trigger events in a **multithreaded** environment.
@@ -133,6 +139,7 @@ The **[05_timer](./05_timer/)** project is a demonstration of timers for handlin
 
 The **[06_threads](./06_threads/)** project explains how to create and manage custom **event dispatching** threads.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Manages simple and dispatcher threads to process custom events.
 - **Sub-project**:
   - `06_threads`: Demonstrates thread management for **real-time** event handling.
@@ -143,6 +150,7 @@ The **[06_threads](./06_threads/)** project explains how to create and manage cu
 
 The **[07_synch](./07_synch/)** project illustrates synchronization between multiple threads using **mutexes** and **events**.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Synchronization primitives for managing thread-safe operations.
 - **Sub-project**:
   - `07_synch`: Implements synchronized event handling across threads.
@@ -153,6 +161,7 @@ The **[07_synch](./07_synch/)** project illustrates synchronization between mult
 
 The **[08_service](./08_service/)** project introduces the creation of a **Service Provider** component and shows how to define an *Application Model* to launch services.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Service provider implementation in a single-threaded context.
 - **Sub-project**:
   - `08_service`: Defines and deploys a service component within an application model.
@@ -163,6 +172,7 @@ The **[08_service](./08_service/)** project introduces the creation of a **Servi
 
 The **[09_svcmulti](./09_svcmulti/)** project demonstrates the reuse of service components across multiple threads defined in *Application Model*.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Service reuse in different contexts via **multithreading** and **multiprocessing**.
 - **Sub-project**:
   - `09_svcmulti`: Implements a service that can be reused across different roles.
@@ -173,6 +183,7 @@ The **[09_svcmulti](./09_svcmulti/)** project demonstrates the reuse of service 
 
 The **[10_locsvc](./10_locsvc/)** project introduces **Local Service**, and the communication between a **Service Provider** and **Service Consumer** within the same process.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Local Service, and interaction between *Service Provider* and *Service Consumer* in a **multithreaded** environment.
 - **Sub-project**:
   - `10_locsvc`: Defines both service (*micro-server*) and client within the same process.
@@ -183,6 +194,7 @@ The **[10_locsvc](./10_locsvc/)** project introduces **Local Service**, and the 
 
 The **[11_locmesh](./11_locmesh/)** project is a demonstration of **mesh of local services** where multiple service providers and consumers communicate across multiple threads within a single process.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: **Mesh of Local Services** and **multithreading** communication.
 - **Sub-project**:
   - `11_locmesh`: Creates a mesh of interconnected services for real-time communication.
@@ -193,6 +205,7 @@ The **[11_locmesh](./11_locmesh/)** project is a demonstration of **mesh of loca
 
 The **[12_pubsvc](./12_pubsvc/)** project is an **inter-process communication (IPC)** project that illustrates a **Public Service** provider and its client (consumer) interacting across processes.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: **Public services** accessible to clients in other processes.
 - **Sub-projects**:
   - `12_pubservice`: Provides a network-discoverable public service, which methods are triggered via **Object Remote Procedure Call (Object RPC or ORPC)**.
@@ -204,6 +217,7 @@ The **[12_pubsvc](./12_pubsvc/)** project is an **inter-process communication (I
 
 The **[13_pubmesh](./13_pubmesh/)** project demonstrates a **Mesh of Public Services** across processes and integrating **Local Services** in the processes.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: **Mesh of Public Services** across multiple processes.
 - **Sub-projects**:
   - `13_common`: Contains shared resources used by other sub-projects.
@@ -217,6 +231,7 @@ The **[13_pubmesh](./13_pubmesh/)** project demonstrates a **Mesh of Public Serv
 
 The **[14_pubtraffic](./14_pubtraffic/)** project shows how to dynamically create and modify the *Application Model* and handle custom events in an IPC system based on AREG Framework.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Dynamic model creation and event processing.
 - **Sub-projects**:
   - `14_pubclient`: Dynamically creates models at runtime.
@@ -228,6 +243,7 @@ The **[14_pubtraffic](./14_pubtraffic/)** project shows how to dynamically creat
 
 The **[15_pubworker](./15_pubworker/)** project is an **IPC** project that demonstrates the use of **Worker Threads** and how to process custom events using AREG Framework.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: **Worker Thread** processing in multithreaded communication and IPC scenarios.
 - **Sub-projects**:
   - `15_pubservice`: A **Public Service Provider** component with a **Worker Thread** and custom event handling used in multithreaded communication.
@@ -239,6 +255,7 @@ The **[15_pubworker](./15_pubworker/)** project is an **IPC** project that demon
 
 The **[16_pubfsm](./16_pubfsm/)** project demonstrates the implementation of a **Finite State Machine (FSM)** to control service behavior.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: **FSM** for state-driven service behavior.
 - **Sub-projects**:
   - `16_pubservice`: Creates a **Public Service** with an integrated **FSM**.
@@ -250,6 +267,7 @@ The **[16_pubfsm](./16_pubfsm/)** project demonstrates the implementation of a *
 
 The **[17_winchat](./17_winchat/)** project is a Windows-based chat application using **IPC** in a **fault-tolerant** system.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Dynamic connection to **mcrouter** and real-time communication.
 - **Sub-projects**:
   - `17_register`: Instantiates a **Public Service** used by all processes.
@@ -261,6 +279,7 @@ The **[17_winchat](./17_winchat/)** project is a Windows-based chat application 
 
 The **[18_locwatchdog](./18_locwatchdog/)** project showcases a **Watchdog** object in Local Service case for **multithreaded** applications. It actively monitors threads and automatically restarts them if they fail, ensuring that service components remain operational and fault-tolerant.
 
+- **Multitasking**: Multithreading project, no run of `mcrouter` is required.
 - **Key Features**: Within a single process implements a Local Service in a thread with the Watchdog for robust fault tolerance.
 - **Sub-project**:
   - `18_locservice`: Within multithreading process, a Watchdog monitors and restarts service, improving reliability and resilience.
@@ -271,6 +290,7 @@ The **[18_locwatchdog](./18_locwatchdog/)** project showcases a **Watchdog** obj
 
 The **[19_pubwatchdog](./19_pubwatchdog/)** project extends the **Watchdog** concept to support **inter-process communication (IPC)**, ensuring fault-tolerance across multiple processes. It monitors public services, restarts them in case of failure, and notifies all connected service consumers.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: A Watchdog that monitors threads with Public Service, restarts services upon failure, and ensures that consumers are notified of disconnections.
 - **Sub-projects**:
   - `19_pubclient`: Simulates a service consumer that reacts to Provider failures by handling service disconnections.
@@ -282,6 +302,7 @@ The **[19_pubwatchdog](./19_pubwatchdog/)** project extends the **Watchdog** con
 
 The **[20_pubdatarate](./20_pubdatarate/)** project is an **inter-process communication (IPC)** example that focuses on measuring the data rate between a public service and multiple clients. This project helps developers understand performance benchmarks in data transfer scenarios.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Measures network data rates between a public service and its clients for performance evaluation.
 - **Sub-projects**:
   - `20_pubservice`: Acts as a data generator, sending large datasets to connected clients.
@@ -293,6 +314,7 @@ The **[20_pubdatarate](./20_pubdatarate/)** project is an **inter-process commun
 
 The **[21_pubunblock](./21_pubunblock/)** project demonstrates how to improve service throughput in **inter-process communication (IPC)** by manually unblocking service requests marked as busy. This approach helps optimize request handling and resource utilization in asynchronous communication.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Manual unblocking of service requests, allowing faster request processing and optimized service management in applications with asynchronous communication.
 - **Sub-projects**:
   - `21_pubservice`: Manages service requests in asynchronous communication and provides functionality to manually unblock and prepare responses efficiently.
@@ -304,6 +326,7 @@ The **[21_pubunblock](./21_pubunblock/)** project demonstrates how to improve se
 
 The **[22_pubsub](./22_pubsub/)** project demonstrates the **Publish/Subscribe (Pub/Sub)** pattern within an **inter-process communication (IPC)** setup. It allows a publisher to send data updates while subscribers receive real-time notifications whenever the data changes.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Implements the **Pub/Sub** model, providing real-time notifications when subscribed data is updated.
 - **Sub-projects**:
   - `22_publisher`: Publishes updates, making data available to all subscribed clients.
@@ -315,6 +338,7 @@ The **[22_pubsub](./22_pubsub/)** project demonstrates the **Publish/Subscribe (
 
 The **[23_pubsubmix](./23_pubsubmix/)** project extends the **Publish/Subscribe** model by introducing mixed configurations where publishers and subscribers are distributed across different threads and processes. This example showcases robust fault-tolerance during network interruptions in **multithreaded** and **multiprocess** environments.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Fault-tolerant **Pub/Sub** model across both threads and processes, providing resilience during network disruptions.
 - **Sub-projects**:
   - `23_common`: Contains shared resources used by other sub-projects.
@@ -327,6 +351,7 @@ The **[23_pubsubmix](./23_pubsubmix/)** project extends the **Publish/Subscribe*
 
 The **[24_pubsubmulti](./24_pubsubmulti/)** project optimizes the **Publish/Subscribe (Pub/Sub)** model for multiple remote subscribers in one thread by reducing event overhead. It ensures that only necessary notifications are sent, improving system efficiency and performance.
 
+- **Multitasking**: Multiprocessing project with **IPC**, run of `mcrouter` is required.
 - **Key Features**: Efficient event notification system that minimizes overhead in **Pub/Sub** models involving multiple subscribers within one thread.
 - **Sub-projects**:
   - `24_publisher`: Provides a network-discoverable **Public Service** that publishes data to clients.

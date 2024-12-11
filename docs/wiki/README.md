@@ -44,6 +44,10 @@ The following sections guide you through installing, configuring, and using the 
    - **[Troubleshooting CMake Builds on Linux](./07b-troubleshooting-cmake-linux-builds.md)**: Provides solutions for common errors encountered during the CMake compilation process on Linux.
    - **[Integration Troubleshooting](./07c-troubshooting-integration.md)**: Provides solutions for common errors encountered during integration of AREG SDK sources or binaries in the projects.
 
+8. **Examples and Tests**
+   - **[Building and Running Examples and Tests](./08a-examples-and-tests.md)**: Instructions to exclude, build and run Examples and Unit Tests of AREG SDK.
+
+
 ```
 Help us to make docs greater.
 See something is wrong, unclear or need a help? 
