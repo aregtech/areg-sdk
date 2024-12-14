@@ -33,7 +33,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (*Automated Real-time Event Grid*) is an advanced communication framework designed for seamless data transmission in IoT **[fog- and mist-network environments](https://csrc.nist.gov/publications/detail/sp/500-325/final)**. Lightweight and platform-agnostic, AREG enables efficient, automated communication by combining **Client-Server** and **Publish-Subscribe** models. By adopting an interface-centric approach, AREG facilitates the creation of service grids, where multiple devices and software nodes function collaboratively as **distributed micro-servers and clients**, ensuring reliable real-time data exchange across a network of connected nodes.
+**AREG Framework** (*Automated Real-time Event Grid*) is a lightweight, platform-independent communication framework designed for IoT **[fog- and mist-network environments](https://csrc.nist.gov/publications/detail/sp/500-325/final)**. It enables seamless real-time data exchange across connected nodes using a hybrid **Client-Server** and **Publish-Subscribe** model, forming service grids where devices act as distributed micro-servers and micro-clients.
 
 ---
 
@@ -68,7 +68,7 @@ Traditionally, devices act as connected clients to stream data to the cloud or f
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="Diagram showing IoT-to-Cloud (Nebula) network connections" style="width:70%;height:70%"/></a></div>
 
-As data is generated and collected at the edge of the network (**mist network**), there is a growing need to redefine the role of connected Things and enable network-accessible _Public Services_ on the edge device, thereby extending the _Cloud_ capabilities to the extreme edge. This approach provides a robust foundation for solutions like:
+As data is generated and collected at the edge of the network (**mist network**), there is a growing need to redefine the role of connected Things and enable network-accessible **Public Services** on the edge device, thereby extending the **Cloud** capabilities to the extreme edge. This approach provides a robust foundation for solutions like:
 * **Enhancing data privacy**, which is crucial for sensitive information.
 * **Decrease data streaming**, which is a fundamental condition to optimize network communication.
 * **Autonomous, intelligent and self-aware devices** with services directly in the environment of data origin.
@@ -85,7 +85,7 @@ At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets 
 
 This **interface-driven Object RPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
 * **Service Providers** (*micro-server objects*) offer reusable, accessible services.
-* **Service Consumers** (*client objects*) invoke services without needing to know the network details.
+* **Service Consumers** (*micro-client objects*) invoke services without needing to know the network details.
 
 AREG's design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
 
@@ -135,9 +135,9 @@ The **AREG SDK** consists of several modules to streamline distributed, real-tim
 
 ### General Requirements
 Ensure your system includes the following:
-- **CMake** (version 3.20+).
 - **Git** for repository cloning.
 - **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer.
+- **CMake** (version 3.20+).
 - **Java** (version 17+ for code generation tools).
 - **Optionally**, you may install following packages:
   - `ncurses` library to support optional objects with extended features in Linux or Cygwin;
@@ -162,8 +162,6 @@ The **AREG SDK** is written in **C++17**, supports multiple platforms, processor
 | MSVC      | Windows       | CMake, MSVS   | Win32         | x86, x86_64               |
 | Cygwin GNU| Windows       | CMake         | POSIX         | x86, x86_64               |
 
-For detailed build instructions, check the **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)** or **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** pages.
-
 > [!NOTE] 
 > Other POSIX-compliant operating systems and compilers have not been tested yet.
 
@@ -185,7 +183,7 @@ cmake --build ./build -j 20
 > cmake --build ./build
 > ```
 
-For **custom builds and cross-compiling** see **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)**.
+For further details on **customizing builds or cross-compiling** with CMake see **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)** page.
 
 #### Build with Microsoft Visual Studio
 
@@ -195,15 +193,12 @@ Open `areg-sdk.sln` file in Microsoft Visual Studio and build the solution, or n
 MSBuild ./areg-sdk.sln
 ```
 
-For further details on customizing builds, visit the **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** document.
+For further details on **customizing builds** with Visual Studio, visit the **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** page.
 
 #### Additional Build Options
 
-- **IDE Support:** Includes instructions for **[Microsoft Visual Studio](./docs/wiki/01c-msvc-build.md)** and **[Visual Studio Code](./docs/wiki/01b-cmake-build.md)**.
+- **IDE Support:** Includes instructions for **[Microsoft Visual Studio](./docs/wiki/01c-msvc-build.md)** and **[Visual Studio Code](./docs/wiki/01b-cmake-build.md)**. The other IDEs are currently not in the focus.
 - **WSL Support:** Detailed steps for building under **[Windows Subsystem for Linux (WSL)](./docs/wiki/01d-wsl-build.md)** are provided.
-
-> [!NOTE]
-> This chapter focuses on building AREG and examples using **Microsoft Visual Studio** and **Visual Studio Code**. The other IDEs are currently not in the focus.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -243,8 +238,10 @@ This either finds or fetches the AREG SDK components from `master` branch. See t
 #### 2. Integrate as a project submodule
 
 1. Add `areg-sdk` as a **Git submodule** in your project.
-2. Include the `*.vcxproj` files from `<areg-sdk>/framework` in your solution.
-3. Link your project with the `areg` library and set project dependencies.
+2. Include `areg-sdk` project in your build:
+   - **Microsoft Visual Studio**: include the `*.vcxproj` files from `<areg-sdk>/framework` in your solution.
+   - **CMake**: include the `<areg-sdk-root>/CMakeLists.txt` in your CMake script. 
+3. Link your projects with the `areg` library and set project dependencies.
 
 For full details, see the **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)**.
 
@@ -326,15 +323,11 @@ You can also set up multiprocess applications using same components and changing
 
 ### Multicast Router and Log Collector
 
-Both **mcrouter** and **logcollector** are essential components for communication and log collection. Configuration templates for the multicast router and log collector services are provided in the `areg.init` file. Both processes are designed to run as console applications or as **Operating System managed** services.
+**mcrouter** and **logcollector** are essential services within the AREG SDK ecosystem, enabling seamless communication and efficient logging. Configuration templates for both are included in the [`areg.init`](./framework/areg/resources/areg.init) file, which is placed in the `config` subdirectory of the build binaries. These applications can function as standalone console tools or be deployed as **Operating System managed services**, providing deployment flexibility.  
 
-For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/05a-mcrouter.md)** and **[Log Collector Service](./docs/wiki/04d-logcollector.md)** pages. *Discover how the AREG SDK's Multicast Router and Log Collector streamline communication and logging in edge computing and real-time data transfer systems.*
+For detailed instructions on building and using these services, see the **[Multicast Router Service](./docs/wiki/05a-mcrouter.md)** and **[Log Collector Service](./docs/wiki/04d-logcollector.md)** documentation. *Explore how they enhance communication and logging in real-time and edge-computing environments.*  
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-This version is strong, but a few minor adjustments can improve flow, consistency, and readability. Here's a refined version:
 
 ---
 
