@@ -177,7 +177,7 @@ service::*::list            = router | logger               # The list of availa
 router::*::service          = mcrouter                      # The name of the message router service (process name)
 router::*::connect          = tcpip			                # The list of supported communication protocols
 router::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-router::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1
+router::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1. Set the real IP-address.
 router::*::port::tcpip      = 8181			                # Protocol specific connection port number, default port is 8181
 
 # ---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ router::*::port::tcpip      = 8181			                # Protocol specific connect
 logger::*::service          = logcollector                  # The name of the log collector service (process name)
 logger::*::connect          = tcpip			                # The list of supported communication protocols
 logger::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-logger::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1
+logger::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1. Set the real IP-address.
 logger::*::port::tcpip      = 8282			                # Protocol specific connection port number, default port is 8282
 
 # #######################################
