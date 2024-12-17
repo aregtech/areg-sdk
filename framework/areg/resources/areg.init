@@ -22,8 +22,8 @@
 #
 #   Logging to remote host: To log to remote host, specify the IP-address and the port number listed
 #                           in the section of service specified in 'log::*::remote::service'.
-#                           For example, if 'log::*::remote::service = logger', change the settings
-#                           in the section 'logger' to set IP-address and port number.
+#                           For example, if 'log::*::remote::service = logcollector', change the settings
+#                           in the section 'logcollector' to set IP-address and port number.
 #                           The 'log::*::enable::remote' should be enabled to make remote logging.
 #
 #   Log scopes and prio:    To set the logging priority, use logging scopes specified in the 'log' section.
@@ -63,7 +63,7 @@
 #   Meaning of Layout format:
 #       The Layout Format is relevant only when logs the messages in the plain text file.
 #       The Layout Format specification fields are following:
-#           %a      -- outputs the ID of a logging object set by the logger.
+#           %a      -- outputs the ID of a logging object set by the log collector.
 #           %c      -- output tick-count value since process start
 #           %d      -- output day and time data
 #           %e      -- output module (process) ID
@@ -155,7 +155,7 @@ log::logobserver::db::location      = ./logs/log_%time%.sqlite3     # Logobserve
 # Messaging enable states for the logcollector and mcrouter services.
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector service: do not output log messages in the file
-log::logcollector::enable::debug    = false     # Log Collector service: do not output logs in the debug output
+log::logcollector::enable::debug    = false     # Log Collector service: do not output logs in the debug output window
 log::logcollector::enable::db       = false     # Log Collector service: do not output in the database
 log::mcrouter::enable::file         = false     # MC Router: File logging enable / disable flag
 log::mcrouter::enable::db           = false     # MC Router: Database logging enable / disable flag
@@ -177,7 +177,7 @@ service::*::list            = router | logger               # The list of availa
 router::*::service          = mcrouter                      # The name of the message router service (process name)
 router::*::connect          = tcpip			                # The list of supported communication protocols
 router::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-router::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1
+router::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1. Set the real IP-address.
 router::*::port::tcpip      = 8181			                # Protocol specific connection port number, default port is 8181
 
 # ---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ router::*::port::tcpip      = 8181			                # Protocol specific connect
 logger::*::service          = logcollector                  # The name of the log collector service (process name)
 logger::*::connect          = tcpip			                # The list of supported communication protocols
 logger::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-logger::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1
+logger::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1. Set the real IP-address.
 logger::*::port::tcpip      = 8282			                # Protocol specific connection port number, default port is 8282
 
 # #######################################
