@@ -500,7 +500,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view 
 {
     LOG_SCOPE(areg_base_NESocket_serverSocketConnect);
 
-    const char * host = hostName.empty() ? hostName.data() : NESocket::LocalHost.data();
+    const char * host = hostName.empty() == false ? hostName.data() : NESocket::LocalHost.data();
 
     LOG_DBG("Creating server socket on host [ %s ] and port number [ %u ]", host, static_cast<unsigned int>(portNr));
 
