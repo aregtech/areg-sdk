@@ -11,7 +11,9 @@ This document outlines solutions to common issues encountered while updating the
 2. [Issue 2: Network Resolution (DNS) Issues](#issue-2-network-resolution-dns-issues)
    - [Solution 1: Update DNS Settings in `/etc/resolv.conf`](#solution-1-update-dns-settings-in-etcresolvconf)
    - [Solution 2: Enable Automatic DNS Resolution](#solution-2-enable-automatic-dns-resolution)
-   - [Solution 3: Reset WSL Network Configuration](#solution-3-reset-wsl-network-configuration) 
+   - [Solution 3: Reset WSL Network Configuration](#solution-3-reset-wsl-network-configuration)
+3. [Issue 3: Configuring communication between Windows and WSL](#issue-3-configuring-communication-between-windows-and-wsl)
+   - [Solution 1: Editing IP address settings](#solution-1-editing-ip-address-settings)
 
 ---
 
@@ -117,3 +119,49 @@ If the issue persists, reset the WSL network configuration:
 
 > [!TIP]
 > These solutions should address most update and DNS-related issues encountered with WSL. If problems persist, consult the [official WSL documentation](https://learn.microsoft.com/en-us/windows/wsl/) or seek assistance from the community forums.
+
+---
+
+## Issue 3: Configuring communication between Windows and WSL
+### Solution 1: Editing IP address settings
+
+Due to WSL not being able to access the Windows ``localhost`` IP address, routing services hosted on Windows must be configured differently to allow access by clients hosted on WSL.
+Additionally, the services on WSL must be provided the correct IP address to connect to the Windows router.
+
+>[!IMPORTANT]
+>This assumes WSL is using the default networking mode, NAT. Changing this setting to Mirror may allow ``localhost`` to work as intended, but this has not been tested.]
+
+> [!NOTE]
+> When connecting a client on Windows to a server or router on WSL, the default ``localhost`` settings will allow the connection.
+
+1. To configure the WSL clients, the IP address of the connection to Windows must be specified. The fastest way to find this IP address is to run the following in the WSL terminal:
+
+   ```bash
+      ip route show | grep -i default | awk '{print $3}'
+   ```
+
+2. In the WSL configuration file, the address for any services running as a router or server must be changed to the IP address found above. For example, to connect to an instance of ``mcrouter`` and ``logcollector`` running on Windows, the configuration file should have the lines
+    ```plaintext
+      router::*::address::tcpip = NEW_IP
+   ```
+
+   and 
+   ```plaintext 
+      logger::*::address::tcpip   = NEW_IP
+   ```
+
+   changed so that ``NEW_IP`` is replaced with the IP address found above.
+
+3. Windows sees the WSL network as being an external network, so the IP address for any services running as a router or server must be set to an IP address which can accept connections from your LAN, such as ``0.0.0.0``. For example, to configure instances of ``mcrouter`` and ``logcollector`` running on Windows to accept connections from services on WSL, the Windows configuration files for these services should have the lines
+   ```plaintext
+      router::*::address::tcpip = 0.0.0.0
+   ```
+   and 
+   ```plaintext 
+       logger::*::address::tcpip   = 0.0.0.0
+   ```
+
+   with ``0.0.0.0`` or an IP address that is configured to accept external connections replacing the defualt ``localhost``.
+
+>[!TIP]
+> For more information about configuring network communication between WSL and Windows, this page may be helpful: [Accessing network applications with WSL](https://learn.microsoft.com/en-us/windows/wsl/networking).
