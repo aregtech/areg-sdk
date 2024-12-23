@@ -145,15 +145,15 @@ Additionally, the services on WSL must be provided the correct IP address to con
 
 2. In the WSL configuration file, [``areg.init``](framework/areg/resources/areg.init), the address for any services running as a router or server must be changed to the IP address found above. For example, to connect to an instance of ``mcrouter`` and ``logcollector`` running on Windows, the ``areg.init`` should have the lines
     ```plaintext
-      router::*::address::tcpip = NEW_IP
+      router::*::address::tcpip = <windows-ip-address>
    ```
 
    and 
    ```plaintext 
-      logger::*::address::tcpip   = NEW_IP
+      logger::*::address::tcpip   = <windows-ip-address>
    ```
 
-   changed so that ``NEW_IP`` is replaced with the IP address found above.
+   changed so that ``<windows-ip-address>`` is replaced with the IP address found above.
 
 3. Windows sees the WSL network as being an external network, so the IP address for any services running as a router or server must be set to an IP address which can accept connections from your LAN, such as ``0.0.0.0``. For example, to configure instances of ``mcrouter`` and ``logcollector`` running on Windows to accept connections from services on WSL, the Windows copy of ``areg.init`` for these services should have the lines
    ```plaintext
@@ -166,8 +166,6 @@ Additionally, the services on WSL must be provided the correct IP address to con
 
    with ``0.0.0.0`` or an IP address that is configured to accept external connections replacing the defualt ``localhost``.
 
->[!TIP]
-> For more information about configuring network communication between WSL and Windows, this page may be helpful: [Accessing network applications with WSL](https://learn.microsoft.com/en-us/windows/wsl/networking).
 
 ### Solution 2: Running some servers on WSL and some on Windows
 
@@ -184,3 +182,6 @@ It is possible to mix which services are running on WSL and Windows, but [``areg
 4. Lunch ``logobserver`` and start AREG-based applications on either Windows, WSL, or a mix of both.
 
 The applications will start communicating as intended.
+
+>[!TIP]
+> For more information about configuring network communication between WSL and Windows, this page may be helpful: [Accessing network applications with WSL](https://learn.microsoft.com/en-us/windows/wsl/networking).
