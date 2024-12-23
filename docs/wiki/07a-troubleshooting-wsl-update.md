@@ -14,6 +14,7 @@ This document outlines solutions to common issues encountered while updating the
    - [Solution 3: Reset WSL Network Configuration](#solution-3-reset-wsl-network-configuration)
 3. [Issue 3: Configuring communication between Windows and WSL](#issue-3-configuring-communication-between-windows-and-wsl)
    - [Solution 1: Editing IP address settings](#solution-1-editing-ip-address-settings)
+   - [Solution 2: Solution 2: Running some servers on WSL and some on Windows](#solution-2-running-some-servers-on-wsl-and-some-on-windows)
 
 ---
 
@@ -170,7 +171,7 @@ Additionally, the services on WSL must be provided the correct IP address to con
 
 ### Solution 2: Running some servers on WSL and some on Windows
 
-It is possible to mix which services are running on WSL and Windows, but [``areg.init``](framework/areg/resources/areg.init) must be updated appropriately for Windows and WSL. The following steps will illustrate how to run ``mcrouter`` on Windows with ``logcollector`` running on WSL
+It is possible to mix which services are running on WSL and Windows, but [``areg.init``](framework/areg/resources/areg.init) must be updated appropriately for Windows and WSL. The following steps illustrate how to run ``mcrouter`` on Windows with ``logcollector`` running on WSL
 
 1. Run ``ipconfig`` on Windows and ``ifconfig`` in the WSL terminal to obtain the IP addresses for the PC running Windows and WSL.
 
