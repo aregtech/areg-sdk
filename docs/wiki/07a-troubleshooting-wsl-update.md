@@ -167,3 +167,19 @@ Additionally, the services on WSL must be provided the correct IP address to con
 
 >[!TIP]
 > For more information about configuring network communication between WSL and Windows, this page may be helpful: [Accessing network applications with WSL](https://learn.microsoft.com/en-us/windows/wsl/networking).
+
+### Solution 2: Running some servers on WSL and some on Windows
+
+It is possible to mix which services are running on WSL and Windows, but [``areg.init``](framework/areg/resources/areg.init) must be updated appropriately for Windows and WSL. The following steps will illustrate how to run ``mcrouter`` on Windows with ``logcollector`` running on WSL
+
+1. Run ``ipconfig`` on Windows and ``ifconfig`` in the WSL terminal to obtain the IP addresses for the PC running Windows and WSL.
+
+2. Modify the ``areg.init`` file on both Windows and WSL to specify the following:
+- ``router::*::address::tcpip = <windows-ip-address>``
+- ``logger::*::address::tcpip = <wsl-ip-address>``
+  
+3. Start ``mcrouter`` on Windows and ``logcollector`` on WSL.
+
+4. Lunch ``logobserver`` and start AREG-based applications on either Windows, WSL, or a mix of both.
+
+The applications will start communicating as intended.
