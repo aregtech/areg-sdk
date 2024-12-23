@@ -143,28 +143,19 @@ Additionally, the services on WSL must be provided the correct IP address to con
       ip route show | grep -i default | awk '{print $3}'
    ```
 
-2. In the WSL configuration file, [``areg.init``](framework/areg/resources/areg.init), the address for any services running as a router or server must be changed to the IP address found above. For example, to connect to an instance of ``mcrouter`` and ``logcollector`` running on Windows, the ``areg.init`` should have the lines
-    ```plaintext
-      router::*::address::tcpip = <windows-ip-address>
-   ```
+2. In the WSL configuration file, [``areg.init``](framework/areg/resources/areg.init), the address for any services running as a router or server must be changed to the IP address found above. For example, to connect to an instance of ``mcrouter`` and ``logcollector`` running on Windows, the ``areg.init`` should have the lines:
 
-   and 
-   ```plaintext 
-      logger::*::address::tcpip   = <windows-ip-address>
-   ```
+   - ``router::*::address::tcpip = <windows-ip-address>``
+   - ``logger::*::address::tcpip   = <windows-ip-address>``
 
-   changed so that ``<windows-ip-address>`` is replaced with the IP address found above.
+changed so that ``<windows-ip-address>`` is replaced with the IP address found above.
 
-3. Windows sees the WSL network as being an external network, so the IP address for any services running as a router or server must be set to an IP address which can accept connections from your LAN, such as ``0.0.0.0``. For example, to configure instances of ``mcrouter`` and ``logcollector`` running on Windows to accept connections from services on WSL, the Windows copy of ``areg.init`` for these services should have the lines
-   ```plaintext
-      router::*::address::tcpip = 0.0.0.0
-   ```
-   and 
-   ```plaintext 
-       logger::*::address::tcpip   = 0.0.0.0
-   ```
+4. Windows sees the WSL network as being an external network, so the IP address for any services running as a router or server must be set to an IP address which can accept connections from your LAN, such as ``0.0.0.0``. For example, to configure instances of ``mcrouter`` and ``logcollector`` running on Windows to accept connections from services on WSL, the Windows copy of ``areg.init`` for these services should have the lines:
 
-   with ``0.0.0.0`` or an IP address that is configured to accept external connections replacing the defualt ``localhost``.
+   - ``router::*::address::tcpip = 0.0.0.0``
+   - ``logger::*::address::tcpip   = 0.0.0.0``
+
+with ``0.0.0.0`` or an IP address that is configured to accept external connections replacing the defualt ``localhost``.
 
 
 ### Solution 2: Running some servers on WSL and some on Windows
@@ -174,8 +165,8 @@ It is possible to mix which services are running on WSL and Windows, but [``areg
 1. Run ``ipconfig`` on Windows and ``ifconfig`` in the WSL terminal to obtain the IP addresses for the PC running Windows and WSL.
 
 2. Modify the ``areg.init`` file on both Windows and WSL to specify the following:
-- ``router::*::address::tcpip = <windows-ip-address>``
-- ``logger::*::address::tcpip = <wsl-ip-address>``
+   - ``router::*::address::tcpip = <windows-ip-address>``
+   - ``logger::*::address::tcpip = <wsl-ip-address>``
   
 3. Start ``mcrouter`` on Windows and ``logcollector`` on WSL.
 
