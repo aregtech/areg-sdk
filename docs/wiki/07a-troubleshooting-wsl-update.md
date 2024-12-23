@@ -123,18 +123,20 @@ If the issue persists, reset the WSL network configuration:
 ---
 
 ## Issue 3: Configuring communication between Windows and WSL
+When using the defualt settings in ``areg.init`` router and server services such as ``mcrouter`` running on Windows will not connect to client services running on WSL. This can be remedied by changing the settings found in the ``areg.init`` file. 
+
+> [!NOTE]
+> When connecting a client on Windows to a server or router on WSL, the default ``localhost`` settings will allow the connection.
+
+>[!IMPORTANT]
+>This assumes WSL is using the default networking mode, NAT. Changing this setting to Mirror may allow ``localhost`` to work as intended, but this has not been tested. For more information about the Mirrored networking setting, see [this](https://learn.microsoft.com/en-us/windows/wsl/networking#mirrored-mode-networking) link. This setting can be changed either in the ``.wslconfig`` file, or in the WSL Settings application.]
+
 ### Solution 1: Editing IP address settings
 
 Due to WSL not being able to access the Windows ``localhost`` IP address, routing services hosted on Windows must be configured differently to allow access by clients hosted on WSL.
 Additionally, the services on WSL must be provided the correct IP address to connect to the Windows router.
 
->[!IMPORTANT]
->This assumes WSL is using the default networking mode, NAT. Changing this setting to Mirror may allow ``localhost`` to work as intended, but this has not been tested.]
-
-> [!NOTE]
-> When connecting a client on Windows to a server or router on WSL, the default ``localhost`` settings will allow the connection.
-
-1. To configure the WSL clients, the IP address of the connection to Windows must be specified. The fastest way to find this IP address is to run the following in the WSL terminal:
+1. To configure the WSL clients, the IP address of the connection to Windows must be specified. One way to find this IP address is to run the following in the WSL terminal:
 
    ```bash
       ip route show | grep -i default | awk '{print $3}'
