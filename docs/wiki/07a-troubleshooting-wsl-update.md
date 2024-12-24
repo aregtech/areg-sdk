@@ -14,7 +14,7 @@ This document outlines solutions to common issues encountered while updating the
    - [Solution 3: Reset WSL Network Configuration](#solution-3-reset-wsl-network-configuration)
 3. [Issue 3: Configuring communication between Windows and WSL](#issue-3-configuring-communication-between-windows-and-wsl)
    - [Solution 1: Editing IP address settings](#solution-1-editing-ip-address-settings)
-   - [Solution 2: Solution 2: Running some servers on WSL and some on Windows](#solution-2-running-some-servers-on-wsl-and-some-on-windows)
+   - [Solution 2: Running some servers on WSL and some on Windows](#solution-2-running-some-servers-on-wsl-and-some-on-windows)
 
 ---
 
