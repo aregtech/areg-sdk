@@ -17,6 +17,7 @@ macro(macro_add_unit_test test_project)
 
     set(_tests)
     set(_list "${ARGN}")
+    set(_libs)
 
     foreach(item IN LISTS _list)
         list(APPEND _tests "${AREG_UNIT_TEST_BASE}/${item}")
@@ -28,7 +29,7 @@ macro(macro_add_unit_test test_project)
 
     unset(_tests)
     unset(_list)
-    unset(libs)
+    unset(_libs)
 
 endmacro(macro_add_unit_test)
 
