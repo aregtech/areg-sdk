@@ -23,8 +23,9 @@ macro(macro_add_unit_test test_project)
         list(APPEND _tests "${AREG_UNIT_TEST_BASE}/${item}")
     endforeach()
 
-    list(APPEND _libs "GTest::gtest_main" "GTest::gtest")
+    list(APPEND _libs "GTest::gtest_main" "GTest::gtest" "GTest::gmock")
     addExecutableEx(${test_project} "" "${_tests}" "${_libs}")
+    target_compile_definitions(${test_project} PRIVATE UNITTEST=1)
     gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
 
     unset(_tests)
@@ -50,4 +51,5 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     TERingStackTest.cpp
     TESortedLinkedListTest.cpp
     TEStackTest.cpp
+    NESocketTest.cpp
 )

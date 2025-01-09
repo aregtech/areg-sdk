@@ -37,54 +37,6 @@
 
 #include <utility>
 
-namespace NESocket
-{
-    // OS specific methods
-
-    /**
-     * \brief   OS specific socket initialization. Required in Win32 to initialize resources.
-     * \return  Returns true if initialization succeeded.
-     **/
-    bool _osInitSocket(void);
-
-    /**
-     * \brief   OS specific socket release. Required in Win32 to release resources.
-     */
-    void _osReleaseSocket(void);
-
-    /**
-     * \brief   OS specific socket close.
-     */
-    void _osCloseSocket(SOCKETHANDLE hSocket);
-
-    /**
-     * \brief   OS specific send data implementation. All checkups and validations should
-     *          be done before calling the method.
-     * \return  Returns number of bytes sent via network.
-     */
-    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize);
-
-    /**
-     * \brief   OS specific receive data implementation. All checkups and validations should
-     *          be done before calling the method.
-     * \return  Returns number of bytes received via network.
-     */
-    int _osRecvData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize);
-
-    /**
-     * \brief   OS specific implementation of socket control call.
-     * \return  Returns true if operation succeeded.
-     */
-    bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long & arg);
-
-    /**
-     * \brief   OS specific implementation of retrieving socket option.
-     *          On output the 'value' indicates the value of the option,
-     *          which is valid only if function returns true.
-     */
-    bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long & value);
-}
-
 DEF_LOG_SCOPE(areg_base_NESocket_clientSocketConnect);
 DEF_LOG_SCOPE(areg_base_NESocket_serverSocketConnect);
 DEF_LOG_SCOPE(areg_base_NESocket_serverAcceptConnection);
@@ -704,11 +656,6 @@ AREG_API_IMPL unsigned int NESocket::pendingRead(SOCKETHANDLE hSocket)
 {
     unsigned long result = 0;
     return (isSocketHandleValid(hSocket) && _osControl(hSocket, FIONREAD, result) ? static_cast<unsigned int>(result) : 0);
-}
-
-AREG_API_IMPL bool NESocket::socketInitialize(void)
-{
-    return _osInitSocket();
 }
 
 AREG_API_IMPL void NESocket::socketRelease(void)

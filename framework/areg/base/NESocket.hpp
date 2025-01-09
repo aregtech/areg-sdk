@@ -28,6 +28,58 @@
  ************************************************************************/
 struct sockaddr_in;
 
+#ifndef UNITTEST
+#define NESocketWrapper NESocket
+#endif
+
+namespace NESocketWrapper
+{
+    // OS specific methods
+
+    /**
+     * \brief   OS specific socket initialization. Required in Win32 to initialize resources.
+     * \return  Returns true if initialization succeeded.
+     **/
+    bool _osInitSocket(void);
+
+    /**
+     * \brief   OS specific socket release. Required in Win32 to release resources.
+     */
+    void _osReleaseSocket(void);
+
+    /**
+     * \brief   OS specific socket close.
+     */
+    void _osCloseSocket(SOCKETHANDLE hSocket);
+
+    /**
+     * \brief   OS specific send data implementation. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns number of bytes sent via network.
+     */
+    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize);
+
+    /**
+     * \brief   OS specific receive data implementation. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns number of bytes received via network.
+     */
+    int _osRecvData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize);
+
+    /**
+     * \brief   OS specific implementation of socket control call.
+     * \return  Returns true if operation succeeded.
+     */
+    bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long & arg);
+
+    /**
+     * \brief   OS specific implementation of retrieving socket option.
+     *          On output the 'value' indicates the value of the option,
+     *          which is valid only if function returns true.
+     */
+    bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long & value);
+}
+
 /**
  * \brief   NESocket namespace is a wrapper of basic socket functionalities
  *          like create and close socket, connect client and server, accept
@@ -372,7 +424,10 @@ namespace NESocket
      * \return  Returns true if socket is initialized and socket function might be called
      *          in the current process.
      **/
-    AREG_API bool socketInitialize( void );
+    inline AREG_API bool socketInitialize( void )
+    {
+        return NESocketWrapper::_osInitSocket();
+    }
 
     /**
      * \brief   NESocket::socketRelease
