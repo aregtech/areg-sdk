@@ -8,13 +8,13 @@ This service is used by each remote servicing component to register clients.
 Before using services, the clients should be registered.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="ServiceAddress" Type="Imported">
-            <Description></Description>
+        <DataType ID="3" Name="ServiceAddress" Type="Imported">
+            <Description>The ServiceAddress type</Description>
             <Namespace></Namespace>
             <ImportedObject>ServiceAddress</ImportedObject>
             <Location>areg\component\ServiceAddress.hpp</Location>
         </DataType>
-        <DataType ID="3" Name="sClientRegister" Type="Structure">
+        <DataType ID="60" Name="sClientRegister" Type="Structure">
             <Description>Describes the client registry entry.</Description>
             <FieldList>
                 <Field ID="4" Name="crID" DataType="uint32">
@@ -95,4 +95,9 @@ Before using services, the clients should be registered.</Description>
             <Description></Description>
         </Constant>
     </ConstantList>
+    <IncludeList>
+        <Location ID="59" Name="areg\component\ServiceAddress.hpp">
+            <Description>Include to use ServiceAddress object.</Description>
+        </Location>
+    </IncludeList>
 </ServiceInterface>
