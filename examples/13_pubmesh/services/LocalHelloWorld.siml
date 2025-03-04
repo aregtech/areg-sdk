@@ -1,36 +1,36 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="LocalHelloWorld" Version="1.0.1">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="LocalHelloWorld" Version="1.1.0" Category="Private">
         <Description>A Local Service Interface to demonstrate working features of AREG SDK.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="sConnectedClient" Type="Structure">
             <Description>The dummy structure describing connected client.</Description>
             <FieldList>
-                <Field DataType="uint32" ID="3" Name="ccID">
-                    <Value IsDefault="true">0</Value>
+                <Field ID="3" Name="ccID" DataType="uint32">
+                    <Value>0</Value>
                     <Description>The ID of client, given by servicing component</Description>
                 </Field>
-                <Field DataType="String" ID="4" Name="ccName">
-                    <Value IsDefault="true"/>
+                <Field ID="4" Name="ccName" DataType="String">
+                    <Value></Value>
                     <Description>The role name of client component. Parameter received by client.</Description>
                 </Field>
             </FieldList>
         </DataType>
     </DataTypeList>
     <MethodList>
-        <Method ID="7" MethodType="request" Name="HelloWorld">
+        <Method ID="7" MethodType="Request" Name="HelloWorld">
             <Description>Request to print hello world</Description>
             <ParamList>
-                <Parameter DataType="String" ID="8" Name="roleName">
+                <Parameter ID="51" DataType="String" Name="roleName">
                     <Description>The role name of client component that requested to print hello world</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" MethodType="response" Name="HelloWorld">
+        <Method ID="10" MethodType="Response" Name="HelloWorld">
             <Description>The response to hello world request.</Description>
             <ParamList>
-                <Parameter DataType="sConnectedClient" ID="11" Name="clientInfo">
+                <Parameter ID="52" DataType="sConnectedClient" Name="clientInfo">
                     <Description>The client information set by servicing component. If empty or invalid ID, the message output failed.</Description>
                 </Parameter>
             </ParamList>

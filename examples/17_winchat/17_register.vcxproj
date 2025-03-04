@@ -21,6 +21,9 @@
     <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>

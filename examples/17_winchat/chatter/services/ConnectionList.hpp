@@ -27,7 +27,7 @@ protected:
      * \param   success         Flag, indicating whether the request to register connection succeeded or not.
      * \see     requestRegisterConnection
      **/
-    virtual void responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, bool success ) override;
+    virtual void responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnections & connectionList, bool success ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when new client connection is accepted

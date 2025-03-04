@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="PublicHelloWorld" Version="2.0.0" isRemote="true">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="PublicHelloWorld" Version="2.1.0" Category="Public">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.
 This interface demonstrates how to use multiple remote services in the system.
 Each service is unique in the network.
@@ -9,89 +9,92 @@ Before using services, the clients should be registered.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="ServiceAddress" Type="Imported">
-            <Namespace/>
+            <Description></Description>
+            <Namespace></Namespace>
+            <ImportedObject>ServiceAddress</ImportedObject>
             <Location>areg\component\ServiceAddress.hpp</Location>
         </DataType>
         <DataType ID="3" Name="sClientRegister" Type="Structure">
             <Description>Describes the client registry entry.</Description>
             <FieldList>
-                <Field DataType="uint32" ID="4" Name="crID">
-                    <Value IsDefault="true">0</Value>
+                <Field ID="4" Name="crID" DataType="uint32">
+                    <Value>0</Value>
                     <Description>The generated ID of the client.</Description>
                 </Field>
-                <Field DataType="String" ID="5" Name="crName">
-                    <Value IsDefault="true">""</Value>
+                <Field ID="5" Name="crName" DataType="String">
+                    <Value>&quot;&quot;</Value>
                     <Description>The name of client</Description>
                 </Field>
-                <Field DataType="ServiceAddress" ID="8" Name="crService">
-                    <Value IsDefault="true"/>
+                <Field ID="6" Name="crService" DataType="ServiceAddress">
+                    <Value></Value>
                     <Description>The service address of the client. Required when the client looses connection, so that the system needs to unregister client.</Description>
                 </Field>
-                <Field DataType="String" ID="6" Name="crThread">
-                    <Value IsDefault="true">""</Value>
+                <Field ID="8" Name="crThread" DataType="String">
+                    <Value>&quot;&quot;</Value>
                     <Description>The thread name where the client is running. Required to provide uniqueness.</Description>
                 </Field>
-                <Field DataType="String" ID="38" Name="crProcess">
-                    <Value IsDefault="true"/>
+                <Field ID="38" Name="crProcess" DataType="String">
+                    <Value></Value>
                     <Description>The name of process. Optional parameter, used to make outputs in the log.</Description>
                 </Field>
             </FieldList>
         </DataType>
     </DataTypeList>
     <MethodList>
-        <Method ID="11" MethodType="request" Name="Register" Response="Register">
+        <Method ID="11" MethodType="Request" Name="Register" Response="Register">
             <Description>Call to register client. Each client should be registered before starting communication.</Description>
             <ParamList>
-                <Parameter DataType="String" ID="12" Name="name">
+                <Parameter ID="51" DataType="String" Name="name">
                     <Description>The name of the client.</Description>
                 </Parameter>
-                <Parameter DataType="ServiceAddress" ID="13" Name="service">
+                <Parameter ID="52" DataType="ServiceAddress" Name="service">
                     <Description>The service address of the client.</Description>
                 </Parameter>
-                <Parameter DataType="String" ID="14" Name="thread">
+                <Parameter ID="53" DataType="String" Name="thread">
                     <Description>The thread name where client is running. Required to provide uniqueness.</Description>
                 </Parameter>
-                <Parameter DataType="String" ID="37" Name="process">
+                <Parameter ID="54" DataType="String" Name="process">
                     <Description>The name of process. Optional parameter, used to make output in logs.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" MethodType="response" Name="Register">
+        <Method ID="15" MethodType="Response" Name="Register">
             <Description>Sent when the client is registered. Each registered client has unique ID.</Description>
             <ParamList>
-                <Parameter DataType="sClientRegister" ID="17" Name="client">
+                <Parameter ID="55" DataType="sClientRegister" Name="client">
                     <Description>The client registration object that contains unique ID.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="18" MethodType="request" Name="Unregister">
+        <Method ID="18" MethodType="Request" Name="Unregister">
             <Description>Sent to unregister connected client.</Description>
             <ParamList>
-                <Parameter DataType="sClientRegister" ID="19" Name="client">
+                <Parameter ID="56" DataType="sClientRegister" Name="client">
                     <Description>The client registration object indicating the unregistered client.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" MethodType="request" Name="HelloWorld" Response="HelloWorld">
+        <Method ID="30" MethodType="Request" Name="HelloWorld" Response="HelloWorld">
             <Description>Outputs message on console.</Description>
             <ParamList>
-                <Parameter DataType="uint32" ID="31" Name="clientID">
+                <Parameter ID="57" DataType="uint32" Name="clientID">
                     <Description>The ID of registered client to make message output.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="33" MethodType="response" Name="HelloWorld">
+        <Method ID="33" MethodType="Response" Name="HelloWorld">
             <Description>Called as reply to the request to output message.</Description>
             <ParamList>
-                <Parameter DataType="uint32" ID="34" Name="clientID">
+                <Parameter ID="58" DataType="uint32" Name="clientID">
                     <Description>Indicates the ID client that made message output</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant DataType="uint32" ID="36" Name="MaximumOutputs">
+        <Constant ID="36" DataType="uint32" Name="MaximumOutputs">
             <Value>50</Value>
+            <Description></Description>
         </Constant>
     </ConstantList>
 </ServiceInterface>

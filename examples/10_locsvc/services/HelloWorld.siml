@@ -1,34 +1,34 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="HelloWorld" Version="1.0.1">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="HelloWorld" Version="1.1.0" Category="Private">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.</Description>
     </Overview>
     <MethodList>
-        <Method ID="7" MethodType="request" Name="HelloWorld" Response="HelloWorld">
+        <Method ID="7" MethodType="Request" Name="HelloWorld" Response="HelloWorld">
             <Description>Request to print hello world</Description>
             <ParamList>
-                <Parameter DataType="String" ID="8" Name="roleName">
+                <Parameter ID="51" DataType="String" Name="roleName">
                     <Description>The role name of client component that requested to print hello world</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" MethodType="response" Name="HelloWorld">
+        <Method ID="10" MethodType="Response" Name="HelloWorld">
             <Description>The response to hello world request.</Description>
         </Method>
-        <Method ID="14" MethodType="request" Name="ShutdownService">
+        <Method ID="14" MethodType="Request" Name="ShutdownService">
             <Description>Sent by client to request to shutdown service and the application. This request has no response.</Description>
         </Method>
-        <Method ID="15" MethodType="broadcast" Name="ReachedMaximum">
+        <Method ID="15" MethodType="Broadcast" Name="ReachedMaximum">
             <Description>Triggered to notify that  reached the maximum number of requests.</Description>
             <ParamList>
-                <Parameter DataType="int32" ID="19" Name="maxNumber">
+                <Parameter ID="52" DataType="int32" Name="maxNumber">
                     <Description>The maximum number of requests.</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant DataType="int16" ID="18" Name="MaxMessages">
+        <Constant ID="18" DataType="int16" Name="MaxMessages">
             <Value>37</Value>
             <Description>The maximum number of messages to output.</Description>
         </Constant>

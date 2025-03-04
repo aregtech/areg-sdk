@@ -1,55 +1,55 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="PowerManager" Version="1.0.0">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="PowerManager" Version="1.1.0" Category="Private">
         <Description>This is a power manager of Traffic Light Controller. It powers the lights ON and OFF.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="3" Name="ePoweredState" Type="Enumerate" Values="default">
+        <DataType ID="3" Name="ePoweredState" Type="Enumeration" Values="default">
             <Description>The power state of the traffic lights.</Description>
             <FieldList>
                 <EnumEntry ID="4" Name="LightsOFF">
-                    <Value/>
+                    <Value></Value>
                     <Description>The lights are OFF</Description>
                 </EnumEntry>
                 <EnumEntry ID="5" Name="LightsON">
-                    <Value/>
+                    <Value></Value>
                     <Description>The lights are ON.</Description>
                 </EnumEntry>
             </FieldList>
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute DataType="ePoweredState" ID="6" Name="LightsPowerState" Notify="OnChange">
+        <Attribute ID="6" Name="LightsPowerState" DataType="ePoweredState" Notify="OnChange">
             <Description>The power state of the traffic lights.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="2" MethodType="request" Name="PowerOn">
+        <Method ID="2" MethodType="Request" Name="PowerOn">
             <Description>Called to power ON the traffic lights.</Description>
         </Method>
-        <Method ID="7" MethodType="request" Name="PowerOff">
+        <Method ID="7" MethodType="Request" Name="PowerOff">
             <Description>Called to power OFF the traffic lights.</Description>
         </Method>
-        <Method ID="8" MethodType="request" Name="StartTrafficLight" Response="StartTrafficLight">
+        <Method ID="8" MethodType="Request" Name="StartTrafficLight" Response="StartTrafficLight">
             <Description>Triggered to start the traffic light</Description>
         </Method>
-        <Method ID="9" MethodType="response" Name="StartTrafficLight">
+        <Method ID="9" MethodType="Response" Name="StartTrafficLight">
             <Description>Sent as a response to start the traffic light. The traffic light can be started when it is powered ON and in initialization state.</Description>
             <ParamList>
-                <Parameter DataType="bool" ID="10" Name="Success">
+                <Parameter ID="51" DataType="bool" Name="Success">
                     <Description>Flag, indicating whether the operation succeeded or not.
 This flag is 'true' if lights are initialization state of if traffic light is already functioning.
 This flag is 'false' if lights are OFF.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="11" MethodType="request" Name="StopTrafficLight" Response="StopTrafficLight">
+        <Method ID="11" MethodType="Request" Name="StopTrafficLight" Response="StopTrafficLight">
             <Description>Call to stop the traffic lights and put them in initialization state.</Description>
         </Method>
-        <Method ID="12" MethodType="response" Name="StopTrafficLight">
+        <Method ID="12" MethodType="Response" Name="StopTrafficLight">
             <Description>Response to stop the traffic lights.</Description>
             <ParamList>
-                <Parameter DataType="bool" ID="13" Name="Success">
+                <Parameter ID="52" DataType="bool" Name="Success">
                     <Description>Flag, indicating whether the request was processed with success or not.
 This flag is 'true' if traffic light are functioning or lights are in initialization state.
 This flag is 'false' if traffic lights are OFF.</Description>

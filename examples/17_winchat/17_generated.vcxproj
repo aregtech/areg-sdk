@@ -23,6 +23,9 @@
   <PropertyGroup>
     <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>

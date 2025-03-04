@@ -1,18 +1,18 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="SystemShutdown" Version="1.1.0" isRemote="true">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="SystemShutdown" Version="1.2.0" Category="Public">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.
 This service demonstrates the usage of attribute.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="4" Name="eServiceState" Type="Enumerate" Values="default">
+        <DataType ID="4" Name="eServiceState" Type="Enumeration" Values="default">
             <Description>Describes the service availability states</Description>
             <FieldList>
-                <EnumEntry ID="7" Name="ServiceShutdown">
+                <EnumEntry ID="6" Name="ServiceShutdown">
                     <Value>0</Value>
                     <Description>Service shutdown state.</Description>
                 </EnumEntry>
-                <EnumEntry ID="6" Name="ServiceReady">
+                <EnumEntry ID="7" Name="ServiceReady">
                     <Value>1</Value>
                     <Description>Service is active, ready to communicate</Description>
                 </EnumEntry>
@@ -20,12 +20,12 @@ This service demonstrates the usage of attribute.</Description>
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute DataType="eServiceState" ID="11" Name="ServiceState" Notify="OnChange">
+        <Attribute ID="11" Name="ServiceState" DataType="eServiceState" Notify="OnChange">
             <Description>Describes the system availability state</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="12" MethodType="request" Name="SystemShutdown">
+        <Method ID="12" MethodType="Request" Name="SystemShutdown">
             <Description>The request to shutdown the system.</Description>
         </Method>
     </MethodList>

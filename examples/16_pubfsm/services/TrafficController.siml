@@ -1,64 +1,64 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="TrafficController" Version="1.0.0" isRemote="true">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="TrafficController" Version="1.1.0" Category="Public">
         <Description>This is a traffic light controlle service interface.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="eTrafficDirection" Type="Enumerate" Values="default">
+        <DataType ID="2" Name="eTrafficDirection" Type="Enumeration" Values="default">
             <Description>The direction of traffic.</Description>
             <FieldList>
                 <EnumEntry ID="4" Name="DirectionUndefiend">
-                    <Value/>
+                    <Value></Value>
                     <Description>Undefined direction.</Description>
                 </EnumEntry>
                 <EnumEntry ID="5" Name="DirectionSouthNorth">
-                    <Value/>
+                    <Value></Value>
                     <Description>The traffic direction is south-north.</Description>
                 </EnumEntry>
                 <EnumEntry ID="6" Name="DirectionEastWest">
-                    <Value/>
+                    <Value></Value>
                     <Description>The traffic direction is east-west.</Description>
                 </EnumEntry>
             </FieldList>
         </DataType>
-        <DataType ID="7" Name="eVehicleTrafficLight" Type="Enumerate" Values="default">
+        <DataType ID="7" Name="eVehicleTrafficLight" Type="Enumeration" Values="default">
             <Description>The states of vehicle traffic states.</Description>
             <FieldList>
                 <EnumEntry ID="8" Name="VehicleLightOFF">
-                    <Value/>
+                    <Value></Value>
                     <Description>The vehicle lights are OFF.</Description>
                 </EnumEntry>
                 <EnumEntry ID="9" Name="VehicleLightsInit">
-                    <Value/>
+                    <Value></Value>
                     <Description>The vehicle lights are initialized (blink yellow).</Description>
                 </EnumEntry>
                 <EnumEntry ID="10" Name="VehicleLightRed">
-                    <Value/>
+                    <Value></Value>
                     <Description>Vehicle light is red.</Description>
                 </EnumEntry>
                 <EnumEntry ID="11" Name="VehicleLightYellow">
-                    <Value/>
+                    <Value></Value>
                     <Description>Vehicle light is yellow.</Description>
                 </EnumEntry>
                 <EnumEntry ID="12" Name="VehicleLightGreen">
-                    <Value/>
+                    <Value></Value>
                     <Description>The vehicle light is green.</Description>
                 </EnumEntry>
             </FieldList>
         </DataType>
-        <DataType ID="13" Name="ePedestrianTrafficLight" Type="Enumerate" Values="default">
+        <DataType ID="13" Name="ePedestrianTrafficLight" Type="Enumeration" Values="default">
             <Description>The traffic light state of pedestrians.</Description>
             <FieldList>
                 <EnumEntry ID="14" Name="PedestrianLightOFF">
-                    <Value/>
+                    <Value></Value>
                     <Description>The pedestrian light is OFF.</Description>
                 </EnumEntry>
                 <EnumEntry ID="15" Name="PedestrianLightRed">
-                    <Value/>
+                    <Value></Value>
                     <Description>Pedestrian light is red.</Description>
                 </EnumEntry>
                 <EnumEntry ID="16" Name="PedestrianLightGreen">
-                    <Value/>
+                    <Value></Value>
                     <Description>The pedestrian light is green.</Description>
                 </EnumEntry>
             </FieldList>
@@ -66,15 +66,15 @@
         <DataType ID="28" Name="sTrafficLight" Type="Structure">
             <Description>Describes the direction of traffic and the states of lights for vehicle and pedestrians.</Description>
             <FieldList>
-                <Field DataType="eTrafficDirection" ID="29" Name="trafficDirection">
+                <Field ID="29" Name="trafficDirection" DataType="eTrafficDirection">
                     <Value IsDefault="true">eTrafficDirection::DirectionUndefiend</Value>
                     <Description>The traffic direction</Description>
                 </Field>
-                <Field DataType="eVehicleTrafficLight" ID="30" Name="lightVehicle">
+                <Field ID="30" Name="lightVehicle" DataType="eVehicleTrafficLight">
                     <Value IsDefault="true">eVehicleTrafficLight::VehicleLightOFF</Value>
                     <Description>The state of vehicle lights.</Description>
                 </Field>
-                <Field DataType="ePedestrianTrafficLight" ID="31" Name="lightPedestrian">
+                <Field ID="31" Name="lightPedestrian" DataType="ePedestrianTrafficLight">
                     <Value IsDefault="true">ePedestrianTrafficLight::PedestrianLightOFF</Value>
                     <Description>Describes the state of pedestrian lights.</Description>
                 </Field>
@@ -82,32 +82,32 @@
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute DataType="sTrafficLight" ID="32" Name="TrafficSouthNorth" Notify="OnChange">
+        <Attribute ID="32" Name="TrafficSouthNorth" DataType="sTrafficLight" Notify="OnChange">
             <Description>The south-north traffic.</Description>
         </Attribute>
-        <Attribute DataType="sTrafficLight" ID="33" Name="TrafficEastWest" Notify="OnChange">
+        <Attribute ID="33" Name="TrafficEastWest" DataType="sTrafficLight" Notify="OnChange">
             <Description>The east-west traffic</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="21" MethodType="broadcast" Name="SouthNorth">
+        <Method ID="21" MethodType="Broadcast" Name="SouthNorth">
             <Description>Broadcasts the light states of south-north direction.</Description>
             <ParamList>
-                <Parameter DataType="eVehicleTrafficLight" ID="23" Name="LightVehicle">
+                <Parameter ID="51" DataType="eVehicleTrafficLight" Name="LightVehicle">
                     <Description>Light state for vehicles</Description>
                 </Parameter>
-                <Parameter DataType="ePedestrianTrafficLight" ID="24" Name="LightPedestrian">
+                <Parameter ID="52" DataType="ePedestrianTrafficLight" Name="LightPedestrian">
                     <Description>Light state for pedestrians.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="25" MethodType="broadcast" Name="EastWest">
+        <Method ID="25" MethodType="Broadcast" Name="EastWest">
             <Description>Broadcasts the light states of east-west direction.</Description>
             <ParamList>
-                <Parameter DataType="eVehicleTrafficLight" ID="26" Name="LightVehicle">
+                <Parameter ID="53" DataType="eVehicleTrafficLight" Name="LightVehicle">
                     <Description>Light state for vehicles</Description>
                 </Parameter>
-                <Parameter DataType="ePedestrianTrafficLight" ID="27" Name="LightPedestrian">
+                <Parameter ID="54" DataType="ePedestrianTrafficLight" Name="LightPedestrian">
                     <Description>Light state for pedestrians.</Description>
                 </Parameter>
             </ParamList>
