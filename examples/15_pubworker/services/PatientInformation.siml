@@ -8,19 +8,17 @@
             <Description>The patien information</Description>
             <FieldList>
                 <Field ID="3" Name="firstName" DataType="String">
-                    <Value></Value>
                     <Description>The first name of patient.</Description>
                 </Field>
                 <Field ID="4" Name="lastName" DataType="String">
-                    <Value></Value>
                     <Description>The last name of patient.</Description>
                 </Field>
                 <Field ID="5" Name="weight" DataType="float">
-                    <Value>0.0</Value>
+                    <Value IsDefault="true">0.0</Value>
                     <Description>The weight of patient in kilogramms.</Description>
                 </Field>
                 <Field ID="6" Name="age" DataType="uint32">
-                    <Value>0</Value>
+                    <Value IsDefault="true">0</Value>
                     <Description>The age of patient.</Description>
                 </Field>
             </FieldList>

@@ -34,11 +34,10 @@ and testing the correct behavior of notifications when Subscribers run in the sa
 which contains integer as a value and name of a service, which updates the value.</Description>
             <FieldList>
                 <Field ID="19" Name="value" DataType="uint32">
-                    <Value>0</Value>
+                    <Value IsDefault="true">0</Value>
                     <Description>The integer value.</Description>
                 </Field>
                 <Field ID="20" Name="name" DataType="String">
-                    <Value></Value>
                     <Description>The name of the service that updated value.</Description>
                 </Field>
             </FieldList>
@@ -48,11 +47,9 @@ which contains integer as a value and name of a service, which updates the value
 which contains string as a value and name of a service, which updates the value.</Description>
             <FieldList>
                 <Field ID="22" Name="value" DataType="String">
-                    <Value></Value>
                     <Description>The value</Description>
                 </Field>
                 <Field ID="23" Name="name" DataType="String">
-                    <Value></Value>
                     <Description>The name of the service that updated value.</Description>
                 </Field>
             </FieldList>

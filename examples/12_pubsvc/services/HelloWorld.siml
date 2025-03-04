@@ -8,11 +8,10 @@
             <Description>The dummy structure describing connected client.</Description>
             <FieldList>
                 <Field ID="3" Name="ccID" DataType="uint32">
-                    <Value>0</Value>
+                    <Value IsDefault="true">0</Value>
                     <Description>The ID of client, given by servicing component</Description>
                 </Field>
                 <Field ID="4" Name="ccName" DataType="String">
-                    <Value></Value>
                     <Description>The role name of client component. Parameter received by client.</Description>
                 </Field>
             </FieldList>
