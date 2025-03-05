@@ -46,7 +46,7 @@ void ServicingComponent::startupServiceInterface(Component & holder)
     StubBase::startupServiceInterface(holder);
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
 
-    printf("Local servicing started, waits for [ %d ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
+    printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
 void ServicingComponent::shutdownServiceIntrface(Component & holder)
