@@ -1,25 +1,23 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="PatientInformation" Version="0.1.0" isRemote="true">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="PatientInformation" Version="1.2.0" Category="Public">
         <Description>This service sends the patient information to apply connected devices.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="PatientInfo" Type="Structure">
             <Description>The patien information</Description>
             <FieldList>
-                <Field DataType="String" ID="3" Name="firstName">
-                    <Value IsDefault="true"/>
+                <Field ID="3" Name="firstName" DataType="String">
                     <Description>The first name of patient.</Description>
                 </Field>
-                <Field DataType="String" ID="4" Name="lastName">
-                    <Value IsDefault="true"/>
+                <Field ID="4" Name="lastName" DataType="String">
                     <Description>The last name of patient.</Description>
                 </Field>
-                <Field DataType="float" ID="5" Name="weight">
+                <Field ID="5" Name="weight" DataType="float">
                     <Value IsDefault="true">0.0</Value>
                     <Description>The weight of patient in kilogramms.</Description>
                 </Field>
-                <Field DataType="uint32" ID="6" Name="age">
+                <Field ID="6" Name="age" DataType="uint32">
                     <Value IsDefault="true">0</Value>
                     <Description>The age of patient.</Description>
                 </Field>
@@ -27,12 +25,12 @@
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute DataType="PatientInfo" ID="7" Name="Patient" Notify="OnChange">
+        <Attribute ID="7" Name="Patient" DataType="PatientInfo" Notify="OnChange">
             <Description>The patient information to apply to hardware.</Description>
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant DataType="uint32" ID="8" Name="Timeout">
+        <Constant ID="8" DataType="uint32" Name="Timeout">
             <Value>500</Value>
             <Description>The timeout in milliseconds to apply the patient information.</Description>
         </Constant>

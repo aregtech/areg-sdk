@@ -81,7 +81,7 @@ void ConnectionManager::startupServiceInterface( Component & holder )
 
     mCookies = 1;
 
-    setConnectionList( NEConnectionManager::MapConnection( ) );
+    setConnectionList( NEConnectionManager::MapConnections( ) );
 }
 
 void ConnectionManager::requestConnect( const String & nickName, const DateTime & dateTime )
@@ -136,7 +136,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
     connection.nickName     = nickName;
     connection.connectTime  = dateRegister;
     connection.cookie       = NEConnectionManager::InvalidCookie;
-    NEConnectionManager::ListConnection listConnections;
+    NEConnectionManager::ListConnections listConnections;
 
     if ( (nickName.isEmpty( ) == false) && (nickName.isValidName( ) == true) )
     {
@@ -144,7 +144,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
         {
             if ( FindConnection( nickName, connection ) == false )
             {
-                NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
+                NEConnectionManager::MapConnections & mapConnections = getConnectionList( );
                 listConnections.resize(mapConnections.getSize( ));
                 uint32_t count = 0;
                 const auto& map = mapConnections.getData();
@@ -209,7 +209,7 @@ void ConnectionManager::requestDisconnect( const String & nickName, unsigned int
 {
     LOG_SCOPE( centralapp_ConnectionManager_requestDisconnect );
     NEConnectionManager::sConnection connection;
-    NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
+    NEConnectionManager::MapConnections & mapConnections = getConnectionList( );
     bool found = cookie != NEConnectionManager::InvalidCookie ? mapConnections.find(cookie, connection) : FindConnection(nickName, connection);
 
     if ( found )
@@ -255,7 +255,7 @@ void ConnectionManager::requestSendMessage( const String & nickName, unsigned in
     LOG_SCOPE( centralapp_ConnectionManager_requestSendMessage );
 
     NEConnectionManager::sConnection connection;
-    NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
+    NEConnectionManager::MapConnections & mapConnections = getConnectionList( );
     bool found = cookie != NEConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
     {
@@ -291,7 +291,7 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
     LOG_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
 
     NEConnectionManager::sConnection connection;
-    NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
+    NEConnectionManager::MapConnections & mapConnections = getConnectionList( );
     bool found = cookie != NEConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
     {
@@ -321,7 +321,7 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
 bool ConnectionManager::FindConnection( const String & nickName, NEConnectionManager::sConnection & connection )
 {
     bool result = false;
-    const NEConnectionManager::MapConnection & mapClients = getConnectionList();
+    const NEConnectionManager::MapConnections & mapClients = getConnectionList();
     const auto& map = mapClients.getData();
     for (const auto& entry : map)
     {
@@ -349,7 +349,7 @@ bool ConnectionManager::IsReservedNickname( const String & nickName ) const
 
 inline bool ConnectionManager::connectionExist( uint32_t cookie ) const
 {
-    const NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
+    const NEConnectionManager::MapConnections & mapConnections = getConnectionList( );
     return mapConnections.contains(cookie);
 }
 

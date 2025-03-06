@@ -60,7 +60,7 @@ void ConnectionList::broadcastClientConnected( const NEConnectionManager::sConne
     }
 }
 
-void ConnectionList::responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, bool success )
+void ConnectionList::responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnections & connectionList, bool success )
 {
     LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
     LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.getString());

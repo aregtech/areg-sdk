@@ -63,6 +63,6 @@ void HardwareWorkerConsumer::updateInfoPatient(const SharedBuffer & data)
     printf("\tFirst Name ......: %s\n", infoPatient.firstName.getString());
     printf("\tLast Name .......: %s\n", infoPatient.lastName.getString());
     printf("\tPatient weight ..: %.02f kg\n", static_cast<double>(infoPatient.weight));
-    printf("\tPatient age .....: %d y.\n", infoPatient.age);
+    printf("\tPatient age .....: %u y.\n", infoPatient.age);
     printf("-----------------------------\n\n");
 }

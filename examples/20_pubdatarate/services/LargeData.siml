@@ -1,26 +1,28 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="LargeData" Version="1.0.0" isRemote="true">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="LargeData" Version="1.1.0" Category="Public">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.
 This service will demonstrate the TCP/IP data rate by sending 
 image data to connected clients.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="42" Name="ImageBlock" Type="Imported">
-        <Namespace>NELargeData</Namespace>
-        <Location>common/NELargeData.hpp</Location>
+            <Description></Description>
+            <Namespace>NELargeData</Namespace>
+            <ImportedObject>ImageBlock</ImportedObject>
+            <Location>common/NELargeData.hpp</Location>
         </DataType>
     </DataTypeList>
     <MethodList>
-        <Method ID="40" MethodType="broadcast" Name="ImageBlockAcquired">
+        <Method ID="40" MethodType="Broadcast" Name="ImageBlockAcquired">
             <Description>Called to notify all connected clients that new image data is available.</Description>
             <ParamList>
-                <Parameter DataType="NELargeData::ImageBlock" ID="43" Name="imageBlock">
+                <Parameter ID="51" DataType="ImageBlock" Name="imageBlock">
                     <Description>Acquired image block.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="41" MethodType="broadcast" Name="ServiceStopping">
+        <Method ID="41" MethodType="Broadcast" Name="ServiceStopping">
             <Description>Called to notify all clients that service is shutting down.</Description>
         </Method>
     </MethodList>

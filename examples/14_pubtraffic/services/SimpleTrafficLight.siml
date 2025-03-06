@@ -1,49 +1,49 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="SimpleTrafficLight" Version="1.0.0" isRemote="true">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="SimpleTrafficLight" Version="1.1.0" Category="Public">
         <Description>The simple traffic light that triggers timeout and changes traffic light state.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="eTrafficLight" Type="Enumerate" Values="default">
+        <DataType ID="2" Name="eTrafficLight" Type="Enumeration" Values="default">
             <Description>The simple traffic light states</Description>
             <FieldList>
                 <EnumEntry ID="3" Name="LightOff">
-                    <Value/>
+                    <Value></Value>
                     <Description>The light is off.</Description>
                 </EnumEntry>
                 <EnumEntry ID="4" Name="LightRed">
-                    <Value/>
+                    <Value></Value>
                     <Description>The light is red.</Description>
                 </EnumEntry>
                 <EnumEntry ID="6" Name="LightYellow">
-                    <Value/>
+                    <Value></Value>
                     <Description>The light is yellow.</Description>
                 </EnumEntry>
                 <EnumEntry ID="8" Name="LightGreen">
-                    <Value/>
+                    <Value></Value>
                     <Description>The light is green.</Description>
                 </EnumEntry>
             </FieldList>
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute DataType="eTrafficLight" ID="19" Name="SouthNorth" Notify="OnChange">
+        <Attribute ID="19" Name="SouthNorth" DataType="eTrafficLight" Notify="OnChange">
             <Description>The light state of south-north traffic.</Description>
         </Attribute>
-        <Attribute DataType="eTrafficLight" ID="20" Name="EastWest" Notify="OnChange">
+        <Attribute ID="20" Name="EastWest" DataType="eTrafficLight" Notify="OnChange">
             <Description>The light state of east-west traffic.</Description>
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant DataType="uint32" ID="10" Name="TimeoutRed">
+        <Constant ID="10" DataType="uint32" Name="TimeoutRed">
             <Value>3000</Value>
             <Description>The red light timeout in milliseconds.</Description>
         </Constant>
-        <Constant DataType="uint32" ID="11" Name="TimeoutYellow">
+        <Constant ID="11" DataType="uint32" Name="TimeoutYellow">
             <Value>1000</Value>
             <Description>The yellow light timeout in milliseconds.</Description>
         </Constant>
-        <Constant DataType="uint32" ID="13" Name="TimeoutGreen">
+        <Constant ID="13" DataType="uint32" Name="TimeoutGreen">
             <Value>3000</Value>
             <Description>The green light timeout in milliseconds.</Description>
         </Constant>

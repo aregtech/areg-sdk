@@ -1,22 +1,28 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="ConnectionManager" Version="1.0.0" isRemote="true">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="ConnectionManager" Version="2.0.0" Category="Public">
         <Description>The connection manager to register each application with client</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="3" Name="sConnection" Type="Imported">
+            <Description>Imported sConnection structure.</Description>
             <Namespace>NECommon</Namespace>
+            <ImportedObject>sConnection</ImportedObject>
             <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="4" Name="ListConnections" Type="Imported">
+            <Description>Imported list of connected clients object.</Description>
             <Namespace>NECommon</Namespace>
+            <ImportedObject>ListConnections</ImportedObject>
             <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="5" Name="MapConnections" Type="Imported">
+            <Description>Connection map</Description>
             <Namespace>NECommon</Namespace>
+            <ImportedObject>MapConnections</ImportedObject>
             <Location>common/NECommon.hpp</Location>
         </DataType>
-        <DataType ID="15" Name="eConnectionResult" Type="Enumerate" Values="default">
+        <DataType ID="15" Name="eConnectionResult" Type="Enumeration" Values="default">
             <Description>The result of connection</Description>
             <FieldList>
                 <EnumEntry ID="16" Name="ConnectionAccepted">
@@ -24,100 +30,85 @@
                     <Description>The connection is accepted by system</Description>
                 </EnumEntry>
                 <EnumEntry ID="17" Name="ConnectionClientExist">
-                    <Value/>
+                    <Value></Value>
                     <Description>The connection is rejected, client exists</Description>
                 </EnumEntry>
                 <EnumEntry ID="18" Name="ConnectionNameReserved">
-                    <Value/>
+                    <Value></Value>
                     <Description>The name is reserved and cannot be used.</Description>
                 </EnumEntry>
                 <EnumEntry ID="19" Name="ConnectionClosed">
-                    <Value/>
+                    <Value></Value>
                     <Description>The connection is closed by system.</Description>
                 </EnumEntry>
                 <EnumEntry ID="20" Name="InvalidClient">
-                    <Value/>
+                    <Value></Value>
                     <Description>The client is invalid</Description>
                 </EnumEntry>
             </FieldList>
         </DataType>
-        <DataType ID="48" Name="sConnection" Type="DefinedType">
-            <Description>The connection structure.</Description>
-            <Container>New Type</Container>
-            <BaseTypeValue>NECommon::sConnection</BaseTypeValue>
-        </DataType>
-        <DataType ID="49" Name="ListConnection" Type="DefinedType">
-            <Description>List of connections.</Description>
-            <Container>New Type</Container>
-            <BaseTypeValue>NECommon::ListConnections</BaseTypeValue>
-        </DataType>
-        <DataType ID="50" Name="MapConnection" Type="DefinedType">
-            <Description>Map of connections.</Description>
-            <Container>New Type</Container>
-            <BaseTypeValue>NECommon::MapConnections</BaseTypeValue>
-        </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute DataType="MapConnection" ID="51" Name="ConnectionList" Notify="OnChange">
+        <Attribute ID="51" Name="ConnectionList" DataType="MapConnections" Notify="OnChange">
             <Description>The map of all active connections</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="14" MethodType="Response" Name="Connect">
+        <Method ID="11" MethodType="Response" Name="Connect">
             <Description>The result of connection request.</Description>
             <ParamList>
-                <Parameter DataType="String" ID="21" Name="nickName">
+                <Parameter ID="52" DataType="String" Name="nickName">
                     <Description>Client connection data, which contains nick name and connection date-time</Description>
                 </Parameter>
-                <Parameter DataType="uint32" ID="22" Name="cookie">
+                <Parameter ID="53" DataType="uint32" Name="cookie">
                     <Description>Connection assigned cookie for client service</Description>
                 </Parameter>
-                <Parameter DataType="DateTime" ID="23" Name="dateTime">
+                <Parameter ID="54" DataType="DateTime" Name="dateTime">
                     <Description>The client service connection time-stamp in UTC</Description>
                 </Parameter>
-                <Parameter DataType="eConnectionResult" ID="25" Name="conResult">
+                <Parameter ID="55" DataType="eConnectionResult" Name="conResult">
                     <Description>The connection operation result</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="11" MethodType="Request" Name="Connect" Response="Connect">
+        <Method ID="14" MethodType="Request" Name="Connect" Response="Connect">
             <Description>The request to connect to system</Description>
             <ParamList>
-                <Parameter DataType="String" ID="12" Name="nickName">
+                <Parameter ID="56" DataType="String" Name="nickName">
                     <Description>The nick name of connecting client service</Description>
                 </Parameter>
-                <Parameter DataType="DateTime" ID="13" Name="dateTime">
+                <Parameter ID="57" DataType="DateTime" Name="dateTime">
                     <Description>The connecting client connection time-stamp in UTC</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" MethodType="Response" Name="RegisterConnection">
+        <Method ID="24" MethodType="Response" Name="RegisterConnection">
             <Description>The result of request to register direct connection service.</Description>
             <ParamList>
-                <Parameter DataType="sConnection" ID="54" Name="connection">
+                <Parameter ID="58" DataType="sConnection" Name="connection">
                     <Description>The connection structure after registration.</Description>
                 </Parameter>
-                <Parameter DataType="ListConnection" ID="55" Name="connectionList">
+                <Parameter ID="59" DataType="ListConnections" Name="connectionList">
                     <Description>The list of all servicing connections.</Description>
                 </Parameter>
-                <Parameter DataType="bool" ID="33" Name="success">
+                <Parameter ID="60" DataType="bool" Name="success">
                     <Description>Flag, indicating whether the request to register connection succeeded or not.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="24" MethodType="Request" Name="RegisterConnection" Response="RegisterConnection">
+        <Method ID="30" MethodType="Request" Name="RegisterConnection" Response="RegisterConnection">
             <Description>Request to register direct connection service.</Description>
             <ParamList>
-                <Parameter DataType="String" ID="52" Name="nickName">
+                <Parameter ID="61" DataType="String" Name="nickName">
                     <Description>The nick name of connection used in service</Description>
                 </Parameter>
-                <Parameter DataType="uint32" ID="53" Name="cookie">
+                <Parameter ID="62" DataType="uint32" Name="cookie">
                     <Description>The cookie value to set</Description>
                 </Parameter>
-                <Parameter DataType="uint32" ID="28" Name="connectCookie">
+                <Parameter ID="63" DataType="uint32" Name="connectCookie">
                     <Description>The cookie to use for registration. </Description>
                 </Parameter>
-                <Parameter DataType="DateTime" ID="29" Name="dateRegister">
+                <Parameter ID="64" DataType="DateTime" Name="dateRegister">
                     <Description>The connection registration time-stamp</Description>
                 </Parameter>
             </ParamList>
@@ -125,13 +116,13 @@
         <Method ID="34" MethodType="Request" Name="Disconnect">
             <Description>Request to disconnect.</Description>
             <ParamList>
-                <Parameter DataType="String" ID="35" Name="nickName">
+                <Parameter ID="65" DataType="String" Name="nickName">
                     <Description>The nick name of client connection service</Description>
                 </Parameter>
-                <Parameter DataType="uint32" ID="36" Name="cookie">
+                <Parameter ID="66" DataType="uint32" Name="cookie">
                     <Description>The cookie given by connection manager. If invalid, it will search by nickName parameter</Description>
                 </Parameter>
-                <Parameter DataType="DateTime" ID="37" Name="dateTime">
+                <Parameter ID="67" DataType="DateTime" Name="dateTime">
                     <Description>Disconnect request date-time</Description>
                 </Parameter>
             </ParamList>
@@ -139,7 +130,7 @@
         <Method ID="38" MethodType="Broadcast" Name="ConnectionUpdated">
             <Description>Notifies all client components the connection has been updated.</Description>
             <ParamList>
-                <Parameter DataType="MapConnection" ID="56" Name="updatedList">
+                <Parameter ID="68" DataType="MapConnections" Name="updatedList">
                     <Description>The complete list of clients to send.</Description>
                 </Parameter>
             </ParamList>
@@ -147,7 +138,7 @@
         <Method ID="40" MethodType="Broadcast" Name="ClientConnected">
             <Description>Notifies that a new client has been connected.</Description>
             <ParamList>
-                <Parameter DataType="sConnection" ID="57" Name="clientConnected">
+                <Parameter ID="69" DataType="sConnection" Name="clientConnected">
                     <Description>New client data, which contains nick name and connected date-time</Description>
                 </Parameter>
             </ParamList>
@@ -155,18 +146,18 @@
         <Method ID="43" MethodType="Broadcast" Name="ClientDisconnected">
             <Description>Notifies a client has been disconnected.</Description>
             <ParamList>
-                <Parameter DataType="sConnection" ID="58" Name="clientLeft">
+                <Parameter ID="70" DataType="sConnection" Name="clientLeft">
                     <Description>The connection data of disconnected client.</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant DataType="uint32" ID="46" Name="InvalidCookie">
+        <Constant ID="46" DataType="uint32" Name="InvalidCookie">
             <Value>NECommon::InvalidCookie</Value>
             <Description>Indicates invalid cookie value</Description>
         </Constant>
-        <Constant DataType="uint32" ID="47" Name="NicknameMaxLen">
+        <Constant ID="47" DataType="uint32" Name="NicknameMaxLen">
             <Value>NECommon::MaxlenNickname</Value>
             <Description>The maximum length of nick name to register.</Description>
         </Constant>
