@@ -103,7 +103,7 @@ TEST( FileTest, Win32FileRead )
     char buffer[ 1024 ]{ 0 };
     DWORD dwRead{ 0 };
     ASSERT_TRUE( ::ReadFile( hFile, buffer, 1024, &dwRead, nullptr ) );
-    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( dwRead, 1024u );
     ASSERT_EQ( buffer[ 0 ], '#' );
 
     ASSERT_TRUE(::CloseHandle( hFile ));
@@ -130,7 +130,7 @@ TEST( FileTest, Win32FileReadWrite )
     char buffer[ 1024 ]{ 0 };
     DWORD dwRead{ 0 };
     ASSERT_TRUE( ::ReadFile( hFileRead, buffer, 1024, &dwRead, nullptr ) );
-    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( dwRead, 1024u );
     ASSERT_EQ( buffer[ 0 ], '#' );
     ASSERT_TRUE( ::CloseHandle( hFileRead ));
 
@@ -138,7 +138,7 @@ TEST( FileTest, Win32FileReadWrite )
     ASSERT_TRUE( hFileWrite != nullptr );
     DWORD dwWrite{ 0 };
     ASSERT_TRUE( ::WriteFile( hFileWrite, buffer, 1024, &dwWrite, nullptr ) );
-    ASSERT_EQ( dwWrite, 1024 );
+    ASSERT_EQ( dwWrite, 1024u );
 
     ASSERT_TRUE( ::CloseHandle( hFileWrite ));
     ASSERT_TRUE( PathFileExistsA( fileNameWrite ) );

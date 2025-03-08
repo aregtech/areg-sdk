@@ -41,22 +41,22 @@ PageMessaging::~PageMessaging()
     cleanService( );
 }
 
-void PageMessaging::OnServiceStartup( bool isStarted, Component * owner )
+void PageMessaging::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread )
+void PageMessaging::OnServiceNetwork( bool /*isConnected*/, DispatcherThread* /*ownerThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnServiceConnection( bool isConnected, DispatcherThread * ownerThread )
+void PageMessaging::OnServiceConnection( bool /*isConnected*/, DispatcherThread* /*ownerThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnClientConnection( bool isConnected, DispatcherThread *dispThread )
+void PageMessaging::OnClientConnection( bool /*isConnected*/, DispatcherThread* /*dispThread*/)
 {
     // do nothing
 }
@@ -308,17 +308,17 @@ void PageMessaging::OnChangeEditMessageAll( )
     }
 }
 
-void PageMessaging::OnTypeMessage( uint32_t cookie, NECommon::sMessageData & data )
+void PageMessaging::OnTypeMessage( uint32_t /*cookie*/, NECommon::sMessageData& data)
 {
     outputTyping( CString( data.nickName ), CString( data.message ), static_cast<uint32_t>(data.dataSave) );
 }
 
-void PageMessaging::OnSendMessage( uint32_t cookie, NECommon::sMessageData & data )
+void PageMessaging::OnSendMessage( uint32_t /*cookie*/, NECommon::sMessageData& data)
 {
     outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
 }
 
-LRESULT PageMessaging::OnOutputMessage( WPARAM wParam, LPARAM lParam )
+LRESULT PageMessaging::OnOutputMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
     if ( data != nullptr)

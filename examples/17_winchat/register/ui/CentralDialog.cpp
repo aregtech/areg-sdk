@@ -228,7 +228,7 @@ HCURSOR CentralDialog::OnQueryDragIcon()
     return static_cast<HCURSOR>(m_hIcon);
 }
 
-LRESULT CentralDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM lParam )
+LRESULT CentralDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM /*lParam*/)
 {
     bool isConnected = wParam != 0;
     mPageConnections.ServiceConnected(isConnected);

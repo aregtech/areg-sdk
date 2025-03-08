@@ -237,7 +237,7 @@ bool LogCollectorMessageProcessor::isLogSource(NEService::eMessageSource msgSour
 
 bool LogCollectorMessageProcessor::isLogObserver(NEService::eMessageSource msgSource)
 {
-    return (NEService::eMessageSource::MessageSourceObserver == msgSource);
+    return ((static_cast<uint32_t>(NEService::eMessageSource::MessageSourceObserver) & static_cast<uint32_t>(msgSource)) != 0);
 }
 
 inline void LogCollectorMessageProcessor::_forwardMessageToLogSources(const RemoteMessage& msgReceived) const

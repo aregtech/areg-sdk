@@ -214,8 +214,8 @@ TEST(TEStackTest, TestLockAndNolockStackPositioning)
     nolock.resize(0);
     lock.resize(0);
     EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
-    EXPECT_EQ(nolock.getSize(), 0);
-    EXPECT_EQ(lock.getSize(), 0);
+    EXPECT_EQ(nolock.getSize(), 0u);
+    EXPECT_EQ(lock.getSize(), 0u);
 }
 
 /**
@@ -310,8 +310,8 @@ TEST(TEStackTest, TestLockAndNolockStackResizing)
     }
 
     EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
-    EXPECT_EQ(nolock.getSize(), 0);
-    EXPECT_EQ(lock.getSize(), 0);
+    EXPECT_EQ(nolock.getSize(), 0u);
+    EXPECT_EQ(lock.getSize(), 0u);
 }
 
 /**

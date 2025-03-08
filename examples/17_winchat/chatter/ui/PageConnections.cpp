@@ -61,7 +61,7 @@ BEGIN_MESSAGE_MAP(PageConnections, CPropertyPage)
     ON_WM_DESTROY( )
 END_MESSAGE_MAP()
 
-void PageConnections::OnServiceStartup( bool isStarted, Component * owner )
+void PageConnections::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/)
 {
     // do nothing
 }
@@ -139,7 +139,7 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
     }
 }
 
-void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread * dispThread )
+void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread * /*dispThread*/)
 {
     LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
     if ( isRegistered )

@@ -532,9 +532,12 @@ TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
         mValueList.reserve(NECommon::ARRAY_DEFAULT_CAPACITY);
     }
 
-    for (uint32_t i = 0; i < count; ++i)
+    if (list != nullptr)
     {
-        mValueList.at(i) = list[i];
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            mValueList.at(i) = list[i];
+        }
     }
 }
 

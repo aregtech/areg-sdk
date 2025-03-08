@@ -34,25 +34,25 @@ TEST(TEArrayListTest, TestConstructors)
 
     Array arr1;
     ASSERT_TRUE(arr1.isEmpty());
-    EXPECT_EQ(arr1.getSize(), 0);
+    EXPECT_EQ(arr1.getSize(), 0u);
     EXPECT_EQ(arr1.getCapacity(), NECommon::ARRAY_DEFAULT_CAPACITY);
 
     Array arr2(_capacity, 0);
     ASSERT_TRUE(arr2.isEmpty());
-    EXPECT_EQ(arr2.getSize(), 0);
-    EXPECT_EQ(arr2.getCapacity(), _capacity);
+    EXPECT_EQ(arr2.getSize(), 0u);
+    EXPECT_EQ(arr2.getCapacity(), static_cast<uint32_t>(_capacity));
 
-    Array arr3(_capacity, 3);
-    EXPECT_EQ(arr3.getSize(), 3);
-    EXPECT_EQ(arr3.getCapacity(), MACRO_MAX(3, _capacity));
+    Array arr3(_capacity, 3u);
+    EXPECT_EQ(arr3.getSize(), 3u);
+    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(MACRO_MAX(3, _capacity)));
 
     Array arr4(_arr, _len);
-    EXPECT_EQ(arr4.getSize(), _len);
+    EXPECT_EQ(arr4.getSize(), static_cast<uint32_t>(_len));
     EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
-    EXPECT_EQ(arr5.getSize(), _len);
-    EXPECT_EQ(arr5.getCapacity(), _len);
+    EXPECT_EQ(arr5.getSize(), static_cast<uint32_t>(_len));
+    EXPECT_EQ(arr5.getCapacity(), static_cast<uint32_t>(_len));
 
     EXPECT_EQ(arr4, arr5);
 
@@ -114,8 +114,8 @@ TEST(TEArrayListTest, TestArrayContent)
     constexpr int _capacity{ 5 };
 
     Array arr3(_capacity, 3);
-    EXPECT_EQ(arr3.getSize(), 3);
-    EXPECT_EQ(arr3.getCapacity(), MACRO_MAX(3, _capacity));
+    EXPECT_EQ(arr3.getSize(), 3u);
+    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(MACRO_MAX(3, _capacity)));
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);

@@ -2052,17 +2052,14 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
                                         , const CharSrc *     strSrc
                                         , NEString::CharCount charsCopy /*= NEString::COUNT_ALL*/)
 {
-    constexpr uint32_t sizeSrc { sizeof( CharSrc ) };
-    constexpr uint32_t sizeDst { sizeof( CharDst ) };
-
     uint32_t result { 0 };
 
-    if ( sizeSrc == sizeDst )
+    if constexpr (sizeof(CharSrc) == sizeof(CharDst))
     {
         if ( strDst != nullptr )
         {
             charsCopy = charsCopy == NEString::COUNT_ALL ? NEString::getStringLength<CharSrc>( strSrc ) : charsCopy;
-            result = NEMemory::memCopy( strDst, static_cast<uint32_t>(dstSpace) * sizeDst, strSrc, static_cast<uint32_t>(charsCopy) * sizeSrc ) / sizeDst;
+            result = NEMemory::memCopy( strDst, static_cast<uint32_t>(dstSpace) * sizeof(CharDst), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharSrc)) / sizeof(CharDst);
             strDst[result] = NEString::EndOfString;
         }
     }
