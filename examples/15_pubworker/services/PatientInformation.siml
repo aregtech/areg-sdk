@@ -5,7 +5,7 @@
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="PatientInfo" Type="Structure">
-            <Description>The patien information</Description>
+            <Description>The patient information</Description>
             <FieldList>
                 <Field ID="3" Name="firstName" DataType="String">
                     <Description>The first name of patient.</Description>
@@ -15,7 +15,7 @@
                 </Field>
                 <Field ID="5" Name="weight" DataType="float">
                     <Value IsDefault="true">0.0</Value>
-                    <Description>The weight of patient in kilogramms.</Description>
+                    <Description>The weight of patient in kilograms.</Description>
                 </Field>
                 <Field ID="6" Name="age" DataType="uint32">
                     <Value IsDefault="true">0</Value>
@@ -30,7 +30,7 @@
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant ID="8" DataType="uint32" Name="Timeout">
+        <Constant ID="8" Name="Timeout" DataType="uint32">
             <Value>500</Value>
             <Description>The timeout in milliseconds to apply the patient information.</Description>
         </Constant>

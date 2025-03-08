@@ -8,15 +8,12 @@
             <Description>The direction of traffic.</Description>
             <FieldList>
                 <EnumEntry ID="4" Name="DirectionUndefiend">
-                    <Value></Value>
                     <Description>Undefined direction.</Description>
                 </EnumEntry>
                 <EnumEntry ID="5" Name="DirectionSouthNorth">
-                    <Value></Value>
                     <Description>The traffic direction is south-north.</Description>
                 </EnumEntry>
                 <EnumEntry ID="6" Name="DirectionEastWest">
-                    <Value></Value>
                     <Description>The traffic direction is east-west.</Description>
                 </EnumEntry>
             </FieldList>
@@ -25,23 +22,18 @@
             <Description>The states of vehicle traffic states.</Description>
             <FieldList>
                 <EnumEntry ID="8" Name="VehicleLightOFF">
-                    <Value></Value>
                     <Description>The vehicle lights are OFF.</Description>
                 </EnumEntry>
                 <EnumEntry ID="9" Name="VehicleLightsInit">
-                    <Value></Value>
                     <Description>The vehicle lights are initialized (blink yellow).</Description>
                 </EnumEntry>
                 <EnumEntry ID="10" Name="VehicleLightRed">
-                    <Value></Value>
                     <Description>Vehicle light is red.</Description>
                 </EnumEntry>
                 <EnumEntry ID="11" Name="VehicleLightYellow">
-                    <Value></Value>
                     <Description>Vehicle light is yellow.</Description>
                 </EnumEntry>
                 <EnumEntry ID="12" Name="VehicleLightGreen">
-                    <Value></Value>
                     <Description>The vehicle light is green.</Description>
                 </EnumEntry>
             </FieldList>
@@ -50,15 +42,12 @@
             <Description>The traffic light state of pedestrians.</Description>
             <FieldList>
                 <EnumEntry ID="14" Name="PedestrianLightOFF">
-                    <Value></Value>
                     <Description>The pedestrian light is OFF.</Description>
                 </EnumEntry>
                 <EnumEntry ID="15" Name="PedestrianLightRed">
-                    <Value></Value>
                     <Description>Pedestrian light is red.</Description>
                 </EnumEntry>
                 <EnumEntry ID="16" Name="PedestrianLightGreen">
-                    <Value></Value>
                     <Description>The pedestrian light is green.</Description>
                 </EnumEntry>
             </FieldList>
@@ -90,24 +79,24 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="21" MethodType="Broadcast" Name="SouthNorth">
+        <Method ID="21" Name="SouthNorth" MethodType="Broadcast">
             <Description>Broadcasts the light states of south-north direction.</Description>
             <ParamList>
-                <Parameter ID="51" DataType="eVehicleTrafficLight" Name="LightVehicle">
+                <Parameter ID="51" Name="LightVehicle" DataType="eVehicleTrafficLight">
                     <Description>Light state for vehicles</Description>
                 </Parameter>
-                <Parameter ID="52" DataType="ePedestrianTrafficLight" Name="LightPedestrian">
+                <Parameter ID="52" Name="LightPedestrian" DataType="ePedestrianTrafficLight">
                     <Description>Light state for pedestrians.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="25" MethodType="Broadcast" Name="EastWest">
+        <Method ID="25" Name="EastWest" MethodType="Broadcast">
             <Description>Broadcasts the light states of east-west direction.</Description>
             <ParamList>
-                <Parameter ID="53" DataType="eVehicleTrafficLight" Name="LightVehicle">
+                <Parameter ID="53" Name="LightVehicle" DataType="eVehicleTrafficLight">
                     <Description>Light state for vehicles</Description>
                 </Parameter>
-                <Parameter ID="54" DataType="ePedestrianTrafficLight" Name="LightPedestrian">
+                <Parameter ID="54" Name="LightPedestrian" DataType="ePedestrianTrafficLight">
                     <Description>Light state for pedestrians.</Description>
                 </Parameter>
             </ParamList>

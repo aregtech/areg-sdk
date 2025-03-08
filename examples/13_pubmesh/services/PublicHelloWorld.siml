@@ -9,10 +9,10 @@ Before using services, the clients should be registered.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="3" Name="ServiceAddress" Type="Imported">
-            <Description>The ServiceAddress type</Description>
-            <Namespace></Namespace>
-            <ImportedObject>ServiceAddress</ImportedObject>
             <Location>areg\component\ServiceAddress.hpp</Location>
+            <Namespace/>
+            <ImportedObject>ServiceAddress</ImportedObject>
+            <Description>The ServiceAddress type</Description>
         </DataType>
         <DataType ID="60" Name="sClientRegister" Type="Structure">
             <Description>Describes the client registry entry.</Description>
@@ -39,60 +39,60 @@ Before using services, the clients should be registered.</Description>
         </DataType>
     </DataTypeList>
     <MethodList>
-        <Method ID="11" MethodType="Request" Name="Register" Response="Register">
+        <Method ID="11" Name="Register" MethodType="Request" Response="Register">
             <Description>Call to register client. Each client should be registered before starting communication.</Description>
             <ParamList>
-                <Parameter ID="51" DataType="String" Name="name">
+                <Parameter ID="61" Name="name" DataType="String">
                     <Description>The name of the client.</Description>
                 </Parameter>
-                <Parameter ID="52" DataType="ServiceAddress" Name="service">
+                <Parameter ID="62" Name="service" DataType="ServiceAddress">
                     <Description>The service address of the client.</Description>
                 </Parameter>
-                <Parameter ID="53" DataType="String" Name="thread">
+                <Parameter ID="63" Name="thread" DataType="String">
                     <Description>The thread name where client is running. Required to provide uniqueness.</Description>
                 </Parameter>
-                <Parameter ID="54" DataType="String" Name="process">
+                <Parameter ID="64" Name="process" DataType="String">
                     <Description>The name of process. Optional parameter, used to make output in logs.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" MethodType="Response" Name="Register">
+        <Method ID="15" Name="Register" MethodType="Response">
             <Description>Sent when the client is registered. Each registered client has unique ID.</Description>
             <ParamList>
-                <Parameter ID="55" DataType="sClientRegister" Name="client">
+                <Parameter ID="65" Name="client" DataType="sClientRegister">
                     <Description>The client registration object that contains unique ID.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="18" MethodType="Request" Name="Unregister">
+        <Method ID="18" Name="Unregister" MethodType="Request">
             <Description>Sent to unregister connected client.</Description>
             <ParamList>
-                <Parameter ID="56" DataType="sClientRegister" Name="client">
+                <Parameter ID="66" Name="client" DataType="sClientRegister">
                     <Description>The client registration object indicating the unregistered client.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" MethodType="Request" Name="HelloWorld" Response="HelloWorld">
+        <Method ID="30" Name="HelloWorld" MethodType="Request" Response="HelloWorld">
             <Description>Outputs message on console.</Description>
             <ParamList>
-                <Parameter ID="57" DataType="uint32" Name="clientID">
+                <Parameter ID="67" Name="clientID" DataType="uint32">
                     <Description>The ID of registered client to make message output.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="33" MethodType="Response" Name="HelloWorld">
+        <Method ID="33" Name="HelloWorld" MethodType="Response">
             <Description>Called as reply to the request to output message.</Description>
             <ParamList>
-                <Parameter ID="58" DataType="uint32" Name="clientID">
+                <Parameter ID="68" Name="clientID" DataType="uint32">
                     <Description>Indicates the ID client that made message output</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="36" DataType="uint32" Name="MaximumOutputs">
+        <Constant ID="36" Name="MaximumOutputs" DataType="uint32">
             <Value>50</Value>
-            <Description></Description>
+            <Description>The maximum numbers of outputs.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>

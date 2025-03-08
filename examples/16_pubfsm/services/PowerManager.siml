@@ -8,11 +8,9 @@
             <Description>The power state of the traffic lights.</Description>
             <FieldList>
                 <EnumEntry ID="4" Name="LightsOFF">
-                    <Value></Value>
                     <Description>The lights are OFF</Description>
                 </EnumEntry>
                 <EnumEntry ID="5" Name="LightsON">
-                    <Value></Value>
                     <Description>The lights are ON.</Description>
                 </EnumEntry>
             </FieldList>
@@ -24,32 +22,32 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="2" MethodType="Request" Name="PowerOn">
+        <Method ID="2" Name="PowerOn" MethodType="Request">
             <Description>Called to power ON the traffic lights.</Description>
         </Method>
-        <Method ID="7" MethodType="Request" Name="PowerOff">
+        <Method ID="7" Name="PowerOff" MethodType="Request">
             <Description>Called to power OFF the traffic lights.</Description>
         </Method>
-        <Method ID="8" MethodType="Request" Name="StartTrafficLight" Response="StartTrafficLight">
+        <Method ID="8" Name="StartTrafficLight" MethodType="Request" Response="StartTrafficLight">
             <Description>Triggered to start the traffic light</Description>
         </Method>
-        <Method ID="9" MethodType="Response" Name="StartTrafficLight">
+        <Method ID="9" Name="StartTrafficLight" MethodType="Response">
             <Description>Sent as a response to start the traffic light. The traffic light can be started when it is powered ON and in initialization state.</Description>
             <ParamList>
-                <Parameter ID="51" DataType="bool" Name="Success">
+                <Parameter ID="51" Name="Success" DataType="bool">
                     <Description>Flag, indicating whether the operation succeeded or not.
 This flag is 'true' if lights are initialization state of if traffic light is already functioning.
 This flag is 'false' if lights are OFF.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="11" MethodType="Request" Name="StopTrafficLight" Response="StopTrafficLight">
+        <Method ID="11" Name="StopTrafficLight" MethodType="Request" Response="StopTrafficLight">
             <Description>Call to stop the traffic lights and put them in initialization state.</Description>
         </Method>
-        <Method ID="12" MethodType="Response" Name="StopTrafficLight">
+        <Method ID="12" Name="StopTrafficLight" MethodType="Response">
             <Description>Response to stop the traffic lights.</Description>
             <ParamList>
-                <Parameter ID="52" DataType="bool" Name="Success">
+                <Parameter ID="52" Name="Success" DataType="bool">
                     <Description>Flag, indicating whether the request was processed with success or not.
 This flag is 'true' if traffic light are functioning or lights are in initialization state.
 This flag is 'false' if traffic lights are OFF.</Description>

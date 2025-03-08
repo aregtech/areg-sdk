@@ -4,47 +4,47 @@
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.</Description>
     </Overview>
     <MethodList>
-        <Method ID="7" MethodType="Request" Name="HelloWorld" Response="HelloWorld">
+        <Method ID="7" Name="HelloWorld" MethodType="Request" Response="HelloWorld">
             <Description>Request to print hello world</Description>
             <ParamList>
-                <Parameter ID="51" DataType="String" Name="roleName">
+                <Parameter ID="51" Name="roleName" DataType="String">
                     <Description>The role name of client component that requested to print hello world</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" MethodType="Response" Name="HelloWorld">
+        <Method ID="10" Name="HelloWorld" MethodType="Response">
             <Description>The response to hello world request.</Description>
             <ParamList>
-                <Parameter ID="52" DataType="String" Name="clientName">
+                <Parameter ID="52" Name="clientName" DataType="String">
                     <Description>The name of connected client that requested to output message.</Description>
                 </Parameter>
-                <Parameter ID="53" DataType="uint32" Name="clientId">
+                <Parameter ID="53" Name="clientId" DataType="uint32">
                     <Description>The given ID of the client that requested to output message.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="14" MethodType="Request" Name="ShutdownService">
+        <Method ID="14" Name="ShutdownService" MethodType="Request">
             <Description>Sent by client to request to shutdown service and the application. This request has no response.</Description>
             <ParamList>
-                <Parameter ID="54" DataType="uint32" Name="clientID">
+                <Parameter ID="54" Name="clientID" DataType="uint32">
                     <Description>The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.</Description>
                 </Parameter>
-                <Parameter ID="55" DataType="String" Name="roleName">
+                <Parameter ID="55" Name="roleName" DataType="String">
                     <Description>Service client component role name</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" MethodType="Broadcast" Name="ReachedMaximum">
+        <Method ID="15" Name="ReachedMaximum" MethodType="Broadcast">
             <Description>Triggered to notify that  reached the maximum number of requests.</Description>
             <ParamList>
-                <Parameter ID="56" DataType="int32" Name="maxNumber">
+                <Parameter ID="56" Name="maxNumber" DataType="int32">
                     <Description>The maximum number of requests.</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="18" DataType="int16" Name="MaxMessages">
+        <Constant ID="18" Name="MaxMessages" DataType="int16">
             <Value>37</Value>
             <Description>The maximum number of messages to output.</Description>
         </Constant>

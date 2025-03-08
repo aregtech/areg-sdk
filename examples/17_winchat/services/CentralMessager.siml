@@ -7,82 +7,82 @@ broadcast to all clients, which have subscribed on event.
 It as well broadcasts own text message to all connected clients.</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" MethodType="Request" Name="SendMessage">
+        <Method ID="2" Name="SendMessage" MethodType="Request">
             <Description>Request to sends message that all clients can see.</Description>
             <ParamList>
-                <Parameter ID="51" DataType="String" Name="nickName">
+                <Parameter ID="51" Name="nickName" DataType="String">
                     <Description>The nick name of initiator</Description>
                 </Parameter>
-                <Parameter ID="52" DataType="uint32" Name="cookie">
+                <Parameter ID="52" Name="cookie" DataType="uint32">
                     <Description>The cookie given by connection manager. Should not be invalid.</Description>
                 </Parameter>
-                <Parameter ID="53" DataType="String" Name="newMessage">
+                <Parameter ID="53" Name="newMessage" DataType="String">
                     <Description>The message sent by connected initiator</Description>
                 </Parameter>
-                <Parameter ID="54" DataType="DateTime" Name="dateTime">
+                <Parameter ID="54" Name="dateTime" DataType="DateTime">
                     <Description>The time-stamp create on local host of initiator</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="7" MethodType="Request" Name="KeyTyping">
+        <Method ID="7" Name="KeyTyping" MethodType="Request">
             <Description>Sent each time when typing a key</Description>
             <ParamList>
-                <Parameter ID="55" DataType="String" Name="nickName">
+                <Parameter ID="55" Name="nickName" DataType="String">
                     <Description>The nick name of initiator</Description>
                 </Parameter>
-                <Parameter ID="56" DataType="uint32" Name="cookie">
+                <Parameter ID="56" Name="cookie" DataType="uint32">
                     <Description>The cookie assigned to initiator</Description>
                 </Parameter>
-                <Parameter ID="57" DataType="String" Name="newMessage">
+                <Parameter ID="57" Name="newMessage" DataType="String">
                     <Description>The message typed.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="11" MethodType="Broadcast" Name="SendMessage">
+        <Method ID="11" Name="SendMessage" MethodType="Broadcast">
             <Description>The response, sent by connection manager to notify the message typing update</Description>
             <ParamList>
-                <Parameter ID="58" DataType="String" Name="nickName">
+                <Parameter ID="58" Name="nickName" DataType="String">
                     <Description>The nick name of initiator</Description>
                 </Parameter>
-                <Parameter ID="59" DataType="uint32" Name="cookie">
+                <Parameter ID="59" Name="cookie" DataType="uint32">
                     <Description>The cookie assigned to initiator</Description>
                 </Parameter>
-                <Parameter ID="60" DataType="String" Name="newMessage">
+                <Parameter ID="60" Name="newMessage" DataType="String">
                     <Description>The message sent by initiator</Description>
                 </Parameter>
-                <Parameter ID="61" DataType="DateTime" Name="dateTime">
+                <Parameter ID="61" Name="dateTime" DataType="DateTime">
                     <Description>The local time-stamp of initiator</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="16" MethodType="Broadcast" Name="KeyTyping">
+        <Method ID="16" Name="KeyTyping" MethodType="Broadcast">
             <Description>Sent each time when a client is typing a key</Description>
             <ParamList>
-                <Parameter ID="62" DataType="String" Name="nickName">
+                <Parameter ID="62" Name="nickName" DataType="String">
                     <Description>The nick name of initiator</Description>
                 </Parameter>
-                <Parameter ID="63" DataType="uint32" Name="cookie">
+                <Parameter ID="63" Name="cookie" DataType="uint32">
                     <Description>Assigned cookie of initiator</Description>
                 </Parameter>
-                <Parameter ID="64" DataType="String" Name="newMessage">
+                <Parameter ID="64" Name="newMessage" DataType="String">
                     <Description>The message typed by initiator</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="20" MethodType="Broadcast" Name="BroadcastMessage">
+        <Method ID="20" Name="BroadcastMessage" MethodType="Broadcast">
             <Description>Server broadcasts a message to all clients.</Description>
             <ParamList>
-                <Parameter ID="65" DataType="String" Name="serverMessage">
+                <Parameter ID="65" Name="serverMessage" DataType="String">
                     <Description>The message sent by servicing server</Description>
                 </Parameter>
-                <Parameter ID="66" DataType="DateTime" Name="dateTime">
+                <Parameter ID="66" Name="dateTime" DataType="DateTime">
                     <Description>The time-stamp of servicing component</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="23" DataType="uint32" Name="MessageMaxLen">
+        <Constant ID="23" Name="MessageMaxLen" DataType="uint32">
             <Value>NECommon::MaxlenMessage</Value>
             <Description>The maximum length of messages.</Description>
         </Constant>

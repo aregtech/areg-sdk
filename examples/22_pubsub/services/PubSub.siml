@@ -10,19 +10,15 @@ subscribes on data update and get notified.</Description>
             <Description>The state of the service provider</Description>
             <FieldList>
                 <EnumEntry ID="9" Name="Uninitialized">
-                    <Value></Value>
                     <Description>The service provider state is initialized. The values are in invalid states.</Description>
                 </EnumEntry>
                 <EnumEntry ID="10" Name="Stopped">
-                    <Value></Value>
                     <Description>The service provider state is stopped, values are initialized and valid.</Description>
                 </EnumEntry>
                 <EnumEntry ID="11" Name="Running">
-                    <Value></Value>
                     <Description>The service provider state is running, the values should change values.</Description>
                 </EnumEntry>
                 <EnumEntry ID="17" Name="Shutdown">
-                    <Value></Value>
                     <Description>The service provider shuts down and quits.</Description>
                 </EnumEntry>
             </FieldList>
@@ -40,15 +36,15 @@ subscribes on data update and get notified.</Description>
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant ID="14" DataType="uint32" Name="TimeoutOnChange">
+        <Constant ID="14" Name="TimeoutOnChange" DataType="uint32">
             <Value>150</Value>
             <Description>The timeout to make updates on change</Description>
         </Constant>
-        <Constant ID="15" DataType="uint32" Name="TimeoutAlways">
+        <Constant ID="15" Name="TimeoutAlways" DataType="uint32">
             <Value>300</Value>
             <Description>The timeout to update on always.</Description>
         </Constant>
-        <Constant ID="16" DataType="uint16" Name="CycleAlways">
+        <Constant ID="16" Name="CycleAlways" DataType="uint16">
             <Value>3</Value>
             <Description>The number of cycles to change the value when updating values.</Description>
         </Constant>

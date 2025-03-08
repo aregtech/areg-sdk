@@ -25,7 +25,7 @@ This service demonstrates the usage of attribute.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="12" MethodType="Request" Name="SystemShutdown">
+        <Method ID="12" Name="SystemShutdown" MethodType="Request">
             <Description>The request to shutdown the system.</Description>
         </Method>
     </MethodList>
