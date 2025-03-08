@@ -9,15 +9,12 @@ This service will demonstrate how the system watchdog works in case of public se
             <Description>The state of component to start a timer and output &quot;Hello Watchdog&quot; message.</Description>
             <FieldList>
                 <EnumEntry ID="29" Name="Initialized">
-                    <Value></Value>
                     <Description>The service just initialized and ready to execute.</Description>
                 </EnumEntry>
                 <EnumEntry ID="30" Name="Started">
-                    <Value></Value>
                     <Description>The timer is started to output messages.</Description>
                 </EnumEntry>
                 <EnumEntry ID="31" Name="Stopped">
-                    <Value></Value>
                     <Description>The timer is requested to stop.</Description>
                 </EnumEntry>
             </FieldList>
@@ -29,43 +26,43 @@ This service will demonstrate how the system watchdog works in case of public se
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="22" MethodType="Request" Name="StartSleep" Response="StartSleep">
+        <Method ID="22" Name="StartSleep" MethodType="Request" Response="StartSleep">
             <Description>The response triggered when the thread resumed from suspended mode.</Description>
             <ParamList>
-                <Parameter ID="51" DataType="uint32" Name="timeoutSleep">
+                <Parameter ID="51" Name="timeoutSleep" DataType="uint32">
                     <Description>The timeout in milliseconds to suspend the thread.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="26" MethodType="Response" Name="StartSleep">
+        <Method ID="26" Name="StartSleep" MethodType="Response">
             <Description>Triggered to stop the timer.</Description>
             <ParamList>
-                <Parameter ID="52" DataType="uint32" Name="timeoutSleep">
+                <Parameter ID="52" Name="timeoutSleep" DataType="uint32">
                     <Description>The timeout in milliseconds while thread was in suspended mode.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="40" MethodType="Request" Name="StopService">
+        <Method ID="40" Name="StopService" MethodType="Request">
             <Description>Called to stop the service.</Description>
         </Method>
-        <Method ID="41" MethodType="Request" Name="ShutdownService">
+        <Method ID="41" Name="ShutdownService" MethodType="Request">
             <Description>Called to shutdown service and exit application.</Description>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="34" DataType="uint32" Name="TimeoutWatchdog">
+        <Constant ID="34" Name="TimeoutWatchdog" DataType="uint32">
             <Value>1000</Value>
             <Description>The timeout of the watchdog</Description>
         </Constant>
-        <Constant ID="35" DataType="uint32" Name="TimeoutStep">
+        <Constant ID="35" Name="TimeoutStep" DataType="uint32">
             <Value>300</Value>
             <Description>The step to increase sleep timeout.</Description>
         </Constant>
-        <Constant ID="36" DataType="uint32" Name="InitialSleepTimeout">
+        <Constant ID="36" Name="InitialSleepTimeout" DataType="uint32">
             <Value>300</Value>
             <Description>The initial timeout to sleep a thread.</Description>
         </Constant>
-        <Constant ID="38" DataType="uint32" Name="MaximumRestarts">
+        <Constant ID="38" Name="MaximumRestarts" DataType="uint32">
             <Value>4</Value>
             <Description>The maximum restarts of service.</Description>
         </Constant>

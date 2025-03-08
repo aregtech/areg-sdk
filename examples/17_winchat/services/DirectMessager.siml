@@ -5,16 +5,16 @@
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
-            <Description></Description>
+            <Location>common/NECommon.hpp</Location>
             <Namespace>NECommon</Namespace>
             <ImportedObject>sParticipant</ImportedObject>
-            <Location>common/NECommon.hpp</Location>
+            <Description/>
         </DataType>
         <DataType ID="3" Name="ListParticipants" Type="Imported">
-            <Description></Description>
+            <Location>common/NECommon.hpp</Location>
             <Namespace>NECommon</Namespace>
             <ImportedObject>ListParticipants</ImportedObject>
-            <Location>common/NECommon.hpp</Location>
+            <Description/>
         </DataType>
     </DataTypeList>
     <AttributeList>
@@ -23,131 +23,131 @@
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="7" MethodType="Request" Name="ChatJoin" Response="ChatJoin">
+        <Method ID="7" Name="ChatJoin" MethodType="Request" Response="ChatJoin">
             <Description>Request to join chat. The participant should be in the list of connections</Description>
             <ParamList>
-                <Parameter ID="51" DataType="sParticipant" Name="participant">
+                <Parameter ID="51" Name="participant" DataType="sParticipant">
                     <Description>The participant to join chat. The participant should be in the connection list.</Description>
                 </Parameter>
-                <Parameter ID="52" DataType="DateTime" Name="timeConnect">
+                <Parameter ID="52" Name="timeConnect" DataType="DateTime">
                     <Description>The time-stamp when the request was sent.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" MethodType="Response" Name="ChatJoin">
+        <Method ID="10" Name="ChatJoin" MethodType="Response">
             <Description>Response to join chat</Description>
             <ParamList>
-                <Parameter ID="53" DataType="bool" Name="succeed">
+                <Parameter ID="53" Name="succeed" DataType="bool">
                     <Description>Flag, indicating whether connection is accepted or not.</Description>
                 </Parameter>
-                <Parameter ID="54" DataType="ListParticipants" Name="listParticipant">
+                <Parameter ID="54" Name="listParticipant" DataType="ListParticipants">
                     <Description>The list of participants.</Description>
                 </Parameter>
-                <Parameter ID="55" DataType="DateTime" Name="timeConnect">
+                <Parameter ID="55" Name="timeConnect" DataType="DateTime">
                     <Description>Time-stamp when it was requested to join chat</Description>
                 </Parameter>
-                <Parameter ID="56" DataType="DateTime" Name="timeConnected">
+                <Parameter ID="56" Name="timeConnected" DataType="DateTime">
                     <Description>Time-stamp when the request to join was accepted and new participants was registered.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" MethodType="Request" Name="MessageSend">
+        <Method ID="15" Name="MessageSend" MethodType="Request">
             <Description>Request to send a message, has no response</Description>
             <ParamList>
-                <Parameter ID="57" DataType="sParticipant" Name="sender">
+                <Parameter ID="57" Name="sender" DataType="sParticipant">
                     <Description>The participant structure of message sender</Description>
                 </Parameter>
-                <Parameter ID="58" DataType="String" Name="msgText">
+                <Parameter ID="58" Name="msgText" DataType="String">
                     <Description>The text message to send</Description>
                 </Parameter>
-                <Parameter ID="59" DataType="DateTime" Name="timeSent">
+                <Parameter ID="59" Name="timeSent" DataType="DateTime">
                     <Description>The time-stamp when the message is requested to send.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="19" MethodType="Request" Name="MessageType">
+        <Method ID="19" Name="MessageType" MethodType="Request">
             <Description>The request to send message while typing a text. Has no response.</Description>
             <ParamList>
-                <Parameter ID="60" DataType="sParticipant" Name="participant">
+                <Parameter ID="60" Name="participant" DataType="sParticipant">
                     <Description>The structure of participant while sending message during typing.</Description>
                 </Parameter>
-                <Parameter ID="61" DataType="String" Name="msgText">
+                <Parameter ID="61" Name="msgText" DataType="String">
                     <Description>The text message while typing.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="22" MethodType="Request" Name="ChatLeave">
+        <Method ID="22" Name="ChatLeave" MethodType="Request">
             <Description>The request to leave chat-room. Has no response.</Description>
             <ParamList>
-                <Parameter ID="62" DataType="sParticipant" Name="participant">
+                <Parameter ID="62" Name="participant" DataType="sParticipant">
                     <Description>The structure of chat-room participant.</Description>
                 </Parameter>
-                <Parameter ID="63" DataType="DateTime" Name="timeLeave">
+                <Parameter ID="63" Name="timeLeave" DataType="DateTime">
                     <Description>Time-stamp when it was requested to leave chat-room.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="25" MethodType="Broadcast" Name="MessageSent">
+        <Method ID="25" Name="MessageSent" MethodType="Broadcast">
             <Description>Informs all connected servicing clients that the message is sent.</Description>
             <ParamList>
-                <Parameter ID="64" DataType="sParticipant" Name="sender">
+                <Parameter ID="64" Name="sender" DataType="sParticipant">
                     <Description>The structure of participant, who sent the message.</Description>
                 </Parameter>
-                <Parameter ID="65" DataType="String" Name="msgText">
+                <Parameter ID="65" Name="msgText" DataType="String">
                     <Description>The message, which was sent.</Description>
                 </Parameter>
-                <Parameter ID="66" DataType="DateTime" Name="timeSent">
+                <Parameter ID="66" Name="timeSent" DataType="DateTime">
                     <Description>The time-stamp when the message was sent.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="29" MethodType="Broadcast" Name="MessageTyped">
+        <Method ID="29" Name="MessageTyped" MethodType="Broadcast">
             <Description>Informs all connected servicing client that the text was typed.</Description>
             <ParamList>
-                <Parameter ID="67" DataType="sParticipant" Name="participant">
+                <Parameter ID="67" Name="participant" DataType="sParticipant">
                     <Description>The structure of participant, who initiated message during typing.</Description>
                 </Parameter>
-                <Parameter ID="68" DataType="String" Name="msgText">
+                <Parameter ID="68" Name="msgText" DataType="String">
                     <Description>The text message while typing.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="32" MethodType="Broadcast" Name="ParticipantJoined">
+        <Method ID="32" Name="ParticipantJoined" MethodType="Broadcast">
             <Description>Informs new participant joined chat-room</Description>
             <ParamList>
-                <Parameter ID="69" DataType="sParticipant" Name="participant">
+                <Parameter ID="69" Name="participant" DataType="sParticipant">
                     <Description>The structure of participant, joined chat-room.</Description>
                 </Parameter>
-                <Parameter ID="70" DataType="DateTime" Name="timeJoined">
+                <Parameter ID="70" Name="timeJoined" DataType="DateTime">
                     <Description>Time-stamp when participant joined the chat-room</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="35" MethodType="Broadcast" Name="ParticipantLeft">
+        <Method ID="35" Name="ParticipantLeft" MethodType="Broadcast">
             <Description>Informs that a participant left chat-room.</Description>
             <ParamList>
-                <Parameter ID="71" DataType="sParticipant" Name="participant">
+                <Parameter ID="71" Name="participant" DataType="sParticipant">
                     <Description>The structure of participant, who left the chat-room.</Description>
                 </Parameter>
-                <Parameter ID="72" DataType="DateTime" Name="timeLeft">
+                <Parameter ID="72" Name="timeLeft" DataType="DateTime">
                     <Description>The time-stamp when the participant left chat-room.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="38" MethodType="Broadcast" Name="ChatClosed">
+        <Method ID="38" Name="ChatClosed" MethodType="Broadcast">
             <Description>Informs all service connected clients that the chat-room is closed. Message will be impossible.</Description>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="40" DataType="uint32" Name="MessageMaxLen">
+        <Constant ID="40" Name="MessageMaxLen" DataType="uint32">
             <Value>NECommon::MaxlenMessage</Value>
             <Description>The maximum length of a message.</Description>
         </Constant>
-        <Constant ID="41" DataType="uint64" Name="InvalidSession">
+        <Constant ID="41" Name="InvalidSession" DataType="uint64">
             <Value>NECommon::InvalidSession</Value>
             <Description>Identifies invalid session value.</Description>
         </Constant>
-        <Constant ID="42" DataType="uint32" Name="InvalidCookie">
+        <Constant ID="42" Name="InvalidCookie" DataType="uint32">
             <Value>NECommon::InvalidCookie</Value>
             <Description>Identifies the invalid cookie.</Description>
         </Constant>

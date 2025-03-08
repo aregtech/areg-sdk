@@ -8,19 +8,15 @@
             <Description>The simple traffic light states</Description>
             <FieldList>
                 <EnumEntry ID="3" Name="LightOff">
-                    <Value></Value>
                     <Description>The light is off.</Description>
                 </EnumEntry>
                 <EnumEntry ID="4" Name="LightRed">
-                    <Value></Value>
                     <Description>The light is red.</Description>
                 </EnumEntry>
                 <EnumEntry ID="6" Name="LightYellow">
-                    <Value></Value>
                     <Description>The light is yellow.</Description>
                 </EnumEntry>
                 <EnumEntry ID="8" Name="LightGreen">
-                    <Value></Value>
                     <Description>The light is green.</Description>
                 </EnumEntry>
             </FieldList>
@@ -35,15 +31,15 @@
         </Attribute>
     </AttributeList>
     <ConstantList>
-        <Constant ID="10" DataType="uint32" Name="TimeoutRed">
+        <Constant ID="10" Name="TimeoutRed" DataType="uint32">
             <Value>3000</Value>
             <Description>The red light timeout in milliseconds.</Description>
         </Constant>
-        <Constant ID="11" DataType="uint32" Name="TimeoutYellow">
+        <Constant ID="11" Name="TimeoutYellow" DataType="uint32">
             <Value>1000</Value>
             <Description>The yellow light timeout in milliseconds.</Description>
         </Constant>
-        <Constant ID="13" DataType="uint32" Name="TimeoutGreen">
+        <Constant ID="13" Name="TimeoutGreen" DataType="uint32">
             <Value>3000</Value>
             <Description>The green light timeout in milliseconds.</Description>
         </Constant>

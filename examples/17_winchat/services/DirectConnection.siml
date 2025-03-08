@@ -8,28 +8,28 @@ the role name is a nick name of a registered application.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
-            <Description></Description>
+            <Location>common/NECommon.hpp</Location>
             <Namespace>NECommon</Namespace>
             <ImportedObject>sParticipant</ImportedObject>
-            <Location>common/NECommon.hpp</Location>
+            <Description/>
         </DataType>
         <DataType ID="3" Name="sInitiator" Type="Imported">
-            <Description></Description>
+            <Location>common/NECommon.hpp</Location>
             <Namespace>NECommon</Namespace>
             <ImportedObject>sInitiator</ImportedObject>
-            <Location>common/NECommon.hpp</Location>
+            <Description/>
         </DataType>
         <DataType ID="4" Name="ListParticipants" Type="Imported">
-            <Description></Description>
+            <Location>common/NECommon.hpp</Location>
             <Namespace>NECommon</Namespace>
             <ImportedObject>ListParticipants</ImportedObject>
-            <Location>common/NECommon.hpp</Location>
+            <Description/>
         </DataType>
         <DataType ID="6" Name="MapParticipants" Type="Imported">
-            <Description></Description>
+            <Location>common/NECommon.hpp</Location>
             <Namespace>NECommon</Namespace>
             <ImportedObject>MapParticipants</ImportedObject>
-            <Location>common/NECommon.hpp</Location>
+            <Description/>
         </DataType>
     </DataTypeList>
     <AttributeList>
@@ -38,101 +38,101 @@ the role name is a nick name of a registered application.</Description>
         </Attribute>
     </AttributeList>
     <MethodList>
-        <Method ID="12" MethodType="Request" Name="ConnectoinSetup" Response="ConnectoinSetup">
+        <Method ID="12" Name="ConnectoinSetup" MethodType="Request" Response="ConnectoinSetup">
             <Description>Request to setup the direct connection to chat room initiator.</Description>
             <ParamList>
-                <Parameter ID="51" DataType="sInitiator" Name="initiator">
+                <Parameter ID="51" Name="initiator" DataType="sInitiator">
                     <Description>The initiator to setup connection</Description>
                 </Parameter>
-                <Parameter ID="52" DataType="ListParticipants" Name="listParticipants">
+                <Parameter ID="52" Name="listParticipants" DataType="ListParticipants">
                     <Description>The list of chat-room participants</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="15" MethodType="Response" Name="ConnectoinSetup">
+        <Method ID="15" Name="ConnectoinSetup" MethodType="Response">
             <Description>The response of connection setup</Description>
             <ParamList>
-                <Parameter ID="53" DataType="bool" Name="succeeded">
+                <Parameter ID="53" Name="succeeded" DataType="bool">
                     <Description>Flag, indicating whether the connection setup succeeded or not.</Description>
                 </Parameter>
-                <Parameter ID="54" DataType="sParticipant" Name="target">
+                <Parameter ID="54" Name="target" DataType="sParticipant">
                     <Description>The targeted participant to include in chat-room</Description>
                 </Parameter>
-                <Parameter ID="55" DataType="sInitiator" Name="initiator">
+                <Parameter ID="55" Name="initiator" DataType="sInitiator">
                     <Description>The chat-room initiator</Description>
                 </Parameter>
-                <Parameter ID="56" DataType="ListParticipants" Name="listParticipants">
+                <Parameter ID="56" Name="listParticipants" DataType="ListParticipants">
                     <Description>List of chat-room participants</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="20" MethodType="Request" Name="AddParticipant" Response="AddParticipant">
+        <Method ID="20" Name="AddParticipant" MethodType="Request" Response="AddParticipant">
             <Description>The request to add a participant in the direct chat-room.</Description>
             <ParamList>
-                <Parameter ID="57" DataType="sInitiator" Name="initiator">
+                <Parameter ID="57" Name="initiator" DataType="sInitiator">
                     <Description>The initiator to add to chat-room</Description>
                 </Parameter>
-                <Parameter ID="58" DataType="ListParticipants" Name="listParticipants">
+                <Parameter ID="58" Name="listParticipants" DataType="ListParticipants">
                     <Description>List of participants</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="23" MethodType="Response" Name="AddParticipant">
+        <Method ID="23" Name="AddParticipant" MethodType="Response">
             <Description>The response to add initiator to chat room</Description>
             <ParamList>
-                <Parameter ID="59" DataType="bool" Name="succeeded">
+                <Parameter ID="59" Name="succeeded" DataType="bool">
                     <Description>Flag, indicating whether operation succeeded.</Description>
                 </Parameter>
-                <Parameter ID="60" DataType="ListParticipants" Name="listParticipants">
+                <Parameter ID="60" Name="listParticipants" DataType="ListParticipants">
                     <Description>New list of participants</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="26" MethodType="Request" Name="RemoveParticipant" Response="RemoveParticipant">
+        <Method ID="26" Name="RemoveParticipant" MethodType="Request" Response="RemoveParticipant">
             <Description>Request to remove initiator from chat-room</Description>
             <ParamList>
-                <Parameter ID="61" DataType="sInitiator" Name="initiator">
+                <Parameter ID="61" Name="initiator" DataType="sInitiator">
                     <Description>The initiator to remove from chat-room</Description>
                 </Parameter>
-                <Parameter ID="62" DataType="ListParticipants" Name="listParticipants">
+                <Parameter ID="62" Name="listParticipants" DataType="ListParticipants">
                     <Description>List of chat-room participants</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="30" MethodType="Response" Name="RemoveParticipant">
+        <Method ID="30" Name="RemoveParticipant" MethodType="Response">
             <Description>Response to remove initiator from chat-room</Description>
             <ParamList>
-                <Parameter ID="63" DataType="bool" Name="succeeded">
+                <Parameter ID="63" Name="succeeded" DataType="bool">
                     <Description>Flag, indicating whether operation succeeded or not.</Description>
                 </Parameter>
-                <Parameter ID="64" DataType="ListParticipants" Name="listParticipants">
+                <Parameter ID="64" Name="listParticipants" DataType="ListParticipants">
                     <Description>New list of chat-room participants.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="33" MethodType="Request" Name="CloseConnection">
+        <Method ID="33" Name="CloseConnection" MethodType="Request">
             <Description>Request to close chat-room. There is no response expected.</Description>
             <ParamList>
-                <Parameter ID="65" DataType="sInitiator" Name="initiator">
+                <Parameter ID="65" Name="initiator" DataType="sInitiator">
                     <Description>The initiator to close chat-room.</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="36" DataType="uint64" Name="InvalidSession">
+        <Constant ID="36" Name="InvalidSession" DataType="uint64">
             <Value>NECommon::InvalidSession</Value>
             <Description>Indicates Invalid session</Description>
         </Constant>
-        <Constant ID="37" DataType="uint32" Name="InvalidCookie">
+        <Constant ID="37" Name="InvalidCookie" DataType="uint32">
             <Value>NECommon::InvalidCookie</Value>
             <Description>Indicates Invalid cookie</Description>
         </Constant>
-        <Constant ID="38" DataType="String" Name="ServicePrefixStub">
+        <Constant ID="38" Name="ServicePrefixStub" DataType="String">
             <Value>&quot;ChatStub&quot;</Value>
             <Description>The prefix to add when create stub instance</Description>
         </Constant>
-        <Constant ID="39" DataType="String" Name="ServicePrefixClient">
+        <Constant ID="39" Name="ServicePrefixClient" DataType="String">
             <Value>&quot;ChatClient&quot;</Value>
             <Description>The prefix when instantiate chat proxy.</Description>
         </Constant>

@@ -4,31 +4,31 @@
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.</Description>
     </Overview>
     <MethodList>
-        <Method ID="7" MethodType="Request" Name="HelloWorld" Response="HelloWorld">
+        <Method ID="7" Name="HelloWorld" MethodType="Request" Response="HelloWorld">
             <Description>Request to print hello world</Description>
             <ParamList>
-                <Parameter ID="51" DataType="String" Name="roleName">
+                <Parameter ID="51" Name="roleName" DataType="String">
                     <Description>The role name of client component that requested to print hello world</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="10" MethodType="Response" Name="HelloWorld">
+        <Method ID="10" Name="HelloWorld" MethodType="Response">
             <Description>The response to hello world request.</Description>
         </Method>
-        <Method ID="14" MethodType="Request" Name="ShutdownService">
+        <Method ID="14" Name="ShutdownService" MethodType="Request">
             <Description>Sent by client to request to shutdown service and the application. This request has no response.</Description>
         </Method>
-        <Method ID="15" MethodType="Broadcast" Name="ReachedMaximum">
+        <Method ID="15" Name="ReachedMaximum" MethodType="Broadcast">
             <Description>Triggered to notify that  reached the maximum number of requests.</Description>
             <ParamList>
-                <Parameter ID="52" DataType="int32" Name="maxNumber">
+                <Parameter ID="52" Name="maxNumber" DataType="int32">
                     <Description>The maximum number of requests.</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant ID="18" DataType="int16" Name="MaxMessages">
+        <Constant ID="18" Name="MaxMessages" DataType="int16">
             <Value>37</Value>
             <Description>The maximum number of messages to output.</Description>
         </Constant>
