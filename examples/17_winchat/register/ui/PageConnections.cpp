@@ -51,7 +51,7 @@ PageConnections::~PageConnections()
     mTypingList.clear();
 }
 
-void PageConnections::ServiceConnected( bool isConnected )
+void PageConnections::ServiceConnected( bool /*isConnected*/)
 {
 }
 
@@ -199,7 +199,7 @@ BOOL PageConnections::OnInitDialog( )
     // EXPTION: OCX Property Pages should return FALSE
 }
 
-LRESULT PageConnections::OnCmdRegistered( WPARAM wParam, LPARAM lParam )
+LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
     if ( data != nullptr )
@@ -232,7 +232,7 @@ int PageConnections::findInTyping( unsigned int cookie )
     return result;
 }
 
-LRESULT PageConnections::OnCmdUnregistered( WPARAM wParam, LPARAM lParam )
+LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
     if ( data != nullptr )
@@ -261,7 +261,7 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM wParam, LPARAM lParam )
     return 0L;
 }
 
-LRESULT PageConnections::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
+LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
     if ( data != nullptr )
@@ -295,7 +295,7 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
     return 0L;
 }
 
-LRESULT PageConnections::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
+LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
     bool isEmpty = data != nullptr ? NEString::isEmpty<TCHAR>( data->message ) : true;

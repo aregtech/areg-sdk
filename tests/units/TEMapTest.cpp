@@ -225,7 +225,7 @@ TEST(TEMapTest, TestPositionManipulation)
         EXPECT_EQ(Key, Value);
     }
 
-    EXPECT_EQ(cnt, 0);
+    EXPECT_EQ(cnt, 0u);
     EXPECT_EQ(idx, count);
 }
 

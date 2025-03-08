@@ -72,6 +72,7 @@ namespace
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
+    static_cast<void>(envp);
     char** argvTemp = _convertArguments(argv, static_cast<int>(argc));
     LogObserver::getInstance().logMain(static_cast<int>(argc), argvTemp);
     _deleteArguments(argvTemp, static_cast<int>(argc));

@@ -34,7 +34,7 @@ PageBrokerSetup::PageBrokerSetup()
 {
 }
 
-void PageBrokerSetup::ServiceConnected(bool isConnected)
+void PageBrokerSetup::ServiceConnected(bool /*isConnected*/)
 {
 }
 

@@ -33,6 +33,15 @@
 #endif // wrong imports
 
 #include "areg/base/GEGlobal.h"
-#include "gtest/gtest.h"
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(push, 3)
+    #pragma warning(disable: 26495)
+    #include "gtest/gtest.h"
+    #pragma warning(default: 26495)
+    #pragma warning(pop)
+#else   // defined(_MSC_VER) && (_MSC_VER > 1200)
+    #include "gtest/gtest.h"
+#endif  // defined(_MSC_VER) && (_MSC_VER > 1200)
 
 #endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP

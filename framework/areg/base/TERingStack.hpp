@@ -313,7 +313,7 @@ public:
      * \brief   Moves entries from the given source. The previous entries are swapped with the source.
      * \param   source  The source of entries to move data.
      **/
-    void move(TERingStack<VALUE> && source);
+    void move(TERingStack<VALUE> && source) noexcept;
 
     /**
      * \brief   Searches element in the stack starting at given position (index).
@@ -1046,7 +1046,7 @@ void TERingStack<VALUE>::copy(const TERingStack<VALUE>& source)
 }
 
 template <typename VALUE>
-void TERingStack<VALUE>::move(TERingStack<VALUE> && source)
+void TERingStack<VALUE>::move(TERingStack<VALUE> && source) noexcept
 {
     if (static_cast<const TERingStack<VALUE> *>(this) != &source)
     {
@@ -1243,14 +1243,15 @@ inline TELockRingStack<VALUE> & TELockRingStack<VALUE>::operator = ( const TERin
 template <typename VALUE>
 inline TELockRingStack<VALUE>& TELockRingStack<VALUE>::operator = (TELockRingStack<VALUE>&& source) noexcept
 {
-    static_cast<TERingStack<VALUE>&>(*this).operator = (std::move(static_cast<TERingStack<VALUE> &&>(source)));
+    TERingStack<VALUE>& temp = static_cast<TERingStack<VALUE> &>(source);
+    TERingStack<VALUE>::move(std::move(temp));
     return (*this);
 }
 
 template <typename VALUE>
 inline TELockRingStack<VALUE>& TELockRingStack<VALUE>::operator = (TERingStack<VALUE>&& source) noexcept
 {
-    static_cast<TERingStack<VALUE>&>(*this).operator = (std::move(static_cast<TERingStack<VALUE>&&>(source)));
+    TERingStack<VALUE>::move(std::move(source));
     return (*this);
 }
 

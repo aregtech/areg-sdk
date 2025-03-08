@@ -412,7 +412,7 @@ void PageChat::setTabTitle( const String & title )
     VERIFY( tab->SetItem( dlg->GetPageIndex( this ), &ti ) );
 }
 
-LRESULT PageChat::OnCmdChatMessage( WPARAM wParam, LPARAM lParam )
+LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
     if ( data != nullptr )
@@ -430,7 +430,7 @@ LRESULT PageChat::OnCmdChatMessage( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-LRESULT PageChat::OnCmdChatTyping( WPARAM wParam, LPARAM lParam )
+LRESULT PageChat::OnCmdChatTyping( WPARAM /*wParam*/, LPARAM lParam)
 {
     NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
     if ( data != nullptr )
@@ -441,7 +441,7 @@ LRESULT PageChat::OnCmdChatTyping( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-LRESULT PageChat::OnCmdChatJoined( WPARAM wParam, LPARAM lParam )
+LRESULT PageChat::OnCmdChatJoined( WPARAM wParam, LPARAM /*lParam*/ )
 {
     DirectMessagingClient * client = GetChatClient( );
     if ( (wParam == 1) && (client != nullptr) )

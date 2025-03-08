@@ -156,7 +156,7 @@ BOOL DistributedDialog::OnInitDialog()
     SetIcon(m_hIcon, FALSE);		// Set small icon
     ModifyStyle( 0, WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SIZEBOX | WS_TABSTOP, SWP_FRAMECHANGED );
 
-    mCaptionInit.LoadString(IDS_APPLICATION_TITLE);
+    static_cast<void>(mCaptionInit.LoadString(IDS_APPLICATION_TITLE));
     mCaption = mCaptionInit;
     SetTitle(mCaption);
 
@@ -376,7 +376,7 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
 }
 
 DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
-LRESULT DistributedDialog::OnCmdAddConnection( WPARAM wParam, LPARAM lParam )
+LRESULT DistributedDialog::OnCmdAddConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
     NEConnectionManager::sConnection * data = reinterpret_cast<NEConnectionManager::sConnection *>(lParam);
@@ -394,7 +394,7 @@ LRESULT DistributedDialog::OnCmdAddConnection( WPARAM wParam, LPARAM lParam )
 }
 
 DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
-LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM wParam, LPARAM lParam )
+LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
     NEConnectionManager::sConnection * data = reinterpret_cast<NEConnectionManager::sConnection *>(lParam);
@@ -412,7 +412,7 @@ LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM wParam, LPARAM lParam )
 }
 
 DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdUpdateConnection);
-LRESULT DistributedDialog::OnCmdUpdateConnection( WPARAM wParam, LPARAM lParam )
+LRESULT DistributedDialog::OnCmdUpdateConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdUpdateConnection);
     ASSERT(lParam == 0);
@@ -425,7 +425,7 @@ LRESULT DistributedDialog::OnCmdUpdateConnection( WPARAM wParam, LPARAM lParam )
 }
 
 DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdDisconnectTriggered);
-LRESULT DistributedDialog::OnCmdDisconnectTriggered( WPARAM wParam, LPARAM lParam )
+LRESULT DistributedDialog::OnCmdDisconnectTriggered( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdDisconnectTriggered);
 
@@ -440,7 +440,7 @@ LRESULT DistributedDialog::OnCmdDisconnectTriggered( WPARAM wParam, LPARAM lPara
 }
 
 DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdChatClosed);
-LRESULT DistributedDialog::OnCmdChatClosed( WPARAM wParam, LPARAM lParam )
+LRESULT DistributedDialog::OnCmdChatClosed( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdChatClosed);
     PageChat * pageChat = reinterpret_cast<PageChat *>(lParam);

@@ -191,8 +191,8 @@ TEST(TEFixedArrayTest, TestElemPosition)
         EXPECT_EQ(notEmpty.getAt(i), notEmpty.valueAtPosition(i));
     }
 
-    EXPECT_EQ(notEmpty.firstEntry(), 0u);
-    EXPECT_EQ(notEmpty.lastEntry(), elemCount - 1u);
+    EXPECT_EQ(notEmpty.firstEntry(), 0);
+    EXPECT_EQ(notEmpty.lastEntry(), static_cast<int>(elemCount - 1u));
 }
 
 /**
