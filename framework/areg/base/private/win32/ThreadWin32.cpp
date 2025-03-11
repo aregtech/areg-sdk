@@ -63,6 +63,8 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
     info.dwThreadID = static_cast<DWORD>(threadId);
     info.dwFlags    = 0;
 
+#ifdef  MS_VISUAL_CPP
+
 #pragma warning(disable: 6312)
     __try
     {
@@ -73,6 +75,18 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
         return;
     }
 #pragma warning(default: 6312)
+
+#elif defined(MINGW)
+
+    __try
+    {
+        RaiseException( SET_NAME_MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), reinterpret_cast<ULONG_PTR *>(&info) );
+    }
+    __catch(int val)
+    {
+        return;
+    }
+#endif  // !defined(MINGW)
 }
 
 void Thread::_osCloseHandle(  THREADHANDLE handle )
@@ -125,14 +139,18 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
             //////////////////////////////////////////////////////////////////////////
 #endif  // _DEBUG
 
+#ifdef MS_VISUAL_CPP
 #pragma warning(disable: 6258)
+#endif // MS_VISUAL_CPP
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
             result = Thread::eCompletionStatus::ThreadTerminated;
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::eExitCodes::ExitTerminated));
             this->mWaitForRun.resetEvent();
             this->mWaitForExit.setEvent();
+#ifdef MS_VISUAL_CPP
 #pragma warning(default: 6258)
+#endif  // MS_VISUAL_CPP
         }
         else
         {

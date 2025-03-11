@@ -17,11 +17,11 @@
 
 #include "subscriber/src/Subscriber.hpp"
 
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg")
     #pragma comment(lib, "22_generated.lib")
     #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 constexpr char const _modelName[]  { "PubSub_model" };  //!< The name of model
 constexpr char const _serviceName[]{ "Publisher" };     //!< The name of the service

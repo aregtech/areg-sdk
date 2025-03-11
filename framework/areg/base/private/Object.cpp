@@ -168,42 +168,42 @@ void * Object::operator new [ ]( size_t /*size*/, void * ptr )
  *          Used in debugging version. In other versions, only allocates memory without
  *          containing other information.
  **/
-#if defined(_DEBUG) && defined(_WINDOWS)
+#if defined(_DEBUG) && defined(_WINDOWS) && !defined(MINGW)
 
 void * Object::operator new( size_t size, int /*block*/, const char * file, int line )
 {
     return ::operator new(size, 1, file, line);
 }
 
-#else   // _DEBUG
+#else   // defined(_DEBUG) && defined(_WINDOWS) && !defined(MINGW)
 
 void * Object::operator new( size_t size, int /*block*/, const char * /*file*/, int /*line*/ )
 {
     return ::operator new (size);
 }
 
-#endif  // _DEBUG
+#endif  // defined(_DEBUG) && defined(_WINDOWS) && !defined(MINGW)
 
 /**
  * \brief   Overloaded placement new. Stores block type, file name and line number information
  *          Used in debugging version. In other versions, only allocates memory without
  *          containing other information.
  **/
-#if defined(_DEBUG) && defined(_WINDOWS)
+#if defined(_DEBUG) && defined(_WINDOWS) && !defined(MINGW)
 
 void * Object::operator new [ ]( size_t size, int /*block*/, const char *file, int line )
 {
     return ::operator new(size, 1, file, line);
 }
 
-#else   // _DEBUG
+#else   // defined(_DEBUG) && defined(_WINDOWS) && !defined(MINGW)
 
 void * Object::operator new [ ]( size_t size, int /*block*/, const char * /*file*/, int /*line*/ )
 {
     return ::operator new [] (size);
 }
 
-#endif  // _DEBUG
+#endif  // defined(_DEBUG) && defined(_WINDOWS) && !defined(MINGW)
 
 /**
  * \brief   Overloaded delete() operator

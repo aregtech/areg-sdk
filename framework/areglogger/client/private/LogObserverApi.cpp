@@ -20,10 +20,8 @@
 
 #include "areglogger/client/private/LoggerClient.hpp"
 
-#include <atomic>
-
 // Use these options if compile for Windows with MSVC
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "aregextend.lib")
 
@@ -32,7 +30,7 @@
 #else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #pragma comment(lib, "aregsqlite3.lib")
 #endif  //defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 
 namespace

@@ -18,12 +18,12 @@
 #include "common/src/NECommon.hpp"
 #include "common/src/PubSubMixed.hpp"
 
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg")
     #pragma comment(lib, "23_generated.lib")
     #pragma comment(lib, "23_common.lib")
     #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 namespace
 {

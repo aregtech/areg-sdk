@@ -3,19 +3,33 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing settings for GNU compiler under \'${AREG_OS}\' platform, Cygwin = \'${CYGWIN}\'")
+message(STATUS "AREG: >>> Preparing settings for GNU compiler under \'${AREG_OS}\' platform, Cygwin = \'${CYGWIN}\', MinGW = \'${MINGW}\' <<<")
 
-if (CYGWIN)
+if (MINGW)
+    set(AREG_COMPILER_FAMILY "mingw")
+elseif (CYGWIN)
     set(AREG_COMPILER_FAMILY "cygwin")  
 else()
     set(AREG_COMPILER_FAMILY "gnu")
 endif()
 
-# POSIX API
-add_definitions(-DPOSIX)
+if (NOT MINGW)
+    # POSIX API
+    add_definitions(-DPOSIX)
+else()
+    add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32 -DUCRT -D_MINGW -D_UCRT) 
+    if (${AREG_BITNESS} EQUAL 64)
+        add_definitions(-DWIN64 -D_WIN64)
+    endif()
+endif()
+
 set(AREG_DEVELOP_ENV "Posix")
 # GNU compile options
-if (CYGWIN)
+if (MINGW)
+    set(AREG_DEVELOP_ENV "Win32")
+    list(APPEND AREG_COMPILER_OPTIONS -Wall -c -mwindows -fmessage-length=0 -MMD -fshort-wchar ${AREG_USER_DEFINES})
+    set(AREG_COMPILER_VERSION  -std=c++17)
+elseif (CYGWIN)
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
     set(AREG_COMPILER_VERSION  -std=gnu++17)
 else()
@@ -40,8 +54,13 @@ if (${AREG_PROCESSOR} STREQUAL ${_proc_x86} OR ${AREG_PROCESSOR} STREQUAL ${_pro
 endif()
 
 # Linker flags (-l is not necessary)
-list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
-set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
+if (MINGW)
+    list(APPEND AREG_LDFLAGS ucrt advapi32 psapi shell32 ws2_32 dbghelp)
+    set(AREG_LDFLAGS_STR "-lucrt -ladvapi32 -lpsapi -lshell32 -lws2_32 -ldbghelp -lmingw32 -municode -mwindows")
+else()
+    list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+    set(AREG_LDFLAGS_STR "-lstdc++ -lpthread -lrt")
+endif()
 
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
@@ -51,4 +70,6 @@ list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
 
 list(APPEND AREG_OPT_DISABLE_WARN_COMMON
         -Wno-psabi
+        -Wno-unused-value
+        -Wno-unused-but-set-variable
 )

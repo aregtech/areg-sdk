@@ -14,11 +14,11 @@
 
 #include "pubservice/src/ServicingComponent.hpp"
 
-#ifdef WIN32
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "aregextend.lib")
     #pragma comment(lib, "20_generated.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 //////////////////////////////////////////////////////////////////////////
 //

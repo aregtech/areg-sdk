@@ -6,7 +6,7 @@ include("${AREG_FRAMEWORK}/mcrouter/service/private/CMakeLists.txt")
 set(_resourses  "${AREG_FRAMEWORK}/mcrouter/resources")
 set(_config     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config")
 
-if (${AREG_DEVELOP_ENV} MATCHES "Win32")
+if (${AREG_DEVELOP_ENV} MATCHES "Win32" AND NOT MINGW)
     set_source_files_properties("${_resourses}/mcrouter.rc" PROPERTIES LANGUAGE RC)
     list(APPEND mcrouter_SRC "${_resourses}/mcrouter.rc")
 endif()

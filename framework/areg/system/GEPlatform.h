@@ -36,7 +36,6 @@
     #endif // !_NDEBUG
 #endif // NDEBUG
 
-
 #if (defined(_POSIX) || defined(POSIX))
 
     #undef WINDOWS
@@ -44,14 +43,26 @@
 
     #include "areg/system/posix/GEPosix.h"
 
-#elif (defined(_WINDOWS) || defined(WINDOWS))
-
-    #include "areg/system/windows/GEWindows.h"
-
 #elif (defined(__unix__) || defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__APPLE__))
 
     #define POSIX
     #include "areg/system/posix/GEPosix.h"
+
+#elif (defined(__MINGW32__) || defined(__MINGW64__))
+
+    #ifndef WINDOWS
+        #define WINDOWS
+    #endif
+
+    #ifndef WIN32
+        #define WIN32
+    #endif  // WIN32
+
+    #include "areg/system/mingw/GEMinGW.h"
+
+#elif (defined(_WINDOWS) || defined(WINDOWS))
+
+    #include "areg/system/windows/GEWindows.h"
 
 #elif(defined(_WIN32) || defined(_WIN64))
 

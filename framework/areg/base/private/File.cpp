@@ -25,6 +25,8 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/Containers.hpp"
 
+#include <locale>
+#include <codecvt>
 #include <filesystem>
 
 //////////////////////////////////////////////////////////////////////////

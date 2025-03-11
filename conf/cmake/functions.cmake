@@ -444,6 +444,12 @@ macro(macro_default_target target_processor var_name_target)
         elseif (${_proc} MATCHES "${_proc_x86}")
             set(${var_name_target} "win32")
         endif()
+    elseif(MINGW)
+        if (${_proc} MATCHES "${_proc_x64}")
+            set(${var_name_target} "x86_64-w64-mingw32")
+        elseif (${_proc} MATCHES "${_proc_x86}")
+            set(${var_name_target} "i386-w32-mingw32")
+        endif()
     elseif(CYGWIN)
         if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} "x86_64-pc-cygwin")
@@ -457,10 +463,10 @@ endmacro(macro_default_target)
 # Macro .......: macro_setup_compilers_data
 # Purpose .....: Detects and configures compiler attributes including family, short name, paths, 
 #                target, processor architecture, and application bitness. 
-# Note ........: In addition to "gnu", "llvm", and "msvc", GNU compilers used in CYGWIN are 
-#                categorized under the "cygwin" family.
+# Note ........: In addition to "gnu", "llvm", and "msvc", GNU compilers used in CYGWIN or MINGW are 
+#                categorized under the "cygwin" and "mingw" families.
 # Parameters ...: ${compiler_path}    [in]       -- Path to the C++ compiler.
-#                 ${var_name_family}  [out]      -- Variable to store the compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+#                 ${var_name_family}  [out]      -- Variable to store the compiler family (e.g., "gnu", "msvc", "llvm", "cygwin", "mingw").
 #                 ${var_name_short}   [out]      -- Variable to store the short name of the compiler (e.g., "gcc", "clang", "cl").
 #                 ${var_name_cxx}     [out]      -- Variable to store the path to the C++ compiler (typically same as ${compiler_path}).
 #                 ${var_name_c}       [out]      -- Variable to store the corresponding C compiler name or path.
@@ -512,7 +518,10 @@ macro(macro_setup_compilers_data
             list(GET _entry 2 _cc_comp)
             # Handle special case for CYGWIN and GNU family compilers
             if (${_family} STREQUAL gnu)
-                if (CYGWIN)
+                if (MINGW)
+                    set(${var_name_family} "mingw")
+                    macro_default_target("${${var_name_arch}}" ${var_name_target})
+                elseif (CYGWIN)
                     set(${var_name_family} "cygwin")
                     macro_default_target("${${var_name_arch}}" ${var_name_target})
                 else()
@@ -565,8 +574,8 @@ endmacro(macro_setup_compilers_data)
 
 # ---------------------------------------------------------------------------
 # Macro ......: macro_setup_compilers_data_by_family
-# Purpose ....: Configures compiler names based on family (e.g., gnu, msvc, llvm, cygwin), and compiler target.
-# Note .......: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
+# Purpose ....: Configures compiler names based on family (e.g., gnu, msvc, llvm, cygwin, mingw), and compiler target.
+# Note .......: The "cygwin" family is supported for GNU compilers on the CYGWIN or MINGW platforms in Windows.
 # Parameters .: ${compiler_family} [in]  -- Compiler family  name (e.g., "gnu", "msvc").
 #               ${var_name_short}  [out] -- Variable to hold the short name of the compiler (e.g., "gcc", "clang").
 #               ${var_name_cxx}    [out] -- Variable to hold the C++ compiler name.
@@ -587,7 +596,7 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
     set(${var_name_found} FALSE)
     
     # Iterate over known compilers and match the family
-    foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc")
+    foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc" "g++;mingw;gcc")
         list(GET _entry 1 _family)
 
         if ("${_family}" STREQUAL "${compiler_family}")

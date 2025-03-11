@@ -20,9 +20,12 @@
 
 #ifdef WINDOWS
 
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "aregextend.lib")
-#pragma comment(lib, "areglogger.lib")
+#ifdef MS_VISUAL_CPP
+    #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "aregextend.lib")
+    #pragma comment(lib, "areglogger.lib")
+#endif  // MS_VISUAL_CPP
+
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN

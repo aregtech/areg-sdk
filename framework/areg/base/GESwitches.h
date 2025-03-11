@@ -79,11 +79,11 @@
    #define AREG_API
 #endif  // AREG_API
 
-#ifdef WIN32
+#if defined(WINDOWS) && defined(WIN32) && defined(MS_VISUAL_CPP)
     #define AREG_API_IMPL   AREG_API
-#else   // !WIN32
+#else   // defined(WINDOWS) && defined(WIN32) && defined(MS_VISUAL_CPP)
     #define AREG_API_IMPL
-#endif   // WIN32
+#endif   // defined(WINDOWS) && defined(WIN32) && defined(MS_VISUAL_CPP)
 
 // By default, no AREG extended features.
 #if !defined(AREG_EXTENDED)

@@ -3,7 +3,7 @@ set(areglogger_SRC)
 include("${AREG_FRAMEWORK}/areglogger/client/private/CMakeLists.txt")
 
 # add .rc file to the list of sources
-if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
+if (${AREG_DEVELOP_ENV} MATCHES "Win32" AND NOT MINGW)
     set_source_files_properties("${AREG_FRAMEWORK}/areglogger/resources/areglogger.rc" PROPERTIES LANGUAGE RC)
 	list(APPEND areglogger_SRC ${AREG_FRAMEWORK}/areglogger/resources/areglogger.rc)
 endif()

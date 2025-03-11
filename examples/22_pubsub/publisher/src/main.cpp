@@ -14,11 +14,11 @@
 
 #include "publisher/src/Publisher.hpp"
 
-#ifdef WIN32
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "22_generated.lib")
     #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 //////////////////////////////////////////////////////////////////////////
 //

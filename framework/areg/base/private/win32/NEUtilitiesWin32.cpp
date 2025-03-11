@@ -25,6 +25,12 @@
 #include <time.h>
 #include <Windows.h>
 
+#ifdef MINGW
+    #define TIMESPEC_GET(ts)    timespec_get((ts), TIME_UTC)
+#else
+    #define TIMESPEC_GET(ts)    std::timespec_get((ts), TIME_UTC)
+#endif
+
 namespace NEUtilities
 {
     uint64_t _osGetTickCount(void)
@@ -35,7 +41,7 @@ namespace NEUtilities
     TIME64 _osSystemTimeNow(void)
     {
         struct timespec ts { };
-        return (std::timespec_get(&ts, TIME_UTC) != 0
+        return (TIMESPEC_GET(&ts) != 0
                 ? (static_cast<TIME64>(ts.tv_sec) * NEUtilities::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / NEUtilities::MICROSEC_TO_NS)
                 : 0uLL);
     }
@@ -44,7 +50,7 @@ namespace NEUtilities
     {
         struct timespec ts { };
         struct tm now { };
-        if (std::timespec_get(&ts, TIME_UTC) != 0)
+        if (TIMESPEC_GET(&ts) != 0)
         {
             if (localTime)
             {

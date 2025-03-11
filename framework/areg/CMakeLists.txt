@@ -7,7 +7,7 @@ include("${AREG_FRAMEWORK}/areg/ipc/private/CMakeLists.txt")
 include("${AREG_FRAMEWORK}/areg/persist/private/CMakeLists.txt")
 include("${AREG_FRAMEWORK}/areg/logging/private/CMakeLists.txt")
 
-if (${AREG_DEVELOP_ENV} MATCHES "Win32")
+if (${AREG_DEVELOP_ENV} MATCHES "Win32" AND NOT MINGW)
     set_source_files_properties("${AREG_FRAMEWORK}/areg/resources/areg.rc" PROPERTIES LANGUAGE RC)
     list(APPEND areg_SRC ${AREG_FRAMEWORK}/areg/resources/areg.rc)
 endif()
@@ -21,7 +21,7 @@ if(AREG_BINARY MATCHES "shared")
     endif()
 
     target_compile_definitions(areg PRIVATE EXP_AREG_DLL _USRDLL)
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
         target_compile_options(areg PRIVATE "-Bdynamic")
     endif()
 
@@ -41,13 +41,17 @@ else()
 
 endif(AREG_BINARY MATCHES "shared")
 
-if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
     target_compile_options(areg PRIVATE -fPIC)
 endif()
 target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OPT_DISABLE_WARN_FRAMEWORK}")
 
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
+
+if(QT_VERSION_MAJOR EQUAL 6)
+    qt_finalize_executable(areg)
+endif()
 
 # copying log and router init files to 'bin/config'
 add_custom_command( TARGET areg POST_BUILD 

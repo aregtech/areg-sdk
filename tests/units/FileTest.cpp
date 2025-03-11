@@ -28,7 +28,9 @@
 #ifdef WINDOWS
     #include <Shlwapi.h>
 
-    #pragma comment(lib, "Shlwapi.lib")
+    #ifdef MS_VISUAL_CPP
+        #pragma comment(lib, "Shlwapi.lib")
+    #endif  // MS_VISUAL_CPP
 #endif // WINDOWS
 
 /**

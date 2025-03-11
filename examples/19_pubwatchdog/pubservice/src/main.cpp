@@ -16,10 +16,10 @@
 #include "common/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "19_generated.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 //////////////////////////////////////////////////////////////////////////
 //

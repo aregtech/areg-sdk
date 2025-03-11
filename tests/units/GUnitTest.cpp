@@ -19,10 +19,10 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 
 /**

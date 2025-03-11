@@ -27,19 +27,19 @@
         #endif
     #endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
-    #if defined(WIN32)
+    #if defined(WINDOWS) && defined(WIN32)
         #ifdef MS_VISUAL_CPP
             #pragma message(">>> Compiling with Win32 API, Debug version")
         #else
             #pragma message ">>> Compiling with Win32 API, Debug version"
         #endif
-    #else   // WIN32
+    #else   // defined(WINDOWS) && defined(WIN32)
         #ifdef MS_VISUAL_CPP
             #pragma message(">>> Compiling with POSIX API, Debug version")
         #else
             #pragma message ">>> Compiling with POSIX API, Debug version"
         #endif
-    #endif
+    #endif  // defined(WINDOWS) && defined(WIN32)
 
     #if !defined(AREG_LOGS)
         #ifdef MS_VISUAL_CPP
@@ -83,7 +83,7 @@
 
 #endif // DEBUG
 
-#ifdef  WIN32
+#if defined(WINDOWS) && defined(WIN32) && defined(MS_VISUAL_CPP)
 
     // Enable or disable memory leak detect only for Debug version
     #ifdef  DEBUG
@@ -95,4 +95,4 @@
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "ws2_32.lib")
 
-#endif  // WIN32
+#endif  // defined(WINDOWS) && defined(WIN32) && defined(MS_VISUAL_CPP)

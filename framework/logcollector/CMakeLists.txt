@@ -6,7 +6,7 @@ include("${AREG_FRAMEWORK}/logcollector/service/private/CMakeLists.txt")
 set(_resourses  "${AREG_FRAMEWORK}/logcollector/resources")
 set(_config     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config")
 
-if (${AREG_DEVELOP_ENV} MATCHES "Win32")
+if (${AREG_DEVELOP_ENV} MATCHES "Win32" AND NOT MINGW)
     set_source_files_properties("${_resourses}/logcollector.rc" PROPERTIES LANGUAGE RC)
     list(APPEND logger_SRC "${_resourses}/logcollector.rc")
 endif()

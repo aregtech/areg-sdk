@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 namespace
 {
@@ -34,8 +35,10 @@ namespace
 
         for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
         {
+            struct stat stt{};
+
             // skip non-numeric directories.
-            if ((dirEntry->d_type == DT_REG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
+            if ((stat(dirEntry->d_name, &stt) == RETURNED_OK) && ((stt.st_mode & S_IFMT) == S_IFREG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
             {
                 String name;
                 name.format(fmt, dirEntry->d_name);

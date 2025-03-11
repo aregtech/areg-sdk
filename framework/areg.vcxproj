@@ -408,6 +408,7 @@
     <ClInclude Include="areg\logging\private\NELogOptions.hpp" />
     <ClInclude Include="areg\persist\PropertyKey.hpp" />
     <ClInclude Include="areg\persist\IEConfigurationListener.hpp" />
+    <ClInclude Include="areg\system\mingw\GEMinGW.h" />
     <ClInclude Include="areg\system\posix\GEPosix.h" />
     <ClInclude Include="areg\system\windows\GEWindows.h" />
     <ClInclude Include="areg\system\GEPlatform.h" />

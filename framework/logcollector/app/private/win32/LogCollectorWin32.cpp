@@ -16,17 +16,12 @@
 
 #ifdef WINDOWS
 
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "aregextend.lib")
-#pragma comment(lib, "advapi32.lib")
-#pragma comment(lib, "kernel32.lib")
-
-#include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/File.hpp"
-#include "areg/base/Process.hpp"
-#include "areg/base/String.hpp"
+#ifdef MS_VISUAL_CPP
+    #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "aregextend.lib")
+    #pragma comment(lib, "advapi32.lib")
+    #pragma comment(lib, "kernel32.lib")
+#endif  // MS_VISUAL_CPP
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN

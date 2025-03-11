@@ -19,13 +19,13 @@
 #include "common/NELargeData.hpp"
 #include "pubclient/src/ServiceClient.hpp"
 
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
 
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "aregextend.lib")
     #pragma comment(lib, "20_generated.lib")
 
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 constexpr char const _modelName[]= { "DataRate" };  //!< The name of model
 const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
