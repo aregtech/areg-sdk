@@ -14,6 +14,9 @@ endif()
 # build mcrouter executable
 addExecutableEx(mcrouter ${AREG_PACKAGE_NAME} "${mcrouter_SRC}" "")
 target_compile_options(mcrouter PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
+if (MINGW)
+    target_link_options(mcrouter PRIVATE -mwin32 -municode -mconsole)
+endif(MINGW)
 
 # Copy 'mcrouter' service running scripts
 if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)

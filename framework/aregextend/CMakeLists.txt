@@ -12,3 +12,6 @@ endif()
 # build areg extended static library
 addStaticLibEx(aregextend ${AREG_PACKAGE_NAME} "${aregextend_SRC}" "")
 target_compile_options(aregextend PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
+if (MINGW)
+    target_link_options(aregextend PRIVATE -mwin32 -municode)
+endif(MINGW)

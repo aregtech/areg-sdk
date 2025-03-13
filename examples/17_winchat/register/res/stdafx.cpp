@@ -15,5 +15,7 @@
 
 #include "register/res/stdafx.h"
 
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "17_generated.lib")
+#ifdef MS_VISUAL_CPP
+    #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "17_generated.lib")
+#endif // MS_VISUAL_CPP

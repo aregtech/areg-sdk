@@ -41,6 +41,8 @@ else(AREG_SQLITE_FOUND)
     set(AREG_SQLITE_LIB     aregsqlite3)
     addStaticLibEx_C(${AREG_SQLITE_LIB} ${AREG_PACKAGE_NAME} "${sqlite_SRC}" "")
     target_compile_options(${AREG_SQLITE_LIB} PRIVATE -DUSE_SQLITE_PACKAGE=0 "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+    if (MINGW)
+        target_link_options(${AREG_SQLITE_LIB} PRIVATE -mwin32 -mcrtdll=ucrt)
+    endif(MINGW)
 
 endif(AREG_SQLITE_FOUND)
-

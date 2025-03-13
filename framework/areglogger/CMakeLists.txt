@@ -14,7 +14,7 @@ endif()
 if (AREG_LOGGER_BINARY MATCHES "shared")
 
     # add .def file to the list of sources
-    if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
+    if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" AND NOT MINGW)
 	    list(APPEND areglogger_SRC "${AREG_FRAMEWORK}/areglogger/resources/areglogger.def")
     endif()
 
@@ -38,3 +38,7 @@ else()
     target_compile_definitions(areglogger PRIVATE EXP_LOGGER_LIB)
 
 endif(AREG_LOGGER_BINARY MATCHES "shared")
+
+if (MINGW)
+    target_link_options(areglogger PRIVATE -mwin32 -municode)
+endif(MINGW)

@@ -19,10 +19,10 @@
 #include "areg/logging/GELog.h"
 #include "src/ServicingComponent.hpp"
 
-#ifdef  _WIN32
+#ifdef  MS_VISUAL_CPP
     // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // _WIN32
+#endif // MS_VISUAL_CPP
 
 constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 

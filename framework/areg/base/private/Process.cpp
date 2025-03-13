@@ -14,11 +14,10 @@
  *              OS independent implementation
  ************************************************************************/
 #include "areg/base/Process.hpp"
+#include "areg/base/WideString.hpp"
 
-#include "areg/base/File.hpp"
 #include "areg/component/NEService.hpp"
 #include <filesystem>
-#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
@@ -49,14 +48,15 @@ void Process::_initPaths( const char * fullPath )
 {
     ASSERT(fullPath != nullptr);
     mProcessFullPath = fullPath;
-    std::filesystem::path procPath(mProcessFullPath.getData());
+    std::basic_string<wchar_t> fp { WideString(fullPath).getData()};
+    std::filesystem::path procPath{std::move(fp), std::filesystem::path::format::auto_format};
 
     if (procPath.empty() == false)
     {
-        mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
-        mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
-        mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
-        mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
+        mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().native();
+        mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().native();
+        mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().native();
+        mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().native();
     }
 }
 

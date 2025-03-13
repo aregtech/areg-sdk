@@ -743,7 +743,7 @@ function(setStaticLibOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Additional compile options for non-Windows platforms
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR WINGW)
         target_compile_options(${target_name} PRIVATE "-Bstatic")  # Ensure static linking
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
     endif()
@@ -827,7 +827,7 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
     # Set common compile definition
     target_compile_definitions(${target_name} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
 
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
         target_compile_options(${target_name} PRIVATE "-Bstatic")
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
@@ -866,7 +866,7 @@ function(setSharedLibOptions target_name library_list)
     target_link_libraries(${target_name} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     # Additional compile options for non-Windows platforms
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
         target_compile_options(${target_name} PRIVATE "-Bdynamic") # Ensure dynamic linking
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code for shared libraries
     endif()

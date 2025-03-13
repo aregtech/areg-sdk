@@ -19,3 +19,6 @@ else ()
 endif()
 
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
+if (MINGW)
+    target_link_options(logobserver PRIVATE -mwin32 -municode -mconsole)
+endif(MINGW)

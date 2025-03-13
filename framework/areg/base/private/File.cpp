@@ -16,7 +16,6 @@
 
 #include "areg/base/File.hpp"
 
-#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
@@ -24,10 +23,17 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NEString.hpp"
 #include "areg/base/Containers.hpp"
+#include "areg/base/WideString.hpp"
 
-#include <locale>
-#include <codecvt>
 #include <filesystem>
+
+namespace
+{
+    inline std::basic_string<wchar_t> unicodeName(const String & name)
+    {
+        return WideString(name.getString()).getData();
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
@@ -93,7 +99,8 @@ unsigned int File::getSizeReadable( void ) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
+        std::filesystem::path pt{unicodeName(mFileName)};
+        std::uintmax_t sz = std::filesystem::file_size(pt, err);
 
         lenRead = _osGetPositionFile();
         lenUsed = !err ? static_cast<unsigned int>(sz) : 0;
@@ -110,7 +117,8 @@ unsigned int File::getSizeWritable( void ) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
+        std::filesystem::path pt{unicodeName(mFileName)};
+        std::uintmax_t sz = std::filesystem::file_size(pt, err);
 
         lenWritten  = _osGetPositionFile();
         lenAvailable = !err ? static_cast<unsigned int>(sz) : 0;
@@ -130,7 +138,8 @@ bool File::remove( void )
 
         close();
         std::error_code err;
-        result = std::filesystem::remove(mFileName.getData(), err);
+        std::filesystem::path pt{ unicodeName(mFileName) };
+        result = std::filesystem::remove(pt, err);
     }
 
     mFileHandle = File::_osGetInvalidHandle();
@@ -210,15 +219,19 @@ String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
         }
         else
         {
-            std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
-            name = filePath.string();
+            std::filesystem::path ptDir{ unicodeName(dir) };
+            std::filesystem::path ptName{ unicodeName(name) };
+            std::filesystem::path filePath = ptDir / ptName;
+            name = filePath.native();
         }
     }
     else
     {
         String dir = File::getCurrentDir();
-        std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
-        name = filePath.string();
+        std::filesystem::path ptDir{ unicodeName(dir) };
+        std::filesystem::path ptName{ unicodeName(name) };
+        std::filesystem::path filePath = ptDir / ptName;
+        name = filePath.native();
     }
 
     return name;
@@ -298,8 +311,8 @@ bool File::createDirCascaded( const char* dirPath )
     if ( NEString::isEmpty<char>( dirPath ) == false )
     {
         std::error_code err;
-        std::filesystem::create_directories( dirPath, err );
-        result = static_cast<bool>(err) == false;
+        std::filesystem::path ptDir{ unicodeName(dirPath) };
+        result = std::filesystem::create_directories( ptDir, err ) && (static_cast<bool>(err) == false);
     }
 
     return result;
@@ -313,10 +326,11 @@ String File::normalizePath(const char* fileName)
         result = fileName;
         FileBase::normalizeName(result);
         std::error_code err;
-        std::filesystem::path fp = std::filesystem::absolute(result.getData(), err);
-        if (!err)
+        std::filesystem::path pt{ unicodeName(result) };
+        std::filesystem::path fp = std::filesystem::absolute(pt, err);
+        if (static_cast<bool>(err) == false)
         {
-            result = fp.string();
+            result = fp.native();
         }
     }
 
@@ -475,10 +489,14 @@ unsigned int File::getLength(void) const
     unsigned int result{ 0 };
     if (isOpened())
     {
+#if 0
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
+        std::filesystem::path pt{ std::move(unicodeName(mFileName)), std::filesystem::path::format::native_format };
+        std::uintmax_t sz = std::filesystem::file_size(pt, err);
         result = !err ? static_cast<unsigned int>(sz) : 0;
+#endif
     }
+
     return result;
 }
 
@@ -491,7 +509,10 @@ unsigned int File::reserve(unsigned int newSize)
         close();
 
         std::error_code err;
-        std::filesystem::resize_file(mFileName.getData(), newSize, err);
+#if 0
+        std::filesystem::path pt{ std::move(unicodeName(mFileName)), std::filesystem::path::format::native_format };
+        std::filesystem::resize_file(pt, newSize, err);
+#endif
         if (open() && !err)
         {
             if (newSize == 0)
@@ -537,27 +558,53 @@ void File::flush(void)
 
 bool File::deleteFile(const char* filePath)
 {
-    std::error_code err;
-    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
+    if (NEString::isEmpty<char>(filePath) == false)
+    {
+#if 0
+        std::error_code err;
+        std::filesystem::path pt{ std::move(unicodeName(filePath)), std::filesystem::path::format::native_format };
+        return std::filesystem::remove(pt, err);
+#endif
+        return false;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool File::createDir(const char* dirPath)
 {
-    std::error_code err;
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
+    if (NEString::isEmpty<char>(dirPath) == false)
+    {
+#if 0
+        std::error_code err;
+        std::filesystem::path pt{ std::move(unicodeName(dirPath)), std::filesystem::path::format::native_format };
+        return std::filesystem::create_directory(pt, err);
+#endif
+        return false;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool File::deleteDir(const char* dirPath)
 {
-    bool result{ false };
     if (NEString::isEmpty<char>(dirPath) == false)
     {
+#if 0
         std::error_code err;
-        std::filesystem::remove_all(dirPath, err);
-        result = !err;
+        std::filesystem::path pt{ std::move(unicodeName(dirPath)), std::filesystem::path::format::native_format };
+        return (std::filesystem::remove_all(pt, err) && (static_cast<bool>(err) == true));
+#endif
+        return false;
     }
-
-    return result;
+    else
+    {
+        return false;
+    }
 }
 
 bool File::moveFile(const char* oldPath, const char* newPath)
@@ -566,16 +613,25 @@ bool File::moveFile(const char* oldPath, const char* newPath)
     if ( (NEString::isEmpty<char>(oldPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
     {
         std::error_code err;
-        std::filesystem::rename(oldPath, newPath, err);
-        result = !err;
+#if 0
+        std::filesystem::path ptOld{ std::move(unicodeName(oldPath)), std::filesystem::path::format::native_format };
+        std::filesystem::path ptNew{ std::move(unicodeName(newPath)), std::filesystem::path::format::native_format };
+        std::filesystem::rename(ptOld, ptNew, err);
+#endif
+        result = static_cast<bool>(err) == false;
     }
+
     return result;
 }
 
 String File::getCurrentDir(void)
 {
+#if 0
     std::error_code err;
-    return String(std::filesystem::current_path(err).string());
+    std::filesystem::path pt = std::filesystem::current_path(err);
+    return String(pt.native());
+#endif
+    return String::EmptyString;
 }
 
 bool File::setCurrentDir(const char* dirPath)
@@ -584,8 +640,11 @@ bool File::setCurrentDir(const char* dirPath)
     if (NEString::isEmpty<char>(dirPath) == false)
     {
         std::error_code err;
-        std::filesystem::current_path(dirPath, err);
-        result = !err;
+#if 0
+        std::filesystem::path pt{ std::move(unicodeName(dirPath)), std::filesystem::path::format::native_format };
+        std::filesystem::current_path(pt, err);
+#endif
+        result = static_cast<bool>(err) == false;
     }
 
     return result;
@@ -596,9 +655,13 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
     bool result{ false };
     if ( (NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
     {
+#if 0
         std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
         std::error_code err;
-        result = std::filesystem::copy_file(originPath, newPath, opt, err);
+        std::filesystem::path ptOrigin{ std::move(unicodeName(originPath)), std::filesystem::path::format::native_format };
+        std::filesystem::path ptNew{ std::move(unicodeName(newPath)), std::filesystem::path::format::native_format };
+        result = std::filesystem::copy_file(ptOrigin, ptNew, opt, err);
+#endif
     }
 
     return result;
@@ -606,20 +669,31 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
 
 String File::getTempDir(void)
 {
+#if 0
     std::error_code err;
-    return String(std::filesystem::temp_directory_path(err).string());
+    return String(std::filesystem::temp_directory_path(err).native());
+#endif
+    return String::EmptyString;
 }
 
 bool File::existDir(const char* dirPath)
 {
+#if 0
     std::error_code err;
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
+    std::filesystem::path pt{ std::move(unicodeName(dirPath)), std::filesystem::path::format::native_format };
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(pt, err) : false);
+#endif
+    return false;
 }
 
 bool File::existFile(const char* filePath)
 {
+#if 0
     std::error_code err;
-    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
+    std::filesystem::path pt{ std::move(unicodeName(filePath)), std::filesystem::path::format::native_format };
+    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(pt, err) : false);
+#endif
+    return false;
 }
 
 String File::getFileFullPath(const char* filePath)
@@ -627,9 +701,19 @@ String File::getFileFullPath(const char* filePath)
     String result;
     if (NEString::isEmpty<char>(filePath) == false)
     {
+#if 0
         std::error_code err;
-        std::filesystem::path fp = std::filesystem::absolute(filePath, err);
-        result = !err ? fp.string() : filePath;
+        std::filesystem::path pt{ std::move(unicodeName(filePath)), std::filesystem::path::format::native_format };
+        std::filesystem::path fp = std::filesystem::absolute(pt, err);
+        if (static_cast<bool>(err) == false)
+        {
+            result = fp.native();
+        }
+        else
+        {
+            result = filePath;
+        }
+#endif
     }
 
     return result;

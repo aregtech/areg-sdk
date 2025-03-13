@@ -63,7 +63,7 @@ if(AREG_BUILD_EXAMPLES)
 endif()
 
 # build optional AREG Framework unit tests, if required
-if(AREG_BUILD_TESTS)
+if(AREG_BUILD_TESTS AND NOT MINGW)
     include(${AREG_TESTS}/CMakeLists.txt)
     if (NOT AREG_GTEST_FOUND)
         # Set dependency of 'areg-dummy' to make sure

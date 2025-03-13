@@ -34,7 +34,7 @@ else()
     endif()
 
     target_compile_definitions(areg PRIVATE EXP_AREG_LIB _LIB)
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
         target_compile_options(areg PRIVATE "-Bstatic")
     endif()
     # set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
@@ -44,14 +44,14 @@ endif(AREG_BINARY MATCHES "shared")
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
     target_compile_options(areg PRIVATE -fPIC)
 endif()
-target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OPT_DISABLE_WARN_FRAMEWORK}")
 
+if (MINGW)
+    target_link_options(areg PRIVATE -mwin32 -municode)
+endif(MINGW)
+
+target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OPT_DISABLE_WARN_FRAMEWORK}")
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
-
-if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(areg)
-endif()
 
 # copying log and router init files to 'bin/config'
 add_custom_command( TARGET areg POST_BUILD 

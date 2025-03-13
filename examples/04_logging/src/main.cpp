@@ -22,10 +22,10 @@
 
 #include "areg/logging/GELog.h"
 
-#ifdef  _WIN32
+#ifdef  MS_VISUAL_CPP
     // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // _WIN32
+#endif // MS_VISUAL_CPP
 
 //! \brief   A thread to run.
 class HelloThread   : public    Thread

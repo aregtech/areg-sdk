@@ -20,11 +20,11 @@
 #if defined(_POSIX) || defined(POSIX)
 
 
-#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Containers.hpp"
+#include "areg/base/WideString.hpp"
 
 #include <fcntl.h>
 #include <dirent.h>
@@ -175,7 +175,9 @@ bool File::_osOpenFile( void )
             String dirName(File::getFileDirectory(mFileName));
             if ( (flag & O_CREAT) != 0 )
             {
-                if (std::filesystem::exists(mFileName.getData(), err))
+                WideString dn(dirName.getData());
+                std::filesystem::path pt{ dn.getData() };
+                if (std::filesystem::exists(pt, err) && (static_cast<bool>(err) == false))
                 {
                     if (dirName == mFileName)
                     {

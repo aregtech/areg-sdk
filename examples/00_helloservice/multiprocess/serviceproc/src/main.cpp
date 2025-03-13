@@ -10,10 +10,10 @@
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg")
     #pragma comment(lib, "00_generated.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 //!< The name of model
 constexpr char const _modelName[]{ "ServiceModel" };

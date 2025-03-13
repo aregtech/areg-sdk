@@ -16,11 +16,10 @@
 #include "common/NECommon.hpp"
 #include "pubclient/src/PatientClient.hpp"
 
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "15_generated.lib")
-#endif // WINDOWS
-
+#endif // MS_VISUAL_CPP
 
 
 constexpr char const _modelName[]  { "TheModel" };   // The name of model

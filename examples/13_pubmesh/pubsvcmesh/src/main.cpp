@@ -21,11 +21,11 @@
 #include "common/src/PublicHelloWorldClient.hpp"
 #include "common/src/PublicHelloWorldService.hpp"
 
-#ifdef WINDOWS
+#ifdef MS_VISUAL_CPP
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "13_generated.lib")
     #pragma comment(lib, "13_common.lib")
-#endif // WINDOWS
+#endif // MS_VISUAL_CPP
 
 //!<\brief  Local service component
 class LocalServiceComponent : public Component

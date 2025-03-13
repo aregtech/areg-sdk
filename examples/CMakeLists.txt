@@ -35,7 +35,7 @@ if(AREG_BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/23_pubsubmix/CMakeLists.txt)
     include(${AREG_EXAMPLES}/24_pubsubmulti/CMakeLists.txt)
 
-    if (AREG_DEVELOP_ENV MATCHES "Win32")
+    if (AREG_DEVELOP_ENV MATCHES "Win32" AND NOT MINGW)
         # This projects are based either on MFC (Microsoft Foundation Classes)
         # or are compiled only under Windows. So that, they are available
         # only when compile with Microsoft Visual Studio.

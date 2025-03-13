@@ -14,9 +14,12 @@ endif()
 # build logcollector executable
 addExecutableEx(logcollector ${AREG_PACKAGE_NAME} "${logger_SRC}" "")
 target_compile_options(logcollector PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
+if (MINGW)
+    target_link_options(logcollector PRIVATE -mwin32 -municode -mconsole)
+endif(MINGW)
 
 # Copy 'logcollector' service running scripts
-if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)
+if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN OR MINGW)
     add_custom_command( TARGET logcollector POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}/logcollector.service.install.bat"   "${_config}/logcollector.service.install.bat"
                         COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}/logcollector.service.uninstall.bat" "${_config}/logcollector.service.uninstall.bat"

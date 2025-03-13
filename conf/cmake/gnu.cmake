@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing settings for GNU compiler under \'${AREG_OS}\' platform, Cygwin = \'${CYGWIN}\', MinGW = \'${MINGW}\' <<<")
+message(STATUS "AREG: >>> Preparing settings for GNU compiler under \'${AREG_OS}\' platform, Cygwin = \'${CYGWIN}\', MinGW = \'${MINGW}\'")
 
 if (MINGW)
     set(AREG_COMPILER_FAMILY "mingw")
@@ -17,7 +17,7 @@ if (NOT MINGW)
     # POSIX API
     add_definitions(-DPOSIX)
 else()
-    add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32 -DUCRT -D_MINGW -D_UCRT) 
+    add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32 -D_UCRT -D__USE_MINGW_ACCESS -D_NO_CRT_STDIO_INLINE -D__USE_MINGW_ANSI_STDIO=1)
     if (${AREG_BITNESS} EQUAL 64)
         add_definitions(-DWIN64 -D_WIN64)
     endif()
@@ -27,7 +27,7 @@ set(AREG_DEVELOP_ENV "Posix")
 # GNU compile options
 if (MINGW)
     set(AREG_DEVELOP_ENV "Win32")
-    list(APPEND AREG_COMPILER_OPTIONS -Wall -c -mwindows -fmessage-length=0 -MMD -fshort-wchar ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -Wall -c -fmessage-length=0 -municode -mwin32 -MMD ${AREG_USER_DEFINES})
     set(AREG_COMPILER_VERSION  -std=c++17)
 elseif (CYGWIN)
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
@@ -55,8 +55,13 @@ endif()
 
 # Linker flags (-l is not necessary)
 if (MINGW)
-    list(APPEND AREG_LDFLAGS ucrt advapi32 psapi shell32 ws2_32 dbghelp)
-    set(AREG_LDFLAGS_STR "-lucrt -ladvapi32 -lpsapi -lshell32 -lws2_32 -ldbghelp -lmingw32 -municode -mwindows")
+    if (AREG_BUILD_TYPE MATCHES "Debug")
+        list(APPEND AREG_LDFLAGS  stdc++   ucrt   advapi32   psapi   shell32   ws2_32   dbghelp)
+        set(AREG_LDFLAGS_STR   "-lstdc++ -lucrt -ladvapi32 -lpsapi -lshell32 -lws2_32 -ldbghelp")
+    else()
+        list(APPEND AREG_LDFLAGS  stdc++   ucrt   advapi32   psapi   shell32   ws2_32)
+        set(AREG_LDFLAGS_STR   "-lstdc++ -lucrt -ladvapi32 -lpsapi -lshell32 -lws2_32")
+    endif()
 else()
     list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
     set(AREG_LDFLAGS_STR "-lstdc++ -lpthread -lrt")
