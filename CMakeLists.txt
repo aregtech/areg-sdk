@@ -9,6 +9,8 @@ cmake_minimum_required(VERSION 3.20.0)
 set(AREG_SDK_ROOT           "${CMAKE_CURRENT_LIST_DIR}")
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
 
+message(STATUS "<<< CMakeLists: AREG_ENABLE_OUTPUTS = ${AREG_ENABLE_OUTPUTS}, AREG_BUILD_ROOT = ${AREG_BUILD_ROOT}, CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
+
 # Set 'AREG_SDK_ROOT' and optional 'AREG_CMAKE_CONFIG_DIR' variables
 #  before 'setup.cmake', and include 'setup.cmake'
 # before 'project' call.

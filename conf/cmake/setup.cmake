@@ -55,6 +55,27 @@ if (NOT DEFINED AREG_SDK_TOOLS OR "${AREG_SDK_TOOLS}" STREQUAL "")
     set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 endif()
 
+message(STATUS "<<< 1. AREG_ENABLE_OUTPUTS = ${AREG_ENABLE_OUTPUTS}, AREG_BUILD_ROOT = ${AREG_BUILD_ROOT}, CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
+
+if (NOT DEFINED AREG_ENABLE_OUTPUTS OR ${AREG_ENABLE_OUTPUTS})
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
+    # Set the areg-sdk build root folder to output files.
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
+    endif()
+
+    if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
+        set(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages")
+    endif()
+else()
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
+    endif()
+endif()
+
+message(STATUS "<<< 2. AREG_ENABLE_OUTPUTS = ${AREG_ENABLE_OUTPUTS}, AREG_BUILD_ROOT = ${AREG_BUILD_ROOT}, CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
+
 # setup functions
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 # setup user configurations
@@ -99,27 +120,6 @@ endif()
 
 # check and fix CXX standard for AREG Framework sources.
 macro_check_fix_areg_cxx_standard()
-
-message(STATUS "<<< 1. AREG_ENABLE_OUTPUTS = ${AREG_ENABLE_OUTPUTS}, AREG_BUILD_ROOT = ${AREG_BUILD_ROOT}, CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
-
-if (NOT DEFINED AREG_ENABLE_OUTPUTS OR ${AREG_ENABLE_OUTPUTS})
-    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
-    # Set the areg-sdk build root folder to output files.
-    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-        set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
-    endif()
-
-    if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
-        set(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages")
-    endif()
-else()
-    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
-    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
-    endif()
-endif()
-
-message(STATUS "<<< 2. AREG_ENABLE_OUTPUTS = ${AREG_ENABLE_OUTPUTS}, AREG_BUILD_ROOT = ${AREG_BUILD_ROOT}, CMAKE_BINARY_DIR = ${CMAKE_BINARY_DIR}")
 
 # The relative path for generated files
 if ("${AREG_GENERATE}" STREQUAL "")
