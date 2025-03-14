@@ -80,7 +80,7 @@ if (NOT "${AREG_C_COMPILER}" STREQUAL "")
     endif()
 endif()
 
-if (WIN32)
+if (MSVC)
 
     if ("${AREG_COMPILER_FAMILY}" STREQUAL "llvm")
         set(CMAKE_GENERATOR_TOOLSET ClangCL CACHE INTERNAL "Force ClangCL tool-set")
