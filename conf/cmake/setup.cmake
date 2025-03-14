@@ -55,7 +55,7 @@ if (NOT DEFINED AREG_SDK_TOOLS OR "${AREG_SDK_TOOLS}" STREQUAL "")
     set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 endif()
 
-if (NOT DEFINED AREG_ENABLE_OUTPUTS OR ${AREG_ENABLE_OUTPUTS})
+if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
     option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
     # Set the areg-sdk build root folder to output files.
     if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
