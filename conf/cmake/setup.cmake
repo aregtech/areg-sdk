@@ -9,33 +9,6 @@
 # Copyright (c) 2022-2023 Aregtech
 # ###########################################################################
 
-# CPP standard for the projects
-set(AREG_CXX_STANDARD 17)
-# CPP standard for the projects
-set(AREG_CXX_STANDARD 17)
-
-if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
-    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
-    # Set the areg-sdk build root folder to output files.
-    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-        set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
-    endif()
-
-    if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
-        set(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages")
-    endif()
-else()
-    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
-    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
-    endif()
-endif()
-
-# The relative path for generated files
-if ("${AREG_GENERATE}" STREQUAL "")
-    set(AREG_GENERATE "generate")
-endif()
-
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
     # Make sure that AREG_SDK_ROOT is set before the 'setup.cmake' is included
     message(FATAL_ERROR "AREG: >>> Set \'AREG_SDK_ROOT\' before including \'setup.cmake\'. Stopping building the project.")
@@ -87,6 +60,9 @@ include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 # setup user configurations
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 
+# CPP standard for the projects
+set(AREG_CXX_STANDARD 17)
+
 # Check whether the CMake CXX-compiler is set
 if (NOT "${AREG_CXX_COMPILER}" STREQUAL "")
     if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
@@ -123,6 +99,28 @@ endif()
 
 # check and fix CXX standard for AREG Framework sources.
 macro_check_fix_areg_cxx_standard()
+
+if (NOT DEFINED AREG_ENABLE_OUTPUTS OR ${AREG_ENABLE_OUTPUTS})
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
+    # Set the areg-sdk build root folder to output files.
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
+    endif()
+
+    if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
+        set(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages")
+    endif()
+else()
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
+    endif()
+endif()
+
+# The relative path for generated files
+if ("${AREG_GENERATE}" STREQUAL "")
+    set(AREG_GENERATE "generate")
+endif()
 
 if (NOT "${AREG_PACKAGES}" STREQUAL "")
     set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages")
