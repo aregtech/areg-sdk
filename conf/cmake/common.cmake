@@ -179,11 +179,21 @@ if (AREG_ENABLE_OUTPUTS)
 
 else()
 
+    # The build root directory
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
+    endif()
+
     # The output directory
     if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
         set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}")
     endif()
 
+endif()
+
+# The directory to output generated files
+if ("${AREG_GENERATE_DIR}" STREQUAL "")
+    set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
 endif()
 
 # The directory to output static libraries

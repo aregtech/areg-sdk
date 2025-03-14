@@ -55,10 +55,30 @@ if (NOT DEFINED AREG_SDK_TOOLS OR "${AREG_SDK_TOOLS}" STREQUAL "")
     set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 endif()
 
+if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
+    # Set the areg-sdk build root folder to output files.
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
+    endif()
+
+    if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
+        set(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages")
+    endif()
+else()
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
+    endif()
+endif()
+
 # setup functions
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 # setup user configurations
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
+
+# CPP standard for the projects
+set(AREG_CXX_STANDARD 17)
 
 # Check whether the CMake CXX-compiler is set
 if (NOT "${AREG_CXX_COMPILER}" STREQUAL "")
@@ -80,7 +100,7 @@ if (NOT "${AREG_C_COMPILER}" STREQUAL "")
     endif()
 endif()
 
-if (WIN32)
+if (MSVC AND NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja")
 
     if ("${AREG_COMPILER_FAMILY}" STREQUAL "llvm")
         set(CMAKE_GENERATOR_TOOLSET ClangCL CACHE INTERNAL "Force ClangCL tool-set")
@@ -96,6 +116,11 @@ endif()
 
 # check and fix CXX standard for AREG Framework sources.
 macro_check_fix_areg_cxx_standard()
+
+# The relative path for generated files
+if ("${AREG_GENERATE}" STREQUAL "")
+    set(AREG_GENERATE "generate")
+endif()
 
 if (NOT "${AREG_PACKAGES}" STREQUAL "")
     set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages")

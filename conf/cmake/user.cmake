@@ -282,31 +282,3 @@ else()
     macro_create_option(AREG_INSTALL           OFF "Enable installation")
 endif()
 
-# CPP standard for the projects
-set(AREG_CXX_STANDARD 17)
-
-if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
-    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
-    # Set the areg-sdk build root folder to output files.
-    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-        set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
-    endif()
-
-    if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
-        set(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages")
-    endif()
-else()
-    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
-    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
-    endif()
-endif()
-
-# The relative path for generated files
-if ("${AREG_GENERATE}" STREQUAL "")
-    set(AREG_GENERATE "generate")
-endif()
-
-if ("${AREG_GENERATE_DIR}" STREQUAL "")
-    set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
-endif()
