@@ -54,6 +54,7 @@ namespace
             dstCallbacks.evtLogDbConfigured     = srcCallbacks->evtLogDbConfigured;
             dstCallbacks.evtServiceConnected    = srcCallbacks->evtServiceConnected;
             dstCallbacks.evtLoggingStarted      = srcCallbacks->evtLoggingStarted;
+            dstCallbacks.evtLogDbCreated        = srcCallbacks->evtLogDbCreated;
             dstCallbacks.evtMessagingFailed     = srcCallbacks->evtMessagingFailed;
             dstCallbacks.evtInstConnected       = srcCallbacks->evtInstConnected;
             dstCallbacks.evtInstDisconnected    = srcCallbacks->evtInstDisconnected;
@@ -68,6 +69,7 @@ namespace
             dstCallbacks.evtLogDbConfigured     = nullptr;
             dstCallbacks.evtServiceConnected    = nullptr;
             dstCallbacks.evtLoggingStarted      = nullptr;
+            dstCallbacks.evtLogDbCreated        = nullptr;
             dstCallbacks.evtMessagingFailed     = nullptr;
             dstCallbacks.evtInstConnected       = nullptr;
             dstCallbacks.evtInstDisconnected    = nullptr;
@@ -158,6 +160,35 @@ LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
 
     return result;
 }
+
+LOGGER_API bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/)
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isConnected(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        if (doStop)
+        {
+            theObserver.losState = eObserverStates::ObserverPaused;
+            client.setPaused(true);
+            client.closeLoggingDatabase();
+            result = true;
+        }
+        else
+        {
+            if (client.openLoggingDatabase(dbPath))
+            {
+                theObserver.losState = eObserverStates::ObserverConnected;
+                client.setPaused(false);
+                result = true;
+            }
+        }
+    }
+
+    return result;
+}
+
 
 LOGGER_API_IMPL eObserverStates logObserverCurrentState()
 {

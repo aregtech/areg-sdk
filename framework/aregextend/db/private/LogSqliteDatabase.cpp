@@ -224,6 +224,7 @@ LogSqliteDatabase::LogSqliteDatabase(void)
     : IELogDatabaseEngine   ( )
 
     , mDbPath               ( )
+    , mDbInitPath           ( )
     , mDbObject             ( nullptr )
     , mIsInitialized        ( false )
     , mDbLogEnabled         ( true )
@@ -242,7 +243,12 @@ inline bool LogSqliteDatabase::_open(const String& dbPath)
 
     bool result{ true };
     _close();
-    mDbPath = dbPath.isEmpty() == false ? File::normalizePath(dbPath) : mDbPath;
+    if (dbPath.isEmpty() == false)
+    {
+        mDbInitPath = dbPath;
+    }
+
+    mDbPath = File::normalizePath(mDbInitPath);
     String folder = File::getFileDirectory(mDbPath);
     if ((folder.isEmpty() == false) && (File::existDir(folder) == false))
     {

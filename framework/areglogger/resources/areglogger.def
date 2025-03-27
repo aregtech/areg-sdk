@@ -6,6 +6,7 @@ EXPORTS
     logObserverConnectLogger
     logObserverDisconnectLogger
     logObserverPauseLogging
+    logObserverStopLogging
     logObserverCurrentState
     logObserverIsInitialized
     logObserverIsConnected

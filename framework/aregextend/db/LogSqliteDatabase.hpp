@@ -54,6 +54,18 @@ public:
      **/
     inline void setDatabaseLoggingEnabled(bool enable);
 
+    /**
+     * \brief   Returns database file path.
+     **/
+    inline const String& getDatabasePath(void) const;
+
+    /**
+     * \brief   Returns the initial database file path. The initial file path may contain mask like timestamp,
+     *          so that each time database is disconnected and connected again with the empty file path,
+     *          it creates new file.
+     **/
+    inline const String& getInitialDatabasePath(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -230,6 +242,9 @@ protected:
     //!< The path to the SQLite database file.
     String      mDbPath;
 
+    //!< The initial path to the SQLIte database file. The path may contain mask like timestamp.
+    String      mDbInitPath;
+
     //!< The SQLite database object.
     void *      mDbObject;
 
@@ -258,6 +273,16 @@ bool LogSqliteDatabase::isDabataseLoggingEnabled(void) const
 inline void LogSqliteDatabase::setDatabaseLoggingEnabled(bool enable)
 {
     mDbLogEnabled = enable;
+}
+
+inline const String& LogSqliteDatabase::getDatabasePath(void) const
+{
+    return mDbPath;
+}
+
+inline const String& LogSqliteDatabase::getInitialDatabasePath(void) const
+{
+    return mDbInitPath;
 }
 
 #endif  // AREG_AREGEXTEND_DB_LOGSQLITEDATABASE_HPP
