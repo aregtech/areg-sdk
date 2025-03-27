@@ -161,6 +161,35 @@ LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
     return result;
 }
 
+LOGGER_API bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/)
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isConnected(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        if (doStop)
+        {
+            theObserver.losState = eObserverStates::ObserverPaused;
+            client.setPaused(true);
+            client.closeLoggingDatabase();
+            result = true;
+        }
+        else
+        {
+            if (client.openLoggingDatabase(dbPath))
+            {
+                theObserver.losState = eObserverStates::ObserverConnected;
+                client.setPaused(false);
+                result = true;
+            }
+        }
+    }
+
+    return result;
+}
+
+
 LOGGER_API_IMPL eObserverStates logObserverCurrentState()
 {
     Lock lock(theObserver.losLock);

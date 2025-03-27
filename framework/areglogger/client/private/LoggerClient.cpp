@@ -215,10 +215,12 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     }
 
     bool result{ mLogDatabase.connect(filePath) };
-    if (mLogDatabase.isOperable())
+    if (mLogDatabase.isOperable() && (mCallbacks != nullptr) && (mCallbacks->evtLogDbCreated != nullptr))
     {
-
+        mCallbacks->evtLogDbCreated(mLogDatabase.getDatabasePath().getString());
     }
+
+    return result;
 }
 
 void LoggerClient::closeLoggingDatabase(void)

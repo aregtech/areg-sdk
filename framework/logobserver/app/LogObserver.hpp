@@ -196,6 +196,12 @@ private:
     static void callbackObserverStarted(bool isStarted);
 
     /**
+     * \brief   The callback of the event triggered when the logging database is created.
+     * \param   dbLocation      The relative or absolute path to the logging database.
+     **/
+    static void callbackLogDbCreated(const char* dbLocation);
+
+    /**
      * \brief   The callback of the event triggered when fails to send or receive message.
      **/
     static void callbackMessagingFailed(void);
@@ -221,6 +227,20 @@ private:
      * \param   count   The number of scope entries in the list.
      **/
     static void callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count);
+
+    /**
+     * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
+     * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+     * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
+     * \param   count   The number of scope entries in the list.
+     **/
+    static void callbackLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count);
+
+    /**
+     * \brief   The callback of the event triggered when receive message to log.
+     * \param   logMessage  The pointer to the log message to log.
+     **/
+    static void callbackLogMessage(const sLogMessage* logMessage);
 
     /**
      * \brief   The callback of the event triggered when receive remote message to log.

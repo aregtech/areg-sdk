@@ -141,6 +141,10 @@ void LogObserver::callbackObserverStarted(bool /* isStarted */)
 {
 }
 
+void LogObserver::callbackLogDbCreated(const char* /* dbLocation */)
+{
+}
+
 void LogObserver::callbackMessagingFailed(void)
 {
 }
@@ -270,6 +274,14 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uin
     }
 }
 
+void LogObserver::callbackLogUpdateScopes(ITEM_ID /* cookie */, const sLogScope* /* scopes */, uint32_t /* count */)
+{
+}
+
+void LogObserver::callbackLogMessage(const sLogMessage* /* logMessage */)
+{
+}
+
 void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t size)
 {
     if (logBuffer != nullptr)
@@ -288,12 +300,13 @@ void LogObserver::logMain( int argc, char ** argv )
         , &LogObserver::callbackDatabaseConfigured
         , &LogObserver::callbackServiceConnected
         , &LogObserver::callbackObserverStarted
+        ,& LogObserver::callbackLogDbCreated
         , &LogObserver::callbackMessagingFailed
         , &LogObserver::callbackConnectedInstances
         , &LogObserver::callbackDisconnecteInstances
         , &LogObserver::callbackLogScopes
-        , nullptr
-        , nullptr
+        , &LogObserver::callbackLogUpdateScopes
+        , nullptr       // set nullptr to receive messages via `callbackLogMessageEx` callback
         , &LogObserver::callbackLogMessageEx
     };
 
