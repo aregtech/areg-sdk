@@ -300,7 +300,7 @@ void LogObserver::logMain( int argc, char ** argv )
         , &LogObserver::callbackDatabaseConfigured
         , &LogObserver::callbackServiceConnected
         , &LogObserver::callbackObserverStarted
-        ,& LogObserver::callbackLogDbCreated
+        , &LogObserver::callbackLogDbCreated
         , &LogObserver::callbackMessagingFailed
         , &LogObserver::callbackConnectedInstances
         , &LogObserver::callbackDisconnecteInstances
