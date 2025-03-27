@@ -54,6 +54,7 @@ namespace
             dstCallbacks.evtLogDbConfigured     = srcCallbacks->evtLogDbConfigured;
             dstCallbacks.evtServiceConnected    = srcCallbacks->evtServiceConnected;
             dstCallbacks.evtLoggingStarted      = srcCallbacks->evtLoggingStarted;
+            dstCallbacks.evtLogDbCreated        = srcCallbacks->evtLogDbCreated;
             dstCallbacks.evtMessagingFailed     = srcCallbacks->evtMessagingFailed;
             dstCallbacks.evtInstConnected       = srcCallbacks->evtInstConnected;
             dstCallbacks.evtInstDisconnected    = srcCallbacks->evtInstDisconnected;
@@ -68,6 +69,7 @@ namespace
             dstCallbacks.evtLogDbConfigured     = nullptr;
             dstCallbacks.evtServiceConnected    = nullptr;
             dstCallbacks.evtLoggingStarted      = nullptr;
+            dstCallbacks.evtLogDbCreated        = nullptr;
             dstCallbacks.evtMessagingFailed     = nullptr;
             dstCallbacks.evtInstConnected       = nullptr;
             dstCallbacks.evtInstDisconnected    = nullptr;

@@ -212,6 +212,8 @@ typedef void (*FuncServiceConnected)(bool /*isConnected*/, const char * /*addres
  **/
 typedef void(*FuncObserverStarted)(bool /*isStarted*/);
 
+typedef void(FuncLogDbCreated)(const char* /*dbLocation*/);
+
 /**
  * \brief   The callback of the event triggered when fails to send or receive message.
  **/
@@ -274,6 +276,7 @@ struct sObserverEvents
     FuncServiceConnected    evtServiceConnected;
     /* The callback to trigger when log observer is started or paused. */
     FuncObserverStarted     evtLoggingStarted;
+    FuncLogDbCreated        evtLogDbCreated;
     /* The callback to trigger when fails to send or receive message. */
     FuncMessagingFailed     evtMessagingFailed;
     /* The callback to trigger when receive list of connected instances that make logs. */
@@ -330,13 +333,16 @@ LOGGER_API bool logObserverConnectLogger(const char * dbPath /* = NULL */, const
 LOGGER_API void logObserverDisconnectLogger();
 
 /**
- * \brief   Call to start paused log observer. By default, when log observer is connected, it is in started state.
- *          When call logObserverStart(false) it pauses the log observer and no messages are logged.
+ * \brief   Call to pause started or start paused log observer. By default, when log observer is connected, it is in started state.
+ *          When call logObserverPauseLogging(true) it pauses the log observer and no messages are logged.
+ *          When call logObserverPauseLogging(false) it resumes the log observer and continues logging messages in the same file.
  *          On start, the log observer resumes and continues writing logs.
  * \param   doPause     The flag to set to indicate whether the log observer should pause or resume writing logs.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
 LOGGER_API bool logObserverPauseLogging(bool doPause);
+
+LOGGER_API bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/);
 
 /**
  * \brief   Call to get the current state of the log observer.

@@ -214,7 +214,11 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
         }
     }
 
-    return mLogDatabase.connect(filePath);
+    bool result{ mLogDatabase.connect(filePath) };
+    if (mLogDatabase.isOperable())
+    {
+
+    }
 }
 
 void LoggerClient::closeLoggingDatabase(void)
