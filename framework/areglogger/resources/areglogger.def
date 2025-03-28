@@ -20,3 +20,6 @@ EXPORTS
     logObserverRequestScopes
     logObserverRequestChangeScopePrio
     logObserverRequestSaveConfig
+    logObserverGetActiveDatabasePath
+    logObserverGetInitialDatabasePath
+    logObserverGetConfigDatabasePath

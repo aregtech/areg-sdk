@@ -458,5 +458,32 @@ LOGGER_API bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScop
  **/
 LOGGER_API bool logObserverRequestSaveConfig(ITEM_ID target);
 
+/**
+ * \brief   Call to get active database full path.
+ * \param   dbPath  The buffer to write the full path of the active database.
+ * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.
+ * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
+ *          the returned value is the space required to allocate to get the path.
+ **/
+LOGGER_API int logObserverGetActiveDatabasePath(char* dbPath, int space);
+
+/**
+ * \brief   Call to get initial database full path.
+ * \param   dbPath  The buffer to write the full path of the initial database.
+ * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.
+ * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
+ *          the returned value is the space required to allocate to get the path.
+ **/
+LOGGER_API int logObserverGetInitialDatabasePath(char* dbPath, int space);
+
+/**
+ * \brief   Call to get the database path specified in the configuration file.
+ * \param   dbPath  The buffer to write the full path of the database specified in the configuration file.
+ * \param   space   The length of the buffer to write the database path, inclusive the null-terminated character at the end.
+ * \return  Returns number of characters copied in the `dbPath`. It `dbPath` is null or `space` is smaller than the length of database path,
+ *          the returned value is the space required to allocate to get the path.
+ **/
+LOGGER_API int logObserverGetConfigDatabasePath(char* dbPath, int space);
+
 #endif  // AREG_AREGLOGGER_CLIENT_LOGOBSERVERAPI_H
 

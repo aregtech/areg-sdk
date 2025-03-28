@@ -213,6 +213,21 @@ public:
      **/
     void closeLoggingDatabase(void);
 
+    /**
+     * \brief   Returns the path to the active logging database.
+     **/
+    String getActiveDatabasePath(void) const;
+
+    /**
+     * \brief   Returns the path to the initial logging database.
+     **/
+    String getInitialDatabasePath(void) const;
+
+    /**
+     * \brief   Returns the path specified in configuration file.
+     **/
+    String getConfigDatabasePath(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
