@@ -161,7 +161,7 @@ LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
     return result;
 }
 
-LOGGER_API bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/)
+LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/)
 {
     Lock lock(theObserver.losLock);
     bool result{ false };
@@ -357,4 +357,43 @@ LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED
     }
 
     return result;
+}
+
+LOGGER_API_IMPL int logObserverGetActiveDatabasePath(char* dbPath, int space)
+{
+    String path{ LoggerClient::getInstance().getActiveDatabasePath() };
+    if ((dbPath != nullptr) && (path.getLength() > static_cast<NEString::CharCount>(space)))
+    {
+        return static_cast<int>(NEString::copyString<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.getString(), path.getLength()));
+    }
+    else
+    {
+        return (path.isEmpty() ? 0 : static_cast<int>(path.getLength() + 1));
+    }
+}
+
+LOGGER_API_IMPL int logObserverGetInitialDatabasePath(char* dbPath, int space)
+{
+    String path{ LoggerClient::getInstance().getInitialDatabasePath() };
+    if ((dbPath != nullptr) && (path.getLength() > static_cast<NEString::CharCount>(space)))
+    {
+        return static_cast<int>(NEString::copyString<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.getString(), path.getLength()));
+    }
+    else
+    {
+        return (path.isEmpty() ? 0 : static_cast<int>(path.getLength() + 1));
+    }
+}
+
+LOGGER_API_IMPL int logObserverGetConfigDatabasePath(char* dbPath, int space)
+{
+    String path{ LoggerClient::getInstance().getConfigDatabasePath() };
+    if ((dbPath != nullptr) && (path.getLength() > static_cast<NEString::CharCount>(space)))
+    {
+        return static_cast<int>(NEString::copyString<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.getString(), path.getLength()));
+    }
+    else
+    {
+        return (path.isEmpty() ? 0 : static_cast<int>(path.getLength() + 1));
+    }
 }

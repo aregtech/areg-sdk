@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "areglogger/client/private/LoggerClient.hpp"
 
+#include "areg/base/File.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/logging/LogConfiguration.hpp"
 #include "areglogger/client/LogObserverApi.h"
@@ -226,6 +227,28 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
 void LoggerClient::closeLoggingDatabase(void)
 {
     mLogDatabase.disconnect();
+}
+
+String LoggerClient::getActiveDatabasePath(void) const
+{
+    return mLogDatabase.getDatabasePath();
+}
+
+String LoggerClient::getInitialDatabasePath(void) const
+{
+    return mLogDatabase.getInitialDatabasePath();
+}
+
+String LoggerClient::getConfigDatabasePath(void) const
+{
+    String result;
+    LogConfiguration config;
+    if (config.isDatabaseLoggingEnabled() && (config.getDatabaseName() == NELogging::LOGDB_NAME_SQLITE3))
+    {
+        result = File::getFileFullPath(config.getDatabaseLocation().getString());
+    }
+
+    return result;
 }
 
 void LoggerClient::prepareSaveConfiguration(ConfigManager& /* config */)
