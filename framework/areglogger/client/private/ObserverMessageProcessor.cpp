@@ -256,9 +256,9 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 msgLog.msgTimestamp = static_cast<unsigned long long>(msgRemote->logTimestamp);
                 msgLog.msgScopeId   = static_cast<unsigned int>(msgRemote->logScopeId);
 
-                NEString::copyString(msgLog.msgLogText, LENGTH_MESSAGE, msgRemote->logMessage, static_cast<NEString::CharCount>(msgRemote->logMessageLen));
-                NEString::copyString(msgLog.msgThread, LENGTH_NAME, msgRemote->logThread     , static_cast<NEString::CharCount>(msgRemote->logThreadLen) );
-                NEString::copyString(msgLog.msgModule, LENGTH_NAME, msgRemote->logModule     , static_cast<NEString::CharCount>(msgRemote->logModuleLen) );
+                NEMemory::memCopy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , msgRemote->logMessageLen + 1);
+                NEMemory::memCopy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen + 1);
+                NEMemory::memCopy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen + 1);
             }
             else if (mLoggerClient.mCallbacks->evtLogMessageEx != nullptr)
             {

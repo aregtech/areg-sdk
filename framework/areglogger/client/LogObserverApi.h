@@ -210,13 +210,13 @@ typedef void (*FuncServiceConnected)(bool /*isConnected*/, const char * /*addres
  *          If the log observer is stopped (disconnected is called), on start it creates new file.
  * \param   isStarted       The flag indicating whether the lob observer is started or paused.
  **/
-typedef void(*FuncObserverStarted)(bool /*isStarted*/);
+typedef void (*FuncObserverStarted)(bool /*isStarted*/);
 
 /**
  * \brief   The callback of the event triggered when the logging database is created.
  * \param   dbLocation      The relative or absolute path to the logging database.
  **/
-typedef void(*FuncLogDbCreated)(const char* /*dbLocation*/);
+typedef void (*FuncLogDbCreated)(const char* /*dbLocation*/);
 
 /**
  * \brief   The callback of the event triggered when fails to send or receive message.

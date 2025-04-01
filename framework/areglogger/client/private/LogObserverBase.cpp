@@ -1,0 +1,73 @@
+/************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \file        areglogger/client/private/LogObserverBase.cpp
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
+ * \author      Artak Avetyan
+ * \brief       AREG Platform, Log Observer library.
+ *              The log observer base class.
+ ************************************************************************/
+
+#include "areglogger/client/LogObserverBase.hpp"
+
+LogObserverBase* LogObserverBase::_theLogObserver{ nullptr };
+
+LogObserverBase::LogObserverBase(void)
+{
+    LogObserverBase::_theLogObserver = this;
+}
+
+void LogObserverBase::_callbackLogObserverConfigured(bool isEnabled, const char* address, uint16_t port)
+{
+    if (LogObserverBase::_theLogObserver)
+}
+
+void LogObserverBase::_callbackLogLogDbConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* dbUser)
+{
+}
+
+void LogObserverBase::_callbackLogServiceConnected(bool isConnected, const char* address, uint16_t port)
+{
+}
+
+void LogObserverBase::_callbackLogObserverStarted(bool isStarted)
+{
+}
+
+void LogObserverBase::_callbackLogLogDbCreated(const char* dbLocation)
+{
+}
+
+void LogObserverBase::_callbackLogMessagingFailed(void)
+{
+}
+
+void LogObserverBase::_callbackLogInstancesConnect(const sLogInstance* instances, uint32_t count)
+{
+}
+
+void LogObserverBase::_callbackLogInstancesDisconnect(const ITEM_ID* instances, uint32_t count)
+{
+}
+
+void LogObserverBase::_callbackLogLogRegisterScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count)
+{
+}
+
+void LogObserverBase::_callbackLogLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count)
+{
+}
+
+void LogObserverBase::_callbackLogLogMessage(const sLogMessage* logMessage)
+{
+}
+
+void LogObserverBase::_callbackLogLogMessageEx(const unsigned char* logBuffer, uint32_t size)
+{
+}
