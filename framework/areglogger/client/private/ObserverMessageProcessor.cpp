@@ -40,8 +40,8 @@ void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgR
 
 void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgReceived)
 {
-    FuncInstancesConnect    evtInstConnected{ nullptr };
-    FuncInstancesDisconnect evtInstDisconnected{ nullptr };
+    FuncInstancesConnect    callbackConnect{ nullptr };
+    FuncInstancesDisconnect callbackDisconnect{ nullptr };
 
     sLogInstance* listConnect{ nullptr };
     ITEM_ID* listDisconnect{ nullptr };
@@ -57,7 +57,7 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
 
         if (remConnect == NERemoteService::eRemoteConnection::RemoteConnected)
         {
-            evtInstConnected = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
+            callbackConnect = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
             listConnect = count != 0 ? new sLogInstance[count] : nullptr;
             for (uint32_t i = 0; i < count; ++i)
             {
@@ -94,7 +94,7 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
         }
         else
         {
-            evtInstDisconnected = mLoggerClient.mCallbacks->evtInstDisconnected;
+            callbackDisconnect = mLoggerClient.mCallbacks->evtInstDisconnected;
             listDisconnect = count != 0 ? new ITEM_ID[count] : nullptr;
             if (listDisconnect != nullptr)
             {

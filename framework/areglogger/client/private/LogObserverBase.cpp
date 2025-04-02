@@ -23,51 +23,8 @@ LogObserverBase::LogObserverBase(void)
     LogObserverBase::_theLogObserver = this;
 }
 
-void LogObserverBase::_callbackLogObserverConfigured(bool isEnabled, const char* address, uint16_t port)
+LogObserverBase::~LogObserverBase(void)
 {
-    if (LogObserverBase::_theLogObserver)
+    LogObserverBase::_theLogObserver = nullptr;
 }
 
-void LogObserverBase::_callbackLogLogDbConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* dbUser)
-{
-}
-
-void LogObserverBase::_callbackLogServiceConnected(bool isConnected, const char* address, uint16_t port)
-{
-}
-
-void LogObserverBase::_callbackLogObserverStarted(bool isStarted)
-{
-}
-
-void LogObserverBase::_callbackLogLogDbCreated(const char* dbLocation)
-{
-}
-
-void LogObserverBase::_callbackLogMessagingFailed(void)
-{
-}
-
-void LogObserverBase::_callbackLogInstancesConnect(const sLogInstance* instances, uint32_t count)
-{
-}
-
-void LogObserverBase::_callbackLogInstancesDisconnect(const ITEM_ID* instances, uint32_t count)
-{
-}
-
-void LogObserverBase::_callbackLogLogRegisterScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count)
-{
-}
-
-void LogObserverBase::_callbackLogLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count)
-{
-}
-
-void LogObserverBase::_callbackLogLogMessage(const sLogMessage* logMessage)
-{
-}
-
-void LogObserverBase::_callbackLogLogMessageEx(const unsigned char* logBuffer, uint32_t size)
-{
-}

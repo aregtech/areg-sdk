@@ -80,10 +80,6 @@ private:
     //!< The message source. It is marked as an observer.
     static constexpr NEService::eMessageSource          SourceType      { NEService::eMessageSource::MessageSourceObserver };
 
-    typedef void (*funcObserverConfigured)  (bool isEnabled, const String & address, uint16_t port);
-
-    typedef void (*funcLogDbConfigured)     (bool isEnabled, const String & dbName, const String & dbLocation, const String & dbUser);
-
 //////////////////////////////////////////////////////////////////////////
 // Static methods.
 //////////////////////////////////////////////////////////////////////////
