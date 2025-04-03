@@ -71,6 +71,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
     do
     {
         Lock lock(mLoggerClient.mLock);
+        callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
         mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
         msgReceived >> count;
         scopes = count != 0 ? new sLogScope[count] : nullptr;
@@ -78,12 +79,6 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         {
             count = 0;
             break;
-        }
-
-
-        if (LogObserverBase::_theLogObserver == nullptr)
-        {
-            callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
         }
 
         for (uint32_t i = 0; i < count; ++i)
@@ -101,7 +96,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
 
     } while (false);
 
-    if (LogObserverBase::_theLogObserver == nullptr)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
         LogObserverBase::_theLogObserver->onLogRegisterScopes(cookie, scopes, count);
     }
@@ -124,11 +119,7 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgRec
     do
     {
         Lock lock(mLoggerClient.mLock);
-        if (LogObserverBase::_theLogObserver == nullptr)
-        {
-            callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
-        }
-
+        callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
         mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
         msgReceived >> count;
         scopes = count != 0 ? new sLogScope[count] : nullptr;
