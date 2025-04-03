@@ -368,7 +368,7 @@ void LoggerClient::disconnectServiceHost(void)
         FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
         if (LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogInstancesDisconnect(mInstances);
+            LogObserverBase::_theLogObserver->onLogServiceDisconnected(mInstances);
         }
         else if (callback != nullptr)
         {

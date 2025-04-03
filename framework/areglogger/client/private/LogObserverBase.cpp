@@ -15,16 +15,20 @@
  ************************************************************************/
 
 #include "areglogger/client/LogObserverBase.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/SharedBuffer.hpp"
 
 LogObserverBase* LogObserverBase::_theLogObserver{ nullptr };
 
 LogObserverBase::LogObserverBase(void)
 {
+    ASSERT(LogObserverBase::_theLogObserver == nullptr);
     LogObserverBase::_theLogObserver = this;
 }
 
 LogObserverBase::~LogObserverBase(void)
 {
+    ASSERT(LogObserverBase::_theLogObserver != nullptr);
     LogObserverBase::_theLogObserver = nullptr;
 }
 

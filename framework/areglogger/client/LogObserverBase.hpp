@@ -16,26 +16,51 @@
  *              The log observer base class.
  ************************************************************************/
 
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areglogger/client/LogObserverSwitches.h"
 #include "areglogger/client/LogObserverApi.h"
+#include "areg/base/TEArrayList.hpp"
+#include "areg/component/NEService.hpp"
 
+/************************************************************************
+ * Dependencies.
+ ************************************************************************/
+class String;
+class SharedBuffer;
+
+/**
+ * \brief   The log observer base class.
+ *          The class is used to trigger callbacks on log observer events.
+ *          Extend the class and implement virtual methods.
+ *          If the class is instantiated, the instance is used to trigger callbacks
+ *          instead of triggering Log Observer API callbacks.
+ *          If the class is not instantiated, the system will try to trigger Log Observer API callbacks.
+ *          The LogObserverBase class should be ingletone.
+ **/
 class LOGGER_API LogObserverBase
 {
+//////////////////////////////////////////////////////////////////////////
+// Friend classes
+//////////////////////////////////////////////////////////////////////////
     friend class LoggerClient;
     friend class ObserverMessageProcessor;
 
+//////////////////////////////////////////////////////////////////////////
+// Protected constructor / destructor
+//////////////////////////////////////////////////////////////////////////
 protected:
     LogObserverBase(void);
-
-public:
     virtual ~LogObserverBase(void);
 
-public:
-
+//////////////////////////////////////////////////////////////////////////
+// Protected Overrides / Callbacks
+//////////////////////////////////////////////////////////////////////////
 protected:
+/************************************************************************
+ * LogObserverBase overrides
+ ************************************************************************/
 
     /**
      * \brief   The callback of the event triggered when initializing and configuring the observer.
@@ -89,14 +114,20 @@ protected:
      * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
      * \param   instances   The list of the connected instances.
      **/
-    virtual void onLogInstancesConnect(const NEService::MapInstances & instances) = 0;
+    virtual void onLogInstancesConnect(const TEArrayList< NEService::sServiceConnectedInstance > & instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
      * \param   instances   The list of IDs of the disconnected instances.
      * \param   count       The number of entries in the list.
      **/
-    virtual void onLogInstancesDisconnect(const NEService::MapInstances & instances) = 0;
+    virtual void onLogInstancesDisconnect(const TEArrayList< NEService::sServiceConnectedInstance > & instances) = 0;
+
+    /**
+     * \brief   The callback of the event triggered when connection with the log collector service is lost.
+     * \param   instances   The list of disconnected instances.
+     **/
+    virtual void onLogServiceDisconnected(const NEService::MapInstances& instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.
@@ -104,7 +135,7 @@ protected:
      * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    virtual void onLogRegisterScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count) = 0;
+    virtual void onLogRegisterScopes(ITEM_ID cookie, const sLogScope* scopes, int count) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
@@ -112,26 +143,19 @@ protected:
      * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    virtual void onLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count) = 0;
+    virtual void onLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, int count) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive message to log.
      * \param   logMessage  The structure of the message to log.
      **/
-    virtual void onLogMessage(const sLogMessage* logMessage) = 0;
-
-    /**
-     * \brief   The callback of the event triggered when receive remote message to log.
-     *          The buffer indicates to the NELogging::sLogMessage structure.
-     * \param   logBuffer   The pointer to the NELogging::sLogMessage structure to log messages.
-     * \param   size        The size of the buffer with log message.
-     **/
-    virtual void onLogMessageEx(const unsigned char* logBuffer, uint32_t size) = 0;
+    virtual void onLogMessage(const SharedBuffer & logMessage) = 0;
 
 private:
     static  LogObserverBase* _theLogObserver; //!< The instance of the log observer base class.
 
 private:
+    DECLARE_NOCOPY_NOMOVE(LogObserverBase);
 };
 
 #endif // AREG_AREGLOGGER_CLIENT_LOGOBSERVERBASE_HPP

@@ -82,6 +82,12 @@ public:
      **/
     void notifyLogMessage(const RemoteMessage& msgReceived);
 
+private:
+
+    void _clientsConnected(const RemoteMessage& msgReceived);
+
+    void _clientsDisconnected(const RemoteMessage& msgReceived);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
 //////////////////////////////////////////////////////////////////////////
