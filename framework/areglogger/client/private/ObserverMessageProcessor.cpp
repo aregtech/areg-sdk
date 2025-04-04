@@ -235,7 +235,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
         int size = static_cast<int>(listConnected.getSize());
         for (int i = 0; i < size; ++i)
         {
-            const NEService::sServiceConnectedInstance& client = listConnected[i];
+            const NEService::sServiceConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
             auto added = mLoggerClient.mInstances.addIfUnique(client.ciCookie, client, false);
             if (added.second)
             {

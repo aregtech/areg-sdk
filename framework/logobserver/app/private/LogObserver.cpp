@@ -282,7 +282,11 @@ void LogObserver::callbackLogMessage(const sLogMessage* /* logMessage */)
 {
 }
 
+#ifdef  DEBUG
 void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t size)
+#else   // DEBUG
+void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t /*size*/)
+#endif  // DEBUG
 {
     if (logBuffer != nullptr)
     {
