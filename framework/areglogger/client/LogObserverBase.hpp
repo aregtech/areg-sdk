@@ -37,7 +37,7 @@ class SharedBuffer;
  *          If the class is instantiated, the instance is used to trigger callbacks
  *          instead of triggering Log Observer API callbacks.
  *          If the class is not instantiated, the system will try to trigger Log Observer API callbacks.
- *          The LogObserverBase class should be ingletone.
+ *          The LogObserverBase class should be singleton.
  **/
 class LOGGER_API LogObserverBase
 {
