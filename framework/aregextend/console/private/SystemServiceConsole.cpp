@@ -64,7 +64,11 @@ void SystemServiceConsole::shutdownServiceIntrface( Component & holder )
     StubBase::shutdownServiceIntrface( holder );
 }
 
+#ifdef DEBUG
 void SystemServiceConsole::processTimer( Timer & timer )
+#else   // DEBUG
+void SystemServiceConsole::processTimer(Timer & /*timer*/)
+#endif  // DEBUG
 {
     ASSERT( &timer == &mTimer );
     if ( mTimer.isActive( ) )

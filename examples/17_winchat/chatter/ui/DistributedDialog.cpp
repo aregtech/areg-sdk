@@ -412,7 +412,11 @@ LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lPar
 }
 
 DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdUpdateConnection);
+#ifdef DEBUG
 LRESULT DistributedDialog::OnCmdUpdateConnection( WPARAM /*wParam*/, LPARAM lParam)
+#else  // DEBUG
+LRESULT DistributedDialog::OnCmdUpdateConnection(WPARAM /*wParam*/, LPARAM /*lParam*/)
+#endif // DEBUG
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdUpdateConnection);
     ASSERT(lParam == 0);
@@ -425,7 +429,11 @@ LRESULT DistributedDialog::OnCmdUpdateConnection( WPARAM /*wParam*/, LPARAM lPar
 }
 
 DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdDisconnectTriggered);
+#ifdef DEBUG
 LRESULT DistributedDialog::OnCmdDisconnectTriggered( WPARAM /*wParam*/, LPARAM lParam)
+#else  // DEBUG
+LRESULT DistributedDialog::OnCmdDisconnectTriggered(WPARAM /*wParam*/, LPARAM /*lParam*/)
+#endif // DEBUG
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdDisconnectTriggered);
 

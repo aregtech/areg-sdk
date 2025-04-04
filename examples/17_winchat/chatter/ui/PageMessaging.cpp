@@ -411,7 +411,11 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
     }
 }
 
+#ifdef DEBUG
 void PageMessaging::removeTyping( const CString & nickName, uint32_t cookie )
+#else  // DEBUG
+void PageMessaging::removeTyping(const CString& /*nickName*/, uint32_t cookie)
+#endif // DEBUG
 {
     for ( int i = mLastItem; i < mCtrlList.GetItemCount(); ++ i)
     {

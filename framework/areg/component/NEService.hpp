@@ -191,7 +191,7 @@ namespace NEService
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnected(NEService::eServiceConnection connectionStatus);
+    inline bool isServiceConnected( NEService::eServiceConnection connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is connected.

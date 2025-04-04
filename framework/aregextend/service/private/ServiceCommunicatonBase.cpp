@@ -368,7 +368,11 @@ bool ServiceCommunicatonBase::startReceiveThread( void )
            mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE );
 }
 
+#ifdef DEBUG
 void ServiceCommunicatonBase::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
+#else  // DEBUG
+void ServiceCommunicatonBase::failedSendMessage(const RemoteMessage& /*msgFailed*/, Socket& whichTarget)
+#endif // DEBUG
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
 

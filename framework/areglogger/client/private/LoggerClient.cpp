@@ -23,6 +23,7 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/logging/LogConfiguration.hpp"
 #include "areglogger/client/LogObserverApi.h"
+#include "areglogger/client/LogObserverBase.hpp"
 
 LoggerClient& LoggerClient::getInstance(void)
 {
@@ -93,23 +94,24 @@ void LoggerClient::setCallbacks(const sObserverEvents* callbacks)
 
 void LoggerClient::setPaused(bool doPause)
 {
-    FuncObserverStarted evtStart{ nullptr };
+    FuncObserverStarted callback{ nullptr };
     bool isStarted{ false };
 
     do
     {
         Lock lock(mLock);
         mIsPaused = doPause;
-        if (mCallbacks != nullptr)
-        {
-            evtStart = isConnectionStarted() ? mCallbacks->evtLoggingStarted : nullptr;
-            isStarted = mIsPaused;
-        }
+        callback = (mCallbacks != nullptr) && isConnectionStarted() ? mCallbacks->evtLoggingStarted : nullptr;
+        isStarted = mIsPaused;
     } while (false);
 
-    if (evtStart != nullptr)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        evtStart(isStarted);
+        LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
+    }
+    else if (callback != nullptr)
+    {
+        callback(isStarted);
     }
 }
 
@@ -216,9 +218,14 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     }
 
     bool result{ mLogDatabase.connect(filePath) };
-    if (mLogDatabase.isOperable() && (mCallbacks != nullptr) && (mCallbacks->evtLogDbCreated != nullptr))
+    FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        mCallbacks->evtLogDbCreated(mLogDatabase.getDatabasePath().getString());
+        LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath());
+    }
+    else if (callback != nullptr)
+    {
+        callback(mLogDatabase.getDatabasePath().getString());
     }
 
     return result;
@@ -265,8 +272,8 @@ void LoggerClient::prepareReadConfiguration(ConfigManager& /* config */)
 
 void LoggerClient::postReadConfiguration(ConfigManager& config)
 {
-    FuncObserverConfigured evtConfig{ nullptr };
-    FuncLogDbConfigured evtLogConfig{ nullptr };
+    FuncObserverConfigured callbackConf{ nullptr };
+    FuncLogDbConfigured callbackConfDb{ nullptr };
     String address;
     uint16_t port{0};
     String dbName;
@@ -281,24 +288,27 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
         Lock lock(mLock);
         if (mCallbacks != nullptr)
         {
-            evtConfig   = mCallbacks->evtObserverConfigured;
-            evtLogConfig= mCallbacks->evtLogDbConfigured;
-            address     = config.getRemoteServiceAddress(LoggerClient::ServiceType, LoggerClient::ConnectType);
-            port        = config.getRemoteServicePort(LoggerClient::ServiceType, LoggerClient::ConnectType);
-            dbName      = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
-            dbLocation  = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
-            dbUser      = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position);
+            callbackConf    = mCallbacks->evtObserverConfigured;
+            callbackConfDb  = mCallbacks->evtLogDbConfigured;
+            address         = config.getRemoteServiceAddress(LoggerClient::ServiceType, LoggerClient::ConnectType);
+            port            = config.getRemoteServicePort(LoggerClient::ServiceType, LoggerClient::ConnectType);
+            dbName          = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
+            dbLocation      = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
+            dbUser          = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position);
         }
     } while (false);
 
-    if (evtConfig != nullptr)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        evtConfig(true, address.getString(), port);
+        LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address, port);
+        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName, dbLocation, dbUser);
     }
-
-    if (evtLogConfig != nullptr)
+    else
     {
-        evtLogConfig(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
+        if (callbackConf != nullptr)
+            callbackConf(true, address.getString(), port);
+        if (callbackConfDb != nullptr)
+            callbackConfDb(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
     }
 }
 
@@ -355,13 +365,17 @@ void LoggerClient::disconnectServiceHost(void)
 {
     if (isRunning())
     {
-        FuncInstancesDisconnect evtDisconnect{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
-        if (evtDisconnect != nullptr)
+        FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
+        if (LogObserverBase::_theLogObserver != nullptr)
+        {
+            LogObserverBase::_theLogObserver->onLogServiceDisconnected(mInstances);
+        }
+        else if (callback != nullptr)
         {
 
             for (const auto& entry : mInstances.getData())
             {
-                evtDisconnect(&entry.first, 1);
+                callback(&entry.first, 1);
             }
         }
 
@@ -381,8 +395,8 @@ void LoggerClient::onServiceExit(void)
 
 void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
 {
-    FuncServiceConnected evtConnect{ nullptr };
-    FuncObserverStarted evtStart{ nullptr };
+    FuncServiceConnected callbackConnect{ nullptr };
+    FuncObserverStarted callbackStart{ nullptr };
     String address;
     uint16_t port{ NESocket::InvalidPort };
     bool isStarted{ false };
@@ -390,116 +404,125 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
     do
     {
         Lock lock(mLock);
+        const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
+        address = addr.getHostAddress();
+        port = addr.getHostPort();
+        isStarted = mIsPaused = false;
+
         if (mCallbacks != nullptr)
         {
-            evtConnect = mCallbacks->evtServiceConnected;
-            evtStart = mCallbacks->evtLoggingStarted;
-            const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
-            address = addr.getHostAddress();
-            port = addr.getHostPort();
-            isStarted = mIsPaused = false;
+            callbackConnect = mCallbacks->evtServiceConnected;
+            callbackStart = mCallbacks->evtLoggingStarted;
         }
     } while (false);
 
     sendMessage(NELogging::messageQueryInstances(channel.getCookie(), LoggerClient::TargetID));
-    if (evtConnect != nullptr)
-    {
-        evtConnect(true, address.getString(), port);
-    }
 
-    if (evtStart != nullptr)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        evtStart(isStarted);
+        LogObserverBase::_theLogObserver->onLogServiceConnected(true, address, port);
+        LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
+    }
+    else
+    {
+        if (callbackConnect != nullptr)
+            callbackConnect(true, address.getString(), port);
+        if (callbackStart != nullptr)
+            callbackStart(isStarted);
     }
 }
 
 void LoggerClient::disconnectedRemoteServiceChannel(const Channel& /* channel */)
 {
-    FuncServiceConnected evtConnect{ nullptr };
-    FuncObserverStarted evtStart{ nullptr };
+    FuncServiceConnected callbackConnect{ nullptr };
+    FuncObserverStarted callbackStart{ nullptr };
     String address;
     uint16_t port{ NESocket::InvalidPort };
 
     do
     {
         Lock lock(mLock);
+        const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
+        address = addr.getHostAddress();
+        port = addr.getHostPort();
+
         if (mCallbacks != nullptr)
         {
-            evtConnect = mCallbacks->evtServiceConnected;
-            evtStart = mCallbacks->evtLoggingStarted;
-            const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
-            address = addr.getHostAddress();
-            port = addr.getHostPort();
+            callbackConnect = mCallbacks->evtServiceConnected;
+            callbackStart = mCallbacks->evtLoggingStarted;
         }
     } while (false);
 
-    if (evtStart != nullptr)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        evtStart(false);
+        LogObserverBase::_theLogObserver->onLogObserverStarted(false);
+        LogObserverBase::_theLogObserver->onLogServiceConnected(false, address, port);
     }
-
-    if (evtConnect != nullptr)
+    else
     {
-        evtConnect(false, address.getString(), port);
+        if (callbackStart != nullptr)
+            callbackStart(false);
+        if (callbackConnect != nullptr)
+            callbackConnect(false, address.getString(), port);
     }
 }
 
 void LoggerClient::lostRemoteServiceChannel(const Channel& /* channel */)
 {
-    FuncObserverStarted evtStart{ nullptr };
+    FuncObserverStarted callback{ nullptr };
 
     do
     {
         Lock lock(mLock);
-        if (mCallbacks != nullptr)
-        {
-            evtStart = mCallbacks->evtLoggingStarted;
-        }
-
+        callback = mCallbacks != nullptr ? mCallbacks->evtLoggingStarted : nullptr;
         mInstances.clear();
     } while (false);
 
-    if (evtStart != nullptr)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        evtStart(false);
+        LogObserverBase::_theLogObserver->onLogObserverStarted(false);
+    }
+    else if (callback != nullptr)
+    {
+        callback(false);
     }
 }
 
 void LoggerClient::failedSendMessage(const RemoteMessage& /* msgFailed */, Socket& /* whichTarget */)
 {
-    FuncMessagingFailed evtFailed{ nullptr };
+    FuncMessagingFailed callback{ nullptr };
     do
     {
         Lock lock(mLock);
-        if (mCallbacks != nullptr)
-        {
-            evtFailed = mCallbacks->evtMessagingFailed;
-        }
+        callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
     } while (false);
 
-
-    if (evtFailed)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        evtFailed();
+        LogObserverBase::_theLogObserver->onLogMessagingFailed();
+    }
+    else if (callback != nullptr)
+    {
+        callback();
     }
 }
 
 void LoggerClient::failedReceiveMessage(Socket& /* whichSource */)
 {
-    FuncMessagingFailed evtFailed{ nullptr };
+    FuncMessagingFailed callback{ nullptr };
     do
     {
         Lock lock(mLock);
-        if (mCallbacks != nullptr)
-        {
-            evtFailed = mCallbacks->evtMessagingFailed;
-        }
+        callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
     } while (false);
 
-
-    if (evtFailed)
+    if (LogObserverBase::_theLogObserver != nullptr)
     {
-        evtFailed();
+        LogObserverBase::_theLogObserver->onLogMessagingFailed();
+    }
+    else if (callback != nullptr)
+    {
+        callback();
     }
 }
 

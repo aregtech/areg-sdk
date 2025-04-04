@@ -184,11 +184,18 @@ void LogCollectorMessageProcessor::logSourceScopesUpadated(const RemoteMessage& 
     _forwardMessageToObservers(msgReceived);
 }
 
+#ifdef      DEBUG
 void LogCollectorMessageProcessor::logSourceConfigurationSaved(const RemoteMessage& msgReceived)
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogConfigurationSaved));
     processNextSaveConfig();
 }
+#else   // DEBUG
+void LogCollectorMessageProcessor::logSourceConfigurationSaved(const RemoteMessage& /*msgReceived*/)
+{
+    processNextSaveConfig();
+}
+#endif  // DEBUG
 
 void LogCollectorMessageProcessor::processNextSaveConfig(void)
 {

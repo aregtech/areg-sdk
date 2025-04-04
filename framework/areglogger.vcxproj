@@ -40,11 +40,13 @@
     <ClInclude Include="areglogger\client\private\LoggerClient.hpp" />
     <ClInclude Include="areglogger\client\private\ObserverMessageProcessor.hpp" />
     <ClInclude Include="areglogger\resources\resource.h" />
+    <ClInclude Include="areglogger\client\LogObserverBase.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="areglogger\client\private\LoggerClient.cpp" />
     <ClCompile Include="areglogger\client\private\LogObserverApi.cpp" />
     <ClCompile Include="areglogger\client\private\ObserverMessageProcessor.cpp" />
+    <ClCompile Include="areglogger\client\private\LogObserverBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="areglogger\CMakeLists.txt" />
