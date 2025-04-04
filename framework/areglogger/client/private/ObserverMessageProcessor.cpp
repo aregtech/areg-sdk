@@ -298,7 +298,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
         mLoggerClient.mLock.lock(NECommon::WAIT_INFINITE);
         for (int i = 0; i < size; ++i)
         {
-            const ITEM_ID& client = listClients[i];
+            const ITEM_ID& client{ listClients[static_cast<uint32_t>(i)] };
             if (mLoggerClient.mInstances.contains(client))
             {
                 const NEService::sServiceConnectedInstance& instance = mLoggerClient.mInstances.getAt(client);
