@@ -485,5 +485,14 @@ LOGGER_API int logObserverGetInitialDatabasePath(char* dbPath, int space);
  **/
 LOGGER_API int logObserverGetConfigDatabasePath(char* dbPath, int space);
 
-#endif  // AREG_AREGLOGGER_CLIENT_LOGOBSERVERAPI_H
+/**
+ * \brief   Call to change the IP-address and TCP port of the log collector service. If required changes are written in configuration file.
+ * \param   address     The IP-address of the log collector service to set in configuration. If empty or null, it is not modified and ignored.
+ * \param   portNr      The TCP port number of the log collector service to set in configuration. If Invalid port (0), it is not modified and ignored.
+ * \param   dbFilePath  The path to the logging database file to set in configuration. If empty or null, it is not modified and ignored.
+ * \param   makeSave    If set true, the modified configuration is saved in the configuration file. 
+ * \return  Returns true if operation succeeded. Otherwise, returns false.
+ **/
+LOGGER_API bool logObserverConfigUpdate(const char* address, uint16_t portNr, const char * dbFilePath, bool makeSave);
 
+#endif  // AREG_AREGLOGGER_CLIENT_LOGOBSERVERAPI_H

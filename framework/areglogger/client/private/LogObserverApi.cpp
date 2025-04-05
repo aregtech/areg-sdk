@@ -397,3 +397,16 @@ LOGGER_API_IMPL int logObserverGetConfigDatabasePath(char* dbPath, int space)
         return (path.isEmpty() ? 0 : static_cast<int>(path.getLength() + 1));
     }
 }
+
+LOGGER_API_IMPL bool logObserverConfigUpdate(const char* address, uint16_t port, const char* dbFilePath, bool makeSave)
+{
+    LoggerClient& logger = LoggerClient::getInstance();
+    bool result{ false };
+    if (logger.setConfigLoggerConnection(address, port) && logger.setConfigDatabasePath(dbFilePath, true))
+    {
+        result = true;
+        logger.saveConfiguration();
+    }
+
+    return result;
+}
