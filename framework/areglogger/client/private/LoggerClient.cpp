@@ -153,6 +153,23 @@ uint16_t LoggerClient::getConfigLoggerPort(void) const
     }
 }
 
+bool LoggerClient::setConfigLoggerConnection(const String& address, uint16_t portNr)
+{
+    bool result{ false };
+    ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
+    if (config.isConfigured())
+    {
+        if (address.isEmpty() == false)
+            config.setConnectionAddress(address);
+        if (portNr != NESocket::InvalidPort)
+            config.setConnectionPort(portNr);
+
+        result = true;
+    }
+
+    return result;
+}
+
 bool LoggerClient::requestConnectedInstances(void)
 {
     bool result{ false };
@@ -256,6 +273,30 @@ String LoggerClient::getConfigDatabasePath(void) const
     }
 
     return result;
+}
+
+bool LoggerClient::setConfigDatabasePath(const String& dbPath, bool enable)
+{
+    bool result{ false };
+    LogConfiguration config;
+    if (config.getDatabaseName() == NELogging::LOGDB_NAME_SQLITE3)
+    {
+        if (config.isDatabaseLoggingEnabled() == false)
+        {
+            config.setDatabaseEnable(enable, false);
+        }
+
+        config.setDatabaseLocation(dbPath, false);
+        result = true;
+    }
+
+    return result;
+}
+
+void LoggerClient::saveConfiguration(void)
+{
+    LogConfiguration config;
+    config.saveConfiguration();
 }
 
 void LoggerClient::prepareSaveConfiguration(ConfigManager& /* config */)

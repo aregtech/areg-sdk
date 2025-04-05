@@ -355,6 +355,11 @@ namespace NEService
      **/
     constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
     /**
+     * \brief   NEService::TARGET_ALL
+     *          The undefined (all) target ID
+     **/
+    constexpr ITEM_ID   TARGET_ALL                  { static_cast<ITEM_ID>(NECommon::eCookies::CookieInvalid) };
+    /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/

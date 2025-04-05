@@ -21,6 +21,8 @@
  ************************************************************************/
 #include "areglogger/client/LogObserverSwitches.h"
 #include "areglogger/client/LogObserverApi.h"
+
+#include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
 #include "areg/component/NEService.hpp"
 
@@ -53,6 +55,210 @@ class LOGGER_API LogObserverBase
 protected:
     LogObserverBase(void);
     virtual ~LogObserverBase(void);
+
+//////////////////////////////////////////////////////////////////////////
+// Operations and attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Initializes the log observer and makes automatic connection to the log collector.
+     *          This method should be called before any other operation. Once the operation succeeded,
+     *          multiple calls of this method will have no effect.
+     *          The connection information is taken from the specified configuration file.
+     *          If the `configFile` parameter is empty, it uses default path `./config/areg.init`.
+     * \param   configFile  The absolute or relative path to the configuration file.
+     *                      If string is empty, uses `./config/areg.init` relative path.
+     * \return  Returns true if successfully initialized.
+     **/
+    bool initialize(const String& configFile = String::EmptyString);
+
+    /**
+     * \brief   Releases the log observer and disconnects from log collector.
+     **/
+    void release(void);
+
+    /**
+     * \brief   Connects to the log collector service.
+     *          The connection information is taken from the specified configuration file.
+     *          If the `dbLocation` parameter is empty, it uses default path `./log/log.db`.
+     * \param   address     The IP address of the log collector service to connect.
+     *                      If string is empty, uses IP address indicated in the configuration file.
+     * \param   portNr      The port number to connect. If 0, uses port number indicated in the config file.
+     *                      If 0, the IP address is ignore and the value in the configuration file is used.
+     * \param   dbLocation  The path to the logging database file. If NULL, uses the path specified in the config file.
+     *                      The file path may as well contain masking like "./log/log_%time%.db".
+     * \return  Returns true if succeeded to trigger connection. The physical connection might not be established yet.
+     *          The physical connection is established when triggers callback of type FuncServiceConnected.
+     **/
+    bool connect(const String& address, uint16_t portNr, const String& dbLocation);
+
+    /**
+     * \brief   Disconnects from the log collector service.
+     *          The method is called to disconnect from the log collector service.
+     *          The method does not close the database. To close the database, use `stop()` method.
+     **/
+    void disconnect(void);
+
+    /**
+     * \brief   Pauses the log observer. The log observer remains connected, but no logs are written.
+     *          If log observer is resume, the logs are written in the same database file.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool pause(void);
+
+    /**
+     * \brief   Resumes paused log observer, continues receiving logs. The logs are written in the same database file.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool resume(void);
+
+    /**
+     * \brief   Stops the log observer, disconnects from log collector service and closes the database file.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool stop(void);
+
+    /**
+     * \brief   Restarts the log observer, establishes the connection with the log collector service using existing connection information
+     *          New database is created and the logs are written in the new database.
+     * \param   dbLocation  The relative of absolute path to the logging database file.
+     *                      If the path is empty, it uses the default path.
+     *                      The path with mask like `log_%time%.sqlog` are allowed.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool restart(const String& dbLocation = String::EmptyString);
+
+    /**
+     * \brief   Returns true if the log observer is initialized.
+     **/
+    bool isInitialized(void) const;
+
+    /**
+     * \brief   Returns true if the log observer is connected to the log collector service.
+     **/
+    bool isConnected(void) const;
+
+    /**
+     * \brief   Returns true if the log observer is fully operable, and is able to collect and write logs.
+     **/
+    bool isStated(void) const;
+
+    /**
+     * \brief   Returns the IP address to connect to the log collector service.
+     **/
+    const String& getLoggerAddress(void) const;
+
+    /**
+     * \brief   Returns the TCP port number to connect to the log collector service.
+     **/
+    uint16_t getLoggerPort(void) const;
+
+    /**
+     * \brief   Return the logging state set in the configuration.
+     **/
+    bool getConfigLoggerEnabled(void) const;
+
+    /**
+     * \brief   Return the IP address of log collector service set in the configuration.
+     **/
+    String getConfigLoggerAddress(void) const;
+
+    /**
+     * \brief   Sets the IP address of the log collector service in the configuration.
+     * \param   address     The IP address of the log collector service to set.
+     **/
+    void setConfigLoggerAddress(const String& address);
+
+    /**
+     * \brief   Return the TCP port number of log collector service set in the configuration.
+     **/
+    uint16_t getConfigLoggerPort(void) const;
+
+    /**
+     * \brief   Sets the TCP port number of the log collector service in the configuration.
+     * \param   portNr  The port number of the log collector service to set.
+     **/
+    void setConfigLoggerPort(uint16_t portNr);
+
+    /**
+     * \brief   Sets the TCP/IP address and port number of the log collector service in the active configuration.
+     * \param   address     The IP address of the log collector service to set.
+     * \param   portNr      The TCP port number of the log collector service to set.
+     **/
+    void setConfigLoggerConnection(const String& address, uint16_t portNr);
+
+    /**
+     * \brief   Returns the database path name set in the configuration.
+     **/
+    String getConfigLoggerDatabase(void) const;
+
+    /**
+     * \brief   Sets the database path name in the configuration.
+     *          The path may contain mask like `log_%time%.sqlog`.
+     * \param   dbLocation  The database path to set.
+     **/
+    void setConfigLoggerDatabase(const String& dbLocation);
+
+    /**
+     * \brief   Returns the path of the currently active logging database. The returned path cannot contain mask.
+     **/
+    String getActiveDatabasePath(void) const;
+
+    /**
+     * \brief   Returns the path of the database set during initialization.
+     *          The path may contain mask like `log_%time%.sqlog`.
+     * \return  Returns the path of the database set during initialization.
+     **/
+    String getInitDatabasePath(void) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Actions
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Requests the list of connected instances that make logs.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool requestInstances(void);
+
+    /**
+     * \brief   Requests the list of registered scopes of the specified connected instance.
+     * \param   target  The cookie ID of the target instance to receive the list of registered scopes.
+     *                  If the target is NEService::TARGET_ALL (or 0), it receives the list of scopes of all connected instances.
+     *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool requestScopes(ITEM_ID target = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Requests to update the priority of the logging message to receive.
+     *          The indicated scopes can be scope group.
+     * \param   target  The valid cookie ID of the target to update the log message priority.
+     *                  This value cannot be NEService::TARGET_ALL (or 0).
+     * \param   scopes  The list of scopes of scope group to update the priority.
+     *                  The scope group should  end with '*'. For example 'areg_base_*'.
+     *                  In this case the ID of the scope can be 0.
+     * \param   count   The number of scope entries in the list.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool requestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count);
+
+    /**
+     * \brief   Requests to save current configuration of the specified target. This is normally called when update the log priority of the instance,
+     *          so that on next start the application logs message of the scopes and priorities currently set.
+     * \param   target  The cookie ID of the target instance to save the configuration.
+     *                  If the target is NEService::TARGET_ALL (or 0), the request is sent to all connected instances.
+     *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
+     * \return  Returns true if processed with success. Otherwise, returns false.
+     **/
+    bool requestSaveConfig(ITEM_ID target = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Saves the configuration of the log observer in the configuration file.
+     **/
+    void saveLoggerConfig(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected Overrides / Callbacks
@@ -151,9 +357,15 @@ protected:
      **/
     virtual void onLogMessage(const SharedBuffer & logMessage) = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
 private:
     static  LogObserverBase* _theLogObserver; //!< The instance of the log observer base class.
 
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
 private:
     DECLARE_NOCOPY_NOMOVE(LogObserverBase);
 };

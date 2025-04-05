@@ -159,6 +159,14 @@ public:
     uint16_t getConfigLoggerPort(void) const;
 
     /**
+     * \brief   Sets the IP address and port number of the log collector service to connect.
+     * \param   address     The IP address of the log collector service to connect.
+     * \param   portNr      The port number of the log collector service to connect.
+     * \return  Returns true if succeeded to set the connection data. Otherwise, returns false.
+     **/
+    bool setConfigLoggerConnection(const String& address, uint16_t portNr);
+
+    /**
      * \brief   Generates and sends the message to query list of connected clients.
      * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
@@ -227,6 +235,21 @@ public:
      * \brief   Returns the path specified in configuration file.
      **/
     String getConfigDatabasePath(void) const;
+
+    /**
+     * \brief   Sets the path to the database file. The path can contain mask.
+     *          If the path is empty, it uses the path specified in the configuration file.
+     *          If the path contains mask, each time it creates a new database.
+     * \param   dbPath      The relative or absolute path to the logging database file.
+     * \param   enable      The flag to set whether to enable or disable database logging.
+     * \return  Returns true if succeeded to set the database path. Otherwise, returns false.
+     **/
+    bool setConfigDatabasePath(const String& dbPath, bool enable);
+
+    /**
+     * \brief   Save current configuration of the log observer to the configuration file.
+     **/
+    void saveConfiguration(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
