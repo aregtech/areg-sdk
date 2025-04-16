@@ -50,9 +50,9 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEServi
                             , NELogging::LOG_MESSAGE_IZE
                             , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
-                            , instance.ciInstance.getString()
+                            , instance.ciInstance.c_str()
                             , instance.ciCookie
-                            , instance.ciLocation.getString());
+                            , instance.ciLocation.c_str());
         NELogging::logAnyMessageLocal(logMsgHello);
 
         mLoggerProcessor.notifyConnectedInstances(getInstances(), NEService::COOKIE_ANY);
@@ -80,9 +80,9 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
                             , NELogging::LOG_MESSAGE_IZE
                             , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
-                            , instance.ciInstance.getString()
+                            , instance.ciInstance.c_str()
                             , instance.ciCookie
-                            , instance.ciLocation.getString());
+                            , instance.ciLocation.c_str());
         NELogging::logAnyMessageLocal(logMsgBye);
 
         listIds.add(instance.ciCookie);

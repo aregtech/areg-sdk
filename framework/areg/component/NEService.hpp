@@ -1070,9 +1070,9 @@ namespace NEService
         //!< The connection timestamp
         TIME64                      ciTimestamp { 0 };
         //!< The name of the application
-        String                      ciInstance  { "" };
+        std::string                 ciInstance  { "" };
         //!< The optional file location
-        String                      ciLocation  { "" };
+        std::string                 ciLocation  { "" };
     };
 
     /**

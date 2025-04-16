@@ -238,7 +238,7 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath());
+        LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().getData());
     }
     else if (callback != nullptr)
     {
@@ -341,8 +341,8 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address, port);
-        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName, dbLocation, dbUser);
+        LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
+        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName.getData(), dbLocation.getData(), dbUser.getData());
     }
     else
     {
@@ -409,7 +409,7 @@ void LoggerClient::disconnectServiceHost(void)
         FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
         if (LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogServiceDisconnected(mInstances);
+            LogObserverBase::_theLogObserver->onLogServiceDisconnected(mInstances.getData());
         }
         else if (callback != nullptr)
         {
@@ -461,7 +461,7 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogServiceConnected(true, address, port);
+        LogObserverBase::_theLogObserver->onLogServiceConnected(true, address.getData(), port);
         LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
     }
     else
@@ -497,7 +497,7 @@ void LoggerClient::disconnectedRemoteServiceChannel(const Channel& /* channel */
     if (LogObserverBase::_theLogObserver != nullptr)
     {
         LogObserverBase::_theLogObserver->onLogObserverStarted(false);
-        LogObserverBase::_theLogObserver->onLogServiceConnected(false, address, port);
+        LogObserverBase::_theLogObserver->onLogServiceConnected(false, address.getData(), port);
     }
     else
     {

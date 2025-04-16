@@ -15,13 +15,12 @@
  ************************************************************************/
 
 #include "areglogger/client/LogObserverBase.hpp"
-#include "areg/base/String.hpp"
-#include "areg/base/SharedBuffer.hpp"
-
 #include "areglogger/client/private/LoggerClient.hpp"
 #include "areglogger/client/LogObserverApi.h"
 
 #include "areg/base/String.hpp"
+#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/TEArrayList.hpp"
 #include "areg/base/NESocket.hpp"
 
 LogObserverBase* LogObserverBase::_theLogObserver{ nullptr };
@@ -38,9 +37,9 @@ LogObserverBase::~LogObserverBase(void)
     LogObserverBase::_theLogObserver = nullptr;
 }
 
-bool LogObserverBase::initialize(const String& configFile)
+bool LogObserverBase::initialize(const std::string& configFile)
 {
-    return logObserverInitialize(nullptr, configFile.isEmpty() ? nullptr : configFile.getString());
+    return logObserverInitialize(nullptr, configFile.empty() ? nullptr : configFile.c_str());
 }
 
 void LogObserverBase::release(void)
@@ -48,10 +47,10 @@ void LogObserverBase::release(void)
     return logObserverRelease();
 }
 
-bool LogObserverBase::connect(const String& address, uint16_t portNr, const String& dbLocation)
+bool LogObserverBase::connect(const std::string& address, uint16_t portNr, const std::string& dbLocation)
 {
-    return logObserverConnectLogger(  dbLocation.isEmpty() ? nullptr : dbLocation.getString()
-                                    , address.isEmpty() ? nullptr : address.getString()
+    return logObserverConnectLogger(  dbLocation.empty() ? nullptr : dbLocation.c_str()
+                                    , address.empty() ? nullptr : address.c_str()
                                     , portNr);
 }
 
@@ -75,9 +74,9 @@ bool LogObserverBase::stop(void)
     return logObserverStopLogging(true, nullptr);
 }
 
-bool LogObserverBase::restart(const String & dbLocation /*= String::EmptyString*/)
+bool LogObserverBase::restart(const std::string & dbLocation /*= String::EmptyString*/)
 {
-    return logObserverStopLogging(false, dbLocation.isEmpty() ? nullptr : dbLocation.getString());
+    return logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
 }
 
 bool LogObserverBase::isInitialized(void) const
@@ -95,9 +94,9 @@ bool LogObserverBase::isStated(void) const
     return logObserverIsStarted();
 }
 
-const String& LogObserverBase::getLoggerAddress(void) const
+const std::string& LogObserverBase::getLoggerAddress(void) const
 {
-    return LoggerClient::getInstance().getAddress().getHostAddress();
+    return LoggerClient::getInstance().getAddress().getHostAddress().getData();
 }
 
 uint16_t LogObserverBase::getLoggerPort(void) const
@@ -110,12 +109,12 @@ bool LogObserverBase::getConfigLoggerEnabled(void) const
     return logObserverConfigLoggerEnabled();
 }
 
-String LogObserverBase::getConfigLoggerAddress(void) const
+std::string LogObserverBase::getConfigLoggerAddress(void) const
 {
-    return LoggerClient::getInstance().getConfigLoggerAddress();
+    return LoggerClient::getInstance().getConfigLoggerAddress().getData();
 }
 
-void LogObserverBase::setConfigLoggerAddress(const String& address)
+void LogObserverBase::setConfigLoggerAddress(const std::string& address)
 {
     LoggerClient::getInstance().setConfigLoggerConnection(address, NESocket::InvalidPort);
 }
@@ -130,29 +129,29 @@ void LogObserverBase::setConfigLoggerPort(uint16_t portNr)
     LoggerClient::getInstance().setConfigLoggerConnection(String::EmptyString, portNr);
 }
 
-void LogObserverBase::setConfigLoggerConnection(const String& address, uint16_t portNr)
+void LogObserverBase::setConfigLoggerConnection(const std::string& address, uint16_t portNr)
 {
     LoggerClient::getInstance().setConfigLoggerConnection(address, portNr);
 }
 
-String LogObserverBase::getConfigLoggerDatabase(void) const
+std::string LogObserverBase::getConfigLoggerDatabase(void) const
 {
-    return LoggerClient::getInstance().getConfigDatabasePath();
+    return LoggerClient::getInstance().getConfigDatabasePath().getData();
 }
 
-void LogObserverBase::setConfigLoggerDatabase(const String& dbLocation)
+void LogObserverBase::setConfigLoggerDatabase(const std::string& dbLocation)
 {
     LoggerClient::getInstance().setConfigDatabasePath(dbLocation, true);
 }
 
-String LogObserverBase::getActiveDatabasePath(void) const
+std::string LogObserverBase::getActiveDatabasePath(void) const
 {
-    return LoggerClient::getInstance().getActiveDatabasePath();
+    return LoggerClient::getInstance().getActiveDatabasePath().getData();
 }
 
-String LogObserverBase::getInitDatabasePath(void) const
+std::string LogObserverBase::getInitDatabasePath(void) const
 {
-    return LoggerClient::getInstance().getInitialDatabasePath();
+    return LoggerClient::getInstance().getInitialDatabasePath().getData();
 }
 
 bool LogObserverBase::requestInstances(void)
@@ -179,4 +178,3 @@ void LogObserverBase::saveLoggerConfig(void)
 {
     LoggerClient::getInstance().saveConfiguration();
 }
-

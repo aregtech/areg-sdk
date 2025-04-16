@@ -452,7 +452,7 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
     char msg[MSG_LEN];
     String::formatString( msg, MSG_LEN, "The %u-bit instance [ %s ] with cookie [ %llu ] is connected at time [ %s ]"
                         , static_cast<uint32_t>(instance.ciBitness)
-                        , instance.ciInstance.getString()
+                        , instance.ciInstance.c_str()
                         , static_cast<uint64_t>(instance.ciCookie)
                         , timestamp.formatTime().getString());
 
@@ -476,8 +476,8 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
                         , static_cast<uint64_t>(instance.ciCookie)
                         , static_cast<uint32_t>(instance.ciSource)
                         , static_cast<uint32_t>(instance.ciBitness)
-                        , instance.ciInstance.getString()
-                        , instance.ciLocation.getString()
+                        , instance.ciInstance.c_str()
+                        , instance.ciLocation.c_str()
                         , static_cast<uint64_t>(instance.ciTimestamp)
                         , static_cast<uint64_t>(timestamp.getTime())
                         );
