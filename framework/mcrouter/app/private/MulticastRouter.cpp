@@ -490,7 +490,7 @@ void MulticastRouter::_outputInstances( const NEService::MapInstances & instance
             instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-            printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.getString());
+            printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
         }
     }
 
