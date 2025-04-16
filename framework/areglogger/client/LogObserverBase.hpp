@@ -22,14 +22,15 @@
 #include "areglogger/client/LogObserverSwitches.h"
 #include "areglogger/client/LogObserverApi.h"
 
-#include "areg/base/String.hpp"
-#include "areg/base/TEArrayList.hpp"
 #include "areg/component/NEService.hpp"
+
+#include <map>
+#include <string>
+#include <vector>
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class String;
 class SharedBuffer;
 
 /**
@@ -71,7 +72,7 @@ public:
      *                      If string is empty, uses `./config/areg.init` relative path.
      * \return  Returns true if successfully initialized.
      **/
-    bool initialize(const String& configFile = String::EmptyString);
+    bool initialize(const std::string& configFile = String::EmptyString);
 
     /**
      * \brief   Releases the log observer and disconnects from log collector.
@@ -91,7 +92,7 @@ public:
      * \return  Returns true if succeeded to trigger connection. The physical connection might not be established yet.
      *          The physical connection is established when triggers callback of type FuncServiceConnected.
      **/
-    bool connect(const String& address, uint16_t portNr, const String& dbLocation);
+    bool connect(const std::string& address, uint16_t portNr, const std::string& dbLocation);
 
     /**
      * \brief   Disconnects from the log collector service.
@@ -127,7 +128,7 @@ public:
      *                      The path with mask like `log_%time%.sqlog` are allowed.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool restart(const String& dbLocation = String::EmptyString);
+    bool restart(const std::string& dbLocation = String::EmptyString);
 
     /**
      * \brief   Returns true if the log observer is initialized.
@@ -147,7 +148,7 @@ public:
     /**
      * \brief   Returns the IP address to connect to the log collector service.
      **/
-    const String& getLoggerAddress(void) const;
+    const std::string& getLoggerAddress(void) const;
 
     /**
      * \brief   Returns the TCP port number to connect to the log collector service.
@@ -162,13 +163,13 @@ public:
     /**
      * \brief   Return the IP address of log collector service set in the configuration.
      **/
-    String getConfigLoggerAddress(void) const;
+    std::string getConfigLoggerAddress(void) const;
 
     /**
      * \brief   Sets the IP address of the log collector service in the configuration.
      * \param   address     The IP address of the log collector service to set.
      **/
-    void setConfigLoggerAddress(const String& address);
+    void setConfigLoggerAddress(const std::string& address);
 
     /**
      * \brief   Return the TCP port number of log collector service set in the configuration.
@@ -186,31 +187,31 @@ public:
      * \param   address     The IP address of the log collector service to set.
      * \param   portNr      The TCP port number of the log collector service to set.
      **/
-    void setConfigLoggerConnection(const String& address, uint16_t portNr);
+    void setConfigLoggerConnection(const std::string& address, uint16_t portNr);
 
     /**
      * \brief   Returns the database path name set in the configuration.
      **/
-    String getConfigLoggerDatabase(void) const;
+    std::string getConfigLoggerDatabase(void) const;
 
     /**
      * \brief   Sets the database path name in the configuration.
      *          The path may contain mask like `log_%time%.sqlog`.
      * \param   dbLocation  The database path to set.
      **/
-    void setConfigLoggerDatabase(const String& dbLocation);
+    void setConfigLoggerDatabase(const std::string& dbLocation);
 
     /**
      * \brief   Returns the path of the currently active logging database. The returned path cannot contain mask.
      **/
-    String getActiveDatabasePath(void) const;
+    std::string getActiveDatabasePath(void) const;
 
     /**
      * \brief   Returns the path of the database set during initialization.
      *          The path may contain mask like `log_%time%.sqlog`.
      * \return  Returns the path of the database set during initialization.
      **/
-    String getInitDatabasePath(void) const;
+    std::string getInitDatabasePath(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Actions
@@ -276,7 +277,7 @@ protected:
      * \param   address         The null-terminated string of the IP address of the log collector service set in the configuration file.
      * \param   port            The IP port number of the log collector service set in the configuration file.
      **/
-    virtual void onLogObserverConfigured(bool isEnabled, const String & address, uint16_t port) = 0;
+    virtual void onLogObserverConfigured(bool isEnabled, const std::string & address, uint16_t port) = 0;
 
     /**
      * \brief   The callback of the event triggered when initializing and configuring the observer.
@@ -287,7 +288,7 @@ protected:
      * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
      * \param   dbUser          The database user to use when log in. If null or empty, the database may not require the user name.
      **/
-    virtual void onLogDbConfigured(bool isEnabled, const String & dbName, const String & dbLocation, const String & dbUser) = 0;
+    virtual void onLogDbConfigured(bool isEnabled, const std::string & dbName, const std::string & dbLocation, const std::string & dbUser) = 0;
 
     /**
      * \brief   The callback of the event triggered when the observer connects or disconnects from the log collector service.
@@ -295,7 +296,7 @@ protected:
      * \param   address         The IP address of the log collector service to connect or disconnect.
      * \param   port            The IP port number of the log collector service to connect or disconnect.
      **/
-    virtual void onLogServiceConnected(bool isConnected, const String & address, uint16_t port) = 0;
+    virtual void onLogServiceConnected(bool isConnected, const std::string & address, uint16_t port) = 0;
 
     /**
      * \brief   The callback of the event trigger when starting or pausing the log observer.
@@ -309,7 +310,7 @@ protected:
      * \brief   The callback of the event triggered when the logging database is created.
      * \param   dbLocation      The relative or absolute path to the logging database.
      **/
-    virtual void onLogDbCreated(const String & dbLocation) = 0;
+    virtual void onLogDbCreated(const std::string & dbLocation) = 0;
 
     /**
      * \brief   The callback of the event triggered when fails to send or receive message.
@@ -320,20 +321,20 @@ protected:
      * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
      * \param   instances   The list of the connected instances.
      **/
-    virtual void onLogInstancesConnect(const TEArrayList< NEService::sServiceConnectedInstance > & instances) = 0;
+    virtual void onLogInstancesConnect(const std::vector< NEService::sServiceConnectedInstance > & instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
      * \param   instances   The list of IDs of the disconnected instances.
      * \param   count       The number of entries in the list.
      **/
-    virtual void onLogInstancesDisconnect(const TEArrayList< NEService::sServiceConnectedInstance > & instances) = 0;
+    virtual void onLogInstancesDisconnect(const std::vector< NEService::sServiceConnectedInstance > & instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when connection with the log collector service is lost.
      * \param   instances   The list of disconnected instances.
      **/
-    virtual void onLogServiceDisconnected(const NEService::MapInstances& instances) = 0;
+    virtual void onLogServiceDisconnected(const std::map<ITEM_ID, NEService::sServiceConnectedInstance>& instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.

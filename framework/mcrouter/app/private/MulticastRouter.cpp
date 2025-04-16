@@ -462,7 +462,7 @@ void MulticastRouter::_outputInstances( const NEService::MapInstances & instance
             instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-            console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.getString());
+            console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
             ++ coord.posY;
         }
     }

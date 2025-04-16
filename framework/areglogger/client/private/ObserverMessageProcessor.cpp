@@ -251,12 +251,12 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                     inst.liTimestamp = client.ciTimestamp;
                     NEString::copyString( inst.liName
                                         , static_cast<NEString::CharCount>(LENGTH_NAME)
-                                        , client.ciInstance.getString()
-                                        , static_cast<NEString::CharCount>(client.ciInstance.getLength()));
+                                        , client.ciInstance.c_str()
+                                        , static_cast<NEString::CharCount>(client.ciInstance.length()));
                     NEString::copyString( inst.liLocation
                                         , static_cast<NEString::CharCount>(LENGTH_LOCATION)
-                                        , client.ciLocation.getString()
-                                        , static_cast<NEString::CharCount>(client.ciLocation.getLength()));
+                                        , client.ciLocation.c_str()
+                                        , static_cast<NEString::CharCount>(client.ciLocation.length()));
             }
         }
 
@@ -264,7 +264,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
         mLoggerClient.mLock.unlock();
         if (LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected);
+            LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
         }
         else if (callback != nullptr)
         {
@@ -320,7 +320,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
         mLoggerClient.mLock.unlock();
         if (LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected);
+            LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
         }
         else if (callback != nullptr)
         {

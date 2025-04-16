@@ -527,16 +527,16 @@ inline IEOutStream & operator << (IEOutStream & stream, const wchar_t * output)
 template<typename CharType>
 inline IEOutStream& operator << (IEOutStream& stream, const std::basic_string<CharType>& output)
 {
-    constexpr unsigned int single = sizeof(CharType);
-    stream.write(reinterpret_cast<const unsigned char*>(output.c_str()), (output.length() + 1) * single);
+    constexpr unsigned int single = static_cast<unsigned int>(sizeof(CharType));
+    stream.write(reinterpret_cast<const unsigned char*>(output.c_str()), static_cast<unsigned int>(output.length() + 1) * single);
     return stream;
 }
 
 template<typename CharType>
 inline IEOutStream& operator << (IEOutStream& stream, const std::basic_string_view<CharType>& output)
 {
-    constexpr unsigned int single = sizeof(CharType);
-    stream.write(reinterpret_cast<const unsigned char*>(output.data()), (output.length() + 1) * single);
+    constexpr unsigned int single = static_cast<unsigned int>(sizeof(CharType));
+    stream.write(reinterpret_cast<const unsigned char*>(output.data()), static_cast<unsigned int>(output.length() + 1) * single);
     return stream;
 }
 
