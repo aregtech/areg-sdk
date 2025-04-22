@@ -322,7 +322,7 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     String dbUser;
 
     config.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true, true);
-    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, true, true);
 
     do
     {
