@@ -102,7 +102,7 @@ void LoggerClient::setPaused(bool doPause)
         Lock lock(mLock);
         mIsPaused = doPause;
         callback = (mCallbacks != nullptr) && isConnectionStarted() ? mCallbacks->evtLoggingStarted : nullptr;
-        isStarted = mIsPaused;
+        isStarted = mIsPaused ? false : isConnectionStarted();
     } while (false);
 
     if (LogObserverBase::_theLogObserver != nullptr)
@@ -322,7 +322,7 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     String dbUser;
 
     config.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true, true);
-    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, true, true);
 
     do
     {
@@ -448,7 +448,7 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
         const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
         address = addr.getHostAddress();
         port = addr.getHostPort();
-        isStarted = mIsPaused = false;
+        isStarted = mIsPaused ? false : isConnectionStarted();
 
         if (mCallbacks != nullptr)
         {

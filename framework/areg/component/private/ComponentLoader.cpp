@@ -464,6 +464,8 @@ void ComponentLoader::unloadModel( bool waitComplete, NERegistry::Model & whichM
             lock.lock();
             _shutdownThreads(threadList);
         }
+
+        whichModel.markModelLoaded(false);
     }
 }
 
