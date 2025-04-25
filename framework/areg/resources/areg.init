@@ -121,6 +121,7 @@ log::*::remote::service     = logger                        # The service name o
 # ---------------------------------------------------------------------------
 # Database logging settings (not supported at the moment!!!)
 # ---------------------------------------------------------------------------
+log::*::db::engine          =                               # The database engine
 log::*::db::name            =                               # The database name
 log::*::db::location        =                               # Database location
 log::*::db::driver          =                               # Database driver
@@ -148,8 +149,9 @@ log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit s
 # ---------------------------------------------------------------------------
 log::logobserver::enable::file      = true                          # Logobserver: File logging enable / disable flag
 log::logobserver::enable::db        = true                          # Logobserver: Database logging enable / disable flag
-log::logobserver::db::name          = sqlite3                       # Logobserver: The database name
-log::logobserver::db::location      = ./logs/log_%time%.sqlog       # Logobserver: Database location
+log::logobserver::db::engine        = sqlite3                       # Logobserver: The database engine
+log::logobserver::db::name          = log_%time%.sqlog              # Logobserver: The log database name
+log::logobserver::db::location      = ./logs                        # Logobserver: The log database location
 
 # ---------------------------------------------------------------------------
 # Messaging enable states for the logcollector and mcrouter services.

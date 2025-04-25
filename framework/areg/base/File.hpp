@@ -583,6 +583,18 @@ public:
      **/
     static int splitPath(const char * filePath, StringList & in_out_List);
 
+    /**
+     * \brief   From given directory name and file name creates the full path of the file.
+     *          The directory can be either full path or relative path. The directory may contain a mask.
+     *          The file may contain a mask.
+     *          If directory or file name contains a mask, the returned path contains the mask as well.
+     *          If a mask exist in the file path, normalize it before creating.
+     * \param   dirName     The full or relative path of directory. The directory may contain a mask.
+     * \param   fileName    The file name located in the given directory. The file name may contain a mask.
+     * \return  Returns full path of the file `fileName` located in the directory `dirName`.
+     */
+    static String makeFileFullPath(const char* dirName, const char* fileName);
+
 private:
 
     /**

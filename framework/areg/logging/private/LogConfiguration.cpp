@@ -199,12 +199,38 @@ void LogConfiguration::setModuleScopes(const std::vector<Property>& scopeList)
     Application::getConfigManager().addModuletLogScopes(scopeList, true);
 }
 
+String LogConfiguration::getDatabaseEngine(void) const
+{
+    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseEngine().position);
+}
+
+void LogConfiguration::setDatabaseEngine(const String& dbEngine, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseEngine().position, dbEngine, isTemporary);
+}
+
+String LogConfiguration::getDatabaseFullPath(void) const
+{
+    String dbLocation = Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
+    String dbName = Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
+    return File::makeFileFullPath(dbLocation, dbName);
+}
+
+void LogConfiguration::setDatabaseFullPath(const String& dbFullPath, bool isTemporary)
+{
+    String dbLocation = File::getFileDirectory(dbFullPath.getString());
+    String dbName = File::getFileNameWithExtension(dbFullPath.getString());
+
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position, dbLocation, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseName().position, dbName, isTemporary);
+}
+
 String LogConfiguration::getDatabaseName(void) const
 {
     return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
 }
 
-void LogConfiguration::setDatabaseName(const String dbName, bool isTemporary /*= false*/)
+void LogConfiguration::setDatabaseName(const String & dbName, bool isTemporary /*= false*/)
 {
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseName().position, dbName, isTemporary);
 }
@@ -214,7 +240,7 @@ String LogConfiguration::getDatabaseLocation(void) const
     return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
 }
 
-void LogConfiguration::setDatabaseLocation(const String& dbLocation, bool isTemporary /*= false*/)
+void LogConfiguration::setDatabaseLocation(const String & dbLocation, bool isTemporary /*= false*/)
 {
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position, dbLocation, isTemporary);
 }

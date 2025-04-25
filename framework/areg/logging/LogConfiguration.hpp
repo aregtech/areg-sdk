@@ -171,10 +171,24 @@ public:
     void setModuleScopes(const std::vector<Property>& scopeList);
 
     /**
+     * \brief   Gets and sets the name of database engine such as `sqlite`.
+     **/
+    String getDatabaseEngine(void) const;
+    void setDatabaseEngine(const String & dbEngine, bool isTemporary = false);
+
+    /**
+     * \brief   Gets and sets the full path of the database file.
+     *          When gets, it adds database file name to the location.
+     *          Wehn sets, it splits file path to 2 parts: database name and database location.
+     **/
+    String getDatabaseFullPath(void) const;
+    void setDatabaseFullPath(const String & dbFullPath, bool isTemporary = false);
+
+    /**
      * \brief   Gets and sets the database name like "SQLite" or "MySQL", etc.
      **/
     String getDatabaseName(void) const;
-    void setDatabaseName(const String dbName, bool isTemporary = false);
+    void setDatabaseName(const String & dbName, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database location. The location can be full or relative file path, or an URI.

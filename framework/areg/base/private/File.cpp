@@ -400,6 +400,15 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
     return static_cast<int>(in_out_List.getSize() - static_cast<uint32_t>(oldCount));
 }
 
+String File::makeFileFullPath(const char* dirName, const char* fileName)
+{
+    std::error_code err;
+    std::filesystem::path filePath(dirName);
+    filePath /= std::string(fileName);
+    std::filesystem::path fp = std::filesystem::absolute(filePath, err);
+    return (!err ? fp.string() : filePath.string());
+}
+
 unsigned int File::read(IEByteBuffer & buffer) const
 {
     return FileBase::read(buffer);

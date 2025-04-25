@@ -144,6 +144,11 @@ public:
     const NESocket::SocketAddress& getAddress(void) const;
 
     /**
+     * \brief   Returns true if the logging database engine is SQLite. Otherwise, returns false.
+     **/
+    bool isSqliteEngine(void) const;
+
+    /**
      * \brief   Returns true if the observer is configured and the log collector service connection is enabled.
      **/
     bool isConfigLoggerConnectEnabled(void) const;
@@ -245,6 +250,35 @@ public:
      * \return  Returns true if succeeded to set the database path. Otherwise, returns false.
      **/
     bool setConfigDatabasePath(const String& dbPath, bool enable);
+
+    /**
+     * \brief   Returns the logging database location path set in configuration file.
+     **/
+    String getConfigDatabaseLocation(void) const;
+
+    /**
+     * \brief   Sets the logging database location path.
+     * \param   dbLocation  The location of logging database.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool setConfigDatabaseLocation(const String& dbLocation);
+
+    /**
+     * \brief   Returns the logging database name set in configuration file.
+     **/
+    String getConfigDatabaseName(void) const;
+
+    /**
+     * \brief   Sets the logging database name in the configuration file.
+     * \param   dbName      The name of logging database.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool setConfigDatabaseName(const String& dbName);
+
+    /**
+     * \brief   Sets logging connection flag in the configuration file.
+     **/
+    bool setConfigLoggerConnectEnabled(bool isEnabled);
 
     /**
      * \brief   Save current configuration of the log observer to the configuration file.
