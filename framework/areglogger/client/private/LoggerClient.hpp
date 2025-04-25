@@ -143,6 +143,9 @@ public:
      **/
     const NESocket::SocketAddress& getAddress(void) const;
 
+    /**
+     * \brief   Returns true if the logging database engine is SQLite. Otherwise, returns false.
+     **/
     bool isSqliteEngine(void) const;
 
     /**
