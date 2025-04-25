@@ -121,6 +121,12 @@ const NESocket::SocketAddress& LoggerClient::getAddress(void) const
     return mClientConnection.getAddress();
 }
 
+bool LoggerClient::isSqliteEngine(void) const
+{
+    LogConfiguration config;
+    return (config.isDatabaseLoggingEnabled() && (config.getDatabaseEngine() == NELogging::LOGDB_ENGINE_NAME));
+}
+
 bool LoggerClient::isConfigLoggerConnectEnabled(void) const
 {
     ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
@@ -222,11 +228,11 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     String filePath (dbPath);
     if (filePath.isEmpty())
     {
-        LogConfiguration config;
-        if (config.isDatabaseLoggingEnabled() && (config.getDatabaseName() == NELogging::LOGDB_NAME_SQLITE3))
+        if (isSqliteEngine())
         {
+            LogConfiguration config;
             mLogDatabase.setDatabaseLoggingEnabled(true);
-            filePath = config.getDatabaseLocation();
+            filePath = File::makeFileFullPath(config.getDatabaseLocation(), config.getDatabaseName());
         }
         else
         {
@@ -266,10 +272,10 @@ String LoggerClient::getInitialDatabasePath(void) const
 String LoggerClient::getConfigDatabasePath(void) const
 {
     String result;
-    LogConfiguration config;
-    if (config.isDatabaseLoggingEnabled() && (config.getDatabaseName() == NELogging::LOGDB_NAME_SQLITE3))
+    if (isSqliteEngine())
     {
-        result = File::getFileFullPath(config.getDatabaseLocation().getString());
+        LogConfiguration config;
+        result = File::makeFileFullPath(config.getDatabaseLocation().getString(), config.getDatabaseName().getString());
     }
 
     return result;
@@ -279,14 +285,76 @@ bool LoggerClient::setConfigDatabasePath(const String& dbPath, bool enable)
 {
     bool result{ false };
     LogConfiguration config;
-    if (config.getDatabaseName() == NELogging::LOGDB_NAME_SQLITE3)
+    if (config.getDatabaseEngine() == NELogging::LOGDB_ENGINE_NAME)
     {
-        if (config.isDatabaseLoggingEnabled() == false)
-        {
-            config.setDatabaseEnable(enable, false);
-        }
+        String dbLocation = File::getFileDirectory(dbPath.getString());
+        String dbName = File::getFileNameWithExtension(dbPath.getString());
+        config.setDatabaseEnable(enable, false);
+        config.setDatabaseLocation(dbLocation, false);
+        config.setDatabaseName(dbName, false);
+        result = true;
+    }
 
-        config.setDatabaseLocation(dbPath, false);
+    return result;
+}
+
+String LoggerClient::getConfigDatabaseLocation(void) const
+{
+    String result;
+    if (isSqliteEngine())
+    {
+        LogConfiguration config;
+        result = File::getFileFullPath(config.getDatabaseLocation().getString());
+    }
+
+    return result;
+}
+
+bool LoggerClient::setConfigDatabaseLocation(const String& dbLocation)
+{
+    bool result{ false };
+    if (isSqliteEngine())
+    {
+        LogConfiguration config;
+        config.setDatabaseLocation(dbLocation, false);
+        result = true;
+    }
+
+    return result;
+}
+
+String LoggerClient::getConfigDatabaseName(void) const
+{
+    String result;
+    if (isSqliteEngine())
+    {
+        LogConfiguration config;
+        result = File::getFileFullPath(config.getDatabaseName().getString());
+    }
+
+    return result;
+}
+
+bool LoggerClient::setConfigDatabaseName(const String& dbName)
+{
+    bool result{ false };
+    if (isSqliteEngine())
+    {
+        LogConfiguration config;
+        config.setDatabaseName(dbName, false);
+        result = true;
+    }
+
+    return result;
+}
+
+bool LoggerClient::setConfigLoggerConnectEnabled(bool isEnabled)
+{
+    bool result{ false };
+    LogConfiguration config;
+    if (config.getDatabaseEngine() == NELogging::LOGDB_ENGINE_NAME)
+    {
+        config.setDatabaseEnable(isEnabled, false);
         result = true;
     }
 

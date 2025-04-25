@@ -208,7 +208,7 @@ namespace NELogging
     /**
      * \brief   The name of the supported database logging engines.
      **/
-    constexpr std::string_view   LOGDB_NAME_SQLITE3 { "sqlite3" };
+    constexpr std::string_view   LOGDB_ENGINE_NAME  { "sqlite3" };
 
     /**
      * \brief   Returns string value of NELogging::eLogPriority.

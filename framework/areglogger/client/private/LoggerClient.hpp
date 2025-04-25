@@ -143,6 +143,8 @@ public:
      **/
     const NESocket::SocketAddress& getAddress(void) const;
 
+    bool isSqliteEngine(void) const;
+
     /**
      * \brief   Returns true if the observer is configured and the log collector service connection is enabled.
      **/
@@ -245,6 +247,16 @@ public:
      * \return  Returns true if succeeded to set the database path. Otherwise, returns false.
      **/
     bool setConfigDatabasePath(const String& dbPath, bool enable);
+
+    String getConfigDatabaseLocation(void) const;
+
+    bool setConfigDatabaseLocation(const String& dbLocation);
+
+    String getConfigDatabaseName(void) const;
+
+    bool setConfigDatabaseName(const String& dbName);
+
+    bool setConfigLoggerConnectEnabled(bool isEnabled);
 
     /**
      * \brief   Save current configuration of the log observer to the configuration file.

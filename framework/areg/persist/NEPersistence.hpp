@@ -159,28 +159,29 @@ namespace NEPersistence
         , EntryLogRemoteQueueSize   = 7     //!< The queue size of remote logging.
         , EntryLogRemoteService     = 8     //!< The service name of the remote logging.
 
-        , EntryLogDatabaseName      = 9     //!< The log database name.
-        , EntryLogDatabaseLocation  = 10    //!< The log database location.
-        , EntryLogDatabaseDriver    = 11    //!< The log database driver.
-        , EntryLogDatabaseAddress   = 12    //!< The log database address.
-        , EntryLogDatabasePort      = 13    //!< The log database port.
-        , EntryLogDatabaseUsername  = 14    //!< The log database user-name.
-        , EntryLogDatabasePassword  = 15    //!< The log database user-password.
+        , EntryLogDatabaseEngine    = 9     //!< The log database name.
+        , EntryLogDatabaseName      = 10    //!< The log database name.
+        , EntryLogDatabaseLocation  = 11    //!< The log database location.
+        , EntryLogDatabaseDriver    = 12    //!< The log database driver.
+        , EntryLogDatabaseAddress   = 13    //!< The log database address.
+        , EntryLogDatabasePort      = 14    //!< The log database port.
+        , EntryLogDatabaseUsername  = 15    //!< The log database user-name.
+        , EntryLogDatabasePassword  = 16    //!< The log database user-password.
 
-        , EntryLogLayoutEnter       = 16    //!< The layout of enter scope message.
-        , EntryLogLayoutMessage     = 17    //!< The layout of log message.
-        , EntryLogLayoutExit        = 18    //!< The layout of exit scope message.
-        , EntryLogScope             = 19    //!< The log scope enable / disable flag.
+        , EntryLogLayoutEnter       = 17    //!< The layout of enter scope message.
+        , EntryLogLayoutMessage     = 18    //!< The layout of log message.
+        , EntryLogLayoutExit        = 19    //!< The layout of exit scope message.
+        , EntryLogScope             = 20    //!< The log scope enable / disable flag.
 
-        , EntryServiceList          = 20    //!< The list of supported remote services.
+        , EntryServiceList          = 21    //!< The list of supported remote services.
 
-        , EntryServiceName          = 21    //!< The process name of the remote service.
-        , EntryServiceConnection    = 22    //!< The list of connection type of the remote service.
-        , EntryServiceEnable        = 23    //!< The connection enable / disable flag of the remote service.
-        , EntryServiceAddress       = 24    //!< The connection address of the remote service.
-        , EntryServicePort          = 25    //!< The connection port number of the remote service.
+        , EntryServiceName          = 22    //!< The process name of the remote service.
+        , EntryServiceConnection    = 23    //!< The list of connection type of the remote service.
+        , EntryServiceEnable        = 24    //!< The connection enable / disable flag of the remote service.
+        , EntryServiceAddress       = 25    //!< The connection address of the remote service.
+        , EntryServicePort          = 26    //!< The connection port number of the remote service.
 
-        , EntryAnyKey               = 26    //!< Indicates any key type.
+        , EntryAnyKey               = 27    //!< Indicates any key type.
     };
 
     /**
@@ -199,28 +200,29 @@ namespace NEPersistence
             , {"log"    , "*"   , "remote"  , "queue"   }   //! 7   , The queue size of remote logging property structure.
             , {"log"    , "*"   , "remote"  , "service" }   //! 8   , The service name of the remote logging.
         
-            , {"log"    , "*"   , "db"      , "name"    }   //! 9   , The name of the log database.
-            , {"log"    , "*"   , "db"      , "location"}   //! 10  , The location of log database.
-            , {"log"    , "*"   , "db"      , "driver"  }   //! 11  , The log database driver.
-            , {"log"    , "*"   , "db"      , "address" }   //! 12  , The address of the remote log database engine (DB Server).
-            , {"log"    , "*"   , "db"      , "port"    }   //! 13  , The port of the remote log database engine (DB Server).
-            , {"log"    , "*"   , "db"      , "username"}   //! 14  , The user name to log-in into the log database.
-            , {"log"    , "*"   , "db"      , "password"}   //! 15  , The user password to log-in into the log database.
+            , {"log"    , "*"   , "db"      , "engine"  }   //! 9   , The name of the log database engine.
+            , {"log"    , "*"   , "db"      , "name"    }   //! 10  , The name of the log database.
+            , {"log"    , "*"   , "db"      , "location"}   //! 11  , The location of log database.
+            , {"log"    , "*"   , "db"      , "driver"  }   //! 12  , The log database driver.
+            , {"log"    , "*"   , "db"      , "address" }   //! 13  , The address of the remote log database engine (DB Server).
+            , {"log"    , "*"   , "db"      , "port"    }   //! 14  , The port of the remote log database engine (DB Server).
+            , {"log"    , "*"   , "db"      , "username"}   //! 15  , The user name to log-in into the log database.
+            , {"log"    , "*"   , "db"      , "password"}   //! 16  , The user password to log-in into the log database.
 
-            , {"log"    , "*"   , "layout"  , "enter"   }   //! 16  , The layout of enter scope message property structure.
-            , {"log"    , "*"   , "layout"  , "message" }   //! 17  , The layout of log message property structure.
-            , {"log"    , "*"   , "layout"  , "exit"    }   //! 18  , The layout of exit scope message property structure.
-            , {"log"    , "*"   , "scope"   , "*"       }   //! 19  , The log scope enable / disable flag property structure.
+            , {"log"    , "*"   , "layout"  , "enter"   }   //! 17  , The layout of enter scope message property structure.
+            , {"log"    , "*"   , "layout"  , "message" }   //! 18  , The layout of log message property structure.
+            , {"log"    , "*"   , "layout"  , "exit"    }   //! 19  , The layout of exit scope message property structure.
+            , {"log"    , "*"   , "scope"   , "*"       }   //! 20  , The log scope enable / disable flag property structure.
 
-            , {"service", "*"   , "list"    , ""        }   //! 20  , The list of supported remote services property structure.
+            , {"service", "*"   , "list"    , ""        }   //! 21  , The list of supported remote services property structure.
 
-            , {"*"      , "*"   , "service" , ""        }   //! 21  , The process name of the remote service property structure.
-            , {"*"      , "*"   , "connect" , ""        }   //! 22  , The list of connection type of the remote service property structure.
-            , {"*"      , "*"   , "enable"  , "*"       }   //! 23  , The connection enable / disable flag of the remote service property structure.
-            , {"*"      , "*"   , "address" , "*"       }   //! 24  , The connection address of the remote service property structure.
-            , {"*"      , "*"   , "port"    , "*"       }   //! 25  , The connection port number of the remote service property structure.
+            , {"*"      , "*"   , "service" , ""        }   //! 22  , The process name of the remote service property structure.
+            , {"*"      , "*"   , "connect" , ""        }   //! 23  , The list of connection type of the remote service property structure.
+            , {"*"      , "*"   , "enable"  , "*"       }   //! 24  , The connection enable / disable flag of the remote service property structure.
+            , {"*"      , "*"   , "address" , "*"       }   //! 25  , The connection address of the remote service property structure.
+            , {"*"      , "*"   , "port"    , "*"       }   //! 26  , The connection port number of the remote service property structure.
 
-            , {"*"      , "*"   , "*"       , "*"       }   //! 26  , Indicates any key type.
+            , {"*"      , "*"   , "*"       , "*"       }   //! 27  , Indicates any key type.
         };
 
     /**
@@ -312,6 +314,11 @@ namespace NEPersistence
      * \brief   Returns the connection port number of the remote service property structure.
      **/
     inline const NEPersistence::sPropertyKey& getServicePort(void);
+
+    /**
+     * \brief   Returns the name of log database engine.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabaseEngine(void);
 
     /**
      * \brief   Returns the log database name.
@@ -442,6 +449,11 @@ inline const NEPersistence::sPropertyKey& NEPersistence::getServiceAddress(void)
 inline const NEPersistence::sPropertyKey& NEPersistence::getServicePort(void)
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServicePort)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseEngine(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseEngine)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseName(void)
