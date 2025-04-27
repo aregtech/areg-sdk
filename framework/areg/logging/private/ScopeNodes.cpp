@@ -373,7 +373,26 @@ bool ScopeNode::isEmpty( void ) const
 //////////////////////////////////////////////////////////////////////////
 
 ScopeRoot::ScopeRoot( void )
-    : ScopeNode     ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) )
+    : ScopeNode ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) )
+    , mRootId   ( NEService::COOKIE_LOCAL )
+{
+}
+
+ScopeRoot::ScopeRoot(const String& rootName, unsigned int rootId, unsigned int scopePrio /*= static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset)*/)
+    : ScopeNode (ScopeNodeBase::eNode::Root, rootName, scopePrio)
+    , mRootId   (rootId)
+{
+}
+
+ScopeRoot::ScopeRoot(const ScopeRoot& src)
+    : ScopeNode (static_cast<const ScopeNode&>(src))
+    , mRootId   (src.mRootId)
+{
+}
+
+ScopeRoot::ScopeRoot(ScopeRoot&& src) noexcept
+    : ScopeNode (std::move(static_cast<ScopeNode&&>(src)))
+    , mRootId   (src.mRootId)
 {
 }
 

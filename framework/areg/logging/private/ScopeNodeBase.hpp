@@ -45,7 +45,7 @@ class LogScope;
  *          NOTE:   This class is not thread safe and supposed to be used only by one thread at a time.
  *                  This and derived object are for internal used.
  **/
-class ScopeNodeBase
+class AREG_API ScopeNodeBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types

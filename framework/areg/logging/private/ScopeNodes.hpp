@@ -37,7 +37,7 @@ class ConfigManager;
 /**
  * \brief   The Leaf node, which has a parent, but does not have children nodes.
  **/
-class ScopeLeaf : public ScopeNodeBase
+class AREG_API ScopeLeaf : public ScopeNodeBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -105,7 +105,7 @@ public:
 /**
  * \brief   The scope node, which has parent, leafs and child nodes.
  **/
-class ScopeNode : public ScopeNodeBase
+class AREG_API ScopeNode : public ScopeNodeBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
@@ -284,11 +284,17 @@ public:
 // Protected members
 //////////////////////////////////////////////////////////////////////////
 protected:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
     //!< The list of child nodes.
     NodeList    mChildNodes;
 
     //!< The list of child leafs.
     LeafList    mChildLeafs;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -298,15 +304,70 @@ protected:
  * \brief   The root node, which does not have a parent, but may have
  *          child nodes and child leafs.
  **/
-class ScopeRoot : public ScopeNode
+class AREG_API ScopeRoot : public ScopeNode
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   Default constructor
+     **/
     ScopeRoot( void );
 
+    /**
+     * \brief   Initializes internal objects, sets the root name and scope priority.
+     * \param   rootName    The name of the root node.
+     * \param   rootID      The ID of the root node.
+     * \param   scopePrio   The overall scope priority of the root node. By default, it is not set.
+     **/
+    explicit ScopeRoot(const String & rootName, unsigned int rootId, unsigned int scopePrio = static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset));
+
+    /**
+     * \brief   Copy constructor.
+     **/
+    ScopeRoot(const ScopeRoot& src);
+
+    /**
+     * \brief   Move constructor.
+     **/
+    ScopeRoot(ScopeRoot && src) noexcept;
+
     virtual ~ScopeRoot( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operators
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns the name of the root. Same as node name.
+     **/
+    inline const String& getRootName(void) const;
+
+    /**
+     * \brief   Sets the name of the root node. Same as setting node name.
+     *          The name of the root is not used when create
+     * \param   rootName    The name of the root to set.
+     **/
+    inline void setRootName(const String& rootName);
+
+    /**
+     * \brief   Returns the ID of the root node.
+     **/
+    inline unsigned int getRootId(void) const;
+
+    /**
+     * \brief   Sets the ID of the root node. Only root nodes may have ID.
+     * \param   rootId  The ID of root object to set.
+     **/
+    inline void setRootId(unsigned int rootId);
+
+    /**
+     * \brief   Copies data from the given source.
+     **/
+    inline ScopeRoot& operator = (const ScopeRoot& src);
+    inline ScopeRoot& operator = (ScopeRoot&& src) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Override
@@ -346,10 +407,10 @@ public:
     virtual unsigned int updateConfigNode(ConfigManager& config, const String & parentPath ) const override;
 
 //////////////////////////////////////////////////////////////////////////
-// Forbidden calls
+// Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ScopeRoot );
+    unsigned int    mRootId; //!< The ID of the root node.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -369,6 +430,44 @@ inline const ScopeNode::LeafList & ScopeNode::getLeafs( void ) const
 inline unsigned int ScopeNode::childNodeCount( void ) const
 {
     return (mChildLeafs.getSize( ) + mChildNodes.getSize( ));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ScopeRoot class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline const String& ScopeRoot::getRootName(void) const
+{
+    return getNodeName();
+}
+
+inline void ScopeRoot::setRootName(const String& rootName)
+{
+    setNodeName(rootName);
+}
+
+inline unsigned int ScopeRoot::getRootId(void) const
+{
+    return mRootId;
+}
+
+inline void ScopeRoot::setRootId(unsigned int rootId)
+{
+    mRootId = rootId;
+}
+
+inline ScopeRoot& ScopeRoot::operator = (const ScopeRoot& src)
+{
+    ScopeNode::operator = (static_cast<const ScopeNode &>(src));
+    mRootId = src.mRootId;
+    return *this;
+}
+
+inline ScopeRoot& ScopeRoot::operator = (ScopeRoot&& src) noexcept
+{
+    ScopeNode::operator = (std::move(static_cast<ScopeNode&&>(src)));
+    mRootId = src.mRootId;
+    return *this;
 }
 
 #endif  // AREG_LOGS
