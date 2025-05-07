@@ -408,6 +408,42 @@ LOGGER_API_IMPL int logObserverGetConfigDatabasePath(char* dbPath, int space)
     }
 }
 
+LOGGER_API_IMPL int logObserverGetConfigDatabaseLocation(char* dbLocation, int space)
+{
+    String location{ LoggerClient::getInstance().getConfigDatabaseLocation() };
+    if ((dbLocation != nullptr) && (location.getLength() > static_cast<NEString::CharCount>(space)))
+    {
+        return static_cast<int>(NEString::copyString<char, char>(dbLocation, static_cast<NEString::CharCount>(space), location.getString(), location.getLength()));
+    }
+    else
+    {
+        return (location.isEmpty() ? 0 : static_cast<int>(location.getLength() + 1));
+    }
+}
+
+LOGGER_API_IMPL bool logObserverSetConfigDatabaseLocation(const char* dbLocation)
+{
+    return LoggerClient::getInstance().setConfigDatabaseLocation(dbLocation);
+}
+
+LOGGER_API_IMPL int logObserverGetConfigDatabaseName(char* dbName, int space)
+{
+    String name{ LoggerClient::getInstance().getConfigDatabaseName() };
+    if ((dbName != nullptr) && (name.getLength() > static_cast<NEString::CharCount>(space)))
+    {
+        return static_cast<int>(NEString::copyString<char, char>(dbName, static_cast<NEString::CharCount>(space), name.getString(), name.getLength()));
+    }
+    else
+    {
+        return (name.isEmpty() ? 0 : static_cast<int>(name.getLength() + 1));
+    }
+}
+
+LOGGER_API_IMPL bool logObserverSetConfigDatabaseName(const char* dbName)
+{
+    return LoggerClient::getInstance().setConfigDatabaseName(dbName);
+}
+
 LOGGER_API_IMPL bool logObserverConfigUpdate(const char* address, uint16_t port, const char* dbFilePath, bool makeSave)
 {
     LoggerClient& logger = LoggerClient::getInstance();

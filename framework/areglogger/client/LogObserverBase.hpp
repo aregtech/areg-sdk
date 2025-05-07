@@ -197,9 +197,35 @@ public:
     /**
      * \brief   Sets the database path name in the configuration.
      *          The path may contain mask like `log_%time%.sqlog`.
-     * \param   dbLocation  The database path to set.
+     * \param   dbFilePath  The database path to set.
      **/
-    void setConfigLoggerDatabase(const std::string& dbLocation);
+    void setConfigLoggerDatabase(const std::string& dbFilePath);
+
+    /**
+     * \brief   Returns the log database file location directory name.
+     *          The path may contain mask like `log_%time%`.
+     **/
+    std::string getConfigLoggerDatabaseLocation(void) const;
+
+    /**
+     * \brief   Sets the log database file location directory name.
+     *          The path may contain mask like `log_%time%`.
+     * \param   dbLocation  The database location to set.
+     **/
+    void setConfigLoggerDatabaseLocation(const std::string& dbLocation);
+
+    /**
+     * \brief   Returns the name of the database file.
+     *          The name may contain mask like `log_%time%.sqlog`.
+     **/
+    std::string getConfigLoggerDatabaseName(void) const;
+
+    /**
+     * \brief   Sets the name of the database file.
+     *          The name may contain mask like `log_%time%.sqlog`.
+     * \param   dbName  The database name to set.
+     **/
+    void setConfigLoggerDatabaseName(const std::string& dbName);
 
     /**
      * \brief   Returns the path of the currently active logging database. The returned path cannot contain mask.
