@@ -23,3 +23,8 @@ EXPORTS
     logObserverGetActiveDatabasePath
     logObserverGetInitialDatabasePath
     logObserverGetConfigDatabasePath
+    logObserverGetConfigDatabaseLocation
+    logObserverSetConfigDatabaseLocation
+    logObserverGetConfigDatabaseName
+    logObserverSetConfigDatabaseName
+    logObserverConfigUpdate

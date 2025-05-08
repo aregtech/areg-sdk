@@ -486,6 +486,40 @@ LOGGER_API int logObserverGetInitialDatabasePath(char* dbPath, int space);
 LOGGER_API int logObserverGetConfigDatabasePath(char* dbPath, int space);
 
 /**
+ * \brief   Call to get the database location specified in the configuration file.
+ * \param   dbLocation  The buffer to write the log database location specified in the configuration file. The path may contain mask like `log_%time`
+ * \param   space       The length of the buffer to write the database path, inclusive the null-terminated character at the end.
+ * \return  Returns number of characters copied in the `dbLocation`. It `dbLocation` is null or `space` is smaller than the length of database path,
+ *          the returned value is the space required to allocate to get the path.
+ **/
+LOGGER_API int logObserverGetConfigDatabaseLocation(char* dbLocation, int space);
+
+/**
+ * \brief   Call to set the database location in the configuration file.
+ * \param   dbLocation  The location to save logging database files. The path may contain mask like `log_%time`.
+ *                      If empty or null, it is not modified and ignored.
+ * \return  Returns true if operation succeeded. Otherwise, returns false.
+ **/
+LOGGER_API bool logObserverSetConfigDatabaseLocation(const char* dbLocation);
+
+/**
+ * \brief   Call to get the database name specified in the configuration file.
+ * \param   dbName  The buffer to write the database name specified in the configuration file. The name may contain mask like `log_%time%.sqlog`.
+ * \param   space   The length of the buffer to write the database name, inclusive the null-terminated character at the end.
+ * \return  Returns number of characters copied in the `dbName`. It `dbName` is null or `space` is smaller than the length of database name,
+ *          the returned value is the space required to allocate to get the name.
+ **/
+LOGGER_API int logObserverGetConfigDatabaseName(char* dbName, int space);
+
+/**
+ * \brief   Call to set the database name in the configuration file.
+ * \param   dbName  The name to save logging database files. The name may contain mask like `log_%time%.sqlog`.
+ *                  If empty or null, it is not modified and ignored.
+ * \return  Returns true if operation succeeded. Otherwise, returns false.
+ **/
+LOGGER_API bool logObserverSetConfigDatabaseName(const char* dbName);
+
+/**
  * \brief   Call to change the IP-address and TCP port of the log collector service. If required changes are written in configuration file.
  * \param   address     The IP-address of the log collector service to set in configuration. If empty or null, it is not modified and ignored.
  * \param   portNr      The TCP port number of the log collector service to set in configuration. If Invalid port (0), it is not modified and ignored.

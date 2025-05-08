@@ -139,9 +139,29 @@ std::string LogObserverBase::getConfigLoggerDatabase(void) const
     return LoggerClient::getInstance().getConfigDatabasePath().getData();
 }
 
-void LogObserverBase::setConfigLoggerDatabase(const std::string& dbLocation)
+void LogObserverBase::setConfigLoggerDatabase(const std::string& dbFilePath)
 {
-    LoggerClient::getInstance().setConfigDatabasePath(dbLocation, true);
+    LoggerClient::getInstance().setConfigDatabasePath(dbFilePath, true);
+}
+
+std::string LogObserverBase::getConfigLoggerDatabaseLocation(void) const
+{
+    return LoggerClient::getInstance().getConfigDatabaseLocation().getData();
+}
+
+void LogObserverBase::setConfigLoggerDatabaseLocation(const std::string& dbLocation)
+{
+    LoggerClient::getInstance().setConfigDatabaseLocation(dbLocation);
+}
+
+std::string LogObserverBase::getConfigLoggerDatabaseName(void) const
+{
+    return LoggerClient::getInstance().getConfigDatabaseName().getData();
+}
+
+void LogObserverBase::setConfigLoggerDatabaseName(const std::string& dbName)
+{
+    LoggerClient::getInstance().setConfigDatabaseName(dbName);
 }
 
 std::string LogObserverBase::getActiveDatabasePath(void) const
