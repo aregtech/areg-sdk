@@ -448,7 +448,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID 
         instance.ciBitness  = static_cast<NEService::eInstanceBitness>(Process::getInstance().getBitness());
         instance.ciCookie   = source;
         instance.ciTimestamp= static_cast<TIME64>(DateTime::getNow());
-        instance.ciInstance = Process::getInstance().getAppName();
+        instance.ciInstance = Process::getInstance().getName();
         instance.ciLocation = Process::getInstance().getPath();
 
         msgHelloServer << instance;
