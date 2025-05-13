@@ -32,16 +32,16 @@ LoggerClient& LoggerClient::getInstance(void)
 }
 
 LoggerClient::LoggerClient(void)
-    : ServiceClientConnectionBase( TargetID
-                                 , ServiceType
+    : ServiceClientConnectionBase( LoggerClient::TargetID
+                                 , LoggerClient::ServiceType
                                  , static_cast<uint32_t>(ConnectType)
-                                 , SourceType
+                                 , LoggerClient::SourceType
                                  , static_cast<IEServiceConnectionConsumer &>(self())
                                  , static_cast<IERemoteMessageHandler &>(self())
                                  , static_cast<DispatcherThread &>(self())
-                                 , ThreadPrefix)
+                                 , LoggerClient::ThreadPrefix)
     , IEConfigurationListener    ( )
-    , DispatcherThread           ( ThreadName )
+    , DispatcherThread           ( LoggerClient::ThreadName )
     , IEServiceConnectionConsumer( )
     , IERemoteMessageHandler     ( )
 
