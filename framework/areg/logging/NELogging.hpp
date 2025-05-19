@@ -191,7 +191,7 @@ namespace NELogging
     /**
      * \brief   The string value of warning priority
      **/
-    const String  PRIO_WARNING_STR    { "WARNING" };
+    const String  PRIO_WARNING_STR    { "WARN" };
     /**
      * \brief   The string value of information priority
      **/
