@@ -62,7 +62,7 @@ class LoggerClient  : public    ServiceClientConnectionBase
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The name of the observer dispatcher thread
-    static constexpr std::string_view                   ThreadName      { "LogObserverThread" };
+    static constexpr std::string_view                   ThreadName      { "AREG_LogObserverThread" };
 
     //!< The prefix to add to the send and receive threads.
     static constexpr std::string_view                   ThreadPrefix    { "Observer" };
