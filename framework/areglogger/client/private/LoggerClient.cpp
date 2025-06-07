@@ -187,37 +187,37 @@ bool LoggerClient::requestConnectedInstances(void)
     return result;
 }
 
-bool LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+bool LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
-    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
+    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::TARGET_UNKNOWN))
     {
-        result = sendMessage(NELogging::messageQueryScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
+        result = sendMessage(NELogging::messageQueryScopes(mChannel.getCookie(), target == NEService::TARGET_ALL ? LoggerClient::TargetID : target));
     }
 
     return result;
 }
 
-bool LoggerClient::requestChangeScopePrio(const NELogging::ScopeNames & scopes, const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+bool LoggerClient::requestChangeScopePrio(const NELogging::ScopeNames & scopes, const ITEM_ID& target /*= NEService::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
-    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
+    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::TARGET_UNKNOWN))
     {
-        result = sendMessage(NELogging::messageUpdateScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target, scopes));
+        result = sendMessage(NELogging::messageUpdateScopes(mChannel.getCookie(), target == NEService::TARGET_ALL ? LoggerClient::TargetID : target, scopes));
     }
 
     return result;
 }
 
-bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
-    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
+    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::TARGET_UNKNOWN))
     {
-        result = sendMessage(NELogging::messageSaveConfiguration(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
+        result = sendMessage(NELogging::messageSaveConfiguration(mChannel.getCookie(), target == NEService::TARGET_ALL ? LoggerClient::TargetID : target));
     }
 
     return result;

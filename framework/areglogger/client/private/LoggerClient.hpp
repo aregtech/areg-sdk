@@ -180,37 +180,37 @@ public:
     /**
      * \brief   Generates and sends the message to query list of scopes.
      *          The message is sent either to certain target or to all connected clients
-     *          if the target is NEService::COOKIE_ANY.
+     *          if the target is NEService::TARGET_ALL.
      * \param   target  The ID of the target to send the message.
-     *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     *                  The message is sent to all clients if the target is NEService::TARGET_ALL.
      * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    bool requestScopes(const ITEM_ID& target = NEService::COOKIE_ANY);
+    bool requestScopes(const ITEM_ID& target = NEService::TARGET_ALL);
 
     /**
      * \brief   Generates and sends the message to update the scope priority.
      *          The message is sent either to certain target or to all connected clients
-     *          if the target is NEService::COOKIE_ANY.
+     *          if the target is NEService::TARGET_ALL.
      * \param   scopes  The list of scopes or scope group to update the log message priority.
      *                  Each entry contains scope name, scope ID and the scope message priority.
      *                  The ID can be 0 if the name refers to a scope group.
      * \param   target  The ID of the target to send the message.
-     *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     *                  The message is sent to all clients if the target is NEService::TARGET_ALL.
      * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    bool requestChangeScopePrio(const NELogging::ScopeNames& scopes, const ITEM_ID& target = NEService::COOKIE_ANY);
+    bool requestChangeScopePrio(const NELogging::ScopeNames& scopes, const ITEM_ID& target = NEService::TARGET_ALL);
 
     /**
      * \brief   Generates and sends the message to request to save configuration current state,
      *          so that on the next start the application starts with the configuration state.
      *          Normally, this is used when change scope message priority.
      *          The message is sent either to certain target or to all connected clients
-     *          if the target is NEService::COOKIE_ANY.
+     *          if the target is NEService::TARGET_ALL.
      * \param   target  The ID of the target to send the message.
-     *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     *                  The message is sent to all clients if the target is NEService::TARGET_ALL.
      * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    bool requestSaveConfiguration(const ITEM_ID & target = NEService::COOKIE_ANY);
+    bool requestSaveConfiguration(const ITEM_ID & target = NEService::TARGET_ALL);
 
     /**
      * \brief   Creates of opens the database for the logging. If specified path is null or empty,

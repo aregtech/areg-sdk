@@ -313,7 +313,7 @@ private:
      * \param   optScope    The option entry that contains scope priority update instruction.
      *                      If the command contains a list of scopes to update, the should be split by ';'.
      * \param   msgList     On output it contains a list a messages to send to the targets.
-     *                      If a message is referred to all connected clients, the target is NEService::COOKIE_ANY.
+     *                      If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
      **/
     static void _createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage> & OUT msgList);
 

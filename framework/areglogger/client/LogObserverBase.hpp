@@ -263,7 +263,7 @@ public:
      * \brief   Requests to update the priority of the logging message to receive.
      *          The indicated scopes can be scope group.
      * \param   target  The valid cookie ID of the target to update the log message priority.
-     *                  This value cannot be NEService::TARGET_ALL (or 0).
+     *                  This value cannot be NEService::TARGET_ALL (or 0xFF).
      * \param   scopes  The list of scopes of scope group to update the priority.
      *                  The scope group should  end with '*'. For example 'areg_base_*'.
      *                  In this case the ID of the scope can be 0.
@@ -276,7 +276,7 @@ public:
      * \brief   Requests to save current configuration of the specified target. This is normally called when update the log priority of the instance,
      *          so that on next start the application logs message of the scopes and priorities currently set.
      * \param   target  The cookie ID of the target instance to save the configuration.
-     *                  If the target is NEService::TARGET_ALL (or 0), the request is sent to all connected instances.
+     *                  If the target is NEService::TARGET_ALL (or 0xFF), the request is sent to all connected instances.
      *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/

@@ -46,14 +46,14 @@ void LogCollectorMessageProcessor::queryConnectedInstances(const RemoteMessage &
     }
 }
 
-void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::MapInstances& instances, const ITEM_ID& target /*= NEService::COOKIE_ANY*/) const
+void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::MapInstances& instances, const ITEM_ID& target /*= NEService::TARGET_ALL*/) const
 {
     const auto& observers{ mLoggerService.getObservers() };
     if (observers.isEmpty())
         return;
 
     RemoteMessage msgInstances;
-    ASSERT((target == NEService::COOKIE_ANY) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
+    ASSERT((target == NEService::TARGET_ALL) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
 
     if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
     {
@@ -77,7 +77,7 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::Map
             msgInstances.moveToEnd();
         }
 
-        if (target == NEService::COOKIE_ANY)
+        if (target == NEService::TARGET_ALL)
         {
             for (const auto& observer : observers.getData())
             {
@@ -105,7 +105,7 @@ void LogCollectorMessageProcessor::notifyDisconnectedInstances(const TEArrayList
     {
         msgInstances << NERemoteService::eRemoteConnection::RemoteDisconnected;
         msgInstances << listIds;
-        if (target == NEService::COOKIE_ANY)
+        if (target == NEService::TARGET_ALL)
         {
             for (const auto& observer : observers.getData())
             {
@@ -156,7 +156,7 @@ void LogCollectorMessageProcessor::saveLogSourceConfiguration(const RemoteMessag
 
     ITEM_ID target{ NEService::COOKIE_UNKNOWN };
     msgReceived >> target;
-    if ((target == NEService::COOKIE_ANY) || (target == NEService::COOKIE_LOGGER))
+    if ((target == NEService::TARGET_ALL) || (target == NEService::COOKIE_LOGGER))
     {
         const NEService::MapInstances& instances{ mLoggerService.getInstances() };
         for (const auto& entry : instances.getData())
@@ -212,7 +212,7 @@ void LogCollectorMessageProcessor::processNextSaveConfig(void)
 
 void LogCollectorMessageProcessor::clientDisconnected(const ITEM_ID& cookie)
 {
-    if ((cookie > NEService::COOKIE_ANY) && (mPendingSave == cookie))
+    if ((cookie > NEService::TARGET_ALL) && (mPendingSave == cookie))
     {
         processNextSaveConfig();
     }
@@ -254,7 +254,7 @@ inline void LogCollectorMessageProcessor::_forwardMessageToLogSources(const Remo
         return;
 
     ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::COOKIE_ANY };
+    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::TARGET_ALL };
 
     auto srcPos = source != NEService::COOKIE_LOGGER ? instances.find(source) : instances.invalidPosition();
     if ((source == NEService::COOKIE_LOGGER) || (instances.isValidPosition(srcPos) && isLogObserver(instances.valueAtPosition(srcPos).ciSource)))
@@ -264,7 +264,7 @@ inline void LogCollectorMessageProcessor::_forwardMessageToLogSources(const Remo
         {
             mLoggerService.sendMessage(msgReceived);
         }
-        else if (target == NEService::COOKIE_ANY)
+        else if (target == NEService::TARGET_ALL)
         {
             for (const auto& instance : instances.getData())
             {
@@ -285,7 +285,7 @@ inline void LogCollectorMessageProcessor::_forwardMessageToObservers(const Remot
         return;
 
     ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::COOKIE_ANY };
+    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::TARGET_ALL };
     const NEService::MapInstances& instances = mLoggerService.getInstances();
 
     auto srcPos = instances.find(source);
@@ -296,7 +296,7 @@ inline void LogCollectorMessageProcessor::_forwardMessageToObservers(const Remot
         {
             mLoggerService.sendMessage(msgReceived);
         }
-        else if (target == NEService::COOKIE_ANY)
+        else if (target == NEService::TARGET_ALL)
         {
             for (const auto& observer : observers.getData())
             {

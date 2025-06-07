@@ -517,7 +517,7 @@ namespace NELogging
     /**
      * \brief   Creates a message to query instances connected to the service.
      * \param   source      The source ID that created the query message. Should be the ID of the log observer or the ID of the log collector service.
-     * \param   target      The target ID to send the message. The target is either concrete target or NEService::COOKIE_ANY if message targets all clients.
+     * \param   target      The target ID to send the message. The target is either concrete target or NEService::TARGET_ALL if message targets all clients.
      * \return  Returns generated message ready to forward to target client(s) via log collector service.
      **/
     AREG_API RemoteMessage messageQueryInstances(const ITEM_ID& source, const ITEM_ID& target);
@@ -532,7 +532,7 @@ namespace NELogging
      * \param   source      The ID of the source that generated the message.
      *                      The source should be either log observer or NEService::COOKIE_LOGGER.
      * \param   target      The ID of the target to send the message.
-     *                      If the ID is NEService::COOKIE_ANY, the message is sent to all connected clients.
+     *                      If the ID is NEService::TARGET_ALL, the message is sent to all connected clients.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
     AREG_API RemoteMessage messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target);
@@ -554,7 +554,7 @@ namespace NELogging
      * \param   source      The source ID that generated the message. It should be either ID of the log observer application
      *                      or the ID of the log collector service.
      * \param   target      The target ID to receive the message. This target can be either concrete connected client
-     *                      or can be NEService::COOKIE_ANY if should be forwarded to all connected clients.
+     *                      or can be NEService::TARGET_ALL if should be forwarded to all connected clients.
      * \return  Returns generated message ready to send to client(s) via log collector service.
      **/
     AREG_API RemoteMessage messageSaveConfiguration(const ITEM_ID & source, const ITEM_ID & target);

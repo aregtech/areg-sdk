@@ -503,7 +503,7 @@ bool LogObserver::_processSaveConfig(const OptionParser::sOption& optSave)
     TEArrayList<ITEM_ID> listTargets;
     if (optSave.inString.empty() || (optSave.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
     {
-        listTargets.add(NEService::COOKIE_ANY);
+        listTargets.add(NEService::TARGET_ALL);
     }
     else
     {
@@ -512,7 +512,7 @@ bool LogObserver::_processSaveConfig(const OptionParser::sOption& optSave)
             if (elem == NEPersistence::SYNTAX_ALL_MODULES)
             {
                 listTargets.clear();
-                listTargets.add(NEService::COOKIE_ANY);
+                listTargets.add(NEService::TARGET_ALL);
                 break;
             }
             else if (elem.isNumeric())
@@ -657,7 +657,7 @@ bool LogObserver::_processQueryScopes(const OptionParser::sOption& optScope)
     TEArrayList<ITEM_ID> listTargets;
     if (optScope.inString.empty() || (optScope.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
     {
-        listTargets.add(NEService::COOKIE_ANY);
+        listTargets.add(NEService::TARGET_ALL);
     }
     else
     {
@@ -666,7 +666,7 @@ bool LogObserver::_processQueryScopes(const OptionParser::sOption& optScope)
             if (elem == NEPersistence::SYNTAX_ALL_MODULES)
             {
                 listTargets.clear();
-                listTargets.add(NEService::COOKIE_ANY);
+                listTargets.add(NEService::TARGET_ALL);
                 break;
             }
             else if (elem.isNumeric())
@@ -737,8 +737,8 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
         if (prop.isValid() && prop.getPropertyType() == NEPersistence::eConfigKeys::EntryLogScope)
         {
             const PropertyKey& key{ prop.getKey() };
-            ITEM_ID target{ key.isAllModules() ? NEService::COOKIE_ANY : key.getModule().toUInt32() };
-            if (target >= NEService::COOKIE_ANY)
+            ITEM_ID target{ key.isAllModules() ? NEService::TARGET_ALL : key.getModule().toUInt32() };
+            if (target >= NEService::TARGET_ALL)
             {
                 String scopeName{ key.getPosition() };
                 uint32_t scopePrio{ prop.getValue().getIndetifier(NEApplication::LogScopePriorityIndentifiers) };
