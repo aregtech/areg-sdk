@@ -55,7 +55,7 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEServi
                             , instance.ciLocation.c_str());
         NELogging::logAnyMessageLocal(logMsgHello);
 
-        mLoggerProcessor.notifyConnectedInstances(getInstances(), NEService::COOKIE_ANY);
+        mLoggerProcessor.notifyConnectedInstances(getInstances(), NEService::TARGET_ALL);
     }
     else if (LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
     {
@@ -86,7 +86,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
         NELogging::logAnyMessageLocal(logMsgBye);
 
         listIds.add(instance.ciCookie);
-        mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::COOKIE_ANY);
+        mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::TARGET_ALL);
     }
     else if (LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
     {
@@ -118,7 +118,7 @@ void LogCollectorServerService::removeAllInstances(void)
 
         if (listIds.isEmpty() == false)
         {
-            mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::COOKIE_ANY);
+            mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::TARGET_ALL);
         }
     }
 
