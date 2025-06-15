@@ -329,7 +329,7 @@ String LoggerClient::getConfigDatabaseName(void) const
     if (isSqliteEngine())
     {
         LogConfiguration config;
-        result = File::getFileFullPath(config.getDatabaseName().getString());
+        result = config.getDatabaseName().getString();
     }
 
     return result;
