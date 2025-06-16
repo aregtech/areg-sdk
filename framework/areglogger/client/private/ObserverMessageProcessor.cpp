@@ -105,7 +105,10 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         callback(cookie, scopes, count);
     }
 
-    delete[] scopes;
+    if (scopes != nullptr)
+    {
+        delete[] scopes;
+    }
 }
 
 void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgReceived)
@@ -151,7 +154,10 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgRec
         callback(cookie, scopes, count);
     }
 
-    delete[] scopes;
+    if (scopes != nullptr)
+    {
+        delete[] scopes;
+    }
 }
 
 void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived)
@@ -218,59 +224,66 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
     TEArrayList< NEService::sServiceConnectedInstance > listConnected;
     msgReceived >> listConnected;
 
-    if (listConnected.isEmpty() == false)
-    {
-        FuncInstancesConnect callback{ nullptr };
-        sLogInstance * listInstances{ nullptr };
-        DateTime now(DateTime::getNow());
+    FuncInstancesConnect callback{ nullptr };
+    sLogInstance* listInstances{ nullptr };
+    int size{ static_cast<int>(listConnected.getSize()) };
 
+    do
+    {
+        Lock lock(mLoggerClient.mLock);
         if (LogObserverBase::_theLogObserver == nullptr)
         {
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
-            listInstances = new sLogInstance[listConnected.getSize()];
         }
 
-        mLoggerClient.mLock.lock(NECommon::WAIT_INFINITE);
-
-        int size = static_cast<int>(listConnected.getSize());
-        for (int i = 0; i < size; ++i)
+        if (size > 0)
         {
-            const NEService::sServiceConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
-            auto added = mLoggerClient.mInstances.addIfUnique(client.ciCookie, client, false);
-            if (added.second)
-            {
-                mLoggerClient.mLogDatabase.logInstanceConnected(client, now);
-            }
+            DateTime now(DateTime::getNow());
+            listInstances = new sLogInstance[size];
 
-            if (listInstances != nullptr)
+            for (int i = 0; i < size; ++i)
             {
+                const NEService::sServiceConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
+                auto added = mLoggerClient.mInstances.addIfUnique(client.ciCookie, client, false);
+                if (added.second)
+                {
+                    mLoggerClient.mLogDatabase.logInstanceConnected(client, now);
+                }
+
+                if (listInstances != nullptr)
+                {
                     sLogInstance& inst{ listInstances[i] };
                     inst.liSource = static_cast<uint32_t>(client.ciSource);
                     inst.liBitness = static_cast<uint32_t>(client.ciBitness);
                     inst.liCookie = client.ciCookie;
                     inst.liTimestamp = client.ciTimestamp;
-                    NEString::copyString( inst.liName
+                    NEString::copyString(inst.liName
                                         , static_cast<NEString::CharCount>(LENGTH_NAME)
                                         , client.ciInstance.c_str()
                                         , static_cast<NEString::CharCount>(client.ciInstance.length()));
-                    NEString::copyString( inst.liLocation
+                    NEString::copyString(inst.liLocation
                                         , static_cast<NEString::CharCount>(LENGTH_LOCATION)
                                         , client.ciLocation.c_str()
                                         , static_cast<NEString::CharCount>(client.ciLocation.length()));
+                }
             }
+
+            mLoggerClient.mLogDatabase.commit(true);
         }
 
-        mLoggerClient.mLogDatabase.commit(true);
-        mLoggerClient.mLock.unlock();
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
-        }
-        else if (callback != nullptr)
-        {
-            callback(listInstances, size);
-        }
+    } while (false);
 
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
+    }
+    else if (callback != nullptr)
+    {
+        callback(listInstances, size);
+    }
+
+    if (listInstances != nullptr)
+    {
         delete[] listInstances;
     }
 }
@@ -281,52 +294,62 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
     TEArrayList< NEService::sServiceConnectedInstance > listDisconnected;
 
     msgReceived >> listClients;
-    if (listClients.isEmpty() == false)
+    FuncInstancesDisconnect callback{ nullptr };
+    ITEM_ID* listInstances{ nullptr };
+    int size{ static_cast<int>(listClients.getSize()) };
+    int count{ 0 };
+
+    do
     {
-        FuncInstancesDisconnect callback{ nullptr };
-        ITEM_ID* listInstances{ nullptr };
-        int count{ 0 };
-        int size{ static_cast<int>(listClients.getSize()) };
-        DateTime now(DateTime::getNow());
+        Lock lock(mLoggerClient.mLock);
 
         if (LogObserverBase::_theLogObserver == nullptr)
         {
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstDisconnected : nullptr;
-            listInstances = new ITEM_ID[size];
         }
 
-        mLoggerClient.mLock.lock(NECommon::WAIT_INFINITE);
-        for (int i = 0; i < size; ++i)
-        {
-            const ITEM_ID& client{ listClients[static_cast<uint32_t>(i)] };
-            if (mLoggerClient.mInstances.contains(client))
-            {
-                const NEService::sServiceConnectedInstance& instance = mLoggerClient.mInstances.getAt(client);
-                listDisconnected.add(instance);
-                if (mLoggerClient.mInstances.removeAt(client))
-                {
-                    mLoggerClient.mLogDatabase.logInstanceDisconnected(client, now);
-                }
 
-                if (listInstances != nullptr)
+        if (size > 0)
+        {
+            DateTime now(DateTime::getNow());
+            listInstances = new ITEM_ID[size];
+
+            for (int i = 0; i < size; ++i)
+            {
+                const ITEM_ID& client{ listClients[static_cast<uint32_t>(i)] };
+                if (mLoggerClient.mInstances.contains(client))
                 {
-                    listInstances[i] = client;
-                    ++count;
+                    const NEService::sServiceConnectedInstance& instance = mLoggerClient.mInstances.getAt(client);
+                    listDisconnected.add(instance);
+                    if (mLoggerClient.mInstances.removeAt(client))
+                    {
+                        mLoggerClient.mLogDatabase.logInstanceDisconnected(client, now);
+                    }
+
+                    if (listInstances != nullptr)
+                    {
+                        listInstances[i] = client;
+                        ++count;
+                    }
                 }
             }
-        }
 
-        mLoggerClient.mLogDatabase.commit(true);
-        mLoggerClient.mLock.unlock();
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
+            mLoggerClient.mLogDatabase.commit(true);
         }
-        else if (callback != nullptr)
-        {
-            callback(listInstances, count);
-        }
+    } while (false);
 
+
+    if (LogObserverBase::_theLogObserver != nullptr)
+    {
+        LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
+    }
+    else if (callback != nullptr)
+    {
+        callback(listInstances, count);
+    }
+
+    if (listInstances != nullptr)
+    {
         delete[] listInstances;
     }
 }
