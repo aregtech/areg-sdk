@@ -184,7 +184,8 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
         }
         else
         {
-            if (client.openLoggingDatabase(dbPath))
+            String dbLog = dbPath == nullptr ? client.getActiveDatabasePath() : String(dbPath);
+            if (client.openLoggingDatabase(dbLog))
             {
                 _theObserver.losState = eObserverStates::ObserverConnected;
                 client.setPaused(false);
