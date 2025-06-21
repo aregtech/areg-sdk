@@ -36,6 +36,7 @@
 #endif
 
 #include <utility>
+#include <regex>
 
 namespace NESocket
 {
@@ -103,40 +104,56 @@ AREG_API_IMPL const int NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXCONN;
 //////////////////////////////////////////////////////////////////////////
 NESocket::SocketAddress::SocketAddress( void )
     : mIpAddr   ( )
+    , mHostName ( )
     , mPortNr   ( NESocket::InvalidPort )
 {
 }
 
 NESocket::SocketAddress::SocketAddress(const String& address, uint16_t portNr)
-    : mIpAddr   ( address )
+    : mIpAddr   ( )
+    , mHostName ( )
     , mPortNr   ( portNr )
 {
+    if (NESocket::isIpAddress(address))
+    {
+        mIpAddr     = address;
+        mHostName   = NESocket::convertIpAddressToHostName(address);
+    }
+    else
+    {
+        mIpAddr     = NESocket::convertHostNameToIpAddress(address);
+        mHostName   = address;
+    }
 }
 
 NESocket::SocketAddress::SocketAddress(const NESocket::SocketAddress & src)
     : mIpAddr   ( src.mIpAddr )
+    , mHostName ( src.mHostName )
     , mPortNr   ( src.mPortNr )
 {
 }
 
 NESocket::SocketAddress::SocketAddress( NESocket::SocketAddress && src ) noexcept
     : mIpAddr   ( std::move(src.mIpAddr) )
+    , mHostName ( std::move(src.mHostName) )
     , mPortNr   ( std::move(src.mPortNr) )
 {
 }
 
 NESocket::SocketAddress & NESocket::SocketAddress::operator = ( const NESocket::SocketAddress & src )
 {
-    mIpAddr = src.mIpAddr;
-    mPortNr = src.mPortNr;
+    mIpAddr     = src.mIpAddr;
+    mHostName   = src.mHostName;
+    mPortNr     = src.mPortNr;
 
     return (*this);
 }
 
 NESocket::SocketAddress & NESocket::SocketAddress::operator = ( NESocket::SocketAddress && src ) noexcept
 {
-    mIpAddr = std::move(src.mIpAddr);
-    mPortNr = std::move(src.mPortNr);
+    mIpAddr     = std::move(src.mIpAddr);
+    mHostName   = std::move(src.mHostName);
+    mPortNr     = std::move(src.mPortNr);
 
     return (*this);
 }
@@ -171,29 +188,17 @@ bool NESocket::SocketAddress::getAddress(struct sockaddr_in & out_sockAddr) cons
 
 void NESocket::SocketAddress::setAddress(const struct sockaddr_in & addrHost)
 {
-    mPortNr = ntohs(addrHost.sin_port);
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1800)
-
-    char ipAddr[32] = { 0 };
-    IN_ADDR & inAddr = const_cast<IN_ADDR &>(addrHost.sin_addr);
-    if ( nullptr != inet_ntop(AF_INET, &inAddr, ipAddr, 32) )
-    {
-        mIpAddr = ipAddr;
-    }
-
-#else   // (_MSC_VER >= 1800) || POSIX
-
-    mIpAddr = inet_ntoa(addrHost.sin_addr);
-
-#endif  // (_MSC_VER >= 1800) || POSIX
+    mPortNr     = NESocket::extractPortNumber(addrHost);
+    mIpAddr     = NESocket::extractIpAddress(addrHost);
+    mHostName   = NESocket::convertIpAddressToHostName(mIpAddr);
 }
 
 bool NESocket::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
 {
-    bool result = false;
+    bool result{ false };
     mPortNr     = NESocket::InvalidPort;
-    mIpAddr     = "";
+    mIpAddr.clear();
+    mHostName.clear();
 
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
@@ -215,16 +220,21 @@ bool NESocket::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
     return result;
 }
 
+bool NESocket::SocketAddress::isEqualAddress(const String& host, uint16_t port) const
+{
+    return  (port == mPortNr) &&
+            (NESocket::isIpAddress(host) ? mIpAddr == host : mHostName == host);
+}
+
 bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName, unsigned short portNr, bool isServer)
 {
-    bool result = false;
-    
-    const char * host = hostName.empty() ? NESocket::LocalHost.data() : hostName.data();
-
+    bool result{ false };
+    const std::string_view& host{ hostName.empty() ? NESocket::LocalHost : hostName };
     mPortNr = NESocket::InvalidPort;
-    mIpAddr = "";
+    mIpAddr.clear();
+    mHostName.clear();
 
-    if ( ::isalnum(*host) )
+    if (NESocket::isIpAddress(String(host)) == false)
     {
         // acquire address info
         char svcName[0x0F];
@@ -238,7 +248,7 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
         hints.ai_protocol   = IPPROTO_TCP;
         addrinfo * aiResult = nullptr;
 
-        if ( RETURNED_OK == ::getaddrinfo(host, static_cast<const char *>(svcName), &hints, &aiResult) )
+        if ( RETURNED_OK == ::getaddrinfo(host.data(), static_cast<const char*>(svcName), &hints, &aiResult))
         {
             ASSERT(aiResult != nullptr);
             for ( addrinfo * addrInfo = aiResult; addrInfo != nullptr; addrInfo = addrInfo->ai_next)
@@ -246,9 +256,10 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
                 if ( addrInfo->ai_family == AF_INET && addrInfo->ai_socktype == SOCK_STREAM )
                 {
                     struct sockaddr_in * addrIn = reinterpret_cast<struct sockaddr_in *>(addrInfo->ai_addr);
-                    setAddress(*addrIn);
-                    result = mIpAddr.isEmpty() == false;
-                    mPortNr = portNr;
+                    mIpAddr     = NESocket::extractIpAddress(*addrIn);
+                    mHostName   = host;
+                    mPortNr     = portNr;
+                    result      = mIpAddr.isEmpty() == false;
                     break;
                 }
             }
@@ -258,9 +269,10 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
     }
     else
     {
-        mPortNr = portNr;
-        mIpAddr = host;
-        result  = true;
+        mPortNr     = portNr;
+        mIpAddr     = host;
+        mHostName   = NESocket::convertIpAddressToHostName(mIpAddr);
+        result      = true;
     }
 
     return result;
@@ -793,4 +805,88 @@ AREG_API_IMPL const String & NESocket::getHostname(void)
     }
 
     return result;
+}
+
+AREG_API_IMPL bool NESocket::isIpAddress(const String& ipaddress)
+{
+    // 25[0-5]  --> 250–255
+    // 2[0-4]\d --> 200–249
+    // 1\d{2}   --> 100–199
+    // [1-9]?\d --> 0–99
+    const std::regex ipv4Regex(
+        R"(^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)"     
+        R"(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)" 
+        R"(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)"
+        R"(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$)"
+    );
+
+    return std::regex_match(ipaddress.getData(), ipv4Regex);
+}
+
+AREG_API_IMPL String NESocket::convertHostNameToIpAddress(const String& hostName)
+{
+    String ipAddress(hostName);
+
+    addrinfo hints{}, * result = nullptr;
+    hints.ai_family = AF_INET; // IPv4 only
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    if ((getaddrinfo(hostName.getString(), nullptr, &hints, &result) == 0) && (result != nullptr))
+    {
+        sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(result->ai_addr);
+        char buffer[INET_ADDRSTRLEN]{};
+        if (inet_ntop(AF_INET, &addr->sin_addr, buffer, sizeof(buffer)) != nullptr)
+        {
+            ipAddress = buffer;
+        }
+
+        freeaddrinfo(result);
+    }
+
+    return ipAddress;
+}
+
+AREG_API_IMPL String NESocket::convertIpAddressToHostName(const String& ipAddress)
+{
+    String hostName(ipAddress);
+
+    sockaddr_in sa{};
+    sa.sin_family = AF_INET;
+    if (inet_pton(AF_INET, ipAddress.getString(), &sa.sin_addr) == 1)
+    {
+        char host[NI_MAXHOST]{};
+        if (getnameinfo(reinterpret_cast<sockaddr*>(&sa), sizeof(sa), host, sizeof(host), nullptr, 0, 0) == 0)
+        {
+            hostName = host;
+        }
+    }
+
+    return hostName;
+}
+
+AREG_API_IMPL String NESocket::extractIpAddress(const sockaddr_in& addrHost)
+{
+    String result;
+#if defined(_MSC_VER) && (_MSC_VER >= 1800)
+
+    char ipAddr[INET_ADDRSTRLEN] { };
+    IN_ADDR& inAddr = const_cast<IN_ADDR&>(addrHost.sin_addr);
+    if (nullptr != inet_ntop(AF_INET, &inAddr, ipAddr, 32))
+    {
+        result = ipAddr;
+    }
+
+#else   // (_MSC_VER >= 1800) || POSIX
+
+    result = inet_ntoa(addrHost.sin_addr);
+
+#endif  // (_MSC_VER >= 1800) || POSIX
+
+    return result;
+}
+
+AREG_API_IMPL uint16_t NESocket::extractPortNumber(const sockaddr_in& addrHost)
+{
+    return ntohs(addrHost.sin_port);
 }

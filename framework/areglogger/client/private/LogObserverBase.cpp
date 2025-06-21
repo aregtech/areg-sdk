@@ -94,9 +94,19 @@ bool LogObserverBase::isStated(void) const
     return logObserverIsStarted();
 }
 
-const std::string& LogObserverBase::getLoggerAddress(void) const
+const NESocket::SocketAddress& LogObserverBase::getLoggerAddress(void) const
+{
+    return LoggerClient::getInstance().getAddress();
+}
+
+const std::string& LogObserverBase::getLoggerIpAddress(void) const
 {
     return LoggerClient::getInstance().getAddress().getHostAddress().getData();
+}
+
+const std::string& LogObserverBase::getLoggerHostName(void) const
+{
+    return LoggerClient::getInstance().getAddress().getHostName().getData();
 }
 
 uint16_t LogObserverBase::getLoggerPort(void) const
@@ -109,7 +119,7 @@ bool LogObserverBase::getConfigLoggerEnabled(void) const
     return logObserverConfigLoggerEnabled();
 }
 
-std::string LogObserverBase::getConfigLoggerAddress(void) const
+const std::string & LogObserverBase::getConfigLoggerAddress(void) const
 {
     return LoggerClient::getInstance().getConfigLoggerAddress().getData();
 }

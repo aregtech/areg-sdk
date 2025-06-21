@@ -230,11 +230,6 @@ private:
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ClientConnection::setAddress(const String & hostName, unsigned short portNr)
-{
-    return mClientSocket.setAddress(hostName, portNr, false);
-}
-
 inline const ITEM_ID & ClientConnection::getCookie( void ) const
 {
     return mCookie;
@@ -248,6 +243,11 @@ inline void ClientConnection::setCookie(const ITEM_ID & newCookie )
 inline const NESocket::SocketAddress & ClientConnection::getAddress( void ) const
 {
     return mClientSocket.getAddress();
+}
+
+inline bool ClientConnection::setAddress(const String& hostName, unsigned short portNr)
+{
+    return mClientSocket.setAddress(hostName, portNr, false);
 }
 
 inline void ClientConnection::setAddress( const NESocket::SocketAddress & newAddress )

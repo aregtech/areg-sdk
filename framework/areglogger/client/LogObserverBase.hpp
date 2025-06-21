@@ -22,6 +22,7 @@
 #include "areglogger/client/LogObserverSwitches.h"
 #include "areglogger/client/LogObserverApi.h"
 
+#include "areg/base/NESocket.hpp"
 #include "areg/component/NEService.hpp"
 
 #include <map>
@@ -146,9 +147,19 @@ public:
     bool isStated(void) const;
 
     /**
-     * \brief   Returns the IP address to connect to the log collector service.
+     * \brief   Returns the address of the log collector service.
      **/
-    const std::string& getLoggerAddress(void) const;
+    const NESocket::SocketAddress & getLoggerAddress(void) const;
+
+    /**
+     * \brief   Returns the IP address of the log collector service.
+     **/
+    const std::string& getLoggerIpAddress(void) const;
+
+    /**
+     * \brief   Return the host name or IP address of the log collector service.
+     **/
+    const std::string& getLoggerHostName(void) const;
 
     /**
      * \brief   Returns the TCP port number to connect to the log collector service.
@@ -163,7 +174,7 @@ public:
     /**
      * \brief   Return the IP address of log collector service set in the configuration.
      **/
-    std::string getConfigLoggerAddress(void) const;
+    const std::string & getConfigLoggerAddress(void) const;
 
     /**
      * \brief   Sets the IP address of the log collector service in the configuration.
