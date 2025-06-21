@@ -159,9 +159,23 @@ namespace NESocket
         bool resolveSocket( SOCKETHANDLE hSocket );
 
         /**
+         * \brief   Compares the stored IPv4 address or host name and port number with the given values.
+         *
+         * \param   host    The IPv4 address or host name to compare.
+         * \param   port    The 16-bit port number to compare.
+         * \return  Returns true if both the host (IPv4 address or name) and port match the stored values.
+         */
+        bool isEqualAddress(const String& host, uint16_t port) const;
+
+        /**
          * \brief   Returns IP address of host as readable string.
          **/
         inline const String & getHostAddress( void ) const;
+
+        /**
+         * \brief   Returns the name of the host as a readable string.
+         **/
+        inline const String & getHostName( void ) const;
 
         /**
          * \brief   Returns port number of host.
@@ -186,6 +200,10 @@ namespace NESocket
          * \brief   The string containing human readable numeric IP-address.
          **/
         String          mIpAddr;
+        /**
+         * \brief   The string contains human readable host name.
+         **/
+        String          mHostName;
         /**
          * \brief   The port number of socket to connect.
          **/
@@ -581,6 +599,48 @@ namespace NESocket
      **/
     AREG_API const String & getHostname(void);
 
+    /**
+     * \brief   NESocket::isLocalAddress
+     *          Checks whether passed IP-address is local address.
+     *          The local address is either "localhost" or "127.0.0.1".
+     **/
+    inline bool isLocalAddress(const String& ipaddress);
+
+    /**
+     * \brief   Checks whether the given string contains an IPv4 address.
+     * \param   ipaddress   String to check.
+     * \return  Returns true if given string is an IPv4 address like "127.0.0.1". Otherwise, returns false.
+     **/
+    AREG_API bool isIpAddress(const String& ipaddress);
+
+    /**
+     * \brief   Converts the host name to the IPv4 address or returns the `hostName` string if failed to convert.
+     * \param   hostName    The human readable string to convert.
+     * \return  Returns appropriate IPv4 address or the same `hostName` string if could not convert.
+     **/
+    AREG_API String convertHostNameToIpAddress(const String& hostName);
+
+    /**
+     * \brief   Converts the IPv4 address to the host name or returns the `ipAddress` string if failed to convert.
+     * \param   ipAddress   The human readable IPv4 address to convert.
+     * \return  Returns appropriate host name or the same `ipAddress` string if could not convert.
+     **/
+    AREG_API String convertIpAddressToHostName(const String& ipAddress);
+
+    /**
+     * \brief   Extracts the IPv4 address from the given `sockaddr_in` structure.
+     * \param   addrHost    The `sockaddr_in` structure which contains the information of the IP address.
+     * \return  Returns human readable IP address.
+     **/
+    AREG_API String extractIpAddress(const struct sockaddr_in& addrHost);
+
+    /**
+     * \brief   Extracts the port number from the given `sockaddr_in` structure.
+     * \param   addrHost    The `sockaddr_in` structure which contains the information of the port number.
+     * \return  Returns port number.
+     **/
+    AREG_API uint16_t extractPortNumber(const struct sockaddr_in& addrHost);
+
 }   // namespace NESocket end
 
 //////////////////////////////////////////////////////////////////////////
@@ -597,6 +657,11 @@ inline const String & NESocket::SocketAddress::getHostAddress( void ) const
     return mIpAddr;
 }
 
+inline const String& NESocket::SocketAddress::getHostName(void) const
+{
+    return mHostName;
+}
+
 inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
 {
     return mPortNr;
@@ -604,13 +669,19 @@ inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
 
 inline void NESocket::SocketAddress::resetAddress( void )
 {
-    mIpAddr = String::EmptyString;
+    mIpAddr.clear();
+    mHostName.clear();
     mPortNr = NESocket::InvalidPort;
 }
 
 inline bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
 {
     return ((hSocket != NESocket::InvalidSocketHandle) && (hSocket != NESocket::FailedSocketHandle));
+}
+
+inline bool NESocket::isLocalAddress(const String& ipaddress)
+{
+    return (ipaddress == NESocket::LocalHost) || (ipaddress == NESocket::LocalAddress);
 }
 
 #endif  // AREG_BASE_NESOCKET_HPP
