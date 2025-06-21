@@ -97,7 +97,7 @@ DEF_LOG_SCOPE(areg_base_NESocket_serverAcceptConnection);
 /**
  * \brief   Constant, identifying maximum number of listeners in the queue. Used by server socket when set to listen connection.
  **/
-AREG_API_IMPL const int NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXCONN;
+AREG_API_IMPL const int NESocket::MAXIMUM_LISTEN_QUEUE_SIZE{ SOMAXCONN };
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket::SocketAddress class implementation
@@ -812,8 +812,8 @@ AREG_API_IMPL bool NESocket::isIpAddress(const String& ipaddress)
 #if 1   // use without exception
 
     const std::string& ip = ipaddress.getData();
-    int num = 0;
-    int dots = 0;
+    int num{ 0 };
+    int dots{ 0 };
     int len = static_cast<int>(ip.length());
 
     if (len < 7 || len > 15)  // Fast length check (e.g., "0.0.0.0" to "255.255.255.255")
@@ -821,11 +821,11 @@ AREG_API_IMPL bool NESocket::isIpAddress(const String& ipaddress)
 
     for (int i = 0; i < len; ++i)
     {
-        char c = ip[i];
+        char c{ ip[i] };
 
         if (c == '.')
         {
-            if (++dots > 3 || i == 0 || ip[i - 1] == '.')
+            if ((++dots > 3) || (i == 0) || (ip[i - 1] == '.'))
                 return false;
 
             if (num < 0 || num > 255)
@@ -835,7 +835,7 @@ AREG_API_IMPL bool NESocket::isIpAddress(const String& ipaddress)
             continue;
         }
 
-        if (!std::isdigit(static_cast<unsigned char>(c)))
+        if (std::isdigit(static_cast<unsigned char>(c)) == false)
             return false;
 
         num = num * 10 + (c - '0');
@@ -843,7 +843,7 @@ AREG_API_IMPL bool NESocket::isIpAddress(const String& ipaddress)
             return false;
     }
 
-    return dots == 3 && num >= 0 && num <= 255 && ip.back() != '.';
+    return (dots == 3) && (num >= 0) && (num <= 255) && (ip.back() != '.');
 
 #else
 
@@ -918,9 +918,9 @@ AREG_API_IMPL String NESocket::extractIpAddress(const sockaddr_in& addrHost)
     String result;
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
 
-    char ipAddr[INET_ADDRSTRLEN] { };
+    char ipAddr[64] { };
     IN_ADDR& inAddr = const_cast<IN_ADDR&>(addrHost.sin_addr);
-    if (nullptr != inet_ntop(AF_INET, &inAddr, ipAddr, 32))
+    if (nullptr != inet_ntop(AF_INET, &inAddr, ipAddr, 64))
     {
         result = ipAddr;
     }
