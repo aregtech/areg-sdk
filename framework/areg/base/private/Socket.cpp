@@ -116,7 +116,7 @@ int Socket::receiveData( unsigned char * buffer, int length ) const
 
 bool Socket::setAddress(const char * hostName, unsigned short portNr, bool isServer)
 {
-    if ( isValid() && mAddress.isEqualAddress(hostName, portNr) )
+    if ( isValid() && (mAddress.isEqualAddress(hostName, portNr) == false))
     {
         ASSERT(mSocket.get() != nullptr);
         decreaseLock( );

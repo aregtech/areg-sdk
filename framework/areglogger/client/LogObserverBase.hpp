@@ -174,7 +174,7 @@ public:
     /**
      * \brief   Return the IP address of log collector service set in the configuration.
      **/
-    const std::string getConfigLoggerAddress(void) const;
+    std::string getConfigLoggerAddress(void) const;
 
     /**
      * \brief   Sets the IP address of the log collector service in the configuration.
