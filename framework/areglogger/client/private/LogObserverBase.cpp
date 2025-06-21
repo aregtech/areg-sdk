@@ -119,7 +119,7 @@ bool LogObserverBase::getConfigLoggerEnabled(void) const
     return logObserverConfigLoggerEnabled();
 }
 
-const std::string & LogObserverBase::getConfigLoggerAddress(void) const
+const std::string LogObserverBase::getConfigLoggerAddress(void) const
 {
     return LoggerClient::getInstance().getConfigLoggerAddress().getData();
 }
