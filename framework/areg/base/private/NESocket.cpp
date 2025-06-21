@@ -809,18 +809,66 @@ AREG_API_IMPL const String & NESocket::getHostname(void)
 
 AREG_API_IMPL bool NESocket::isIpAddress(const String& ipaddress)
 {
+#if 1   // use without exception
+
+    const std::string& ip = ipaddress.getData();
+    int num = 0;
+    int dots = 0;
+    int len = static_cast<int>(ip.length());
+
+    if (len < 7 || len > 15)  // Fast length check (e.g., "0.0.0.0" to "255.255.255.255")
+        return false;
+
+    for (int i = 0; i < len; ++i)
+    {
+        char c = ip[i];
+
+        if (c == '.')
+        {
+            if (++dots > 3 || i == 0 || ip[i - 1] == '.')
+                return false;
+
+            if (num < 0 || num > 255)
+                return false;
+
+            num = 0;
+            continue;
+        }
+
+        if (!std::isdigit(static_cast<unsigned char>(c)))
+            return false;
+
+        num = num * 10 + (c - '0');
+        if (num > 255)
+            return false;
+    }
+
+    return dots == 3 && num >= 0 && num <= 255 && ip.back() != '.';
+
+#else
+
     // 25[0-5]  --> 250–255
     // 2[0-4]\d --> 200–249
     // 1\d{2}   --> 100–199
     // [1-9]?\d --> 0–99
-    const std::regex ipv4Regex(
-        R"(^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)"     
-        R"(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)" 
-        R"(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)"
-        R"(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$)"
+    static const std::regex ipv4Regex(
+        R"(^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
+        R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
+        R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
+        R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$)",
+        std::regex::ECMAScript | std::regex::optimize
     );
 
-    return std::regex_match(ipaddress.getData(), ipv4Regex);
+    try
+    {
+        return std::regex_match(ipaddress.getData(), ipv4Regex);
+    }
+    catch (const std::regex_error&)
+    {
+        return false; // Regex failed or input caused an issue
+    }
+
+#endif
 }
 
 AREG_API_IMPL String NESocket::convertHostNameToIpAddress(const String& hostName)
