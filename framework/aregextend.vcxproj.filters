@@ -72,6 +72,12 @@
     <ClCompile Include="aregextend\service\private\win32\ServiceApplicationBaseWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aregextend\db\private\SqliteStatement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aregextend\db\private\SqliteRow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="aregextend\CMakeLists.txt">
@@ -131,6 +137,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\resources\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\db\SqliteRow.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\db\SqliteStatement.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

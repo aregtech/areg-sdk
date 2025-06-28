@@ -29,6 +29,7 @@
  **/
 class SqliteDatabase  : public IEDatabaseEngine
 {
+    friend class SqliteStatement;
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -110,6 +111,11 @@ public:
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
     virtual bool commit(bool doCommit) override;
+
+    /**
+     * \brief   Rolls back the database changes and returns true if succeeded.
+     **/
+    virtual bool rollback(void) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

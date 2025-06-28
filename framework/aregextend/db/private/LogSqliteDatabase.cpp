@@ -584,3 +584,65 @@ bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, unsigned int s
                         );
     return _execute(sql);
 }
+
+bool LogSqliteDatabase::rollback(void)
+{
+    return commit(false);
+}
+
+#if 0
+std::vector<String> LogSqliteDatabase::getLogInstanceNames(void) const
+{
+    return std::vector<String>();
+}
+
+std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances(void) const
+{
+    return std::vector<ITEM_ID>();
+}
+
+std::vector<String> LogSqliteDatabase::getLogThreadNames(void) const
+{
+    return std::vector<String>();
+}
+
+std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads(void) const
+{
+    return std::vector<ITEM_ID>();
+}
+
+std::vector<String> LogSqliteDatabase::getLogScopeNames(void) const
+{
+    return std::vector<String>();
+}
+
+std::vector<ITEM_ID> LogSqliteDatabase::getLogScopes(void) const
+{
+    return std::vector<ITEM_ID>();
+}
+
+std::vector<String> LogSqliteDatabase::getPriorityNames(void) const
+{
+    return std::vector<String>();
+}
+
+std::vector<NELogging::sScopeInfo> LogSqliteDatabase::getLogInstScopes(ITEM_ID instId) const
+{
+    return std::vector<NELogging::sScopeInfo>();
+}
+
+std::vector<SharedBuffer> LogSqliteDatabase::getLodMessages(void) const
+{
+    return std::vector<SharedBuffer>();
+}
+
+std::vector<SharedBuffer> LogSqliteDatabase::getLodInstMessages(ITEM_ID instId) const
+{
+    return std::vector<SharedBuffer>();
+}
+
+std::vector<SharedBuffer> LogSqliteDatabase::getLodScopeMessages(ITEM_ID instId, uint32_t scopeId) const
+{
+    return std::vector<SharedBuffer>();
+}
+#endif
