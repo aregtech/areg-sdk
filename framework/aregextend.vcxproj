@@ -47,6 +47,8 @@
     <ClCompile Include="aregextend\console\private\SystemServiceConsole.cpp" />
     <ClCompile Include="aregextend\db\private\LogSqliteDatabase.cpp" />
     <ClCompile Include="aregextend\db\private\SqliteDatabase.cpp" />
+    <ClCompile Include="aregextend\db\private\SqliteRow.cpp" />
+    <ClCompile Include="aregextend\db\private\SqliteStatement.cpp" />
     <ClCompile Include="aregextend\service\private\DataRateHelper.cpp" />
     <ClCompile Include="aregextend\service\private\NESystemService.cpp" />
     <ClCompile Include="aregextend\service\private\posix\ServiceApplicationBasePosix.cpp" />
@@ -70,6 +72,8 @@
     <ClInclude Include="aregextend\console\OptionParser.hpp" />
     <ClInclude Include="aregextend\db\SqliteDatabase.hpp" />
     <ClInclude Include="aregextend\db\LogSqliteDatabase.hpp" />
+    <ClInclude Include="aregextend\db\SqliteRow.hpp" />
+    <ClInclude Include="aregextend\db\SqliteStatement.hpp" />
     <ClInclude Include="aregextend\service\DataRateHelper.hpp" />
     <ClInclude Include="aregextend\service\NESystemService.hpp" />
     <ClInclude Include="aregextend\console\SystemServiceConsole.hpp" />

@@ -27,7 +27,18 @@
     #include "sqlite3/amalgamation/sqlite3.h"
 #endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 
+namespace
+{
+    inline sqlite3* _sqlite(void* dbObject)
+    {
+        return reinterpret_cast<sqlite3*>(dbObject);
+    }
 
+    inline sqlite3** _sqlite(void** dbObject)
+    {
+        return reinterpret_cast<sqlite3 **>(dbObject);
+    }
+}
 
 SqliteDatabase::SqliteDatabase(void)
     : IEDatabaseEngine  ( )
@@ -43,7 +54,7 @@ SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
 {
     if (open && (mDbPath.isEmpty() == false))
     {
-        if (::sqlite3_open(mDbPath.getString(), reinterpret_cast<sqlite3 **>(&mDbObject)) != SQLITE_OK)
+        if (::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)) != SQLITE_OK)
         {
             _close();
         }
@@ -60,7 +71,7 @@ inline bool SqliteDatabase::_open(const String& dbPath)
     bool result{ true };
     _close();
     mDbPath = dbPath.isEmpty() == false ? File::normalizePath(dbPath) : mDbPath;
-    if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), reinterpret_cast<sqlite3 **>(&mDbObject)))
+    if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)))
     {
         _close();
         result = false;
@@ -73,7 +84,7 @@ inline void SqliteDatabase::_close(void)
 {
     if (mDbObject != nullptr)
     {
-        ::sqlite3_close(reinterpret_cast<sqlite3 *>(mDbObject));
+        ::sqlite3_close(_sqlite(mDbObject));
         mDbObject = nullptr;
     }
 }
@@ -98,7 +109,7 @@ bool SqliteDatabase::execute(const String& sql)
     bool result{ false };
     if (mDbObject != nullptr)
     {
-        result = SQLITE_OK == ::sqlite3_exec(reinterpret_cast<sqlite3*>(mDbObject), sql.getString(), nullptr, nullptr, nullptr);
+        result = SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sql.getString(), nullptr, nullptr, nullptr);
     }
 
     return result;
@@ -108,7 +119,7 @@ bool SqliteDatabase::begin(void)
 {
     constexpr std::string_view  sqlBegin{ "BEGIN TRANSACTION;" };
 
-    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(reinterpret_cast<sqlite3*>(mDbObject), sqlBegin.data(), nullptr, nullptr, nullptr) : false);
+    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sqlBegin.data(), nullptr, nullptr, nullptr) : false);
 }
 
 bool SqliteDatabase::commit(bool doCommit)
@@ -116,5 +127,10 @@ bool SqliteDatabase::commit(bool doCommit)
     constexpr std::string_view sqlCommit{ "COMMIT;" };
     constexpr std::string_view sqlRoolback{ "ROLLBACK;" };
 
-    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(reinterpret_cast<sqlite3*>(mDbObject), doCommit ? sqlCommit.data() : sqlRoolback.data(), nullptr, nullptr, nullptr) : false);
+    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRoolback.data(), nullptr, nullptr, nullptr) : false);
+}
+
+bool SqliteDatabase::rollback(void)
+{
+    return commit(false);
 }

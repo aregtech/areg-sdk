@@ -21,6 +21,30 @@
 #include "areg/logging/IELogDatabaseEngine.hpp"
 #include "areg/base/String.hpp"
 
+#if 0
+#include <vector>
+
+enum eLogItemType
+{
+      ItemUnknown   = 0 //!< Unknown log item type
+    , ItemInstance      //!< Log instance item
+    , ItemThread        //!< Log thread item
+    , ItemScope         //!< Log scope item
+    , ItemPriority      //!< Log priority item
+};
+
+struct sLogItem
+{
+    ITEM_ID itemId  { 0 };  //<! The ID of the log item
+    String  itemName{   };  //!< The name of the log item
+};
+
+struct sLogItemList
+{
+    eLogItemType            itemType{ ItemUnknown };    //!< The type of the log item
+    std::vector<sLogItem>   itemList{             };    //!< The list of log items
+};
+#endif
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -198,6 +222,39 @@ public:
      * \return  Returns true if operation succeeded.
      **/
     virtual bool logScopeDeactivate(const ITEM_ID & cookie, unsigned int scopeId, const DateTime & timestamp) override;
+
+    /**
+     * \brief   Rolls back the database changes and returns true if succeeded.
+     **/
+    virtual bool rollback(void) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes and operations
+//////////////////////////////////////////////////////////////////////////
+#if 0
+    std::vector<String> getLogInstanceNames(void) const;
+
+    std::vector<ITEM_ID> getLogInstances(void) const;
+
+    std::vector<String> getLogThreadNames(void) const;
+
+    std::vector<ITEM_ID> getLogThreads(void) const;
+
+    std::vector<String> getLogScopeNames(void) const;
+
+    std::vector<ITEM_ID> getLogScopes(void) const;
+
+    std::vector<String> getPriorityNames(void) const;
+
+    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId) const;
+
+    std::vector<SharedBuffer> getLodMessages(void) const;
+
+    std::vector<SharedBuffer> getLodInstMessages(ITEM_ID instId) const;
+
+    std::vector<SharedBuffer> getLodScopeMessages(ITEM_ID instId, uint32_t scopeId) const;
+
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

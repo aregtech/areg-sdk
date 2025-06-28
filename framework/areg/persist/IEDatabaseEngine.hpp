@@ -87,6 +87,11 @@ public:
      **/
     virtual bool commit(bool doCommit) = 0;
 
+    /**
+     * \brief   Rolls back the database changes and returns true if succeeded.
+     **/
+    virtual bool rollback(void) = 0;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
