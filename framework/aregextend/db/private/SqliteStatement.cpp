@@ -101,29 +101,44 @@ void SqliteStatement::finalize()
     }
 }
 
-bool SqliteStatement::bindInt(int index, int value)
+bool SqliteStatement::bindInt32(int index, int32_t value)
 {
-    return isValid() && (sqlite3_bind_int(_sqlite_stmt(mStatement), index, value) == SQLITE_OK);
+    return ((index >= 0) && isValid() && (sqlite3_bind_int(_sqlite_stmt(mStatement), index + 1, value) == SQLITE_OK));
+}
+
+bool SqliteStatement::bindUint32(int index, uint32_t value)
+{
+    return ((index >= 0) && isValid() && (sqlite3_bind_int64(_sqlite_stmt(mStatement), index + 1, static_cast<sqlite_int64>(value)) == SQLITE_OK));
 }
 
 bool SqliteStatement::bindInt64(int index, int64_t value)
 {
-    return isValid() && (sqlite3_bind_int64(_sqlite_stmt(mStatement), index, value) == SQLITE_OK);
+    return ((index >= 0) && isValid() && (sqlite3_bind_int64(_sqlite_stmt(mStatement), index + 1, static_cast<sqlite_int64>(value)) == SQLITE_OK));
+}
+
+bool SqliteStatement::bindUint64(int index, uint64_t value)
+{
+    return ((index >= 0) && isValid() && (sqlite3_bind_int64(_sqlite_stmt(mStatement), index + 1, static_cast<sqlite_uint64>(value)) == SQLITE_OK));
 }
 
 bool SqliteStatement::bindDouble(int index, double value)
 {
-    return isValid() && (sqlite3_bind_double(_sqlite_stmt(mStatement), index, value) == SQLITE_OK);
+    return ((index >= 0) && isValid() && (sqlite3_bind_double(_sqlite_stmt(mStatement), index + 1, value) == SQLITE_OK));
+}
+
+bool SqliteStatement::bindFloat(int index, float value)
+{
+    return ((index >= 0) && isValid() && (sqlite3_bind_double(_sqlite_stmt(mStatement), index + 1, value) == SQLITE_OK));
 }
 
 bool SqliteStatement::bindText(int index, const String& value)
 {
-    return isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index, value.getString(), -1, SQLITE_TRANSIENT) == SQLITE_OK);
+    return ((index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, value.getString(), -1, SQLITE_TRANSIENT) == SQLITE_OK));
 }
 
 bool SqliteStatement::bindNull(int index)
 {
-    return isValid() && (sqlite3_bind_null(_sqlite_stmt(mStatement), index) == SQLITE_OK);
+    return ((index >= 0) && isValid() && (sqlite3_bind_null(_sqlite_stmt(mStatement), index + 1) == SQLITE_OK));
 }
 
 void SqliteStatement::clearBindings(void)
@@ -132,72 +147,95 @@ void SqliteStatement::clearBindings(void)
     sqlite3_clear_bindings(_sqlite_stmt(mStatement));
 }
 
-int SqliteStatement::getInt(int column) const
+int SqliteStatement::getInt32(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return sqlite3_column_int(_sqlite_stmt(mStatement), column);
+    ASSERT(index >= 0);
+    return static_cast<int32_t>(sqlite3_column_int(_sqlite_stmt(mStatement), index + 1));
 }
 
-int64_t SqliteStatement::getInt64(int column) const
+uint32_t SqliteStatement::getUint32(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return sqlite3_column_int64(_sqlite_stmt(mStatement), column);
+    ASSERT(index >= 0);
+    return static_cast<uint32_t>(sqlite3_column_int64(_sqlite_stmt(mStatement), index + 1));
 }
 
-double SqliteStatement::getDouble(int column) const
+int64_t SqliteStatement::getInt64(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return sqlite3_column_double(_sqlite_stmt(mStatement), column);
+    ASSERT(index >= 0);
+    return static_cast<int64_t>(sqlite3_column_int64(_sqlite_stmt(mStatement), index + 1));
 }
 
-String SqliteStatement::getText(int column) const
-{
-    return String(reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), column)));
-}
-
-bool SqliteStatement::isNull(int column) const
+uint64_t SqliteStatement::getUint64(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_NULL);
+    ASSERT(index >= 0);
+    return static_cast<uint64_t>(sqlite3_column_int64(_sqlite_stmt(mStatement), index + 1));
 }
 
-bool SqliteStatement::isColumnValid(int column) const
+double SqliteStatement::getDouble(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return (sqlite3_column_type(_sqlite_stmt(mStatement), column) != SQLITE_NULL);
+    ASSERT(index >= 0);
+    return static_cast<double>(sqlite3_column_double(_sqlite_stmt(mStatement), index + 1));
 }
 
-bool SqliteStatement::isString(int column) const
+float SqliteStatement::getFloat(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_TEXT);
+    ASSERT(index >= 0);
+    return static_cast<float>(sqlite3_column_double(_sqlite_stmt(mStatement), index + 1));
 }
 
-bool SqliteStatement::isInteger(int column) const
+String SqliteStatement::getText(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_INTEGER);
+    ASSERT(index >= 0);
+    return String(reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), index + 1)));
 }
 
-bool SqliteStatement::isInteger64(int column) const
+bool SqliteStatement::isNull(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_INTEGER);
+    ASSERT(index >= 0);
+    return (sqlite3_column_type(_sqlite_stmt(mStatement), index + 1) == SQLITE_NULL);
 }
 
-bool SqliteStatement::isDouble(int column) const
+bool SqliteStatement::isColumnValid(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_FLOAT);
+    ASSERT(index >= 0);
+    return (sqlite3_column_type(_sqlite_stmt(mStatement), index + 1) != SQLITE_NULL);
+}
+
+bool SqliteStatement::isString(int index) const
+{
+    ASSERT(isValid());
+    ASSERT(index >= 0);
+    return (sqlite3_column_type(_sqlite_stmt(mStatement), index + 1) == SQLITE_TEXT);
+}
+
+bool SqliteStatement::isInteger(int index) const
+{
+    ASSERT(isValid());
+    ASSERT(index >= 0);
+    return (sqlite3_column_type(_sqlite_stmt(mStatement), index + 1) == SQLITE_INTEGER);
+}
+
+bool SqliteStatement::isInteger64(int index) const
+{
+    ASSERT(isValid());
+    ASSERT(index >= 0);
+    return (sqlite3_column_type(_sqlite_stmt(mStatement), index + 1) == SQLITE_INTEGER);
+}
+
+bool SqliteStatement::isDouble(int index) const
+{
+    ASSERT(isValid());
+    ASSERT(index >= 0);
+    return (sqlite3_column_type(_sqlite_stmt(mStatement), index + 1) == SQLITE_FLOAT);
 }
 
 int SqliteStatement::getColumnCount(void) const
@@ -206,11 +244,11 @@ int SqliteStatement::getColumnCount(void) const
     return sqlite3_column_count(_sqlite_stmt(mStatement));
 }
 
-String SqliteStatement::getColumnName(int column) const
+String SqliteStatement::getColumnName(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    const char* columnName = sqlite3_column_name(_sqlite_stmt(mStatement), column);
+    ASSERT(index >= 0);
+    const char* columnName = sqlite3_column_name(_sqlite_stmt(mStatement), index + 1);
     return String((columnName != nullptr) ? columnName : String::EmptyString);
 }
 
@@ -230,11 +268,11 @@ int SqliteStatement::getColumnIndex(const String& columnName) const
     return NECommon::INVALID_INDEX; // Column not found
 }
 
-SqliteStatement::eColumnType SqliteStatement::getColumnType(int column) const
+SqliteStatement::eColumnType SqliteStatement::getColumnType(int index) const
 {
     ASSERT(isValid());
-    ASSERT(column >= 0);
-    int type = sqlite3_column_type(_sqlite_stmt(mStatement), column);
+    ASSERT(index >= 0);
+    int type = sqlite3_column_type(_sqlite_stmt(mStatement), index + 1);
     switch (type)
     {
         case SQLITE_INTEGER:
