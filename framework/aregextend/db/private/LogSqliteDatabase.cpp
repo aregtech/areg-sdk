@@ -800,10 +800,7 @@ void LogSqliteDatabase::getLogThreadNames(std::vector<String>& names)
         while (stmt.next())
         {
             String instName{ stmt.getText(0) };
-            if (instName.isEmpty() == false)
-            {
-                names.push_back(instName);
-            }
+            names.push_back(instName);
         }
     }
 
