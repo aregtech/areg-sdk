@@ -57,7 +57,7 @@ public:
      * \brief   Returns true if the database and the log tables are initialized,
      *          and ready to log messages.
      **/
-    virtual bool tablesInitialized(void) const = 0;
+    virtual bool areTablesInitialized(void) const = 0;
 
     /**
      * \brief   Called when logging message should be saved in the database.

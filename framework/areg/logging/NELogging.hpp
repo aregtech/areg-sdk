@@ -310,9 +310,9 @@ namespace NELogging
          **/
         sLogMessage & operator = (const sLogMessage & src);
 
-        NELogging::eLogDataType       logDataType;    //!< The type of log message data.
-        NELogging::eLogMessageType    logMsgType;     //!< The type of the logging message.
-        NELogging::eLogPriority       logMessagePrio; //!< The log message priority
+        NELogging::eLogDataType     logDataType;    //!< The type of log message data.
+        NELogging::eLogMessageType  logMsgType;     //!< The type of the logging message.
+        NELogging::eLogPriority     logMessagePrio; //!< The log message priority
         ITEM_ID                     logSource;      //!< The ID of the source that generated logging message.
         ITEM_ID                     logTarget;      //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
         ITEM_ID                     logCookie;      //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.

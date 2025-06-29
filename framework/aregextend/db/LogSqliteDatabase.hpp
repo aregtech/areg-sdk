@@ -18,33 +18,16 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include "aregextend/db/SqliteDatabase.hpp"
+#include "aregextend/db/SqliteStatement.hpp"
+#include "areg/component/NEService.hpp"
+#include "areg/logging/NELogging.hpp"
 #include "areg/logging/IELogDatabaseEngine.hpp"
 #include "areg/base/String.hpp"
 
-#if 0
 #include <vector>
 
-enum eLogItemType
-{
-      ItemUnknown   = 0 //!< Unknown log item type
-    , ItemInstance      //!< Log instance item
-    , ItemThread        //!< Log thread item
-    , ItemScope         //!< Log scope item
-    , ItemPriority      //!< Log priority item
-};
-
-struct sLogItem
-{
-    ITEM_ID itemId  { 0 };  //<! The ID of the log item
-    String  itemName{   };  //!< The name of the log item
-};
-
-struct sLogItemList
-{
-    eLogItemType            itemType{ ItemUnknown };    //!< The type of the log item
-    std::vector<sLogItem>   itemList{             };    //!< The list of log items
-};
-#endif
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -150,7 +133,7 @@ public:
      * \brief   Returns true if the database and the log tables are initialized,
      *          and ready to log messages.
      **/
-    virtual bool tablesInitialized(void) const override;
+    virtual bool areTablesInitialized(void) const override;
 
     /**
      * \brief   Called when logging message should be saved in the database.
@@ -231,30 +214,78 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
-#if 0
-    std::vector<String> getLogInstanceNames(void) const;
 
-    std::vector<ITEM_ID> getLogInstances(void) const;
+    /**
+     * \brief   Call to query and get list of names of connected instances from log database.
+     **/
+    std::vector<String> getLogInstanceNames(void);
 
-    std::vector<String> getLogThreadNames(void) const;
+    /**
+     * \brief   Call to query and get list of IDs of connected instances from log database.
+     **/
+    std::vector<ITEM_ID> getLogInstances(void);
 
-    std::vector<ITEM_ID> getLogThreads(void) const;
+    /**
+     * \brief   Call to query and get list of names of threads of the connected instances from log database.
+     **/
+    std::vector<String> getLogThreadNames(void);
 
-    std::vector<String> getLogScopeNames(void) const;
+    /**
+     * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
+     **/
+    std::vector<ITEM_ID> getLogThreads(void);
 
-    std::vector<ITEM_ID> getLogScopes(void) const;
+    /**
+     * \brief   Call to get the list of log priorities.
+     **/
+    std::vector<String> getPriorityNames(void);
 
-    std::vector<String> getPriorityNames(void) const;
+    /**
+     * \brief   Call to query and get information of connected instances from log database.
+     *          This query will receive list of all registered instances.
+     **/
+    std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos(void);
 
-    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId) const;
+    /**
+     * \brief   Call to query and get information of log scopes of specified instance from log database.
+     *          This query will receive list of all registered scopes.
+     * \param   instID  The ID of the instance.
+     **/
+    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId);
 
-    std::vector<SharedBuffer> getLodMessages(void) const;
+    /**
+     * \brief   Call to get all log messages from log database.
+     **/
+    std::vector<SharedBuffer> getLogMessages(void);
 
-    std::vector<SharedBuffer> getLodInstMessages(ITEM_ID instId) const;
+    /**
+     * \brief   Call to get log messages of the specified instance from log database.
+     *          If `instId` is `NEService::COOKIE_ANY` it receives the list of all instances
+     *          similar to the call to `getLogMessages()`.
+     * \param   instId  The ID of the instance to get log messages.
+     *                  If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     **/
+    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = NEService::COOKIE_ANY);
 
-    std::vector<SharedBuffer> getLodScopeMessages(ITEM_ID instId, uint32_t scopeId) const;
+    /**
+     * \brief   Call to get log messages of the specified scope from log database.
+     *          If `scopeId` is `0` it receives the list of all scopes
+     *          similar to the call to `getLogMessages()`.
+     * \param   scopeId     The ID of the scope to get log messages.
+     *                      If `0` it receives log messages of all scopes.
+     **/
+    std::vector<SharedBuffer> getLogScopeMessages(uint32_t scopeId = 0);
 
-#endif
+    /**
+     * \brief   Call to get log messages of the specified instance and log scope ID from log database.
+     *          If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
+     *          similar to the call to `getLogMessages()`.
+     * \param   instId      The ID of the instance to get log messages.
+     *                      If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     * \param   scopeId     The ID of the scope to get log messages.
+     *                      If `0` it receives log messages of all scopes.
+     **/
+    std::vector<SharedBuffer> getLogMessages(ITEM_ID instId, uint32_t scopeId);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -266,11 +297,6 @@ private:
      *          The path can be relative or absolute, it may as contain the mask.
      **/
     inline bool _open(const String& dbPath);
-
-    /**
-     * \brief   Closes previously opened database and releases resources.
-     **/
-    inline void _close(void);
 
     /**
      * \brief   In the opened database file, creates the tables required to save logs.
@@ -287,29 +313,26 @@ private:
      **/
     inline void _initialize(void);
 
-    /**
-     * \brief   Executes the SQL script. The database should be already opened and initialized.
-     **/
-    inline bool _execute(const char * sql);
+    inline void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 protected:
     //!< The path to the SQLite database file.
-    String      mDbPath;
+    SqliteDatabase  mDatabase;
+
+    //!< The statement to log messages in the database.
+    SqliteStatement mStmtLogs;
 
     //!< The initial path to the SQLIte database file. The path may contain mask like timestamp.
-    String      mDbInitPath;
-
-    //!< The SQLite database object.
-    void *      mDbObject;
+    String          mDbInitPath;
 
     //!< Flag, indicating whether the database and data tables are initialized or not.
-    bool        mIsInitialized;
+    bool            mIsInitialized;
 
     //!< Flag, indicating whether the database logging is enabled or not.
-    bool        mDbLogEnabled;
+    bool            mDbLogEnabled;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -334,7 +357,7 @@ inline void LogSqliteDatabase::setDatabaseLoggingEnabled(bool enable)
 
 inline const String& LogSqliteDatabase::getDatabasePath(void) const
 {
-    return mDbPath;
+    return mDatabase.getPath();
 }
 
 inline const String& LogSqliteDatabase::getInitialDatabasePath(void) const
