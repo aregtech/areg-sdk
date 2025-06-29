@@ -219,32 +219,38 @@ public:
      * \brief   Call to query and get list of names of connected instances from log database.
      **/
     std::vector<String> getLogInstanceNames(void);
+    void getLogInstanceNames(std::vector<String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database.
      **/
     std::vector<ITEM_ID> getLogInstances(void);
+    void getLogInstances(std::vector<ITEM_ID>& ids);
 
     /**
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
      **/
     std::vector<String> getLogThreadNames(void);
+    void getLogThreadNames(std::vector<String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
      **/
     std::vector<ITEM_ID> getLogThreads(void);
+    void getLogThreads(std::vector<ITEM_ID>& ids);
 
     /**
      * \brief   Call to get the list of log priorities.
      **/
     std::vector<String> getPriorityNames(void);
+    void getPriorityNames(std::vector<String>& names);
 
     /**
      * \brief   Call to query and get information of connected instances from log database.
      *          This query will receive list of all registered instances.
      **/
     std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos(void);
+    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
@@ -252,11 +258,13 @@ public:
      * \param   instID  The ID of the instance.
      **/
     std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId);
+    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
      **/
     std::vector<SharedBuffer> getLogMessages(void);
+    void getLogMessages(std::vector<SharedBuffer>& messages);
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
@@ -266,6 +274,7 @@ public:
      *                  If `NEService::COOKIE_ANY` it receives log messages of all instances.
      **/
     std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = NEService::COOKIE_ANY);
+    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
@@ -275,6 +284,7 @@ public:
      *                      If `0` it receives log messages of all scopes.
      **/
     std::vector<SharedBuffer> getLogScopeMessages(uint32_t scopeId = 0);
+    void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
@@ -286,6 +296,7 @@ public:
      *                      If `0` it receives log messages of all scopes.
      **/
     std::vector<SharedBuffer> getLogMessages(ITEM_ID instId, uint32_t scopeId);
+    void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

@@ -738,6 +738,13 @@ bool LogSqliteDatabase::rollback(void)
 std::vector<String> LogSqliteDatabase::getLogInstanceNames(void)
 {
     std::vector<String> result;
+    getLogInstanceNames(result);
+    return result;
+}
+
+void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& names)
+{
+    names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceName);
     if (stmt.isValid())
     {
@@ -746,35 +753,47 @@ std::vector<String> LogSqliteDatabase::getLogInstanceNames(void)
             String instName{ stmt.getText(0) };
             if (instName.isEmpty() == false)
             {
-                result.push_back(instName);
+                names.push_back(instName);
             }
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(names.size()));
 }
 
 std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances(void)
 {
     std::vector<ITEM_ID> result;
+    getLogInstances(result);
+    return result;
+}
+
+void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& ids)
+{
+    ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceIds);
     if (stmt.isValid())
     {
         while (stmt.next())
         {
             ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
-            result.push_back(instId);
+            ids.push_back(instId);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(ids.size()));
 }
 
 std::vector<String> LogSqliteDatabase::getLogThreadNames(void)
 {
     std::vector<String> result;
+    getLogThreadNames(result);
+    return result;
+}
+
+void LogSqliteDatabase::getLogThreadNames(std::vector<String>& names)
+{
+    names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadNames);
     if (stmt.isValid())
     {
@@ -783,30 +802,35 @@ std::vector<String> LogSqliteDatabase::getLogThreadNames(void)
             String instName{ stmt.getText(0) };
             if (instName.isEmpty() == false)
             {
-                result.push_back(instName);
+                names.push_back(instName);
             }
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(names.size()));
 }
 
 std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads(void)
 {
     std::vector<ITEM_ID> result;
+    getLogThreads(result);
+    return result;
+}
+
+void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& ids)
+{
+    ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadIds);
     if (stmt.isValid())
     {
         while (stmt.next())
         {
             ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
-            result.push_back(instId);
+            ids.push_back(instId);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(ids.size()));
 }
 
 std::vector<String> LogSqliteDatabase::getPriorityNames(void)
@@ -825,9 +849,21 @@ std::vector<String> LogSqliteDatabase::getPriorityNames(void)
     return result;
 }
 
+void LogSqliteDatabase::getPriorityNames(std::vector<String>& names)
+{
+    names = getPriorityNames();
+}
+
 std::vector<NEService::sServiceConnectedInstance> LogSqliteDatabase::getLogInstanceInfos(void)
 {
     std::vector<NEService::sServiceConnectedInstance> result;
+    getLogInstanceInfos(result);
+    return result;
+}
+
+void LogSqliteDatabase::getLogInstanceInfos(std::vector<NEService::sServiceConnectedInstance>& infos)
+{
+    infos.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogInstances);
     if (stmt.isValid())
     {
@@ -840,17 +876,23 @@ std::vector<NEService::sServiceConnectedInstance> LogSqliteDatabase::getLogInsta
             inst.ciTimestamp = static_cast<TIME64>(stmt.getInt64(3));
             inst.ciInstance = stmt.getText(4);
             inst.ciLocation = stmt.getText(5);
-            result.push_back(inst);
+            infos.push_back(inst);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(infos.size()));
 }
 
 std::vector<NELogging::sScopeInfo> LogSqliteDatabase::getLogInstScopes(ITEM_ID instId)
 {
     std::vector<NELogging::sScopeInfo> result;
+    getLogInstScopes(result, instId);
+    return result;
+}
+
+void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId)
+{
+    scopes.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogScopes);
     if (stmt.isValid())
     {
@@ -861,17 +903,23 @@ std::vector<NELogging::sScopeInfo> LogSqliteDatabase::getLogInstScopes(ITEM_ID i
             log.scopeName = stmt.getText(0);
             log.scopeId = static_cast<uint32_t>(stmt.getInt(1));
             log.scopePrio = static_cast<uint32_t>(stmt.getInt(2));
-            result.push_back(log);
+            scopes.push_back(log);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(scopes.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(void)
 {
     std::vector<SharedBuffer> result;
+    getLogMessages(result);
+    return result;
+}
+
+void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages)
+{
+    messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
     if (stmt.isValid())
     {
@@ -879,22 +927,29 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(void)
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
-            result.push_back(buf);
+            messages.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogInstMessages(ITEM_ID instId)
 {
+    std::vector<SharedBuffer> result;
+    getLogInstMessages(result, instId);
+    return result;
+}
+
+void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId)
+{
     if (instId == NEService::COOKIE_ANY)
     {
-        return getLogMessages();
+        getLogMessages(messages);
+        return;
     }
 
-    std::vector<SharedBuffer> result;
+    messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
     if (stmt.isValid())
     {
@@ -903,22 +958,29 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogInstMessages(ITEM_ID instId)
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
-            result.push_back(buf);
+            messages.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogScopeMessages(uint32_t scopeId)
 {
+    std::vector<SharedBuffer> result;
+    getLogScopeMessages(result, scopeId);
+    return result;
+}
+
+void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId)
+{
     if (scopeId == 0)
     {
-        return getLogMessages();
+        getLogMessages(messages);
+        return;
     }
 
-    std::vector<SharedBuffer> result;
+    messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetScopeLogMessages);
     if (stmt.isValid())
     {
@@ -927,12 +989,11 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogScopeMessages(uint32_t scopeI
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
-            result.push_back(buf);
+            messages.push_back(buf);
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
-    return result;
+    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint32_t scopeId)
@@ -962,4 +1023,37 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint
 
     ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
     return result;
+}
+
+void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
+{
+    if (instId == NEService::COOKIE_ANY)
+    {
+        if (scopeId == 0)
+            getLogMessages(messages);
+        else
+            getLogScopeMessages(messages, scopeId);
+        return;
+    }
+    else if (scopeId == 0)
+    {
+        getLogInstMessages(messages, instId);
+        return;
+    }
+
+    messages.clear();
+    SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
+    if (stmt.isValid())
+    {
+        stmt.bindInt64(0, static_cast<int64_t>(instId));
+        stmt.bindInt64(1, static_cast<int64_t>(scopeId));
+        while (stmt.next())
+        {
+            SharedBuffer buf;
+            _copyLogMessage(stmt, buf);
+            messages.push_back(buf);
+        }
+    }
+
+    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
 }

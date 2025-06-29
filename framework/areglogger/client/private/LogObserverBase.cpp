@@ -208,3 +208,58 @@ void LogObserverBase::saveLoggerConfig(void)
 {
     LoggerClient::getInstance().saveConfiguration();
 }
+
+void LogObserverBase::getLogInstanceNames(std::vector<String>& names)
+{
+    LoggerClient::getInstance().getLogInstanceNames(names);
+}
+
+void LogObserverBase::getLogInstances(std::vector<ITEM_ID>& ids)
+{
+    LoggerClient::getInstance().getLogInstances(ids);
+}
+
+void LogObserverBase::getLogThreadNames(std::vector<String>& names)
+{
+    LoggerClient::getInstance().getLogThreadNames(names);
+}
+
+void LogObserverBase::getLogThreads(std::vector<ITEM_ID>& ids)
+{
+    LoggerClient::getInstance().getLogThreads(ids);
+}
+
+void LogObserverBase::getPriorityNames(std::vector<String>& names)
+{
+    LoggerClient::getInstance().getPriorityNames(names);
+}
+
+void LogObserverBase::getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos)
+{
+    LoggerClient::getInstance().getLogInstanceInfos(infos);
+}
+
+void LogObserverBase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId)
+{
+    LoggerClient::getInstance().getLogInstScopes(scopes, instId);
+}
+
+void LogObserverBase::getLogMessages(std::vector<SharedBuffer>& messages)
+{
+    LoggerClient::getInstance().getLogMessages(messages);
+}
+
+void LogObserverBase::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= NEService::COOKIE_ANY*/)
+{
+    LoggerClient::getInstance().getLogInstMessages(messages, instId);
+}
+
+void LogObserverBase::getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
+{
+    LoggerClient::getInstance().getLogScopeMessages(messages, scopeId);
+}
+
+void LogObserverBase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
+{
+    LoggerClient::getInstance().getLogMessages(messages, instId, scopeId);
+}
