@@ -62,7 +62,7 @@
 #ifdef BIT64
 
     //! The type defining ID. It is 64-bit in 64-bit systems.
-    typedef unsigned long long   id_type;
+    typedef uint64_t    id_type;
 
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t   ptr_type;
@@ -73,7 +73,7 @@
 #else   // defined(BIT32)
 
     //! The type defining ID. It is 64-bit in 64-bit systems.
-    typedef unsigned int   id_type;
+    typedef uint32_t    id_type;
 
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t       ptr_type;

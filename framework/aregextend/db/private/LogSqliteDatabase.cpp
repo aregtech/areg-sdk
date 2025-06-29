@@ -522,12 +522,12 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const 
         return false;
     }
 
-    mStmtLogs.bindInt64(0, static_cast<int>(message.logCookie));
-    mStmtLogs.bindInt(  1, static_cast<int>(message.logScopeId));
-    mStmtLogs.bindInt(  2, static_cast<int>(message.logMsgType));
-    mStmtLogs.bindInt(  3, static_cast<int>(message.logMessagePrio));
-    mStmtLogs.bindInt64(4, static_cast<int>(message.logModuleId));
-    mStmtLogs.bindInt64(5, static_cast<int>(message.logThreadId));
+    mStmtLogs.bindInt64(0, static_cast<uint64_t>(message.logCookie));
+    mStmtLogs.bindInt(  1, static_cast<uint32_t>(message.logScopeId));
+    mStmtLogs.bindInt(  2, static_cast<uint32_t>(message.logMsgType));
+    mStmtLogs.bindInt(  3, static_cast<uint32_t>(message.logMessagePrio));
+    mStmtLogs.bindInt64(4, static_cast<uint64_t>(message.logModuleId));
+    mStmtLogs.bindInt64(5, static_cast<uint64_t>(message.logThreadId));
     mStmtLogs.bindText( 6, message.logMessage);
     mStmtLogs.bindText( 7, message.logThreadLen != 0 ? message.logThread : String::EmptyString);
     mStmtLogs.bindText( 8, message.logModuleId != 0 ? message.logModule : String::EmptyString);
@@ -685,11 +685,11 @@ uint32_t LogSqliteDatabase::logScopesActivate(const NELogging::ScopeNames& scope
     SqliteStatement stmt(mDatabase, _sqlInsertScopeInsert);
     for (const auto& scope : scopes.getData())
     {
-        stmt.bindInt64(0, static_cast<uint32_t>(scope.scopeId));
-        stmt.bindInt64(1, static_cast<uint64_t>(cookie));
-        stmt.bindInt(2, static_cast<uint32_t>(scope.scopePrio));
-        stmt.bindText(3, scope.scopeName.getString());
-        stmt.bindInt64(4, static_cast<uint64_t>(timestamp.getTime()));
+        stmt.bindInt(   0, static_cast<uint32_t>(scope.scopeId));
+        stmt.bindInt64( 1, static_cast<uint64_t>(cookie));
+        stmt.bindInt(   2, static_cast<uint32_t>(scope.scopePrio));
+        stmt.bindText(  3, scope.scopeName.getString());
+        stmt.bindInt64( 4, static_cast<uint64_t>(timestamp.getTime()));
         result += stmt.next() ? 1 : 0;
         stmt.reset();
         stmt.clearBindings();
@@ -893,7 +893,7 @@ void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& sco
     SqliteStatement stmt(mDatabase, _sqlGetLogScopes);
     if (stmt.isValid())
     {
-        stmt.bindInt64(0, static_cast<int64_t>(instId));
+        stmt.bindInt64(0, static_cast<uint64_t>(instId));
         while (stmt.next())
         {
             NELogging::sScopeInfo log;
@@ -950,7 +950,7 @@ void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& messages, 
     SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
     if (stmt.isValid())
     {
-        stmt.bindInt64(0, static_cast<int64_t>(instId));
+        stmt.bindInt64(0, static_cast<uint64_t>(instId));
         while (stmt.next())
         {
             SharedBuffer buf;
@@ -981,7 +981,7 @@ void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& messages,
     SqliteStatement stmt(mDatabase, _sqlGetScopeLogMessages);
     if (stmt.isValid())
     {
-        stmt.bindInt64(0, static_cast<int64_t>(scopeId));
+        stmt.bindInt(0, static_cast<uint32_t>(scopeId));
         while (stmt.next())
         {
             SharedBuffer buf;
@@ -1008,8 +1008,8 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
     if (stmt.isValid())
     {
-        stmt.bindInt64(0, static_cast<int64_t>(instId));
-        stmt.bindInt64(1, static_cast<int64_t>(scopeId));
+        stmt.bindInt64( 0, static_cast<uint64_t>(instId));
+        stmt.bindInt(   1, static_cast<uint32_t>(scopeId));
         while (stmt.next())
         {
             SharedBuffer buf;
@@ -1042,8 +1042,8 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
     if (stmt.isValid())
     {
-        stmt.bindInt64(0, static_cast<int64_t>(instId));
-        stmt.bindInt64(1, static_cast<int64_t>(scopeId));
+        stmt.bindInt64( 0, static_cast<uint64_t>(instId));
+        stmt.bindInt(   1, static_cast<uint32_t>(scopeId));
         while (stmt.next())
         {
             SharedBuffer buf;
