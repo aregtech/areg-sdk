@@ -285,6 +285,89 @@ public:
      **/
     void saveConfiguration(void);
 
+    /**
+     * \brief   Call to query and get list of names of connected instances from log database.
+     * \param   names   On output, contains the list of names of connected instances.
+     **/
+    inline void getLogInstanceNames(std::vector<String>& names);
+
+    /**
+     * \brief   Call to query and get list of IDs of connected instances from log database
+     * \param   ids     On output, contains the list of IDs of connected instances.
+     **/
+    inline void getLogInstances(std::vector<ITEM_ID>& ids);
+
+    /**
+     * \brief   Call to query and get list of names of threads of the connected instances from log database.
+     * \param   names   On output, contains the list of all thread names that sent messages.
+     **/
+    inline void getLogThreadNames(std::vector<String>& names);
+
+    /**
+     * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
+     * \param   ids     On output, contains the list of all thread IDs that sent messages.
+     **/
+    inline void getLogThreads(std::vector<ITEM_ID>& ids);
+
+    /**
+     * \brief   Call to get the list of log priorities.
+     * \param   names   On output, contains the names of all priorities.
+     **/
+    inline void getPriorityNames(std::vector<String>& names);
+
+    /**
+     * \brief   Call to query and get information of connected instances from log database.
+     *          This query will receive list of all registered instances.
+     * \param   infos   On output, contains the list of information of all registered instances in database.
+     **/
+    inline void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
+
+    /**
+     * \brief   Call to query and get information of log scopes of specified instance from log database.
+     *          This query will receive list of all registered scopes.
+     * \param   scopes  On output, contains the list of all registered scopes in database related with the specified instance ID.
+     * \param   instID  The ID of the instance.
+     **/
+    inline void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
+
+    /**
+     * \brief   Call to get all log messages from log database.
+     * \param   messages   On output, contains the list of all log messages.
+     **/
+    inline void getLogMessages(std::vector<SharedBuffer>& messages);
+
+    /**
+     * \brief   Call to get log messages of the specified instance from log database.
+     *          If `instId` is `NEService::COOKIE_ANY` it receives the list of all instances
+     *          similar to the call to `getLogMessages()`.
+     * \param   messages    On output, contains the list of log messages of the specified instance.
+     * \param   instId  The ID of the instance to get log messages.
+     *                  If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     **/
+    inline void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
+
+    /**
+     * \brief   Call to get log messages of the specified scope from log database.
+     *          If `scopeId` is `0` it receives the list of all scopes
+     *          similar to the call to `getLogMessages()`.
+     * \param   messages    On output, contains the list of log messages of the specified scope.
+     * \param   scopeId     The ID of the scope to get log messages.
+     *                      If `0` it receives log messages of all scopes.
+     **/
+    inline void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
+
+    /**
+     * \brief   Call to get log messages of the specified instance and log scope ID from log database.
+     *          If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
+     *          similar to the call to `getLogMessages()`.
+     * \param   messages    On output, contains the list of log messages of the specified instance and scope.
+     * \param   instId      The ID of the instance to get log messages.
+     *                      If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     * \param   scopeId     The ID of the scope to get log messages.
+     *                      If `0` it receives log messages of all scopes.
+     **/
+    inline void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -470,6 +553,61 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LoggerClient inline methods.
 //////////////////////////////////////////////////////////////////////////
+
+inline void LoggerClient::getLogInstanceNames(std::vector<String>& names)
+{
+    mLogDatabase.getLogInstanceNames(names);
+}
+
+inline void LoggerClient::getLogInstances(std::vector<ITEM_ID>& ids)
+{
+    mLogDatabase.getLogInstances(ids);
+}
+
+inline void LoggerClient::getLogThreadNames(std::vector<String>& names)
+{
+    mLogDatabase.getLogThreadNames(names);
+}
+
+inline void LoggerClient::getLogThreads(std::vector<ITEM_ID>& ids)
+{
+    mLogDatabase.getLogThreads(ids);
+}
+
+inline void LoggerClient::getPriorityNames(std::vector<String>& names)
+{
+    mLogDatabase.getPriorityNames(names);
+}
+
+inline void LoggerClient::getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos)
+{
+    mLogDatabase.getLogInstanceInfos(infos);
+}
+
+inline void LoggerClient::getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId)
+{
+    mLogDatabase.getLogInstScopes(scopes, instId);
+}
+
+inline void LoggerClient::getLogMessages(std::vector<SharedBuffer>& messages)
+{
+    mLogDatabase.getLogMessages(messages);
+}
+
+inline void LoggerClient::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= NEService::COOKIE_ANY*/)
+{
+    mLogDatabase.getLogInstMessages(messages, instId);
+}
+
+inline void LoggerClient::getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
+{
+    mLogDatabase.getLogScopeMessages(messages, scopeId);
+}
+
+inline void LoggerClient::getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
+{
+    mLogDatabase.getLogMessages(messages, instId, scopeId);
+}
 
 inline LoggerClient& LoggerClient::self(void)
 {
