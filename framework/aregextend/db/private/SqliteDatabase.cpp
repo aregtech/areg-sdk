@@ -49,15 +49,16 @@ SqliteDatabase::SqliteDatabase(void)
 
 SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
     : IEDatabaseEngine  ( )
-    , mDbPath           (dbPath.isEmpty() ? String::getEmptyString() : File::normalizePath(dbPath))
+    , mDbPath           ( )
     , mDbObject         ( nullptr )
 {
-    if (open && (mDbPath.isEmpty() == false))
+    if (open)
     {
-        if (::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)) != SQLITE_OK)
-        {
-            _close();
-        }
+        _open(dbPath);
+    }
+    else
+    {
+        mDbPath = dbPath.isEmpty() ? String::getEmptyString() : File::normalizePath(dbPath);
     }
 }
 
@@ -71,6 +72,18 @@ inline bool SqliteDatabase::_open(const String& dbPath)
     bool result{ true };
     _close();
     mDbPath = dbPath.isEmpty() == false ? File::normalizePath(dbPath) : mDbPath;
+    if (mDbPath.isEmpty())
+    {
+        ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
+        return false;
+    }
+
+    String folder = File::getFileDirectory(mDbPath);
+    if ((folder.isEmpty() == false) && (File::existDir(folder) == false))
+    {
+        File::createDirCascaded(folder);
+    }
+
     if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)))
     {
         _close();
@@ -125,9 +138,9 @@ bool SqliteDatabase::begin(void)
 bool SqliteDatabase::commit(bool doCommit)
 {
     constexpr std::string_view sqlCommit{ "COMMIT;" };
-    constexpr std::string_view sqlRoolback{ "ROLLBACK;" };
+    constexpr std::string_view sqlRollback{ "ROLLBACK;" };
 
-    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRoolback.data(), nullptr, nullptr, nullptr) : false);
+    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRollback.data(), nullptr, nullptr, nullptr) : false);
 }
 
 bool SqliteDatabase::rollback(void)

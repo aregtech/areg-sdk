@@ -122,31 +122,34 @@ public:
 
     /**
      * \brief   Binds an integer value to the specified parameter index.
-     * \param   index   The 1-based parameter index.
+     * \param   index   The 0-based parameter index.
      * \param   value   The integer value to bind.
      * \return  True if binding was successful, false otherwise.
      */
-    bool bindInt(int index, int value);
+    bool bindInt32(int index, int32_t value);
+    bool bindUint32(int index, uint32_t value);
 
     /**
      * \brief   Binds a 64-bit integer value to the specified parameter index.
-     * \param   index   The 1-based parameter index.
+     * \param   index   The 0-based parameter index.
      * \param   value   The 64-bit integer value to bind.
      * \return  True if binding was successful, false otherwise.
      */
     bool bindInt64(int index, int64_t value);
+    bool bindUint64(int index, uint64_t value);
 
     /**
      * \brief   Binds a double value to the specified parameter index.
-     * \param   index   The 1-based parameter index.
+     * \param   index   The 0-based parameter index.
      * \param   value   The double value to bind.
      * \return  True if binding was successful, false otherwise.
      */
     bool bindDouble(int index, double value);
+    bool bindFloat(int index, float value);
 
     /**
      * \brief   Binds a text value to the specified parameter index.
-     * \param   index   The 1-based parameter index.
+     * \param   index   The 0-based parameter index.
      * \param   value   The string value to bind.
      * \return  True if binding was successful, false otherwise.
      */
@@ -154,7 +157,7 @@ public:
 
     /**
      * \brief   Binds a NULL value to the specified parameter index.
-     * \param   index   The 1-based parameter index.
+     * \param   index   The 0-based parameter index.
      * \return  True if binding was successful, false otherwise.
      */
     bool bindNull(int index);
@@ -166,73 +169,76 @@ public:
 
     /**
      * \brief   Retrieves the integer value of the specified column in the current row.
-     * \param   column  The 0-based column index.
+     * \param   index   The 0-based column index.
      * \return  The integer value of the column.
      */
-    int getInt(int column) const;
+    int32_t getInt32(int index) const;
+    uint32_t getUint32(int index) const;
 
     /**
      * \brief   Retrieves the 64-bit integer value of the specified column in the current row.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  The 64-bit integer value of the column.
      */
-    int64_t getInt64(int column) const;
+    int64_t getInt64(int index) const;
+    uint64_t getUint64(int index) const;
 
     /**
      * \brief   Retrieves the double value of the specified column in the current row.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  The double value of the column.
      */
-    double getDouble(int column) const;
+    double getDouble(int index) const;
+    float getFloat(int index) const;
 
     /**
      * \brief   Retrieves the text value of the specified column in the current row.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  The string value of the column.
      */
-    String getText(int column) const;
+    String getText(int index) const;
 
     /**
      * \brief   Checks if the specified column in the current row is NULL.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  True if the column is NULL, false otherwise.
      */
     bool isNull(int column) const;
 
     /**
      * \brief   Checks if the specified column index is valid for the current result set.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  True if the column index is valid, false otherwise.
      */
-    bool isColumnValid(int column) const;
+    bool isColumnValid(int index) const;
 
     /**
      * \brief   Checks if the specified column contains a string value.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  True if the column is a string, false otherwise.
      */
-    bool isString(int column) const;
+    bool isString(int index) const;
 
     /**
      * \brief   Checks if the specified column contains a 32-bit integer value.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  True if the column is a 32-bit integer, false otherwise.
      */
-    bool isInteger(int column) const;
+    bool isInteger(int index) const;
 
     /**
      * \brief   Checks if the specified column contains a 64-bit integer value.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  True if the column is a 64-bit integer, false otherwise.
      */
-    bool isInteger64(int column) const;
+    bool isInteger64(int index) const;
 
     /**
      * \brief   Checks if the specified column contains a double value.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  True if the column is a double, false otherwise.
      */
-    bool isDouble(int column) const;
+    bool isDouble(int index) const;
 
     /**
      * \brief   Returns the number of columns in the result set.
@@ -242,10 +248,10 @@ public:
 
     /**
      * \brief   Returns the name of the specified column.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  The name of the column.
      */
-    String getColumnName(int column) const;
+    String getColumnName(int index) const;
 
     /**
      * \brief   Returns the index of the column with the specified name.
@@ -256,10 +262,10 @@ public:
 
     /**
      * \brief   Returns the type of the specified column.
-     * \param   column  The 0-based column index.
+     * \param   index  The 0-based column index.
      * \return  The column type as eColumnType.
      */
-    SqliteStatement::eColumnType getColumnType(int column) const;
+    SqliteStatement::eColumnType getColumnType(int index) const;
 
     /**
      * \brief   Returns a SqliteRow object representing the current row.
