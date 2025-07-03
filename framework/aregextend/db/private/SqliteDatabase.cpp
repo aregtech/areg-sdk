@@ -107,7 +107,7 @@ bool SqliteDatabase::isOperable(void) const
     return (mDbObject != nullptr);
 }
 
-bool SqliteDatabase::connect(const String& dbPath)
+bool SqliteDatabase::connect(const String& dbPath, bool /*readOnly*/)
 {
     return _open(dbPath);
 }

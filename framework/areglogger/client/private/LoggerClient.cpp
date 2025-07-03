@@ -240,7 +240,7 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
         }
     }
 
-    bool result{ mLogDatabase.connect(filePath) };
+    bool result{ mLogDatabase.connect(filePath, false) };
     FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
     if (LogObserverBase::_theLogObserver != nullptr)
     {

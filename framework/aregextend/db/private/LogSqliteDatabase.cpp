@@ -315,7 +315,7 @@ LogSqliteDatabase::~LogSqliteDatabase(void)
     mIsInitialized = false;
 }
 
-inline bool LogSqliteDatabase::_open(const String& dbPath)
+inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
 {
     if (mDbLogEnabled == false)
         return false;
@@ -328,7 +328,7 @@ inline bool LogSqliteDatabase::_open(const String& dbPath)
         mDbInitPath = dbPath;
     }
 
-    if (mDatabase.connect(mDbInitPath) == false)
+    if (mDatabase.connect(mDbInitPath, readOnly) == false)
     {
         mDatabase.disconnect();
         mIsInitialized = false;
@@ -426,13 +426,13 @@ bool LogSqliteDatabase::isOperable(void) const
     return mDatabase.isOperable();
 }
 
-bool LogSqliteDatabase::connect(const String& dbPath /*= String::EmptyString*/)
+bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
 {
     if (mDbLogEnabled && mDatabase.isOperable() == false)
     {
         bool exists = File::existFile(dbPath);
         ASSERT(mIsInitialized == false);
-        if (_open(dbPath))
+        if (_open(dbPath, readOnly))
         {
             if (exists == false)
             {
@@ -443,7 +443,10 @@ bool LogSqliteDatabase::connect(const String& dbPath /*= String::EmptyString*/)
             }
 
             mIsInitialized = true;
-            mStmtLogs.prepare(_sqlInsertLog);
+            if (readOnly == false)
+            {
+                mStmtLogs.prepare(_sqlInsertLog);
+            }
         }
     }
 
