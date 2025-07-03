@@ -430,13 +430,18 @@ bool LogSqliteDatabase::connect(const String& dbPath /*= String::EmptyString*/)
 {
     if (mDbLogEnabled && mDatabase.isOperable() == false)
     {
+        bool exists = File::existFile(dbPath);
         ASSERT(mIsInitialized == false);
         if (_open(dbPath))
         {
-            _createTables();
-            _createIndexes();
-            _initialize();
-            commit(true);
+            if (exists == false)
+            {
+                _createTables();
+                _createIndexes();
+                _initialize();
+                commit(true);
+            }
+
             mIsInitialized = true;
             mStmtLogs.prepare(_sqlInsertLog);
         }
