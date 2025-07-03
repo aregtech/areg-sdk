@@ -391,7 +391,7 @@ inline void LogSqliteDatabase::_initialize(void)
 inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuffer& buf)
 {
     constexpr uint32_t _logSize{ static_cast<uint32_t>(sizeof(NELogging::sLogMessage)) };
-    
+    buf.reserve(_logSize, false);
     buf.setSizeUsed(_logSize);
     buf.moveToBegin();
     NELogging::sLogMessage* log = reinterpret_cast<NELogging::sLogMessage*>(buf.getBuffer());
