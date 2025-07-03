@@ -89,15 +89,16 @@ public:
     virtual bool isOperable(void) const override;
 
     /**
-     * \brief   Connects to the specified SqliteDatabase.
-     * \param   dbPath  The path to the SqliteDatabase. If needed, the path may contain
-     *                  file path or URL, user name and password. It is up to
-     *                  SqliteDatabase engine to parse the path and initialize the connection.
-     *                  If the parameter is empty, it should take the data from the
-     *                  'areg.init' configuration file.
+     * \brief   Connects to the specified database.
+     * \param   dbPath      The path to the database. If needed, the path may contain
+     *                      file path or URL, user name and password. It is up to
+     *                      Database engine to parse the path and initialize the connection.
+     *                      If the parameter is empty, it should take the data from the
+     *                      'areg.init' configuration file.
+     * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    virtual bool connect(const String & dbPath) override;
+    virtual bool connect(const String& dbPath, bool readOnly) override;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
@@ -217,86 +218,97 @@ public:
 
     /**
      * \brief   Call to query and get list of names of connected instances from log database.
+     * \param   names   On output, the vector contains names of connected instances.
      **/
+    void getLogInstanceNames(std::vector<String>& OUT names);
     std::vector<String> getLogInstanceNames(void);
-    void getLogInstanceNames(std::vector<String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database.
+     * \param   ids     On output, the vector contains IDs of connected instances.
      **/
+    void getLogInstances(std::vector<ITEM_ID>& OUT ids);
     std::vector<ITEM_ID> getLogInstances(void);
-    void getLogInstances(std::vector<ITEM_ID>& ids);
 
     /**
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
+     * \param   names   On output, the vector contains names of threads of connected instances.
      **/
+    void getLogThreadNames(std::vector<String>& OUT names);
     std::vector<String> getLogThreadNames(void);
-    void getLogThreadNames(std::vector<String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
+     * \param   ids     On output, the vector contains IDs of threads of connected instances.
      **/
+    void getLogThreads(std::vector<ITEM_ID>& OUT ids);
     std::vector<ITEM_ID> getLogThreads(void);
-    void getLogThreads(std::vector<ITEM_ID>& ids);
 
     /**
      * \brief   Call to get the list of log priorities.
+     * \param   names   On output, the vector contains names of log priorities.
      **/
+    void getPriorityNames(std::vector<String>& OUT names);
     std::vector<String> getPriorityNames(void);
-    void getPriorityNames(std::vector<String>& names);
 
     /**
      * \brief   Call to query and get information of connected instances from log database.
      *          This query will receive list of all registered instances.
+     * \param   infos   On output, the vector contains information of connected instances.
      **/
+    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& OUT infos);
     std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos(void);
-    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
      *          This query will receive list of all registered scopes.
+     * \param   scopes  On output, the vector contains information of log scopes.
      * \param   instID  The ID of the instance.
      **/
-    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId);
-    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
+    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, ITEM_ID IN instId);
+    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID IN instId);
 
     /**
      * \brief   Call to get all log messages from log database.
+     * \param   messages    On output, the vector contains all log messages.
      **/
+    void getLogMessages(std::vector<SharedBuffer>& OUT messages);
     std::vector<SharedBuffer> getLogMessages(void);
-    void getLogMessages(std::vector<SharedBuffer>& messages);
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
      *          If `instId` is `NEService::COOKIE_ANY` it receives the list of all instances
      *          similar to the call to `getLogMessages()`.
-     * \param   instId  The ID of the instance to get log messages.
-     *                  If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     * \param   messages    On output, the vector contains log messages of the specified instance.
+     * \param   instId      The ID of the instance to get log messages.
+     *                      If `NEService::COOKIE_ANY` it receives log messages of all instances.
      **/
-    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = NEService::COOKIE_ANY);
-    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
+    void getLogInstMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID IN instId = NEService::COOKIE_ANY);
+    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID IN instId = NEService::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
      *          If `scopeId` is `0` it receives the list of all scopes
      *          similar to the call to `getLogMessages()`.
+     * \param   messages    On output, the vector contains log messages of the specified scope.
      * \param   scopeId     The ID of the scope to get log messages.
      *                      If `0` it receives log messages of all scopes.
      **/
-    std::vector<SharedBuffer> getLogScopeMessages(uint32_t scopeId = 0);
-    void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
+    void getLogScopeMessages(std::vector<SharedBuffer>& OUT messages, uint32_t IN scopeId = 0);
+    std::vector<SharedBuffer> getLogScopeMessages(uint32_t IN scopeId = 0);
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
      *          If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
      *          similar to the call to `getLogMessages()`.
+     * \param   messages    On output, the vector contains log messages of the specified instance and scope.
      * \param   instId      The ID of the instance to get log messages.
      *                      If `NEService::COOKIE_ANY` it receives log messages of all instances.
      * \param   scopeId     The ID of the scope to get log messages.
      *                      If `0` it receives log messages of all scopes.
      **/
-    std::vector<SharedBuffer> getLogMessages(ITEM_ID instId, uint32_t scopeId);
-    void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
+    void getLogMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID IN instId, uint32_t IN scopeId);
+    std::vector<SharedBuffer> getLogMessages(ITEM_ID IN instId, uint32_t IN scopeId);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -306,8 +318,11 @@ private:
     /**
      * \brief   Opens or creates the specified database file.
      *          The path can be relative or absolute, it may as contain the mask.
+     * \param   dbPath      The relative or absolute path the database file.
+     * \param   readOnly    If true, the database engine should connect in read-only mode.
+     * \return  Returns true if succeeded to open or create the database file.
      **/
-    inline bool _open(const String& dbPath);
+    inline bool _open(const String& dbPath, bool readOnly);
 
     /**
      * \brief   In the opened database file, creates the tables required to save logs.
@@ -324,6 +339,11 @@ private:
      **/
     inline void _initialize(void);
 
+    /**
+     * \brief   Extracts the log message from the SqliteStatement and copies it to the SharedBuffer.
+     * \param   stmt    The SqliteStatement to extract the log message.
+     * \param   buf     The SharedBuffer to copy the log message.
+     **/
     inline void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
 
 //////////////////////////////////////////////////////////////////////////

@@ -57,7 +57,7 @@ bool DatabaseLogger::openLogger(void)
             String fileName(mLogConfiguration.getDatabaseFullPath());
             dbFile = File::normalizePath(fileName.getString());
 
-            if (mDatabase->connect(dbFile))
+            if (mDatabase->connect(dbFile, false))
             {
                 result = true;
             }

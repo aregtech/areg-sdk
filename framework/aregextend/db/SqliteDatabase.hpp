@@ -76,15 +76,16 @@ public:
     virtual bool isOperable(void) const override;
 
     /**
-     * \brief   Connects to the specified SqliteDatabase.
-     * \param   dbPath  The path to the SqliteDatabase. If needed, the path may contain
-     *                  file path or URL, user name and password. It is up to
-     *                  SqliteDatabase engine to parse the path and initialize the connection.
-     *                  If the parameter is empty, it should take the data from the
-     *                  'areg.init' configuration file.
+     * \brief   Connects to the specified database.
+     * \param   dbPath      The path to the database. If needed, the path may contain
+     *                      file path or URL, user name and password. It is up to
+     *                      Database engine to parse the path and initialize the connection.
+     *                      If the parameter is empty, it should take the data from the
+     *                      'areg.init' configuration file.
+     * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    virtual bool connect(const String & dbPath) override;
+    virtual bool connect(const String& dbPath, bool readOnly) override;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
