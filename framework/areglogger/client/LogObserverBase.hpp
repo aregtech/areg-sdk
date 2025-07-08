@@ -453,9 +453,8 @@ protected:
 
     /**
      * \brief   The callback of the event triggered when connection with the log collector service is lost.
-     * \param   instances   The list of disconnected instances.
      **/
-    virtual void onLogServiceDisconnected(const std::map<ITEM_ID, NEService::sServiceConnectedInstance>& instances) = 0;
+    virtual void onLogServiceDisconnected(void) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.

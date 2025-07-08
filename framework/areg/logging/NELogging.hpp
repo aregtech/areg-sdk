@@ -80,9 +80,9 @@ namespace NELogging
          **/
         inline sScopeInfo(const char* name, uint32_t id, uint32_t prio);
 
-        String      scopeName;  //!< The name of the scope or scope group.
         uint32_t    scopeId;    //!< The scope ID, can be 0 (NELogging::LOG_SCOPE_ID_NONE). For scope group should be 0.
         uint32_t    scopePrio;  //!< The scope priority.
+        String      scopeName;  //!< The name of the scope or scope group.
     };
 
     //!< The list of scope update structure.
@@ -620,7 +620,7 @@ inline IEOutStream& operator << (IEOutStream& stream, const NELogging::sLogMessa
  **/
 inline const IEInStream& operator >> (const IEInStream& stream, NELogging::sScopeInfo & input)
 {
-    stream >> input.scopeName >> input.scopeId >> input.scopePrio;
+    stream >> input.scopeId >> input.scopePrio >> input.scopeName;
     return stream;
 }
 
@@ -631,7 +631,7 @@ inline const IEInStream& operator >> (const IEInStream& stream, NELogging::sScop
  **/
 inline IEOutStream& operator << (IEOutStream& stream, const NELogging::sScopeInfo & output)
 {
-    stream << output.scopeName << output.scopeId << output.scopePrio;
+    stream << output.scopeId << output.scopePrio << output.scopeName;
     return stream;
 }
 
@@ -678,16 +678,16 @@ inline const char* NELogging::getString(NELogging::eLogPriority prio)
 }
 
 inline NELogging::sScopeInfo::sScopeInfo(void)
-    : scopeName ( String::EmptyString )
-    , scopeId   ( 0u )
+    : scopeId   ( 0u )
     , scopePrio ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
+    , scopeName (String::EmptyString)
 {
 }
 
 inline NELogging::sScopeInfo::sScopeInfo(const char* name, uint32_t id, uint32_t prio)
-    : scopeName (name)
-    , scopeId   (id)
+    : scopeId   (id)
     , scopePrio (prio)
+    , scopeName (name)
 {
 }
 
