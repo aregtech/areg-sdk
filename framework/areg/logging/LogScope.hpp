@@ -155,6 +155,10 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 private:
     /**
+     * \brief   The name of log scope. It cannot be changed
+     **/
+    const String        mScopeName;
+    /**
      * \brief   The ID of log scope. It cannot be changed
      **/
     const unsigned int  mScopeId;
@@ -162,10 +166,6 @@ private:
      * \brief   The log message priority of the scope.
      **/
     unsigned int        mScopePrio;
-    /**
-     * \brief   The name of log scope. It cannot be changed
-     **/
-    const String        mScopeName;
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -209,9 +209,9 @@ namespace std
 
 inline IEOutStream & operator << ( IEOutStream & stream, const LogScope & output )
 {
+    stream << output.mScopeName;
     stream << output.mScopeId;
     stream << output.mScopePrio;
-    stream << output.mScopeName;
 
     return stream;
 }

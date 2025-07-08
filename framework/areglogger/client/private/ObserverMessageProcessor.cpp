@@ -85,9 +85,10 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         {
             LogScope scope(msgReceived);
             sLogScope& entry{ scopes[i] };
-            entry.lsId      = scope.getScopeId();
-            entry.lsPrio    = scope.getPriority();
-            NEMemory::memCopy(entry.lsName, LENGTH_SCOPE, scope.getScopeName().getString(), scope.getScopeName().getLength() + 1);
+            entry.lsId = scope.getScopeId();
+            entry.lsPrio = scope.getPriority();
+            NEString::copyString(entry.lsName, static_cast<NEString::CharCount>(LENGTH_SCOPE), scope.getScopeName().getString(), scope.getScopeName().getLength());
+
             mLoggerClient.mLogDatabase.logScopeActivate(scope.getScopeName(), scope.getScopeId(), scope.getPriority(), cookie, now);
         }
 
@@ -137,7 +138,7 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgRec
             sLogScope& entry{ scopes[i] };
             entry.lsId = scope.getScopeId();
             entry.lsPrio = scope.getPriority();
-            NEMemory::memCopy(entry.lsName, LENGTH_SCOPE, scope.getScopeName().getString(), scope.getScopeName().getLength() + 1);
+            NEString::copyString(entry.lsName, static_cast<NEString::CharCount>(LENGTH_SCOPE), scope.getScopeName().getString(), scope.getScopeName().getLength());
             mLoggerClient.mLogDatabase.logScopeActivate(scope.getScopeName(), scope.getScopeId(), scope.getPriority(), cookie, now);
         }
 
@@ -196,8 +197,8 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 msgLog.msgScopeId   = static_cast<unsigned int>(msgRemote->logScopeId);
 
                 NEMemory::memCopy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , msgRemote->logMessageLen + 1);
-                NEMemory::memCopy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
-                NEMemory::memCopy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen  + 1);
+                NEMemory::memCopy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen + 1);
+                NEMemory::memCopy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen + 1);
             }
             else if (mLoggerClient.mCallbacks->evtLogMessageEx != nullptr)
             {
@@ -226,31 +227,18 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
     FuncInstancesConnect callback{ nullptr };
     sLogInstance* listInstances{ nullptr };
     int size{ static_cast<int>(listConnected.getSize()) };
-    if (size == 0)
-        return;
 
     do
     {
         Lock lock(mLoggerClient.mLock);
-        DateTime now(DateTime::getNow());
-
-        if (LogObserverBase::_theLogObserver != nullptr)
-        {
-            for (int i = 0; i < size; ++i)
-            {
-                const NEService::sServiceConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
-                auto added = mLoggerClient.mInstances.addIfUnique(client.ciCookie, client, false);
-                if (added.second)
-                {
-                    mLoggerClient.mLogDatabase.logInstanceConnected(client, now);
-                }
-            }
-
-            mLoggerClient.mLogDatabase.commit(true);
-        }
-        else
+        if (LogObserverBase::_theLogObserver == nullptr)
         {
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
+        }
+
+        if (size > 0)
+        {
+            DateTime now(DateTime::getNow());
             listInstances = new sLogInstance[size];
 
             for (int i = 0; i < size; ++i)
@@ -269,13 +257,20 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                     inst.liBitness = static_cast<uint32_t>(client.ciBitness);
                     inst.liCookie = client.ciCookie;
                     inst.liTimestamp = client.ciTimestamp;
-                    NEMemory::memCopy(inst.liName    , LENGTH_NAME    , client.ciInstance.c_str(), static_cast<int>(client.ciInstance.length()) + 1);
-                    NEMemory::memCopy(inst.liLocation, LENGTH_LOCATION, client.ciLocation.c_str(), static_cast<int>(client.ciLocation.length()) + 1);
+                    NEString::copyString(inst.liName
+                                        , static_cast<NEString::CharCount>(LENGTH_NAME)
+                                        , client.ciInstance.c_str()
+                                        , static_cast<NEString::CharCount>(client.ciInstance.length()));
+                    NEString::copyString(inst.liLocation
+                                        , static_cast<NEString::CharCount>(LENGTH_LOCATION)
+                                        , client.ciLocation.c_str()
+                                        , static_cast<NEString::CharCount>(client.ciLocation.length()));
                 }
             }
 
             mLoggerClient.mLogDatabase.commit(true);
         }
+
     } while (false);
 
     if (LogObserverBase::_theLogObserver != nullptr)
