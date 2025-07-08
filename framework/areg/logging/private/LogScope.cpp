@@ -30,17 +30,17 @@
 #if AREG_LOGS
 
 LogScope::LogScope( const char * scopeName, NELogging::eLogPriority priority /*= NELogging::PrioNotset*/ )
-    : mScopeName    ( scopeName != nullptr ? scopeName : "" )
-    , mScopeId      ( NELogging::makeScopeId(mScopeName.getString())  )
+    : mScopeId      ( NELogging::makeScopeId(scopeName)  )
     , mScopePrio    ( priority )
+    , mScopeName    (scopeName != nullptr ? scopeName : "")
 {
     LogManager::registerLogScope( self() );
 }
 
 LogScope::LogScope(const IEInStream & stream)
-    : mScopeName    (stream)
-    , mScopeId      (stream.read32Bits())
+    : mScopeId      (stream.read32Bits())
     , mScopePrio    (stream.read32Bits())
+    , mScopeName    (stream)
 {
 }
 
@@ -62,16 +62,16 @@ void LogScope::setPriority(const String& newPrio)
 #else   // AREG_LOGS
 
 LogScope::LogScope(const char* /*scopeName*/, NELogging::eLogPriority /*priority*/ /*= NELogging::PrioNotset*/)
-    : mScopeName    ()
-    , mScopeId      ( 0 )
+    : mScopeId      ( 0 )
     , mScopePrio    ( static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid) )
+    , mScopeName    ( )
 {
 }
 
 LogScope::LogScope(const IEInStream& /*stream*/ )
-    : mScopeName    ()
-    , mScopeId      ( 0 )
+    : mScopeId      ( 0 )
     , mScopePrio    ( static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid) )
+    , mScopeName    ( )
 {
 }
 

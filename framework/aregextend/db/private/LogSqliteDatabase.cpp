@@ -677,14 +677,7 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
 
 bool LogSqliteDatabase::logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID& cookie, const DateTime& timestamp)
 {
-    char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtScopes.data()
-                        , static_cast<uint32_t>(scope.scopeId)
-                        , static_cast<uint64_t>(cookie)
-                        , static_cast<uint32_t>(scope.scopePrio)
-                        , scope.scopeName.getString()
-                        , static_cast<uint64_t>(timestamp.getTime()));
-    return mDatabase.execute(sql);
+    return logScopeActivate(scope.scopeName, scope.scopeId, scope.scopePrio, cookie, timestamp);
 }
 
 uint32_t LogSqliteDatabase::logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp)
