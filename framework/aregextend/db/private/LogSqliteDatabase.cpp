@@ -259,6 +259,12 @@ namespace
         "SELECT scope_name, scope_id, scope_prio FROM scopes WHERE cookie_id = ? ORDER BY time_received;"
     };
 
+    //! A script to extract the logging scopes of a certain instance with their information.
+    constexpr std::string_view _sqlGetAllLogScopes
+    {
+        "SELECT scope_name, scope_id, scope_prio FROM scopes ORDER BY time_received;"
+    };
+
     //! A script to extract all logged messages
     constexpr std::string_view _sqlGetAllLogMessages
     {
@@ -297,6 +303,21 @@ namespace
 // LogSqliteDatabase class implementation.
 //////////////////////////////////////////////////////////////////////////
 
+String LogSqliteDatabase::getReadScopesQuery(void)
+{
+    return String(_sqlGetScopeLogMessages);
+}
+
+String LogSqliteDatabase::getReadInstancesQuery(void)
+{
+    return String(_sqlGetInstScopeLogMessages);
+}
+
+String LogSqliteDatabase::getReadAllLogMessagesQuery(void)
+{
+    return String(_sqlGetAllLogMessages);
+}
+
 LogSqliteDatabase::LogSqliteDatabase(void)
     : IELogDatabaseEngine   ( )
 
@@ -305,6 +326,7 @@ LogSqliteDatabase::LogSqliteDatabase(void)
     , mDbInitPath           ( )
     , mIsInitialized        ( false )
     , mDbLogEnabled         ( true )
+    , mLock                 ( false )
 {
 }
 
@@ -421,6 +443,23 @@ inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuff
     NEString::copyStringFast(log->logModule, module.getString(), module.getLength());
 }
 
+inline void LogSqliteDatabase::_copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance& inst)
+{
+    inst.ciSource   = static_cast<NEService::eMessageSource>(  stmt.getUint32(0));
+    inst.ciBitness  = static_cast<NEService::eInstanceBitness>(stmt.getUint32(1));
+    inst.ciCookie   = static_cast<ITEM_ID>(stmt.getInt64(2));
+    inst.ciTimestamp= static_cast<TIME64>( stmt.getInt64(3));
+    inst.ciInstance = stmt.getText(4);
+    inst.ciLocation = stmt.getText(5);
+}
+
+inline void LogSqliteDatabase::_copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope)
+{
+    scope.scopeName = stmt.getText(0);
+    scope.scopeId   = static_cast<uint32_t>(stmt.getUint32(1));
+    scope.scopePrio = static_cast<uint32_t>(stmt.getUint32(2));
+}
+
 bool LogSqliteDatabase::isOperable(void) const
 {
     return mDatabase.isOperable();
@@ -428,6 +467,7 @@ bool LogSqliteDatabase::isOperable(void) const
 
 bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
 {
+    Lock lock(mLock);
     if (mDbLogEnabled && mDatabase.isOperable() == false)
     {
         bool exists = File::existFile(dbPath);
@@ -455,9 +495,11 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
 
 void LogSqliteDatabase::disconnect(void)
 {
-    if (mDatabase.isOperable() == false)
+    Lock lock(mLock);
+    if ((mDatabase.isOperable() == false) || (mIsInitialized == false))
         return;
 
+    mIsInitialized = false;
     if (mStmtLogs.isValid())
         mStmtLogs.finalize();
 
@@ -868,12 +910,7 @@ void LogSqliteDatabase::getLogInstanceInfos(std::vector<NEService::sServiceConne
         while (stmt.next())
         {
             NEService::sServiceConnectedInstance inst;
-            inst.ciSource   = static_cast<NEService::eMessageSource>(  stmt.getUint32(0));
-            inst.ciBitness  = static_cast<NEService::eInstanceBitness>(stmt.getUint32(1));
-            inst.ciCookie   = static_cast<ITEM_ID>(stmt.getInt64(2));
-            inst.ciTimestamp= static_cast<TIME64>( stmt.getInt64(3));
-            inst.ciInstance = stmt.getText(4);
-            inst.ciLocation = stmt.getText(5);
+            _copyLogInstances(stmt, inst);
             infos.push_back(inst);
         }
     }
@@ -897,11 +934,9 @@ void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT
         stmt.bindUint64(0, static_cast<uint64_t>(instId));
         while (stmt.next())
         {
-            NELogging::sScopeInfo log;
-            log.scopeName = stmt.getText(0);
-            log.scopeId   = static_cast<uint32_t>(stmt.getUint32(1));
-            log.scopePrio = static_cast<uint32_t>(stmt.getUint32(2));
-            scopes.push_back(log);
+            NELogging::sScopeInfo scope;
+            _copyLogScopes(stmt, scope);
+            scopes.push_back(scope);
         }
     }
 
@@ -1054,4 +1089,68 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages, 
     }
 
     ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
+}
+
+int LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEtnries /*= -1*/)
+{
+    int result{ 0 };
+    if (stmt.isValid())
+    {
+        while (stmt.next())
+        {
+            NELogging::sScopeInfo scope;
+            _copyLogScopes(stmt, scope);
+            scopes.push_back(scope);
+            result++;
+            if ((maxEtnries > 0) && (result >= maxEtnries))
+                break;
+        }
+    }
+
+    return result;
+}
+
+int LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages, SqliteStatement& IN stmt, int IN maxEtnries /*= -1*/)
+{
+    int result{ 0 };
+    if (stmt.isValid())
+    {
+        while (stmt.next())
+        {
+            SharedBuffer buf;
+            _copyLogMessage(stmt, buf);
+            messages.push_back(buf);
+            result++;
+            if ((maxEtnries > 0) && (result >= maxEtnries))
+                break;
+        }
+    }
+
+    return result;
+}
+
+bool LogSqliteDatabase::setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+{
+    stmt.reset();
+    if (instId == NEService::TARGET_ALL)
+    {
+        return stmt.prepare(_sqlGetAllLogScopes);
+    }
+    else
+    {
+        return (stmt.prepare(_sqlGetLogScopes) && stmt.bindInt64(0, instId));
+    }
+}
+
+bool LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+{
+    stmt.reset();
+    if (instId == NEService::TARGET_ALL)
+    {
+        return stmt.prepare(_sqlGetAllLogMessages);
+    }
+    else
+    {
+        return (stmt.prepare(_sqlGetInstLogMessages) && stmt.bindInt64(0, instId));
+    }
 }
