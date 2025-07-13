@@ -25,6 +25,7 @@
 #include "areg/logging/NELogging.hpp"
 #include "areg/logging/IELogDatabaseEngine.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 #include <vector>
 
@@ -36,6 +37,27 @@
  **/
 class LogSqliteDatabase : public IELogDatabaseEngine
 {
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns the SQL query to read instance dependent log scopes from the database.
+     *          The ID of the instance can be specified (bound) to read scopes.
+     **/
+    static String getReadScopesQuery(void);
+
+    /**
+     * \brief   Returns the SQL query to read all instances from the database.
+     **/
+    static String getReadInstancesQuery(void);
+
+    /**
+     * \brief   Returns the SQL query to read all log messages from the database.
+     **/
+    static String getReadAllLogMessagesQuery(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -72,6 +94,12 @@ public:
      *          it creates new file.
      **/
     inline const String& getInitialDatabasePath(void) const;
+
+    /**
+     * \brief   Return SQLite database object
+     **/
+    inline SqliteDatabase& getDatabase(void);
+    inline const SqliteDatabase& getDatabase(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -310,6 +338,52 @@ public:
     void getLogMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID IN instId, uint32_t IN scopeId);
     std::vector<SharedBuffer> getLogMessages(ITEM_ID IN instId, uint32_t IN scopeId);
 
+    /**
+     * \brief   Call to get log scopes using SQLite Statement object. The SQLite Statement should be already initialized
+     *          and the parameters should be bound, if there is any. The method will extract the log scopes from the statement
+     *          up to the specified maximum number of entries or all if the `maxEntries` is `-1`.
+     * \param   scopes      [out]   The vector to fill with log scopes. The extracted scopes will be added to the existing vector.
+     * \param   stmt        [in]    The SQLite Statement object to extract log scopes. The Statement should be already initialized
+     *                              and the parameters should be bound, if there is any.
+     * \param   maxEtnries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \return  Returns number of entries added to the vector.
+     **/
+    int getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEtnries = -1);
+
+    /**
+     * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
+     *          and the parameters should be bound, if there is any. The method will extract the log messages from the statement
+     *          up to the specified maximum number of entries or all if the `maxEntries` is `-1`.
+     * \param   messages    [out]   The vector to fill with log messages. The extracted messages will be added to the existing vector.
+     * \param   stmt        [in]    The SQLite Statement object to extract log messages. The Statement should be already initialized
+     *                              and the parameters should be bound, if there is any.
+     * \param   maxEtnries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \return  Returns number of entries added to the vector.
+     **/
+    int getLogMessages(std::vector<SharedBuffer>& OUT messages, SqliteStatement& IN stmt, int IN maxEtnries = -1);
+
+    /**
+     * \brief   Call to setup statement to read the list of logging scopes from log database.
+     *          The statement will fetch all scopes if `instId` is `NEService::TARGET_ALL`.
+     *          The statement object should be already initialized and bind with the log database.
+     *          The logging database should be opened for reading data.
+     * \param   stmt    The SQLite statement object bound with SQLite logging database.
+     * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
+     * @return  Returns true if succeeded to setup.
+     **/
+    bool setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Call to setup statement to read the list of logs from logging database.
+     *          The statement will fetch all logs if `instId` is `NEService::TARGET_ALL`.
+     *          The statement object should be already initialized and bind with the log database.
+     *          The logging database should be opened for reading data.
+     * \param   stmt    The SQLite statement object bound with SQLite logging database.
+     * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
+     * @return  Returns true if succeeded to setup.
+     **/
+    bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -346,6 +420,20 @@ private:
      **/
     inline void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
 
+    /**
+     * \brief   Extracts the log instance from the SqliteStatement and copies it to the NEService::sServiceConnectedInstance.
+     * \param   stmt    The SqliteStatement to extract the log instance.
+     * \param   inst    The NEService::sServiceConnectedInstance to copy the log instance.
+     **/
+    inline void _copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance & inst);
+
+    /**
+     * \brief   Extracts the log scope from the SqliteStatement and copies it to the NELogging::sScopeInfo.
+     * \param   stmt    The SqliteStatement to extract the log scope.
+     * \param   scope   The NELogging::sScopeInfo to copy the log scope.
+     **/
+    inline void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -364,6 +452,9 @@ protected:
 
     //!< Flag, indicating whether the database logging is enabled or not.
     bool            mDbLogEnabled;
+
+    //!< Mutex to protect database operations.
+    Mutex           mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -394,6 +485,16 @@ inline const String& LogSqliteDatabase::getDatabasePath(void) const
 inline const String& LogSqliteDatabase::getInitialDatabasePath(void) const
 {
     return mDbInitPath;
+}
+
+inline SqliteDatabase& LogSqliteDatabase::getDatabase(void)
+{
+    return mDatabase;
+}
+
+inline const SqliteDatabase& LogSqliteDatabase::getDatabase(void) const
+{
+    return mDatabase;
 }
 
 #endif  // AREG_AREGEXTEND_DB_LOGSQLITEDATABASE_HPP
