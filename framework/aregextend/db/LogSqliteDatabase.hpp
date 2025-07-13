@@ -42,10 +42,20 @@ class LogSqliteDatabase : public IELogDatabaseEngine
 //////////////////////////////////////////////////////////////////////////
 public:
 
+    /**
+     * \brief   Returns the SQL query to read instance dependent log scopes from the database.
+     *          The ID of the instance can be specified (bound) to read scopes.
+     **/
     static String getReadScopesQuery(void);
 
+    /**
+     * \brief   Returns the SQL query to read all instances from the database.
+     **/
     static String getReadInstancesQuery(void);
 
+    /**
+     * \brief   Returns the SQL query to read all log messages from the database.
+     **/
     static String getReadAllLogMessagesQuery(void);
 
 //////////////////////////////////////////////////////////////////////////
