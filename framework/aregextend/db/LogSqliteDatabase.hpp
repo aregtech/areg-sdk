@@ -345,22 +345,68 @@ public:
      * \param   scopes      [out]   The vector to fill with log scopes. The extracted scopes will be added to the existing vector.
      * \param   stmt        [in]    The SQLite Statement object to extract log scopes. The Statement should be already initialized
      *                              and the parameters should be bound, if there is any.
-     * \param   maxEtnries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    int getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEtnries = -1);
+    int getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
      *          and the parameters should be bound, if there is any. The method will extract the log messages from the statement
      *          up to the specified maximum number of entries or all if the `maxEntries` is `-1`.
-     * \param   messages    [out]   The vector to fill with log messages. The extracted messages will be added to the existing vector.
+     * \param   logs        [out]   The vector to fill with log messages. The extracted messages will be added to the existing vector.
      * \param   stmt        [in]    The SQLite Statement object to extract log messages. The Statement should be already initialized
      *                              and the parameters should be bound, if there is any.
-     * \param   maxEtnries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    int getLogMessages(std::vector<SharedBuffer>& OUT messages, SqliteStatement& IN stmt, int IN maxEtnries = -1);
+    int getLogMessages(std::vector<SharedBuffer>& OUT logs, SqliteStatement& IN stmt, int IN maxEntries = -1);
+
+    /**
+     * \brief   Fills log instances in the specified array. The array should be initialized and it should have enough space to set data.
+     *          The method does not append instance to the array. Use `countLogInstances()` method to know the initialized size of array to re-size.
+     *          On output, the `infos` array will not change the size and will contain instance information extracted from database.
+     * \param   infos   [in, out]   The array to set instance information from database. It should have enough space to set data.
+     *                              On output, this array will not change the size.
+     * \param   stmt    [in]        The SQLite Statement object to extract instance information. The Statement should be already initialized
+     *                              and prepared to extract instance information.
+     * \return  Returns number of entries set in the array.
+     **/
+    int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& IN OUT infos, SqliteStatement& IN stmt);
+
+    /**
+     * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
+     *          The method does not append scope to the array. Use `countScopeEntries()` method to know the initialized size of array to re-size.
+     *          On output, the `scopes` array will not change the size and it will contain scope information starting at position `startAt`
+     *          and maximum `maxEntries`, if this number is positive.
+     *          This method can be called in the loop until the returns number is equal to `maxEntries`.
+     * \param   scopes  [in, out]   The array to set scope information from database. It should have enough space to set data.
+     *                              On output, this array will not change the size and will contain scope information starting
+     *                              from position `startAt` with maximum `maxEntries` number of entries, if it is positive number.
+     * \param   stmt    [in]        The SQLite Statement object to extract scope information. The Statement should be already initialized
+     *                              and prepared to extract scope information.
+     * \param   startAt [in]        The zero-based position to start to fill scope data. The first call in the loop should have position 0.
+     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \return  Returns number of entries set in the array.
+     **/
+    int fillInstScopes(std::vector<NELogging::sScopeInfo>& IN OUT scopes, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
+
+    /**
+     * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
+     *          The method does not append log message to the array. Use `countLogEntries()` method to know the initialized size of array to re-size.
+     *          On output, the `logs` array will not change the size and it will contain log messages starting at position `startAt`
+     *          and maximum `maxEntries`, if this number is positive.
+     *          This method can be called in the loop until the returns number is equal to `maxEntries`.
+     * \param   logs    [in, out]   The array to set log message information from database. It should have enough space to set data.
+     *                              On output, this array will not change the size and will contain log messages starting
+     *                              from position `startAt` with maximum `maxEntries` number of entries, if it is positive number.
+     * \param   stmt    [in]        The SQLite Statement object to extract log messages. The Statement should be already initialized
+     *                              and prepared to extract log messages.
+     * \param   startAt [in]        The zero-based position to start to fill log messages. The first call in the loop should have position 0.
+     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \return  Returns number of entries set in the array.
+     **/
+    int fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database.
@@ -383,6 +429,25 @@ public:
      * @return  Returns true if succeeded to setup.
      **/
     bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Returns number of log messages of specified instance ID.
+     *          Returns number of all log messages if the instance ID is `NEService::TARGET_ALL`.
+     * \param   instId  The ID of the instance to get log messages. If `NEService::TARGET_ALL` extracts all log messages.
+     **/
+    uint32_t countLogEntries(ITEM_ID instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Returns number of scopes of specified instance ID.
+     *          Returns number of all scopes if the instance ID is `NEService::TARGET_ALL`.
+     * \param   instId  The ID of the instance to get scope information. If `NEService::TARGET_ALL` extracts all scopes.
+     **/
+    uint32_t countScopeEntries(ITEM_ID instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Returns number of log instances.
+     **/
+    uint32_t countLogInstances(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
