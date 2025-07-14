@@ -1250,7 +1250,7 @@ uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
         stmt.bindInt64(0, instId);
     }
 
-    return stmt.getUint32(0);
+    return (stmt.next() ? stmt.getUint32(0) : 0);
 }
 
 uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
@@ -1268,7 +1268,7 @@ uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
         stmt.bindInt64(0, instId);
     }
 
-    return stmt.getUint32(0);
+    return (stmt.next() ? stmt.getUint32(0) : 0);
 }
 
 uint32_t LogSqliteDatabase::countLogInstances(void)
@@ -1277,5 +1277,5 @@ uint32_t LogSqliteDatabase::countLogInstances(void)
         return 0;
 
     SqliteStatement stmt(mDatabase, _sqlCountInstances);
-    return stmt.getUint32(0);
+    return (stmt.next() ? stmt.getUint32(0) : 0);
 }
