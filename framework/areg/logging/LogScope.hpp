@@ -21,6 +21,7 @@
 #include "areg/logging/NELogging.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/IEIOStream.hpp"
+#include <atomic>
 
 //////////////////////////////////////////////////////////////////////////////
 // LogScope class declaration
@@ -40,6 +41,10 @@ class AREG_API LogScope
 // friend class declaration to access internals
 //////////////////////////////////////////////////////////////////////////////
     friend class ScopeMessage;
+//////////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////////
+    using session   = std::atomic_uint32_t;
 
 //////////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -150,6 +155,11 @@ public:
      **/
     inline const String & getScopeName( void ) const;
 
+    /**
+     * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
+     **/
+    inline uint32_t getSessionId(void) const;
+
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
@@ -170,11 +180,25 @@ private:
      * \brief   The log scope is active or not.
      **/
      const bool         mIsRegistered;
+     /**
+      * \brief   The session ID of the log scope, used to identify the scope in the session.
+      **/
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+     mutable session    mSessionId;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Increases the session ID and returns the value to use in log messages.
+     **/
+    inline uint32_t nextSession(void) const;
     /**
      * \brief   Returns LogScope object
      **/
@@ -223,6 +247,11 @@ inline IEOutStream & operator << ( IEOutStream & stream, const LogScope & output
 //////////////////////////////////////////////////////////////////////////////
 // LogScope class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
+
+inline uint32_t LogScope::nextSession(void) const
+{
+    return mSessionId.fetch_add(1);
+}
 
 inline LogScope & LogScope::self( void )
 {
@@ -282,6 +311,11 @@ inline unsigned int LogScope::getScopeId( void ) const
 inline const String & LogScope::getScopeName( void ) const
 {
     return mScopeName;
+}
+
+inline uint32_t LogScope::getSessionId(void) const
+{
+    return mSessionId;
 }
 
 #endif  // AREG_LOGGING_LOGSCOPE_HPP

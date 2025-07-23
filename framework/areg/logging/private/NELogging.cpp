@@ -118,6 +118,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
     , logThreadId   { Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logScopeId    { NELogging::LOG_SCOPE_ID_NONE }
+    , logSessionId  { 0u }
     , logMessageLen { 0 }
     , logMessage    { '\0' }
     , logThreadLen  { 0 }
@@ -128,7 +129,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
 }
 
 #if AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen)
+NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen)
     : logDataType   { NELogging::eLogDataType::LogDataLocal }
     , logMsgType    { msgType }
     , logMessagePrio{ msgPrio }
@@ -139,6 +140,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     , logThreadId   { Thread::getCurrentThreadId() }
     , logTimestamp  { DateTime::getNow() }
     , logScopeId    { scopeId }
+    , logSessionId  { sessionId }
     , logMessageLen { msgLen }
     , logMessage    { '\0' }
     , logThreadLen  { 0 }
@@ -150,23 +152,24 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int /*scopeId*/, NELogging::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
+NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int /*scopeId*/, unsigned int /*sessionId*/, NELogging::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
     : logDataType{ NELogging::eLogDataType::LogDataLocal }
     , logMsgType{ msgType }
     , logMessagePrio{ NELogging::eLogPriority::PrioNotset }
-    , logSource{ NEService::COOKIE_LOCAL }
-    , logTarget{ NEService::COOKIE_LOGGER }
-    , logCookie{ NEService::COOKIE_LOCAL }
-    , logModuleId{ Process::CURRENT_PROCESS }
-    , logThreadId{ Thread::INVALID_THREAD_ID }
-    , logTimestamp{ DateTime::INVALID_TIME }
-    , logScopeId{ NELogging::LOG_SCOPE_ID_NONE }
-    , logMessageLen{ 0 }
-    , logMessage{ '\0' }
-    , logThreadLen{ 0 }
-    , logThread{ '\0' }
-    , logModuleLen{ 0 }
-    , logModule{ '\0' }
+    , logSource     { NEService::COOKIE_LOCAL }
+    , logTarget     { NEService::COOKIE_LOGGER }
+    , logCookie     { NEService::COOKIE_LOCAL }
+    , logModuleId   { Process::CURRENT_PROCESS }
+    , logThreadId   { Thread::INVALID_THREAD_ID }
+    , logTimestamp  { DateTime::INVALID_TIME }
+    , logScopeId    { NELogging::LOG_SCOPE_ID_NONE }
+    , logSessionId  { 0u }
+    , logMessageLen { 0 }
+    , logMessage    { '\0' }
+    , logThreadLen  { 0 }
+    , logThread     { '\0' }
+    , logModuleLen  { 0 }
+    , logModule     { '\0' }
 {
 }
 #endif  // AREG_LOGS
@@ -182,6 +185,7 @@ NELogging::sLogMessage::sLogMessage(const NELogging::sLogMessage & src)
     , logThreadId   { src.logThreadId }
     , logTimestamp  { src.logTimestamp }
     , logScopeId    { src.logScopeId }
+    , logSessionId  { src.logSessionId }
     , logMessageLen { src.logMessageLen }
     , logMessage    { '\0' }
     , logThreadLen  { 0 }
@@ -206,6 +210,7 @@ NELogging::sLogMessage & NELogging::sLogMessage::operator = (const NELogging::sL
         logThreadId     = src.logThreadId;
         logTimestamp    = src.logTimestamp;
         logScopeId      = src.logScopeId;
+        logSessionId    = src.logSessionId;
         logMessageLen   = src.logMessageLen;
 
         if (logDataType == NELogging::eLogDataType::LogDataRemote)

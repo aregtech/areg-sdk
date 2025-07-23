@@ -293,11 +293,12 @@ namespace NELogging
          * \brief   Initializes logging message and sets specified data.
          * \param   msgType     The logging message type.
          * \param   scopeId     The ID of message scope.
+         * \param   sessionId   The ID of session, which is used to differentiate messages of the same scope.
          * \param   msgPrio     The priority of logging message.
          * \param   message     The message text to output on target. Can be empty.
          * \param   msgLen      The length of the message string.
          **/
-        sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen);
+        sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
@@ -320,6 +321,7 @@ namespace NELogging
         ITEM_ID                     logThreadId;    //!< The ID the thread in the local process.
         TIME64                      logTimestamp;   //!< The timestamp of generated log.
         unsigned int                logScopeId;     //!< The ID of log scope that generated log message
+        unsigned int                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
         unsigned int                logMessageLen;  //!< The actual length of the log message
         char                        logMessage[LOG_MESSAGE_IZE];//!< The message text to output, with maximum NELogging::LOG_MESSAGE_IZE characters.
         unsigned int                logThreadLen;               //!< The length of the thread name;

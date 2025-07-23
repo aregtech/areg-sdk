@@ -194,6 +194,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 msgLog.msgThreadId  = static_cast<unsigned long long>(msgRemote->logThreadId);
                 msgLog.msgTimestamp = static_cast<unsigned long long>(msgRemote->logTimestamp);
                 msgLog.msgScopeId   = static_cast<unsigned int>(msgRemote->logScopeId);
+                msgLog.msgSessionId = static_cast<unsigned int>(msgRemote->logSessionId);
 
                 NEMemory::memCopy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , msgRemote->logMessageLen + 1);
                 NEMemory::memCopy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
