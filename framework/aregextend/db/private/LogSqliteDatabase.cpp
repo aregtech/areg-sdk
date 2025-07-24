@@ -597,7 +597,6 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const 
 {
     if (mStmtLogs.isValid() == false)
     {
-        ASSERT(false && "LogSqliteDatabase::logMessage() - The statement to log messages is not prepared.");
         return false;
     }
 
