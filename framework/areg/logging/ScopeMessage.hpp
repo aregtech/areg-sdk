@@ -170,11 +170,12 @@ private:
     /**
      * \brief   Creates a logging message object and sends it to the logging targets.
      * \param   scopeId     The ID of the Log Scope.
+     * \param   sessionId   The ID of the session, used to differentiate messages of the same scope.
      * \param   msgPrio     The priority of the message to log.
      * \param   format      The formatted text to output.
      * \param   args        The list of arguments to apply to the formatted text.
      **/
-    static void _sendLog( unsigned int scopeId, NELogging::eLogPriority msgPrio, const char * format, va_list args );
+    static void _sendLog( unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * format, va_list args );
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -182,6 +183,7 @@ private:
 private:
     const String &      mScopeName; //!< Name of the logging scope.
     const unsigned int  mScopeId;   //!< ID of the logging scope.
+    const unsigned int  mSessionId; //!< Priority of the logging scope.
     const unsigned int& mScopePrio; //!< Enabled logging priority for the scope.
 
 #endif  // AREG_LOGS

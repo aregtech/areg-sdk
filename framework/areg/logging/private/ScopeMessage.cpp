@@ -27,11 +27,12 @@
 ScopeMessage::ScopeMessage( const LogScope & logScope )
     : mScopeName( logScope.getScopeName() )
     , mScopeId  ( logScope.mScopeId       )
+    , mSessionId( logScope.nextSession()  )
     , mScopePrio( logScope.mScopePrio     )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeEnter, mScopeId, NELogging::PrioScope, mScopeName };
+        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeEnter, mScopeId, mSessionId, NELogging::PrioScope, mScopeName };
         LogManager::logMessage(msg);
     }
 }
@@ -40,7 +41,7 @@ ScopeMessage::~ScopeMessage( void )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeExit, mScopeId, NELogging::PrioScope, mScopeName };
+        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeExit, mScopeId, mSessionId, NELogging::PrioScope, mScopeName };
         LogManager::logMessage(msg);
     }
 }
@@ -51,7 +52,7 @@ void ScopeMessage::logDebug( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, NELogging::PrioDebug, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, NELogging::PrioDebug, format, args);
         va_end(args);
     }
 }
@@ -62,7 +63,7 @@ void ScopeMessage::logInfo( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, NELogging::PrioInfo, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, NELogging::PrioInfo, format, args);
         va_end(args);
     }
 }
@@ -73,7 +74,7 @@ void ScopeMessage::logWarning(const char * format, ...) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, NELogging::PrioWarning, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, NELogging::PrioWarning, format, args);
         va_end(args);
     }
 }
@@ -84,7 +85,7 @@ void ScopeMessage::logError( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, NELogging::PrioError, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, NELogging::PrioError, format, args);
         va_end(args);
     }
 }
@@ -95,7 +96,7 @@ void ScopeMessage::logFatal( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, NELogging::PrioFatal, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, NELogging::PrioFatal, format, args);
         va_end(args);
     }
 }
@@ -104,7 +105,7 @@ void ScopeMessage::logMessage(NELogging::eLogPriority logPrio, const char * form
 {
     va_list args;
     va_start(args, format);
-    ScopeMessage::_sendLog(mScopeId, logPrio, format, args);
+    ScopeMessage::_sendLog(mScopeId, mSessionId, logPrio, format, args);
     va_end(args);
 }
 
@@ -112,13 +113,13 @@ void ScopeMessage::log( NELogging::eLogPriority logPrio, const char * format, ..
 {
     va_list args;
     va_start(args, format);
-    ScopeMessage::_sendLog(NELogging::LOG_SCOPE_ID_NONE, logPrio, format, args);
+    ScopeMessage::_sendLog(NELogging::LOG_SCOPE_ID_NONE, 0u, logPrio, format, args);
     va_end(args);
 }
 
-inline void ScopeMessage::_sendLog( unsigned int scopeId, NELogging::eLogPriority msgPrio, const char * format, va_list args )
+inline void ScopeMessage::_sendLog( unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * format, va_list args )
 {
-    LogMessage logData(NELogging::eLogMessageType::LogMessageText, scopeId, msgPrio, nullptr, 0);
+    LogMessage logData(NELogging::eLogMessageType::LogMessageText, scopeId, sessionId, msgPrio, nullptr, 0);
     logData.logMessageLen = static_cast<uint32_t>(String::formatStringList( logData.logMessage, NELogging::LOG_MESSAGE_IZE, format, args ));
     LogManager::logMessage( logData );
 }

@@ -34,6 +34,7 @@ LogScope::LogScope( const char * scopeName, NELogging::eLogPriority priority /*=
     , mScopePrio    ( priority )
     , mScopeName    ( scopeName != nullptr ? scopeName : "" )
     , mIsRegistered ( true )
+    , mSessionId    ( 0 )
 {
     LogManager::registerLogScope( self() );
 }
@@ -43,6 +44,7 @@ LogScope::LogScope(const IEInStream & stream)
     , mScopePrio    ( stream.read32Bits() )
     , mScopeName    ( stream )
     , mIsRegistered ( false )
+    , mSessionId    ( 0 )
 {
 }
 

@@ -152,6 +152,8 @@ struct sLogMessage
     TIME64          msgTimestamp;
     /* The ID of the scope that generated message. Same as indicated in sLogScope::lsId. */
     uint32_t        msgScopeId;
+    /* The ID of the session, which is used to differentiate messages of the same scope. */
+    uint32_t        msgSessionId;
     /* The text of generated log message. */
     char            msgLogText[LENGTH_MESSAGE];
     /* The name of the thread, if set, where the message was generated. */

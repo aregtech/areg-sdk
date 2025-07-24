@@ -174,6 +174,7 @@ namespace
             "\"id\"	                INTEGER NOT NULL UNIQUE,"
             "\"cookie_id\"	        INTEGER,"
             "\"scope_id\"	        INTEGER,"
+            "\"session_id\"         INTEGER,"
             "\"msg_type\"	        INTEGER,"
             "\"msg_prio\"	        INTEGER,"
             "\"msg_module_id\"	    INTEGER,"
@@ -191,18 +192,18 @@ namespace
     constexpr std::string_view _fmtLog
     {
         "INSERT INTO logs "
-        "(cookie_id, scope_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_thread, msg_module, time_created, time_received)"
+        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_thread, msg_module, time_created, time_received)"
         "VALUES "
-        "(%llu, %u, %u, %u, %llu, %llu, \'%s\', \'%s\', \'%s\', %llu, %llu);"
+        "(%llu, %u, %u, %u, %u, %llu, %llu, \'%s\', \'%s\', \'%s\', %llu, %llu);"
     };
 
     //! A string format to create INSERT statement to insert new log message in the logs table.
     constexpr std::string_view _sqlInsertLog
     {
         "INSERT INTO logs "
-        "(cookie_id, scope_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_thread, msg_module, time_created, time_received)"
+        "(cookie_id, scope_id, session_id, msg_type, msg_prio, msg_module_id, msg_thread_id, msg_log, msg_thread, msg_module, time_created, time_received)"
         "VALUES "
-        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
     };
 
     //! A script to create index of the instances table. 
@@ -268,25 +269,25 @@ namespace
     //! A script to extract all logged messages
     constexpr std::string_view _sqlGetAllLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, msg_log, msg_thread, msg_module FROM logs ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs ORDER BY time_created;"
     };
 
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetInstLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? ORDER BY time_created;"
     };
 
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetScopeLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, msg_log, msg_thread, msg_module FROM logs WHERE scope_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE scope_id = ? ORDER BY time_created;"
     };
 
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetInstScopeLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? AND scope_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? AND scope_id = ? ORDER BY time_created;"
     };
 
     constexpr std::string_view _sqlCountInstanceLogs
@@ -422,6 +423,7 @@ inline void LogSqliteDatabase::_initialize(void)
     String::formatString(sql, SQL_LEN, _fmtLog.data()
                         , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
                         , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
+                        , static_cast<uint32_t>(0u)
                         , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
                         , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
@@ -455,9 +457,10 @@ inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuff
     log->logThreadId    = static_cast<ITEM_ID>( stmt.getInt64(4));
     log->logTimestamp   = static_cast<TIME64>(  stmt.getInt64(5));
     log->logScopeId     = static_cast<uint32_t>(stmt.getUint32(6));
-    String msg          = stmt.getText(7);
-    String thread       = stmt.getText(8);
-    String module       = stmt.getText(9);
+    log->logSessionId   = static_cast<uint32_t>(stmt.getUint32(7));
+    String msg          = stmt.getText(8);
+    String thread       = stmt.getText(9);
+    String module       = stmt.getText(10);
 
     log->logMessageLen = msg.getLength();
     log->logThreadLen = thread.getLength();
@@ -541,8 +544,9 @@ void LogSqliteDatabase::disconnect(void)
     mDatabase.execute(sql);
 
     String::formatString( sql, SQL_LEN, _fmtLog.data()
-                        , NEService::COOKIE_LOCAL
-                        , NEMath::CHECKSUM_IGNORE
+                        , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
+                        , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
+                        , static_cast<uint32_t>(0u)
                         , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
                         , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
@@ -599,15 +603,16 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const 
 
     mStmtLogs.bindUint64( 0, static_cast<uint64_t>(message.logCookie));
     mStmtLogs.bindUint32( 1, static_cast<uint32_t>(message.logScopeId));
-    mStmtLogs.bindUint32( 2, static_cast<uint32_t>(message.logMsgType));
-    mStmtLogs.bindUint32( 3, static_cast<uint32_t>(message.logMessagePrio));
-    mStmtLogs.bindUint64( 4, static_cast<uint64_t>(message.logModuleId));
-    mStmtLogs.bindUint64( 5, static_cast<uint64_t>(message.logThreadId));
-    mStmtLogs.bindText(   6, message.logMessage);
-    mStmtLogs.bindText(   7, message.logThreadLen != 0 ? message.logThread : String::EmptyString);
-    mStmtLogs.bindText(   8, message.logModuleLen != 0 ? message.logModule : String::EmptyString);
-    mStmtLogs.bindUint64( 9, static_cast<uint64_t>(message.logTimestamp));
-    mStmtLogs.bindUint64(10,static_cast<uint64_t>(timestamp.getTime()));
+    mStmtLogs.bindUint32( 2, static_cast<uint32_t>(message.logSessionId));
+    mStmtLogs.bindUint32( 3, static_cast<uint32_t>(message.logMsgType));
+    mStmtLogs.bindUint32( 4, static_cast<uint32_t>(message.logMessagePrio));
+    mStmtLogs.bindUint64( 5, static_cast<uint64_t>(message.logModuleId));
+    mStmtLogs.bindUint64( 6, static_cast<uint64_t>(message.logThreadId));
+    mStmtLogs.bindText(   7, message.logMessage);
+    mStmtLogs.bindText(   8, message.logThreadLen != 0 ? message.logThread : String::EmptyString);
+    mStmtLogs.bindText(   9, message.logModuleLen != 0 ? message.logModule : String::EmptyString);
+    mStmtLogs.bindUint64(10, static_cast<uint64_t>(message.logTimestamp));
+    mStmtLogs.bindUint64(11,static_cast<uint64_t>(timestamp.getTime()));
 
     bool result{ mStmtLogs.next() };
     mStmtLogs.reset();
@@ -645,15 +650,16 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
     {
         mStmtLogs.bindUint64( 0, static_cast<uint64_t>(NEService::COOKIE_LOCAL));
         mStmtLogs.bindUint32( 1, static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE));
-        mStmtLogs.bindUint32( 2, static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText));
-        mStmtLogs.bindUint32( 3, static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore));
-        mStmtLogs.bindUint64( 4, static_cast<uint64_t>(proc.getId()));
-        mStmtLogs.bindUint64( 5, static_cast<uint64_t>(threadId));
-        mStmtLogs.bindText(   6, msg);
-        mStmtLogs.bindText(   7, thread);
-        mStmtLogs.bindText(   8, module);
-        mStmtLogs.bindUint64( 9, static_cast<uint64_t>(timestamp.getTime()));
+        mStmtLogs.bindUint32( 2, static_cast<uint32_t>(0u));
+        mStmtLogs.bindUint32( 3, static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText));
+        mStmtLogs.bindUint32( 4, static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore));
+        mStmtLogs.bindUint64( 5, static_cast<uint64_t>(proc.getId()));
+        mStmtLogs.bindUint64( 6, static_cast<uint64_t>(threadId));
+        mStmtLogs.bindText(   7, msg);
+        mStmtLogs.bindText(   8, thread);
+        mStmtLogs.bindText(   9, module);
         mStmtLogs.bindUint64(10, static_cast<uint64_t>(timestamp.getTime()));
+        mStmtLogs.bindUint64(11, static_cast<uint64_t>(timestamp.getTime()));
 
         bool result{ mStmtLogs.next() };
         mStmtLogs.reset();
@@ -666,6 +672,7 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
         String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
                             , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
                             , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
+                            , static_cast<uint32_t>(0u)
                             , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
                             , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                             , static_cast<uint64_t>(proc.getId())
@@ -706,15 +713,16 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
     {
         mStmtLogs.bindUint64( 0, static_cast<uint64_t>(NEService::COOKIE_LOCAL));
         mStmtLogs.bindUint32( 1, static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE));
-        mStmtLogs.bindUint32( 2, static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText));
-        mStmtLogs.bindUint32( 3, static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore));
-        mStmtLogs.bindUint64( 4, static_cast<uint64_t>(proc.getId()));
-        mStmtLogs.bindUint64( 5, static_cast<uint64_t>(threadId));
-        mStmtLogs.bindText(   6, msg);
-        mStmtLogs.bindText(   7, thread);
-        mStmtLogs.bindText(   8, module);
-        mStmtLogs.bindUint64( 9, static_cast<uint64_t>(timestamp.getTime()));
+        mStmtLogs.bindUint32( 2, static_cast<uint32_t>(0u));
+        mStmtLogs.bindUint32( 3, static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText));
+        mStmtLogs.bindUint32( 4, static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore));
+        mStmtLogs.bindUint64( 5, static_cast<uint64_t>(proc.getId()));
+        mStmtLogs.bindUint64( 6, static_cast<uint64_t>(threadId));
+        mStmtLogs.bindText(   7, msg);
+        mStmtLogs.bindText(   8, thread);
+        mStmtLogs.bindText(   9, module);
         mStmtLogs.bindUint64(10, static_cast<uint64_t>(timestamp.getTime()));
+        mStmtLogs.bindUint64(11, static_cast<uint64_t>(timestamp.getTime()));
 
         bool result{ mStmtLogs.next() };
         mStmtLogs.reset();
@@ -727,6 +735,7 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
         String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
                             , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
                             , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
+                            , static_cast<uint32_t>(0u)
                             , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
                             , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
                             , static_cast<uint64_t>(proc.getId())
