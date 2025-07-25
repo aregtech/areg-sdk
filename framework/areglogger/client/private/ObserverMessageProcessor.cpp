@@ -173,7 +173,12 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
         Lock lock(mLoggerClient.mLock);
         const NELogging::sLogMessage* msgRemote = reinterpret_cast<const NELogging::sLogMessage*>(msgReceived.getBuffer());
         ASSERT(msgRemote != nullptr);
-        mLoggerClient.mLogDatabase.logMessage(*msgRemote, now);
+        if (mLoggerClient.mLogDatabase.logMessage(*msgRemote, now) == false)
+        {
+            // If log message is not stored, it is not processed
+            break;
+        }
+
         mLoggerClient.mLogDatabase.commit(true);
 
         if (LogObserverBase::_theLogObserver != nullptr)

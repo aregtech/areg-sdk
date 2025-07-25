@@ -80,9 +80,9 @@ bool SqliteStatement::execute()
 
 bool SqliteStatement::next()
 {
-    bool result{ isValid() && (sqlite3_step(_sqlite_stmt(mStatement)) == SQLITE_ROW) };
-    mRowPos += result ? 1 : 0; // Increment row position if a new row is available
-    return result;
+    int result = isValid() ? sqlite3_step(_sqlite_stmt(mStatement)) : SQLITE_ERROR;
+    mRowPos += (result == SQLITE_ROW) ? 1 : 0; // Increment row position if a new row is available, otherwise reset to 0
+    return (result == SQLITE_DONE) || (result == SQLITE_ROW);
 }
 
 void SqliteStatement::reset()
