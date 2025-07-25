@@ -348,7 +348,7 @@ public:
      * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    int getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEntries = -1);
+    static int getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
@@ -360,7 +360,7 @@ public:
      * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    int getLogMessages(std::vector<SharedBuffer>& OUT logs, SqliteStatement& IN stmt, int IN maxEntries = -1);
+    static int getLogMessages(std::vector<SharedBuffer>& OUT logs, SqliteStatement& IN stmt, int IN maxEntries = -1);
 
     /**
      * \brief   Fills log instances in the specified array. The array should be initialized and it should have enough space to set data.
@@ -372,7 +372,7 @@ public:
      *                              and prepared to extract instance information.
      * \return  Returns number of entries set in the array.
      **/
-    int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& IN OUT infos, SqliteStatement& IN stmt);
+    static int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& IN OUT infos, SqliteStatement& IN stmt);
 
     /**
      * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -389,7 +389,7 @@ public:
      * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    int fillInstScopes(std::vector<NELogging::sScopeInfo>& IN OUT scopes, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
+    static int fillInstScopes(std::vector<NELogging::sScopeInfo>& IN OUT scopes, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
 
     /**
      * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -406,7 +406,7 @@ public:
      * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    int fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
+    static int fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database.
@@ -417,7 +417,7 @@ public:
      * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
      * @return  Returns true if succeeded to setup.
      **/
-    bool setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    static bool setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Call to setup statement to read the list of logs from logging database.
@@ -428,7 +428,7 @@ public:
      * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
      * @return  Returns true if succeeded to setup.
      **/
-    bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    static bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
@@ -483,21 +483,21 @@ private:
      * \param   stmt    The SqliteStatement to extract the log message.
      * \param   buf     The SharedBuffer to copy the log message.
      **/
-    inline void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
+    inline static void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
 
     /**
      * \brief   Extracts the log instance from the SqliteStatement and copies it to the NEService::sServiceConnectedInstance.
      * \param   stmt    The SqliteStatement to extract the log instance.
      * \param   inst    The NEService::sServiceConnectedInstance to copy the log instance.
      **/
-    inline void _copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance & inst);
+    inline static void _copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance & inst);
 
     /**
      * \brief   Extracts the log scope from the SqliteStatement and copies it to the NELogging::sScopeInfo.
      * \param   stmt    The SqliteStatement to extract the log scope.
      * \param   scope   The NELogging::sScopeInfo to copy the log scope.
      **/
-    inline void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
+    inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

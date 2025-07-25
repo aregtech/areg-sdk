@@ -575,16 +575,19 @@ void LogSqliteDatabase::disconnect(void)
 
 bool LogSqliteDatabase::execute(const String& sql)
 {
+    Lock lock(mLock);
     return mDatabase.execute(sql);
 }
 
 bool LogSqliteDatabase::begin(void)
 {
+    Lock lock(mLock);
     return mDatabase.begin();
 }
 
 bool LogSqliteDatabase::commit(bool doCommit)
 {
+    Lock lock(mLock);
     return mDatabase.commit(doCommit);
 }
 
@@ -595,6 +598,7 @@ bool LogSqliteDatabase::areTablesInitialized(void) const
 
 bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const DateTime& timestamp)
 {
+    Lock lock(mLock);
     if (mStmtLogs.isValid() == false)
     {
         return false;
@@ -621,6 +625,7 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const 
 
 bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedInstance& instance, const DateTime& timestamp)
 {
+    Lock lock(mLock);
     Process& proc{ Process::getInstance() };
     String module{ proc.getAppName() };
     id_type threadId{ Thread::getCurrentThreadId() };
@@ -689,6 +694,7 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
 
 bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const DateTime& timestamp)
 {
+    Lock lock(mLock);
     logScopesDeactivate(cookie, timestamp);
 
     Process& proc{ Process::getInstance() };
@@ -757,6 +763,7 @@ bool LogSqliteDatabase::logScopeActivate(const NELogging::sScopeInfo & scope, co
 
 uint32_t LogSqliteDatabase::logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp)
 {
+    Lock lock(mLock);
     uint32_t result{ 0 };
     SqliteStatement stmt(mDatabase, _sqlInsertScope);
     for (const auto& scope : scopes.getData())
@@ -783,7 +790,7 @@ bool LogSqliteDatabase::logScopeActivate(const String& scopeName, uint32_t scope
                         , static_cast<uint32_t>(scopePrio)
                         , scopeName.getString()
                         , static_cast<uint64_t>(timestamp.getTime()));
-    return mDatabase.execute(sql);
+    return execute(sql);
 }
 
 bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTime& timestamp)
@@ -792,7 +799,7 @@ bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTim
     String::formatString( sql, SQL_LEN, _fmtUpdScopes.data()
                         , static_cast<uint64_t>(timestamp.getTime())
                         , static_cast<uint64_t>(cookie));
-    return mDatabase.execute(sql);
+    return execute(sql);
 }
 
 bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, unsigned int scopeId, const DateTime& timestamp)
@@ -803,11 +810,12 @@ bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, unsigned int s
                         , static_cast<uint64_t>(cookie)
                         , static_cast<uint32_t>(scopeId)
                         );
-    return mDatabase.execute(sql);
+    return execute(sql);
 }
 
 bool LogSqliteDatabase::rollback(void)
 {
+    Lock lock(mLock);
     return mDatabase.rollback();
 }
 
@@ -820,6 +828,7 @@ std::vector<String> LogSqliteDatabase::getLogInstanceNames(void)
 
 void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& OUT names)
 {
+    Lock lock(mLock);
     names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceName);
     if (stmt.isValid())
@@ -846,6 +855,7 @@ std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances(void)
 
 void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& OUT ids)
 {
+    Lock lock(mLock);
     ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceIds);
     if (stmt.isValid())
@@ -869,6 +879,7 @@ std::vector<String> LogSqliteDatabase::getLogThreadNames(void)
 
 void LogSqliteDatabase::getLogThreadNames(std::vector<String>& OUT names)
 {
+    Lock lock(mLock);
     names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadNames);
     if (stmt.isValid())
@@ -892,6 +903,7 @@ std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads(void)
 
 void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& OUT ids)
 {
+    Lock lock(mLock);
     ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadIds);
     if (stmt.isValid())
@@ -936,6 +948,7 @@ std::vector<NEService::sServiceConnectedInstance> LogSqliteDatabase::getLogInsta
 
 void LogSqliteDatabase::getLogInstanceInfos(std::vector<NEService::sServiceConnectedInstance>& OUT infos)
 {
+    Lock lock(mLock);
     infos.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogInstances);
     if (stmt.isValid())
@@ -960,6 +973,7 @@ std::vector<NELogging::sScopeInfo> LogSqliteDatabase::getLogInstScopes(ITEM_ID I
 
 void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, ITEM_ID IN instId)
 {
+    Lock lock(mLock);
     scopes.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogScopes);
     if (stmt.isValid())
@@ -985,6 +999,7 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(void)
 
 void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages)
 {
+    Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
     if (stmt.isValid())
@@ -1015,6 +1030,7 @@ void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& OUT messag
         return;
     }
 
+    Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
     if (stmt.isValid())
@@ -1046,6 +1062,7 @@ void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& OUT messa
         return;
     }
 
+    Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetScopeLogMessages);
     if (stmt.isValid())
@@ -1073,6 +1090,7 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID IN instId, u
         return getLogInstMessages(instId);
     }
 
+    Lock lock(mLock);
     std::vector<SharedBuffer> result;
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
     if (stmt.isValid())
@@ -1107,6 +1125,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages, 
         return;
     }
 
+    Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
     if (stmt.isValid())
@@ -1245,6 +1264,7 @@ bool LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITE
 
 uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
 {
+    Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0;
 
@@ -1263,6 +1283,7 @@ uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
 
 uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
 {
+    Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0;
 
@@ -1281,6 +1302,7 @@ uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
 
 uint32_t LogSqliteDatabase::countLogInstances(void)
 {
+    Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0;
 
