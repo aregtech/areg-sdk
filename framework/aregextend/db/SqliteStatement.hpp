@@ -52,10 +52,13 @@ public:
         , ColumnNull            //!< Null column.
     };
 
+    /**
+     * \brief   Values set when getting the next row in the result set.
+     **/
     enum class eQueryResult
     {
           Failed    = 0 //!< The query failed to execute.
-        , HasMore   = 1 //!< The query executed successfully and has more rows to process.
+        , HasMore   = 1 //!< The query executed successfully and has rows to process.
         , HasNoMore = 2 //<! The query executed successfully and has no more rows to process.
     };
 
@@ -102,7 +105,10 @@ public:
     /**
      * \brief   Advances to the next row in the result set.
      * \return  One of the results to execute the query.
-     */
+     *              - The returned value `eQueryResult::Failed` means error.
+     *              - The returned value `eQueryResult::HasMore` means there is data in the row to extract.
+     *              - The returned value `eQueryResult::HasNoMore` means all data are extracted, reached the end and there is no more data to extract.
+     **/
     SqliteStatement::eQueryResult next(void);
 
     /**
