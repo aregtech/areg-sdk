@@ -43,13 +43,20 @@ public:
      */
     enum class eColumnType
     {
-          ColumnUnknown     = 0   //!< Unknown column type.
-        , ColumnInteger           //!< 32-bit integer column.
-        , ColumnInteger64         //!< 64-bit integer column.
-        , ColumnDouble            //!< Double-precision floating point column.
-        , ColumnText              //!< Text (string) column.
-        , ColumnBlob              //!< Binary large object column.
-        , ColumnNull              //!< Null column.
+          ColumnUnknown     = 0 //!< Unknown column type.
+        , ColumnInteger         //!< 32-bit integer column.
+        , ColumnInteger64       //!< 64-bit integer column.
+        , ColumnDouble          //!< Double-precision floating point column.
+        , ColumnText            //!< Text (string) column.
+        , ColumnBlob            //!< Binary large object column.
+        , ColumnNull            //!< Null column.
+    };
+
+    enum class eQueryResult
+    {
+          Failed    = 0 //!< The query failed to execute.
+        , HasMore   = 1 //!< The query executed successfully and has more rows to process.
+        , HasNoMore = 2 //<! The query executed successfully and has no more rows to process.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,9 +101,9 @@ public:
 
     /**
      * \brief   Advances to the next row in the result set.
-     * \return  True if a new row is available, false if there are no more rows.
+     * \return  One of the results to execute the query.
      */
-    bool next(void);
+    SqliteStatement::eQueryResult next(void);
 
     /**
      * \brief   Resets the statement to its initial state, ready for re-execution.

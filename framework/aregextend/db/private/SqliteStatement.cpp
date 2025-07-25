@@ -78,11 +78,22 @@ bool SqliteStatement::execute()
     return isValid() && (sqlite3_step(_sqlite_stmt(mStatement)) == SQLITE_DONE);
 }
 
-bool SqliteStatement::next()
+SqliteStatement::eQueryResult SqliteStatement::next()
 {
     int result = isValid() ? sqlite3_step(_sqlite_stmt(mStatement)) : SQLITE_ERROR;
-    mRowPos += (result == SQLITE_ROW) ? 1 : 0; // Increment row position if a new row is available, otherwise reset to 0
-    return (result == SQLITE_DONE) || (result == SQLITE_ROW);
+    if (result == SQLITE_DONE)
+    {
+        return SqliteStatement::eQueryResult::HasNoMore;
+    }
+    else if (result == SQLITE_ROW)
+    {
+        mRowPos += 1;
+        return SqliteStatement::eQueryResult::HasMore;
+    }
+    else
+    {
+        return SqliteStatement::eQueryResult::Failed;
+    }
 }
 
 void SqliteStatement::reset()
