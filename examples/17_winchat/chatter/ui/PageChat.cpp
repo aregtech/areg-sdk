@@ -455,15 +455,16 @@ LRESULT PageChat::OnCmdChatJoined( WPARAM wParam, LPARAM /*lParam*/ )
 
 void PageChat::removeTyping( CString nickName, uint32_t cookie )
 {
-    for ( int i = mLastItem; i < mCtrlList.GetItemCount(); ++ i)
+    for ( int i = mLastItem; i < mCtrlList.GetItemCount(); )
     {
         if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(i)) )
         {
-            ASSERT( nickName == mCtrlList.GetItemText(i, 0) );
             mCtrlList.DeleteItem(i);
             mCtrlList.EnsureVisible( mCtrlList.GetItemCount( ) - 1, FALSE );
-            break;
+            continue; // Continue to check next items, because the current item is deleted.
         }
+
+        ++i;
     }
 }
 
@@ -548,7 +549,6 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
             ch = 'a';
     }
     mChatMsg += ch;
-    // mEditEnabled = mChatMsg.IsEmpty() == FALSE;
     UpdateData(FALSE);
     if (mChatMsg.GetLength() >= AUTOMESSAGE_MAX_LEN)
     {

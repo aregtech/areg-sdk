@@ -22,7 +22,7 @@ class PageChat  : public CPropertyPage
 private:
     static LPCTSTR HEADER_TITILES[];
 
-    static const USHORT TIMER_MIN_VALUE     = 1;
+    static const USHORT TIMER_MIN_VALUE     = 15;
     static const USHORT TIMER_MAX_VALUE     = 1000;
     static const USHORT AUTOMESSAGE_MAX_LEN = 20;
 
@@ -64,6 +64,11 @@ public:
     afx_msg LRESULT OnCmdChatJoined( WPARAM wParam, LPARAM lParam );
     afx_msg LRESULT OnCmdChatMessage( WPARAM wParam, LPARAM lParam );
     afx_msg LRESULT OnCmdChatTyping( WPARAM wParam, LPARAM lParam );
+
+    afx_msg void OnBnClickedCheckAuto();
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
+    afx_msg void OnEnChangeChatTimer();
+    afx_msg void OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult);
 
 private:
     void setHeaders( void );
@@ -108,12 +113,5 @@ private:
     String              mModelName;
 
 private:
-    PageChat( void );
-    PageChat( const PageChat & /*src*/ );
-    const PageChat & operator = ( const PageChat & /*src*/ );
-public:
-    afx_msg void OnBnClickedCheckAuto();
-    afx_msg void OnTimer(UINT_PTR nIDEvent);
-    afx_msg void OnEnChangeChatTimer();
-    afx_msg void OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult);
+    DECLARE_NOCOPY_NOMOVE(PageChat);
 };
