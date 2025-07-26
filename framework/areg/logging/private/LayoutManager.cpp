@@ -46,13 +46,14 @@ bool LayoutManager::createLayouts(const String& layoutFormat)
     deleteLayouts();
     uint32_t len  = static_cast<uint32_t>(layoutFormat.getLength());
     uint32_t size = len + 1u;
-    char* strFormat = size > 1 ? DEBUG_NEW char[size] : nullptr;
+    unsigned char * buf = size > 1 ? DEBUG_NEW unsigned char[size] : nullptr;
+    char* strFormat = reinterpret_cast<char *>(buf);
 
-    if (strFormat != nullptr)
+    if (buf != nullptr)
     {
         NEString::copyString<char, char>(strFormat, static_cast<NEString::CharCount>(len), layoutFormat.getString(), static_cast<NEString::CharCount>(len));
         _createLayouts(strFormat);
-        delete[] strFormat;
+        delete[] buf;
     }
 
     return (mLayoutList.isEmpty() == false);
@@ -92,6 +93,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
     bool hasExclusive{ false };
     char* pos = layoutFormat;
     const char* pos1 = pos;
+    IELayout* anyText{ nullptr };
 
     while (*pos != String::EmptyChar)
     {
@@ -176,13 +178,13 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
             if (newLayout != nullptr)
             {
                 *pos = String::EmptyChar;
-                if (pos1 != pos)
+                anyText = pos1 != pos ? DEBUG_NEW AnyTextLayout(pos1) : nullptr;
+                if (anyText != nullptr)
                 {
-                    mLayoutList.add(static_cast<IELayout*>(DEBUG_NEW AnyTextLayout(pos1)));
+                    mLayoutList.add(anyText);
                 }
 
                 mLayoutList.add(newLayout);
-
                 *(++pos) = String::EmptyChar;
                 pos1 = ++pos;
             }
@@ -192,10 +194,11 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
             ++pos;
         }
     }
-
-    if (pos1 != pos)
+    
+    anyText = pos1 != pos ? DEBUG_NEW AnyTextLayout(pos1) : nullptr;
+    if (anyText != nullptr)
     {
-        mLayoutList.add(static_cast<IELayout*>(DEBUG_NEW AnyTextLayout(pos1)));
+        mLayoutList.add(anyText);
     }
 }
 

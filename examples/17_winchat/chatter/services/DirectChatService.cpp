@@ -72,6 +72,11 @@ DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, 
 {
 }
 
+DirectChatService::~DirectChatService(void)
+{
+    _clearList();
+}
+
 void DirectChatService::startupComponent( ComponentThread & comThread )
 {
     LOG_SCOPE( chatter_DirectChatService_StartupComponent );
@@ -80,7 +85,8 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
 
     const NEDirectConnection::sInitiator & initiator = mPaticipantsHandler.GetInitiator();
     const NEDirectConnection::ListParticipants & listParticipants = mPaticipantsHandler.GetParticipantList();
-    for (uint32_t i = 0; i < listParticipants.getSize( ); ++ i )
+    uint32_t count {listParticipants.getSize( )};
+    for (uint32_t i = 0; i < count; ++ i )
     {
         const NEDirectConnection::sParticipant & target = listParticipants[i];
         if ( target != initiator )
@@ -95,14 +101,8 @@ void DirectChatService::shutdownComponent( ComponentThread & comThread )
 {
     LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
     mPaticipantsHandler.SetConnectionService( nullptr );
-
-    for (uint32_t i = 0; i < mListClients.getSize(); ++ i )
-    {
-        DirectConnectionClient * client = mListClients[i];
-        delete client;
-    }
-    mListClients.clear();
-
+    
+    _clearList();    
     Component::shutdownComponent(comThread);
 }
 
@@ -168,4 +168,16 @@ void DirectChatService::requestChatLeave( const NEDirectMessager::sParticipant &
         broadcastParticipantLeft( participant, timeLeave );
         notifyChatParticipantsUpdated( );
     }
+}
+
+inline void DirectChatService::_clearList(void)
+{
+    uint32_t count{ mListClients.getSize() };
+    for (uint32_t i = 0; i < count; ++ i )
+    {
+        DirectConnectionClient * client = mListClients[i];
+        delete client;
+    }
+    
+    mListClients.clear();
 }

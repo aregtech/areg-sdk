@@ -453,7 +453,7 @@ LRESULT PageChat::OnCmdChatJoined( WPARAM wParam, LPARAM /*lParam*/ )
     return 0;
 }
 
-void PageChat::removeTyping( CString nickName, uint32_t cookie )
+void PageChat::removeTyping( const CString & /*nickName*/, uint32_t cookie)
 {
     for ( int i = mLastItem; i < mCtrlList.GetItemCount(); )
     {

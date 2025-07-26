@@ -29,7 +29,6 @@
         <ClCompile>
             <MultiProcessorCompilation>true</MultiProcessorCompilation>
             <MinimalRebuild>false</MinimalRebuild>
-            <WarningLevel>Level3</WarningLevel>
             <ConformanceMode>true</ConformanceMode>
             <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Debug'">EnableFastChecks</BasicRuntimeChecks>
             <BasicRuntimeChecks Condition="'$(ConfigShortName)'=='Release'">Default</BasicRuntimeChecks>

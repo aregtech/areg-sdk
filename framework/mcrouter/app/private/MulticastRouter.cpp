@@ -34,27 +34,27 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
+static String _modelName("MCRouterModel");
+
+// Describe mode, set model name
+BEGIN_MODEL(_modelName)
+
+    // define console service thread.
+    BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE )
+        // Define the console service
+        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
+            // register dummy 'empty service'.
+            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+        // end of component description
+        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
+    // end of thread description
+    END_REGISTER_THREAD( "RouterConsoleServiceThread" )
+
+// end of model description
+END_MODEL(_modelName)
+        
 namespace
 {
-    static String _modelName("MCRouterModel");
-
-    // Describe mode, set model name
-    BEGIN_MODEL(_modelName)
-
-        // define console service thread.
-        BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE )
-            // Define the console service
-            BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
-                // register dummy 'empty service'.
-                REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
-            // end of component description
-            END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
-        // end of thread description
-        END_REGISTER_THREAD( "RouterConsoleServiceThread" )
-
-    // end of model description
-    END_MODEL(_modelName)
-
     constexpr std::string_view _msgHelp []
     {
           {"Usage of AREG Message Router (mcrouter) :"}

@@ -41,8 +41,8 @@
 //////////////////////////////////////////////////////////////////////////
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
-    static_cast<void*>(argv);
-    static_cast<void*>(envp);
+    static_cast<void>(argv);
+    static_cast<void>(envp);
     int result{ ServiceApplicationBase::RESULT_FAILED_RUN };
     char ** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
     LogCollector& logger = LogCollector::getInstance();
