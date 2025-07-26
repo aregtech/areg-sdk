@@ -22,7 +22,7 @@ class PageChat  : public CPropertyPage
 private:
     static LPCTSTR HEADER_TITILES[];
 
-    static const USHORT TIMER_MIN_VALUE     = 10;
+    static const USHORT TIMER_MIN_VALUE     = 15;
     static const USHORT TIMER_MAX_VALUE     = 1000;
     static const USHORT AUTOMESSAGE_MAX_LEN = 20;
 
