@@ -65,6 +65,11 @@ public:
     afx_msg LRESULT OnCmdChatMessage( WPARAM wParam, LPARAM lParam );
     afx_msg LRESULT OnCmdChatTyping( WPARAM wParam, LPARAM lParam );
 
+    afx_msg void OnBnClickedCheckAuto();
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
+    afx_msg void OnEnChangeChatTimer();
+    afx_msg void OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult);
+
 private:
     void setHeaders( void );
     void setTabTitle( const String & title );
@@ -108,12 +113,5 @@ private:
     String              mModelName;
 
 private:
-    PageChat( void );
-    PageChat( const PageChat & /*src*/ );
-    const PageChat & operator = ( const PageChat & /*src*/ );
-public:
-    afx_msg void OnBnClickedCheckAuto();
-    afx_msg void OnTimer(UINT_PTR nIDEvent);
-    afx_msg void OnEnChangeChatTimer();
-    afx_msg void OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult);
+    DECLARE_NOCOPY_NOMOVE(PageChat);
 };
