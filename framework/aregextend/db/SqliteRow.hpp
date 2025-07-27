@@ -65,7 +65,7 @@ public:
      * \brief   Move constructor.
      * \param   src     The source SqliteRow to move from.
      */
-    SqliteRow(SqliteRow&& src);
+    SqliteRow(SqliteRow&& src) noexcept;
 
     /**
      * \brief   Destructor. Defaulted.
@@ -84,7 +84,7 @@ public:
      * \param   src     The source SqliteRow to move from.
      * \return  Reference to this object.
      */
-    SqliteRow& operator = (SqliteRow&& src);
+    SqliteRow& operator = (SqliteRow&& src) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

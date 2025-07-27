@@ -121,6 +121,7 @@ namespace NELogging
         , PrioIgnoreLayout  = 0x0C00  //!< Ignore layout priority,    bit set:  1100 0000 0000
         , PrioAny           = 0x0FF0  //!< Log without priority,      bit set:  1111 1111 0000
         , PrioValid         = 0x0FF1  //!< Valid logging priority     bit set:  1111 1111 0001
+        , PrioUndefined     = 0xFFFF  //!< Undefined lottint priority bit set:  1111 1111 1111
     };
 
     /**

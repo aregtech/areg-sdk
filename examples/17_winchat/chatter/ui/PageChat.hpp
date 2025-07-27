@@ -75,7 +75,7 @@ private:
     void setTabTitle( const String & title );
     void outputMessage(CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie, bool removeType = true);
     void outputTyping(CString nickName, CString message, uint32_t cookie );
-    void removeTyping(CString nickName, uint32_t cookie);
+    void removeTyping(const CString & nickName, uint32_t cookie);
     bool isActivePage( void );
     void sendMessage( void );
     void sendType( void );

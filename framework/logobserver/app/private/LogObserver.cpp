@@ -67,7 +67,6 @@ namespace
     sLoggerConnect  _logConnect;
     ListInstances   _listInstances;
     MapScopes       _mapScopes;
-
 }
 
 //////////////////////////////////////////////////////////////////////////

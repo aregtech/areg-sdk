@@ -49,7 +49,7 @@ SqliteRow::SqliteRow(const SqliteRow& src)
 {
 }
 
-SqliteRow::SqliteRow(SqliteRow&& src)
+SqliteRow::SqliteRow(SqliteRow&& src) noexcept
     : mStatement(src.mStatement)
 {
     src.mStatement = nullptr; // Transfer ownership
@@ -61,7 +61,7 @@ SqliteRow& SqliteRow::operator = (const SqliteRow& src)
     return (*this);
 }
 
-SqliteRow& SqliteRow::operator = (SqliteRow&& src)
+SqliteRow& SqliteRow::operator = (SqliteRow&& src) noexcept
 {
     mStatement = src.mStatement;
     src.mStatement = nullptr; // Transfer ownership
