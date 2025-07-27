@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/base/SynchObjects.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/private/win32/SpinLockWin32.hpp"
@@ -430,4 +430,4 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
 }
 
 
-#endif  // _WINDOWS
+#endif  // _WIN32

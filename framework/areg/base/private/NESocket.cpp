@@ -18,7 +18,7 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/logging/GELog.h"
 
-#ifdef   _WINDOWS
+#ifdef   _WIN32
     #ifndef WIN32_LEAN_AND_MEAN
         #define WIN32_LEAN_AND_MEAN
     #endif  // WIN32_LEAN_AND_MEAN
@@ -620,14 +620,14 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
         {
             entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 
             for ( int count = 0; count < entriesCount; ++ count)
                 readList.fd_array[count + 1] = masterList[count];
             
             readList.fd_count = static_cast<u_int>( entriesCount + 1 );
 
-#else   // !_WINDOWS
+#else   // !_WIN32
 
             LOG_DBG("There are [ %d ] socket entries in the master list, setting FD_SET", entriesCount);
             for ( int count = 0; count < entriesCount; ++ count)
@@ -646,7 +646,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
                 }
             }
 
-#endif  // !_WINDOWS
+#endif  // !_WIN32
         }
 
         if (result == NESocket::InvalidSocketHandle)
@@ -769,22 +769,22 @@ AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char* dat
 
 AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
 {
-#ifdef WINDOWS
+#ifdef _WIN32
     int flag{ SD_SEND };
 #else
     int flag{ SHUT_WR };
-#endif // WINDOWS
+#endif // _WIN32
 
     return ( isSocketHandleValid(hSocket) && (RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
 AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 {
-#ifdef WINDOWS
+#ifdef _WIN32
     int flag{ SD_RECEIVE };
 #else
     int flag{ SHUT_RD };
-#endif // WINDOWS
+#endif // _WIN32
 
     return ( isSocketHandleValid(hSocket) && (RETURNED_OK == ::shutdown(hSocket, flag)) );
 }

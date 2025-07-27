@@ -47,7 +47,7 @@
  * \brief   Set Exports / Imports for dynamic and static libraries
  **/
 #ifdef EXP_AREG_DLL
-   #if defined(_WIN32)
+   #if defined(_MSC_VER)
       #define AREG_API          __declspec(dllexport)
    #elif defined(__CYGWIN__)
       #define AREG_API          __attribute__ ((dllexport))
@@ -59,7 +59,7 @@
 #endif   // EXP_AREG_DLL
 
 #ifdef IMP_AREG_DLL
-   #if defined(_WIN32)
+   #if defined(_MSC_VER)
       #define AREG_API          __declspec(dllimport)
    #elif defined(__CYGWIN__)
       #define AREG_API          __attribute__ ((dllimport))
@@ -79,11 +79,11 @@
    #define AREG_API
 #endif  // AREG_API
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(_MINGW)
     #define AREG_API_IMPL   AREG_API
-#else   // !WIN32
+#else   // defined(WIN32) && !defined(_MINGW)
     #define AREG_API_IMPL
-#endif   // WIN32
+#endif   // defined(WIN32) && !defined(_MINGW)
 
 // By default, no AREG extended features.
 #if !defined(AREG_EXTENDED)

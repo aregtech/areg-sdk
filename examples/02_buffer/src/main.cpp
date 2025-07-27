@@ -17,10 +17,10 @@
 
 #include <iostream>
 
-#ifdef  _WIN32
+#ifdef  _MSC_VER
     // link with areg library, valid only for MSVC
-    #pragma comment(lib, "areg.lib")
-#endif // _WIN32
+    #pragma comment(lib, "areg")
+#endif // _MSC_VER
 
 //! \brief   A thread to run and output message
 class HelloThread   : public    Thread

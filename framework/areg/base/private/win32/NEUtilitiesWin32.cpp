@@ -16,7 +16,7 @@
 
 #include "areg/base/NEUtilities.hpp"
 
-#ifdef  WINDOWS
+#ifdef  _WIN32
 
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
@@ -35,16 +35,26 @@ namespace NEUtilities
     TIME64 _osSystemTimeNow(void)
     {
         struct timespec ts { };
-        return (std::timespec_get(&ts, TIME_UTC) != 0
+#ifndef _MINGW
+        return (timespec_get(&ts, TIME_UTC) != 0
                 ? (static_cast<TIME64>(ts.tv_sec) * NEUtilities::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / NEUtilities::MICROSEC_TO_NS)
                 : 0uLL);
+#else   // _MINGW
+        return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+                    ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
+                    : 0LL);
+#endif  // _MINGW
     }
 
     void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
     {
         struct timespec ts { };
         struct tm now { };
-        if (std::timespec_get(&ts, TIME_UTC) != 0)
+#ifndef _MINGW
+        if (timespec_get(&ts, TIME_UTC) != 0)
+#else   // _MINGW
+        if (RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
+#endif  // _MINGW
         {
             if (localTime)
             {
@@ -124,4 +134,4 @@ namespace NEUtilities
 
 } // namespace
 
-#endif // WINDOWS
+#endif // _WIN32

@@ -21,11 +21,11 @@
 #include "common/src/PublicHelloWorldClient.hpp"
 #include "common/src/NECommon.hpp"
 
-#ifdef WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "13_generated.lib")
-    #pragma comment(lib, "13_common.lib")
-#endif // WIN32
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "13_generated")
+    #pragma comment(lib, "13_common")
+#endif // _MSC_VER
 
 //!<\brief   A local service component. It also contains service client object.
 class ServiceComponent : public Component

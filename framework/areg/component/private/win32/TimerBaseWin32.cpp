@@ -17,7 +17,7 @@
 
 #include "areg/component/TimerBase.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 
 #include <Windows.h>
 
@@ -41,4 +41,4 @@ void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )
     ::CloseHandle( static_cast<HANDLE>(handle) );
 }
 
-#endif // _WINDOWS
+#endif // _WIN32

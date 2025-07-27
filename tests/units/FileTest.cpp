@@ -28,7 +28,9 @@
 #ifdef WINDOWS
     #include <Shlwapi.h>
 
-    #pragma comment(lib, "Shlwapi.lib")
+    #ifdef _MSC_VER
+        #pragma comment(lib, "Shlwapi")
+    #endif // _MSC_VER
 #endif // WINDOWS
 
 /**
@@ -90,7 +92,7 @@ TEST( FileTest, StlFileReadWrite )
  **/
 TEST( FileTest, Win32FileRead )
 {
-#ifdef WINDOWS
+#if defined(WINDOWS) && !defined(_MINGW)
 
     Application::setWorkingDirectory( nullptr );
 
@@ -108,7 +110,7 @@ TEST( FileTest, Win32FileRead )
 
     ASSERT_TRUE(::CloseHandle( hFile ));
 
-#endif // WINDOWS
+#endif // defined(WINDOWS) && !swdinws(_MINGW)
 }
 
 /**
@@ -117,7 +119,7 @@ TEST( FileTest, Win32FileRead )
  **/
 TEST( FileTest, Win32FileReadWrite )
 {
-#ifdef WINDOWS
+#if defined(WINDOWS) && !defined(_MINGW)
 
     Application::setWorkingDirectory( nullptr );
 

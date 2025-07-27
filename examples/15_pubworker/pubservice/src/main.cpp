@@ -18,10 +18,10 @@
 #include "pubservice/src/PatientService.hpp"
 #include "common/NECommon.hpp"
 
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "15_generated.lib")
-#endif // WINDOWS
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "15_generated")
+#endif // _MSC_VER
 
 
 constexpr char const _modelName[]      { "TheModel" };           // The name of model

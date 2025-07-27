@@ -488,7 +488,7 @@
 /**
  * \brief   defines some switches and macros to use in debug version
  **/
-#if defined(_DEBUG) && defined(_WINDOWS)
+#if defined(_DEBUG) && defined(_MSC_VER)
    // on non-Windows systems, there is no operator new which takes three parameters
    // this is defined in a platform specific overloaded new.h
     #include <crtdbg.h>

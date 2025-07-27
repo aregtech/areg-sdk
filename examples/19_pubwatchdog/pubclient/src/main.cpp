@@ -19,10 +19,10 @@
 #include "common/NECommon.hpp"
 #include "pubclient/src/ServiceClient.hpp"
 
-#ifdef WINDOWS
+#ifdef _MSC_VER
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "19_generated.lib")
-#endif // WINDOWS
+    #pragma comment(lib, "19_generated")
+#endif // _MSC_VER
 
 constexpr char const _modelName[]= { "HelloModel" };  //!< The name of model
 const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component

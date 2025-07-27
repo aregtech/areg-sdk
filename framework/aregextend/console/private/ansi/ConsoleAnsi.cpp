@@ -21,7 +21,7 @@
 
 #if !(AREG_EXTENDED)
 
-#ifdef WINDOWS
+#ifdef _WIN32
 
     // This is required only to enable ASCII control sequence on Windows console.
     // Ignored in other cases.
@@ -30,7 +30,7 @@
     #endif  // WIN32_LEAN_AND_MEAN
     #include <Windows.h>
 
-#endif // WINDOWS
+#endif // _WIN32
 
 #include <stdio.h>
 
@@ -45,7 +45,7 @@ namespace
     void _enableAsciiControlSequence(void)
     {
 
-#ifdef WINDOWS
+#ifdef _WIN32
         //////////////////////////////////////////////////////////////
         // 
         // The ASCII control sequence (or ANSI Escape Sequences) may not work properly
@@ -71,7 +71,7 @@ namespace
         //
         //////////////////////////////////////////////////////////////
 
-#endif // WINDOWS
+#endif // _WIN32
 
     }
 }
@@ -157,17 +157,17 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
 {
     ASSERT(buffer != nullptr);
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
-    #if defined(WINDOWS)
+    #if defined(_WIN32) && !defined(_MINGW)
         if (::gets_s(buffer, size) == nullptr)
             return false;
-    #else   // defined(WINDOWS)
+    #else   // defined(_WIN32)
         if (::fgets(buffer, size, stdin) == nullptr)
             return false;
-    #endif  // defined(WINDOWS)
+    #endif  // defined(_WIN32)
 #else
         if (::gets_s(buffer, size) == nullptr)
             return false;
-#endif // WINDOWS
+#endif // _WIN32
 
     NEString::trimAll<char>(buffer);
     return ( NEString::isEmpty(buffer) == false );

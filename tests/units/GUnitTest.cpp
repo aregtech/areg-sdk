@@ -19,10 +19,10 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "aregextend")
+#endif // _MSC_VER
 
 
 /**

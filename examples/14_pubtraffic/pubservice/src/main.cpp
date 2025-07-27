@@ -24,11 +24,11 @@
 #include "common/NECommon.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "aregextend.lib")
-    #pragma comment(lib, "14_generated.lib")
-#endif // WINDOWS
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "aregextend")
+    #pragma comment(lib, "14_generated")
+#endif // _MSC_VER
 
 constexpr char const _modelName[]  { "TheModel" };   // The name of model
 constexpr char const _threadName[] { "TestSimpleTrafficThread" };	// The name of component thread

@@ -450,6 +450,14 @@ macro(macro_default_target target_processor var_name_target)
         elseif (${_proc} MATCHES "${_proc_x86}")
             set(${var_name_target} "i386-pc-cygwin")
         endif()
+    elseif(MINGW)
+        if (${_proc} MATCHES "${_proc_x64}")
+            set(${var_name_target} "x86_64-w64-mingw32")
+        elseif (${_proc} MATCHES "${_proc_x86}")
+            set(${var_name_target} "i386-w32-mingw32")
+        endif()
+    else()
+        set(${var_name_target})
     endif()
 endmacro(macro_default_target)
 
@@ -458,9 +466,9 @@ endmacro(macro_default_target)
 # Purpose .....: Detects and configures compiler attributes including family, short name, paths, 
 #                target, processor architecture, and application bitness. 
 # Note ........: In addition to "gnu", "llvm", and "msvc", GNU compilers used in CYGWIN are 
-#                categorized under the "cygwin" family.
+#                categorized under the "cygwin" family, and MINGW is "mingw".
 # Parameters ...: ${compiler_path}    [in]       -- Path to the C++ compiler.
-#                 ${var_name_family}  [out]      -- Variable to store the compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+#                 ${var_name_family}  [out]      -- Variable to store the compiler family (e.g., "gnu", "msvc", "llvm", "cygwin", "mingw").
 #                 ${var_name_short}   [out]      -- Variable to store the short name of the compiler (e.g., "gcc", "clang", "cl").
 #                 ${var_name_cxx}     [out]      -- Variable to store the path to the C++ compiler (typically same as ${compiler_path}).
 #                 ${var_name_c}       [out]      -- Variable to store the corresponding C compiler name or path.
@@ -514,6 +522,9 @@ macro(macro_setup_compilers_data
             if (${_family} STREQUAL gnu)
                 if (CYGWIN)
                     set(${var_name_family} "cygwin")
+                    macro_default_target("${${var_name_arch}}" ${var_name_target})
+                elseif(MINGW)
+                    set(${var_name_family} "mingw")
                     macro_default_target("${${var_name_arch}}" ${var_name_target})
                 else()
                     set(${var_name_family} "gnu")
@@ -587,7 +598,7 @@ macro(macro_setup_compilers_data_by_family compiler_family var_name_short var_na
     set(${var_name_found} FALSE)
     
     # Iterate over known compilers and match the family
-    foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc")
+    foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc" "g++;mingw;gcc")
         list(GET _entry 1 _family)
 
         if ("${_family}" STREQUAL "${compiler_family}")
@@ -734,7 +745,7 @@ function(setStaticLibOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Additional compile options for non-Windows platforms
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW2)
         target_compile_options(${target_name} PRIVATE "-Bstatic")  # Ensure static linking
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
     endif()
@@ -818,7 +829,7 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
     # Set common compile definition
     target_compile_definitions(${target_name} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
 
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
         target_compile_options(${target_name} PRIVATE "-Bstatic")
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
@@ -857,7 +868,7 @@ function(setSharedLibOptions target_name library_list)
     target_link_libraries(${target_name} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     # Additional compile options for non-Windows platforms
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
         target_compile_options(${target_name} PRIVATE "-Bdynamic") # Ensure dynamic linking
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code for shared libraries
     endif()
@@ -1081,7 +1092,7 @@ macro(macro_declare_static_library lib_name)
     addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
     # If on Windows, set the RC files' language property
-    if (AREG_DEVELOP_ENV MATCHES "Win32" AND _resources)
+    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
         set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
     endif()
 
@@ -1115,7 +1126,7 @@ macro(macro_declare_shared_library lib_name)
     addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
     # If on Windows, set the RC files' language property
-    if (AREG_DEVELOP_ENV MATCHES "Win32" AND _resources)
+    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
         set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
     endif()
 
@@ -1150,7 +1161,7 @@ macro(macro_declare_executable exe_name)
     addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
 
     # If on Windows, set the RC files' language property
-    if (AREG_DEVELOP_ENV MATCHES "Win32" AND _resources)
+    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
         set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
     endif()
 

@@ -6,7 +6,7 @@ include("${AREG_FRAMEWORK}/logcollector/service/private/CMakeLists.txt")
 set(_resourses  "${AREG_FRAMEWORK}/logcollector/resources")
 set(_config     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config")
 
-if (${AREG_DEVELOP_ENV} MATCHES "Win32")
+if ((${AREG_DEVELOP_ENV} MATCHES "Win32") AND (NOT MINGW))
     set_source_files_properties("${_resourses}/logcollector.rc" PROPERTIES LANGUAGE RC)
     list(APPEND logger_SRC "${_resourses}/logcollector.rc")
 endif()
@@ -16,7 +16,7 @@ addExecutableEx(logcollector ${AREG_PACKAGE_NAME} "${logger_SRC}" "")
 target_compile_options(logcollector PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
 # Copy 'logcollector' service running scripts
-if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)
+if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN OR MINGW)
     add_custom_command( TARGET logcollector POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}/logcollector.service.install.bat"   "${_config}/logcollector.service.install.bat"
                         COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}/logcollector.service.uninstall.bat" "${_config}/logcollector.service.uninstall.bat"

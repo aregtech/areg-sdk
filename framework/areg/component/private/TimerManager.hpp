@@ -228,7 +228,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
     /**
      * \brief   Windows OS specific timer routine function. Triggered, when one of timer is expired.
@@ -238,7 +238,7 @@ private:
      **/
     static void _windowsTimerExpiredRoutine( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
 
-#endif // !_WINDOWS
+#endif // !_WIN32
 
 
 #ifdef _POSIX

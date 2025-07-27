@@ -16,10 +16,10 @@
 #include "common/NECommon.hpp"
 #include "pubclient/src/PatientClient.hpp"
 
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "15_generated.lib")
-#endif // WINDOWS
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "15_generated")
+#endif // _MSC_VER
 
 
 

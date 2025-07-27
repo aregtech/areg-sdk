@@ -26,10 +26,10 @@
 #include "locsvcmesh/src/ClientComponent.hpp"
 #include "locsvcmesh/src/ServicingComponents.hpp"
 
-#ifdef _WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "11_generated.lib")
-#endif // _WIN32
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "11_generated")
+#endif // _MSC_VER
 
 constexpr char const _modelName[]       { "TestModel" };    //!< The name of model
 constexpr char const _mainServiceName[] { "MainService" };  //!< Main component that controls shutdown.

@@ -23,10 +23,10 @@
 #include "common/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "16_generated.lib")
-#endif // WINDOWS
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "16_generated")
+#endif // _MSC_VER
 
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)

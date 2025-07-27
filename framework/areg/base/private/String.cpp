@@ -105,11 +105,11 @@ namespace
         char buffer[ CharCount ]{ 0 };
 
         int32_t count{ -1 };
-#ifdef WINDOWS
+#ifdef _WIN32
         count = ::sprintf_s(buffer, CharCount, format, number);
-#else   // !WINDOWS
+#else   // !_WIN32
         count = ::snprintf( buffer, CharCount, format, number);
-#endif  // WINDOWS
+#endif  // _WIN32
         result.assign(buffer, count > 0 ? count : 0);
         return count;
     }
@@ -124,11 +124,11 @@ namespace
      **/
     inline int _formatStringList( char * buffer, int count, const char * format, va_list argptr )
     {
-#ifdef  WINDOWS
+#ifdef  _WIN32
         return vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
-#else   // !WINDOWS
+#else   // !_WIN32
         return vsnprintf( buffer, count, format, argptr );
-#endif  // WINDOWS
+#endif  // _WIN32
     }
 
     /**

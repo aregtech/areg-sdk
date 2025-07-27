@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "areg/base/NESocket.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/GEMacros.h"
@@ -175,4 +175,4 @@ namespace NESocket
 
 } // namespace NESocket
 
-#endif  // _WINDOWS
+#endif  // _WIN32

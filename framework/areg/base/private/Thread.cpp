@@ -104,7 +104,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
 /************************************************************************/
 ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 {
-    static __THREAD_LOCAL ThreadLocalStorage* _localStorage = nullptr;
+    static __THREAD_LOCAL ThreadLocalStorage* _localStorage {nullptr};
     if ( ownThread == reinterpret_cast<Thread *>(Thread::CURRENT_THREAD) )
     {
         // do nothing, the static local storage item is already instantiated

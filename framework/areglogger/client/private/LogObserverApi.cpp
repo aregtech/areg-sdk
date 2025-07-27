@@ -23,16 +23,16 @@
 #include <atomic>
 
 // Use these options if compile for Windows with MSVC
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "aregextend.lib")
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "aregextend")
 
 #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #pragma comment(lib, "sqlite3")
 #else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
-    #pragma comment(lib, "aregsqlite3.lib")
+    #pragma comment(lib, "aregsqlite3")
 #endif  //defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
-#endif // WINDOWS
+#endif // _MSC_VER
 
 
 namespace

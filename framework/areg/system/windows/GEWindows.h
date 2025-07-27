@@ -24,6 +24,11 @@
     #endif // !WINDOWS
 #endif // WINDOWS
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+    #ifndef _MINGW
+        #define _MINGW
+    #endif // _MINGW
+#endif // defined(__MINGW32__) || defined(__MINGW64__)
 
 #if defined(_WIN32)
     #ifndef WIN32
@@ -133,8 +138,10 @@
 /************************************************************************
  * common defines
  ************************************************************************/
-#if (defined(_WIN32) && !defined(__THREAD_LOCAL))
+#if (defined(_MSC_VER) && !defined(__THREAD_LOCAL))
     #define __THREAD_LOCAL  __declspec( thread )
+#elif defined(__GNUC__) && (__GNUC__ >= 4) && !defined(__THREAD_LOCAL)
+    #define __THREAD_LOCAL  __thread
 #else   // !(defined(_WIN32) && !defined(__THREAD_LOCAL))
     #define __THREAD_LOCAL 
 #endif  // !(defined(_WIN32) && !defined(__THREAD_LOCAL))

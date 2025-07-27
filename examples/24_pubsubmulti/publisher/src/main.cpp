@@ -14,11 +14,11 @@
 
 #include "publisher/src/Publisher.hpp"
 
-#ifdef WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "24_generated.lib")
-    #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "24_generated")
+    #pragma comment(lib, "aregextend")
+#endif // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 //

@@ -157,7 +157,7 @@ install(FILES
 )
 
 # configure and copy servicing script files.
-if ((WIN32) OR (CYGWIN))
+if ((WIN32) OR (CYGWIN) OR (MINGW))
 
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.install.bat.in"    exports/logcollector.service.install.bat    @ONLY)
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.uninstall.bat.in"  exports/logcollector.service.uninstall.bat  @ONLY)

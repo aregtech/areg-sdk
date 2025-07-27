@@ -87,7 +87,7 @@
  * \brief   Set Exports / Imports for dynamic and static libraries
  **/
 #ifdef EXP_LOGGER_DLL
-   #if defined(_WIN32)
+   #if defined(_MSC_VER)
       #define LOGGER_API       __declspec(dllexport)
    #elif defined(__CYGWIN__)
       #define LOGGER_API       __attribute__ ((dllexport))
@@ -99,7 +99,7 @@
 #endif   // EXP_LOGGER_DLL
 
 #ifdef IMP_LOGGER_DLL
-   #if defined(_WIN32)
+   #if defined(_MSC_VER)
       #define LOGGER_API       __declspec(dllimport)
    #elif defined(__CYGWIN__)
       #define LOGGER_API       __attribute__ ((dllimport))
@@ -119,9 +119,9 @@
    #define LOGGER_API 
 #endif  // LOGGER_API 
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(_MINGW)
     #define LOGGER_API_IMPL     LOGGER_API 
-#else   // !WIN32
+#else   // definde(WIN32) && !defined(_MINGW)
     #define LOGGER_API_IMPL
 #endif   // WIN32
 

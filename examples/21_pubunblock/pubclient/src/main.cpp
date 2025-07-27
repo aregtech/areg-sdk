@@ -18,10 +18,10 @@
 
 #include "pubclient/src/ServiceClient.hpp"
 
-#ifdef WINDOWS
+#ifdef _MSC_VER
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "21_generated.lib")
-#endif // WINDOWS
+    #pragma comment(lib, "21_generated")
+#endif // _MSC_VER
 
 constexpr char const _modelName[]{ "UnblockRequest" };  //!< The name of model
 constexpr char const _serviceName[]{ "UnblockRequestService" }; //!< The name of the service

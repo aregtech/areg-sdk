@@ -30,7 +30,8 @@ project("${PROJECT_NAME}"
         HOMEPAGE_URL "https://aregtech.com" 
         LANGUAGES    CXX C)
 
-# The 'common.cmake' file should be included after 'project' call
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)# The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 
 # add a custom command to create output build folders if they are not existing.

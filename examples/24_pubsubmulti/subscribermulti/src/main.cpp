@@ -17,11 +17,11 @@
 
 #include "subscribermulti/src/Subscriber.hpp"
 
-#ifdef WINDOWS
+#ifdef _MSC_VER
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "24_generated.lib")
-    #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+    #pragma comment(lib, "24_generated")
+    #pragma comment(lib, "aregextend")
+#endif // _MSC_VER
 
 constexpr char const _modelName[]  { "PubSub_model" };  //!< The name of model
 constexpr char const _serviceName[]{ "Publisher" };     //!< The name of the service

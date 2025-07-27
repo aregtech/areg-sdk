@@ -14,12 +14,14 @@
  ************************************************************************/
 #include "logcollector/app/LogCollector.hpp"
 
-#ifdef WINDOWS
+#ifdef _WIN32
+    #ifdef _MSC_VER
 
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "aregextend.lib")
-#pragma comment(lib, "advapi32.lib")
-#pragma comment(lib, "kernel32.lib")
+        #pragma comment(lib, "areg")
+        #pragma comment(lib, "aregextend")
+        #pragma comment(lib, "advapi32")
+        #pragma comment(lib, "kernel32")
+    #endif  // _MSC_VER
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
@@ -39,6 +41,8 @@
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
+
+#ifndef _MINGW
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(argv);
@@ -52,6 +56,14 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
     return result;
 }
+#else   // _MINGW
+int main(int argc, char* argv[], char* envp[])
+{
+    LogCollector& logger = LogCollector::getInstance();
+    logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
+    return logger.serviceMain(logger.getCurrentOption(), nullptr);
+}
+#endif  // _MINGW
 
 VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
@@ -99,4 +111,4 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
 // Global functions, End
 //////////////////////////////////////////////////////////////////////////
 
-#endif // WINDOWS
+#endif // _WIN32

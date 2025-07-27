@@ -14,12 +14,14 @@
  ************************************************************************/
 #include "mcrouter/app/MulticastRouter.hpp"
 
-#ifdef WINDOWS
+#ifdef _WIN32
 
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "aregextend.lib")
-#pragma comment(lib, "advapi32.lib")
-#pragma comment(lib, "kernel32.lib")
+    #ifdef _MSC_VER
+        #pragma comment(lib, "areg")
+        #pragma comment(lib, "aregextend")
+        #pragma comment(lib, "advapi32")
+        #pragma comment(lib, "kernel32")
+    #endif // _MSC_VER
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
@@ -40,6 +42,7 @@
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
 
+#ifndef _MINGW
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
@@ -52,6 +55,14 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
     return result;
 }
+#else   // _MINGW
+int main(int argc, char* argv[], char* envp[])
+{
+    MulticastRouter& router = MulticastRouter::getInstance();
+    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
+    return router.serviceMain(router.getCurrentOption(), nullptr);
+}
+#endif  // _MINGW
 
 VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
@@ -99,4 +110,4 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
 // Global functions, End
 //////////////////////////////////////////////////////////////////////////
 
-#endif // WINDOWS
+#endif // _WIN32
