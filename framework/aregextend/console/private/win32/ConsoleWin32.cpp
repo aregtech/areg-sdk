@@ -21,7 +21,7 @@
   ************************************************************************/
 #include "aregextend/console/Console.hpp"
 
-#if defined(WINDOWS) && (AREG_EXTENDED)
+#if defined(_WIN32) && (AREG_EXTENDED)
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
@@ -241,4 +241,4 @@ void Console::_osMoveCursorOneLineDown(void) const
     WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);
 }
 
-#endif  // defined(WINDOWS) && (AREG_EXTENDED)
+#endif  // defined(_WIN32) && (AREG_EXTENDED)

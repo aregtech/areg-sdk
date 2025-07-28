@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/base/Process.hpp"
 
-#ifdef	_WINDOWS
+#ifdef	_WIN32
 
 #include "areg/base/File.hpp"
 
@@ -64,4 +64,4 @@ String Process::_osGetEnvVariable( const char* var ) const
     return result;
 }
 
-#endif // _WINDOWS
+#endif // _WIN32

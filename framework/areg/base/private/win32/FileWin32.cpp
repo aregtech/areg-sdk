@@ -17,7 +17,7 @@
 
 #include "areg/base/File.hpp"
 
-#ifdef	_WINDOWS
+#ifdef	_WIN32
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <Windows.h>
@@ -286,4 +286,4 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const eSp
     return static_cast<unsigned int>(strlen(buffer));
 }
 
-#endif // _WINDOWS
+#endif // _WIN32

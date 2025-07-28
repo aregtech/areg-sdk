@@ -24,10 +24,10 @@
 #include "areg/component/Timer.hpp"
 #include "areg/logging/GELog.h"
 
-#ifdef  _WIN32
+#ifdef  _MSC_VER
     // link with areg library, valid only for MSVC
-    #pragma comment(lib, "areg.lib")
-#endif // _WIN32
+    #pragma comment(lib, "areg")
+#endif // _MSC_VER
 
 //! \brief  An example of a dispatcher thread, which starts and processes timers.
 //!         Indifferent in which thread context the timers are started,

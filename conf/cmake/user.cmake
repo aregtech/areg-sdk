@@ -32,7 +32,7 @@
 #  22. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
 #
 # Default Values:
-#   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
+#   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, mingw, llvm, msvc)
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
 #   3. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
 #   4. AREG_PROCESSOR       = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
@@ -59,6 +59,7 @@
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
 #       - 'gnu' sets g++ and gcc for C++ and C.
 #       - 'cygwin' sets g++ and gcc for C++ and C under Cygwin.
+#       - 'mingw' sets g++ and gcc for C++ and C under MinGW.
 #       - 'llvm' sets clang++, clang, and clang-cl (on Windows) for C++ and C.
 #       - 'msvc' sets Microsoft Visual C++ (cl) for C++ and C.
 #

@@ -17,7 +17,7 @@
  ************************************************************************/
 #include "areg/component/private/WatchdogManager.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -73,4 +73,4 @@ void WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigned long
     }
 }
 
-#endif // _WINDOWS
+#endif // _WIN32

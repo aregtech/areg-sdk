@@ -1,7 +1,7 @@
 #ifndef AREG_LOGCOLLECTOR_RESOUR_TARGETVER_HPP
 #define AREG_LOGCOLLECTOR_RESOUR_TARGETVER_HPP
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 
 // Including SDKDDKVer.h defines the highest available Windows platform.
@@ -11,6 +11,6 @@
 
 #include <SDKDDKVer.h>
 
-#endif // _WINDOWS
+#endif // _WIN32
 
 #endif // AREG_LOGCOLLECTOR_RESOUR_TARGETVER_HPP

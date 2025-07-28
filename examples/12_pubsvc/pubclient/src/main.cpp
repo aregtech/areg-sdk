@@ -17,10 +17,10 @@
 
 #include "ServiceClient.hpp"
 
-#ifdef WINDOWS
+#ifdef _MSC_VER
     #pragma comment(lib, "areg")
-    #pragma comment(lib, "12_generated.lib")
-#endif // WINDOWS
+    #pragma comment(lib, "12_generated")
+#endif // _MSC_VER
 
 constexpr char const _modelName[]  { "HelloModel" };    //!< The name of model
 constexpr char const _serviceName[]{ "HelloService" };  //!< The name of provided service

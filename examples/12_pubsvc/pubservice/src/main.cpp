@@ -14,10 +14,10 @@
 
 #include "pubservice/src/ServicingComponent.hpp"
 
-#ifdef _WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "12_generated.lib")
-#endif // _WIN32
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "12_generated")
+#endif // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 //

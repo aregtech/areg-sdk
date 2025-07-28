@@ -19,7 +19,7 @@
 
 #include "areg/base/private/win32/SpinLockWin32.hpp"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 #if defined (__cplusplus) && (__cplusplus > 201703L)
 
 #include "areg/base/Thread.hpp"
@@ -109,4 +109,4 @@ bool SpinLockWin32::tryLock( void )
 }
 
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
-#endif  // _WINDOWS
+#endif  // _WIN32

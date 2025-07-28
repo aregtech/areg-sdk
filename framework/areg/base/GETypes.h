@@ -97,7 +97,7 @@ typedef uint64_t        ITEM_ID;
 /**
  * \brief   Type definition of socket descriptor. Differs in on different platforms
  **/
-#ifdef  _WINDOWS
+#ifdef  _WIN32
     typedef size_t      SOCKETHANDLE;
 #else
     typedef int         SOCKETHANDLE;

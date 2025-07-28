@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/base/private/NEDebug.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Containers.hpp"
@@ -163,4 +163,4 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack(struct _EXCEPTION_POINTERS* /
 }
 #endif  // _DEBUG
 
-#endif  // _WINDOWS
+#endif  // _WIN32

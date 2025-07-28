@@ -17,7 +17,7 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 
 #include <Windows.h>
 #include <processthreadsapi.h>
@@ -42,6 +42,7 @@ unsigned long Thread::_windowsThreadRoutine( void * data )
  **/
 void Thread::_osSetThreadName( id_type threadId, const char* threadName)
 {
+#ifdef _MSC_VER
     /**
      * \brief   MS Exception value, used to set thread name.
      **/
@@ -73,6 +74,7 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
         return;
     }
 #pragma warning(default: 6312)
+#endif // _MSC_VER
 }
 
 void Thread::_osCloseHandle(  THREADHANDLE handle )
@@ -125,14 +127,18 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
             //////////////////////////////////////////////////////////////////////////
 #endif  // _DEBUG
 
-#pragma warning(disable: 6258)
+#ifdef _MSC_VER
+    #pragma warning(disable: 6258)
+#endif // _MSC_VER
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
             result = Thread::eCompletionStatus::ThreadTerminated;
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::eExitCodes::ExitTerminated));
             this->mWaitForRun.resetEvent();
             this->mWaitForExit.setEvent();
-#pragma warning(default: 6258)
+#ifdef _MSC_VER
+    #pragma warning(default: 6258)
+#endif // _MSC_VER
         }
         else
         {
@@ -228,4 +234,4 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     return oldPrio;
 }
 
-#endif  // _WINDOWS
+#endif  // _WIN32

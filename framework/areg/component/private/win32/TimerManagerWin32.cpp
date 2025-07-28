@@ -17,7 +17,7 @@
  ************************************************************************/
 #include "areg/component/private/TimerManager.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -77,4 +77,4 @@ bool TimerManager::_osSystemTimerStart( Timer & timer )
                                 , static_cast<void *>(timer.getHandle()), FALSE ) == TRUE );
 }
 
-#endif // _WINDOWS
+#endif // _WIN32

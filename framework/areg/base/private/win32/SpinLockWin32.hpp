@@ -20,7 +20,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 #if defined (__cplusplus) && (__cplusplus > 201703L)
 
 #include <atomic>
@@ -105,6 +105,6 @@ private:
 
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 
-#endif // _WINDOWS
+#endif // _WIN32
 
 #endif  // AREG_BASE_PRIVATE_WIN32_SPINLOCKWIN32_HPP

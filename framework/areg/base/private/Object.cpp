@@ -168,7 +168,7 @@ void * Object::operator new [ ]( size_t /*size*/, void * ptr )
  *          Used in debugging version. In other versions, only allocates memory without
  *          containing other information.
  **/
-#if defined(_DEBUG) && defined(_WINDOWS)
+#if defined(_DEBUG) && defined(_MSC_VER)
 
 void * Object::operator new( size_t size, int /*block*/, const char * file, int line )
 {
@@ -189,7 +189,7 @@ void * Object::operator new( size_t size, int /*block*/, const char * /*file*/, 
  *          Used in debugging version. In other versions, only allocates memory without
  *          containing other information.
  **/
-#if defined(_DEBUG) && defined(_WINDOWS)
+#if defined(_DEBUG) && defined(_MSC_VER)
 
 void * Object::operator new [ ]( size_t size, int /*block*/, const char *file, int line )
 {

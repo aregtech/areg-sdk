@@ -16,10 +16,10 @@
 #include "locservice/src/ServicingComponent.hpp"
 #include "locservice/src/ServiceClient.hpp"
 
-#ifdef _WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "10_generated.lib")
-#endif // _WIN32
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "10_generated")
+#endif // _MSC_VER
 
 constexpr char const _modelName[]   { "TestModel" };            //!< The name of model
 constexpr char const _roleName[]    { "TestServiceComponent" }; //!< Service role name

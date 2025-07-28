@@ -100,7 +100,7 @@ namespace NEDebug
      **/
     void AREG_API outputConsole(const char* msg, ...);
 
-#ifdef  _WINDOWS
+#ifdef  _WIN32
     /**
      * \brief   Extracts call stack information from passed exception pointer and dumps in
      *          specified vector object. On output, the vector object will contain
@@ -112,7 +112,7 @@ namespace NEDebug
      **/
 
     void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack);
-#endif  // _WINDOWS
+#endif  // _WIN32
 
     /**
      * \brief   Operating System specific call to output message.

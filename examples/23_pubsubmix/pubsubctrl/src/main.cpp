@@ -17,12 +17,12 @@
 #include "common/src/PubSubMixed.hpp"
 #include "pubsubctrl/src/PubSubController.hpp"
 
-#ifdef WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "23_generated.lib")
-    #pragma comment(lib, "23_common.lib")
-    #pragma comment(lib, "aregextend.lib")
-#endif // WINDOWS
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "23_generated")
+    #pragma comment(lib, "23_common")
+    #pragma comment(lib, "aregextend")
+#endif // _MSC_VER
 
 namespace
 {

@@ -18,11 +18,13 @@
  ************************************************************************/
 #include "logobserver/app/LogObserver.hpp"
 
-#ifdef WINDOWS
+#ifdef _WIN32
 
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "aregextend.lib")
-#pragma comment(lib, "areglogger.lib")
+    #ifdef _MSC_VER
+        #pragma comment(lib, "areg")
+        #pragma comment(lib, "aregextend")
+        #pragma comment(lib, "areglogger")
+    #endif // _MSC_VER
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
@@ -69,7 +71,8 @@ namespace
     }
 
 } // namespace
-
+    
+#ifndef _MINGW
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
@@ -79,6 +82,13 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
     return 0;
 }
+#else
+int main(int argc, char* argv[], char* envp[])
+{
+    LogObserver::getInstance().logMain(static_cast<int>(argc), argv);
+    return 0;
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, End
@@ -86,7 +96,15 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 bool LogObserver::_osWaitUserInput(char* buffer, unsigned int bufSize)
 {
-    return( gets_s(buffer, bufSize) != nullptr );
+#if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
+    #if defined(_WIN32) && !defined(_MINGW)
+        return (::gets_s(buffer, bufSize) != nullptr);
+    #else   // defined(_WIN32)
+        return (::fgets(buffer, bufSize, stdin) != nullptr);
+    #endif  // defined(_WIN32)
+#else
+    return (::gets_s(buffer, bufSize) != nullptr);
+#endif // _WIN32
 }
 
-#endif // WINDOWS
+#endif // _WIN32

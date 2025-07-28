@@ -24,11 +24,11 @@
 #include "common/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
-#ifdef WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "aregextend.lib")
-    #pragma comment(lib, "14_generated.lib")
-#endif // WIN32
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "aregextend")
+    #pragma comment(lib, "14_generated")
+#endif // _MSC_VER
 
 //! A demo of dynamic model and client with data update subscription.
 int main()

@@ -843,7 +843,7 @@ void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& OUT names)
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(names.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(names.size()));
 }
 
 std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances(void)
@@ -867,7 +867,7 @@ void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& OUT ids)
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(ids.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
 }
 
 std::vector<String> LogSqliteDatabase::getLogThreadNames(void)
@@ -891,7 +891,7 @@ void LogSqliteDatabase::getLogThreadNames(std::vector<String>& OUT names)
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(names.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(names.size()));
 }
 
 std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads(void)
@@ -915,7 +915,7 @@ void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& OUT ids)
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(ids.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
 }
 
 std::vector<String> LogSqliteDatabase::getPriorityNames(void)
@@ -961,7 +961,7 @@ void LogSqliteDatabase::getLogInstanceInfos(std::vector<NEService::sServiceConne
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(infos.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(infos.size()));
 }
 
 std::vector<NELogging::sScopeInfo> LogSqliteDatabase::getLogInstScopes(ITEM_ID IN instId)
@@ -987,7 +987,7 @@ void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(scopes.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(scopes.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(void)
@@ -1012,7 +1012,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages)
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogInstMessages(ITEM_ID IN instId)
@@ -1044,7 +1044,7 @@ void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& OUT messag
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogScopeMessages(uint32_t IN scopeId)
@@ -1076,7 +1076,7 @@ void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& OUT messa
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
 }
 
 std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID IN instId, uint32_t IN scopeId)
@@ -1105,7 +1105,7 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID IN instId, u
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(result.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(result.size()));
     return result;
 }
 
@@ -1140,7 +1140,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& OUT messages, 
         }
     }
 
-    ASSERT(stmt.getRowPos() == static_cast<int>(messages.size()));
+    ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
 }
 
 int LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEntries /*= -1*/)

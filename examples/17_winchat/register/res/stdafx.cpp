@@ -15,5 +15,7 @@
 
 #include "register/res/stdafx.h"
 
-#pragma comment(lib, "areg.lib")
-#pragma comment(lib, "17_generated.lib")
+#ifdef _MSC_VER
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "17_generated")
+#endif // _MSC_VER

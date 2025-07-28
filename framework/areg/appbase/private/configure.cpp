@@ -83,16 +83,16 @@
 
 #endif // DEBUG
 
-#ifdef  WIN32
+#ifdef  _MSC_VER
 
     // Enable or disable memory leak detect only for Debug version
     #ifdef  DEBUG
-        #pragma comment(lib, "dbghelp.lib")
+        #pragma comment(lib, "dbghelp")
     #endif  // DEBUG
 
-    #pragma comment(lib, "advapi32.lib")
-    #pragma comment(lib, "psapi.lib")
-    #pragma comment(lib, "shell32.lib")
-    #pragma comment(lib, "ws2_32.lib")
+    #pragma comment(lib, "advapi32")
+    #pragma comment(lib, "psapi")
+    #pragma comment(lib, "shell32")
+    #pragma comment(lib, "ws2_32")
 
-#endif  // WIN32
+#endif  // _MSC_VER

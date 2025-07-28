@@ -7,7 +7,7 @@
  ************************************************************************/
 #include "areg/appbase/Application.hpp"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 #include <Windows.h>
 
@@ -88,4 +88,4 @@ bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t
     return result;
 }
 
-#endif // _WINDOWS
+#endif // _WIN32
