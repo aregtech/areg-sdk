@@ -117,6 +117,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
     , logModuleId   { Process::CURRENT_PROCESS }
     , logThreadId   { Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
+    , logReceived   { DateTime::INVALID_TIME }
     , logScopeId    { NELogging::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
@@ -139,6 +140,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     , logModuleId   { Process::getInstance().getId() }
     , logThreadId   { Thread::getCurrentThreadId() }
     , logTimestamp  { DateTime::getNow() }
+    , logReceived   { DateTime::INVALID_TIME }
     , logScopeId    { scopeId }
     , logSessionId  { sessionId }
     , logMessageLen { msgLen }
@@ -162,6 +164,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     , logModuleId   { Process::CURRENT_PROCESS }
     , logThreadId   { Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
+    , logReceived   { DateTime::INVALID_TIME }
     , logScopeId    { NELogging::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
@@ -184,6 +187,7 @@ NELogging::sLogMessage::sLogMessage(const NELogging::sLogMessage & src)
     , logModuleId   { src.logModuleId }
     , logThreadId   { src.logThreadId }
     , logTimestamp  { src.logTimestamp }
+    , logReceived   { src.logReceived }
     , logScopeId    { src.logScopeId }
     , logSessionId  { src.logSessionId }
     , logMessageLen { src.logMessageLen }
@@ -209,6 +213,7 @@ NELogging::sLogMessage & NELogging::sLogMessage::operator = (const NELogging::sL
         logModuleId     = src.logModuleId;
         logThreadId     = src.logThreadId;
         logTimestamp    = src.logTimestamp;
+        logReceived     = src.logReceived;
         logScopeId      = src.logScopeId;
         logSessionId    = src.logSessionId;
         logMessageLen   = src.logMessageLen;

@@ -269,25 +269,25 @@ namespace
     //! A script to extract all logged messages
     constexpr std::string_view _sqlGetAllLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs ORDER BY time_created;"
     };
 
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetInstLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? ORDER BY time_created;"
     };
 
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetScopeLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE scope_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE scope_id = ? ORDER BY time_created;"
     };
 
     //! A script to extract logged messages of the certain instance source
     constexpr std::string_view _sqlGetInstScopeLogMessages
     {
-        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? AND scope_id = ? ORDER BY time_created;"
+        "SELECT msg_type, msg_prio, cookie_id, msg_module_id, msg_thread_id, time_created, time_received, scope_id, session_id, msg_log, msg_thread, msg_module FROM logs WHERE cookie_id = ? AND scope_id = ? ORDER BY time_created;"
     };
 
     constexpr std::string_view _sqlCountInstanceLogs
@@ -455,12 +455,13 @@ inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuff
     log->logCookie      = static_cast<ITEM_ID>( stmt.getInt64(2));
     log->logModuleId    = static_cast<ITEM_ID>( stmt.getInt64(3));
     log->logThreadId    = static_cast<ITEM_ID>( stmt.getInt64(4));
-    log->logTimestamp   = static_cast<TIME64>(  stmt.getInt64(5));
-    log->logScopeId     = static_cast<uint32_t>(stmt.getUint32(6));
-    log->logSessionId   = static_cast<uint32_t>(stmt.getUint32(7));
-    String msg          = stmt.getText(8);
-    String thread       = stmt.getText(9);
-    String module       = stmt.getText(10);
+    log->logTimestamp   = static_cast<TIME64>(  stmt.getUint64(5));
+    log->logReceived    = static_cast<TIME64>(  stmt.getUint64(6));
+    log->logScopeId     = static_cast<uint32_t>(stmt.getUint32(7));
+    log->logSessionId   = static_cast<uint32_t>(stmt.getUint32(8));
+    String msg          = stmt.getText(9);
+    String thread       = stmt.getText(10);
+    String module       = stmt.getText(11);
 
     log->logMessageLen = msg.getLength();
     log->logThreadLen = thread.getLength();
@@ -596,7 +597,7 @@ bool LogSqliteDatabase::areTablesInitialized(void) const
     return mIsInitialized;
 }
 
-bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const DateTime& timestamp)
+bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message)
 {
     Lock lock(mLock);
     if (mStmtLogs.isValid() == false)
@@ -615,7 +616,7 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message, const 
     mStmtLogs.bindText(   8, message.logThreadLen != 0 ? message.logThread : String::EmptyString);
     mStmtLogs.bindText(   9, message.logModuleLen != 0 ? message.logModule : String::EmptyString);
     mStmtLogs.bindUint64(10, static_cast<uint64_t>(message.logTimestamp));
-    mStmtLogs.bindUint64(11,static_cast<uint64_t>(timestamp.getTime()));
+    mStmtLogs.bindUint64(11, static_cast<uint64_t>(message.logReceived));
 
     bool result{ mStmtLogs.next() == SqliteStatement::eQueryResult::HasNoMore };
     mStmtLogs.reset();

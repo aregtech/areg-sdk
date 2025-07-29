@@ -173,7 +173,8 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
         Lock lock(mLoggerClient.mLock);
         const NELogging::sLogMessage* msgRemote = reinterpret_cast<const NELogging::sLogMessage*>(msgReceived.getBuffer());
         ASSERT(msgRemote != nullptr);
-        if (mLoggerClient.mLogDatabase.logMessage(*msgRemote, now) == false)
+        const_cast<NELogging::sLogMessage*>(msgRemote)->logReceived = static_cast<TIME64>(now);
+        if (mLoggerClient.mLogDatabase.logMessage(*msgRemote) == false)
         {
             // If log message is not stored, it is not processed
             break;
@@ -198,6 +199,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 msgLog.msgModuleId  = static_cast<unsigned long long>(msgRemote->logModuleId);
                 msgLog.msgThreadId  = static_cast<unsigned long long>(msgRemote->logThreadId);
                 msgLog.msgTimestamp = static_cast<unsigned long long>(msgRemote->logTimestamp);
+                msgLog.msgReceived  = static_cast<unsigned long long>(msgRemote->logReceived);
                 msgLog.msgScopeId   = static_cast<unsigned int>(msgRemote->logScopeId);
                 msgLog.msgSessionId = static_cast<unsigned int>(msgRemote->logSessionId);
 

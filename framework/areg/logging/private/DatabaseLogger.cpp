@@ -81,7 +81,7 @@ void DatabaseLogger::logMessage(const NELogging::sLogMessage& logMessage)
     Lock lock(mLock);
     if (isValid())
     {
-        mDatabase->logMessage(logMessage, DateTime::getNow());
+        mDatabase->logMessage(logMessage);
     }
 }
 

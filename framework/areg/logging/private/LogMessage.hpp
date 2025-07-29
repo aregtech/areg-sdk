@@ -140,6 +140,11 @@ public:
     inline const DateTime getTimestamp( void ) const;
 
     /**
+     * \brief   Returns the time-stamp when the message log was received.
+     **/
+    inline const DateTime getTimeReceived(void) const;
+
+    /**
      * \brief   Returns message log module ID. By default, it is process ID.
      *          The module ID is an unique identifier set by system.
      **/
@@ -246,6 +251,11 @@ inline unsigned int LogMessage::getScopeId(void) const
 inline const DateTime LogMessage::getTimestamp(void) const
 {
     return static_cast<DateTime>(this->logTimestamp);
+}
+
+inline const DateTime LogMessage::getTimeReceived(void) const
+{
+    return static_cast<DateTime>(this->logReceived);
 }
 
 inline const ITEM_ID & LogMessage::getModuleId(void) const
