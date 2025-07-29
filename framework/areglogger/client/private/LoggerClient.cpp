@@ -518,8 +518,6 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
         port = addr.getHostPort();
         isStarted = mIsPaused ? false : isConnectionStarted();
 
-        mMessageProcessor.notifyServiceConnectionAction(true);
-
         if (mCallbacks != nullptr)
         {
             callbackConnect = mCallbacks->evtServiceConnected;
@@ -556,8 +554,6 @@ void LoggerClient::disconnectedRemoteServiceChannel(const Channel& /* channel */
         const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
         address = addr.getHostAddress();
         port = addr.getHostPort();
-
-        mMessageProcessor.notifyServiceConnectionAction(false);
 
         if (mCallbacks != nullptr)
         {

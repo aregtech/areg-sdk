@@ -36,23 +36,6 @@ ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
 {
 }
 
-void ObserverMessageProcessor::notifyServiceConnectionAction(bool isConnecting)
-{
-    NELogging::sLogMessage log;
-    _initLocalLogMessage(log, NEService::COOKIE_LOCAL, 0);
-    if (isConnecting)
-    {
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Connecting to log collector service...");
-    }
-    else
-    {
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Disconnecting to log collector service...");
-    }
-
-    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, NEService::COOKIE_LOCAL);
-    notifyLogMessage(msgLog);
-}
-
 void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgReceived)
 {
     ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };

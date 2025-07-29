@@ -50,12 +50,6 @@ public:
 public:
 
     /**
-     * \brief   Triggered when service connect or disconnect action is triggered.
-     * \param   isConnecting    Flag, indicating whether the action is to connect or disconnect.
-     **/
-    void notifyServiceConnectionAction(bool isConnecting);
-
-    /**
      * \brief   Triggered to notify the connection of the service.
      *          The message contains Cookie ID of the observer.
      * \param   msgReceived     The buffer with data of the message received when connect to the service.
