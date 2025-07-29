@@ -26,7 +26,9 @@
  ************************************************************************/
 class LoggerClient;
 class RemoteMessage;
-
+namespace NELogging {
+    struct sLogMessage;
+}
 //////////////////////////////////////////////////////////////////////////
 // ObserverMessageProcessor class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -46,6 +48,12 @@ public:
 // Operations.
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Triggered when service connect or disconnect action is triggered.
+     * \param   isConnecting    Flag, indicating whether the action is to connect or disconnect.
+     **/
+    void notifyServiceConnectionAction(bool isConnecting);
 
     /**
      * \brief   Triggered to notify the connection of the service.
@@ -84,9 +92,14 @@ public:
 
 private:
 
+    //!< Triggered to process client connected message.
     void _clientsConnected(const RemoteMessage& msgReceived);
 
+    //!< Triggered to process client disconnected message.
     void _clientsDisconnected(const RemoteMessage& msgReceived);
+
+    //!< Initializes the local log message with default values.
+    void _initLocalLogMessage(NELogging::sLogMessage& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

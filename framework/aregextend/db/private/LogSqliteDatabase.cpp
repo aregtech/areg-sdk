@@ -642,55 +642,7 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
                         , static_cast<uint64_t>(instance.ciTimestamp)
                         , static_cast<uint64_t>(timestamp.getTime())
                         );
-    mDatabase.execute(sqlInst);
-
-     char msg[MSG_LEN];
-    String::formatString( msg, MSG_LEN, "The %u-bit instance [ %s ] with cookie [ %llu ] is connected at time [ %s ]"
-                        , static_cast<uint32_t>(instance.ciBitness)
-                        , instance.ciInstance.c_str()
-                        , static_cast<uint64_t>(instance.ciCookie)
-                        , timestamp.formatTime().getString());
-
-   if (mStmtLogs.isValid())
-    {
-        mStmtLogs.bindUint64( 0, static_cast<uint64_t>(NEService::COOKIE_LOCAL));
-        mStmtLogs.bindUint32( 1, static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE));
-        mStmtLogs.bindUint32( 2, static_cast<uint32_t>(0u));
-        mStmtLogs.bindUint32( 3, static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText));
-        mStmtLogs.bindUint32( 4, static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore));
-        mStmtLogs.bindUint64( 5, static_cast<uint64_t>(proc.getId()));
-        mStmtLogs.bindUint64( 6, static_cast<uint64_t>(threadId));
-        mStmtLogs.bindText(   7, msg);
-        mStmtLogs.bindText(   8, thread);
-        mStmtLogs.bindText(   9, module);
-        mStmtLogs.bindUint64(10, static_cast<uint64_t>(timestamp.getTime()));
-        mStmtLogs.bindUint64(11, static_cast<uint64_t>(timestamp.getTime()));
-
-        bool result{ mStmtLogs.next() == SqliteStatement::eQueryResult::HasNoMore };
-        mStmtLogs.reset();
-        mStmtLogs.clearBindings();
-        return result;
-    }
-    else
-    {
-        char sqlLog[SQL_LEN_MAX];
-        String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
-                            , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
-                            , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
-                            , static_cast<uint32_t>(0u)
-                            , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
-                            , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
-                            , static_cast<uint64_t>(proc.getId())
-                            , static_cast<uint64_t>(threadId)
-                            , msg
-                            , thread.getString()
-                            , module.getString()
-                            , static_cast<uint64_t>(timestamp.getTime())
-                            , static_cast<uint64_t>(timestamp.getTime())
-                            );
-
-        return mDatabase.execute(sqlLog);
-    }
+    return mDatabase.execute(sqlInst);
 }
 
 bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const DateTime& timestamp)
@@ -708,53 +660,7 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
                         , static_cast<uint64_t>(timestamp.getTime())
                         , static_cast<uint64_t>(DateTime::getNow().getTime())
                         , static_cast<uint64_t>(cookie));
-    mDatabase.execute(sqlInst);
-
-    char msg[MSG_LEN];
-    String::formatString( msg, MSG_LEN, "The instance with cookie [ %llu ] is disconnected at time [ %s ]"
-                        , static_cast<uint64_t>(cookie)
-                        , timestamp.formatTime().getString());
-
-    if (mStmtLogs.isValid())
-    {
-        mStmtLogs.bindUint64( 0, static_cast<uint64_t>(NEService::COOKIE_LOCAL));
-        mStmtLogs.bindUint32( 1, static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE));
-        mStmtLogs.bindUint32( 2, static_cast<uint32_t>(0u));
-        mStmtLogs.bindUint32( 3, static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText));
-        mStmtLogs.bindUint32( 4, static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore));
-        mStmtLogs.bindUint64( 5, static_cast<uint64_t>(proc.getId()));
-        mStmtLogs.bindUint64( 6, static_cast<uint64_t>(threadId));
-        mStmtLogs.bindText(   7, msg);
-        mStmtLogs.bindText(   8, thread);
-        mStmtLogs.bindText(   9, module);
-        mStmtLogs.bindUint64(10, static_cast<uint64_t>(timestamp.getTime()));
-        mStmtLogs.bindUint64(11, static_cast<uint64_t>(timestamp.getTime()));
-
-        bool result{ mStmtLogs.next() == SqliteStatement::eQueryResult::HasNoMore };
-        mStmtLogs.reset();
-        mStmtLogs.clearBindings();
-        return result;
-    }
-    else
-    {
-        char sqlLog[SQL_LEN_MAX];
-        String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
-                            , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
-                            , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
-                            , static_cast<uint32_t>(0u)
-                            , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
-                            , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
-                            , static_cast<uint64_t>(proc.getId())
-                            , static_cast<uint64_t>(threadId)
-                            , msg
-                            , thread.getString()
-                            , module.getString()
-                            , static_cast<uint64_t>(timestamp.getTime())
-                            , static_cast<uint64_t>(timestamp.getTime())
-                            );
-
-        return mDatabase.execute(sqlLog);
-    }
+    return mDatabase.execute(sqlInst);
 }
 
 bool LogSqliteDatabase::logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID& cookie, const DateTime& timestamp)

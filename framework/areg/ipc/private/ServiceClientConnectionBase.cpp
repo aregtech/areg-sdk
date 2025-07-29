@@ -77,6 +77,7 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
 
+    msgReceived.moveToBegin();
     ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
     NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
     msgReceived >> cookie;
