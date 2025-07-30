@@ -132,7 +132,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
 
         NELogging::sLogMessage log;
         _initLocalLogMessage(log, NEService::COOKIE_LOGGER, now);
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %u.", count, cookie);
+        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
         RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, NEService::COOKIE_LOGGER);
         notifyLogMessage(msgLog);
 
@@ -302,10 +302,10 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                     _initLocalLogMessage(log, NEService::COOKIE_LOGGER, now);
                     log.logMessageLen = String::formatString( log.logMessage
                                                             , NELogging::LOG_MESSAGE_IZE
-                                                            , "Log observer have got %u-bit %s (%u) client connection event, ready to receive logs."
+                                                            , "Log observer have got %u-bit %s (%lu) client connection event, ready to receive logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
-                                                            , client.ciCookie);
+                                                            , static_cast<uint64_t>(client.ciCookie));
                     RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, NEService::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
@@ -330,10 +330,10 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                     _initLocalLogMessage(log, NEService::COOKIE_LOGGER, now);
                     log.logMessageLen = String::formatString( log.logMessage
                                                             , NELogging::LOG_MESSAGE_IZE
-                                                            , "Log observer have got %u-bit %s (%u) client connection event, starts receiving logs."
+                                                            , "Log observer have got %u-bit %s (%lu) client connection event, starts receiving logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
-                                                            , client.ciCookie);
+                                                            , static_cast<uint64_t>(client.ciCookie));
                     RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, NEService::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
