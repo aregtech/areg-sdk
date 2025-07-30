@@ -139,7 +139,8 @@ bool SqliteStatement::bindFloat(int index, float value)
 
 bool SqliteStatement::bindText(int index, const String& value)
 {
-    return ((index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, value.getString(), -1, SQLITE_TRANSIENT) == SQLITE_OK));
+    const char* txt = value.getString();
+    return (txt != nullptr ? (index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.getLength(), SQLITE_TRANSIENT) == SQLITE_OK) : bindNull(index));
 }
 
 bool SqliteStatement::bindNull(int index)
@@ -199,7 +200,8 @@ String SqliteStatement::getText(int index) const
 {
     ASSERT(isValid());
     ASSERT(index >= 0);
-    return String(reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), index)));
+    const char* txt = reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), index));
+    return String(txt != nullptr ? txt : String::EmptyString);
 }
 
 bool SqliteStatement::isNull(int index) const

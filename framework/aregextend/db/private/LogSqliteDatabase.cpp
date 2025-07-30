@@ -457,9 +457,9 @@ inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuff
     String thread       = stmt.getText(10);
     String module       = stmt.getText(11);
 
-    log->logMessageLen = msg.getLength();
-    log->logThreadLen = thread.getLength();
-    log->logModuleLen = module.getLength();
+    log->logMessageLen  = msg.getLength();
+    log->logThreadLen   = thread.getLength();
+    log->logModuleLen   = module.getLength();
 
     NEString::copyStringFast(log->logMessage, msg.getString(), msg.getLength());
     NEString::copyStringFast(log->logThread, thread.getString(), thread.getLength());
@@ -522,46 +522,8 @@ void LogSqliteDatabase::disconnect(void)
     if ((mDatabase.isOperable() == false) || (mIsInitialized == false))
         return;
 
-    mIsInitialized = false;
     if (mStmtLogs.isValid())
         mStmtLogs.finalize();
-
-    Process& proc{ Process::getInstance() };
-    DateTime now{ DateTime::getNow() };
-    String module{ proc.getAppName() };
-    id_type threadId{ Thread::getCurrentThreadId() };
-    String thread{ Thread::getThreadName(threadId) };
-
-    char sql[SQL_LEN]{};
-
-    String::formatString( sql, SQL_LEN, _fmtUpdVersion.data()
-                        , static_cast<uint64_t>(now.getTime()));
-    mDatabase.execute(sql);
-
-    String::formatString( sql, SQL_LEN, _fmtLog.data()
-                        , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
-                        , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
-                        , static_cast<uint32_t>(0u)
-                        , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
-                        , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
-                        , static_cast<uint64_t>(proc.getId())
-                        , static_cast<uint64_t>(threadId)
-                        , "Closing database logging..."
-                        , thread.getString()
-                        , module.getString()
-                        , static_cast<uint64_t>(now.getTime())
-                        , static_cast<uint64_t>(now.getTime())
-                        );
-    mDatabase.execute(sql);
-
-    String::formatString( sql, SQL_LEN, _fmtCloseScopes.data()
-                        , static_cast<uint64_t>(now.getTime()));
-    mDatabase.execute(sql);
-
-    String::formatString( sql, SQL_LEN, _fmCloseInstances.data()
-                        , static_cast<uint64_t>(now.getTime())
-                        , static_cast<uint64_t>(now.getTime()));
-    mDatabase.execute(sql);
 
     mDatabase.commit(true);
     mDatabase.disconnect();
@@ -607,8 +569,8 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message)
     mStmtLogs.bindUint64( 5, static_cast<uint64_t>(message.logModuleId));
     mStmtLogs.bindUint64( 6, static_cast<uint64_t>(message.logThreadId));
     mStmtLogs.bindText(   7, message.logMessage);
-    mStmtLogs.bindText(   8, message.logThreadLen != 0 ? message.logThread : String::EmptyString);
-    mStmtLogs.bindText(   9, message.logModuleLen != 0 ? message.logModule : String::EmptyString);
+    mStmtLogs.bindText(   8, message.logThread);
+    mStmtLogs.bindText(   9, message.logModule);
     mStmtLogs.bindUint64(10, static_cast<uint64_t>(message.logTimestamp));
     mStmtLogs.bindUint64(11, static_cast<uint64_t>(message.logReceived));
 
@@ -621,10 +583,10 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message)
 bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedInstance& instance, const DateTime& timestamp)
 {
     Lock lock(mLock);
-    Process& proc{ Process::getInstance() };
-    String module{ proc.getAppName() };
-    id_type threadId{ Thread::getCurrentThreadId() };
-    String thread{ Thread::getThreadName(threadId) };
+    Process& proc    { Process::getInstance() };
+    String   module  { proc.getAppName() };
+    id_type  threadId{ Thread::getCurrentThreadId() };
+    String   thread  { Thread::getThreadName(threadId) };
 
     char sqlInst[SQL_LEN];
     String::formatString( sqlInst, SQL_LEN, _fmtInstance.data()
@@ -653,7 +615,8 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
     String::formatString( sqlInst, SQL_LEN, _fmtUpdInstance.data()
                         , static_cast<uint64_t>(timestamp.getTime())
                         , static_cast<uint64_t>(DateTime::getNow().getTime())
-                        , static_cast<uint64_t>(cookie));
+                        , static_cast<uint64_t>(cookie)
+                        );
     return mDatabase.execute(sqlInst);
 }
 
@@ -690,7 +653,8 @@ bool LogSqliteDatabase::logScopeActivate(const String& scopeName, uint32_t scope
                         , static_cast<uint64_t>(cookie)
                         , static_cast<uint32_t>(scopePrio)
                         , scopeName.getString()
-                        , static_cast<uint64_t>(timestamp.getTime()));
+                        , static_cast<uint64_t>(timestamp.getTime())
+                        );
     return execute(sql);
 }
 
@@ -699,7 +663,8 @@ bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTim
     char sql[SQL_LEN];
     String::formatString( sql, SQL_LEN, _fmtUpdScopes.data()
                         , static_cast<uint64_t>(timestamp.getTime())
-                        , static_cast<uint64_t>(cookie));
+                        , static_cast<uint64_t>(cookie)
+                        );
     return execute(sql);
 }
 

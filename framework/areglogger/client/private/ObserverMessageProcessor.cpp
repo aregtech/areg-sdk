@@ -437,6 +437,10 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
 
 inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::sLogMessage& log, ITEM_ID cookie, TIME64 timestamp /*= 0*/) const
 {
+    Process& process = Process::getInstance();
+    String instance  = process.getName();
+    DateTime now     = DateTime::getNow();
+
     log.logDataType     = NELogging::eLogDataType::LogDataLocal;
     log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
     log.logMessagePrio  = NELogging::eLogPriority::PrioAny;
@@ -445,16 +449,14 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::sLogMessag
     log.logCookie       = cookie;
     log.logModuleId     = Process::CURRENT_PROCESS;
     log.logThreadId     = Thread::INVALID_THREAD_ID;
-    log.logTimestamp    = timestamp == 0 ? static_cast<TIME64>(DateTime::getNow()) : timestamp;
-    log.logReceived     = log.logTimestamp;
+    log.logTimestamp    = timestamp == 0 ? static_cast<TIME64>(now) : timestamp;
+    log.logReceived     = static_cast<TIME64>(now);
     log.logScopeId      = NELogging::LOG_SCOPE_ID_NONE;
-    log.logScopeId      = 0u;
-    log.logMessageLen   = 0u;
-    log.logThreadLen    = 0u;
-    log.logThread[0]    = String::EmptyChar;
-    
-    log.logModuleLen    = 0u;
-    log.logModuleLen    = String::formatString(log.logModule, NELogging::LOG_NAMES_SIZE, "%s", Process::getInstance().getName().getBuffer());
+    log.logSessionId    = 0u;
     log.logMessageLen   = 0u;
     log.logMessage[0]   = String::EmptyChar;
+    log.logThreadLen    = 0u;
+    log.logThread[0]    = String::EmptyChar;
+    log.logModuleLen    = 0u;
+    log.logModule[0]    = String::EmptyChar;
 }
