@@ -439,7 +439,7 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::sLogMessag
 {
     Process& process = Process::getInstance();
     String instance  = process.getName();
-    DateTime now = DateTime::getNow();
+    DateTime now     = DateTime::getNow();
 
     log.logDataType     = NELogging::eLogDataType::LogDataLocal;
     log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
@@ -458,5 +458,5 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::sLogMessag
     log.logThreadLen    = 0u;
     log.logThread[0]    = String::EmptyChar;
     log.logModuleLen    = 0u;
-    log.logModuleLen    = String::formatString(log.logModule, NELogging::LOG_NAMES_SIZE, "%s", Process::getInstance().getName().getBuffer());
+    log.logModule[0]    = String::EmptyChar;
 }

@@ -311,18 +311,23 @@ AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMes
         msgLog.moveToEnd();
         msgLog.setSource(srcCookie);
         NELogging::sLogMessage* log = reinterpret_cast<NELogging::sLogMessage*>(msgLog.getBuffer());
-        log->logCookie  = srcCookie;
+        log->logCookie   = srcCookie;
         log->logDataType = dataType;
+
+        const String& module = Process::getInstance().getAppName();
+        NEMemory::memCopy(log->logModule, NELogging::LOG_NAMES_SIZE, module.getString(), static_cast<uint32_t>(module.getLength()) + 1);
+        log->logModuleLen   = static_cast<uint32_t>(module.getLength());
 
         if (NELogging::eLogDataType::LogDataLocal != dataType)
         {
             const String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
             NEMemory::memCopy(log->logThread, NELogging::LOG_NAMES_SIZE, threadName.getString(), static_cast<uint32_t>(threadName.getLength()) + 1);
             log->logThreadLen   = static_cast<uint32_t>(threadName.getLength());
-
-            const String& module = Process::getInstance().getAppName();
-            NEMemory::memCopy(log->logModule, NELogging::LOG_NAMES_SIZE, module.getString(), static_cast<uint32_t>(module.getLength()) + 1);
-            log->logModuleLen   = static_cast<uint32_t>(module.getLength());
+        }
+        else
+        {
+            log->logThread[0]   = String::EmptyChar;
+            log->logThreadLen   = 0u;
         }
     }
 
