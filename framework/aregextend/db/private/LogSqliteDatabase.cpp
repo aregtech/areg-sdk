@@ -315,14 +315,8 @@ namespace
         "SELECT COUNT(cookie_id) from instances;"
     };
 
-    //! The size of the string buffer to generate a message.
-    constexpr uint32_t  MSG_LEN     { 512 };
-
     //! The size of the string buffer to format SQL scripts
     constexpr uint32_t  SQL_LEN     { 768 };
-
-    //! The size of the string buffer to format SQL script to insert a log.
-    constexpr uint32_t  SQL_LEN_MAX { 1024 };
 }
 
 //////////////////////////////////////////////////////////////////////////

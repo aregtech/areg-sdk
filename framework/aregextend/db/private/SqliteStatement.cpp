@@ -27,11 +27,6 @@ namespace
         return reinterpret_cast<sqlite3*>(dbObject);
     }
 
-    inline sqlite3** _sqlite(void** dbObject)
-    {
-        return reinterpret_cast<sqlite3**>(dbObject);
-    }
-
     inline sqlite3_stmt* _sqlite_stmt(void* stmtObject)
     {
         return reinterpret_cast<sqlite3_stmt*>(stmtObject);
