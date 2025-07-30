@@ -648,6 +648,7 @@ void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, Sock
         {
         case NEService::eFuncIdRange::SystemServiceNotifyConnection:
             mMessageProcessor.notifyServiceConnection(msgReceived);
+            serviceConnectionEvent(msgReceived);
             break;
 
         case NEService::eFuncIdRange::SystemServiceNotifyInstances:

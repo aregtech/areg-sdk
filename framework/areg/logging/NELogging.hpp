@@ -321,6 +321,7 @@ namespace NELogging
         ITEM_ID                     logModuleId;    //!< The ID of the process in the local machine.
         ITEM_ID                     logThreadId;    //!< The ID the thread in the local process.
         TIME64                      logTimestamp;   //!< The timestamp of generated log.
+        TIME64                      logReceived;    //!< The timestamp when the log message is updated.
         unsigned int                logScopeId;     //!< The ID of log scope that generated log message
         unsigned int                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
         unsigned int                logMessageLen;  //!< The actual length of the log message

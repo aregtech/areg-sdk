@@ -62,10 +62,9 @@ public:
     /**
      * \brief   Called when logging message should be saved in the database.
      * \param   message     The structure of the message to log.
-     * \param   timestamp   The timestamp to register when the message is logged.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    virtual bool logMessage(const NELogging::sLogMessage & message, const DateTime & timestamp) = 0;
+    virtual bool logMessage(const NELogging::sLogMessage & message) = 0;
 
     /**
      * \brief   Called when need to log information about log source instance.
