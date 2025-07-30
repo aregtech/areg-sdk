@@ -139,20 +139,8 @@ bool SqliteStatement::bindFloat(int index, float value)
 
 bool SqliteStatement::bindText(int index, const String& value)
 {
-#if 1
     const char* txt = value.getString();
-    return ((index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.getLength(), SQLITE_TRANSIENT) == SQLITE_OK));
-#else
-    if (value.isEmpty())
-    {
-        return ((index >= 0) && isValid() && (sqlite3_bind_null(_sqlite_stmt(mStatement), index + 1) == SQLITE_OK));
-    }
-    else
-    {
-        const char* txt = value.getString();
-        return ((index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.getLength(), SQLITE_TRANSIENT) == SQLITE_OK));
-    }
-#endif
+    return (txt != nullptr ? (index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.getLength(), SQLITE_TRANSIENT) == SQLITE_OK) : bindNull(index));
 }
 
 bool SqliteStatement::bindNull(int index)
