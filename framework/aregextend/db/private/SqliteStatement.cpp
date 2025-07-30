@@ -140,7 +140,7 @@ bool SqliteStatement::bindFloat(int index, float value)
 bool SqliteStatement::bindText(int index, const String& value)
 {
     const char* txt = value.getString();
-    return ((index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.getLength() + 1, SQLITE_TRANSIENT) == SQLITE_OK));
+    return ((index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.getLength(), SQLITE_TRANSIENT) == SQLITE_OK));
 }
 
 bool SqliteStatement::bindNull(int index)
