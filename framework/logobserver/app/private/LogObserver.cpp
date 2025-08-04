@@ -172,6 +172,7 @@ void LogObserver::callbackConnectedInstances(const sLogInstance* instances, uint
 
         if (contains == false)
         {
+            TIME64 now{ DateTime::getNow() };
             NELogging::sLogMessage log{ };
             log.logDataType     = NELogging::eLogDataType::LogDataLocal;
             log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
@@ -182,7 +183,8 @@ void LogObserver::callbackConnectedInstances(const sLogInstance* instances, uint
             log.logModuleId     = 0u;
             log.logThreadId     = 0u;
             log.logTimestamp    = inst.liTimestamp;
-            log.logReceived     = static_cast<TIME64>(DateTime::getNow());
+            log.logReceived     = static_cast<TIME64>(now);
+            log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
             log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
@@ -210,6 +212,7 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
             const sLogInstance& inst{ _listInstances[j] };
             if (inst.liCookie == cookie)
             {
+                TIME64 now{ DateTime::getNow() };
                 NELogging::sLogMessage log{ };
                 log.logDataType     = NELogging::eLogDataType::LogDataLocal;
                 log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
@@ -219,8 +222,9 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
                 log.logCookie       = inst.liCookie;
                 log.logModuleId     = 0u;
                 log.logThreadId     = 0u;
-                log.logTimestamp    = static_cast<TIME64>(DateTime::getNow());
+                log.logTimestamp    = static_cast<TIME64>(now);
                 log.logReceived     = log.logTimestamp;
+                log.logDuration     = 0u;
                 log.logScopeId      = 0u;
                 log.logSessionId    = 0u;
                 log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
@@ -257,6 +261,7 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uin
             log.logThreadId     = 0u;
             log.logTimestamp    = static_cast<TIME64>(DateTime::getNow());
             log.logReceived     = log.logTimestamp;
+            log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
             log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));

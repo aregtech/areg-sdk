@@ -250,12 +250,12 @@ namespace NELogging
      * \brief   NELogging::LOG_MESSAGE_IZE
      *          The maximum size of text in log message
      **/
-    constexpr uint32_t  LOG_MESSAGE_IZE     { 512 };
+    constexpr uint32_t  LOG_MESSAGE_IZE     { 256 };
     /**
      * \brief   NELogging::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
      **/
-    constexpr uint32_t   LOG_NAMES_SIZE     { 128 };
+    constexpr uint32_t   LOG_NAMES_SIZE     { 64 };
 
     /**
      * \brief   NELogging::eLogMessageType
@@ -299,7 +299,7 @@ namespace NELogging
          * \param   message     The message text to output on target. Can be empty.
          * \param   msgLen      The length of the message string.
          **/
-        sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen);
+        sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
@@ -322,6 +322,7 @@ namespace NELogging
         ITEM_ID                     logThreadId;    //!< The ID the thread in the local process.
         TIME64                      logTimestamp;   //!< The timestamp of generated log.
         TIME64                      logReceived;    //!< The timestamp when the log message is updated.
+        unsigned int                logDuration;    //!< The duration in milliseconds after scope message is instantiated in the method call.
         unsigned int                logScopeId;     //!< The ID of log scope that generated log message
         unsigned int                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
         unsigned int                logMessageLen;  //!< The actual length of the log message

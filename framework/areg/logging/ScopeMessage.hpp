@@ -175,7 +175,7 @@ private:
      * \param   format      The formatted text to output.
      * \param   args        The list of arguments to apply to the formatted text.
      **/
-    static void _sendLog( unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * format, va_list args );
+    static void _sendLog( unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * format, va_list args );
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -184,6 +184,7 @@ private:
     const String &      mScopeName; //!< Name of the logging scope.
     const unsigned int  mScopeId;   //!< ID of the logging scope.
     const unsigned int  mSessionId; //!< Priority of the logging scope.
+    const TIME64        mTimestamp; //!< The timestamp when the scope message object was instantiated.
     const unsigned int& mScopePrio; //!< Enabled logging priority for the scope.
 
 #endif  // AREG_LOGS

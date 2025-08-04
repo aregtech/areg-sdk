@@ -118,6 +118,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
     , logThreadId   { Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
+    , logDuration   ( 0u )
     , logScopeId    { NELogging::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
@@ -130,7 +131,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
 }
 
 #if AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen)
+NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen)
     : logDataType   { NELogging::eLogDataType::LogDataLocal }
     , logMsgType    { msgType }
     , logMessagePrio{ msgPrio }
@@ -141,6 +142,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     , logThreadId   { Thread::getCurrentThreadId() }
     , logTimestamp  { DateTime::getNow() }
     , logReceived   { DateTime::INVALID_TIME }
+    , logDuration   { scopeStamp != 0u ? static_cast<unsigned int>(logTimestamp - scopeStamp) : 0u }
     , logScopeId    { scopeId }
     , logSessionId  { sessionId }
     , logMessageLen { msgLen }
@@ -154,7 +156,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int /*scopeId*/, unsigned int /*sessionId*/, NELogging::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
+NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int /*scopeId*/, unsigned int /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
     : logDataType{ NELogging::eLogDataType::LogDataLocal }
     , logMsgType{ msgType }
     , logMessagePrio{ NELogging::eLogPriority::PrioNotset }
@@ -165,6 +167,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     , logThreadId   { Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
+    , logDuration   ( 0u )
     , logScopeId    { NELogging::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
     , logMessageLen { 0 }
@@ -188,6 +191,7 @@ NELogging::sLogMessage::sLogMessage(const NELogging::sLogMessage & src)
     , logThreadId   { src.logThreadId }
     , logTimestamp  { src.logTimestamp }
     , logReceived   { src.logReceived }
+    , logDuration   { src.logDuration }
     , logScopeId    { src.logScopeId }
     , logSessionId  { src.logSessionId }
     , logMessageLen { src.logMessageLen }
@@ -214,6 +218,7 @@ NELogging::sLogMessage & NELogging::sLogMessage::operator = (const NELogging::sL
         logThreadId     = src.logThreadId;
         logTimestamp    = src.logTimestamp;
         logReceived     = src.logReceived;
+        logDuration     = src.logDuration;
         logScopeId      = src.logScopeId;
         logSessionId    = src.logSessionId;
         logMessageLen   = src.logMessageLen;

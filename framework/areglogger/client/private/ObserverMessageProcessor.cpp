@@ -246,6 +246,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 msgLog.msgThreadId  = static_cast<unsigned long long>(msgRemote->logThreadId);
                 msgLog.msgTimestamp = static_cast<unsigned long long>(msgRemote->logTimestamp);
                 msgLog.msgReceived  = static_cast<unsigned long long>(msgRemote->logReceived);
+                msgLog.msgDuration  = static_cast<unsigned int>(msgRemote->logDuration);
                 msgLog.msgScopeId   = static_cast<unsigned int>(msgRemote->logScopeId);
                 msgLog.msgSessionId = static_cast<unsigned int>(msgRemote->logSessionId);
 
@@ -449,8 +450,9 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::sLogMessag
     log.logCookie       = cookie;
     log.logModuleId     = Process::CURRENT_PROCESS;
     log.logThreadId     = Thread::INVALID_THREAD_ID;
-    log.logTimestamp    = timestamp == 0 ? static_cast<TIME64>(now) : timestamp;
+    log.logTimestamp    = timestamp == 0u ? static_cast<TIME64>(now) : timestamp;
     log.logReceived     = static_cast<TIME64>(now);
+    log.logDuration     = timestamp == 0u ? 0u : static_cast<uint32_t>(now - timestamp);
     log.logScopeId      = NELogging::LOG_SCOPE_ID_NONE;
     log.logSessionId    = 0u;
     log.logMessageLen   = 0u;

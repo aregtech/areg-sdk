@@ -152,6 +152,8 @@ struct sLogMessage
     TIME64          msgTimestamp;
     /* The timestamp when the log data received */
     TIME64          msgReceived;
+    /* The duration in milliseconds since the scope message was instantiated */
+    uint32_t        msgDuration;
     /* The ID of the scope that generated message. Same as indicated in sLogScope::lsId. */
     uint32_t        msgScopeId;
     /* The ID of the session, which is used to differentiate messages of the same scope. */
