@@ -250,7 +250,7 @@ namespace NELogging
      * \brief   NELogging::LOG_MESSAGE_IZE
      *          The maximum size of text in log message
      **/
-    constexpr uint32_t  LOG_MESSAGE_IZE     { 256 };
+    constexpr uint32_t  LOG_MESSAGE_IZE     { 420 };
     /**
      * \brief   NELogging::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
