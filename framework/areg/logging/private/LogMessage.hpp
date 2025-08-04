@@ -145,7 +145,7 @@ public:
     inline const DateTime getTimeReceived(void) const;
 
     /**
-     * \brief   Returns the duration in milliseconds since scope message object was instantiated.
+     * \brief   Returns the duration in microseconds since scope message object was instantiated.
      */
     inline const uint32_t getDuration(void) const;
 

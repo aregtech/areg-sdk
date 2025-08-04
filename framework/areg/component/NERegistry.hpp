@@ -1809,7 +1809,7 @@ namespace NERegistry
         bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
 
         /**
-         * \brief   Returns duration in nansocends when the model was loaded and alive.
+         * \brief   Returns duration in nanoseconds when the model was loaded and alive.
          *          Returns zero if model was not loaded at all.
          *          Returns valid duration until the current time if model is still loaded.
          *          Returns last alive duration if it was alive and currently is stopped.
