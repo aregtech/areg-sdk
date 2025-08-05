@@ -250,12 +250,12 @@ namespace NELogging
      * \brief   NELogging::LOG_MESSAGE_IZE
      *          The maximum size of text in log message
      **/
-    constexpr uint32_t  LOG_MESSAGE_IZE     { 420 };
+    constexpr uint32_t  LOG_MESSAGE_IZE     { 332 };
     /**
      * \brief   NELogging::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
      **/
-    constexpr uint32_t   LOG_NAMES_SIZE     { 64 };
+    constexpr uint32_t   LOG_NAMES_SIZE     { 48 };
 
     /**
      * \brief   NELogging::eLogMessageType
@@ -295,6 +295,8 @@ namespace NELogging
          * \param   msgType     The logging message type.
          * \param   scopeId     The ID of message scope.
          * \param   sessionId   The ID of session, which is used to differentiate messages of the same scope.
+         * \param   scopeStamp  The timestamp of the scope message, which is used to log message. This parameter is used to set duration.
+         *                      The duration is ignored and set to 0 if the scopeStamp is 0.
          * \param   msgPrio     The priority of logging message.
          * \param   message     The message text to output on target. Can be empty.
          * \param   msgLen      The length of the message string.
