@@ -61,13 +61,6 @@ namespace
         "INSERT INTO version (name, version, describe, created_by, db_name, time_created) VALUES (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', %llu);"
     };
 
-    //! A string format to generate UPDATE state to change entry in the version table.
-    //! Used when application stops collecting logs.
-    constexpr std::string_view  _fmtUpdVersion
-    {
-        "UPDATE version SET time_closed = %llu;"
-    };
-
     //! Create a table with the information about connected log source instances.
     //! Each new entry should have unique cookie_id, as well as information when it
     //! is connected and when disconnected.
@@ -105,13 +98,6 @@ namespace
     constexpr std::string_view _fmtUpdInstance
     {
         "UPDATE instances SET inst_connect = 0, time_disconnected = %llu, time_updated = %llu WHERE cookie_id = %llu AND time_disconnected IS NULL;"
-    };
-
-    //! A string format to generate UPDATE statement and mark all instances as disconnected.
-    //! It is closed before closing database to ensure that all entries are updated.
-    constexpr std::string_view _fmCloseInstances
-    {
-        "UPDATE instances SET inst_connect = 0, time_disconnected = %llu, time_updated = %llu WHERE time_disconnected IS NULL;"
     };
 
     //! Create a table with the information about scopes of connected instances.
@@ -158,12 +144,6 @@ namespace
     constexpr std::string_view _fmtUpdScope
     {
         "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %llu AND scope_id = %u AND scope_is_active = 1;"
-    };
-
-    //! A string format to generate UPDATE statement to mark all scopes of all instances as inactive.
-    constexpr std::string_view _fmtCloseScopes
-    {
-        "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE scope_is_active = 1;"
     };
 
     //! Create a table with logs that contain information of application cookie ID,
