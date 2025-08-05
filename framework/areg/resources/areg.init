@@ -200,7 +200,8 @@ logger::*::port::tcpip      = 8282			                # Protocol specific connect
 # ###########################################################################
 
 log::*::scope::*			= DEBUG | SCOPE ;               # By default, activate and enable log scopes of all applications.
-log::mcrouter::scope::*     = WARN  | SCOPE ;               # The multicast router should output only warnings and errors.
+log::mcrouter::scope::*     = NOTSET ;                      # The multicast router should output only warnings and errors.
+log::*::scope::areg_*		= NOTSET ;                      # Activate and enable log scopes of all AREG framework applications.
 log::logcollector::scope::* = NOTSET ;                      # No log messages from the log collector
 log::logobserver::scope::*  = NOTSET ;                      # No log messages from the log collector
 

@@ -250,12 +250,12 @@ namespace NELogging
      * \brief   NELogging::LOG_MESSAGE_IZE
      *          The maximum size of text in log message
      **/
-    constexpr uint32_t  LOG_MESSAGE_IZE     { 512 };
+    constexpr uint32_t  LOG_MESSAGE_IZE     { 332 };
     /**
      * \brief   NELogging::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
      **/
-    constexpr uint32_t   LOG_NAMES_SIZE     { 128 };
+    constexpr uint32_t   LOG_NAMES_SIZE     { 48 };
 
     /**
      * \brief   NELogging::eLogMessageType
@@ -295,11 +295,13 @@ namespace NELogging
          * \param   msgType     The logging message type.
          * \param   scopeId     The ID of message scope.
          * \param   sessionId   The ID of session, which is used to differentiate messages of the same scope.
+         * \param   scopeStamp  The timestamp of the scope message, which is used to log message. This parameter is used to set duration.
+         *                      The duration is ignored and set to 0 if the scopeStamp is 0.
          * \param   msgPrio     The priority of logging message.
          * \param   message     The message text to output on target. Can be empty.
          * \param   msgLen      The length of the message string.
          **/
-        sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen);
+        sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
@@ -322,6 +324,7 @@ namespace NELogging
         ITEM_ID                     logThreadId;    //!< The ID the thread in the local process.
         TIME64                      logTimestamp;   //!< The timestamp of generated log.
         TIME64                      logReceived;    //!< The timestamp when the log message is updated.
+        unsigned int                logDuration;    //!< The duration in microseconds after scope message is instantiated in the method call.
         unsigned int                logScopeId;     //!< The ID of log scope that generated log message
         unsigned int                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
         unsigned int                logMessageLen;  //!< The actual length of the log message

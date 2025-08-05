@@ -45,7 +45,7 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEServi
     ServiceCommunicatonBase::addInstance(cookie, instance);
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
-        NELogging::sLogMessage logMsgHello(NELogging::eLogMessageType::LogMessageText, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
+        NELogging::sLogMessage logMsgHello(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
         String::formatString( logMsgHello.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
@@ -75,7 +75,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
     mLoggerProcessor.clientDisconnected(cookie);
     if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
-        NELogging::sLogMessage logMsgBye(NELogging::eLogMessageType::LogMessageText, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
+        NELogging::sLogMessage logMsgBye(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgBye.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
@@ -111,7 +111,7 @@ void LogCollectorServerService::removeAllInstances(void)
             }
         }
 
-        NELogging::sLogMessage logMsgClose(NELogging::eLogMessageType::LogMessageText, 0, 0, NELogging::eLogPriority::PrioAny, nullptr, 0);
+        NELogging::sLogMessage logMsgClose(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgClose.logMessage, NELogging::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
         NELogging::logAnyMessageLocal(logMsgClose);
         ServiceCommunicatonBase::removeAllInstances();
