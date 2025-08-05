@@ -452,7 +452,7 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::sLogMessag
     log.logThreadId     = Thread::INVALID_THREAD_ID;
     log.logTimestamp    = timestamp == 0u ? static_cast<TIME64>(now) : timestamp;
     log.logReceived     = static_cast<TIME64>(now);
-    log.logDuration     = timestamp == 0u ? 0u : static_cast<uint32_t>(now - timestamp);
+    log.logDuration     = 0u;
     log.logScopeId      = NELogging::LOG_SCOPE_ID_NONE;
     log.logSessionId    = 0u;
     log.logMessageLen   = 0u;
