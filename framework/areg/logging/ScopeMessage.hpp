@@ -171,6 +171,8 @@ private:
      * \brief   Creates a logging message object and sends it to the logging targets.
      * \param   scopeId     The ID of the Log Scope.
      * \param   sessionId   The ID of the session, used to differentiate messages of the same scope.
+     * \param   scopeStamp  The timestamp of the scope message, which is used to log message. This parameter is used to set duration.
+     *                      The duration is ignored and set to 0 if the scopeStamp is 0.
      * \param   msgPrio     The priority of the message to log.
      * \param   format      The formatted text to output.
      * \param   args        The list of arguments to apply to the formatted text.
