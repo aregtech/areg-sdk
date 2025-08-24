@@ -1,6 +1,6 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
 <a name="logo" href="https://www.aregtech.com"><img align="center" src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:100%;height:100%"/></a>
-  <br /><br /><strong>AREG SDK</strong>
+  <br /><br /><strong>Areg SDK</strong>
 </h1>
 
 *Concurrency without the complexity.*
@@ -14,8 +14,15 @@
 
 ---
 
+## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
+
+Many projects struggle with hidden bugs in multiprocessing and multithreading. Areg unifies communication and makes remote objects act like local, with automated messaging, dispatching, and discovery — so teams save time and focus on features. The AREG SDK delivers robust, high-performance solutions with a framework and tools to develop, debug, and test applications. _Focus on features; we handle the rest._
+
+---
+
 <!-- markdownlint-disable -->
 ## Project Status[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#project-status)
+
 <table class="no-border">
   <tr>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml" alt="CMake"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg" alt="CMake build"/></a></td>
@@ -28,12 +35,6 @@
     <td colspan="2"><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm%20%7C%20aarch64-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architect"/></td>
   </tr>
 </table>
-
----
-
-## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
-
-Many projects struggle with hidden bugs in multiprocessing and multithreading. AREG unifies communication and makes remote objects act like local, with automated messaging, dispatching, and discovery — so teams save time and focus on features. The AREG SDK delivers robust, high-performance solutions with a framework and tools to develop, debug, and test applications. Focus on features; we handle the rest.
 
 ---
 
