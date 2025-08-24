@@ -110,7 +110,7 @@ log::*::version             = 2.0.0                         # Logging version
 log::*::target              = remote | file | debug | db    # Log targets: remote, file, debug output, database
 log::*::enable              = true                          # Global logging enable / disable flag
 log::*::enable::remote      = true                          # Remote logging enable / disable flag
-log::*::enable::file        = true                          # File logging enable / disable flag
+log::*::enable::file        = false                         # File logging enable / disable flag
 log::*::enable::debug       = false                         # Debug output console logging enable / disable flag
 log::*::enable::db          = false                         # Database logging enable / disable flag
 log::*::file::location      = ./logs/%appname%_%time%.log   # Log file location and masks
@@ -147,7 +147,7 @@ log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit s
 # ---------------------------------------------------------------------------
 # Log observer specific database logging settings
 # ---------------------------------------------------------------------------
-log::logobserver::enable::file      = true                          # Logobserver: File logging enable / disable flag
+log::logobserver::enable::file      = false                         # Logobserver: File logging enable / disable flag
 log::logobserver::enable::db        = true                          # Logobserver: Database logging enable / disable flag
 log::logobserver::db::engine        = sqlite3                       # Logobserver: The database engine
 log::logobserver::db::name          = log_%time%.sqlog              # Logobserver: The log database name
@@ -162,7 +162,7 @@ log::logcollector::enable::db       = false     # Log Collector service: do not 
 log::mcrouter::enable::file         = false     # MC Router: File logging enable / disable flag
 log::mcrouter::enable::db           = false     # MC Router: Database logging enable / disable flag
 log::mcrouter::enable::debug        = false     # MC Router: Debug output console logging enable / disable flag
-log::mcrouter::enable::remote       = true      # MC Router: Remote logging enable / disable flag
+log::mcrouter::enable::remote       = false     # MC Router: Remote logging enable / disable flag
 
 # ###########################################################################
 # Remote services

@@ -3,7 +3,7 @@
   <br /><br /><strong>AREG SDK</strong>
 </h1>
 
-*Discover AREG - an advanced framework for real-time communication in mist- and fog- network environments.*
+*Concurrency without the complexity.*
 
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
 [![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://GitHub.com/aregtech/areg-sdk/commit/)
@@ -33,7 +33,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG Framework** (*Automated Real-time Event Grid*) is an asynchronous, interface-driven communication engine that enables connected software nodes to form a network of distributed services. By facilitating seamless remote object interactions, AREG allows nodes to communicate without knowledge of their network locations, as if they coexist within the same process and thread. Lightweight and designed for IoT **[fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final)**, it empowers devices to deliver real-time public services, enabling efficient remote access and collaboration.
+Many projects struggle with hidden bugs in multiprocessing and multithreading. AREG unifies communication and makes remote objects act like local, with automated messaging, dispatching, and discovery — so teams save time and focus on features. The AREG SDK delivers robust, high-performance solutions with a framework and tools to develop, debug, and test applications. Focus on features; we handle the rest.
 
 ---
 
