@@ -18,7 +18,7 @@ if (MINGW)
     set(AREG_DEVELOP_ENV "Win32")
     add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
     set(AREG_COMPILER_VERSION -std=c++17)
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -municode -mwin32 -MMD ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -municode -MMD ${AREG_USER_DEFINES})
 
     if (${AREG_PROCESSOR} STREQUAL ${_proc_x86} OR ${AREG_PROCESSOR} STREQUAL ${_proc_x64})
         if(${AREG_BITNESS} EQUAL 32)

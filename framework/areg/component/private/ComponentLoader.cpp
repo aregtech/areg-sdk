@@ -299,48 +299,44 @@ ComponentLoader::~ComponentLoader( void )
 bool ComponentLoader::addModel( const NERegistry::Model & newModel )
 {
     Lock  lock(mLock);
-    bool hasError = newModel.getModelName().isEmpty() || newModel.isModelLoaded() ? true : false;
+    bool succeed { (newModel.getModelName().isEmpty() == false) && (newModel.isModelLoaded() == false) };
     // the new model name cannot be empty and it should be unique, and it cannot be marked as loaded.
-    ASSERT(hasError == false);
+    ASSERT(succeed);
 
     // search if model with the same name exists
-    for (uint32_t i = 0; hasError == false && i < mModelList.getSize(); ++ i )
+    for (uint32_t i = 0; succeed && (i < mModelList.getSize()); ++ i )
     {
         const NERegistry::Model & regModel = mModelList.getAt(i);
         if ( newModel.getModelName() != regModel.getModelName() )
         {
             const NERegistry::ComponentThreadList & regThreadList = regModel.getThreadList();
-            for ( uint32_t j = 0; hasError == false && j < regThreadList.mListThreads.getSize(); ++ j )
+            for ( uint32_t j = 0; succeed && (j < regThreadList.mListThreads.getSize()); ++ j )
             {
                 const NERegistry::ComponentThreadEntry & regThreadEntry = regThreadList.mListThreads.getAt(j);
                 if ( newModel.findThread(regThreadEntry) < 0 )
                 {
                     const NERegistry::ComponentList & regComponentList = regThreadEntry.mComponents;
-                    for ( uint32_t k = 0; hasError == false && k < regComponentList.mListComponents.getSize(); ++ k )
+                    for ( uint32_t k = 0; succeed && (k < regComponentList.mListComponents.getSize()); ++ k )
                     {
                         const NERegistry::ComponentEntry & regComponentEntry = regComponentList.mListComponents.getAt(k);
-                        if ( newModel.hasRegisteredComponent(regComponentEntry) )
-                        {
-                            hasError = true;
-                            ASSERT(false);
-                        }
+                        succeed = newModel.hasRegisteredComponent(regComponentEntry);
                     } // end of for ( int k = 0; hasError == false && k < newComponentList.GetSize(); k ++ )
                 }
                 else
                 {
-                    hasError = true;
+                    succeed = false;
                     ASSERT(false);
                 }
             } // end of for ( int j = 0; hasError == false && j < newThreadList.GetSize(); j ++ )
         }
         else
         {
-            hasError = true;
+            succeed = false;
             ASSERT(false);
         }
     }
 
-    if ( hasError == false )
+    if ( succeed )
     {
         mModelList.add(newModel);
         if ( mDefaultModel.isEmpty() )
@@ -348,7 +344,8 @@ bool ComponentLoader::addModel( const NERegistry::Model & newModel )
             mDefaultModel = newModel.getModelName();
         }
     }
-    return (hasError == false);
+    
+    return succeed;
 }
 
 int ComponentLoader::loadAllModels( void )
