@@ -28,12 +28,12 @@ LayoutManager::~LayoutManager(void)
 bool LayoutManager::createLayouts( const char * layoutFormat )
 {
     deleteLayouts();
-    int len = NEString::isEmpty<char>(layoutFormat) == false ? NEString::getStringLength<char>( layoutFormat ) + 1 : 0;
-    char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<unsigned int>(len) ] : nullptr;
+    int len = NEString::isEmpty<char>(layoutFormat) == false ? NEString::getStringLength<char>( layoutFormat ) : 0;
+    char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<unsigned int>(len) + 1u ] : nullptr;
 
     if ( strFormat != nullptr )
     {
-        NEString::copyString<char, char>( strFormat, len, layoutFormat, len );
+        NEString::copyString<char, char>( strFormat, len + 1, layoutFormat, len );
         _createLayouts(strFormat);
         delete [] strFormat;
     }
@@ -45,15 +45,13 @@ bool LayoutManager::createLayouts(const String& layoutFormat)
 {
     deleteLayouts();
     uint32_t len  = static_cast<uint32_t>(layoutFormat.getLength());
-    uint32_t size = len + 1u;
-    unsigned char * buf = size > 1 ? DEBUG_NEW unsigned char[size] : nullptr;
-    char* strFormat = reinterpret_cast<char *>(buf);
+    char* strFormat = len != 0 ? DEBUG_NEW char[len + 1] : nullptr;
 
-    if (buf != nullptr)
+    if (strFormat != nullptr)
     {
-        NEString::copyString<char, char>(strFormat, static_cast<NEString::CharCount>(len), layoutFormat.getString(), static_cast<NEString::CharCount>(len));
+        NEString::copyString<char, char>(strFormat, static_cast<NEString::CharCount>(len + 1), layoutFormat.getString(), static_cast<NEString::CharCount>(len));
         _createLayouts(strFormat);
-        delete[] buf;
+        delete[] strFormat;
     }
 
     return (mLayoutList.isEmpty() == false);

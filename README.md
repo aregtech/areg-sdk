@@ -1,9 +1,9 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
 <a name="logo" href="https://www.aregtech.com"><img align="center" src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:100%;height:100%"/></a>
-  <br /><br /><strong>AREG SDK</strong>
+  <br /><br /><strong>Areg SDK</strong>
 </h1>
 
-*Discover AREG - an advanced framework for real-time communication in mist- and fog- network environments.*
+*Concurrency without the complexity.*
 
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
 [![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://GitHub.com/aregtech/areg-sdk/commit/)
@@ -14,8 +14,15 @@
 
 ---
 
+## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
+
+Many projects struggle with hidden bugs in multiprocessing and multithreading. Areg unifies communication and makes remote objects act like local, with automated messaging, dispatching, and discovery — so teams save time and focus on features. The AREG SDK delivers robust, high-performance solutions with a framework and tools to develop, debug, and test applications. _Focus on features; we handle the rest._
+
+---
+
 <!-- markdownlint-disable -->
 ## Project Status[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#project-status)
+
 <table class="no-border">
   <tr>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml" alt="CMake"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg" alt="CMake build"/></a></td>
@@ -28,12 +35,6 @@
     <td colspan="2"><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm%20%7C%20aarch64-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architect"/></td>
   </tr>
 </table>
-
----
-
-## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
-
-**AREG Framework** (*Automated Real-time Event Grid*) is an asynchronous, interface-driven communication engine that enables connected software nodes to form a network of distributed services. By facilitating seamless remote object interactions, AREG allows nodes to communicate without knowledge of their network locations, as if they coexist within the same process and thread. Lightweight and designed for IoT **[fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final)**, it empowers devices to deliver real-time public services, enabling efficient remote access and collaboration.
 
 ---
 

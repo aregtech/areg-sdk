@@ -476,6 +476,12 @@ bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener *
     dstPath = File::getFileFullPath( File::normalizePath(dstPath) );
     srcPath = mFilePath.isEmpty() ? dstPath : mFilePath;
 
+    String dstDir = File::getFileDirectory(dstPath);
+    if ((dstDir.isEmpty() == false) && File::existDir(dstDir) == false)
+    {
+        File::createDirCascaded(dstDir);
+    }
+
     File srcFile(srcPath, modeRead );
     File dstFile(tempFile, modeWrite);
 

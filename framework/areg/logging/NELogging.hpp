@@ -118,10 +118,14 @@ namespace NELogging
         , PrioLogs          = 0x03E0  //!< Log is enabled priority,   bit set:  0011 1110 0000
         , PrioValidLogs     = 0x03F1  //!< The valid log priority,    bit set:  0011 1111 0001
         , PrioIgnore        = 0x0400  //!< Ignore logging priority,   bit set:  0100 0000 0000
+        , PrioMarker        = 0x0401  //!< Ignore Prio, Marker,       bit set:  0100 0000 0001
+        , PrioMarkerError   = 0x0441  //!< Ignore Prio, Marker,       bit set:  0100 0100 0001
+        , PrioMarkerWarning = 0x0481  //!< Ignore Prio, Marker,       bit set:  0100 1000 0001
+        , PrioMarkerInfo    = 0x0501  //!< Ignore Prio, Marker,       bit set:  0101 0000 0001
         , PrioIgnoreLayout  = 0x0C00  //!< Ignore layout priority,    bit set:  1100 0000 0000
         , PrioAny           = 0x0FF0  //!< Log without priority,      bit set:  1111 1111 0000
         , PrioValid         = 0x0FF1  //!< Valid logging priority     bit set:  1111 1111 0001
-        , PrioUndefined     = 0xFFFF  //!< Undefined lottint priority bit set:  1111 1111 1111
+        , PrioUndefined     = 0xFFFF  //!< Undefined logging priority bit set:  1111 1111 1111
     };
 
     /**
