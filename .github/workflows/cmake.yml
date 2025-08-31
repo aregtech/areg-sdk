@@ -367,7 +367,7 @@ jobs:
 
       - name: Install cygwin on Windows
         if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        uses: cygwin/cygwin-install-action@v6
+        uses: cygwin/cygwin-install-action@master
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make
 
