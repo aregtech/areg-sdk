@@ -25,7 +25,7 @@ This repository contains **example projects** illustrating AREG SDK capabilities
 ## Quick Start – Build & Run
 
 > [!IMPORTANT]
-> Ensure you have CMake 3.20+ or MSVS 2019+. Ensure you have Java17+ on your machine for code generator.
+> **Requirements:** Ensure you have **CMake 3.20+** or **MSVS 2019+**. Ensure you have **Java17+** on your machine for code generator.
 
 1. **Clone the Repository**
 
