@@ -1,39 +1,38 @@
-# 13_locsvc Project Overview
+﻿# 13_locsvc
 
-The **13_locsvc** project demonstrates creating and managing a **Local Service** within the AREG Framework, using the Service Interface document and AREG SDK's code generator. This example shows how to build a service provider and consumer that communicate asynchronously within a single, multithreaded process, without external visibility.
+🧵 **Type:** Multithreading / Single Process
 
-The **Local Service** interface is defined in the [HelloWorld.siml](./services/HelloWorld.siml) file, and the corresponding source code is automatically generated during the build process via `codegen.jar`.
+## Overview
+The **13_locsvc** example demonstrates how to create and manage a **Local Service** within a single, **multithreaded process** using the AREG Framework.  
+It shows a service provider and consumer communicating asynchronously, without exposing the service externally.  
+The consumer uses `serviceConnected()` to detect when the provider is ready, ensuring requests and subscriptions occur only when safe.
 
-## Key Concepts
+This addresses common challenges in multithreaded service design: coordinating service availability, handling request/response flows, and managing event subscriptions without boilerplate code.
 
-- **Local Service**: The project showcases a service provider and consumer that are confined to the local process, providing a controlled environment for internal communication.
-- **Multithreaded Environment**: Using Local Services, the project creates a complex, multithreaded setup where service providers and consumers can operate across different threads and communicate asynchronously.
-- **Service Interface**: With the Service Interface document and code generator, **Object Remote Procedure Call (Object RPC)** messages are automated for efficient, simplified communication between the host and local targets.
-- **Request and Response Handling**: Manage requests, responses, and event broadcasts within the scope of a local service.
+## Concepts Shown
+- **Local Service**: Provider and consumer operate entirely within one process for secure internal communication.  
+- **Multithreading**: Components can run in separate threads and communicate asynchronously.  
+- **Auto-Discovery with `serviceConnected()`**: Consumer subscribes to events and sends requests only when the provider is connected.  
+- **Request/Response Handling**: Structured request/response flows with automatic event broadcasting.  
+- **Runtime Subscription**: Consumers can dynamically subscribe or unsubscribe from provider events.
 
-## Sub-Projects
+## How It Works
+The project contains two subprojects:
 
-1. **13_generated**:
-   - Contains code generated from the [HelloWorld.siml](./services/HelloWorld.siml) interface file during CMake configuration or pre-build action in Visual Studio. This includes files essential for defining the local service functionality.
+1. **13_generated** – Contains code generated from [`HelloWorld.siml`](./services/HelloWorld.siml) via `codegen.jar`. Provides the necessary RPC glue for the local service.  
 
-2. **[13_locservice](./locservice/)**:
-   - Implements both the **service provider** and **service consumer**. Communication between these objects relies on **RPC messages**, and is event-driven and asynchronous. Key components include:
-     - **Request Handling**: The service provider processes incoming requests from the consumer and sends appropriate responses.
-     - **Response Processing**: The consumer manages responses from the provider.
-     - **Event Broadcasting**: The service provider can broadcast events to subscribed consumers.
+2. **[13_locservice](./locservice/)** – Implements both the service provider and consumer.  
+   - The **provider** handles incoming requests and broadcasts events.  
+   - The **consumer** waits for `serviceConnected()` notifications before sending requests or subscribing to updates.  
+   - Communication is fully asynchronous and event-driven, demonstrating real-time inter-thread interaction within a single process.
 
-## Features
-
-- **Local-Only Access**: The service is confined within the process, making it ideal for secure, internal communication.
-- **Request/Response Model**: Demonstrates a structured request/response interaction between provider and consumer.
-- **Event Broadcasting**: Allows the service provider to broadcast updates or events to all subscribed consumers.
-- **Runtime Subscription**: Consumers can dynamically subscribe or unsubscribe from broadcasts in real time, enabling flexible service usage.
+At runtime, threads and components are created automatically. Consumers only send requests or subscribe to events **after receiving a connected status** from `serviceConnected()`. The provider can broadcast updates to all subscribed consumers safely, and disconnections are handled by cleaning up subscriptions.
 
 ## Use Cases
+- Build **secure, internal services** confined to a single process.  
+- Learn **asynchronous request/response and event broadcasting** between threads.  
+- Implement **dynamic subscription management**, allowing consumers to adapt at runtime.  
+- Use as a foundation for **multithreaded service architectures** without external dependencies.
 
-- **Dynamic Service Consumption**: Consumers can subscribe or unsubscribe from events at runtime, allowing flexible service usage in scenarios that require real-time adaptability.
-- **Event-Driven Architectures**: Ideal for event-driven systems, enabling multiple components to communicate asynchronously within a single process.
-
-## Conclusion
-
-The **13_locsvc** project provides a clear example of implementing a **Local Service** in a **multithreaded environment** using the AREG SDK. By defining a local service provider and consumer, it demonstrates effective request/response handling, asynchronous communication, and real-time event broadcasting within a single process.
+## Takeaway
+A clear, practical example of implementing a **Local Service in a multithreaded process**, demonstrating **safe request/response handling, asynchronous communication, and dynamic event subscriptions** using `serviceConnected()`.

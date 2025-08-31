@@ -1,40 +1,25 @@
+﻿# 14_locmesh
 
-# 14_locmesh Project Overview
+🧵 **Type:** Multithreading / Single Process
 
-The **14_locmesh** project builds on the [13_locsvc](./../13_locsvc) example, demonstrating how to run **multiple instances** of the same **local service** within a **multithreaded environment**. Each service instance operates in its own thread and is assigned a unique name, allowing for efficient parallel processing and service interaction.
+## Overview
+The **14_locmesh** project builds on [13_locsvc](./../13_locsvc), showing how to run **multiple instances** of the same **local service** in a **multithreaded environment**. Each instance operates in its own thread with a unique name, enabling efficient parallel processing and dynamic service interaction.
 
-## Key Concepts
+## Concepts Shown
+- **Multiple Service Instances**: Create and manage multiple service instances, each with a unique name for precise identification.
+- **Service Interface & Object RPC**: Use the Service Interface document and code generator to automate **Object RPC** messages for efficient inter-service communication.
+- **Multithreading**: Each service instance runs in a separate thread, demonstrating parallel operation in a multithreaded system.
+- **Service Provider and Consumer Interaction**: Services interact asynchronously, handling requests, responses, and events in real-time.
+- **Application Lifecycle Management**: Observe how multiple service instances can be started, monitored, and terminated gracefully.
 
-- **Multiple Service Instances**: Learn how to create and manage multiple instances of the same service, each identified by a unique name within the application.
-- **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
-- **Multithreading**: Each service instance runs in a separate thread, demonstrating how services operate concurrently in a multithreaded system.
-- **Service Provider and Consumer Interaction**: The project highlights how multiple service providers and consumers asynchronously interact in real-time, showcasing dynamic service-to-service communication.
-
-## Sub-Projects
-
-1. **14_generated**:
-   - This library contains code generated from the [HelloWorld.siml](./services/HelloWorld.siml) service interface document during CMake configuration or as part of a pre-build action in Visual Studio. It includes the source files necessary to define and instantiate multiple service instances.
-
-2. **[14_locmesh](./locsvcmesh)**:
-   - This sub-project demonstrates the instantiation of **multiple service providers and consumers**, each running in separate threads. Key features include:
-     - **Multithreaded Service Instances**: Multiple service instances are created and assigned unique names, allowing the system to manage them independently in parallel.
-     - **Main Service**: One of the service providers is designated as the *main* service (`MainService`), acting as a primary service instance.
-     - **Graceful Shutdown**: The application runs until a *quit* message is sent, demonstrating how to manage the lifecycle of multiple service instances within the application.
-
-## Features
-
-- **Multithreaded Local Services**: Each service provider and consumer operates in its own thread, allowing for high-performance parallel execution.
-- **Unique Service Names**: Each service instance is given a unique name, ensuring that the system can distinguish between and manage multiple instances of the same service.
-- **Service Interaction**: The project demonstrates how service providers and consumers interact, exchanging data and responding to events in real-time.
-- **Application Lifecycle Management**: The application runs until a termination message is received, showcasing how to manage the lifecycle of a multithreaded application.
+## How It Works
+The project generates code from [HelloWorld.siml](./services/HelloWorld.siml) to define the service interface. Multiple service providers and consumers are instantiated in separate threads, each with a unique name. One instance acts as the *main* service (`MainService`). The application continues running until a quit message is sent, illustrating controlled lifecycle management in a multithreaded setup.
 
 ## Use Cases
+- Parallel execution of **multiple service instances** within the same process.
+- Dynamic **real-time communication** between service providers and consumers.
+- Efficient **multithreaded workload distribution**, where each service handles tasks independently.
+- Scalable **internal service management** in multithreaded applications.
 
-- **Parallel Service Processing**: This project is designed for complex, multithreaded applications where multiple service providers and consumers operate within the same environment. It supports scenarios where each service instance runs in a separate thread, allowing services to interact efficiently across threads.
-- **Concurrent Service Instances**: The project also covers cases where multiple instances of the same service run simultaneously, with each instance handling different tasks in parallel. This setup enables workload distribution and enhances performance by processing tasks concurrently within a single process.
-- **Dynamic Service Interaction**: Learn how to manage real-time communication between multiple service providers and consumers, which is useful for complex systems requiring high throughput and responsiveness.
-- **Multithreaded Application Management**: The example demonstrates best practices for running, managing, and terminating multithreaded applications with multiple service instances.
-
-## Conclusion
-
-The **14_locmesh** project offers a practical guide for creating complex multithreaded application, managing **multiple local service instances** in a **multithreaded environment** using the AREG SDK. By assigning unique names to each service and running them in parallel, developers can build scalable, high-performance applications that handle multiple tasks concurrently.
+## Takeaway
+The **14_locmesh** example demonstrates managing **multiple local service instances** in a **multithreaded environment**, enabling developers to build scalable, high-performance applications with parallel service execution.

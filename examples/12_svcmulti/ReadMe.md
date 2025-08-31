@@ -1,31 +1,24 @@
-# 12_svcmulti Project Overview
+﻿# 12_svcmulti
 
-The **12_svcmulti** project builds upon the concepts from the [11_service](./../11_service) project, demonstrating how to create **multiple instances** of the same **local service** with distinct names. This example shows how to configure and manage multiple **service providers** running in parallel, each identified by a unique *role* (name) within the application.
+🧵 **Type:** Multithreading / Single Process
 
-## Key Concepts
+## Overview
+The **12_svcmulti** project extends the concepts from [11_service](./../11_service), demonstrating how to create **multiple instances** of the same **local service**, each with a unique *role* (name). This example highlights how to configure and manage several **service providers** running in parallel within a **multithreaded application**.
 
-- **Multiple Service Instances**: Learn how to create and manage multiple instances of the same service, each with a unique name (or *role*) defined in the *Application Model*.
-- **Service Roles**: Each service instance operates under a distinct *name*, allowing the system to differentiate between otherwise identical services.
-- **Multithreaded Services**: The project demonstrates how to run multiple service providers in separate threads, ensuring efficient parallel execution.
+## Concepts Shown
+- **Multiple Service Instances**: Create and manage multiple instances of the same service, each with a distinct name (*role*) defined in the *Application Model*.
+- **Service Roles**: Differentiate otherwise identical services using unique names to allow precise control and identification.
+- **Multithreaded Execution**: Run multiple service providers in separate threads to ensure parallel and efficient operation.
+- **Service Lifecycle**: Observe how each service instance is loaded, executed, and unloaded safely within the multithreaded environment.
+- **Internal Communication**: Services remain confined to the local process, providing isolated and predictable execution.
 
-## Features
-
-- **Multiple Service Providers**: The project creates two identical instances of a **local service**, each running under a different *role*, showcasing how to scale services within the same process.
-- **Name-Based Service Identification**: Each service instance is assigned a *unique name* called *role* in the *Application Model*, allowing for clear identification and management of services.
-- **Multithreaded Execution**: Each service provider operates in its own thread, demonstrating how to manage multiple service providers in a **multithreaded environment**.
-
-## Project Structure
-
-- **Service Instantiation**: The project shows how to define and instantiate multiple instances of the same service, each with a unique role.
-- **Application Model**: The services are defined in the application's model, which controls their roles and behavior during runtime.
-- **Multithreading**: The services are executed in separate threads, providing a clear example of how to handle multiple service providers concurrently.
+## How It Works
+Each service instance is defined in the *Application Model* with a unique *role*. The project creates two or more instances of the same service, each running in its own thread. The framework handles initialization, execution, and cleanup for each service instance, demonstrating how **multithreaded applications** can scale internal services efficiently. All interactions are confined within the process.
 
 ## Use Cases
+- Scale **local services** by running multiple instances in parallel.
+- Manage **services with unique roles** for fine-grained control.
+- Implement **multithreaded service providers** for high-performance, resource-intensive tasks within a single process.
 
-- **Scaling Local Services**: This project is ideal for applications that require multiple instances of the same service, each handling distinct tasks or operating under different conditions.
-- **Name-Based Service Management**: Learn how to assign unique *roles* to services, allowing for more granular control over multiple service instances within the same application.
-- **Multithreaded Service Providers**: The project offers practical guidance on running multiple service providers in parallel, which is useful in high-performance or resource-intensive applications.
-
-## Conclusion
-
-The **12_svcmulti** project provides a practical guide for creating and managing **multiple local service providers** in a **multithreaded environment** using the AREG Framework. By assigning distinct *roles* to each service instance, developers can scale services and manage them efficiently within a single application process.
+## Takeaway
+The **12_svcmulti** example shows how to manage **multiple local service providers** in a **multithreaded environment**, assigning distinct *roles* to scale services safely and efficiently.

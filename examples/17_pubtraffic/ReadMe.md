@@ -1,43 +1,32 @@
-# 17_pubtraffic Project Overview
+﻿# 17_pubtraffic
 
-The **17_pubtraffic** project demonstrates how to dynamically create and manage models within a **multiprocessing application**, showcasing the ability to handle custom events and dynamic model creation during runtime. The project utilizes **Inter-Process Communication (IPC)** and **Object Remote Procedure Call (Object RPC)** to enable seamless communication between services in a distributed environment.
+🧵🚀 **Type:** Multithreading + IPC
 
-> [!IMPORTANT]
-> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+## Overview
+The **17_pubtraffic** project demonstrates how to dynamically create and manage **runtime models** within a **multithreaded, multi-process application**. It shows how services communicate using **Object Remote Procedure Call (Object RPC)** over **Inter-Process Communication (IPC)**, with custom events triggered by user commands.
 
-## Key Concepts
+> [!NOTE]
+> A **Multi-Target Router** (`mcrouter`) must be running on a network-accessible machine. Ensure the `areg.init` file includes the correct IP and port for the router.
 
-- **Dynamic Model Creation**: Learn how to dynamically create and manage models during runtime, enabling flexible system behavior and responsiveness to user commands.
-- **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
-- **Custom Event Handling**: Demonstrates the handling of custom events within a multithreaded system, triggered by user commands such as `start`, `stop`, and `quit`.
+## Concepts Shown
+- **Dynamic Model Creation**: Create and manage service models at runtime for flexible system behavior.
+- **Custom Event Handling**: Handle user-triggered events such as `start`, `stop`, and `quit`.
+- **Object RPC for IPC**: Automates inter-process message dispatching between provider and consumer services.
+- **Service Discovery**: Consumers automatically connect to providers using `serviceConnected()`, regardless of startup order.
+- **Multithreaded & Multiprocess Execution**: Services run in separate threads and processes for scalability and concurrency.
+
+## How It Works
+Code is generated from [SimpleTrafficLight.siml](./services/SimpleTrafficLight.siml) to handle Object RPC communication. The project includes a service provider (`17_pubservice`) that listens for custom commands and multiple clients (`17_pubclient`) that dynamically create models and subscribe to specific datasets. Messages between processes are routed via `mcrouter`, ensuring reliable and fault-tolerant IPC.
 
 ## Sub-Projects
-
-1. **17_generated**:
-   - Contains codes, generated from the [SimpleTrafficLight.siml](./services/SimpleTrafficLight.siml) Service Interface document. The generated code automates **Object RPC** message creation and communication, enabling efficient interaction between service providers and consumers.
-
-2. **[17_pubclient](./pubclient/)**:
-   - A service consumer application that dynamically creates models during runtime. Multiple instances of this client can be launched, with each instance subscribing to different data sets via commands like `sn` (for nominal *South-North* direction data) or `ew` (for nominal *East-West* direction data).
-
-3. **[17_pubservice](./pubservice/)**:
-   - An application that provides **Public Services**, handling custom events triggered by user commands. This service listens for commands such as `start` to begin service operations, `stop` to halt them, and `quit` to gracefully terminate the all service provider and consumer applications.
-
-## Communication
-
-Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the system's functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
-
-## Key Features
-
-- **Dynamic Model Management**: The ability to dynamically create models and manage their lifecycle during runtime in a **multithreaded** and **multiprocessing** environment provides flexibility and scalability.
-- **Object RPC and IPC**: The project demonstrates the use of **Object RPC** and **IPC** to handle communication between services, automating message dispatch and response handling across multiple processes.
-- **Custom Event Handling**: The service provider reacts to user commands by triggering custom events, offering fine-grained control over service behavior and interaction.
+1. **17_generated**: Auto-generated Object RPC code from service interface documents.
+2. **[17_pubclient](./pubclient/)**: Dynamically creates models at runtime and subscribes to specific datasets. Multiple client instances can run concurrently.
+3. **[17_pubservice](./pubservice/)**: Provides Public Services, handles custom events, and manages the lifecycle of all clients and services based on user commands.
 
 ## Use Cases
+- **Dynamic Runtime Model Management**: Ideal for systems that require creating objects or services dynamically during execution.
+- **Real-Time IPC**: Demonstrates reliable inter-process communication in distributed systems using Object RPC.
+- **Custom Event-Driven Applications**: Supports event-driven systems with precise control over service behavior via user commands.
 
-- **Dynamic Runtime Model Creation**: This project is ideal for applications that require models or objects to be created dynamically during runtime, offering flexibility in service configuration and operation.
-- **Real-time Inter-Process Communication (IPC)**: Suitable for systems where real-time communication between distributed services is essential, leveraging **Object RPC** and **IPC** to ensure reliable message exchange.
-- **Custom Event-Driven Systems**: Applications that rely on custom event handling can benefit from the project's approach to managing user-triggered events in a multithreaded environment.
-
-## Conclusion
-
-The **17_pubtraffic** project highlights the AREG SDK's capabilities in managing **dynamic models** and **custom events** within a **multithreaded** and **distributed system**. Through the use of **Object RPC** and **IPC**, the project demonstrates how to achieve real-time communication and event handling, making it a valuable example for developers looking to build scalable, event-driven applications.
+## Takeaway
+The **17_pubtraffic** example demonstrates **dynamic model creation**, **custom event handling**, and **real-time IPC** using **Object RPC** in a **multithreaded, distributed environment**, providing a blueprint for scalable and responsive service-driven applications.

@@ -1,44 +1,42 @@
+﻿# 03_helloservice
 
-# 03_helloservice Project Overview
+🧵🚀 **Type:** Multithreading + IPC
 
-The **03_helloservice** project is a foundational example from the AREG SDK, designed to demonstrate how to build an application using **Inter-Process Communication (IPC)** and **multithreading** only by changing the *Application Model*. This project showcases the creation and interaction of service (*micro-server*) and client objects, illustrating various deployment scenarios (various *models*) within the AREG framework.
+## Overview
+The **03_helloservice** example demonstrates building applications using **Inter-Process Communication (IPC)** and **multithreading** in the AREG Framework.  
+It shows how to implement service (*micro-server*) and client objects and deploy them in single-threaded, multithreaded, or multiprocess setups by changing the *Application Model*.  
 
-## Key Concepts
+> [!NOTE]
+> To run multiprocess examples, a **Multi-Target Router** must be started to enable IPC communication between processes.
 
-- **Service and Client Objects**: Learn how to implement service providers and consumers using the AREG Framework.
-- **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
-- **Multithreading**: Understand how services and clients can coexist or run independently across threads.
-- **IPC (Inter-Process Communication)**: Explore scenarios where service provider and consumer reusable objects communicate across multiple processes using **Object RPC**.
-- **Scalable Architecture**: The example demonstrates different deployment strategies, from single-threaded setups to more complex multiprocess applications only by changing *Application Model*.
+## Concepts Shown
+- **Service and Client Objects**: Implement service providers and consumers using AREG.  
+- **Service Interface & Code Generation**: Automate **Object RPC** message creation and dispatching for reliable communication.  
+- **Multithreading**: Run services and clients in the same or separate threads.  
+- **Inter-Process Communication (IPC)**: Communicate between processes using Object RPC via a Multi-Target Router.  
+- **Scalable Deployment**: Switch between single-threaded, multithreaded, or multiprocess deployment by modifying the Application Model.
 
-## Project Structure
+## How It Works
+- **03_generated**  
+  Contains files generated from the [HelloService.siml](./services/HelloService.siml) Service Interface. These files automate RPC message creation and simplify communication between threads and processes.  
 
-1. **03_generated**: 
-   - This library contains files automatically created from the [HelloService.siml](./services/HelloService.siml) Service Interface. The files are generated during CMake setup or as a pre-build step in Visual Studio. The generated code simplifies and automates the process of creating and managing **RPC** based communication between multiple threads and processes.
+- **[common](./common/)**  
+  Holds shared implementations of both the service provider and consumer. These reusable components can be instantiated in any subproject by adjusting the Application Model.  
 
-2. **[common](./common/)**:
-   - This directory holds shared implementations of both the **Service Provider** and **Service Consumer** components. These shared components are reused across different sub-projects, allowing developers to build multithreaded or multiprocessing applications by modifying the *Application Model* definition.
+- **[03_onethread](./onethread/)**  
+  Demonstrates running the service provider and consumer in a **single thread** within one process. Both components share the same thread.  
 
-3. **[03_onethread](./onethread/)**:
-   - This example shows how the service provider and client can run in a single thread within the same process. Both components use the same thread, and their code is found in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
+- **[03_twothreads](./twothreads/)**  
+  Demonstrates running the service provider and consumer in **separate threads** within one process. Components remain in the common directory, but the Application Model assigns different threads.  
 
-4. **[03_twothreads](./twothreads/)**:
-   - In this scenario, the service provider and client run in two separate threads within the same process. The shared implementations are again located in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
-
-5. **[03_pubservice](./multiprocess/serviceproc/)** and **[03_pubclient](./multiprocess/clientproc/)**:
-   - These projects set up a *Public Service*, allowing the *Service Consumer* in the `03_pubclient` project to send requests to the *Service Provider* in the `03_pubservice` project. The service provider and consumer components are implemented in the *common* directory. This example shows how to define a multiprocess application using the *Application Model* object.
-
-## Key Features
-
-- **Single-threaded and Multithreaded Examples**: Learn how to structure applications where the service provider and client either share the same thread or operate in separate threads within the same process.
-- **Multiprocessing with IPC**: Discover how to set up a service that communicates with multiple clients across different processes.
-- **Reusable Components**: The *common* directory demonstrates how to centralize service and client implementations for use across various deployment strategies.
-- **Object Remote Procedure Call (Object RPC)**: This project demonstrates how **Object RPC** facilitates communication between different threads and processes, enabling seamless request and response exchanges between components running in the same or multiple processes.
-- **Code generation**: A highly effective way to use the Service Interface document and code generator to reduce errors, avoid tedious tasks, and focus more on the core business logic of the application.
+- **[03_pubservice](./multiprocess/serviceproc/)** and **[03_pubclient](./multiprocess/clientproc/)**  
+  Demonstrate a **Public Service** setup across separate processes. The consumer in `03_pubclient` discovers and communicates with the provider in `03_pubservice`. These examples require the **Multi-Target Router** to run properly.
 
 ## Use Cases
+- Learn to implement services that communicate across **threads and processes**.  
+- Build **service-consumer architectures** that scale from single-threaded apps to multiprocess systems.  
+- Explore **event-driven applications** with asynchronous communication patterns.  
+- Start building **cross-platform IPC applications** with reusable components.
 
-- **Multithreading in IPC Applications**: Ideal for developers looking to implement services that communicate efficiently across threads and processes.
-- **Service-Oriented Architectures**: Useful for building applications that follow a service-consumer model, allowing for scalable and modular design.
-- **Event-driven Architectures**: Ideal for building applications with asynchronous communication, enabling the design of scalable and autonomous systems.
-- **Cross-Platform Development**: The AREG SDK is designed for cross-platform applications, and this example provides a foundation for creating services that work on different operating systems.
+## Takeaway
+A foundational example illustrating **multithreaded and multiprocess service deployment** in AREG, highlighting **Object RPC**, reusable components, and IPC via a **Multi-Target Router**.

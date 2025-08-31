@@ -1,31 +1,32 @@
-# 01_minimalrpc Project Overview
+﻿# 01_minimalrpc
 
-The **01_minimalrpc** project demonstrates the use of RPC in the multithreading environment. It declares a model with 2 threads and 2 components -- one is a service provider and another is a service consumer, which is calling `reguestHelloService()` method when service is available and triggers a quit application signal, when receives `responseHelloSercice()`.
+🧵 **Type:** Multithreading / Single Process
 
-## Key Concepts
+## Overview
+The **01_minimalrpc** example demonstrates how to use **RPC between threads** in a single process using the AREG Framework.  
+It defines a simple model with **two threads** and **two components**: a **Service Provider** and a **Service Consumer**.  
+The consumer waits for `serviceConnected()` to indicate the provider is available before calling `requestHelloService()`. Upon receiving the response, it triggers application quit.
 
-- **Model Declaration**: Learn how to declare a model with multiple threads and components using the AREG Framework.
-- **Service Provider and Consumer**: Understand the interaction between service providers and consumers in a multithreading environment.
-- **RPC method calls**: A method called on service consumer side is invoked on service provider side.
+This addresses the common pain points of multithreaded communication: knowing when a service is ready, avoiding race conditions, and managing threads safely without boilerplate.
 
-## Features
+## Concepts Shown
+- **Model Declaration**: How to define a model with multiple threads and components in AREG.  
+- **Service Provider/Consumer Interaction**: Asynchronous communication between threads.  
+- **RPC Method Calls**: Consumer requests are executed on the provider with zero-boilerplate messaging.  
+- **Auto-Discovery**: `serviceConnected()` notifies the consumer when the provider is ready to accept requests and manage subscriptions.  
+- **Thread and Component Lifecycle**: Automatic creation and destruction of threads and components with the model.
 
-- **Modeling**: A simple modeling with 2 threads and 2 servicing components -- Service Provider and Service Consumer.
-- **Service Provider**: Implements a service that responds to requests from the consumer.
-- **Service Consumer**: Calls the service method and handles the response, demonstrating inter-thread communication.
-- **Thread and Component Lifecycle**: The threads and components are automatically created when model is loaded and destroyed when model is unloaded.
+## How It Works
+The project includes:  
+- **Service Interface Document**: Defines `HelloService` RPC methods.  
+- **Source Code**: Implements provider and consumer in separate threads.  
 
-## Project Structure
-
-- **Source Code**: The objects and code are in one file for better traceability.
-- **Service Interface document**: The service interface XML document with 2 methods: `HelloService` and connected `HelloService`
-
+At runtime, the framework creates the threads and components. The **consumer receives `serviceConnected()` notifications** when the provider connects or disconnects. Once connected, it calls `requestHelloService()`, the provider responds via `responseHelloService()`, and the consumer triggers application shutdown, demonstrating a complete request/response lifecycle.
 
 ## Use Cases
+- Learn **multithreaded RPC** without manual thread management.  
+- Understand **service connection handling** and lifecycle management.  
+- Serve as a foundation before moving to **multi-process IPC examples**.
 
-- **Multithreading Basics**: Ideal for developers to learn the basics of multithreading development without manual threading.
-- **Thread and Component Lifecycle**: Learn when the threads.
-
-## Conclusion
-
-The **01_minimalrpc** project serves as a beginner-friendly introduction to **multithreading** in the AREG framework.
+## Takeaway
+A beginner-friendly demonstration of **thread-to-thread RPC with auto-discovery** in AREG, showing safe asynchronous communication and managed component lifecycles.

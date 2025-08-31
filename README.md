@@ -317,7 +317,7 @@ In this example:
 - **ServiceProvider** runs on `ProviderThread`, and **ServiceConsumer** runs on `ConsumerThread`.
 - `REGISTER_DEPENDENCY("ServiceProvider")` means `ServiceConsumer` component consumes the services provided by `ServiceProvider`.
 
-You can also set up multiprocess applications using same components and changing *model*. As a practical example, follow projects in the **[00_helloservice](./examples/00_helloservice/)** directory.
+You can also set up multiprocess applications using same components and changing *model*. As a practical example, follow projects in the **[03\_helloservice](./examples/03_helloservice/)** directory.
 
 > [!TIP]
 > *Learn how AREG SDK simplifies the creation of Service Providers and Consumers, supporting both multithreading and multiprocessing for real-time, distributed applications.* Visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
@@ -337,15 +337,15 @@ For detailed instructions on building and using these services, see the **[Multi
 The AREG SDK offers hands-on examples demonstrating **Multithreading** and **Multiprocessing** applications, **Client-Server** and **Publish-Subscribe** models, **Object Remote Procedure Call (Object RPC)** and **Inter-Process Communication (IPC)**, featured **Finite-State Machines (FSM)** creation, and more. Each project highlights key features that facilitate efficient development of distributed services.
 
 **Some Featured Examples:**
-1. **[00_helloservice](./examples/00_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG's intuitive, interface-driven approach.
+1. **[03\_helloservice](./examples/03_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG's intuitive, interface-driven approach.
 
-2. **[04_logging](./examples/04_logging/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
+2. **[07\_logging](./examples/07_logging/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
 
-3. **[16_pubfsm](./examples/16_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG's *Timers* and *Events* for smooth state transitions.
+3. **[19\_pubfsm](./examples/19_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG's *Timers* and *Events* for smooth state transitions.
 
-4. **[19_pubwatchdog](./examples/19_pubwatchdog/)**: Implement a watchdog to monitor thread activity, restart unresponsive threads, and notify components as needed.
+4. **[22\_pubwatchdog](./examples/22_pubwatchdog/)**: Implement a watchdog to monitor thread activity, restart unresponsive threads, and notify components as needed.
 
-5. **[24_pubsubmulti](./examples/24_pubsubmulti/)**: Explore the PubSub model, which reduces data traffic by delivering only relevant updates.
+5. **[27\_pubsubmulti](./examples/27_pubsubmulti/)**: Explore the PubSub model, which reduces data traffic by delivering only relevant updates.
 
 For the full list of examples and additional documentation, visit **[AREG SDK Examples](./examples/README.md)**.
 
