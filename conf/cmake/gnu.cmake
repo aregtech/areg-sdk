@@ -60,7 +60,7 @@ else()
     endif()
 
     if (${AREG_PROCESSOR} STREQUAL ${_proc_x86} OR ${AREG_PROCESSOR} STREQUAL ${_proc_x64})
-        if(${AREG_BITNESS} EQUAL 32)
+        if("${AREG_BITNESS}" STREQUAL "32")
             list(APPEND AREG_COMPILER_OPTIONS -m32)
             list(APPEND AREG_LDFLAGS -m32)
         else()
