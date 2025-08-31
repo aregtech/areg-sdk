@@ -63,7 +63,7 @@ MSBuild ./areg-sdk.sln
 
 | Project                                | Scope              | Highlights                         | Key Feature / Solution                                                                                              |
 | -------------------------------------- | ------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| [01\_minimalrpc](./01_minimalrpc/)     | 🧵 Multithreading  | Object RPC, Minimal Setup          | Demonstrates basic Object RPC between threads; shows request/response handling in a multithreaded context.          |
+| [01\_minimalrpc](./01_minimalrpc/)     | 🧵 Multithreading  | Object RPC, Minimal Setup          | Minimal thread-to-thread RPC with auto-discovery; provider handles request and signals app quit.                    |
 | [02\_minimalipc](./02_minimalipc/)     | 🚀 Multiprocessing | IPC, Minimal Setup                 | Demonstrates minimal inter-process communication setup; illustrates message exchange across processes via mcrouter. |
 | [03\_helloservice](./03_helloservice/) | 🚀 Multiprocessing | Service/Client, Threading Model    | Introduces service creation and client-server interactions; flexible threading and process models for IPC.          |
 | [04\_hellothread](./04_hellothread/)   | 🧵 Multithreading  | Thread Lifecycle                   | Demonstrates thread creation, management, and synchronization; prints "Hello World!" in a separate thread.          |

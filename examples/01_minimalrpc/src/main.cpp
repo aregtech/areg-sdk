@@ -45,7 +45,7 @@ protected:
     virtual void requestHelloService(void) override
     {
         std::cout << "\'Hello Service!\'" << std::endl;
-        responseHelloService();
+        Application::signalAppQuit();   // quit application is if received response
     }
 
 private:
@@ -86,13 +86,6 @@ protected:
         // Return `true` if the service connection notification is relevant.
         return true;
     }
-
-    //!< The response from Service Provider
-    virtual void responseHelloService(void) override
-    {
-        std::cout << "\'Bey Service!\'" << std::endl;
-        Application::signalAppQuit();   // quit application is if received response
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,7 +122,7 @@ int main(void)
     // wait until Application quit signal is set.
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
     // stop and unload components
-    Application::unloadModel(_modelName);
+    // Application::unloadModel(_modelName);
     // release and cleanup resources of application.
     Application::releaseApplication();
     return 0;
