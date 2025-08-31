@@ -363,7 +363,7 @@ jobs:
 
       - name: Set Windows PATH environment variable
         if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;$env:SYSTEMROOT\system32;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
         if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
