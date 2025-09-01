@@ -71,7 +71,7 @@ With built-in **auto-discovery, async RPC, and event-driven messaging**, Areg el
 
 ## Why Areg SDK?[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk)
 
-Software complexity isn’t caused by algorithms — it usually comes from frameworks that don’t scale. Threads, processes, and distributed components quickly accumulate boilerplate, hidden bugs, and costly rewrites. Late framework choices can lock teams into fragile architectures.
+Software complexity often comes not from algorithms but from frameworks that don’t scale. Threads, processes, and distributed components quickly accumulate boilerplate, hidden bugs, and costly rewrites. Late framework choices can lock teams into fragile architectures.
 
 **Areg SDK removes these risks from day one** with a unified **Pub/Sub + Request-Reply** model that handles communication, threading, and distributed execution seamlessly across threads, processes, and devices.
 
@@ -96,9 +96,9 @@ Software complexity isn’t caused by algorithms — it usually comes from frame
 
 ### Compared to Alternatives
 
-* **Unlike raw messaging libraries**, Areg SDK eliminates manual wiring with built-in auto-discovery and code generation.
-* **Unlike heavyweight actor frameworks**, Areg SDK remains lightweight and service-focused, with simple lifecycle management and no runtime bloat.
-* **Unlike generic RPC systems**, Areg SDK is designed for C++ developers building embedded, IoT-edge, and desktop systems — balancing real-time performance with developer productivity.
+* **Productivity & Developer Experience** — declarative threading, auto-discovery, and zero-boilerplate RPC let developers focus on **services, not plumbing**, avoiding fragile glue code and manual setup.
+* **Reliability & Fault-Tolerance** — watchdog-protected threads, resilient messaging, and dynamic service lifecycle keep apps running smoothly even when components fail.
+* **Scalability & Observability** — services automatically form a **self-organizing mesh**, handle cross-dependencies effortlessly, and include built-in profiling with scope-based logging for actionable insights.
 
 ✅ Areg SDK helps developers build **scalable, reliable, and maintainable C++ systems** without drowning in IPC and threading complexity.
 
