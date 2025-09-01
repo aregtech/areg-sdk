@@ -81,7 +81,7 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
    Define components and threads declaratively; the runtime handles routing, queuing, and execution context—no hand-wired threads, sockets, or fragile glue code.
 
 2. **Unified local & remote API + low-latency async RPC**
-   Call services the same way in-thread, across processes, or over the network. RPCs and events are queued in the target thread’s context for **non-blocking, highly responsive behavior**.
+   Call services the same way in-thread, across processes, or over the network. RPCs and events are queued in the target thread for **non-blocking, highly responsive behavior**.
 
 3. **Self-organizing service mesh**
    Services auto-discover and connect logically regardless of location, forming a dynamic mesh that **handles cross-dependencies automatically**.
