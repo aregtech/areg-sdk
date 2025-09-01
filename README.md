@@ -45,19 +45,17 @@ This lets developers **design, connect, and debug services effortlessly** across
   - [Key Solutions / Top 5 Pain Killers](#key-solutions--top-5-pain-killers)
   - [Compared to Alternatives](#compared-to-alternatives)
 - [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Quick Start](#quick-start)
+  - [Recommended Learning Path](#recommended-learning-path)
+  - [Integration](#integration))
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than Embedded](#more-than-embedded)
 - [Composition of AREG SDK](#composition-of-areg-sdk)
-- [Getting Started: Clone and Build the AREG SDK](#getting-started-clone-and-build-the-areg-sdk)
   - [Cloning Sources](#cloning-sources)
   - [Build Instructions](#build-instructions)
-- [Integration and Development](#integration-and-development)
-  - [AREG SDK Integration Methods](#areg-sdk-integration-methods)
-  - [Service Creation and Development](#service-creation-and-development)
-  - [Example: Application Model Setup](#example-application-model-setup)
-  - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
-- [Examples](#examples)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
 - [Use Cases and Benefits](#use-cases-and-benefits)
 - [License](#license)
@@ -130,6 +128,76 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 
 ---
 
+## Getting Started [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started)
+
+### Prerequisites
+
+* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC (Windows) or MinGW
+* **CMake ≥ 3.20**
+* **Java ≥ 17** (for code generation tools)
+
+> **Supported OS:** Linux, Windows
+> **Supported Hardware:** x86, AMD64, ARM32, AArch64
+
+For **compiler options, environment setup, and troubleshooting**, see the [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) and [README Wiki](./docs/wiki/README.md).
+
+### Quick Start
+
+1. **Clone and build the SDK**:
+
+```bash
+git clone https://github.com/aregtech/areg-sdk.git
+cd areg-sdk
+cmake -B build
+cmake --build build -j 12
+```
+
+2. **Run the pre-built minimal RPC example**:
+
+```bash
+./product/build/<compiler>/<os>-<hw>-<build-type>-<lib-type>/bin/01_minimalrpc
+```
+
+> [This example](examples/01_minimalrpc/) demonstrates a simple RPC between 2 components running in 2 threads:
+>
+> * **Provider** prints a message
+> * **Consumer** triggers it automatically
+> * The app exits once the message is printed
+>   [Full source code here](examples/01_minimalrpc/src/main.cpp)
+
+**Message Flow Overview:**
+
+```text
+main() → load model → system auto-connects components → Consumer calls request → Provider handles request → prints & signals quit → main() releases & exits
+```
+
+> This shows how minimal services communicate in Areg without boilerplate.
+
+### Recommended Learning Path
+
+Start small and progress gradually:
+
+1. **01\_minimalrpc** – basic RPC between 2 components
+2. **02\_minimalipc** – IPC communication across processes
+3. **03\_helloservice** – full multithreaded RPC + IPC example
+
+> Explore more [examples](./examples/) for advanced features.
+
+### Integration
+
+* **CMake FetchContent:** [Integration Guide](./docs/wiki/02c-cmake-integrate.md)
+* **Complete demo project:** [areg-sdk-demo](https://github.com/aregtech/areg-sdk-demo)
+* **Optional GUI / Qt tools:** [areg-sdk-tools](https://github.com/aregtech/areg-sdk-tools)
+
+> For advanced builds (IDE setup, cross-compilation, disabling tests/examples), see the [Areg SDK Wiki](./docs/wiki/).
+
+
+**Next Steps:** Learn **Service Development** (Providers + Consumers) and optional tools (`mcrouter`, `logcollector`) → see [Documentation](#documentation).
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
 ## Motivation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#motivation)
 
 Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
@@ -194,229 +262,6 @@ The **AREG SDK** consists of several modules to streamline distributed, real-tim
 
 > [!NOTE]
 > The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It is supposed to provide multiple features like Service Interface design, log viewing, and runtime testing. We call to join this open source project to develop the tool.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## Getting Started: Clone and Build the AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started-clone-and-build-the-areg-sdk)
-
-### General Requirements
-Ensure your system includes the following:
-- **Git** for repository cloning.
-- **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer.
-- **CMake** (version 3.20+).
-- **Java** (version 17+ for code generation tools).
-- **Optionally**, you may install following packages:
-  - `ncurses` library to support optional objects with extended features in Linux or Cygwin;
-  - **CMake**, **Clang** and **MFC** packages of Microsoft Visual Studio;
-  - **SQLite** and **GTest** packages.
-
-### Cloning Sources
-
-To obtain the AREG SDK source codes, use the following command:
-```bash
-git clone https://github.com/aregtech/areg-sdk.git
-```
-
-### Build Instructions
-
-The **AREG SDK** is written in **C++17**, supports multiple platforms, processors and compilers:
-
-| Compiler  | Platforms     | Tools         | API           | CPU Architecture          |
-|-----------|---------------|---------------|---------------|---------------------------|
-| GNU       | Linux, macOS  | CMake         | POSIX         | x86, x86_64, ARM, AARCH64 |
-| Clang     | Linux, Windows| CMake, MSVS   | POSIX, Win32  | x86, x86_64, ARM, AARCH64 |
-| MSVC      | Windows       | CMake, MSVS   | Win32         | x86, x86_64               |
-| Cygwin GNU| Windows       | CMake         | POSIX         | x86, x86_64               |
-
-> [!NOTE] 
-> Other POSIX-compliant operating systems and compilers have not been tested yet.
-
-#### Build with CMake
-
-To compile the **AREG SDK** using **CMake**, follow these steps:
-
-```bash
-cmake -B ./build
-cmake --build ./build -j 20
-```
-
-> [!TIP]
-> By default, AREG SDK sources are built with Examples and Unit Tests. To exclude **AREG Unit Tests** from the build process, set the `AREG_BUILD_TESTS` CMake option to `OFF`. Similarly, to exclude **AREG Examples**, set the `AREG_BUILD_EXAMPLES` CMake option to `OFF`.
-> 
-> Below is an example of configuring and building the AREG SDK sources without Unit Tests and Examples:
-> ```bash
-> cmake -B ./build -DAREG_BUILD_TESTS=OFF -DAREG_BUILD_EXAMPLES=OFF
-> cmake --build ./build
-> ```
-
-For further details on **customizing builds or cross-compiling** with CMake see **[Building AREG SDK with CMake](./docs/wiki/01b-cmake-build.md)** page.
-
-#### Build with Microsoft Visual Studio
-
-Open `areg-sdk.sln` file in Microsoft Visual Studio and build the solution, or navigate to the root directory of the project and run build with **MSBuild**:
-
-```bash
-MSBuild ./areg-sdk.sln
-```
-
-For further details on **customizing builds** with Visual Studio, visit the **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)** page.
-
-#### Additional Build Options
-
-- **IDE Support:** Includes instructions for **[Microsoft Visual Studio](./docs/wiki/01c-msvc-build.md)** and **[Visual Studio Code](./docs/wiki/01b-cmake-build.md)**. The other IDEs are currently not in the focus.
-- **WSL Support:** Detailed steps for building under **[Windows Subsystem for Linux (WSL)](./docs/wiki/01d-wsl-build.md)** are provided.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## Integration and Development[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration-and-development)
-
-For a practical example of building real-time, distributed systems using **AREG SDK**, check out the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project, which includes implementations of multitasking applications for **embedded, IoT mist- and fog-systems**.
-
-### AREG SDK Integration Methods
-
-There are three ways to integrate the AREG SDK into your project:
-
-#### 1. Integrate by Fetching sources
-
-Add the following script to your `CMakeLists.txt` to integrate AREG SDK:
-
-```cmake
-find_package(areg CONFIG)
-if (NOT areg_FOUND)
-    include(FetchContent)
-    FetchContent_Declare(
-        areg-sdk
-        GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
-        GIT_TAG "master"
-    )
-    FetchContent_MakeAvailable(areg-sdk)
-    set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
-    include_directories("${AREG_SDK_ROOT}/framework")
-endif()
-
-include("${AREG_SDK_ROOT}/areg.cmake")
-```
-
-This either finds or fetches the AREG SDK components from `master` branch. See the **[Building AREG SDK with CMake](./docs/wiki/02c-cmake-integrate.md)** page for more details.
-
-#### 2. Integrate as a project submodule
-
-1. Add `areg-sdk` as a **Git submodule** in your project.
-2. Include `areg-sdk` project in your build:
-   - **Microsoft Visual Studio**: include the `*.vcxproj` files from `<areg-sdk>/framework` in your solution.
-   - **CMake**: include the `<areg-sdk-root>/CMakeLists.txt` in your CMake script. 
-3. Link your projects with the `areg` library and set project dependencies.
-
-For full details, see the **[Building the AREG SDK with Microsoft Visual Studio and MSBuild](./docs/wiki/01c-msvc-build.md)**.
-
-#### 3. Integrate the `areg` Package (vcpkg)
-
-> [!IMPORTANT]
-> Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager.
-
-Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg)** repository to clone and install the `vcpkg` package manager tool in your PC.
-
-1. **Install and integrate the `areg` package:** Example of the AREG SDK components, headers and its dependencies installation under Linux:
-   ```bash
-   ./vcpkg install areg:linux-64
-   ./vcpkg integrate install
-   ```
-
-2. **Integrate with CMake:** Add the following script to your `CMakeLists.txt` (replace `<example>` with real target):
-   ```cmake
-   find_package(areg CONFIG REQUIRED)
-   target_link_libraries(<example> PRIVATE areg::areg)
-   ```
-   Use `vcpkg` toolchain file (`<vcpkg-root>` is the root path of `vcpkg`) to configure and build the project:
-   ```bash
-   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
-   cmake --build ./build -j 20
-   ```
-
-3. **Integrate with Microsoft Visual Studio:** In Microsoft Visual Studio, there is no need to add AREG SDK projects in the solution file. Develop projects and make sure to link `areg` library with binaries either in *Project Properties* or by adding this line of code:
-   ```cpp
-   #pragma comment(lib, "areg")
-   ```
-
-For details of installing and using `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/01a-areg-package.md)** document.
-
-### Service Creation and Development
-
-Follow the **[“Hello Service!”](./docs/HelloService.md)** tutorial for step-by-step instructions. Generated service interface files integrate with CMake or Visual Studio projects. Service Providers extend **xxxStub**, and Service Consumers extend **xxxClientBase**.
-
-### Example: Application Model Setup
-
-When developing **Service Provider** and **Service Consumer** components, developers can easily determine whether to run components in the same process (multithreading) or in separate processes (multiprocessing) for optimal performance in real-time applications by defining the **Application Model**. Below is an example of setting up a *model* where the *Service Provider* and *Service Consumer* components run in the same process, but on different threads.
-
-```cpp
-BEGIN_MODEL("ApplicationModel")
-    // Provider Thread
-    BEGIN_REGISTER_THREAD("ProviderThread", NECommon::WATCHDOG_IGNORE)
-        BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceComponent)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
-        END_REGISTER_COMPONENT("ServiceProvider")
-    END_REGISTER_THREAD("ProviderThread")
-        
-    // Consumer Thread
-    BEGIN_REGISTER_THREAD("ConsumerThread", NECommon::WATCHDOG_IGNORE)
-        BEGIN_REGISTER_COMPONENT("ServiceConsumer", ClientComponent)
-            REGISTER_DEPENDENCY("ServiceProvider")
-        END_REGISTER_COMPONENT("ServiceConsumer")
-    END_REGISTER_THREAD("ConsumerThread")
-END_MODEL("ApplicationModel")
-
-int main(void)
-{
-    Application::initApplication();
-    Application::loadModel("ApplicationModel");
-    Application::waitAppQuit();
-    Application::unloadModel("ApplicationModel");
-    Application::releaseApplication();
-    return 0;
-}
-```
-
-In this example:
-- **ServiceProvider** runs on `ProviderThread`, and **ServiceConsumer** runs on `ConsumerThread`.
-- `REGISTER_DEPENDENCY("ServiceProvider")` means `ServiceConsumer` component consumes the services provided by `ServiceProvider`.
-
-You can also set up multiprocess applications using same components and changing *model*. As a practical example, follow projects in the **[03\_helloservice](./examples/03_helloservice/)** directory.
-
-> [!TIP]
-> *Learn how AREG SDK simplifies the creation of Service Providers and Consumers, supporting both multithreading and multiprocessing for real-time, distributed applications.* Visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
-
-### Multicast Router and Log Collector
-
-**mcrouter** and **logcollector** are essential services within the AREG SDK ecosystem, enabling seamless communication and efficient logging. Configuration templates for both are included in the [`areg.init`](./framework/areg/resources/areg.init) file, which is placed in the `config` subdirectory of the build binaries. These applications can function as standalone console tools or be deployed as **Operating System managed services**, providing deployment flexibility.  
-
-For detailed instructions on building and using these services, see the **[Multicast Router Service](./docs/wiki/05a-mcrouter.md)** and **[Log Collector Service](./docs/wiki/04d-logcollector.md)** documentation. *Explore how they enhance communication and logging in real-time and edge-computing environments.*  
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## Examples[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
-
-The AREG SDK offers hands-on examples demonstrating **Multithreading** and **Multiprocessing** applications, **Client-Server** and **Publish-Subscribe** models, **Object Remote Procedure Call (Object RPC)** and **Inter-Process Communication (IPC)**, featured **Finite-State Machines (FSM)** creation, and more. Each project highlights key features that facilitate efficient development of distributed services.
-
-**Some Featured Examples:**
-1. **[03\_helloservice](./examples/03_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG's intuitive, interface-driven approach.
-
-2. **[07\_logging](./examples/07_logging/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
-
-3. **[19\_pubfsm](./examples/19_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG's *Timers* and *Events* for smooth state transitions.
-
-4. **[22\_pubwatchdog](./examples/22_pubwatchdog/)**: Implement a watchdog to monitor thread activity, restart unresponsive threads, and notify components as needed.
-
-5. **[27\_pubsubmulti](./examples/27_pubsubmulti/)**: Explore the PubSub model, which reduces data traffic by delivering only relevant updates.
-
-For the full list of examples and additional documentation, visit **[AREG SDK Examples](./examples/README.md)**.
-
-> *Accelerate your multithreading, multiprocessing, embedded, IoT edge, and event-driven development with these examples. For technical inquiries, please contact us.*
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
