@@ -49,7 +49,8 @@ This lets developers **design, connect, and debug services effortlessly** across
   - [Prerequisites](#prerequisites)
   - [Quick Start](#quick-start)
   - [Recommended Learning Path](#recommended-learning-path)
-  - [Integration](#integration))
+  - [Integration](#integration)
+- [Modules](#modules)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than Embedded](#more-than-embedded)
@@ -198,6 +199,22 @@ Start small and progress gradually:
 
 ---
 
+## Modules[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#modules)
+
+| Module                                                                                         | Purpose                                                             | When You Need It                                                         | Key Notes                                                                                                                           |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **[Areg Framework (`areg`)](./docs/wiki/01-introduction.md)**                                  | Core library for IPC and multithreading services                    | Always required for any app using Areg                                   | [View source](./framework/areg/) – linked to the code; linked into every service-based application                                  |
+| **[Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)**                             | Routes messages across processes/machines (IPC)                     | Required for inter-process or network communication                      | [View source](./framework/mcrouter/) – console or system service; fast and lightweight; configurable via `areg.init`                |
+| **[Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)**                          | Collects and forwards logs from apps                                | Only if centralized/remote logging is needed                             | [View source](./framework/logcollector/) – fast and lightweight; configurable ([logging config](./docs/wiki/04a-logging-config.md)) |
+| **[Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)**                             | Controls and saves logs                                             | Use to activate/deactivate scopes, adjust priorities, and save logs      | [View source](./framework/logobserver/) – CLI tool; does not display logs; supports configuration and persistence                   |
+| **[Log Observer Library (`areglogger`)](./docs/wiki/04d-logcollector.md#logobserver-library)** | Connects to `logcollector`                                          | Needed for building custom log viewers or used by Log Observer and Lusan | [View source](./framework/areglogger/) – flexible; not only for internal use                                                        |
+| **[Extended Library (`aregextend`)](./docs/wiki/05a-mcrouter.md#areg-extend)**                 | Extra utilities (console helpers, service wrappers, SQLite wrapper) | Optional — only if you need these utilities                              | [View source](./framework/aregextend/) – used by `mcrouter`, `logcollector`, `logobserver`, and `areglogger`                        |
+| **[Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md)**                        | Generates provider/consumer code from SIML files                    | Always used during build when service interfaces are included            | [View source](./master/tools/) – integrated with CMake/MSVC; examples provided                                                      |
+| **[Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)**                              | GUI for service design and log viewing                              | Use to create/edit SIML files and analyze logs visually                  | [View source](https://github.com/aregtech/areg-sdk-tools) – Qt-based; still evolving but usable                                     |
+| **[Examples](./examples/README.md)**                                                           | Demonstrates Areg usage                                             | Always helpful for learning and quick starts                             | [View source](./examples/) – covers IPC, RPC, watchdogs, state machines, logging, and more                                          |
+
+---
+
 ## Motivation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#motivation)
 
 Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
@@ -242,26 +259,6 @@ The fault-tolerant design of AREG offers key advantages, such as:
 * **Resilience:** Failure in one application does not affect the overall system.
 * **Automatic Discovery:** Services are automatically discovered by clients without manual configuration.
 * **Thread-Safe Execution:** All service methods are executed within their respective thread contexts, ensuring thread safety and independence.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## Composition of AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition-of-areg-sdk)
-
-The **AREG SDK** consists of several modules to streamline distributed, real-time applications development:
-- **[AREG Communication Engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
-- **[Multicast Router (*mcrouter*)](./framework/mcrouter/):** Facilitates message routing between services.
-- **[Log Collector (*logcollector*)](./framework/logcollector/):** Collects logs from applications and forwards them to log observers.
-- **[Log Observer Library (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
-- **[Log Observer (*logobserver*)](./framework/logobserver/):** In real-time mode monitors, saves and dynamically controls logs.
-- **[AREG Extended Library (*aregextend*)](./framework/aregextend/):** Offers additional objects with extended features.
-- **[Code Generator (*codegen.jar*)](./master/tools/):** Generates Service **Provider** and **Consumer** objects from Service Interface.
-- **[Examples](./examples/):** Illustrates the features of AREG Framework and use of the AREG SDK components.
-- **[UI Tool (*lusan*)](https://github.com/aregtech/areg-sdk-tools):** Simplifies and visualizes service design, log views.
-
-> [!NOTE]
-> The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It is supposed to provide multiple features like Service Interface design, log viewing, and runtime testing. We call to join this open source project to develop the tool.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
