@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public"/>
+    <MethodList>
+        <Method ID="2" Name="HelloService" MethodType="Request"/>
+    </MethodList>
+</ServiceInterface>
