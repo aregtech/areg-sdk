@@ -46,18 +46,16 @@ This lets developers **design, connect, and debug services effortlessly** across
   - [Compared to Alternatives](#compared-to-alternatives)
 - [Features](#features)
 - [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Quick Start](#quick-start)
+  - [Recommended Learning Path](#recommended-learning-path)
+  - [Integration](#integration))
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than Embedded](#more-than-embedded)
 - [Composition of AREG SDK](#composition-of-areg-sdk)
   - [Cloning Sources](#cloning-sources)
   - [Build Instructions](#build-instructions)
-- [Integration and Development](#integration-and-development)
-  - [AREG SDK Integration Methods](#areg-sdk-integration-methods)
-  - [Service Creation and Development](#service-creation-and-development)
-  - [Example: Application Model Setup](#example-application-model-setup)
-  - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
-- [Examples](#examples)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
 - [Use Cases and Benefits](#use-cases-and-benefits)
 - [License](#license)
@@ -130,129 +128,71 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 
 ---
 
-## Getting Started[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started)
+## Getting Started [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started)
 
 ### Prerequisites
 
-* **Git** for cloning the repository
-* **C++17-compatible compiler**: GNU, Clang/LLVM, or MSVC (Windows)
+* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC (Windows) or MinGW
 * **CMake ≥ 3.20**
 * **Java ≥ 17** (for code generation tools)
 
-Optional: SQLite, GTest, or OS-specific libraries for extended features (see advanced setup guides in the [wiki](./docs/wiki/)).
+> **Supported OS:** Linux, Windows
+> **Supported Hardware:** x86, AMD64, ARM32, AArch64
 
----
+For **compiler options, environment setup, and troubleshooting**, see the [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) and [README Wiki](./docs/wiki/README.md).
 
-### Build
+### Quick Start
 
-Clone and build the **AREG SDK**:
+1. **Clone and build the SDK**:
 
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
-cmake -B ./build
-cmake --build ./build -j $(nproc)
+cmake -B build
+cmake --build build -j 12
 ```
 
-> [!TIP]
-> By default, this builds **Examples and Unit Tests**. To skip them:
+2. **Run the pre-built minimal RPC example**:
 
 ```bash
-cmake -B ./build -DAREG_BUILD_TESTS=OFF -DAREG_BUILD_EXAMPLES=OFF
-cmake --build ./build
+./product/build/<compiler>/<os>-<hw>-<build-type>-<lib-type>/bin/01_minimalrpc
 ```
 
-**Windows / Visual Studio**
+> [This example](examples/01_minimalrpc/) demonstrates a simple RPC between 2 components running in 2 threads:
+>
+> * **Provider** prints a message
+> * **Consumer** triggers it automatically
+> * The app exits once the message is printed
+>   [Full source code here](examples/01_minimalrpc/src/main.cpp)
 
-Open `areg-sdk.sln` or run:
+**Message Flow Overview:**
 
-```bash
-MSBuild ./areg-sdk.sln
+```text
+main() → load model → system auto-connects components → Consumer calls request → Provider handles request → prints & signals quit → main() releases & exits
 ```
 
-For **IDE-specific builds, cross-compilation, or WSL**, see the **[Areg SDK Wiki](./docs/wiki/)**.
+> This shows how minimal services communicate in Areg without boilerplate.
 
----
+### Recommended Learning Path
 
-### Hello Service example
+Start small and progress gradually:
 
-A minimal example showing a `ServiceConsumer` in one thread calling `requestHelloService()` on a `ServiceProvider` in another thread:
+1. **01\_minimalrpc** – basic RPC between 2 components
+2. **02\_minimalipc** – IPC communication across processes
+3. **03\_helloservice** – full multithreaded RPC + IPC example
 
-```cpp
-class ServiceProvider : public Component, public HelloServiceStub {
-    void requestHelloService() override {
-        std::cout << "Hello Service!" << std::endl;
-        Application::signalAppQuit();
-    }
-};
+> Explore more [examples](./examples/) for advanced features.
 
-class ServiceConsumer : public Component, public HelloServiceClientBase {
-    bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
-            requestHelloService();
-        return true;
-    }
-};
-```
+### Integration
 
-**Model setup snippet:**
+* **CMake FetchContent:** [Integration Guide](./docs/wiki/02c-cmake-integrate.md)
+* **Complete demo project:** [areg-sdk-demo](https://github.com/aregtech/areg-sdk-demo)
+* **Optional GUI / Qt tools:** [areg-sdk-tools](https://github.com/aregtech/areg-sdk-tools)
 
-```cpp
-BEGIN_MODEL("ServiceModel")
-    BEGIN_REGISTER_THREAD("Thread1")
-        BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
-        END_REGISTER_COMPONENT()
-    END_REGISTER_THREAD()
-    BEGIN_REGISTER_THREAD("Thread2")
-        BEGIN_REGISTER_COMPONENT("ServiceClient", ServiceConsumer)
-            REGISTER_DEPENDENCY("ServiceProvider")
-        END_REGISTER_COMPONENT()
-    END_REGISTER_THREAD()
-END_MODEL()
-```
+> For advanced builds (IDE setup, cross-compilation, disabling tests/examples), see the [Areg SDK Wiki](./docs/wiki/).
 
-Run 🔗 [the application](examples/01_minimalrpc/) to see the provider print `"Hello Service!"` and quit.
 
----
-
-### Examples & References
-
-1. 🔗 [This minimal RPC project](examples/01_minimalrpc/) and 🔗 [Service Interface definition (HelloService.xml)](examples/01_minimalrpc/services/HelloService.siml).
-2. 🔗 [Minimal IPC](examples/02_minimalipc/).
-3. 🔗 [Unification: IPC/RPC and multithreading](examples/03_helloservice/).
-
----
-
-### Integration & Development
-
-The [**areg-sdk-demo**](https://github.com/aregtech/areg-sdk-demo) repository is the best starting point for integrating **AREG SDK** into your project. It provides:
-
-* A complete working template (CMake integration + submodule usage)
-* Demo projects that you can build and run immediately
-* A practical reference for structuring your own applications
-
-You can integrate **AREG SDK** in three main ways:
-
-1. **CMake FetchContent** – automatically fetch the SDK sources in your `CMakeLists.txt`.
-   → [CMake Integration Guide](./docs/wiki/02c-cmake-integrate.md)
-
-2. **Git Submodule** – add `areg-sdk` as a submodule and include it in your build (Visual Studio or CMake).
-   → [MSVC & Submodule Guide](./docs/wiki/01c-msvc-build.md)
-
-3. **vcpkg Package** – install and link the `areg` package via [vcpkg](https://vcpkg.io/).
-   → [vcpkg Integration Guide](./docs/wiki/01a-areg-package.md)
-
-**Service Development**
-Follow the [Hello Service tutorial](./docs/HelloService.md) to implement Service Providers (`xxxStub`) and Consumers (`xxxClientBase`). Define an **Application Model** to control threading and process distribution. See [03\_helloservice](./examples/03_helloservice/) for a working example.
-
-**Supporting Tools**
-The SDK ships with two optional services:
-
-* **`mcrouter`** → distributed message routing
-* **`logcollector`** → centralized logging
-
-Both come with configuration templates in `config/areg.init`. Setup guides: [Multicast Router](./docs/wiki/05a-mcrouter.md), [Log Collector](./docs/wiki/04d-logcollector.md).
+**Next Steps:** Learn **Service Development** (Providers + Consumers) and optional tools (`mcrouter`, `logcollector`) → see [Documentation](#documentation).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -322,29 +262,6 @@ The **AREG SDK** consists of several modules to streamline distributed, real-tim
 
 > [!NOTE]
 > The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It is supposed to provide multiple features like Service Interface design, log viewing, and runtime testing. We call to join this open source project to develop the tool.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## Examples[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
-
-The AREG SDK offers hands-on examples demonstrating **Multithreading** and **Multiprocessing** applications, **Client-Server** and **Publish-Subscribe** models, **Object Remote Procedure Call (Object RPC)** and **Inter-Process Communication (IPC)**, featured **Finite-State Machines (FSM)** creation, and more. Each project highlights key features that facilitate efficient development of distributed services.
-
-**Some Featured Examples:**
-1. **[03\_helloservice](./examples/03_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG's intuitive, interface-driven approach.
-
-2. **[07\_logging](./examples/07_logging/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
-
-3. **[19\_pubfsm](./examples/19_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG's *Timers* and *Events* for smooth state transitions.
-
-4. **[22\_pubwatchdog](./examples/22_pubwatchdog/)**: Implement a watchdog to monitor thread activity, restart unresponsive threads, and notify components as needed.
-
-5. **[27\_pubsubmulti](./examples/27_pubsubmulti/)**: Explore the PubSub model, which reduces data traffic by delivering only relevant updates.
-
-For the full list of examples and additional documentation, visit **[AREG SDK Examples](./examples/README.md)**.
-
-> *Accelerate your multithreading, multiprocessing, embedded, IoT edge, and event-driven development with these examples. For technical inquiries, please contact us.*
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
