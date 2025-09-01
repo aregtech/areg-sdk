@@ -42,6 +42,8 @@ With built-in **auto-discovery, async RPC, and event-driven messaging**, Areg el
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
 - [Why Areg SDK?](#why-areg-sdk)
+  - [Key Solutions / Top 5 Pain Killers](#key-solutions-top-5-pain-killers)
+  - [Compared to Alternatives](#compared-to-alternatives)
 - [Features](#features)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
@@ -100,6 +102,8 @@ Software complexity isn’t caused by algorithms — it usually comes from frame
 
 ✅ Areg SDK helps developers build **scalable, reliable, and maintainable C++ systems** without drowning in IPC and threading complexity.
 
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
 ---
 
 ## Features[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#features)
@@ -121,6 +125,8 @@ Software complexity isn’t caused by algorithms — it usually comes from frame
 * **Service Interface Editor** — define APIs in XML; generate type-safe C++ code.
 * **Runtime Logging & Control** — scoped logs with filters; debug without code changes.
 * **Performance Measurement** — per-method timing for latency profiling and bottleneck detection.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
