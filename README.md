@@ -106,21 +106,21 @@ Software complexity isn’t caused by algorithms — it usually comes from frame
 
 **Core Model**
 
-* **Unified Service Model** — define threads and components in models; load and unload them dynamically at runtime.
-* **Virtual Clients & Servers** — reusable components act as micro-servers/clients, mapped flexibly across threads and processes.
-* **Async RPC & Events** — non-blocking RPC and events executed directly in the target thread’s context.
+* **Unified Service Model** — define threads and components in models; load/unload dynamically.
+* **Virtual Clients & Servers** — reusable micro-servers/clients, mapped across threads/processes.
+* **Async RPC & Events** — non-blocking RPC/events executed in the target thread.
 
 **Automations**
 
-* **Auto-Discovery** — consumers automatically find providers across threads, processes, and machines on the same network.
-* **Code Generation & Serialization** — generate stubs and proxies with serialization built in, keeping APIs boilerplate-free.
-* **Automatic Dispatching** — routes RPC (lightweight Object RPC) calls directly to target object methods — no manual wiring.
+* **Auto-Discovery** — consumers find providers across threads, processes, and machines automatically.
+* **Code Generation & Serialization** — generate stubs and proxies with built-in serialization.
+* **Automatic Dispatching** — routes RPC calls to target objects without manual wiring.
 
 **Tooling**
 
-* **Service Interface Editor** — define APIs visually in XML, then generate type-safe C++ code at compile time.
-* **Runtime Logging & Control** — scoped logging with filters and persisted states; debug applications at runtime without code changes.
-* **Performance Measurement** — scope-based timing with per-method metrics for latency profiling and bottleneck detection.
+* **Service Interface Editor** — define APIs in XML; generate type-safe C++ code.
+* **Runtime Logging & Control** — scoped logs with filters; debug without code changes.
+* **Performance Measurement** — per-method timing for latency profiling and bottleneck detection.
 
 ---
 
