@@ -42,7 +42,7 @@ With built-in **auto-discovery, async RPC, and event-driven messaging**, Areg el
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
 - [Why Areg SDK?](#why-areg-sdk)
-  - [Key Solutions / Top 5 Pain Killers](#key-solutions-top-5-pain-killers)
+  - [Key Solutions / Top 5 Pain Killers](#key-solutions--top-5-pain-killers)
   - [Compared to Alternatives](#compared-to-alternatives)
 - [Features](#features)
 - [Motivation](#motivation)
