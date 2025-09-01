@@ -77,19 +77,19 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 
 ### Key Solutions / Top 5 Pain Killers
 
-1. **Eliminate manual threading & boilerplate**
+1. **Eliminate manual threading & boilerplate:**
    Define components and threads declaratively; the runtime handles routing, queuing, and execution context—no hand-wired threads, sockets, or fragile glue code.
 
-2. **Unified local & remote API + low-latency async RPC**
+2. **Unified local & remote API + low-latency async RPC:**
    Call services the same way in-thread, across processes, or over the network. RPCs and events are queued in the target thread for **non-blocking, responsive behavior**.
 
-3. **Self-organizing service mesh**
+3. **Self-organizing service mesh:**
    Services auto-discover and connect logically regardless of location, forming a dynamic mesh that **handles cross-dependencies automatically**.
 
-4. **Fault-tolerant by design**
+4. **Fault-tolerant by design:**
    Providers can appear, disappear, or restart without breaking consumers. Watchdog-protected threads restart stuck components cleanly.
 
-5. **Lightweight observability & profiling**
+5. **Lightweight observability & profiling:**
    Scope-based logging captures entry/exit timings automatically, and the log viewer highlights per-method latency **without intrusive instrumentation**.
 
 👉 Tested on **Linux and Windows**, scaling from single-device prototypes to multi-node production systems.
