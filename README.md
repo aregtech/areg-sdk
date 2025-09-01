@@ -16,7 +16,9 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-Many projects struggle with hidden bugs in multiprocessing and multithreading. Areg unifies communication and makes remote objects act like local, with automated messaging, dispatching, and discovery — so teams save time and focus on features. The AREG SDK delivers robust, high-performance solutions with a framework and tools to develop, debug, and test applications. _Focus on features; we handle the rest._
+Threads, IPC, and distributed messaging often slow development with fragile glue code, hidden bugs, and endless debugging. By handling threading, IPC, and distributed execution automatically, Areg SDK delivers lightweight, reliable auto-discovery, async RPC, and event-driven messaging.
+
+This lets developers **design, connect, and debug services effortlessly** across threads, processes, and devices—so they can focus on features, not plumbing.
 
 ---
 
@@ -39,6 +41,10 @@ Many projects struggle with hidden bugs in multiprocessing and multithreading. A
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
+- [Why Areg SDK?](#why-areg-sdk)
+  - [Key Solutions / Top 5 Pain Killers](#key-solutions--top-5-pain-killers)
+  - [Compared to Alternatives](#compared-to-alternatives)
+- [Features](#features)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than Embedded](#more-than-embedded)
@@ -60,6 +66,67 @@ Many projects struggle with hidden bugs in multiprocessing and multithreading. A
 
 > [!IMPORTANT]
 > For full technical guidance of building and using AREG SDK, see the [following documents](./docs/wiki/).
+
+---
+
+## Why Areg SDK?[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk)
+
+Software complexity rarely comes from algorithms—it comes from **frameworks that don’t scale**. Threads, processes, and distributed components quickly lead to **manual wiring, hidden bugs, and costly rewrites**. Late framework decisions can lock teams into fragile architectures, wasting weeks of development.
+
+**Areg SDK removes these risks from day one.** Its unified **Pub/Sub + Request-Reply model** handles threading, IPC, and distributed execution across threads, processes, and devices—letting developers focus on **services and features, not plumbing**.
+
+### Key Solutions / Top 5 Pain Killers
+
+1. **Eliminate manual threading & boilerplate:**
+   Define components and threads declaratively; the runtime handles routing, queuing, and execution context—no hand-wired threads, sockets, or fragile glue code.
+
+2. **Unified local & remote API + low-latency async RPC:**
+   Call services the same way in-thread, across processes, or over the network. RPCs and events are queued in the target thread for **non-blocking, responsive behavior**.
+
+3. **Self-organizing service mesh:**
+   Services auto-discover and connect logically regardless of location, forming a dynamic mesh that **handles cross-dependencies automatically**.
+
+4. **Fault-tolerant by design:**
+   Providers can appear, disappear, or restart without breaking consumers. Watchdog-protected threads restart stuck components cleanly.
+
+5. **Lightweight observability & profiling:**
+   Scope-based logging captures entry/exit timings automatically, and the log viewer highlights per-method latency **without intrusive instrumentation**.
+
+👉 Tested on **Linux and Windows**, scaling from single-device prototypes to multi-node production systems.
+
+### Compared to Alternatives
+
+* **Productivity & Developer Experience** — declarative threading, auto-discovery, and zero-boilerplate RPC let developers focus on **services, not plumbing**. Avoid fragile glue code and wasted hours wiring threads, processes, and network calls.
+* **Reliable & Fault-Tolerant** — Watchdog-protected threads, resilient messaging, and dynamic service lifecycles **keep apps running even when parts fail**. No manual recovery or fragile orchestration required.
+* **Scalable & Observable** — Services automatically form a **self-organizing mesh**, handle cross-dependencies, and include built-in profiling with scope-based logging for actionable insights—**from a single thread to multi-device orchestration**.
+
+✅ Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Features[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#features)
+
+**Core Model**
+
+* **Unified Service Model** — define threads and components in models; load/unload dynamically.
+* **Virtual Clients & Servers** — reusable micro-servers/clients, mapped across threads/processes.
+* **Async RPC & Events** — non-blocking RPC/events executed in the target thread.
+
+**Automations**
+
+* **Auto-Discovery** — consumers find providers across threads, processes, and machines automatically.
+* **Code Generation & Serialization** — generate stubs and proxies with built-in serialization.
+* **Automatic Dispatching** — routes RPC calls to target objects without manual wiring.
+
+**Tooling**
+
+* **Service Interface Editor** — define APIs in XML; generate type-safe C++ code.
+* **Runtime Logging & Control** — scoped logs with filters; debug without code changes.
+* **Performance Measurement** — per-method timing for latency profiling and bottleneck detection.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
