@@ -16,7 +16,9 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-Threads, IPC, and distributed messaging often slow development with fragile glue code, hidden bugs, and endless debugging. By handling threading, IPC, and distributed execution automatically, Areg SDK delivers lightweight, reliable auto-discovery, async RPC, and event-driven messaging.
+*Areg is like a smart telephone operator, but for programs — a lightweight C++ framework that automates software communication.*
+
+Threads, IPC, and distributed messaging often slow development with fragile glue code, hidden bugs, and endless debugging. By automating threading, IPC, and distributed communication, Areg SDK delivers lightweight, reliable auto-discovery, async RPC, and event-driven messaging. 
 
 This lets developers **design, connect, and debug services effortlessly** across threads, processes, and devices—so they can focus on features, not plumbing.
 
@@ -54,9 +56,6 @@ This lets developers **design, connect, and debug services effortlessly** across
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than Embedded](#more-than-embedded)
-- [Composition of AREG SDK](#composition-of-areg-sdk)
-  - [Cloning Sources](#cloning-sources)
-  - [Build Instructions](#build-instructions)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
 - [Use Cases and Benefits](#use-cases-and-benefits)
 - [License](#license)
