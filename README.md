@@ -18,9 +18,7 @@
 
 *Areg is like a smart telephone operator, but for programs — a lightweight C++ framework that automates software communication.*
 
-Threads, IPC, and distributed messaging often slow development with fragile glue code, hidden bugs, and endless debugging. By automating threading, IPC, and distributed communication, Areg SDK delivers lightweight, reliable auto-discovery, async RPC, and event-driven messaging. 
-
-This lets developers **design, connect, and debug services effortlessly** across threads, processes, and devices—so they can focus on features, not plumbing.
+Threads, IPC, and distributed messaging often slow development, creating fragile glue code and hidden bugs. By combining async RPC, auto-discovery, and event-driven messaging, AREG SDK makes it faster and easier to build and debug distributed services across threads, processes, and devices—enabling developers to focus on features, not plumbing.
 
 ---
 
