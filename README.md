@@ -91,7 +91,7 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 5. **Lightweight observability & profiling:**
    Scope-based logging captures entry/exit timings automatically, and the log viewer highlights per-method latency **without intrusive instrumentation**.
 
-👉 Tested on **Linux and Windows**, scaling from single-device prototypes to multi-node production systems.
+Tested on **Linux and Windows**, scaling from single-device prototypes to multi-node production systems.
 
 ### Compared to Alternatives
 
@@ -103,9 +103,9 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 | Automation           | ✅ Codegen, modeling, auto-dispatch    | ⚠️ Manual setup, stubs only                                   |
 | Auto-Discovery       | ✅ Self-organizing service mesh        | ✅ Topics (DDS), ⚠️ Control-plane (gRPC), ❌ Manual (ZeroMQ) |
 | Fault-Tolerance      | ✅ Watchdog, auto-restart, resilience  | ✅ QoS (DDS), ⚠️ Retries (gRPC), ❌ Manual (ZeroMQ)          |
-| Request-Reply (RPC)  | ✅ Native ORPC (Object RPC in service)	| ✅ RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ)    |
+| Request-Reply (RPC)  | ✅ Native ORPC (Object RPC in service) | ✅ RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ)    |
 | Pub/Sub Messaging    | ✅ Native, built-in in service         | ✅ Topics (DDS), ⚠️ Add-ons (gRPC), ⚠️ Manual (ZeroMQ)       |
-| Built-in Logging     | ✅ Integrated, dynamic + viewer        | ⚠️ Vendor-specific (DDS), ❌ External                         |
+| Built-in Logging     | ✅ Integrated, dynamic + viewer tool   | ⚠️ Vendor-specific (DDS), ❌ External                        |
 | Dev Time Saved       | ✅ Significant, via automation         | ⚠️ Limited, external tooling                                  |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -241,7 +241,7 @@ This **interface-driven design** supports both **Client-Server (Request-Reply)**
 **Problem:** Traditionally, edge devices stream data to servers, causing latency, privacy risks, and heavy network usage. In addition, wireless communication consumes more power than CPU, which is critical for small devices.
 **Solution:** AREG allows **Public Services to run directly on devices** in a **mist network**, where devices act as **micro-servers and micro-data centers**, capable of storing, combining, and processing data locally—**highly requested for AI-driven applications**.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
 
 Benefits:
 
@@ -256,7 +256,7 @@ Benefits:
 **Problem:** Small devices often lack scalable service infrastructure, while larger systems need multithreading/multiprocessing support.
 **Solution:** AREG scales **beyond embedded devices** to PCs, servers, and clusters running GPOS (e.g., embedded Linux), turning devices into **service-enabled nodes**.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
 * **Local Services** – internal to a device (multithreading).
 * **Public Services** – accessible across processes or devices (multiprocessing).
@@ -275,7 +275,7 @@ Key benefits:
 **Problem:** Developing multi-device or multi-process systems is complex, often requiring **custom communication layers or centralized servers**.
 **Solution:** AREG enables **decentralized distributed communication**, where processes and devices interact as if part of a single application, forming a **mesh of services** that supports **action- and data-centric messaging**.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png" alt="AREG SDK features diagram" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="Areg SDK features diagram" style="width:70%;height:70%"/></a></div>
 
 ---
 
@@ -284,7 +284,7 @@ Key benefits:
 **Problem:** Writing device drivers is **complex, slow, unsafe, OS-specific, and hard to maintain**.
 **Solution:** AREG allows **driverless service-enabled devices**, exposing hardware as services that are portable, safe, and fast to develop.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png" alt="AREG driverless solution" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png" alt="Areg driverless solution" style="width:70%;height:70%"/></a></div>
 
 ---
 
@@ -293,7 +293,7 @@ Key benefits:
 **Problem:** Testing devices or distributed applications is hard when hardware is unavailable or costly.
 **Solution:** AREG enables **simulation of data and services**, providing a realistic software environment for testing and rapid prototyping.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png" alt="Software simulation layers" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/software-layers.png" alt="Software simulation layers" style="width:70%;height:70%"/></a></div>
 
 * **Portable & accessible** – tests run without full hardware.
 * **Safe prototyping** – reduces risk and speeds up development.
