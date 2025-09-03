@@ -95,16 +95,16 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 
 ### Compared to Alternatives
 
-| Feature              | AREG SDK                                  | Competitors (gRPC, DDS, ZeroMQ)                   |
-| -------------------- | ----------------------------------------- | ------------------------------------------------- |
-| Ease of Use          | ✅ GUI, automated, easy setup             | ⚠️ Manual, boilerplate, complex                   |
-| Automation           | ✅ Auto-dispatching, codegen, modeling    | ⚠️ Partial (stubs, manual wiring, dispatching)    |
-| Auto-Discovery       | ✅ Fully automated mesh of services       | ✅ Mesh of topics (DDS), ⚠️ Control-plane (gRPC), ❌ Manual (ZeroMQ) |
-| Fault-Tolerance      | ✅ Multi-layer resilience + watchdog      | ✅ QoS policies (DDS), ⚠️ Basic retries (gRPC), ❌ Manual (ZeroMQ) |
-| Request-Reply (RPC)  | ✅ Native, built-in (ORPC)                | ✅ Built-in RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ) |
-| Pub/Sub Messaging    | ✅ Native, built-in (event-driven)        | ✅ Built-in (DDS), ⚠️ Limited / external (gRPC), ⚠️ Manual (ZeroMQ) |
-| Built-in Logging     | ✅ Integrated + viewer                    | ⚠️ Vendor-specific (DDS), ❌ External (others)    |
-| Developer Time Saved | ✅ High (automation + tooling)            | ⚠️ Lower, depends on external tooling             |
+| Feature              | AREG SDK                          | Competitors (gRPC, DDS, ZeroMQ)          |
+| -------------------- | --------------------------------- | ---------------------------------------- |
+| Ease of Use          | ✅ GUI, automated setup           | ⚠️ Manual, boilerplate, complex          |
+| Automation           | ✅ Codegen, modeling, auto-dispatch | ⚠️ Stubs only, manual wiring/dispatch    |
+| Auto-Discovery       | ✅ Mesh of services               | ✅ Topics (DDS), ⚠️ Control-plane (gRPC), ❌ Manual (ZeroMQ) |
+| Fault-Tolerance      | ✅ Watchdog + resilience          | ✅ QoS (DDS), ⚠️ Retries (gRPC), ❌ Manual |
+| Request-Reply (RPC)  | ✅ Native ORPC                    | ✅ RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ) |
+| Pub/Sub Messaging    | ✅ Built-in, event-driven         | ✅ DDS, ⚠️ Add-ons (gRPC), ⚠️ Manual (ZeroMQ) |
+| Built-in Logging     | ✅ Integrated + viewer            | ⚠️ Vendor-specific (DDS), ❌ External     |
+| Dev Time Saved       | ✅ High via automation            | ⚠️ Lower, external tooling needed        |
 
 👉 Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.
 
