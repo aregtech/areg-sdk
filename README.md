@@ -16,7 +16,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-*Areg is like a phone switchboard operator, but for programs — a lightweight C++ framework that automates software communication.*
+*Areg is like a network operator, but for C++ programs — a lightweight framework that automates software communication.*
 
 Threads, IPC, and distributed messaging often slow development, creating fragile glue code and hidden bugs. By combining async RPC, auto-discovery, and event-driven messaging, Areg SDK makes it faster and easier to build and debug distributed services across threads, processes, and devices—enabling developers to focus on features, not plumbing.
 
