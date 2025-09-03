@@ -69,6 +69,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{7BD2AAAA-FA5
 		docs\img\driver-solution.png = docs\img\driver-solution.png
 		docs\img\driverless-solution.png = docs\img\driverless-solution.png
 		docs\img\generated-sources.png = docs\img\generated-sources.png
+		docs\img\interface-centric.png = docs\img\interface-centric.png
 		docs\img\logo-aregtech.png = docs\img\logo-aregtech.png
 		docs\img\logo-aregtech.svg = docs\img\logo-aregtech.svg
 		docs\img\mist-network.png = docs\img\mist-network.png
