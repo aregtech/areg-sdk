@@ -106,7 +106,7 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 | Built-in Logging     | ✅ Integrated + viewer                    | ⚠️ Vendor-specific (DDS), ❌ External (others)    |
 | Developer Time Saved | ✅ High (automation + tooling)            | ⚠️ Lower, depends on external tooling             |
 
-✅ Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.
+👉 Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
