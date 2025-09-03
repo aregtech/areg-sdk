@@ -16,7 +16,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-*Areg is like a smart telephone operator, but for programs — a lightweight C++ framework that automates software communication.*
+*Areg is like a phone switchboard operator, but for programs — a lightweight C++ framework that automates software communication.*
 
 Threads, IPC, and distributed messaging often slow development, creating fragile glue code and hidden bugs. By combining async RPC, auto-discovery, and event-driven messaging, AREG SDK makes it faster and easier to build and debug distributed services across threads, processes, and devices—enabling developers to focus on features, not plumbing.
 
@@ -51,11 +51,14 @@ Threads, IPC, and distributed messaging often slow development, creating fragile
   - [Recommended Learning Path](#recommended-learning-path)
   - [Integration](#integration)
 - [Modules](#modules)
-- [Motivation](#motivation)
-- [Interface-centricity](#interface-centricity)
-- [More than Embedded](#more-than-embedded)
+- [Architecture](#architecture)
+- [Use Cases](#use-cases)
+  - [IoT: Mist-to-Cloud](#iot--mist-to-cloud)
+  - [More than Embedded](#more-than-embedded)
+  - [Distributed Solutions](#distributed-solutions)
+  - [Driverless Devices](#driverless-devices)
+  - [Simulation & Testing](#Simulation-Testing)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
-- [Use Cases and Benefits](#use-cases-and-benefits)
 - [License](#license)
 - [Call to action](#call-to-action)
 - [Thank you all!](#thank-you-all)
@@ -92,9 +95,16 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 
 ### Compared to Alternatives
 
-* **Productivity & Developer Experience** — declarative threading, auto-discovery, and zero-boilerplate RPC let developers focus on **services, not plumbing**. Avoid fragile glue code and wasted hours wiring threads, processes, and network calls.
-* **Reliable & Fault-Tolerant** — Watchdog-protected threads, resilient messaging, and dynamic service lifecycles **keep apps running even when parts fail**. No manual recovery or fragile orchestration required.
-* **Scalable & Observable** — Services automatically form a **self-organizing mesh**, handle cross-dependencies, and include built-in profiling with scope-based logging for actionable insights—**from a single thread to multi-device orchestration**.
+| Feature              | AREG SDK                                  | Competitors (gRPC, DDS, ZeroMQ)                   |
+| -------------------- | ----------------------------------------- | ------------------------------------------------- |
+| Ease of Use          | ✅ GUI, automated, easy setup             | ⚠️ Manual, boilerplate, complex                   |
+| Automation           | ✅ Auto-dispatching, codegen, modeling    | ⚠️ Partial (stubs, manual wiring, dispatching)    |
+| Auto-Discovery       | ✅ Fully automated mesh of services       | ✅ Mesh of topics (DDS), ⚠️ Control-plane (gRPC), ❌ Manual (ZeroMQ) |
+| Fault-Tolerance      | ✅ Multi-layer resilience + watchdog      | ✅ QoS policies (DDS), ⚠️ Basic retries (gRPC), ❌ Manual (ZeroMQ) |
+| Request-Reply (RPC)  | ✅ Native, built-in (ORPC)                | ✅ Built-in RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ) |
+| Pub/Sub Messaging    | ✅ Native, built-in (event-driven)        | ✅ Built-in (DDS), ⚠️ Limited / external (gRPC), ⚠️ Manual (ZeroMQ) |
+| Built-in Logging     | ✅ Integrated + viewer                    | ⚠️ Vendor-specific (DDS), ❌ External (others)    |
+| Developer Time Saved | ✅ High (automation + tooling)            | ⚠️ Lower, depends on external tooling             |
 
 ✅ Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.
 
@@ -212,53 +222,84 @@ Start small and progress gradually:
 
 ---
 
-## Motivation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#motivation)
+## Architecture
 
-Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
+**AREG** is built around an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** (servers) and interact with **Service Consumers** (clients) via automatically generated **Stubs & Proxies**, which handle requests, responses, and data updates through the **Multitarget Router**. Services can be invoked **without knowing network locations**, enabling seamless distributed communication.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="Diagram showing IoT-to-Cloud (Nebula) network connections" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
-As data is generated and collected at the edge of the network (**mist network**), there is a growing need to redefine the role of connected Things and enable network-accessible **Public Services** on the edge device, thereby extending the **Cloud** capabilities to the extreme edge. This approach provides a robust foundation for solutions like:
-* **Enhancing data privacy**, which is crucial for sensitive information.
-* **Decrease data streaming**, which is a fundamental condition to optimize network communication.
-* **Autonomous, intelligent and self-aware devices** with services directly in the environment of data origin.
+This **interface-driven design** supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** patterns, enabling **action- and data-centric messaging**. It is designed for **multithreading**, **multiprocessing**, and **with the focus on internet-scale deployment in the future**, keeping messaging reliable and consistent across applications.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Interface-centricity[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#interface-centricity)
+## Use Cases
 
-At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets interfaces on objects. This allows AREG to establish a **service mesh** or **service grid** where applications expose reusable services. Clients, without knowledge of the server's network location, can request services seamlessly via method invocation.
+### IoT: Mist-to-Cloud
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Diagram showing multiprocess communication" style="width:50%;height:50%"/></a></div>
+**Problem:** Traditionally, edge devices stream data to servers, causing latency, privacy risks, and heavy network usage. In addition, wireless communication consumes more power than CPU, which is critical for small devices.
+**Solution:** AREG allows **Public Services to run directly on devices** in a **mist network**, where devices act as **micro-servers and micro-data centers**, capable of storing, combining, and processing data locally—**highly requested for AI-driven applications**.
 
-This **interface-driven Object RPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
-* **Service Providers** (*micro-server objects*) offer reusable, accessible services.
-* **Service Consumers** (*micro-client objects*) invoke services without needing to know the network details.
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
 
-AREG's design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
+Benefits:
 
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+* **Enhanced data privacy** – data is processed at the source.
+* **Reduced network traffic** – minimal streaming required.
+* **Autonomous, intelligent devices** – capable of local decision-making and data fusion.
 
 ---
 
-## More than Embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
+### More than Embedded
 
-The architecture of AREG is ideal for embedded applications, but its capabilities extend far beyond. AREG offers distributed and scalable solutions for **multithreading**, **multiprocessing**, and **internet** communications, making it a versatile choice for a wide range of applications. Services in AREG are categorized into three types: **Local**, **Public**, and **Internet**, enabling flexible and efficient remote communication across diverse environments.
+**Problem:** Small devices often lack scalable service infrastructure, while larger systems need multithreading/multiprocessing support.
+**Solution:** AREG scales **beyond embedded devices** to PCs, servers, and clusters running GPOS (e.g., embedded Linux), turning devices into **service-enabled nodes**.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Diagram showing Services and AREG Framework message handling" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
-> [!NOTE]
-> AREG currently supports **Local** (multithreading) and **Public** (multiprocessing) services.
+* **Local Services** – internal to a device (multithreading).
+* **Public Services** – accessible across processes or devices (multiprocessing).
+* **Internet Services (concept only)** – **currently not supported**; for cloud connection, external solutions should be used.
 
-The fault-tolerant design of AREG offers key advantages, such as:
-* **Resilience:** Failure in one application does not affect the overall system.
-* **Automatic Discovery:** Services are automatically discovered by clients without manual configuration.
-* **Thread-Safe Execution:** All service methods are executed within their respective thread contexts, ensuring thread safety and independence.
+Key benefits:
+
+* **Resilient** – failure in one service does not disrupt others.
+* **Automatic Discovery** – services dynamically located by clients.
+* **Thread-Safe Execution** – each service runs in its own thread context.
+
+---
+
+### Distributed Solutions
+
+**Problem:** Developing multi-device or multi-process systems is complex, often requiring **custom communication layers or centralized servers**.
+**Solution:** AREG enables **decentralized distributed communication**, where processes and devices interact as if part of a single application, forming a **mesh of services** that supports **action- and data-centric messaging**.
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png" alt="AREG SDK features diagram" style="width:70%;height:70%"/></a></div>
+
+---
+
+### Driverless Devices
+
+**Problem:** Writing device drivers is **complex, slow, unsafe, OS-specific, and hard to maintain**.
+**Solution:** AREG allows **driverless service-enabled devices**, exposing hardware as services that are portable, safe, and fast to develop.
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png" alt="AREG driverless solution" style="width:70%;height:70%"/></a></div>
+
+---
+
+### Simulation & Testing
+
+**Problem:** Testing devices or distributed applications is hard when hardware is unavailable or costly.
+**Solution:** AREG enables **simulation of data and services**, providing a realistic software environment for testing and rapid prototyping.
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png" alt="Software simulation layers" style="width:70%;height:70%"/></a></div>
+
+* **Portable & accessible** – tests run without full hardware.
+* **Safe prototyping** – reduces risk and speeds up development.
+* **API-driven automation** – facilitates end-to-end test automation.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
 ---
 
 ## Pipeline and Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#pipeline-and-roadmap)
@@ -275,20 +316,6 @@ The AREG SDK is continuously evolving to help developers create complex applicat
 - **Service Testing & Simulation Tool**: Helps simulate services and data, streamlining testing and development.
 
 The tools are actively being developed in the **[AREG SDK Tools repository](https://github.com/aregtech/areg-sdk-tools)**.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## Use Cases and Benefits[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-and-benefits)
-
-The **AREG SDK** enables efficient multithreading and multiprocessing communication, offering full support for *edge computing* and *fog computing* use cases that demand efficient communication between devices and services in real-time. It is ideal for developing:
-
-- **Distributed solutions** for embedded systems.
-- **Real-time applications** for IoT devices.
-- **Simulation and test environments**.
-
-Explore **[real-world use cases and examples](./docs/USECASES.md)** to learn more about its applications.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

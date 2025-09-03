@@ -267,6 +267,10 @@
 
 #endif // !DECLARE_NOCOPY_NOMOVE
 
+#ifndef DECLARE_UNUSED
+    #define DECLARE_UNUSED(x)           ((void)(x))
+#endif  // DECLARE_UNUSED
+
  /**
   * \brief   PI number
   **/
