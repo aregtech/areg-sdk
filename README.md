@@ -49,7 +49,7 @@ Threads, IPC, and distributed messaging often slow development, creating fragile
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Quick Start](#quick-start)
-  - [Recommended Learning Path](#recommended-learning-path)
+  - [Learning Path](#learning-path)
   - [Integration](#integration)
 - [Modules](#modules)
 - [Architecture](#architecture)
@@ -199,7 +199,7 @@ main() → load model → system auto-connects components → Consumer calls req
 
 > This shows how minimal services communicate in Areg without boilerplate.
 
-### Recommended Learning Path
+### Learning Path
 
 Start small and progress gradually:
 
@@ -207,7 +207,7 @@ Start small and progress gradually:
 2. **02\_minimalipc** – IPC communication across processes
 3. **03\_helloservice** – full multithreaded RPC + IPC example
 
-> Explore more [examples](./examples/) for advanced features.
+👉 Explore **more** [examples](./examples/) for advanced features.
 
 ### Integration
 
