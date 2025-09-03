@@ -244,7 +244,7 @@ The modules listed below are the core components of Areg SDK; additional optiona
 
 **Areg** is built around an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** (servers) and interact with **Service Consumers** (clients) via automatically generated **Stubs & Proxies**, which handle requests, responses, and data updates through the **Multitarget Router**. Services can be invoked **without knowing network locations**, enabling seamless distributed communication.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
 This **interface-driven design** supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** patterns, enabling **action- and data-centric messaging**. It is designed for **multithreading**, **multiprocessing**, and **with the focus on internet-scale deployment in the future**, keeping messaging reliable and consistent across applications.
 
