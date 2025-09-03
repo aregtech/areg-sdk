@@ -95,18 +95,18 @@ Software complexity rarely comes from algorithms—it comes from **frameworks th
 
 ### Compared to Alternatives
 
-| Feature              | AREG SDK                             | Competitors (gRPC, DDS, ZeroMQ)          |
-| -------------------- | ------------------------------------ | ---------------------------------------- |
-| Ease of Use          | ✅ Automated setup, abstracted API   | ⚠️ Manual, boilerplate, complex          |
-| Automation           | ✅ Codegen, modeling, auto-dispatch  | ⚠️ Manual setup, stubs only |
-| Auto-Discovery       | ✅ Self-organizing service mesh      | ✅ Topics (DDS), ⚠️ Control-plane (gRPC), ❌ Manaul (ZeroMQ) |
-| Fault-Tolerance      | ✅ Watchdog, auto-restart, resilience| ✅ QoS (DDS), ⚠️ Retries (gRPC), ❌ Manaul (ZeroMQ) |
-| Request-Reply (RPC)  | ✅ Native, built-in in service (ORPC)| ✅ RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ) |
-| Pub/Sub Messaging    | ✅ Native, uuilt-in in service       | ✅ Topics (DDS), ⚠️ Add-ons (gRPC), ⚠️ Manual (ZeroMQ) |
-| Built-in Logging     | ✅ Integrated, dynamic + viewer      | ⚠️ Vendor-specific (DDS), ❌ External     |
-| Dev Time Saved       | ✅ Significant, via automation       | ⚠️ Lower, external tooling needed        |
+👉 **AREG SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.**
 
-👉 Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.
+| Feature              | AREG SDK                               | Competitors (gRPC, DDS, ZeroMQ)                                |
+| -------------------- | -------------------------------------- | -------------------------------------------------------------- |
+| Ease of Use          | ✅ Automated setup, abstracted API     | ⚠️ Manual, boilerplate, complex                               |
+| Automation           | ✅ Codegen, modeling, auto-dispatch    | ⚠️ Manual setup, stubs only                                   |
+| Auto-Discovery       | ✅ Self-organizing service mesh        | ✅ Topics (DDS), ⚠️ Control-plane (gRPC), ❌ Manual (ZeroMQ) |
+| Fault-Tolerance      | ✅ Watchdog, auto-restart, resilience  | ✅ QoS (DDS), ⚠️ Retries (gRPC), ❌ Manual (ZeroMQ)          |
+| Request-Reply (RPC)  | ✅ Native ORPC (Object RPC in service)	| ✅ RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ)    |
+| Pub/Sub Messaging    | ✅ Native, built-in in service         | ✅ Topics (DDS), ⚠️ Add-ons (gRPC), ⚠️ Manual (ZeroMQ)       |
+| Built-in Logging     | ✅ Integrated, dynamic + viewer        | ⚠️ Vendor-specific (DDS), ❌ External                         |
+| Dev Time Saved       | ✅ Significant, via automation         | ⚠️ Limited, external tooling                                  |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
