@@ -113,23 +113,38 @@ Tested on **Linux and Windows**, scalable from prototypes to multi-node producti
 
 ## Features[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#features)
 
-**Core Model**
+Areg SDK provides a complete stack for building distributed, service-oriented applications.  
 
-* **Unified Service Model** — define threads and components in models; load/unload dynamically.
-* **Virtual Clients & Servers** — reusable micro-servers/clients, mapped across threads/processes.
-* **Async RPC & Events** — non-blocking RPC/events executed in the target thread.
+- **Reliable Service Communication**  
+  Built on the [areg](docs/wiki/README.md) C++17 core library — enabling multithreading, IPC, pub/sub, and distributed messaging.
 
-**Automations**
+- **Inter-Process and Multi-Device Routing**  
+  Powered by [mcrouter](docs/wiki/README.md#mcrouter) — **required for IPC**. It routes messages across processes and devices, forming the service mesh. Can run as a console app or system service.
 
-* **Auto-Discovery** — consumers find providers automatically.  
-* **Code Generation & Serialization** — generate stubs and proxies with built-in serialization.
-* **Automatic Dispatching** — routes RPC calls to target objects without manual wiring.
+- **Extended Development Utilities**  
+  The [aregextend](docs/wiki/README.md#aregextend) library adds helpers (timers, tracing, debugging aids) that simplify service development.
 
-**Tooling**
+- **Monitoring & Debugging Tools**  
+  - [logcollector](docs/wiki/README.md#logcollector) gathers logs from distributed services.  
+  - [Lusan](docs/wiki/README.md#lusan) provides a GUI to visualize mesh topology and debug service interactions.
 
-* **Service Interface Editor** — define APIs in XML; generate type-safe C++ code.
-* **Runtime Logging & Control** — scoped logs with filters; debug without code changes.
-* **Performance Measurement** — per-method timing for latency profiling and bottleneck detection.
+- **Demonstration & Testing**  
+  [multitarget](docs/wiki/README.md#multitarget) shows how to connect services across multiple devices/platforms, useful for prototyping and validation.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+
+
+## Modules
+
+| Module | Purpose |
+| ------ | ------- |
+| [areg](docs/wiki/README.md) | Core C++17 library. Provides service communication, multithreading, IPC, and distributed messaging. |
+| [mcrouter](docs/wiki/README.md#mcrouter) | **Required for IPC** — routes messages across processes/devices to form the service mesh. Runs as a console app or system service. |
+| [aregextend](docs/wiki/README.md#aregextend) | Utility library with extended features (timers, tracing, helpers) that simplify service development. |
+| [multitarget](docs/wiki/README.md#multitarget) | Demo router for multi-device scenarios — shows how services connect across platforms. |
+| [logcollector](docs/wiki/README.md#logcollector) | Centralized service log collector for monitoring distributed systems. |
+| [Lusan](docs/wiki/README.md#lusan) | GUI app for inspecting service mesh topology and debugging service interactions. |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -202,7 +217,12 @@ main() → load model → system auto-connects components → Consumer calls req
 2. [**02\_minimalipc**](examples/01_minimalipc/) – IPC across processes, **requires `mcrouter`**.
 3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using same components, **requires `mcrouter`**.
 
-👉 Explore more [**more examples**](./examples/) for advanced features. IPC apps **require** `mcrouter` running ([mcrouter guide](./docs/wiki/05a-mcrouter.md)). The `mcrouter` binary can run as a console application or system managed service under Linux and Windows.
+👉 Explore more [**more examples**](./examples/) for advanced features.
+
+> [!IMPORTANT]  
+> For IPC and multi-device communication, **mcrouter must be running** ([mcrouter guide](./docs/wiki/05a-mcrouter.md)).
+> It acts as the message router that forms the service mesh. Run it as a console app or a system service.
+
 
 ### Integration
 
