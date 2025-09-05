@@ -183,11 +183,11 @@ main() → load model → auto-connect → Consumer requests → Provider respon
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | [Areg Framework (`areg`)](./docs/wiki/01-introduction.md)           | Core C++17 runtime: ORPC, thread-safe components, routing and IPC — removes glue code.                                           |
 | [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)      | **Required for IPC** — routes messages across processes/devices to form the service mesh. Runs as console app or system service. |
-| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Centralized log collection for distributed deployments — simplifies monitoring and analysis.                                     |
+| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Centralized log collection for distributed apps — helps monitoring and analysis.                                                 |
 | [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)      | CLI tool to view, filter, and save runtime logs — useful for debugging.                                                          |
 | [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization from service definitions (SIML) — eliminates boilerplate.                            |
 | [Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)       | GUI to design APIs, visualize topology, and debug service interactions.                                                          |
-| [Examples](./examples/README.md)                                    | Sample apps (RPC, Pub/Sub, IPC, auto-discovery) — quickest way to validate the SDK.                                              |
+| [Examples](./examples/README.md)                                    | Sample apps (RPC, Pub/Sub, IPC, auto-discovery) — quickest way to validate Areg.                                                 |
 
 Areg follows an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using auto-generated **Stubs & Proxies**, communicating through the **Multitarget Router**. Services work without knowing network locations, enabling seamless distributed communication.
 
