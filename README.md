@@ -43,7 +43,6 @@ Threads, IPC, and distributed messaging often slow development and create fragil
 - [Why Areg SDK?](#why-areg-sdk)
   - [Top 5 Benefits](#top-5-benefits)
   - [Compared to Alternatives](#compared-to-alternatives)
-- [Features](#features)
 - [Areg SDK Decision Checklist](#areg-sdk-decision-checklist)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -106,45 +105,6 @@ Tested on **Linux and Windows**, scalable from prototypes to multi-node producti
 | Pub/Sub          | ✅ Native, built-in in service  | ✅ Topics (DDS), ⚠️ Add-ons or Manual       |
 | Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ Vendor-specific (DDS), ❌ External       |
 | Dev Time Saved   | ✅ Significant, via automation  | ⚠️ Limited, external tooling                |
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
----
-
-## Features[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#features)
-
-Areg SDK provides a complete stack for building distributed, service-oriented applications.  
-
-- **Reliable Service Communication**  
-  Built on the [areg](docs/wiki/README.md) C++17 core library — enabling multithreading, IPC, pub/sub, and distributed messaging.
-
-- **Inter-Process and Multi-Device Routing**  
-  Powered by [mcrouter](docs/wiki/README.md#mcrouter) — **required for IPC**. It routes messages across processes and devices, forming the service mesh. Can run as a console app or system service.
-
-- **Extended Development Utilities**  
-  The [aregextend](docs/wiki/README.md#aregextend) library adds helpers (timers, tracing, debugging aids) that simplify service development.
-
-- **Monitoring & Debugging Tools**  
-  - [logcollector](docs/wiki/README.md#logcollector) gathers logs from distributed services.  
-  - [Lusan](docs/wiki/README.md#lusan) provides a GUI to visualize mesh topology and debug service interactions.
-
-- **Demonstration & Testing**  
-  [multitarget](docs/wiki/README.md#multitarget) shows how to connect services across multiple devices/platforms, useful for prototyping and validation.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
-
-
-
-## Modules
-
-| Module | Purpose |
-| ------ | ------- |
-| [areg](docs/wiki/README.md) | Core C++17 library. Provides service communication, multithreading, IPC, and distributed messaging. |
-| [mcrouter](docs/wiki/README.md#mcrouter) | **Required for IPC** — routes messages across processes/devices to form the service mesh. Runs as a console app or system service. |
-| [aregextend](docs/wiki/README.md#aregextend) | Utility library with extended features (timers, tracing, helpers) that simplify service development. |
-| [multitarget](docs/wiki/README.md#multitarget) | Demo router for multi-device scenarios — shows how services connect across platforms. |
-| [logcollector](docs/wiki/README.md#logcollector) | Centralized service log collector for monitoring distributed systems. |
-| [Lusan](docs/wiki/README.md#lusan) | GUI app for inspecting service mesh topology and debugging service interactions. |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -217,12 +177,11 @@ main() → load model → system auto-connects components → Consumer calls req
 2. [**02\_minimalipc**](examples/01_minimalipc/) – IPC across processes, **requires `mcrouter`**.
 3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using same components, **requires `mcrouter`**.
 
-👉 Explore more [**more examples**](./examples/) for advanced features.
-
 > [!IMPORTANT]  
-> For IPC and multi-device communication, **mcrouter must be running** ([mcrouter guide](./docs/wiki/05a-mcrouter.md)).
-> It acts as the message router that forms the service mesh. Run it as a console app or a system service.
-
+> For IPC and multi-device communication, **`mcrouter` must be running**.  
+> It routes messages across processes and devices to form the service mesh.  
+> Run it as a console app or install as a system service.  
+> See: [mcrouter documentation](./docs/wiki/05a-mcrouter.md).
 
 ### Integration
 
@@ -238,15 +197,17 @@ main() → load model → system auto-connects components → Consumer calls req
 
 ## Modules[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#modules)
 
-| Module                                                              | Purpose & Description                                                                                                                         |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Areg Framework (`areg`)](./docs/wiki/01-introduction.md)           | Core IPC + threading library. Handles ORPC, auto-dispatch, and safe component execution—removes glue code and manual wiring.                  |
-| [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)      | **Required for IPC** to routes messages across processes and devices, enabling to for mesh of service. Runs as console app or system service. |
-| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Collects logs from multiple processes. Simplifies debugging distributed systems. Runs as console app or system service                        |
-| [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)      | CLI for saving, controlling and filtering logs in runtime.                                                                                    |
-| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization code. Eliminates repetitive boilerplate.                                                          |
-| [Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)       | GUI for designing services and API, view and control logs in runtime, and monitoring performance. Helps understand runtime behavior visually. |
-| [Examples](./examples/README.md)                                    | Sample apps demonstrating RPC, Pub/Sub, auto-discovery, logging, and other features. Speeds learning and onboarding.                          |
+| Module                                                            | Purpose       |
+| ----------------------------------------------------------------- | ------------- |
+| [Areg Framework (`areg`)](./docs/wiki/01-introduction.md)         | Core C++17 runtime: ORPC, thread-safe components, routing and IPC — removes glue code. |
+| [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)    | **Required for IPC** — routes messages across processes/devices to form the service mesh. Runs as console app or system service. |
+| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md) | Centralized log collection for distributed deployments — simplifies monitoring and analysis. |
+| [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)    | CLI tool to view, filter, and save runtime logs — useful for debugging. |
+| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization from service definitions (SIML) — eliminates boilerplate. |
+| [Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)     | GUI to design APIs, visualize topology, and debug service interactions. |
+| [Examples](./examples/README.md)                                  | Sample apps (RPC, Pub/Sub, IPC, auto-discovery) — quickest way to validate the SDK. |
+
+Additional helpers: **`aregextend`** and **`areglogger`** are optional utilities for advanced scenarios.
 
 ---
 
