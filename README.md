@@ -16,13 +16,12 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-*Areg is like a network operator, but for C++ programs — a lightweight framework that automates software communication.*
+*Areg is like a network operator for C++ programs — a lightweight framework automating software communication.*
 
-Threads, IPC, and distributed messaging often slow development, creating fragile glue code and hidden bugs. By combining async RPC, auto-discovery, and event-driven messaging, Areg SDK makes it faster and easier to build and debug distributed services across threads, processes, and devices—enabling developers to focus on features, not plumbing.
+Threads, IPC, and distributed messaging often slow development and create fragile glue code. By combining **async RPC**, **auto-discovery**, and **automatic messaging**, Areg SDK accelerates building and debugging distributed services across **threads, processes, and devices**, letting developers focus on features rather than plumbing.
 
 ---
 
-<!-- markdownlint-disable -->
 ## Project Status[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#project-status)
 
 <table class="no-border">
@@ -55,58 +54,58 @@ Threads, IPC, and distributed messaging often slow development, creating fragile
 - [Architecture](#architecture)
 - [Use Cases](#use-cases)
   - [IoT: Mist-to-Cloud](#iot--mist-to-cloud)
-  - [More than Embedded](#more-than-embedded)
-  - [Distributed Solutions](#distributed-solutions)
+  - [Beyond Embedded](#beyond-embedded)
   - [Driverless Devices](#driverless-devices)
   - [Simulation & Testing](#Simulation-Testing)
-- [Roadmap](#pipeline-and-roadmap)
+- [Roadmap](#roadmap)
+- [Documentation](#documentation)
 - [License](#license)
 - [Call to action](#call-to-action)
 
 > [!IMPORTANT]
-> For full technical guidance of building and using Areg SDK, see the [following documents](./docs/wiki/).
+> For full technical guidance of building, using and integrating Areg SDK, see the [following documents](./docs/wiki/).
 
 ---
 
 ## Why Areg SDK?[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk)
 
-Software complexity rarely comes from algorithms—it comes from **frameworks that don’t scale**. Threads, processes, and distributed components quickly lead to **manual wiring, hidden bugs, and costly rewrites**. Late framework decisions can lock teams into fragile architectures, wasting weeks of development.
+Software complexity rarely comes from algorithms—it comes from **frameworks that don’t scale**. Threads, processes, and distributed components quickly lead to **manual wiring, hidden bugs, and costly rewrites**. Late framework decisions can lock teams into fragile architectures, wasting weeks of development and refactoring.
 
-**Areg SDK removes these risks from day one.** Its unified **Pub/Sub + Request-Reply model** handles threading, IPC, and distributed execution across threads, processes, and devices—letting developers focus on **services and features, not plumbing**.
+**Areg SDK eliminates these risks.** Its unified **Pub/Sub + Request-Reply model** handles threading, IPC, and distributed execution across threads, processes, and devices—so developers can focus on **features, not plumbing**.
 
 ### Top 5 Benefits
 
-1. **Eliminate manual threading & boilerplate:**  
-   Define components and threads declaratively; the runtime handles routing, queuing, and execution context—no hand-wired threads, sockets, or fragile glue code.
+1. **Eliminate manual threading & boilerplate:**
+   Define components and threads declaratively; the runtime manages routing, queuing, and execution context automatically.
 
 2. **Unified local & remote API + low-latency async RPC:**  
-   Call services the same way in-thread, across processes, or over the network. RPCs and events are queued in the target thread for **non-blocking, responsive behavior**.
+   Call services the same way in-thread, across processes, or over the network. RPCs and events are queued for **non-blocking, responsive execution**.
 
-3. **Self-organizing service mesh:**  
-   Services auto-discover and connect logically regardless of location, forming a dynamic mesh that **handles cross-dependencies automatically**.
+3. **Self-organizing service mesh:**
+   Services auto-discover and connect, forming a dynamic mesh that **handles dependencies automatically**.
 
-4. **Fault-tolerant by design:**  
-   Providers can appear, disappear, or restart without breaking consumers. Watchdog-protected threads restart stuck components cleanly.
+4. **Fault-tolerant by design:**
+   Providers can appear, disappear, or restart without disrupting consumers. Watchdog-protected threads recover stuck components safely.
 
-5. **Lightweight observability & profiling:**  
-   Scope-based logging captures entry/exit timings automatically, and the log viewer highlights per-method latency **without intrusive instrumentation**.
+5. **Lightweight observability & profiling:**
+   Scoped logging captures entry/exit timings, while the log viewer highlights per-method latency **without intrusive instrumentation**.
 
-Tested on **Linux and Windows**, scaling from single-device prototypes to multi-node production systems.
+Tested on **Linux and Windows**, scalable from prototypes to multi-node production systems.
 
 ### Compared to Alternatives
 
-👉 **Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.**
+**Areg SDK helps developers build scalable, reliable, and maintainable C++ systems without drowning in IPC, threading, or distributed complexity.**
 
-| Feature              | Areg SDK                               | Competitors (gRPC, DDS, ZeroMQ)                                |
-| -------------------- | -------------------------------------- | -------------------------------------------------------------- |
-| Ease of Use          | ✅ Automated setup, abstracted API     | ⚠️ Manual, boilerplate, complex                               |
-| Automation           | ✅ Codegen, modeling, auto-dispatch    | ⚠️ Manual setup, stubs only                                   |
-| Auto-Discovery       | ✅ Self-organizing service mesh        | ✅ Topics (DDS), ⚠️ Control-plane (gRPC), ❌ Manual (ZeroMQ) |
-| Fault-Tolerance      | ✅ Watchdog, auto-restart, resilience  | ✅ QoS (DDS), ⚠️ Retries (gRPC), ❌ Manual (ZeroMQ)          |
-| Request-Reply (RPC)  | ✅ Native ORPC (Object RPC in service) | ✅ RPC (gRPC), ⚠️ Over topics (DDS), ⚠️ Patterns (ZeroMQ)    |
-| Pub/Sub Messaging    | ✅ Native, built-in in service         | ✅ Topics (DDS), ⚠️ Add-ons (gRPC), ⚠️ Manual (ZeroMQ)       |
-| Built-in Logging     | ✅ Integrated, dynamic + viewer tool   | ⚠️ Vendor-specific (DDS), ❌ External                        |
-| Dev Time Saved       | ✅ Significant, via automation         | ⚠️ Limited, external tooling                                  |
+| Feature          | Areg SDK                        | Competitors (gRPC, DDS, ZeroMQ)              |
+| ---------------- | ------------------------------- | -------------------------------------------- |
+| Ease of Use      | ✅ Automated setup              | ⚠️ Manual, boilerplate, complex             |
+| Automation       | ✅ Codegen, modeling, dispatch  | ⚠️ Manual setup, stubs only                 |
+| Auto-Discovery   | ✅ Self-organizing service mesh | ✅ Topics (DDS), ⚠️ Control-plane or Manual |
+| Fault-Tolerance  | ✅ Watchdog & auto-restart      | ✅ QoS (DDS), ⚠️ Retries or Manual          |
+| Request-Reply    | ✅ Native Object RPC in service | ✅ RPC (gRPC), ⚠️ Over topics or Patterns   |
+| Pub/Sub          | ✅ Native, built-in in service  | ✅ Topics (DDS), ⚠️ Add-ons or Manual       |
+| Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ Vendor-specific (DDS), ❌ External       |
+| Dev Time Saved   | ✅ Significant, via automation  | ⚠️ Limited, external tooling                |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -122,7 +121,7 @@ Tested on **Linux and Windows**, scaling from single-device prototypes to multi-
 
 **Automations**
 
-* **Auto-Discovery** — consumers find providers across threads, processes, and machines automatically.
+* **Auto-Discovery** — consumers find providers automatically.  
 * **Code Generation & Serialization** — generate stubs and proxies with built-in serialization.
 * **Automatic Dispatching** — routes RPC calls to target objects without manual wiring.
 
@@ -140,36 +139,36 @@ Tested on **Linux and Windows**, scaling from single-device prototypes to multi-
 
 Unsure if Areg SDK fits your project? ✅ Take this quick self-check:
 
-* [ ] Is manually managing **threads, IPC, or service setup** taking too much time?  
-* [ ] Would **automatic dispatching** of requests and events speed up your workflow?  
-* [ ] Is **debugging distributed services** across threads and processes painful?  
-* [ ] Do you want services to **auto-discover and connect**, reducing configuration and setup effort?  
-* [ ] Would **integrated logging** save you time when troubleshooting?  
-* [ ] Would **automatically generating boilerplate code** save you effort?  
-* [ ] Are you tired of **costly manual integration and debugging**, and want a unified framework to focus on your core product?  
+* [ ] Are **threads, IPC, or service setup** consuming too much time?  
+* [ ] Would **automatic dispatching** of requests/events speed your workflow?  
+* [ ] Is **debugging distributed services** painful?  
+* [ ] Do you want services to **auto-discover and connect**, reducing setup effort?  
+* [ ] Would **integrated logging** save time troubleshooting?  
+* [ ] Would **automated code generation** save effort?  
+* [ ] Do you want to focus on **core features** rather than manual integration and debugging?  
 
-💡 **Tip:** If you check **3 or more** boxes, Areg SDK is likely a strong fit for your project.
+💡 **Tip:** Checking **4 or more** boxes means Areg SDK is a strong fit.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Getting Started [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started)
+## Getting Started[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started)
 
 ### Prerequisites
 
-* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC (Windows) or MinGW
+* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC, MinGW
 * **CMake ≥ 3.20**
 * **Java ≥ 17** (for code generation tools)
 
-> **Supported OS:** Linux, Windows
+> **Supported OS:** Linux, Windows</br>
 > **Supported Hardware:** x86, AMD64, ARM32, AArch64
 
-For **compiler options, environment setup, and troubleshooting**, see the [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) and [README Wiki](./docs/wiki/README.md).
+For **compiler options, setup, and troubleshooting**, see the [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) and [README Wiki](./docs/wiki/README.md).
 
 ### Quick Start
 
-1. **Clone and build the SDK**:
+1. Clone and build the SDK:
 
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
@@ -178,47 +177,40 @@ cmake -B build
 cmake --build build -j 12
 ```
 
-2. **Run the pre-built minimal RPC example**:
+2. Run the pre-built minimal RPC example:
 
 ```bash
 ./product/build/<compiler>/<os>-<hw>-<build-type>-<lib-type>/bin/01_minimalrpc
 ```
 
-> [This example](examples/01_minimalrpc/) demonstrates a simple RPC between 2 components running in 2 threads:
+> [This example source code](examples/01_minimalrpc/) demonstrates a simple RPC:
 >
-> * **Provider** prints a message
-> * **Consumer** triggers it automatically
-> * The app exits once the message is printed
->   [Full source code here](examples/01_minimalrpc/src/main.cpp)
+> * **Provider** and **Consumer** run in different threads.
+> * Consumer calls Provider request when connects.
+> * Provider prints a message.
+> * App exits after completion.
 
-**Message Flow Overview:**
+**Message Flow:**
 
 ```text
 main() → load model → system auto-connects components → Consumer calls request → Provider handles request → prints & signals quit → main() releases & exits
 ```
 
-> This shows how minimal services communicate in Areg without boilerplate.
-
 ### Learning Path
 
-Start small and progress gradually:
+1. [**01\_minimalrpc**](examples/01_minimalrpc/) – basic RPC between 2 components.
+2. [**02\_minimalipc**](examples/01_minimalipc/) – IPC across processes, **requires `mcrouter`**.
+3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using same components, **requires `mcrouter`**.
 
-1. **01\_minimalrpc** – basic RPC between 2 components
-2. **02\_minimalipc** – IPC communication across processes
-3. **03\_helloservice** – full multithreaded RPC + IPC example
-
-👉 Explore **more** [examples](./examples/) for advanced features.
+👉 Explore more [**more examples**](./examples/) for advanced features. IPC apps **require** `mcrouter` running ([mcrouter guide](./docs/wiki/05a-mcrouter.md)). The `mcrouter` binary can run as a console application or system managed service under Linux and Windows.
 
 ### Integration
 
 * **CMake FetchContent:** [Integration Guide](./docs/wiki/02c-cmake-integrate.md)
-* **Complete demo project:** [areg-sdk-demo](https://github.com/aregtech/areg-sdk-demo)
-* **Optional GUI / Qt tools:** [areg-sdk-tools](https://github.com/aregtech/areg-sdk-tools)
+* **Demo Project:** [areg-sdk-demo](https://github.com/aregtech/areg-sdk-demo)
+* **Qt-based integration:** [areg-sdk-tools](https://github.com/aregtech/areg-sdk-tools)
 
-> For advanced builds (IDE setup, cross-compilation, disabling tests/examples), see the [Areg SDK Wiki](./docs/wiki/).
-
-
-**Next Steps:** Learn **Service Development** (Providers + Consumers) and optional tools (`mcrouter`, `logcollector`) → see [Documentation](#documentation).
+> 💡 Advanced builds (IDE setup, cross-compilation, disabling tests/examples) documented in [Wiki](./docs/wiki/).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -226,27 +218,25 @@ Start small and progress gradually:
 
 ## Modules[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#modules)
 
-The modules listed below are the core components of Areg SDK; additional optional utilities like `aregextend` and `areglogger` are available for advanced use or internal integration.
-
-| Module                                                                  | Purpose                                 | When You Need It                  | Key Notes                                                       |
-| ----------------------------------------------------------------------- | --------------------------------------- | --------------------------------- | --------------------------------------------------------------- |
-| **[Areg Framework (`areg`)](./docs/wiki/01-introduction.md)**           | Core IPC + multithreading library	    | Always required	                | Includes ORPC, auto-dispatch, thread-safe component execution   |
-| **[Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)**      | IPC & network communication	            | Inter-process or network apps     | Enables self-organizing service mesh                            |
-| **[Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)**   | Centralized log collection	            | Remote logging required	        | Collects logs from multiple apps/services                       |
-| **[Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)**      | Control and save remote logs via CLI	| Save and configure logs           | Real-time view and filtering of logs                            |
-| **[Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md)** | Automates code generation from SIML	    | During development and build      | Generates threads, components, and service glue automatically   |
-| **[Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)**       | GUI for design, logging, and metrics	| For visual design and diagnostics	| Design threads, services, and monitor runtime metrics           |
-| **[Examples](./examples/README.md)**                                    | Illustrates framework usage	            | Learning and quick starts	        | Demonstrates ORPC, Pub/Sub, auto-discovery, logging             |
+| Module                                                              | Purpose & Description                                                                                                                         |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Areg Framework (`areg`)](./docs/wiki/01-introduction.md)           | Core IPC + threading library. Handles ORPC, auto-dispatch, and safe component execution—removes glue code and manual wiring.                  |
+| [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)      | **Required for IPC** to routes messages across processes and devices, enabling to for mesh of service. Runs as console app or system service. |
+| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Collects logs from multiple processes. Simplifies debugging distributed systems. Runs as console app or system service                        |
+| [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)      | CLI for saving, controlling and filtering logs in runtime.                                                                                    |
+| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization code. Eliminates repetitive boilerplate.                                                          |
+| [Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)       | GUI for designing services and API, view and control logs in runtime, and monitoring performance. Helps understand runtime behavior visually. |
+| [Examples](./examples/README.md)                                    | Sample apps demonstrating RPC, Pub/Sub, auto-discovery, logging, and other features. Speeds learning and onboarding.                          |
 
 ---
 
 ## Architecture
 
-**Areg** is built around an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** (servers) and interact with **Service Consumers** (clients) via automatically generated **Stubs & Proxies**, which handle requests, responses, and data updates through the **Multitarget Router**. Services can be invoked **without knowing network locations**, enabling seamless distributed communication.
+Areg uses an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using auto-generated **Stubs & Proxies**, communicating through the **Multitarget Router**. Services work without knowing network locations, enabling seamless distributed communication.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
-This **interface-driven design** supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** patterns, enabling **action- and data-centric messaging**. It is designed for **multithreading**, **multiprocessing**, and **with the focus on internet-scale deployment in the future**, keeping messaging reliable and consistent across applications.
+Supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** patterns, designed for **multithreading**, **multiprocessing**, and future **internet-scale deployment**, ensuring reliable messaging.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -256,66 +246,49 @@ This **interface-driven design** supports both **Client-Server (Request-Reply)**
 
 ### IoT: Mist-to-Cloud
 
-**Problem:** Traditionally, edge devices stream data to servers, causing latency, privacy risks, and heavy network usage. In addition, wireless communication consumes more power than CPU, which is critical for small devices.
-**Solution:** Areg allows **Public Services to run directly on devices** in a **mist network**, where devices act as **micro-servers and micro-data centers**, capable of storing, combining, and processing data locally—**highly requested for AI-driven applications**.
+* **Problem:** Traditionally, edge devices stream data to servers, causing latency, privacy risks, and heavy network usage. Wireless communication consumes more power than CPU, which is critical for small devices.<br/>
+**Solution:** Areg lets **services run directly on devices**, forming a **mist network** of micro-servers that process and combine data locally.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
 
-Benefits:
-
-* **Enhanced data privacy** – data is processed at the source.
-* **Reduced network traffic** – minimal streaming required.
-* **Autonomous, intelligent devices** – capable of local decision-making and data fusion.
+**Benefit:** Service-enabled devices form a **mesh at the edge** and communicate in near real-time, acting as a fast, autonomous system without a centralized server. **Private data remains on-device**, reducing streaming to the cloud.
 
 ---
 
-### More than Embedded
+### Beyond Embedded
 
-**Problem:** Small devices often lack scalable service infrastructure, while larger systems need multithreading/multiprocessing support.
-**Solution:** Areg scales **beyond embedded devices** to PCs, servers, and clusters running GPOS (e.g., embedded Linux), turning devices into **service-enabled nodes**.
+**Problem:** Small devices often lack scalable service infrastructure, while larger systems need multithreading/multiprocessing support.<br/>
+**Solution:** Areg provides **multithreading, inter-process, and distributed service orchestration**, turning devices and PCs into **service-enabled nodes**.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
-* **Local Services** – internal to a device (multithreading).
-* **Public Services** – accessible across processes or devices (multiprocessing).
-* **Internet Services (not existing yet)** – **currently not supported**; for cloud connection, external solutions should be used.
+* Local Services – internal, for multithreading.
+* Public Services – across processes, for multiprocessing.
+* Internet Services – not supported yet.
 
-Key benefits:
-
-* **Resilient** – failure in one service does not disrupt others.
-* **Automatic Discovery** – services dynamically located by clients.
-* **Thread-Safe Execution** – each service runs in its own thread context.
-
----
-
-### Distributed Solutions
-
-**Problem:** Developing multi-device or multi-process systems is complex, often requiring **custom communication layers or centralized servers**.
-**Solution:** Areg enables **decentralized distributed communication**, where processes and devices interact as if part of a single application, forming a **mesh of services** that supports **action- and data-centric messaging**.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="Areg SDK features diagram" style="width:70%;height:70%"/></a></div>
+**Benefit:** Devices expose **public services** that can be seamlessly accessed and reused by other applications and devices.
 
 ---
 
 ### Driverless Devices
 
-**Problem:** Writing device drivers is **complex, slow, unsafe, OS-specific, and hard to maintain**.
-**Solution:** Areg allows **driverless service-enabled devices**, exposing hardware as services that are portable, safe, and fast to develop.
+**Problem:** Writing device drivers is slow, complex, OS-specific, and error-prone.<br/>
+**Solution:** Areg enables **driverless, service-enabled devices**, exposing hardware as portable services.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png" alt="Areg driverless solution" style="width:70%;height:70%"/></a></div>
+
+Benefit: Engineers can **prototype and test hardware faster**, fix issues early, and build **network-accessible devices** without OS-dependent drivers.
 
 ---
 
 ### Simulation & Testing
 
-**Problem:** Testing devices or distributed applications is hard when hardware is unavailable or costly.
-**Solution:** Areg enables **simulation of data and services**, providing a realistic software environment for testing and rapid prototyping.
+**Problem:** Testing distributed systems or devices is costly and hardware-dependent.<br/>
+**Solution:** Areg enables **service and data simulation**, providing realistic environments for testing and prototyping.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/software-layers.png" alt="Software simulation layers" style="width:70%;height:70%"/></a></div>
 
-* **Portable & accessible** – tests run without full hardware.
-* **Safe prototyping** – reduces risk and speeds up development.
-* **API-driven automation** – facilitates end-to-end test automation.
+**Benefit:** Since **service location is transparent**, developers can move data-layer services into external apps that simulate data, making it easy to **develop and stress-test safely** across one or multiple applications.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -323,18 +296,32 @@ Key benefits:
 
 ## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
 
-The Areg SDK is continuously evolving to help developers build complex applications efficiently on **Desktop**, **Embedded**, and **IoT edge** devices. It aims to reduce development time by **30-50%** while maintaining automation, reliability, and flexibility.
+Areg SDK evolves to accelerate complex applications on **Desktop**, **Embedded**, and **IoT edge**, reducing development time by \~30% while keeping automation, reliability, and flexibility.
 
 **Upcoming Features:**
-- **Multi-channel & multi-protocol communication** – broader support for diverse communication methods, improving interoperability.
-- **Internet services** – expansion into web-based, cloud-ready services for modern applications.
 
-**[Lusan GUI tool](https://github.com/aregtech/areg-sdk-tools/) in development** (already usable):
-- **Service API Designer** – visually create and edit service interfaces.
-- **Interactive Log Viewer** – analyze logs and performance in real time.
-- **Service Testing & Simulation Tool** – simulate services and data to streamline testing and development.
+* Multi-channel & multi-protocol communication
+* Internet services – cloud-ready applications
 
-All tools are actively developed in the **[Areg SDK Tools repository](https://github.com/aregtech/areg-sdk-tools)**.
+**[Lusan GUI Tool](https://github.com/aregtech/areg-sdk-tools/)** (in active development)
+
+* Service API Designer (usable) – visually create/edit interfaces
+* Interactive Log Viewer (usable) – real-time log/performance analysis
+* Service Testing & Simulation – simulate services/data for testing
+
+GUI tools in the **[Areg SDK Tools repository](https://github.com/aregtech/areg-sdk-tools)**.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Documentation
+
+* [Getting Started](./docs/wiki/getting-started.md)
+* [CMake Configuration](./docs/wiki/02a-cmake-config.md)
+* [Architecture](./docs/wiki/architecture.md)
+* [Examples](./examples/README.md)
+* [Troubleshooting](./docs/wiki/README.md)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -342,13 +329,14 @@ All tools are actively developed in the **[Areg SDK Tools repository](https://gi
 
 ## License[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#license)
 
-The Areg SDK is released under the **[Apache License Version 2.0](./LICENSE.txt)**, a permissive open-source license.  
+Areg SDK is released under the **[Apache License Version 2.0](./LICENSE.txt)**, a permissive open-source license.
 
-For organizations or developers requiring commercial licensing, options are available, offering:  
-- Dedicated commercial support  
-- Full rights to create and distribute software without open-source obligations  
+**Commercial licensing options** are available, providing:
 
-For details on commercial licensing, support, training, or partnership opportunities, visit **[Aregtech](https://www.aregtech.com/)** or contact **info[at]aregtech[dot]com**.
+* Dedicated commercial support
+* Full rights to distribute software without open-source obligations
+
+For details, support, training, or partnerships, visit **[Aregtech](https://www.aregtech.com/)** or contact **info\[at]aregtech\[dot]com**.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -358,18 +346,16 @@ For details on commercial licensing, support, training, or partnership opportuni
 
 Help grow the Areg SDK community and improve the framework for developers working on embedded systems, multithreaded/multiprocess apps, real-time data, and IoT projects.  
 
-- Explore [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) to contribute where help is needed.  
-- Share ideas or request new features via [issues](https://github.com/aregtech/areg-sdk/issues) or [discussions](https://github.com/aregtech/areg-sdk/discussions).  
-- Submit pull requests following the project’s coding style.  
-- ⭐ Consider starring Areg SDK on GitHub to support the project and help grow the community.
+* Explore [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+* Share ideas or request features via [issues](https://github.com/aregtech/areg-sdk/issues) or [discussions](https://github.com/aregtech/areg-sdk/discussions)
+* Submit pull requests following project style
+* ⭐ Star Areg SDK on GitHub
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-**Follow us** at<br />
+**Follow us** at<br/>
 ![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/aregtech) 
 [![Follow us on LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech)
 [![Join the chat at https://gitter.im/areg-sdk/community](https://badges.gitter.im/areg-sdk/community.svg)](https://gitter.im/areg-sdk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-<!-- markdownlint-enable -->
