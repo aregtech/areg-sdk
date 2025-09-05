@@ -158,7 +158,8 @@ cmake --build build -j 12
 ./product/build/<compiler>/<os>-<hw>-<build-type>-<lib-type>/bin/01_minimalrpc
 ```
 
-> [Example source code](examples/01_minimalrpc/) demonstrates a simple RPC:
+> [!TIP]
+> [Click here to see the complete example source code](examples/01_minimalrpc/) of a fully working minimal RPC:
 >
 > * **Provider** and **Consumer** run in different threads.
 > * Consumer calls Provider when connected.
@@ -173,8 +174,8 @@ main() → load model → system auto-connects components → Consumer calls req
 
 ### Learning Path
 
-1. [**01\_minimalrpc**](examples/01_minimalrpc/) – basic RPC between 2 components.
-2. [**02\_minimalipc**](examples/02_minimalipc/) – IPC across processes, **requires `mcrouter`**.
+1. [**01\_minimalrpc**](examples/01_minimalrpc/) – minimal example of basic RPC between 2 components.
+2. [**02\_minimalipc**](examples/02_minimalipc/) – minimal example of IPC across processes, **requires `mcrouter`**.
 3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using same components, **requires `mcrouter`**.
 
 > [!IMPORTANT]
@@ -245,7 +246,7 @@ Supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (Pub/Sub
 
 * Local Services – internal, for multithreading.
 * Public Services – across processes, for multiprocessing.
-* Internet Services – not supported yet.
+* Internet Services – planned (see Roadmap).
 
 **Benefit:** Devices expose **public services** that can be seamlessly accessed and reused by other applications and devices.
 
@@ -298,11 +299,14 @@ GUI tools in the **[Areg SDK Tools repository](https://github.com/aregtech/areg-
 
 ## Documentation
 
-* [Getting Started](./docs/wiki/getting-started.md)
-* [CMake Configuration](./docs/wiki/02a-cmake-config.md)
-* [Architecture](./docs/wiki/architecture.md)
-* [Examples](./examples/README.md)
-* [Troubleshooting](./docs/wiki/README.md)
+* [Installation and Build](./docs/wiki/README.md#1--installation-and-build)
+* [Build Options and Integrations](./docs/wiki/README.md#2--build-options-and-integrations)
+* [Development Tools](./docs/wiki/README.md#3--development-tools)
+* [Logging and Monitoring](./docs/wiki/README.md#4--logging-and-monitoring)
+* [Networking and Communication](./docs/wiki/README.md#5--networking-and-communication)
+* [Persistence](./docs/wiki/README.md#6--persistence)
+* [Troubleshooting](./docs/wiki/README.md#7--troubleshooting)
+* [Examples and Tests](./docs/wiki/README.md#8--examples-and-tests)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
