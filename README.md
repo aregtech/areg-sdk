@@ -199,7 +199,7 @@ Supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (Pub/Sub
 
 ---
 
-## Use Cases
+## Use Cases[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
 ### IoT: Mist-to-Cloud
 
@@ -265,7 +265,7 @@ Areg SDK evolves for **Desktop, Embedded, and IoT edge**, reducing development t
 
 ---
 
-## Documentation
+## Documentation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
 * [Installation and Build](./docs/wiki/README.md#1--installation-and-build)
 * [Build Options and Integrations](./docs/wiki/README.md#2--build-options-and-integrations)
@@ -306,6 +306,6 @@ Help grow the Areg SDK community:
 ---
 
 **Follow us:**<br/>
-[![X Follow](https://img.shields.io/twitter/follow/aregtech)](https://x.com/aregtech?lang=en)](https://twitter.com/aregtech?lang=en)
+[![X Follow](https://img.shields.io/twitter/follow/aregtech)](https://x.com/aregtech?lang=en)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat\&logo=linkedin\&logoColor=b0c0c0\&labelColor=363D44)](https://www.linkedin.com/company/aregtech)
 [![Gitter](https://badges.gitter.im/areg-sdk/community.svg)](https://gitter.im/areg-sdk/community)
