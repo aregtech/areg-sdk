@@ -202,49 +202,44 @@ Supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (Pub/Sub
 
 ### IoT: Mist-to-Cloud
 
-**Problem:** Traditionally, edge devices stream data to servers, causing latency, privacy risks, and heavy network usage. Wireless communication consumes more power than CPU, which is critical for small devices.<br/>
-**Solution:** Areg lets **services run directly on devices**, forming a **mist network** of micro-servers that process and combine data locally.
+Edge devices typically stream raw data to servers, causing latency, network load, and privacy risks. **Areg runs services directly on devices**, forming a mist network of micro-servers that process and combine data locally.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
 
-**Benefit:** Service-enabled devices form a **mesh at the edge** and communicate in near real-time, acting as a fast, autonomous system without a centralized server. **Private data remains on-device**, reducing streaming to the cloud.
+**Benefit:** Fast, autonomous edge mesh; private data stays on-device; reduced cloud traffic.
 
 ---
 
 ### Beyond Embedded
 
-**Problem:** Small devices lack scalable service infrastructure; larger systems require multithreading/multiprocessing.<br/>
-**Solution:** Areg provides **multithreading, inter-process, and distributed service orchestration**, turning devices and PCs into **service-enabled nodes**.
+Small devices lack accessibility and scalable service infrastructure; larger systems need multithreading and multiprocessing. **Areg orchestrates multithreaded, inter-process, and distributed services**, turning devices and PCs into service-enabled nodes.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
 * Local Services – for multithreading
 * Public Services – across processes
-* Internet Services – planned (see Roadmap)
 
-**Benefit:** Devices expose **public services** that can be seamlessly accessed and reused by other applications and devices.
+**Benefit:** Devices expose public services accessible across applications and devices without rewriting code.
 
 ---
 
 ### Driverless Devices
 
-**Problem:** Writing device drivers is slow, complex, OS-specific, and error-prone.<br/>
-**Solution:** Areg enables **driverless, service-enabled devices**, exposing hardware as portable services.
+Device drivers are slow, complex, and OS-specific to develop. **Areg exposes hardware as portable services**, enabling devices to be service-enabled without custom drivers.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png" alt="Areg driverless solution" style="width:70%;height:70%"/></a></div>
 
-**Benefit:** Engineers can **prototype and test hardware faster**, fix issues early, and build **network-accessible devices** without OS-dependent drivers.
+**Benefit:** Faster prototyping and testing, early bug detection, and network-accessible devices.
 
 ---
 
 ### Simulation & Testing
 
-**Problem:** Testing distributed systems or devices is costly and hardware-dependent.<br/>
-**Solution:** Areg enables **service and data simulation**, providing realistic environments for testing and prototyping.
+Testing distributed systems is costly and hardware-dependent. **Areg simulates services and data**, providing realistic environments for prototyping, development, and safe stress testing.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/software-layers.png" alt="Software simulation layers" style="width:70%;height:70%"/></a></div>
 
-**Benefit:** Since **service location is transparent**, developers can move data-layer services into external apps that simulate data, making it easy to **develop and stress-test safely** across one or multiple applications.
+**Benefit:** Transparent service location allows moving data-layer services into external apps for robust multi-application testing.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
