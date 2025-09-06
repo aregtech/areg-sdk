@@ -1,5 +1,13 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.aregtech.com"><img align="center" src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-1280x360px-logo.png" alt="Areg SDK Home" style="width:100%;height:100%"/></a>
+  <a name="logo" href="https://www.aregtech.com">
+    <img 
+      align="center" 
+      src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-1280x360px-logo.png" 
+      alt="Areg SDK – C++ Middleware for Remote Procedure Call (RPC) and Inter-Process Communication (IPC)" 
+      title="Areg SDK – Cross-Platform Lightweight C++ Framework for Microservices and Distributed Systems" 
+      style="width:100%;height:100%" 
+    />
+  </a>
 </h1>
 
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
@@ -10,6 +18,8 @@
 [![Wiki Pages](https://img.shields.io/badge/Areg%20Wiki%20Pages-8-brightgreen?style=social&logo=wikipedia)](https://github.com/aregtech/areg-sdk/wiki/)
 
 ---
+
+*Areg is like a network operator, but for C++ programs — a lightweight **C++ middleware** that automates software communication for distributed computing.*
 
 Threads, IPC, and distributed messaging often slow development and create fragile glue code. **Areg SDK** combines **async RPC**, **auto-discovery**, and **automatic messaging**, so developers can build and debug distributed services across threads, processes, and devices — focusing on features instead of plumbing.
 
@@ -212,7 +222,7 @@ Edge devices typically stream raw data to servers, causing latency, network load
 
 ### Beyond Embedded
 
-Small devices lack accessibility and scalable service infrastructure; larger systems need multithreading and multiprocessing. **Areg orchestrates multithreaded, inter-process, and distributed services**, turning devices and PCs into service-enabled nodes.
+Small devices often lack accessibility and scalable infrastructure. **Areg SDK** orchestrates **C++ multithreaded and multi-process services**, extending embedded applications into **distributed modules** that seamlessly scale across remote nodes and heterogeneous platforms.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
