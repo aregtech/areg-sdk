@@ -2,8 +2,6 @@
 <a name="logo" href="https://www.aregtech.com"><img align="center" src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-1280x360px-logo.png" alt="Areg SDK Home" style="width:100%;height:100%"/></a>
 </h1>
 
-*Concurrency without the complexity.*
-
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
 [![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://GitHub.com/aregtech/areg-sdk/commit/)
 [![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/stargazers)
@@ -62,49 +60,50 @@ Threads, IPC, and distributed messaging often slow development and create fragil
 
 ## Why Areg SDK?[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk)
 
-Software complexity rarely comes from algorithms — it comes from **frameworks that don’t scale**. Threads, IPC, and distributed components quickly lead to **manual wiring, hidden bugs, and costly rewrites**. Late framework choices can lock teams into fragile architectures and waste weeks of engineering time.
+Software complexity rarely comes from algorithms — it comes from **frameworks that don’t scale**. Threads, IPC, and distributed Components lead to **manual wiring, hidden bugs, and costly rewrites**. Choosing the wrong framework late locks teams into fragile architectures and wastes weeks on fixes.
 
-**Areg SDK solves that problem.** It provides an interface-centric runtime that unifies **async RPC**, **Pub/Sub**, and **auto-discovery** so services behave the same whether they run in-thread, across processes, or on remote devices — helping teams focus on features, not plumbing.
+**Areg SDK removes that glue.** It unifies service interaction in-thread, across processes, or across devices. With built-in **async RPC**, **Pub/Sub**, and **auto-discovery**, teams can scale from a single-process prototype to a multi-node system without rewriting code.
 
 ### Top 5 Benefits
 
 1. **Eliminate manual threading**<br/>
-   Define components and threads declaratively; the runtime handles routing, queuing, and execution automatically.
+   Declare threads and components in a model; loading it automatically instantiates them, manages execution, and monitors with watchdogs.
 
-2. **Unified local & remote API**<br/>
-   Call services the same way in-thread, across processes, or over the network. All calls are **non-blocking and responsive**.
+2. **One API, everywhere**<br/>
+   Call services the same way locally or remotely — always async and non-blocking.
 
 3. **Self-organizing service mesh**<br/>
-   Automatic discovery connects and reconnects services across threads, processes, and devices.
+   Auto-discovery connects services across threads, processes, and devices  without manual setup.
 
 4. **Fault-tolerant by design**<br/>
-   Providers can appear/disappear without disrupting consumers. Watchdog-protected threads recover safely.
+   Components join or leave without disruption; watchdog restart failed threads with Components.
 
 5. **Lightweight observability**<br/>
-   Scoped logging and a log viewer surface per-method latency without intrusive instrumentation.
+   Scoped logging with a log viewer shows per-method duration when enabled.
 
-Tested on **Linux and Windows**; scales from prototypes to multi-node deployments.
+💡 **When to use:** Linux & Windows, embedded and desktop C++ apps; scaling from prototype to multi-node.<br/>
+⚠️ **When not to use:** RTOS (planned), web, or non-C++ apps — use web/RTOS-specific tools instead.
 
 ### Compared to Alternatives
 
-| Feature          | Areg SDK                        | Competitors (gRPC, DDS, ZeroMQ)                  |
-| ---------------- | ------------------------------- | ------------------------------------------------ |
-| Ease of Use      | ✅ Automated setup              | ⚠️ Manual, boilerplate, complex                 |
-| Automation       | ✅ Codegen, modeling, dispatch  | ⚠️ Manual setup, stubs only                     |
-| Auto-Discovery   | ✅ Self-organizing service mesh | ✅ DDS: built-in, ⚠️ gRPC/ZeroMQ: external      |
-| Fault-Tolerance  | ✅ Watchdog & auto-restart      | ✅ DDS: QoS, ⚠️ gRPC/ZeroMQ: Retries/Manual      |
-| Request-Reply    | ✅ Native Object RPC in service | ✅ gRPC: RPC, ⚠️ DDS/ZeroMQ: Over topics/patterns|
-| Pub/Sub          | ✅ Native, built-in in service  | ✅ DDS: Topics, ⚠️ Add-ons/Manual               |
-| Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ Vendor-specific (DDS) or External            |
-| Dev Time Saved   | ✅ Significant, via automation  | ⚠️ Limited, external tooling                    |
+| Feature          | Areg SDK                        | Competitors (gRPC, DDS, ZeroMQ)                      |
+| ---------------- | ------------------------------- | ---------------------------------------------------- |
+| Ease of Use      | ✅ Automated setup              | ⚠️ Manual, boilerplate, complex                     |
+| Automation       | ✅ Codegen, modeling, dispatch  | ⚠️ Manual setup, stubs only                         |
+| Auto-Discovery   | ✅ Self-organizing service mesh | ✅ DDS: built-in, ⚠️ gRPC/ZeroMQ: external          |
+| Fault-Tolerance  | ✅ Watchdog & auto-restart      | ✅ DDS: QoS, ⚠️ gRPC/ZeroMQ: Retries/Manual         |
+| Request-Reply    | ✅ Native Object RPC in service | ✅ gRPC: RPC, ⚠️ DDS/ZeroMQ: Over topics/patterns   |
+| Pub/Sub          | ✅ Native, built-in in service  | ✅ DDS: Topics, ⚠️ Add-ons/Manual                   |
+| Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ Vendor-specific (DDS) or External                |
+| Dev Time Saved   | ✅ Significant, via automation  | ⚠️ Limited, external tooling                        |
 
 ### Decision Checklist
 
-* [ ] Are **threads, IPC, or service wiring** consuming too much development time?
-* [ ] Would **automatic dispatching and code generation** remove repeated boilerplate?
+* [ ] Are **threads, IPC, or service wiring** consuming too much time?
+* [ ] Would **automatic dispatching and code generation** remove boilerplate?
 * [ ] Is **debugging** across threads/processes/devices slowing delivery?
 * [ ] Do you need **auto-discovery and runtime reconnection** across processes/devices?
-* [ ] Would a **unified API across threads, processes, and devices** cut months off your release schedule?
+* [ ] Would a **unified API** across threads, processes, and devices cut months off your release?
 
 💡 **Tip:** If you answer **yes** to 3 or more, Areg SDK is a strong candidate.
 
@@ -143,7 +142,7 @@ cmake --build build -j 12
 ```
 
 > [!TIP]
-> [Complete example source code](examples/01_minimalrpc/) of a fully working minimal RPC:
+> [Complete example source code](examples/01_minimalrpc/src/main.cpp) of a fully working minimal RPC:
 >
 > * Provider & Consumer run in different threads
 > * Consumer calls Provider when connected
@@ -163,7 +162,7 @@ main() → load model → auto-connect → Consumer requests → Provider respon
 3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using same components, **requires `mcrouter`**.
 
 > [!IMPORTANT]
-> For IPC and multi-device communication, **`mcrouter` must be running**. See: [mcrouter documentation](./docs/wiki/05a-mcrouter.md).
+> **For IPC `mcrouter` must be running**. See: [mcrouter documentation](./docs/wiki/05a-mcrouter.md).
 
 ### Integration
 
@@ -181,15 +180,15 @@ main() → load model → auto-connect → Consumer requests → Provider respon
 
 | Module                                                              | Purpose                                                                                                                          |
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| [Areg Framework (`areg`)](./docs/wiki/01-introduction.md)           | Core C++17 runtime: ORPC, thread-safe components, routing and IPC — removes glue code.                                           |
+| [Areg Framework (`areg`)](./docs/HelloService.md)                   | Core C++17 runtime: ORPC, thread-safe components, routing and IPC — removes glue code.                                           |
 | [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)      | **Required for IPC** — routes messages across processes/devices to form the service mesh. Runs as console app or system service. |
-| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Centralized log collection for distributed apps — helps monitoring and analysis.                                                 |
+| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Centralized log collection for distributed apps — helps monitoring and analysis. Runs as console app or system service.          |
 | [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)      | CLI tool to view, filter, and save runtime logs — useful for debugging.                                                          |
-| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization from service definitions (SIML) — eliminates boilerplate.                            |
+| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization from service object API (SIML) — eliminates boilerplate.                             |
 | [Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)       | GUI to design APIs, visualize topology, and debug service interactions.                                                          |
 | [Examples](./examples/README.md)                                    | Sample apps (RPC, Pub/Sub, IPC, auto-discovery) — quickest way to validate Areg.                                                 |
 
-Areg follows an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using auto-generated **Stubs & Proxies**, communicating through the **Multitarget Router**. Services work without knowing network locations, enabling seamless distributed communication.
+Areg follows an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using auto-generated **Stubs, Proxies & Rules**, communicating through the **Multitarget Router**. Services work without knowing network locations, enabling seamless distributed communication.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
