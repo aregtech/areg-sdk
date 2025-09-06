@@ -188,15 +188,15 @@ main() → load model → auto-connect → Consumer requests → Provider respon
 
 ## Core Modules & Architecture[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#core-modules--architecture)
 
-| Module                                                              | Purpose                                                                                                                                  |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| [Areg Framework (`areg`)](./docs/HelloService.md)                   | Cross-platform C++17 framework with middleware layer: automated, service-oriented Object RPC (ORPC) and IPC for distributed computing.   |
-| [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)      | **Required for IPC** — routes messages across processes/devices to form a service mesh. Runs as console app or system service.           |
-| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Centralized log collection for distributed apps — helps monitoring and analysis. Runs as console app or system service.                  |
-| [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)      | CLI tool to receive, filter, and save runtime logs — useful for debugging.                                                               |
-| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization from service object API (SIML) — eliminates boilerplate.                                     |
-| [Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)       | GUI app to design service APIs, visualize logs, filter messages, and analyze performance.                                                |
-| [Examples](./examples/README.md)                                    | Sample projects (RPC, Pub/Sub, IPC, FSM, auto-discovery, etc.) — the fastest way to validate Areg in action.                             |
+| Module                                                              | Purpose                                                                                                                                |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [Areg Framework (`areg`)](./docs/HelloService.md)                   | Cross-platform C++17 framework with middleware layer: automated, service-oriented Object RPC (ORPC) and IPC for distributed computing. |
+| [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)      | **Required for IPC** — routes messages across processes/devices to form a service mesh. Runs as console app or system service.         |
+| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Centralized log collection for distributed apps — helps monitoring and analysis. Runs as console app or system service.                |
+| [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)      | CLI tool to receive, filter, and save runtime logs — useful for debugging.                                                             |
+| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization from service object API (SIML) — eliminates boilerplate.                                   |
+| [Lusan (UI Tool)](https://github.com/aregtech/areg-sdk-tools)       | GUI app to design service APIs, visualize and filter logs, and analyze performance.                                                    |
+| [Examples](./examples/README.md)                                    | Sample projects (RPC, Pub/Sub, IPC, FSM, auto-discovery, etc.) — the fastest way to validate Areg in action.                           |
 
 Areg implements an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using auto-generated **Stubs, Proxies & Rules**, communicating through the **Multitarget Router**. Services (logical micro-servers) do not need to know physical network locations — enabling portable **C++ microservices** and scalable **service-oriented architecture (SOA)**.
 
@@ -286,7 +286,7 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ## License[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#license)
 
-Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permissive and suitable for both open-source and commercial use.
+Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permissive and suitable for open-source and commercial use.
 
 **Commercial licensing & services:** Dedicated support, training, and tailored licensing options are available for enterprise customers. Visit **[Aregtech](https://www.aregtech.com/)** or email **info\[at]aregtech\[dot]com** for details.
 
