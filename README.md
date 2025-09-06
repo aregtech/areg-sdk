@@ -113,7 +113,7 @@ Software complexity rarely comes from algorithms — it comes from **frameworks 
 * [ ] Would **automatic dispatching and code generation** remove boilerplate?
 * [ ] Is **debugging** across distributed components slowing delivery?
 * [ ] Do you need **auto-discovery and runtime reconnection** across systems?
-* [ ] Could a **unified solution across threads, processes, and devices** reduce integration errors and accelerate delivery?
+* [ ] Could a **unified solution across threads, processes, and devices** reduce errors and accelerate delivery?
 
 💡 **Tip:** If you answer **yes** to 3 or more, Areg SDK is a strong candidate.
 
@@ -222,7 +222,7 @@ Traditionally, edge devices stream raw data to servers, causing latency, network
 
 ### Beyond Embedded
 
-Small devices often lack scalable infrastructure. Extend embedded applications into **distributed modules** that scale across remote nodes and heterogeneous platforms; **Areg** orchestrates **C++ multithreaded and multi-process services**.
+Small devices often lack scalable infrastructure. Extend embedded applications into **distributed modules** that scale across remote nodes and platforms; **Areg** orchestrates **C++ multithreaded and multiprocess services**.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
@@ -249,7 +249,7 @@ Testing distributed systems is costly and hardware-dependent. Simulate services 
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/software-layers.png" alt="Software 4 Layer Architecture: Simulate Data Layer" style="width:70%;height:70%"/></a></div>
 
-**Benefit:** Transparent service location lets you move data-layer services into external apps for robust multi-application testing.
+**Benefit:** Transparent service location lets you run simulated data-layer services in external apps to test higher layers.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -257,7 +257,7 @@ Testing distributed systems is costly and hardware-dependent. Simulate services 
 
 ## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
 
-Areg SDK continues to evolve for **Desktop, Embedded, and IoT Edge**, focusing on automation, reliability, and performance.
+Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automation, reliability, and performance.
 
 **Planned work:**
 
@@ -271,7 +271,7 @@ Areg SDK continues to evolve for **Desktop, Embedded, and IoT Edge**, focusing o
 
 ## Documentation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#documentation)
 
-* [Installation and Build](./docs/wiki/README.md#1--installation-and-build) — cross-platform builds, toolchains, and CMake integration for embedded and desktop targets
+* [Installation and Build](./docs/wiki/README.md#1--installation-and-build) — cross-platform builds, toolchains, CMake integration for embedded and desktop targets
 * [Build Options and Integrations](./docs/wiki/README.md#2--build-options-and-integrations) — FetchContent, packaging, and embedding Areg as a library
 * [Development Tools](./docs/wiki/README.md#3--development-tools) — code generation for service-oriented development
 * [Logging and Monitoring](./docs/wiki/README.md#4--logging-and-monitoring) — logcollector and logobserver usage
@@ -286,7 +286,7 @@ Areg SDK continues to evolve for **Desktop, Embedded, and IoT Edge**, focusing o
 
 ## License[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#license)
 
-Areg SDK is released under the **[Apache License Version 2.0](./LICENSE.txt)** — permissive and suitable for both open-source and commercial use.
+Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permissive and suitable for both open-source and commercial use.
 
 **Commercial licensing & services:** Dedicated support, training, and tailored licensing options are available for enterprise customers. Visit **[Aregtech](https://www.aregtech.com/)** or email **info\[at]aregtech\[dot]com** for details.
 
