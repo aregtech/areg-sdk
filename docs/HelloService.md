@@ -1,18 +1,23 @@
-﻿# Hello Service!
+﻿
+# Hello Service!
 
 ```
+
 This file is part of AREG SDK
-Copyright (c) 2021-2023, Aregtech
-Contact: info[at]aregtech.com
-Website: https://www.aregtech.com
-```
+Copyright (c) 2021–2023, Aregtech
+Contact: info\[at]aregtech.com
+Website: [https://www.aregtech.com](https://www.aregtech.com)
 
-This document provides a practical example of creating applications with distributed services using the AREG SDK.
+````
+
+This tutorial walks through building distributed applications with the AREG SDK.
 
 > [!NOTE]
-> You can find the source code for this example in the [00_helloservice](../examples/00_helloservice/) directory.
+> Full source code is in [03_helloservice](../examples/03_helloservice/).
 
-## Table of Content
+---
+
+## Table of Contents
 
 - [Introduction](#introduction)
 - [Demonstrated Features](#demonstrated-features)
@@ -22,80 +27,79 @@ This document provides a practical example of creating applications with distrib
 - [Service Interface](#service-interface)
 - [Code Generation](#code-generation)
 - [Model](#model)
-    - [Declaring Static Models](#declaring-static-models)
+  - [Declaring Static Models](#declaring-static-models)
 - [Project Examples](#project-examples)
-    - [`onethread`](#onethread)
-    - [`twothreads`](#twothreads)
-    - [`multiprocess`](#multiprocess)
+  - [`onethread`](#onethread)
+  - [`twothreads`](#twothreads)
+  - [`multiprocess`](#multiprocess)
 - [Testing `multiprocess`](#testing-multiprocess)
+
+---
 
 ## Introduction
 
-This tutorial offers a step-by-step guide to building service-enabled applications. To get started, it is recommended to create a new directory within the AREG SDK's [examples](../examples) directory and name it `helloservice`. This directory will serve as the root for your projects and the working space for three sample projects included in this tutorial.
+This example consists of three projects under `examples/03_helloservice`. Each project reuses the same **ServiceComponent** and **ClientComponent** (in `common/src`) but demonstrates different execution models:
 
-Each project demonstrates a different approach to running the service provider (server) and service consumer (client), both of which are located in the `common/src` subdirectory:
+- **[onethread](../examples/03_helloservice/onethread/):** Both components run in the same thread.  
+- **[twothreads](../examples/03_helloservice/twothreads/):** Components run in separate threads of one process.  
+- **[multiprocess](../examples/03_helloservice/multiprocess/):** Components run in separate processes.
 
-- **Project #1** ([onethread](../examples/00_helloservice/onethread/)): Service provider and consumer operate in the same thread within a single process.
-- **Project #2** ([twothreads](../examples/00_helloservice/twothreads/)): Service provider and consumer run in separate threads within a single process.
-- **Project #3** ([multiprocess](../examples/00_helloservice/multiprocess/)): Service provider and consumer run in separate processes.
-
-By following this tutorial and completing the sample projects, you will gain hands-on experience with creating multithreading and multiprocessing applications, and learn how to implement distributed services in an IoT edge network (mist network).
+By completing the steps, you’ll learn how to create multithreaded and multiprocess applications and understand how AREG SDK enables distributed services in edge (mist) networks.
 
 ---
 
 ## Demonstrated Features
 
-The following features are illustrated in these examples:
+1. A model defines two components: one providing a service, one consuming it.  
+2. Models can be loaded/unloaded dynamically, managing the service lifecycle.  
+3. Components discover each other automatically.  
+4. Once discovered, the client component sends a request.  
+5. The service component processes and responds.  
+6. On response:  
+   - In **onethread** and **twothreads**, the app exits.  
+   - In **multiprocess**, the client exits but the service keeps running.  
+7. **multiprocess** supports multiple clients, regardless of start order.
 
-1. Each project defines a model with a service provider (_server_) and a service consumer (_client_) that can run in the same thread, separate threads, or different processes.
-2. Applications dynamically load and unload the model to manage the service lifecycle.
-3. The server registers the service, and the client automatically discovers it.
-4. The client sends a request to the server once the service becomes available.
-5. The server processes the request and sends a response back to the client.
-6. Upon receiving the response:
-   - In **Project #1** and **Project #2**, where both run in a single process, the application exits.
-   - In **Project #3**, the client exits while the server continues running.
-7. **Project #3** allows multiple clients to connect concurrently, and service discovery ensures the order of client startup is irrelevant.
+---
 
-### Key Notes for Service Implementation
+## Key Notes for Service Implementation
 
-- A **Component** manages service provider and consumer objects.
-- A single **Component** can provide and consume multiple services.
-- The same service provider can be instantiated multiple times but must have unique **Role Names** when running in separate threads or processes.
-- Service consumers identify providers by their **Role Names**, which must be unique:
-  - Within a process for _Local_ services.
-  - Across a network for _Public_ services.
-- Service connection status is tracked via callbacks:
-  - **Consumers**: `void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)`
-  - **Providers**: `bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)`
+- A **Component** can provide and/or consume multiple services.  
+- Multiple service providers of the same type can exist, but each must have a unique **Role Name**.  
+- Role Names must be unique:  
+  - Within a process for _Local_ services.  
+  - Across the network for _Public_ services.  
+- Service connection status is tracked via callbacks:  
+  - **Client Component:** `void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)`  
+  - **Service Component:** `bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)`
 
 ---
 
 ## Showcase
 
-This tutorial demonstrates how to design flexible service providers and consumers that can be split across threads or processes to optimize computing power. All projects share the same service provider and consumer implementations, with variations only in their **models**, declared in the respective `main.cpp` files.
+These examples show how components can be flexibly arranged across threads or processes. The logic is identical; only the **models** differ in `main.cpp`.
 
-### Directory Structure
-- **Generated Code**: Located in the `generated/src` subdirectory, created by the **code generator**.
-- **Common Code**: The service provider (_server_) and consumer (_client_) implementations are in the `common/src` subdirectory, shared across all projects.
-- **Service Interface**: Defined in the `res` subdirectory and used to generate code.
+---
 
-Before starting, create the following subdirectories under `helloservice`: `common/src` and `service`
+## Directory Structure
+
+- **`generated/src`** → Code generated from the service interface.  
+- **`common/src`** → Shared component implementations (service + client).  
+- **`service`** → Service interface definition (`.siml` file).  
+
+Before starting, create `common/src` and `service` under `helloservice`.
 
 ---
 
 ## Service Interface
 
-To create a multithreading and multiprocessing project, follow these steps to define a `HelloService` interface:
-
-1. In the `helloservice/service` directory, create a file named `HelloService.siml`.
-2. Add the following XML content:
+Create `helloservice/service/HelloService.siml`:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="HelloService" Version="1.0.0" isRemote="true">
-        <Description>The hello world application</Description>
+        <Description>Hello world application</Description>
     </Overview>
     <MethodList>
         <Method ID="2" MethodType="request" Name="HelloService" Response="HelloService">
@@ -110,100 +114,86 @@ To create a multithreading and multiprocessing project, follow these steps to de
             <Description>Response indicating success status.</Description>
             <ParamList>
                 <Parameter DataType="bool" ID="5" Name="success">
-                    <Description>Indicates whether the greeting was successfully output.</Description>
+                    <Description>Was the greeting successfully output?</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
 </ServiceInterface>
-```
+````
 
-This interface declares the **HelloService** as _Public_ (`isRemote="true"`) with a request and its corresponding response.
+This declares **HelloService** as *Public* (`isRemote="true"`) with a request/response pair.
 
 ---
 
 ## Code Generation
 
-> [!NOTE]
-> Ensure [Java](https://java.com/) is installed to run the code generator. The minimum required version is 17
+> \[!NOTE]
+> Requires [Java 17+](https://java.com/).
 
-Run the following command in the `helloservice` directory to generate service-related files:
+Run in the `helloservice` directory:
 
 ```bash
-java -jar <areg-sdk-root>/tools/codegen.jar --root=<areg-sdk-root>/product/generate --doc=<helloservice-project-root>/service/HelloService.siml --target=helloservice/services
+java -jar <areg-sdk-root>/tools/codegen.jar \
+  --root=<areg-sdk-root>/product/generate \
+  --doc=<helloservice-project-root>/service/HelloService.siml \
+  --target=helloservice/services
 ```
 
-The generated code includes:
-- **Service Provider Base Classes** (e.g., `HelloServiceStub`)
-- **Service Consumer Base Classes** (e.g., `HelloServiceClientBase`)
-
-Follow the remaining sections to implement the **Service Provider** and **Service Consumer**, with code snippets and explanations provided. Each example builds on these core implementations.
-
---- 
-
-### Model
-
-The AREG Engine utilizes a service-oriented architecture to manage the relationships between threads, service providers, and service consumers. These relationships are encapsulated within a **model**. There are two types of models: **static models**, predefined during application development, and **dynamic models**, created and managed at runtime. An application can include multiple models, which can be loaded dynamically to automatically instantiate threads, components, and services.
-
-Key concepts of the model:
-
-- **Components and Threads**:
-  Each thread must host at least one component, and each component must include at least one service provider or service consumer. Components can extend or contain multiple service provider/consumer objects, with the model specifying the services provided and consumed.
-- **Model Lifecycle**:
-  When a model is no longer required, it can be unloaded, stopping all threads and shutting down all services registered within that model.
-
-#### Declaring Static Models
-
-To declare static models in your application, follow these guidelines:
-
-1. **Unique Model Names**:
-   Each application must include at least one model with a unique name.
-2. **Model Declaration**:
-   Use the **BEGIN_MODEL** and **END_MODEL** macros to define the model, specifying its name.
-3. **Threads**:
-   Each model must define at least one thread with a unique name. Use the **BEGIN_REGISTER_THREAD** and **END_REGISTER_THREAD** macros to declare threads, and optionally specify a _watchdog timeout_.
-4. **Components**:
-   Each thread must register at least one component with a unique name (_Role Name_).
-   - If a component provides or consumes only **Local** services, its name must be unique within the application.
-   - If a component provides or consumes at least one **Public** service, its name must be unique across the network.
-   - Use the **BEGIN_REGISTER_COMPONENT** and **END_REGISTER_COMPONENT** macros to register components, specifying the component object associated with its _Role Name_.
-5. **Service Providers**:
-   - Use the **REGISTER_IMPLEMENT_SERVICE** macro to declare services provided by a component.
-   - A component can provide multiple services, but each must have a unique interface within the component and thread.
-6. **Service Consumers**:
-   - Use the **REGISTER_DEPENDENCY** macro to define a component's dependency on a service provided by another component (identified by its _Role Name_).
-   - A component can consume multiple services, and a service can be consumed by multiple components.
-
-> [!NOTE]
-> Service providers are identified by their _Service Interface Name_, while service consumers refer to the provider using the _Role Name_ of the component. This ensures that consumers can distinguish between multiple implementations of the same service interface.
-
-Example source code for implementing models can be found in the [`00_helloservice`](../examples/00_helloservice/) directory. All examples utilize common [`ServiceComponent`](../examples/00_helloservice/common/src/ServiceComponent.hpp) and [`ClientComponent`](../examples/00_helloservice/common/src/ClientComponent.hpp) objects.
-
-> [!IMPORTANT]
-> All example projects must be linked with the **areg library** (_shared_ or _static_).
+This generates base classes such as `HelloServiceStub` (service) and `HelloServiceClientBase` (client).
 
 ---
 
-### Project Examples
+## Model
 
-#### [`onethread`](../examples/00_helloservice/onethread/)
+A **model** describes threads, components, and their relationships. Models can be static (declared at compile time) or dynamic (created at runtime).
 
-This example demonstrates a model where both the service provider and consumer operate within the same thread of a single process. The service starts automatically when the model is loaded.
-**Steps to create and run**:
+### Concepts
 
-1. Create a `onethread` project.
-2. Add a `main.cpp` file.
-3. Copy the following code into `main.cpp` to define the model, compile, and run:
+* **Threads & Components:**
+  Each thread hosts at least one component. Each component must provide or consume at least one service.
+* **Lifecycle:**
+  Unloading a model stops all its threads and services.
+* **Role Names:**
+  Components are identified by Role Names, unique per process (local) or across the network (public).
+
+### Declaring Static Models
+
+1. **Unique model name** — each app needs at least one.
+2. **Declare with macros:**
+
+   * `BEGIN_MODEL` / `END_MODEL`
+   * `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD`
+   * `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT`
+3. **Register services:**
+
+   * `REGISTER_IMPLEMENT_SERVICE` (provided by component).
+   * `REGISTER_DEPENDENCY` (consumed by component).
+
+> \[!NOTE]
+> Service providers are identified by **Interface Name**; clients refer by **Role Name**.
+
+See [`03_helloservice`](../examples/03_helloservice/) for examples. All reuse [`ServiceComponent`](../examples/03_helloservice/common/src/ServiceComponent.hpp) and [`ClientComponent`](../examples/03_helloservice/common/src/ClientComponent.hpp).
+
+> \[!IMPORTANT]
+> Link all projects with the **areg library** (shared or static).
+
+---
+
+## Project Examples
+
+### [`onethread`](../examples/03_helloservice/onethread/)
+
+Both components run in one thread.
+
+**main.cpp:**
 
 ```cpp
-#include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-
 #include "common/src/ServiceComponent.hpp"
 #include "common/src/ClientComponent.hpp"
 
-// Model name
 constexpr char const _model[]{ "ServiceModel" };
 
 BEGIN_MODEL(_model)
@@ -230,24 +220,18 @@ int main()
 
 ---
 
-#### [`twothreads`](../examples/00_helloservice/twothreads/)
+### [`twothreads`](../examples/03_helloservice/twothreads/)
 
-This example separates the service provider and consumer into different threads within the same process.
-**Steps to create and run**:
+Components run in separate threads.
 
-1. Create a `twothreads` project.
-2. Add a `main.cpp` file.
-3. Copy the following code into `main.cpp`, compile, and run:
+**main.cpp:**
 
 ```cpp
-#include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-
 #include "common/src/ServiceComponent.hpp"
 #include "common/src/ClientComponent.hpp"
 
-// Model name
 constexpr char const _model[]{ "ServiceModel" };
 
 BEGIN_MODEL(_model)
@@ -256,6 +240,7 @@ BEGIN_MODEL(_model)
             REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
         END_REGISTER_COMPONENT("ServiceComponent")
     END_REGISTER_THREAD("Thread1")
+
     BEGIN_REGISTER_THREAD("Thread2", NECommon::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
             REGISTER_DEPENDENCY("ServiceComponent")
@@ -276,24 +261,22 @@ int main()
 
 ---
 
-#### [`multiprocess`](../examples/00_helloservice/multiprocess/)
+### [`multiprocess`](../examples/03_helloservice/multiprocess/)
 
-This example distributes the service provider and consumer across separate processes. Two projects are required:
+Components run in different processes:
 
-1. **`serviceproc` (Service Provider)**
-   Registers the service provider. See [source code](../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp).
-
-2. **`clientproc` (Service Consumer)**
-   Registers the service consumer. See [source code](../examples/00_helloservice/multiprocess/clientproc/src/main.cpp).
+* **`serviceproc`** → Registers the service. ([source](../examples/03_helloservice/multiprocess/serviceproc/src/main.cpp))
+* **`clientproc`** → Registers the client. ([source](../examples/03_helloservice/multiprocess/clientproc/src/main.cpp))
 
 ---
 
-### Testing `multiprocess`
+## Testing `multiprocess`
 
-1. Start **mcrouter** locally or configure its IP in the [_areg.init_](../framework/areg/resources/areg.init) file.
-2. Run `serviceproc` and `clientproc`.
-   - Start **serviceproc** (only one instance allowed).
-   - Launch multiple **clientproc** instances if needed (unique names are auto-generated).
-3. Services will communicate across platforms or networks seamlessly.
+1. Start **mcrouter** (or set IP in [areg.init](../framework/areg/resources/areg.init)).
+2. Run `serviceproc` (only one instance).
+3. Run one or more `clientproc` (unique names auto-assigned).
+4. Clients and services discover each other and communicate transparently across processes or devices.
 
-By organizing applications using this model, you can build scalable, efficient, and cross-platform systems with ease.
+---
+
+With this setup, you can build scalable, cross-platform, and distributed applications using AREG SDK.
