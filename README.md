@@ -212,7 +212,8 @@ Supports **Client-Server (Request-Reply)** and **Publish-Subscribe (Pub/Sub)** p
 
 ### IoT: Mist-to-Cloud
 
-Edge devices traditionally stream raw data to central servers, causing **latency, network overhead, and privacy issues**. With **Areg**, services run directly on devices, forming a **mist network of micro-servers** that process and aggregate data locally.
+Edge devices often stream raw data to central servers, creating latency, network load, and privacy issues. With **Areg**, services run on devices, forming a **mist network of micro-servers** that process and aggregate data locally.
+
 
 <div align="center"><a href="https://GitHub.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
 
