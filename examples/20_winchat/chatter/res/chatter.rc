@@ -105,7 +105,7 @@ BEGIN
     LTEXT           "Broker IP-Address:",IDC_STATIC,10,10,63,15,SS_CENTERIMAGE
     LTEXT           "Broker Port:",IDC_STATIC,10,37,63,15,SS_CENTERIMAGE
     LTEXT           "Nick Name:",IDC_STATIC,10,64,63,15,SS_CENTERIMAGE
-    CTEXT           "Please set IP-Address and port number of Multicast Router.\nAnd choose unique Nick Name to set in network.",IDC_STATIC,10,90,304,28
+    CTEXT           "Please set IP-Address and port number of Multitarget Router.\nAnd choose unique Nick Name to set in network.",IDC_STATIC,10,90,304,28
 END
 
 IDD_PAGE_MESSAGES DIALOGEX 0, 0, 325, 203

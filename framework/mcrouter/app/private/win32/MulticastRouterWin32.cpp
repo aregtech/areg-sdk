@@ -7,12 +7,12 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/MulticastRouterWin32.cpp
+ * \file        mcrouter/app/private/MultitargetRouterWin32.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Router, Multicast Router Service process
+ * \brief       Router, Multitarget Router Service process
  ************************************************************************/
-#include "mcrouter/app/MulticastRouter.hpp"
+#include "mcrouter/app/MultitargetRouter.hpp"
 
 #ifdef _WIN32
 
@@ -48,7 +48,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     static_cast<void>(envp);
     int result{ ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
-    MulticastRouter& router = MulticastRouter::getInstance();
+    MultitargetRouter& router = MultitargetRouter::getInstance();
     router.parseOptions(static_cast<int>(argc), argvTemp, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
     result = router.serviceMain(router.getCurrentOption(), nullptr);
     NESystemService::deleteArguments(argvTemp, argc);
@@ -58,7 +58,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #else   // _MINGW
 int main(int argc, char* argv[], char* envp[])
 {
-    MulticastRouter& router = MulticastRouter::getInstance();
+    MultitargetRouter& router = MultitargetRouter::getInstance();
     router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }
@@ -68,7 +68,7 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-        MulticastRouter& router = MulticastRouter::getInstance();
+        MultitargetRouter& router = MultitargetRouter::getInstance();
         router.setState(NESystemService::eSystemServiceState::ServiceStarting);
         char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int>(argc));
         router.serviceMain(NESystemService::eServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
@@ -86,19 +86,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch ( CtrlCode )
     {
     case SERVICE_CONTROL_STOP:
-        MulticastRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceStop);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        MulticastRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServicePause);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        MulticastRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceContinue);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        MulticastRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceShutdown);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceShutdown);
         break;
 
     default:

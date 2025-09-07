@@ -1,5 +1,5 @@
 ﻿[Unit]
-Description=AREG TCP/IP Multicast Router Service to automate messaging
+Description=AREG TCP/IP Multitarget Router Service to automate messaging
 StartLimitIntervalSec=1
 
 [Service]
@@ -13,7 +13,7 @@ RestartSec=1
 WantedBy=multi-user.target
 Alias=mcrouter.service
 
-# Run this file under Linux with admin rights to enable, start or stop AREG Multicast Router Service.
+# Run this file under Linux with admin rights to enable, start or stop AREG Multitarget Router Service.
 # Example:
 # Enable .: service: sudo systemctl enable  mcrouter.service
 # Start ..: service: sudo systemctl start   mcrouter.service

@@ -18,7 +18,7 @@ cmake --build ./build
 
 Executing the above commands will build the AREG framework, taking into account the extended functionality provided by `ncurses` when the `AREG_EXTENDED` option is enabled.
 
-**The list of POSIX API functions and macro used in AREG SDK (including multicast message router):**
+**The list of POSIX API functions and macro used in AREG SDK (including Multitarget message router):**
 
 ```
 accept

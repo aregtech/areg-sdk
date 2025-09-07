@@ -1,6 +1,6 @@
-# Directory Overview: AREG Multicast Router Application (`mcrouter`)
+# Directory Overview: AREG Multitarget Router Application (`mcrouter`)
 
-This directory contains the source code for the Multicast Router (`mcrouter`), a core application that facilitates inter-process communication (IPC) for creating connected networks of Things at the network edge. Applications using the AREG framework require `mcrouter` to send and receive messages, making it an essential component of the AREG SDK. The `mcrouter` can operate as a console application or an OS-managed service, depending on the configuration.
+This directory contains the source code for the Multitarget Router (`mcrouter`), a core application that facilitates inter-process communication (IPC) for creating connected networks of Things at the network edge. Applications using the AREG framework require `mcrouter` to send and receive messages, making it an essential component of the AREG SDK. The `mcrouter` can operate as a console application or an OS-managed service, depending on the configuration.
 
 ### Directory Contents
 
@@ -99,7 +99,7 @@ To configure and run the `mcrouter` application as a Windows-managed service, fo
      ```
 
 ---
-## Usage of AREG Multicast Router (`mcrouter`)
+## Usage of AREG Multitarget Router (`mcrouter`)
 
 The `mcrouter` provides flexible command-line and console commands for managing communication and connected instances.
 

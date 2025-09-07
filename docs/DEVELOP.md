@@ -18,7 +18,7 @@ Brief description of AREG SDK file structure:
 3. The [framework/areglogger](./../framework/areglogger/) directory contains implementation of a Log Observer library to use in applications to receive logs.
 4. The [framework/logcollector](./../framework/logcollector/) directory contains implementation of Log Collector (`logcollector`), which runs either as console application or OS-managed Service.
 5. The [framework/logobserver](./../framework/logobserver/) directory contains implementation of Log Observer (`logobserver`), which runs as a console application.
-6. The [framework/mcrouter](./../framework/mcrouter/) directory contains implementation of Multicast Router (`mcrouter`), which runs either as console application or OS-managed Service.
+6. The [framework/mcrouter](./../framework/mcrouter/) directory contains implementation of Multitarget Router (`mcrouter`), which runs either as console application or OS-managed Service.
 7. The [thirdparty](./../thirdparty) directory contains third-party modules that SDK has dependencies.
 8. The [examples](./../examples/) directory contains working examples to demonstrate _AREG_ features.
 9. The [tests](./../tests/) directory contains _Unit Tests_ (planned to have benchmark tests).

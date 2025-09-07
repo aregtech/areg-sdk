@@ -7,13 +7,13 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/MulticastRouter.cpp
+ * \file        mcrouter/app/private/MultitargetRouter.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-cast routing to run as process or service.
  ************************************************************************/
 
-#include "mcrouter/app/MulticastRouter.hpp"
+#include "mcrouter/app/MultitargetRouter.hpp"
 #include "mcrouter/app/private/RouterConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
@@ -79,20 +79,20 @@ namespace
 // Scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_servicePause);
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
-DEF_LOG_SCOPE(mcrouter_app_MulticastRouter_setState);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceMain);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceStart);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceStop);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_servicePause);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceContinue);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceInstall);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceUninstall);
+DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_setState);
 
 //////////////////////////////////////////////////////////////////////////
-// MulticastRouter class implementation
+// MultitargetRouter class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::sOptionSetup MulticastRouter::ValidOptions[ ]
+const OptionParser::sOptionSetup MultitargetRouter::ValidOptions[ ]
 {
       { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
@@ -108,47 +108,47 @@ const OptionParser::sOptionSetup MulticastRouter::ValidOptions[ ]
     , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
-MulticastRouter & MulticastRouter::getInstance(void)
+MultitargetRouter & MultitargetRouter::getInstance(void)
 {
-    static MulticastRouter _messageRouter;
+    static MultitargetRouter _messageRouter;
     return _messageRouter;
 }
 
 #if AREG_EXTENDED
-void MulticastRouter::printStatus(const String& status)
+void MultitargetRouter::printStatus(const String& status)
 {
 
-    if (MulticastRouter::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
+    if (MultitargetRouter::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
     {
         Console& console{ Console::getInstance() };
         Console::Coord curPos{ console.getCursorCurPosition() };
-        MulticastRouter::_outputInfo(status);
+        MultitargetRouter::_outputInfo(status);
         console.setCursorCurPosition(curPos);
     }
 }
 #else   // AREG_EXTENDED
-void MulticastRouter::printStatus(const String& /* status */)
+void MultitargetRouter::printStatus(const String& /* status */)
 {
 }
 #endif  // AREG_EXTENDED
 
-MulticastRouter::MulticastRouter( void )
+MultitargetRouter::MultitargetRouter( void )
     : ServiceApplicationBase( mServiceServer )
     , mServiceServer        ( )
 {
 }
 
-Console::CallBack MulticastRouter::getOptionCheckCallback( void ) const
+Console::CallBack MultitargetRouter::getOptionCheckCallback( void ) const
 {
-    return Console::CallBack( MulticastRouter::_checkCommand );
+    return Console::CallBack( MultitargetRouter::_checkCommand );
 }
 
-void MulticastRouter::runConsoleInputExtended( void )
+void MultitargetRouter::runConsoleInputExtended( void )
 {
 #if AREG_EXTENDED
 
     Console & console = Console::getInstance( );
-    MulticastRouter::_outputTitle( );
+    MultitargetRouter::_outputTitle( );
 
     if (getDataRateHelper().isVerbose())
     {
@@ -175,13 +175,13 @@ void MulticastRouter::runConsoleInputExtended( void )
 #endif   // !AREG_EXTENDED
 }
 
-void MulticastRouter::runConsoleInputSimple( void )
+void MultitargetRouter::runConsoleInputSimple( void )
 {
     constexpr uint32_t bufSize{ 512 };
     char cmd[bufSize]{ 0 };
     bool quit{ false };
 
-    MulticastRouter::_outputTitle( );
+    MultitargetRouter::_outputTitle( );
 
     do
     {
@@ -189,58 +189,58 @@ void MulticastRouter::runConsoleInputSimple( void )
         if (inputConsoleData(cmd, bufSize) == false)
             continue;
 
-        quit = MulticastRouter::_checkCommand( cmd );
+        quit = MultitargetRouter::_checkCommand( cmd );
 
     } while ( quit == false );
 }
 
-std::pair<const OptionParser::sOptionSetup*, int> MulticastRouter::getAppOptions(void) const
+std::pair<const OptionParser::sOptionSetup*, int> MultitargetRouter::getAppOptions(void) const
 {
-    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN(MulticastRouter::ValidOptions))));
+    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MultitargetRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN(MultitargetRouter::ValidOptions))));
     return _opts;
 }
 
-wchar_t* MulticastRouter::getServiceNameW(void) const
+wchar_t* MultitargetRouter::getServiceNameW(void) const
 {
-    return NEMulticastRouterSettings::SERVICE_NAME_WIDE;
+    return NEMultitargetRouterSettings::SERVICE_NAME_WIDE;
 }
 
-char* MulticastRouter::getServiceNameA(void) const
+char* MultitargetRouter::getServiceNameA(void) const
 {
-    return NEMulticastRouterSettings::SERVICE_NAME_ASCII;
+    return NEMultitargetRouterSettings::SERVICE_NAME_ASCII;
 }
 
-wchar_t* MulticastRouter::getServiceDisplayNameW(void) const
+wchar_t* MultitargetRouter::getServiceDisplayNameW(void) const
 {
-    return NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_WIDE;
+    return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE;
 }
 
-char* MulticastRouter::getServiceDisplayNameA(void) const
+char* MultitargetRouter::getServiceDisplayNameA(void) const
 {
-    return NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_ASCII;
+    return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII;
 }
 
-wchar_t* MulticastRouter::getServiceDescriptionW(void) const
+wchar_t* MultitargetRouter::getServiceDescriptionW(void) const
 {
-    return NEMulticastRouterSettings::SERVICE_DESCRIBE_WIDE;
+    return NEMultitargetRouterSettings::SERVICE_DESCRIBE_WIDE;
 }
 
-char* MulticastRouter::getServiceDescriptionA(void) const
+char* MultitargetRouter::getServiceDescriptionA(void) const
 {
-    return NEMulticastRouterSettings::SERVICE_DESCRIBE_ASCII;
+    return NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII;
 }
 
-NERemoteService::eRemoteServices MulticastRouter::getServiceType(void) const
+NERemoteService::eRemoteServices MultitargetRouter::getServiceType(void) const
 {
     return NERemoteService::eRemoteServices::ServiceRouter;
 }
 
-NERemoteService::eConnectionTypes MulticastRouter::getConnectionType(void) const
+NERemoteService::eConnectionTypes MultitargetRouter::getConnectionType(void) const
 {
     return NERemoteService::eConnectionTypes::ConnectTcpip;
 }
 
-void MulticastRouter::printHelp( bool /* isCmdLine */ )
+void MultitargetRouter::printHelp( bool /* isCmdLine */ )
 {
 #if     AREG_EXTENDED
 
@@ -267,75 +267,75 @@ void MulticastRouter::printHelp( bool /* isCmdLine */ )
 #endif  // AREG_EXTENDED
 }
 
-void MulticastRouter::startConsoleService( void )
+void MultitargetRouter::startConsoleService( void )
 {
     Application::loadModel( _modelName );
 }
 
-void MulticastRouter::stopConsoleService( void )
+void MultitargetRouter::stopConsoleService( void )
 {
     Application::unloadModel( _modelName );
 }
 
-bool MulticastRouter::_checkCommand(const String& cmd)
+bool MultitargetRouter::_checkCommand(const String& cmd)
 {
-    OptionParser parser( MulticastRouter::ValidOptions, MACRO_ARRAYLEN( MulticastRouter::ValidOptions) );
+    OptionParser parser( MultitargetRouter::ValidOptions, MACRO_ARRAYLEN( MultitargetRouter::ValidOptions) );
     bool quit{ false };
     bool hasError{ false };
 
-    MulticastRouter::_cleanHelp();
+    MultitargetRouter::_cleanHelp();
 
     if ( parser.parseOptionLine( cmd ) )
     {
-        MulticastRouter & router = MulticastRouter::getInstance( );
+        MultitargetRouter & router = MultitargetRouter::getInstance( );
         const OptionParser::InputOptionList & opts = parser.getOptions( );
         for (uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
             const OptionParser::sOption & opt = opts[ i ];
-            switch ( static_cast<MulticastRouter::eRouterOptions>(opt.inCommand) )
+            switch ( static_cast<MultitargetRouter::eRouterOptions>(opt.inCommand) )
             {
-            case MulticastRouter::eRouterOptions::CMD_RouterPause:
-                MulticastRouter::_outputInfo( "Pausing message router ..." );
+            case MultitargetRouter::eRouterOptions::CMD_RouterPause:
+                MultitargetRouter::_outputInfo( "Pausing message router ..." );
                 router.getCommunicationController().disconnectServiceHost( );
                 router.mServiceServer.waitToComplete( );
-                MulticastRouter::_outputInfo( "Message router is paused ..." );
+                MultitargetRouter::_outputInfo( "Message router is paused ..." );
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterRestart:
-                MulticastRouter::_outputInfo( "Restarting message router ..." );
+            case MultitargetRouter::eRouterOptions::CMD_RouterRestart:
+                MultitargetRouter::_outputInfo( "Restarting message router ..." );
                 router.getCommunicationController( ).connectServiceHost( );
-                MulticastRouter::_outputInfo( "Message router is restarted ..." );
+                MultitargetRouter::_outputInfo( "Message router is restarted ..." );
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterInstances:
-                MulticastRouter::_outputInstances( router.getConnetedInstances() );
+            case MultitargetRouter::eRouterOptions::CMD_RouterInstances:
+                MultitargetRouter::_outputInstances( router.getConnetedInstances() );
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterVerbose:
-                MulticastRouter::_setVerboseMode( true );
+            case MultitargetRouter::eRouterOptions::CMD_RouterVerbose:
+                MultitargetRouter::_setVerboseMode( true );
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterSilent:
-                MulticastRouter::_setVerboseMode( false );
+            case MultitargetRouter::eRouterOptions::CMD_RouterSilent:
+                MultitargetRouter::_setVerboseMode( false );
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterPrintHelp:
+            case MultitargetRouter::eRouterOptions::CMD_RouterPrintHelp:
                 router.printHelp( false );
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterQuit:
+            case MultitargetRouter::eRouterOptions::CMD_RouterQuit:
                 quit = true;
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterConsole:    // pass through
-            case MulticastRouter::eRouterOptions::CMD_RouterInstall:    // pass through
-            case MulticastRouter::eRouterOptions::CMD_RouterUninstall:  // pass through
-            case MulticastRouter::eRouterOptions::CMD_RouterService:    // pass through
-            case MulticastRouter::eRouterOptions::CMD_RouterLoad:
-                MulticastRouter::_outputInfo("This command should be used in command line ...");
+            case MultitargetRouter::eRouterOptions::CMD_RouterConsole:    // pass through
+            case MultitargetRouter::eRouterOptions::CMD_RouterInstall:    // pass through
+            case MultitargetRouter::eRouterOptions::CMD_RouterUninstall:  // pass through
+            case MultitargetRouter::eRouterOptions::CMD_RouterService:    // pass through
+            case MultitargetRouter::eRouterOptions::CMD_RouterLoad:
+                MultitargetRouter::_outputInfo("This command should be used in command line ...");
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterUndefined:  // pass through
+            case MultitargetRouter::eRouterOptions::CMD_RouterUndefined:  // pass through
             default:
                 hasError = true;
                 break;
@@ -389,25 +389,25 @@ bool MulticastRouter::_checkCommand(const String& cmd)
     return quit;
 }
 
-void MulticastRouter::_outputTitle( void )
+void MultitargetRouter::_outputTitle( void )
 {
 #if AREG_EXTENDED
 
     Console & console = Console::getInstance( );
     console.lockConsole();
-    console.outputTxt( NESystemService::COORD_TITLE, NEMulticastRouterSettings::APP_TITLE.data( ) );
+    console.outputTxt( NESystemService::COORD_TITLE, NEMultitargetRouterSettings::APP_TITLE.data( ) );
     console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
     console.unlockConsole();
 
 #else   // !AREG_EXTENDED
 
-    printf( "%s\n", NEMulticastRouterSettings::APP_TITLE.data( ) );
+    printf( "%s\n", NEMultitargetRouterSettings::APP_TITLE.data( ) );
     printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
 
 #endif  // AREG_EXTENDED
 }
 
-void MulticastRouter::_outputInfo( const String & info )
+void MultitargetRouter::_outputInfo( const String & info )
 {
 #if AREG_EXTENDED
 
@@ -428,7 +428,7 @@ void MulticastRouter::_outputInfo( const String & info )
 #endif  // AREG_EXTENDED
 }
 
-void MulticastRouter::_outputInstances( const NEService::MapInstances & instances )
+void MultitargetRouter::_outputInstances( const NEService::MapInstances & instances )
 {
     static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
@@ -500,11 +500,11 @@ void MulticastRouter::_outputInstances( const NEService::MapInstances & instance
 }
 
 #if AREG_EXTENDED
-void MulticastRouter::_setVerboseMode( bool makeVerbose )
+void MultitargetRouter::_setVerboseMode( bool makeVerbose )
 {
     static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
     static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
-    MulticastRouter & router = MulticastRouter::getInstance( );
+    MultitargetRouter & router = MultitargetRouter::getInstance( );
     Console & console = Console::getInstance( );
     console.lockConsole( );
     if ( router.getDataRateHelper().isVerbose() != makeVerbose )
@@ -535,7 +535,7 @@ void MulticastRouter::_setVerboseMode( bool makeVerbose )
 
 #else   // !AREG_EXTENDED
 
-void MulticastRouter::_setVerboseMode( bool /* makeVerbose */ )
+void MultitargetRouter::_setVerboseMode( bool /* makeVerbose */ )
 {
     static constexpr std::string_view _unsupported{"This option is available only with extended features"};
     printf( "%s\n", _unsupported.data( ) );
@@ -543,7 +543,7 @@ void MulticastRouter::_setVerboseMode( bool /* makeVerbose */ )
 
 #endif  // AREG_EXTENDED
 
-void MulticastRouter::_cleanHelp(void)
+void MultitargetRouter::_cleanHelp(void)
 {
 #if     AREG_EXTENDED
 

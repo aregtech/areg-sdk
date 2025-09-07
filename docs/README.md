@@ -26,7 +26,7 @@ areg-sdk .............. --> The root folder of the AREG SDK.
     |
     +- examples ....... --> Examples demonstrating the usage of the AREG framework and services.
     |
-    +- framework ...... --> Source code of the AREG framework and Multicast Router.
+    +- framework ...... --> Source code of the AREG framework and Multitarget Router.
     |   |
     |   +- areg ....... --> Source code of the AREG framework.
     |   |
@@ -38,7 +38,7 @@ areg-sdk .............. --> The root folder of the AREG SDK.
     |   |
     |   +- logobserver  --> A console application designed to manage and analyze logs in real time.
     |   |
-    |   +- mcrouter ... --> Source code of the Multicast Router (MCR).
+    |   +- mcrouter ... --> Source code of the Multitarget Router (MCR).
     |
     +- tests .......... --> Unit tests for the AREG Framework.
     |

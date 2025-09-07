@@ -1,6 +1,6 @@
-# AREG SDK Multicast Router
+# AREG SDK Multitarget Router
 
-The **Multicast Router (mcrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
+The **Multitarget Router (mcrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
 
 ## Table of Contents
 1. [General Information](#1-general-information)
@@ -17,13 +17,13 @@ The **Multicast Router (mcrouter)** in AREG SDK enables efficient communication 
 
 ## 1. General Information
 
-The AREG Framework utilizes an **Object Remote Procedure Call (Object RPC)** protocol to facilitate seamless data exchange between software components. The **Multicast Message Router** (or **Router**) establishes a communication network, efficiently routing messages to the correct destinations. This guide outlines configuration and setup instructions for the Multicast Router.
+The AREG Framework utilizes an **Object Remote Procedure Call (Object RPC)** protocol to facilitate seamless data exchange between software components. The **Multitarget Message Router** (or **Router**) establishes a communication network, efficiently routing messages to the correct destinations. This guide outlines configuration and setup instructions for the Multitarget Router.
 
 ---
 
 ## 2. Running Router as a Service
 
-The Multicast Router (`mcrouter`) is implemented within the AREG SDK [Multicast Router module](./../../framework/mcrouter/) and compiled as a standalone executable that can operate as either a console application or an OS-managed service on Windows and Linux platforms. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
+The Multitarget Router (`mcrouter`) is implemented within the AREG SDK [Multitarget Router module](./../../framework/mcrouter/) and compiled as a standalone executable that can operate as either a console application or an OS-managed service on Windows and Linux platforms. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
 
 ### Linux Service
 
@@ -181,4 +181,4 @@ int main()
 }
 ```
 
-Using `Application::initApplication()` with the appropriate parameters connects the application to the Multicast Router, making it ready for service-based **Inter-Process Communication (IPC)**. Finally, `Application::releaseApplication()` cleans up resources.
+Using `Application::initApplication()` with the appropriate parameters connects the application to the Multitarget Router, making it ready for service-based **Inter-Process Communication (IPC)**. Finally, `Application::releaseApplication()` cleans up resources.

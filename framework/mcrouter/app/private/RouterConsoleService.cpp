@@ -18,7 +18,7 @@
  ************************************************************************/
 #include "mcrouter/app/private/RouterConsoleService.hpp"
 
-#include "mcrouter/app/MulticastRouter.hpp"
+#include "mcrouter/app/MultitargetRouter.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // RouterConsoleService class implementation, static methods
@@ -37,6 +37,6 @@ void RouterConsoleService::DeleteComponent( Component & compObject, const NERegi
 // RouterConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
 RouterConsoleService::RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
-    : SystemServiceConsole( &MulticastRouter::getInstance().getDataRateHelper(), entry, owner, data)
+    : SystemServiceConsole( &MultitargetRouter::getInstance().getDataRateHelper(), entry, owner, data)
 {
 }

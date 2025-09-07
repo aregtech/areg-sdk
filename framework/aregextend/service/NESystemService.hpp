@@ -96,7 +96,7 @@ namespace NESystemService
     inline const char * getString( NESystemService::eSystemServiceState serviceState );
 
     /**
-     * \brief   The default option to run multicast System as a console application.
+     * \brief   The default option to run Multitarget System as a console application.
      **/
     constexpr eServiceOption   DEFAULT_OPTION   { eServiceOption::CMD_Console };
 

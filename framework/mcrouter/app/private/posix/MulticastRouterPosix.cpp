@@ -7,12 +7,12 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/MulticastRouterPosix.cpp
+ * \file        mcrouter/app/private/MultitargetRouterPosix.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       Router, Multicast Router Service process
+ * \brief       Router, Multitarget Router Service process
  ************************************************************************/
-#include "mcrouter/app/MulticastRouter.hpp"
+#include "mcrouter/app/MultitargetRouter.hpp"
 
 #ifdef _POSIX
 
@@ -30,7 +30,7 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    MulticastRouter& router = MulticastRouter::getInstance();
+    MultitargetRouter& router = MultitargetRouter::getInstance();
     router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }

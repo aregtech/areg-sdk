@@ -89,7 +89,7 @@ namespace NEApplication
 
     /**
      * \brief   NEApplication::DEFAULT_ROUTER_SERVICE_NAME
-     *          The default name of Multicast Router.
+     *          The default name of Multitarget Router.
      **/
     constexpr std::string_view  DEFAULT_ROUTER_SERVICE_NAME { "mcrouter" };
 

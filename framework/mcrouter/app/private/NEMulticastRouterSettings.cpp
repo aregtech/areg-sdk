@@ -7,19 +7,19 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/NEMulticastRouterSettings.cpp
+ * \file        mcrouter/app/private/NEMultitargetRouterSettings.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multicast routing settings.
+ * \brief       AREG Platform, Multitarget routing settings.
  ************************************************************************/
-#include "mcrouter/app/NEMulticastRouterSettings.hpp"
+#include "mcrouter/app/NEMultitargetRouterSettings.hpp"
 #include "areg/appbase/NEApplication.hpp"
 
-char *      NEMulticastRouterSettings::SERVICE_NAME_ASCII    { NEApplication::ROUTER_SERVICE_NAME_ASCII };
+char *      NEMultitargetRouterSettings::SERVICE_NAME_ASCII    { NEApplication::ROUTER_SERVICE_NAME_ASCII };
 
-wchar_t *   NEMulticastRouterSettings::SERVICE_NAME_WIDE     { NEApplication::ROUTER_SERVICE_NAME_WIDE };
+wchar_t *   NEMultitargetRouterSettings::SERVICE_NAME_WIDE     { NEApplication::ROUTER_SERVICE_NAME_WIDE };
 
-char        NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_ASCII[]
+char        NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
@@ -27,7 +27,7 @@ char        NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_ASCII[]
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
-wchar_t     NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_WIDE[]
+wchar_t     NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
@@ -35,7 +35,7 @@ wchar_t     NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_WIDE[]
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
-char        NEMulticastRouterSettings::SERVICE_DESCRIBE_ASCII[]
+char        NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
@@ -46,7 +46,7 @@ char        NEMulticastRouterSettings::SERVICE_DESCRIBE_ASCII[]
         , 'm', 'e', 's', 's', 'a', 'g', 'i', 'n', 'g', '.', '\0'
 };
 
-wchar_t     NEMulticastRouterSettings::SERVICE_DESCRIBE_WIDE[]
+wchar_t     NEMultitargetRouterSettings::SERVICE_DESCRIBE_WIDE[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '

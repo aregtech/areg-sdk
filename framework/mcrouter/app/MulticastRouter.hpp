@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_APP_MULTICASTROUTER_HPP
-#define AREG_MCROUTER_APP_MULTICASTROUTER_HPP
+#ifndef AREG_MCROUTER_APP_MULTITARGETROUTER_HPP
+#define AREG_MCROUTER_APP_MULTITARGETROUTER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/MulticastRouter.hpp
+ * \file        mcrouter/app/MultitargetRouter.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-cast routing to run as process or service.
@@ -24,7 +24,7 @@
 #include "areg/base/SynchObjects.hpp"
 #include "aregextend/console/OptionParser.hpp"
 #include "aregextend/service/NESystemService.hpp"
-#include "mcrouter/app/NEMulticastRouterSettings.hpp"
+#include "mcrouter/app/NEMultitargetRouterSettings.hpp"
 #include "mcrouter/service/RouterServerService.hpp"
 
 #include <utility>
@@ -32,21 +32,21 @@
 class Console;
 
 //////////////////////////////////////////////////////////////////////////
-// MulticastRouter class declaration
+// MultitargetRouter class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The message routing service is a separate process, which receives and routs messages
  *          to the connected servicing components. Applications connect to message routing service via
  *          TCP/IP protocol. The message router distributes the IPC message to the targets.
  **/
-class MulticastRouter final : public ServiceApplicationBase
+class MultitargetRouter final : public ServiceApplicationBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   MulticastRouter::eRouterOptions
+     * \brief   MultitargetRouter::eRouterOptions
      *          The command to handle the message router.
      **/
     enum class eRouterOptions : int32_t
@@ -78,7 +78,7 @@ public:
     /**
      * \brief   Returns singleton instance of multi-cast router (MCR).
      **/
-    static MulticastRouter & getInstance( void );
+    static MultitargetRouter & getInstance( void );
 
     /**
      * \brief   Outputs the specified message on the console.
@@ -96,9 +96,9 @@ private:
     /**
      * \brief   Default constructor and destructor.
      **/
-    MulticastRouter( void );
+    MultitargetRouter( void );
 
-    virtual ~MulticastRouter( void ) = default;
+    virtual ~MultitargetRouter( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -217,7 +217,7 @@ private:
     /**
      * \brief   Returns instance of message router service.
      **/
-    inline MulticastRouter & self( void );
+    inline MultitargetRouter & self( void );
 
     /**
      * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
@@ -267,21 +267,21 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( MulticastRouter );
+    DECLARE_NOCOPY_NOMOVE( MultitargetRouter );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// MulticastRouter class inline methods.
+// MultitargetRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::MapInstances & MulticastRouter::getConnetedInstances( void ) const
+inline const NEService::MapInstances & MultitargetRouter::getConnetedInstances( void ) const
 {
     return mServiceServer.getInstances( );
 }
 
-inline MulticastRouter & MulticastRouter::self( void )
+inline MultitargetRouter & MultitargetRouter::self( void )
 {
     return (*this);
 }
 
-#endif  // AREG_MCROUTER_APP_MULTICASTROUTER_HPP
+#endif  // AREG_MCROUTER_APP_MULTITARGETROUTER_HPP

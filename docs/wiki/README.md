@@ -34,7 +34,7 @@ The following sections guide you through installing, configuring, and using the 
    - **[AREG SDK Log Collector Service](./04d-logcollector.md)**: Configuration and use of AREG SDK's log collector for centralized log management.
 
 ### 5. Networking and Communication
-   - **[AREG SDK Multitarget Router](./05a-mcrouter.md)**: Information on setting up multicast communication for distributed applications.
+   - **[AREG SDK Multitarget Router](./05a-mcrouter.md)**: Information on setting up Multitarget communication for distributed applications.
 
 ### 6. Persistence
    - **[Key-Value Data Persistence Syntax in AREG SDK](./06a-persistence-syntax.md)**: Persistent data storage and management using AREG SDK's key-value storage options.

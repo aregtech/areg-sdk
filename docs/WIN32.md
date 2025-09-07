@@ -17,7 +17,7 @@ msbuild /m /property:Configuration=Debug /property:Platform=x64 /property:AregEx
 
 By executing the above command, the AREG framework will be built, taking into account the extended functionality that is available for Windows 2000 and higher.
 
-**The list of Win32 API functions and macro used in AREG SDK (including multicast message router):**
+**The list of Win32 API functions and macro used in AREG SDK (including Multitarget message router):**
 
 ```
 TODO: Add Win32 API list here.

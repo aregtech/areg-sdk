@@ -24,10 +24,10 @@
     <ClInclude Include="mcrouter\resources\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\app\MulticastRouter.hpp">
+    <ClInclude Include="mcrouter\app\MultitargetRouter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp">
+    <ClInclude Include="mcrouter\app\NEMultitargetRouterSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcrouter\service\RouterServerService.hpp">
@@ -76,7 +76,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
+    <ClCompile Include="mcrouter\app\private\MultitargetRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\service\private\RouterServerService.cpp">
@@ -94,13 +94,13 @@
     <ClCompile Include="mcrouter\service\private\ServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp">
+    <ClCompile Include="mcrouter\app\private\NEMultitargetRouterSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\posix\MulticastRouterPosix.cpp">
+    <ClCompile Include="mcrouter\app\private\posix\MultitargetRouterPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp">
+    <ClCompile Include="mcrouter\app\private\win32\MultitargetRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp">
