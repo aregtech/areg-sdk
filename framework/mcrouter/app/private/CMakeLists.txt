@@ -1,7 +1,7 @@
-macro_add_source(mcrouter_SRC "${AREG_FRAMEWORK}"
-	mcrouter/app/private/MultitargetRouter.cpp
-	mcrouter/app/private/NEMultitargetRouterSettings.cpp
-    mcrouter/app/private/RouterConsoleService.cpp
-    mcrouter/app/private/posix/MultitargetRouterPosix.cpp
-    mcrouter/app/private/win32/MultitargetRouterWin32.cpp
+macro_add_source(mtrouter_SRC "${AREG_FRAMEWORK}"
+	mtrouter/app/private/MultitargetRouter.cpp
+	mtrouter/app/private/NEMultitargetRouterSettings.cpp
+    mtrouter/app/private/RouterConsoleService.cpp
+    mtrouter/app/private/posix/MultitargetRouterPosix.cpp
+    mtrouter/app/private/win32/MultitargetRouterWin32.cpp
 )

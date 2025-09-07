@@ -126,7 +126,7 @@ If the issue persists, reset the WSL network configuration:
 ## Issue 3: Configuring communication between Windows and WSL
 When using Windows Subsystem for Linux (WSL), it is common to encounter issues with communication between Windows and WSL services. This section provides solutions to help configure communication between Windows and WSL.
 
-By default, the [`areg.init`](./../../framework/areg/resources/areg.init) configuration file uses the `localhost` IP address to run the `mcrouter` and `logcollector` services on the Windows platform. Applications running within WSL cannot connect to these services due to this configuration. To resolve this, you need to modify the [`areg.init`](./../../framework/areg/resources/areg.init) file settings to enable proper communication.
+By default, the [`areg.init`](./../../framework/areg/resources/areg.init) configuration file uses the `localhost` IP address to run the `mtrouter` and `logcollector` services on the Windows platform. Applications running within WSL cannot connect to these services due to this configuration. To resolve this, you need to modify the [`areg.init`](./../../framework/areg/resources/areg.init) file settings to enable proper communication.
 
 > [!IMPORTANT]
 >
@@ -140,7 +140,7 @@ By default, the [`areg.init`](./../../framework/areg/resources/areg.init) config
 
 ### Solution 1: Editing all IP address settings (Recommended)
 
-When WSL applications cannot connect to services running on Windows due to the use of default `localhost` address, you can reconfigure the [`areg.init`](./../../framework/areg/resources/areg.init) settings to enable communication. In the following example, let's consider the case where `mcrouter` is running on Windows and `logcollector` is running within WSL. Other services and/or applications that communicate with `mcrouter` or `logcollector` can be run on either Windows or WSL.
+When WSL applications cannot connect to services running on Windows due to the use of default `localhost` address, you can reconfigure the [`areg.init`](./../../framework/areg/resources/areg.init) settings to enable communication. In the following example, let's consider the case where `mtrouter` is running on Windows and `logcollector` is running within WSL. Other services and/or applications that communicate with `mtrouter` or `logcollector` can be run on either Windows or WSL.
 
 **Steps:**
 
@@ -149,7 +149,7 @@ When WSL applications cannot connect to services running on Windows due to the u
    - Run `ifconfig` in the WSL terminal to find the IP address for WSL.
 
 2. **Update WSL Configuration**
-   Edit the `areg.init` configuration file for applications running on WSL to specify the IP addresses of the `mcrouter` and `logcollector` services. Update the lines:
+   Edit the `areg.init` configuration file for applications running on WSL to specify the IP addresses of the `mtrouter` and `logcollector` services. Update the lines:
    ```
    router::*::address::tcpip = <windows-ip-address>
    logger::*::address::tcpip = <wsl-ip-address>
@@ -157,18 +157,18 @@ When WSL applications cannot connect to services running on Windows due to the u
    Replace `<windows-ip-address>` and `<wsl-ip-address>` with the IP addresses found in **Step 1**.
 
 3. **Update Windows Configuration**
-   Edit the `areg.init` configuration file for applications running on Windows to specify the IP address of the `mcrouter` and `logcollector` services. Update the lines:
+   Edit the `areg.init` configuration file for applications running on Windows to specify the IP address of the `mtrouter` and `logcollector` services. Update the lines:
    ```
    router::*::address::tcpip = <windows-ip-address>
    logger::*::address::tcpip = <wsl-ip-address>
    ```
 
 4. **Restart Services**
-   After updating the configuration files, restart the relevant services (`mcrouter`, `logcollector`, etc.) to apply the changes.
+   After updating the configuration files, restart the relevant services (`mtrouter`, `logcollector`, etc.) to apply the changes.
 
 ### Solution 2: Updating only necessary IP addresses
 
-Applications running on Windows have access to the `localhost` IP Address within WSL, but applications within WSL do not have access to the `localhost` IP address of Windows. Therefore, it is only strictly necessary to update the configuration files to reflect the IP address of services running on Windows. For example, let's again consider the case where `mcrouter` is running on Windows and `logcollector` is running on WSL.
+Applications running on Windows have access to the `localhost` IP Address within WSL, but applications within WSL do not have access to the `localhost` IP address of Windows. Therefore, it is only strictly necessary to update the configuration files to reflect the IP address of services running on Windows. For example, let's again consider the case where `mtrouter` is running on Windows and `logcollector` is running on WSL.
 
 **Steps:**
 
@@ -176,21 +176,21 @@ Applications running on Windows have access to the `localhost` IP Address within
    - Run `ipconfig` on Windows to find the IP address for the Windows host.
 
 2. **Update WSL Configuration**
-   Edit the `areg.init` configuration file for applications running on WSL to specify the IP addresses of the `mcrouter` and `logcollector` services. Update the lines:
+   Edit the `areg.init` configuration file for applications running on WSL to specify the IP addresses of the `mtrouter` and `logcollector` services. Update the lines:
    ```
    router::*::address::tcpip = <windows-ip-address>
    ```
    Replace `<windows-ip-address>` with the IP address found in **Step 1**. Leave the line `logger::*::address::tcpip = localhost` unchanged.
 
 3. **Update Windows Configuration**
-   Edit the `areg.init` configuration file for applications running on Windows to specify the IP address of the `mcrouter` and `logcollector` services. Update the lines:
+   Edit the `areg.init` configuration file for applications running on Windows to specify the IP address of the `mtrouter` and `logcollector` services. Update the lines:
    ```
    router::*::address::tcpip = <windows-ip-address>
    ```
    Again, leave the line `logger::*::address::tcpip = localhost` unchanged.
 
 4. **Restart Services**
-   After updating the configuration files, restart the relevant services (`mcrouter`, `logcollector`, etc.) to apply the changes.
+   After updating the configuration files, restart the relevant services (`mtrouter`, `logcollector`, etc.) to apply the changes.
 
 >[!IMPORTANT]
 >You cannot mix Solution 1 and Solution 2. The IP address of a service and/or application running on WSL must either be specified as `<wsl-ip-address>` or left unchanged in both configuration files. Leaving `localhost` in one configuration file but specifying `<wsl-ip-address>` in the other will prevent proper communication. See [this](https://github.com/aregtech/areg-sdk/pull/480#issuecomment-2568508064) description.

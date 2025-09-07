@@ -6,7 +6,7 @@
 The **16_pubmesh** project demonstrates how to create a **distributed service mesh** combining **Public** and **Local Services** in a **multithreaded, multi-process environment** using **Object Remote Procedure Call (Object RPC)**. The example shows how services interact seamlessly across processes and threads, leveraging automatic discovery and reliable message routing.
 
 > [!NOTE]
-> To run this example, a **Multi-Target Router** (`mcrouter`) must be running on a network-accessible machine. Ensure the `areg.init` file includes the correct IP address and port for the router.
+> To run this example, a **Multi-Target Router** (`mtrouter`) must be running on a network-accessible machine. Ensure the `areg.init` file includes the correct IP address and port for the router.
 
 ## Concepts Shown
 - **Distributed Service Mesh**: Multiple services (Public and Local) interact in real-time across threads and processes.
@@ -16,7 +16,7 @@ The **16_pubmesh** project demonstrates how to create a **distributed service me
 - **Fault Tolerance**: Services maintain reliable communication even if nodes start out of order or fail temporarily.
 
 ## How It Works
-Code is generated from [LocalHelloWorld.siml](./services/LocalHelloWorld.siml), [PublicHelloWorld.siml](./services/PublicHelloWorld.siml), and [SystemShutdown.siml](./services/SystemShutdown.siml) to handle Object RPC communication. The system includes multiple applications hosting service providers and consumers that interact across threads and processes. All IPC messages are routed through `mcrouter`, ensuring reliable message delivery across the mesh.
+Code is generated from [LocalHelloWorld.siml](./services/LocalHelloWorld.siml), [PublicHelloWorld.siml](./services/PublicHelloWorld.siml), and [SystemShutdown.siml](./services/SystemShutdown.siml) to handle Object RPC communication. The system includes multiple applications hosting service providers and consumers that interact across threads and processes. All IPC messages are routed through `mtrouter`, ensuring reliable message delivery across the mesh.
 
 ## Sub-Projects
 1. **16_generated**: Auto-generated code for Object RPC communication across services.
@@ -31,4 +31,4 @@ Code is generated from [LocalHelloWorld.siml](./services/LocalHelloWorld.siml), 
 - **Message Routing via Router**: Ensures efficient delivery to multiple recipients across threads and processes.
 
 ## Takeaway
-The **16_pubmesh** example demonstrates how to implement a **multithreaded, distributed service mesh** using **Object RPC**, automatic service discovery via `serviceConnected()`, and message routing through `mcrouter`, providing a scalable and fault-tolerant framework for complex multi-process applications.
+The **16_pubmesh** example demonstrates how to implement a **multithreaded, distributed service mesh** using **Object RPC**, automatic service discovery via `serviceConnected()`, and message routing through `mtrouter`, providing a scalable and fault-tolerant framework for complex multi-process applications.

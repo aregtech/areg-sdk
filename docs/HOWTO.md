@@ -69,7 +69,7 @@ The projects based on AREG SDK can be compiled with or without logs. If a projec
 
 Multitarget Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The Multitarget router can run as a stand-alone application or as a service managed by operating system. The Multitarget should be configured and all applications should contain [areg.init](./../framework/areg/resources/areg.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
 
-The [AREG SDK Multitarget Router](./wiki/05a-mcrouter.md) page of the AREG SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
+The [AREG SDK Multitarget Router](./wiki/05a-mtrouter.md) page of the AREG SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 

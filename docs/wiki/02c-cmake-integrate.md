@@ -43,7 +43,7 @@ The AREG SDK includes several key components:
 1. **AREG Framework (`areg` library)**: The core library for automation and Object RPC communication.
 2. **AREG Framework Extension (`aregextend` library)**: An optional library with additional utilities.
 3. **AREG Log Observer API (`areglogger` library)**: Allows applications to receive and manage log messages.
-4. **AREG Multitarget Router (`mcrouter` executable)**: An OS-managed service that routes RPC messages.
+4. **AREG Multitarget Router (`mtrouter` executable)**: An OS-managed service that routes RPC messages.
 5. **AREG Log Collector (`logcollector` executable)**: An OS-managed service for remote log collection.
 6. **AREG Log Observer (`logobserver` executable)**: A stand-alone application for managing logs.
 7. **AREG Code Generator (`codegen.jar` runnable)**: A Java tool for generating Service Interface source code.

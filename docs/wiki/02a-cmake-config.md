@@ -151,14 +151,14 @@ The following are the available CMake options to configure the AREG SDK build. O
 > [!TIP]
 > To check if an application has been compiled for a 32-bit or 64-bit system, navigate to the build binary directory and run:
 > ```bash
-> file ./mcrouter.elf
+> file ./mtrouter.elf
 > ```
-> This command displays the binary's architecture. For example, the output for a 32-bit `mcrouter` binary may appear as:
-> > ./mcrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
+> This command displays the binary's architecture. For example, the output for a 32-bit `mtrouter` binary may appear as:
+> > ./mtrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
 
 > Alternatively, use the following command to check specific details in the ELF header:
 > ```bash
-> od -t x1 -t c ./mcrouter | head -n 2
+> od -t x1 -t c ./mtrouter | head -n 2
 > ```
 > In the ELF header output, the 5th byte indicates the bitness: `001` represents a 32-bit executable, while `002` indicates a 64-bit executable.
 > ```plaintext

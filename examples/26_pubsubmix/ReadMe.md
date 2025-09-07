@@ -7,7 +7,7 @@
 The **26_pubsubmix** project demonstrates a hybrid *Publish/Subscribe* (Pub/Sub) system where publishers and subscribers can operate locally within the same process or remotely across multiple processes. Subscribers reliably receive data updates in real time, even during network disruptions, ensuring seamless communication between local and distributed components.
 
 > [!NOTE]
-> This example requires **Multi-Target Router (`mcrouter`)** for message routing. Ensure `mcrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
+> This example requires **Multi-Target Router (`mtrouter`)** for message routing. Ensure `mtrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
 
 ## Concepts Shown
 
@@ -19,7 +19,7 @@ The **26_pubsubmix** project demonstrates a hybrid *Publish/Subscribe* (Pub/Sub)
 
 ## How It Works
 
-The **26_pubsubmix** system consists of multiple processes that can act as both publishers and subscribers. Publishers broadcast updates to all connected subscribers, while subscribers automatically receive the latest data upon subscription. Local subscribers in the same process are updated instantly, and remote subscribers rely on `mcrouter` for reliable, fault-tolerant message delivery.
+The **26_pubsubmix** system consists of multiple processes that can act as both publishers and subscribers. Publishers broadcast updates to all connected subscribers, while subscribers automatically receive the latest data upon subscription. Local subscribers in the same process are updated instantly, and remote subscribers rely on `mtrouter` for reliable, fault-tolerant message delivery.
 
 Processes like **26_pubsubctrl** and **26_pubsubdyn** manage both publishing and subscribing dynamically, allowing seamless switching of roles while maintaining synchronized state across the system. The AREG Framework handles service discovery via `serviceConnected()` and ensures fault-tolerant IPC.
 
@@ -45,4 +45,4 @@ Processes like **26_pubsubctrl** and **26_pubsubdyn** manage both publishing and
 
 ## Takeaway
 
-Demonstrates a resilient hybrid Pub/Sub system with local and remote subscribers, leveraging **Object RPC** and fault-tolerant IPC via `mcrouter` for reliable real-time data distribution.
+Demonstrates a resilient hybrid Pub/Sub system with local and remote subscribers, leveraging **Object RPC** and fault-tolerant IPC via `mtrouter` for reliable real-time data distribution.

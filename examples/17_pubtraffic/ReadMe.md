@@ -6,7 +6,7 @@
 The **17_pubtraffic** project demonstrates how to dynamically create and manage **runtime models** within a **multithreaded, multi-process application**. It shows how services communicate using **Object Remote Procedure Call (Object RPC)** over **Inter-Process Communication (IPC)**, with custom events triggered by user commands.
 
 > [!NOTE]
-> A **Multi-Target Router** (`mcrouter`) must be running on a network-accessible machine. Ensure the `areg.init` file includes the correct IP and port for the router.
+> A **Multi-Target Router** (`mtrouter`) must be running on a network-accessible machine. Ensure the `areg.init` file includes the correct IP and port for the router.
 
 ## Concepts Shown
 - **Dynamic Model Creation**: Create and manage service models at runtime for flexible system behavior.
@@ -16,7 +16,7 @@ The **17_pubtraffic** project demonstrates how to dynamically create and manage 
 - **Multithreaded & Multiprocess Execution**: Services run in separate threads and processes for scalability and concurrency.
 
 ## How It Works
-Code is generated from [SimpleTrafficLight.siml](./services/SimpleTrafficLight.siml) to handle Object RPC communication. The project includes a service provider (`17_pubservice`) that listens for custom commands and multiple clients (`17_pubclient`) that dynamically create models and subscribe to specific datasets. Messages between processes are routed via `mcrouter`, ensuring reliable and fault-tolerant IPC.
+Code is generated from [SimpleTrafficLight.siml](./services/SimpleTrafficLight.siml) to handle Object RPC communication. The project includes a service provider (`17_pubservice`) that listens for custom commands and multiple clients (`17_pubclient`) that dynamically create models and subscribe to specific datasets. Messages between processes are routed via `mtrouter`, ensuring reliable and fault-tolerant IPC.
 
 ## Sub-Projects
 1. **17_generated**: Auto-generated Object RPC code from service interface documents.

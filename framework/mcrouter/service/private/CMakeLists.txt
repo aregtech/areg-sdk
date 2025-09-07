@@ -1,7 +1,7 @@
-macro_add_source(mcrouter_SRC "${AREG_FRAMEWORK}"
-	mcrouter/service/private/ListServiceProxies.cpp
-	mcrouter/service/private/RouterServerService.cpp
-	mcrouter/service/private/ServiceProxy.cpp
-	mcrouter/service/private/ServiceRegistry.cpp
-	mcrouter/service/private/ServiceStub.cpp
+macro_add_source(mtrouter_SRC "${AREG_FRAMEWORK}"
+	mtrouter/service/private/ListServiceProxies.cpp
+	mtrouter/service/private/RouterServerService.cpp
+	mtrouter/service/private/ServiceProxy.cpp
+	mtrouter/service/private/ServiceRegistry.cpp
+	mtrouter/service/private/ServiceStub.cpp
 )

@@ -12,8 +12,8 @@ set PATH=%SystemRoot%\System32;%PATH%
 
 :: create 'config' directory if does not exist and copy file
 IF NOT EXIST "%TARGET_DIR%config" mkdir      "%TARGET_DIR%config"
-copy /D /y "%RESOURCE_DIR%mcrouter.service.install.bat"   "%TARGET_DIR%config\"
-copy /D /y "%RESOURCE_DIR%mcrouter.service.uninstall.bat" "%TARGET_DIR%config\"
+copy /D /y "%RESOURCE_DIR%mtrouter.service.install.bat"   "%TARGET_DIR%config\"
+copy /D /y "%RESOURCE_DIR%mtrouter.service.uninstall.bat" "%TARGET_DIR%config\"
 
 :: restore PATH
 set PATH=%OLDPATH%

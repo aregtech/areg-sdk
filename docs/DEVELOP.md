@@ -18,7 +18,7 @@ Brief description of AREG SDK file structure:
 3. The [framework/areglogger](./../framework/areglogger/) directory contains implementation of a Log Observer library to use in applications to receive logs.
 4. The [framework/logcollector](./../framework/logcollector/) directory contains implementation of Log Collector (`logcollector`), which runs either as console application or OS-managed Service.
 5. The [framework/logobserver](./../framework/logobserver/) directory contains implementation of Log Observer (`logobserver`), which runs as a console application.
-6. The [framework/mcrouter](./../framework/mcrouter/) directory contains implementation of Multitarget Router (`mcrouter`), which runs either as console application or OS-managed Service.
+6. The [framework/mtrouter](./../framework/mtrouter/) directory contains implementation of Multitarget Router (`mtrouter`), which runs either as console application or OS-managed Service.
 7. The [thirdparty](./../thirdparty) directory contains third-party modules that SDK has dependencies.
 8. The [examples](./../examples/) directory contains working examples to demonstrate _AREG_ features.
 9. The [tests](./../tests/) directory contains _Unit Tests_ (planned to have benchmark tests).
@@ -56,7 +56,7 @@ cmake --build ./build -j20
 msbuild .
 ```
 
-All compiled AREG Framework and example binaries are located in `<areg-sdk>/product/build/..../bin` directory. See the [description of examples](./../examples/README.md). If the example is marked as **IPC** (Inter-process communication), the application contains a **Public Service** Provider and Consumer, and it requires start of `mcrouter` to run in the multiprocessing environment. Otherwise, the application contains **Local Service** Provider and Consumer, and it can run without `mcrouter` in a multithreading environment. Some applications may create logs in the `logs` subdirectory to analyze.
+All compiled AREG Framework and example binaries are located in `<areg-sdk>/product/build/..../bin` directory. See the [description of examples](./../examples/README.md). If the example is marked as **IPC** (Inter-process communication), the application contains a **Public Service** Provider and Consumer, and it requires start of `mtrouter` to run in the multiprocessing environment. Otherwise, the application contains **Local Service** Provider and Consumer, and it can run without `mtrouter` in a multithreading environment. Some applications may create logs in the `logs` subdirectory to analyze.
 
 ---
 

@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_SERVICE_PRIVATE_SERVICEPROXY_HPP
-#define AREG_MCROUTER_SERVICE_PRIVATE_SERVICEPROXY_HPP
+#ifndef AREG_mtrouter_SERVICE_PRIVATE_SERVICEPROXY_HPP
+#define AREG_mtrouter_SERVICE_PRIVATE_SERVICEPROXY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/service/private/ServiceProxy.hpp
+ * \file        mtrouter/service/private/ServiceProxy.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Proxy Service object
@@ -246,4 +246,4 @@ inline bool ServiceProxy::isWaiting( void ) const
     return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
 }
 
-#endif  // AREG_MCROUTER_SERVICE_PRIVATE_SERVICEPROXY_HPP
+#endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICEPROXY_HPP

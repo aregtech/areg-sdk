@@ -1,6 +1,6 @@
 # AREG SDK Multitarget Router
 
-The **Multitarget Router (mcrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
+The **Multitarget Router (mtrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
 
 ## Table of Contents
 1. [General Information](#1-general-information)
@@ -10,7 +10,7 @@ The **Multitarget Router (mcrouter)** in AREG SDK enables efficient communicatio
 3. [Router Configuration](#3-router-configuration)
 4. [Command Line Options](#4-command-line-options)
 5. [Connection Initialization](#5-connection-initialization)
-   - [mcrouter Initialization](#mcrouter-initialization)
+   - [mtrouter Initialization](#mtrouter-initialization)
    - [Application Setup](#application-setup)
 
 ---
@@ -23,62 +23,62 @@ The AREG Framework utilizes an **Object Remote Procedure Call (Object RPC)** pro
 
 ## 2. Running Router as a Service
 
-The Multitarget Router (`mcrouter`) is implemented within the AREG SDK [Multitarget Router module](./../../framework/mcrouter/) and compiled as a standalone executable that can operate as either a console application or an OS-managed service on Windows and Linux platforms. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
+The Multitarget Router (`mtrouter`) is implemented within the AREG SDK [Multitarget Router module](./../../framework/mtrouter/) and compiled as a standalone executable that can operate as either a console application or an OS-managed service on Windows and Linux platforms. Deployment can occur on any networked machine with a **General Purpose Operating System (GPOS)**.
 
 ### Linux Service
 
-To configure and run the `mcrouter` application as a Linux-managed service, follow these steps:
+To configure and run the `mtrouter` application as a Linux-managed service, follow these steps:
 
 1. **Copy Service Configuration File**:
-   - Copy the `mcrouter.service` file to the `/etc/systemd/system/` directory.
+   - Copy the `mtrouter.service` file to the `/etc/systemd/system/` directory.
 
 2. **Copy the Executable**:
-   - Copy the built `mcrouter.elf` executable to the desired location, such as `/usr/local/bin`.
+   - Copy the built `mtrouter.elf` executable to the desired location, such as `/usr/local/bin`.
 
 3. **Ensure Library Access (if applicable)**:
-   - If the AREG Framework was built as a shared library, ensure that `mcrouter` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
+   - If the AREG Framework was built as a shared library, ensure that `mtrouter` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
 
 4. **Edit the Service Configuration**:
-   - Open the `mcrouter.service` file and verify that the `ExecStart` path points to the correct location of the `mcrouter.elf` executable. For example:
+   - Open the `mtrouter.service` file and verify that the `ExecStart` path points to the correct location of the `mtrouter.elf` executable. For example:
      ```plaintext
-     ExecStart=/usr/local/bin/mcrouter.elf --service
+     ExecStart=/usr/local/bin/mtrouter.elf --service
      ```
    - Ensure the `ExecStart` line includes the `--service` (or `-s`) as a command line option.
 
 5. **Enable and Start the Service**:
    - Enable the service to start automatically at boot:
      ```bash
-     sudo systemctl enable mcrouter.service
+     sudo systemctl enable mtrouter.service
      ```
    - Start the service:
      ```bash
-     sudo systemctl start mcrouter.service
+     sudo systemctl start mtrouter.service
      ```
 
 6. **Stop or Disable the Service**:
    - To stop the service:
      ```bash
-     sudo systemctl stop mcrouter.service
+     sudo systemctl stop mtrouter.service
      ```
    - To disable the service from starting at boot:
      ```bash
-     sudo systemctl disable mcrouter.service
+     sudo systemctl disable mtrouter.service
      ```
 
 ### Windows Service
 
-To configure and run the `mcrouter` application as a Windows-managed service, follow these steps:
+To configure and run the `mtrouter` application as a Windows-managed service, follow these steps:
 
 1. **Copy the Binaries**:
-   - Copy the `mcrouter.exe` and `areg.dll` binaries to the desired location.
+   - Copy the `mtrouter.exe` and `areg.dll` binaries to the desired location.
 
 2. **Install the Service**:
    - Open **PowerShell** as the Administrator.
    - Register the executable as a service by running:
      ```powershell
-     .\mcrouter.exe --install
+     .\mtrouter.exe --install
      ```
-   - Alternatively, you can execute `mcrouter.service.install.bat` as **Administrator**, ensuring the correct path to `mcrouter.exe`.
+   - Alternatively, you can execute `mtrouter.service.install.bat` as **Administrator**, ensuring the correct path to `mtrouter.exe`.
 
 3. **Start the Service**:
    - Open the **Services** application (or run `services.msc` in the Command Prompt).
@@ -89,18 +89,18 @@ To configure and run the `mcrouter` application as a Windows-managed service, fo
    - Stop the service using the **Services** application or the `services.msc` command.
    - Uninstall the service by running the following command in PowerShell:
      ```powershell
-     .\mcrouter.exe --uninstall
+     .\mtrouter.exe --uninstall
      ```
-   - Alternatively, you can execute `mcrouter.service.uninstall.bat` as **Administrator**, ensuring the correct path to `mcrouter.exe`.
+   - Alternatively, you can execute `mtrouter.service.uninstall.bat` as **Administrator**, ensuring the correct path to `mtrouter.exe`.
 
 ---
 
 ## 3. Router Configuration
 
-The **mcrouter** uses a configuration file, typically [areg.init](./../../framework/areg/resources/areg.init), with settings defined as key-value pairs. Each setting uses the format `section::(module|*)::property[::(position|*)] = value`. Below is a sample configuration for `mcrouter` in `areg.init`:
+The **mtrouter** uses a configuration file, typically [areg.init](./../../framework/areg/resources/areg.init), with settings defined as key-value pairs. Each setting uses the format `section::(module|*)::property[::(position|*)] = value`. Below is a sample configuration for `mtrouter` in `areg.init`:
 
 ```plaintext
-router::*::service          = mcrouter      # Router process name
+router::*::service          = mtrouter      # Router process name
 router::*::connect          = tcpip		    # Supported communication protocols
 router::*::enable::tcpip    = true		    # Enable/disable protocol
 router::*::address::tcpip   = 172.23.96.1   # Connection IP address (default: 127.0.0.1)
@@ -127,21 +127,21 @@ For further details, refer to the [AREG SDK Persistence Syntax](./06a-persistenc
 
 ## 4. Command Line Options
 
-The `mcrouter` can be run as either a console application or an OS-managed service. It has various commands for starting, configuring, and controlling its operation. Some commands are entered while `mcrouter` is running in the console, marked as **Console** in the options list. All others are command-line options to start the program.
+The `mtrouter` can be run as either a console application or an OS-managed service. It has various commands for starting, configuring, and controlling its operation. Some commands are entered while `mtrouter` is running in the console, marked as **Console** in the options list. All others are command-line options to start the program.
 
 | Command:              | Platform: | Description:                  | Usage Example:                |
 |-----------------------|-----------|-------------------------------|-------------------------------|
-| `-c, --console`       | All       | Run as a console application  | `mcrouter --console`          |
-| `-h, --help`          | All       | Display help message          | `mcrouter --help`             |
-| `-i, --install`       | Windows   | Install as a service          | `mcrouter --install`          |
-| `-l, --load`          | All       | Load configuration            | `mcrouter -l="config.init"`   |
+| `-c, --console`       | All       | Run as a console application  | `mtrouter --console`          |
+| `-h, --help`          | All       | Display help message          | `mtrouter --help`             |
+| `-i, --install`       | Windows   | Install as a service          | `mtrouter --install`          |
+| `-l, --load`          | All       | Load configuration            | `mtrouter -l="config.init"`   |
 | `-n, --instances`     | Console   | Display connected instances   | `-n`                          |
 | `-p, --pause`         | Console   | Pause message routing         | `-p`                          |
 | `-q, --quit`          | Console   | Quit console application      | `-q`                          |
 | `-r, --restart`       | Console   | Restart connections           | `-r`                          |
-| `-s, --service`       | Linux     | Start as a service            | `mcrouter --service`          |
+| `-s, --service`       | Linux     | Start as a service            | `mtrouter --service`          |
 | `-t, --silent`        | Console   | Run silently                  | `-t`                          |
-| `-u, --uninstall`     | Windows   | Uninstall service             | `mcrouter --uninstall`        |
+| `-u, --uninstall`     | Windows   | Uninstall service             | `mtrouter --uninstall`        |
 | `-v, --verbose`       | Console   | Display data rate             | `-v`                          |
 
 Commands may vary with version updates.
@@ -150,20 +150,20 @@ Commands may vary with version updates.
 
 ## 5. Connection Initialization
 
-### mcrouter Initialization
+### mtrouter Initialization
 
-By default, `mcrouter` loads settings from `areg.init`. For a custom configuration file, specify it like this:
+By default, `mtrouter` loads settings from `areg.init`. For a custom configuration file, specify it like this:
 
 ```bash
-mcrouter --load="./my/config/file.init"
+mtrouter --load="./my/config/file.init"
 ```
 
 > [!NOTE]
-> To disable `mcrouter` logs, set `log::mcrouter::scope::* = NOTSET` in `areg.init`.
+> To disable `mtrouter` logs, set `log::mtrouter::scope::* = NOTSET` in `areg.init`.
 
 ### Application Setup
 
-Applications establish a `mcrouter` connection by starting message router client and specifying the path to their configuration file:
+Applications establish a `mtrouter` connection by starting message router client and specifying the path to their configuration file:
 
 ```cpp
 #include "areg/appbase/Application.hpp"

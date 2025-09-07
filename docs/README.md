@@ -38,7 +38,7 @@ areg-sdk .............. --> The root folder of the AREG SDK.
     |   |
     |   +- logobserver  --> A console application designed to manage and analyze logs in real time.
     |   |
-    |   +- mcrouter ... --> Source code of the Multitarget Router (MCR).
+    |   +- mtrouter ... --> Source code of the Multitarget Router (MCR).
     |
     +- tests .......... --> Unit tests for the AREG Framework.
     |

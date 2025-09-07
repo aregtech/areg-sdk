@@ -197,14 +197,14 @@ To compile AREG SDK for a 32-bit system, you need to specify the target processo
 
 To verify that a binary is 32-bit, navigate to the build directory and run:
 ```bash
-file ./mcrouter.elf
+file ./mtrouter.elf
 ```
 This command should output something like:
-> ./mcrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
+> ./mtrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
 
 Alternatively, you can run:
 ```bash
-od -t x1 -t c ./mcrouter | head -n 2
+od -t x1 -t c ./mtrouter | head -n 2
 ```
 In the ELF Header, the 5th byte `001` indicates a 32-bit executable, while `002` indicates 64-bit.
 > ```plaintext
@@ -237,7 +237,7 @@ Cross-compiling for ARM processors requires an ARM-compatible toolchain and conf
 
 Verify the architecture of the compiled binary with:
 ```bash
-file ./mcrouter.elf
+file ./mtrouter.elf
 ```
 This should output message `ELF 32-bit LSB executable, ARM, ...`.
 
@@ -263,7 +263,7 @@ For AARCH64 architecture, install the 64-bit ARM toolchain and configure CMake a
 
 Verify the binary architecture:
 ```bash
-file ./mcrouter.elf
+file ./mtrouter.elf
 ```
 This should output message `ELF 64-bit LSB executable, ARM aarch64, ...`.
 

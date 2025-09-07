@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_APP_ROUTERCONSOLESERVICE_HPP
-#define AREG_MCROUTER_APP_ROUTERCONSOLESERVICE_HPP
+#ifndef AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP
+#define AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/RouterConsoleService.hpp
+ * \file        mtrouter/app/private/RouterConsoleService.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-cast routing, service that outputs statistics.
@@ -78,4 +78,4 @@ private:
     DECLARE_NOCOPY_NOMOVE( RouterConsoleService );
 };
 
-#endif  // AREG_MCROUTER_APP_ROUTERCONSOLESERVICE_HPP
+#endif  // AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP

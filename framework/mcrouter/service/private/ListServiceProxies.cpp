@@ -7,13 +7,13 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/service/private/ListServiceProxies.cpp
+ * \file        mtrouter/service/private/ListServiceProxies.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Proxy Service object
  ************************************************************************/
-#include "mcrouter/service/private/ListServiceProxies.hpp"
-#include "mcrouter/service/private/ServiceStub.hpp"
+#include "mtrouter/service/private/ListServiceProxies.hpp"
+#include "mtrouter/service/private/ServiceStub.hpp"
 #include "areg/component/StubAddress.hpp"
 
 const ServiceProxy     ListServiceProxies::InvalidProxyService;

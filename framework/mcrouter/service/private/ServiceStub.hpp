@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_SERVICE_PRIVATE_SERVICESTUB_HPP
-#define AREG_MCROUTER_SERVICE_PRIVATE_SERVICESTUB_HPP
+#ifndef AREG_mtrouter_SERVICE_PRIVATE_SERVICESTUB_HPP
+#define AREG_mtrouter_SERVICE_PRIVATE_SERVICESTUB_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/service/private/ServiceStub.hpp
+ * \file        mtrouter/service/private/ServiceStub.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Stub Service object
@@ -254,4 +254,4 @@ inline const StubAddress & ServiceStub::getServiceAddress( void ) const
     return mStubAddress;
 }
 
-#endif  // AREG_MCROUTER_SERVICE_PRIVATE_SERVICESTUB_HPP
+#endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICESTUB_HPP

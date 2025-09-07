@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/RouterConsoleService.cpp
+ * \file        mtrouter/app/private/RouterConsoleService.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-cast routing, service that outputs statistics.
@@ -16,9 +16,9 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "mcrouter/app/private/RouterConsoleService.hpp"
+#include "mtrouter/app/private/RouterConsoleService.hpp"
 
-#include "mcrouter/app/MultitargetRouter.hpp"
+#include "mtrouter/app/MultitargetRouter.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // RouterConsoleService class implementation, static methods

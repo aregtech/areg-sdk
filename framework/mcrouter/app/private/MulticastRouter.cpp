@@ -7,14 +7,14 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/MultitargetRouter.cpp
+ * \file        mtrouter/app/private/MultitargetRouter.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-cast routing to run as process or service.
  ************************************************************************/
 
-#include "mcrouter/app/MultitargetRouter.hpp"
-#include "mcrouter/app/private/RouterConsoleService.hpp"
+#include "mtrouter/app/MultitargetRouter.hpp"
+#include "mtrouter/app/private/RouterConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
@@ -34,7 +34,7 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static String _modelName("MCRouterModel");
+static String _modelName("mtrouterModel");
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -57,19 +57,19 @@ namespace
 {
     constexpr std::string_view _msgHelp []
     {
-          {"Usage of AREG Message Router (mcrouter) :"}
+          {"Usage of AREG Message Router (mtrouter) :"}
         , NESystemService::MSG_SEPARATOR
-        , {"-c, --console   : Command to run mcrouter as a console application (default option). Usage: \'mcrouter --console\'"}
+        , {"-c, --console   : Command to run mtrouter as a console application (default option). Usage: \'mtrouter --console\'"}
         , {"-h, --help      : Command to display this message on console."}
-        , {"-i, --install   : Command to install mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --install\'"}
-        , {"-l, --load      : Command to initialize from specified file. Used to start application. Usage: \'mcrouter --load=<path-to-init-file>\'"}
+        , {"-i, --install   : Command to install mtrouter as a service. Valid only for Windows OS. Usage: \'mtrouter --install\'"}
+        , {"-l, --load      : Command to initialize from specified file. Used to start application. Usage: \'mtrouter --load=<path-to-init-file>\'"}
         , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
         , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
         , {"-q, --quit      : Command option to stop router and quit application. Used in console application. Usage: --quit"}
         , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
-        , {"-s, --service   : Command to run mcrouter as a system service. Usage: \'mcrouter --service\'"}
+        , {"-s, --service   : Command to run mtrouter as a system service. Usage: \'mtrouter --service\'"}
         , {"-t, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
-        , {"-u, --uninstall : Command to uninstall mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --uninstall\'"}
+        , {"-u, --uninstall : Command to uninstall mtrouter as a service. Valid only for Windows OS. Usage: \'mtrouter --uninstall\'"}
         , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
         , NESystemService::MSG_SEPARATOR
     };
@@ -79,14 +79,14 @@ namespace
 // Scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceMain);
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceStart);
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceStop);
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_servicePause);
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceContinue);
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceInstall);
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_serviceUninstall);
-DEF_LOG_SCOPE(mcrouter_app_MultitargetRouter_setState);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceMain);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceStart);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceStop);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_servicePause);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceContinue);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceInstall);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceUninstall);
+DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_setState);
 
 //////////////////////////////////////////////////////////////////////////
 // MultitargetRouter class implementation

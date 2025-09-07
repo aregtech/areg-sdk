@@ -18,108 +18,108 @@
     <ClInclude Include="system\GEPlatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\resources\resource.h">
+    <ClInclude Include="mtrouter\resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\resources\targetver.h">
+    <ClInclude Include="mtrouter\resources\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\app\MultitargetRouter.hpp">
+    <ClInclude Include="mtrouter\app\MultitargetRouter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\app\NEMultitargetRouterSettings.hpp">
+    <ClInclude Include="mtrouter\app\NEMultitargetRouterSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\service\RouterServerService.hpp">
+    <ClInclude Include="mtrouter\service\RouterServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\service\private\ServiceRegistry.hpp">
+    <ClInclude Include="mtrouter\service\private\ServiceRegistry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\service\private\ListServiceProxies.hpp">
+    <ClInclude Include="mtrouter\service\private\ListServiceProxies.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\service\private\ServiceProxy.hpp">
+    <ClInclude Include="mtrouter\service\private\ServiceProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\service\private\ServiceStub.hpp">
+    <ClInclude Include="mtrouter\service\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp">
+    <ClInclude Include="mtrouter\app\private\RouterConsoleService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="mcrouter\resources\mcrouter.ico">
+    <None Include="mtrouter\resources\mtrouter.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\mcrouter.service.install.bat">
+    <None Include="mtrouter\resources\mtrouter.service.install.bat">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\mcrouter.service.uninstall.bat">
+    <None Include="mtrouter\resources\mtrouter.service.uninstall.bat">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\small.ico">
+    <None Include="mtrouter\resources\small.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\Readme.md">
+    <None Include="mtrouter\resources\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\mcrouter.service">
+    <None Include="mtrouter\resources\mtrouter.service">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\mcrouter_post_build.bat">
+    <None Include="mtrouter\resources\mtrouter_post_build.bat">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\Readme.md">
+    <None Include="mtrouter\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mcrouter\app\private\MultitargetRouter.cpp">
+    <ClCompile Include="mtrouter\app\private\MultitargetRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\service\private\RouterServerService.cpp">
+    <ClCompile Include="mtrouter\service\private\RouterServerService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\service\private\ServiceRegistry.cpp">
+    <ClCompile Include="mtrouter\service\private\ServiceRegistry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\service\private\ListServiceProxies.cpp">
+    <ClCompile Include="mtrouter\service\private\ListServiceProxies.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\service\private\ServiceProxy.cpp">
+    <ClCompile Include="mtrouter\service\private\ServiceProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\service\private\ServiceStub.cpp">
+    <ClCompile Include="mtrouter\service\private\ServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\NEMultitargetRouterSettings.cpp">
+    <ClCompile Include="mtrouter\app\private\NEMultitargetRouterSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\posix\MultitargetRouterPosix.cpp">
+    <ClCompile Include="mtrouter\app\private\posix\MultitargetRouterPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\win32\MultitargetRouterWin32.cpp">
+    <ClCompile Include="mtrouter\app\private\win32\MultitargetRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp">
+    <ClCompile Include="mtrouter\app\private\RouterConsoleService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="mcrouter\resources\mcrouter.rc">
+    <ResourceCompile Include="mtrouter\resources\mtrouter.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="mcrouter\app\private\CMakeLists.txt">
+    <Text Include="mtrouter\app\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="mcrouter\service\private\CMakeLists.txt">
+    <Text Include="mtrouter\service\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="mcrouter\CMakeLists.txt">
+    <Text Include="mtrouter\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

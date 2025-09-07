@@ -7,12 +7,12 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/NEMultitargetRouterSettings.cpp
+ * \file        mtrouter/app/private/NEMultitargetRouterSettings.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multitarget routing settings.
  ************************************************************************/
-#include "mcrouter/app/NEMultitargetRouterSettings.hpp"
+#include "mtrouter/app/NEMultitargetRouterSettings.hpp"
 #include "areg/appbase/NEApplication.hpp"
 
 char *      NEMultitargetRouterSettings::SERVICE_NAME_ASCII    { NEApplication::ROUTER_SERVICE_NAME_ASCII };

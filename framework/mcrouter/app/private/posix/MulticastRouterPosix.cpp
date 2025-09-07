@@ -7,12 +7,12 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/MultitargetRouterPosix.cpp
+ * \file        mtrouter/app/private/MultitargetRouterPosix.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Router, Multitarget Router Service process
  ************************************************************************/
-#include "mcrouter/app/MultitargetRouter.hpp"
+#include "mtrouter/app/MultitargetRouter.hpp"
 
 #ifdef _POSIX
 
