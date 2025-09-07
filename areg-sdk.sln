@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 16.0.0
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg", "framework\areg.vcxproj", "{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcrouter", "framework\mcrouter.vcxproj", "{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mtrouter", "framework\mtrouter.vcxproj", "{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
@@ -678,9 +678,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "exports", "exports", "{60EE
 		conf\exports\logcollector.service.in = conf\exports\logcollector.service.in
 		conf\exports\logcollector.service.install.bat.in = conf\exports\logcollector.service.install.bat.in
 		conf\exports\logcollector.service.uninstall.bat.in = conf\exports\logcollector.service.uninstall.bat.in
-		conf\exports\mcrouter.service.in = conf\exports\mcrouter.service.in
-		conf\exports\mcrouter.service.install.bat.in = conf\exports\mcrouter.service.install.bat.in
-		conf\exports\mcrouter.service.uninstall.bat.in = conf\exports\mcrouter.service.uninstall.bat.in
+		conf\exports\mtrouter.service.in = conf\exports\mtrouter.service.in
+		conf\exports\mtrouter.service.install.bat.in = conf\exports\mtrouter.service.install.bat.in
+		conf\exports\mtrouter.service.uninstall.bat.in = conf\exports\mtrouter.service.uninstall.bat.in
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{31AB3D1E-3F6C-4415-B3A5-BB8AA449A1E2}"
@@ -706,7 +706,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\04b-logging-develop.md = docs\wiki\04b-logging-develop.md
 		docs\wiki\04c-logobserver.md = docs\wiki\04c-logobserver.md
 		docs\wiki\04d-logcollector.md = docs\wiki\04d-logcollector.md
-		docs\wiki\05a-mcrouter.md = docs\wiki\05a-mcrouter.md
+		docs\wiki\05a-mtrouter.md = docs\wiki\05a-mtrouter.md
 		docs\wiki\06a-persistence-syntax.md = docs\wiki\06a-persistence-syntax.md
 		docs\wiki\07a-troubleshooting-wsl-update.md = docs\wiki\07a-troubleshooting-wsl-update.md
 		docs\wiki\07b-troubleshooting-cmake-linux-builds.md = docs\wiki\07b-troubleshooting-cmake-linux-builds.md

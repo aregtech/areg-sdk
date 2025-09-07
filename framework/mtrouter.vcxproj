@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}</ProjectGuid>
+    <ProjectName>mtrouter</ProjectName>
+    <RootNamespace>mtrouter</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregConfigDir)project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>$(AregFramewor)mtrouter\resources\mtrouter_post_build.bat "$(AregFramewor)mtrouter\resources\" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy  mtrouter service install and uninstall scripts to the config directory.</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="mtrouter\app\private\MultitargetRouter.cpp" />
+    <ClCompile Include="mtrouter\app\private\NEMultitargetRouterSettings.cpp" />
+    <ClCompile Include="mtrouter\app\private\posix\MultitargetRouterPosix.cpp" />
+    <ClCompile Include="mtrouter\app\private\RouterConsoleService.cpp" />
+    <ClCompile Include="mtrouter\app\private\win32\MultitargetRouterWin32.cpp" />
+    <ClCompile Include="mtrouter\service\private\ListServiceProxies.cpp" />
+    <ClCompile Include="mtrouter\service\private\RouterServerService.cpp" />
+    <ClCompile Include="mtrouter\service\private\ServiceProxy.cpp" />
+    <ClCompile Include="mtrouter\service\private\ServiceRegistry.cpp" />
+    <ClCompile Include="mtrouter\service\private\ServiceStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mtrouter\app\private\RouterConsoleService.hpp" />
+    <ClInclude Include="mtrouter\service\private\ListServiceProxies.hpp" />
+    <ClInclude Include="mtrouter\service\private\ServiceProxy.hpp" />
+    <ClInclude Include="mtrouter\service\private\ServiceRegistry.hpp" />
+    <ClInclude Include="mtrouter\service\private\ServiceStub.hpp" />
+    <ClInclude Include="mtrouter\service\RouterServerService.hpp" />
+    <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="mtrouter\app\MultitargetRouter.hpp" />
+    <ClInclude Include="mtrouter\app\NEMultitargetRouterSettings.hpp" />
+    <ClInclude Include="mtrouter\resources\resource.h" />
+    <ClInclude Include="mtrouter\resources\targetver.h" />
+    <ResourceCompile Include="mtrouter\resources\mtrouter.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mtrouter\Readme.md" />
+    <None Include="mtrouter\resources\mtrouter.service" />
+    <None Include="mtrouter\resources\mtrouter.ico" />
+    <None Include="mtrouter\resources\mtrouter_post_build.bat" />
+    <None Include="mtrouter\resources\Readme.md" />
+    <None Include="mtrouter\resources\small.ico" />
+    <None Include="mtrouter\resources\mtrouter.service.install.bat" />
+    <None Include="mtrouter\resources\mtrouter.service.uninstall.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="mtrouter\app\private\CMakeLists.txt" />
+    <Text Include="mtrouter\CMakeLists.txt" />
+    <Text Include="mtrouter\service\private\CMakeLists.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
