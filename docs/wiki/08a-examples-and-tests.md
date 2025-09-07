@@ -105,7 +105,7 @@ To execute Examples:
 
 **Key Notes**:
 - Example sources are located in the [`./examples`](./../../examples/) directory, with descriptions in the [README](./../../examples/README.md).
-- **IPC Examples**: Projects utilizing Inter-Process Communication (IPC) require the **mcrouter** service for process communication. Run **mcrouter** from the build directory before testing. These **IPC** projects are categorized in the `Multitasking` section of each example description.
+- **IPC Examples**: Projects utilizing Inter-Process Communication (IPC) require the **mtrouter** service for process communication. Run **mtrouter** from the build directory before testing. These **IPC** projects are categorized in the `Multitasking` section of each example description.
 - **Generated Projects**: Projects like `xx_generate` are created from **Service Interface** document files (`.siml`). For CMake builds, these files are generated during configuration. In Visual Studio, generation occurs as a pre-build event of the `dummy` project.
 - **MFC-Based Projects**: The [17_winchat](./17_winchat/) project builds only on Windows using Microsoft Compilers (*MSVC* or *ClangCL*) and requires *Microsoft Foundation Classes (MFC)*.
 

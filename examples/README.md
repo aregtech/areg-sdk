@@ -52,7 +52,7 @@ MSBuild ./areg-sdk.sln
 
 ### Developer Notes
 
-* **IPC Projects**: Multiprocessing examples require **mcrouter** for inter-process communication.
+* **IPC Projects**: Multiprocessing examples require **mtrouter** for inter-process communication.
 * **Fault-Tolerance**: Services work reliably regardless of startup order due to automatic discovery and recovery.
 * **Generated Projects**: Projects ending in `_generated` are created from **Service Interface** (`.siml`) documents during build.
 * **Windows-only Projects**: [20\_winchat](./20_winchat/) requires **MFC** and MSVC/ClangCL compilers.
@@ -64,7 +64,7 @@ MSBuild ./areg-sdk.sln
 | Project                                | Scope              | Highlights                         | Key Feature / Solution                                                                                              |
 | -------------------------------------- | ------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | [01\_minimalrpc](./01_minimalrpc/)     | 🧵 Multithreading  | Object RPC, Minimal Setup          | Minimal thread-to-thread RPC with auto-discovery; provider handles request and signals app quit.                    |
-| [02\_minimalipc](./02_minimalipc/)     | 🚀 Multiprocessing | IPC, Minimal Setup                 | Demonstrates minimal inter-process communication setup; illustrates message exchange across processes via mcrouter. |
+| [02\_minimalipc](./02_minimalipc/)     | 🚀 Multiprocessing | IPC, Minimal Setup                 | Demonstrates minimal inter-process communication setup; illustrates message exchange across processes via mtrouter. |
 | [03\_helloservice](./03_helloservice/) | 🚀 Multiprocessing | Service/Client, Threading Model    | Introduces service creation and client-server interactions; flexible threading and process models for IPC.          |
 | [04\_hellothread](./04_hellothread/)   | 🧵 Multithreading  | Thread Lifecycle                   | Demonstrates thread creation, management, and synchronization; prints "Hello World!" in a separate thread.          |
 | [05\_buffer](./05_buffer/)             | 🧵 Multithreading  | Shared Memory, Serialization       | Shows how to serialize data into a shared buffer, pass it between threads, and deserialize it in another thread.    |

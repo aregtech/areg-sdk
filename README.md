@@ -42,22 +42,11 @@ Threads, IPC, and distributed messaging often slow development. **Areg SDK** com
 
 ---
 
-## Table of Contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
-- [Why Areg SDK?](#why-areg-sdk)
-  - [Top 5 Benefits](#top-5-benefits)
-  - [Compared to Alternatives](#compared-to-alternatives)
-  - [Decision Checklist](#areg-sdk-decision-checklist)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Quick Start](#quick-start)
-  - [Learning Path](#learning-path)
-  - [Integration](#integration)
+## Table of Contents [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
+- [Why Areg SDK: Benefits and Compare](#why-areg-sdk-benefits-and-compare)
+- [Getting Started: Build and Integration](#getting-started-build-and-integration)
 - [Core Modules and Architecture](#core-modules-and-architecture)
 - [Use Cases: Distributed, RPC and IPC](#use-cases-distributed-rpc-and-ipc)
-  - [IoT: Mist-to-Cloud](#iot-mist-to-cloud)
-  - [Beyond Embedded](#beyond-embedded)
-  - [Driverless Devices](#driverless-devices)
-  - [Simulation & Testing](#simulation--testing)
 - [Roadmap](#roadmap)
 - [Documentation](#documentation)
 - [License](#license)
@@ -68,7 +57,7 @@ Threads, IPC, and distributed messaging often slow development. **Areg SDK** com
 
 ---
 
-## Why Areg SDK?[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk "Why Areg SDK Lightweight C++ Framework")
+## Why Areg SDK:Benefits and Compare [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk-benefits-and-compare "Why Areg SDK Lightweight C++ Framework")
 
 Software complexity rarely comes from algorithms — it comes from **frameworks that don’t scale**. Threads and IPC introduce **manual wiring, hidden bugs, and costly rewrites**. The wrong **communication framework** locks teams into fragile architectures and wastes weeks.
 
@@ -109,11 +98,11 @@ Software complexity rarely comes from algorithms — it comes from **frameworks 
 
 ### Decision Checklist
 
-* [ ] Are **threads, IPC, or service wiring** consuming too much time?
-* [ ] Would **automatic dispatching and code generation** remove boilerplate?
-* [ ] Is **debugging** across distributed components slowing delivery?
-* [ ] Do you need **auto-discovery and runtime reconnection** across systems?
-* [ ] Could a **unified solution across threads, processes, and devices** reduce errors and accelerate delivery?
+- [ ] Do **threading** and **synchronization** issues slow your progress?
+- [ ] Does **debugging** across **threads, processes, or components** take excessive time?
+- [ ] Is setting up **communication** across **processes or nodes** complex and error-prone?
+- [ ] Do **remote failures** and **reconnections** create delays and extra work?
+- [ ] Would a **unified communication model** across **threads, processes, and devices** simplify development?
 
 💡 **Tip:** If you answer **yes** to 3+ questions, Areg SDK is a strong candidate.
 
@@ -121,7 +110,7 @@ Software complexity rarely comes from algorithms — it comes from **frameworks 
 
 ---
 
-## Getting Started[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started)
+## Getting Started: Build and Integration [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started-build-and-integration)
 
 ### Prerequisites
 
@@ -168,11 +157,11 @@ cmake --build build -j 12
 ### Learning Path
 
 1. [**01\_minimalrpc**](examples/01_minimalrpc/) – minimal RPC example between 2 components.
-2. [**02\_minimalipc**](examples/02_minimalipc/) – minimal IPC example across processes, **requires `mcrouter`**.
-3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using the same components, **requires `mcrouter`**.
+2. [**02\_minimalipc**](examples/02_minimalipc/) – minimal IPC example across processes, **requires `mtrouter`**.
+3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using the same components, **requires `mtrouter`**.
 
 > [!IMPORTANT]
-> For IPC, **`mcrouter` must be running**. See [mcrouter documentation](./docs/wiki/05a-mcrouter.md).
+> For IPC, **`mtrouter` must be running**. See [mtrouter documentation](./docs/wiki/05a-mtrouter.md).
 
 ### Integration
 
@@ -186,12 +175,12 @@ cmake --build build -j 12
 
 ---
 
-## Core Modules and Architecture[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#core-modules--architecture)
+## Core Modules and Architecture [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#core-modules--architecture)
 
 | Module                                                              | Purpose                                                                                                                                |
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | [Areg Framework (`areg`)](./docs/HelloService.md)                   | Cross-platform C++17 framework with middleware layer: automated, service-oriented Object RPC (ORPC) and IPC for distributed computing. |
-| [Multitarget Router (`mcrouter`)](./docs/wiki/05a-mcrouter.md)      | **Required for IPC** — routes messages across processes/devices to form a service mesh. Runs as console app or system service.         |
+| [Multitarget Router (`mtrouter`)](./docs/wiki/05a-mtrouter.md)      | **Required for IPC** — routes messages across processes/devices to form a service mesh. Runs as console app or system service.         |
 | [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)   | Centralized log collection for distributed apps — helps monitoring and analysis. Runs as console app or system service.                |
 | [Log Observer (`logobserver`)](./docs/wiki/04c-logobserver.md)      | CLI tool to receive, filter, and save runtime logs — useful for debugging.                                                             |
 | [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | Generates stubs, proxies, and serialization from service object API (SIML) — eliminates boilerplate.                                   |
@@ -208,7 +197,7 @@ Supports **Client-Server (Request-Reply)** and **Publish-Subscribe (Pub/Sub)** p
 
 ---
 
-## Use Cases: Distributed, RPC and IPC[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-distributed-rpc-and-ipc)
+## Use Cases: Distributed, RPC and IPC [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-distributed-rpc-and-ipc)
 
 ### IoT: Mist-to-Cloud
 
@@ -256,7 +245,7 @@ Validating distributed systems is expensive and hardware-dependent. **Areg** all
 
 ---
 
-## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
+## Roadmap [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
 
 Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automation, reliability, and performance.
 
@@ -270,13 +259,13 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ---
 
-## Documentation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#documentation)
+## Documentation [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#documentation)
 
 * [Installation and Build](./docs/wiki/README.md#1--installation-and-build) — cross-platform builds, toolchains, CMake integration for embedded and desktop targets
 * [Build Options and Integrations](./docs/wiki/README.md#2--build-options-and-integrations) — FetchContent, packaging, and embedding Areg as a library
 * [Development Tools](./docs/wiki/README.md#3--development-tools) — code generation for service-oriented development
 * [Logging and Monitoring](./docs/wiki/README.md#4--logging-and-monitoring) — logcollector and logobserver usage
-* [Networking and Communication](./docs/wiki/README.md#5--networking-and-communication) — multicast router for IPC and low-latency messaging
+* [Networking and Communication](./docs/wiki/README.md#5--networking-and-communication) — Multitarget router for IPC and low-latency messaging
 * [Persistence](./docs/wiki/README.md#6--persistence) — for local data storage in a text file
 * [Troubleshooting](./docs/wiki/README.md#7--troubleshooting) — common issues and recommended solutions
 * [Examples and Tests](./docs/wiki/README.md#8--examples-and-tests) — catalog of sample projects (RPC, IPC, Pub/Sub, FSM, and more)
@@ -285,7 +274,7 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ---
 
-## License[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#license)
+## License [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#license)
 
 Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permissive and suitable for open-source and commercial use.
 
@@ -295,7 +284,7 @@ Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permi
 
 ---
 
-## Call to Action[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
+## Call to Action [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
 Help grow the Areg SDK community:
 

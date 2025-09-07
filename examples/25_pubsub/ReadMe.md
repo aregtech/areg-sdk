@@ -7,7 +7,7 @@
 The **25_pubsub** project demonstrates a distributed system using the *Publish/Subscribe* (Pub/Sub) model. A *Public Service* (**Publisher**) broadcasts data updates to multiple subscribing processes (**Subscribers**). The publisher supports two notification modes: **On Change** (notify only when data changes) and **Always** (notify on every update). When no subscribers are present, updates occur internally without notifications, reducing unnecessary network traffic.
 
 > [!NOTE]
-> This example requires **Multi-Target Router (`mcrouter`)** for message routing. Ensure `mcrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
+> This example requires **Multi-Target Router (`mtrouter`)** for message routing. Ensure `mtrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
 
 ## Concepts Shown
 
@@ -20,7 +20,7 @@ The **25_pubsub** project demonstrates a distributed system using the *Publish/S
 
 The **Publisher** broadcasts updates to all connected subscribers. Depending on the selected mode, notifications are sent only on data changes or every update. New subscribers immediately receive the latest data to remain in sync with the system state.
 
-**Subscribers** register with the publisher and receive notifications as data updates. The system leverages `mcrouter` for cross-machine message routing, while the AREG Framework automates service discovery using `serviceConnected()` and ensures fault-tolerant, seamless inter-process communication.
+**Subscribers** register with the publisher and receive notifications as data updates. The system leverages `mtrouter` for cross-machine message routing, while the AREG Framework automates service discovery using `serviceConnected()` and ensures fault-tolerant, seamless inter-process communication.
 
 ## Sub-Projects
 

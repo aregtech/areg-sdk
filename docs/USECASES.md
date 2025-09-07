@@ -68,7 +68,7 @@ In these codes:
 2.  **mixed.cpp** contains model to register service `"RemoteRegistry"` that implements interface `NERemoteRegistry::ServiceName` and consumes (requires) service `"SystemShutdown"`.
 3. `int main()` is identical in both files. It initializes resources, loads model and waits for the completion.
 
-The developers should create `SystemShutdownService` and `RemoteRegistryService` objects that implement the business logic of _request_ methods of provided and _response_ methods of used service interfaces. When these processes start, the services are automatically discovered via `mcrouter`. With this technique, the projects easily develop multiprocessing applications where provided services can be distributed and accessed remotely within the network formed by `mcrouter`.
+The developers should create `SystemShutdownService` and `RemoteRegistryService` objects that implement the business logic of _request_ methods of provided and _response_ methods of used service interfaces. When these processes start, the services are automatically discovered via `mtrouter`. With this technique, the projects easily develop multiprocessing applications where provided services can be distributed and accessed remotely within the network formed by `mtrouter`.
 
 An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) guide. As well there are multiple [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) of multiprocessing and multithreading applications.
 </details>
@@ -98,7 +98,7 @@ The services, described in the interface prototype documents, are faster and eas
 
 AREG engine automatically generates and delivers messages to the target and invokes the exact methods of the target objects in real-time with ultra-low networking latency. This makes it ideal for developing time-sensitive applications for industries such as automotive, drone fleets, medtech, real-time manufacturing, and monitoring.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="AREG SDK and Multitarget features" style="width:70%;height:70%"/></a></div>
 </details>
 
 ---

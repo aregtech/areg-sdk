@@ -3,7 +3,7 @@
  * \brief   Minimal IPC example with request-response.
  *          It gets 'requestHelloService()' call from remote consumer running in other process.
  *          Then sends 'responseHelloService()' and quits application.
- *          This example requires `mcrouter`.
+ *          This example requires `mtrouter`.
  **/
 
 #include "areg/base/GEGlobal.h"

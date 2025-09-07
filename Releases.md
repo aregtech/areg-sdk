@@ -31,7 +31,7 @@ Release date: 15.06.2023
    * Preprocessor define symbols
    * Compile with WSL
    * AREG Logging System
-   * AREG Multicast Router
+   * AREG Multitarget Router
    * Persistence Syntax
 
 ### Deprecated

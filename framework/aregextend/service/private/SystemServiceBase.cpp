@@ -27,7 +27,7 @@
 DEF_LOG_SCOPE( areg_aregextend_service_SystemServiceBase_serviceMain );
 
 //////////////////////////////////////////////////////////////////////////
-// MulticastRouter class implementation
+// MultitargetRouter class implementation
 //////////////////////////////////////////////////////////////////////////
 SystemServiceBase::SystemServiceBase( ServiceCommunicatonBase & commBase )
     : mCommunication        ( commBase )

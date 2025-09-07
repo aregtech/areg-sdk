@@ -6,7 +6,7 @@
 The **19_pubfsm** project demonstrates how to implement a **Finite-State Machine (FSM)** using the AREG Framework, combining **Timers** and **Events** to control the states and data of services. It highlights how FSMs can manage dynamic models and coordinate multiple service consumers in a **multiprocess** environment.
 
 > [!NOTE]
-> Ensure a **Multi-Target Router** (`mcrouter`) is running on a network-accessible machine. Verify that the `areg.init` configuration file includes the correct IP address and port for the router.
+> Ensure a **Multi-Target Router** (`mtrouter`) is running on a network-accessible machine. Verify that the `areg.init` configuration file includes the correct IP address and port for the router.
 
 ## Concepts Shown
 - **Finite-State Machine (FSM)**: Control complex service states and transitions using timers and events.

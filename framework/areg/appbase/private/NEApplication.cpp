@@ -58,10 +58,10 @@ AREG_API_IMPL const std::vector<Identifier>   NEApplication::LogScopePriorityInd
     , { static_cast<unsigned int>(NELogging::eLogPriority::PrioDebug)                     , NELogging::PRIO_DEBUG_STR                           }
 };
 
- //! AREG TCP/IP Multicast Router Service name
+ //! AREG TCP/IP Multitarget Router Service name
 AREG_API_IMPL char NEApplication::ROUTER_SERVICE_NAME_ASCII[]           { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
-//! AREG TCP/IP Multicast Router Service name
+//! AREG TCP/IP Multitarget Router Service name
 AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_NAME_WIDE[]         { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
 //! Router Service executable

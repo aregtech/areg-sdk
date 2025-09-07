@@ -89,9 +89,9 @@ namespace NEApplication
 
     /**
      * \brief   NEApplication::DEFAULT_ROUTER_SERVICE_NAME
-     *          The default name of Multicast Router.
+     *          The default name of Multitarget Router.
      **/
-    constexpr std::string_view  DEFAULT_ROUTER_SERVICE_NAME { "mcrouter" };
+    constexpr std::string_view  DEFAULT_ROUTER_SERVICE_NAME { "mtrouter" };
 
     /**
      * \brief   NEApplication::DEFAULT_ROUTER_HOST
@@ -265,7 +265,7 @@ namespace NEApplication
 
             , { {"service"  , "*"   , "list"    , ""        }, "router | logger"                }   //!< The list of supported remote services.
 
-            , { {"router"   , "*"   , "service" , ""        }, "mcrouter"                       }   //!< The process name of the 'router' service.
+            , { {"router"   , "*"   , "service" , ""        }, "mtrouter"                       }   //!< The process name of the 'router' service.
             , { {"router"   , "*"   , "connect" , ""        }, "tcpip"                          }   //!< The list of connection type of the 'router' service.
             , { {"router"   , "*"   , "enable"  , "tcpip"   }, "true"                           }   //!< The TCP/IP connection enable / disable flag of the 'router' service.
             , { {"router"   , "*"   , "address" , "tcpip"   }, DEFAULT_ROUTER_HOST              }   //!< The TCP/IP connection address of the 'router' service.
@@ -288,7 +288,7 @@ namespace NEApplication
      **/
     constexpr NEPersistence::sProperty DefaultLogScopesConfig[]
         {
-              { {"log", "mcrouter"      , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'mcrouter' service scopes to enable / disable.
+              { {"log", "mtrouter"      , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'mtrouter' service scopes to enable / disable.
             , { {"log", "logcollector"  , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'logcollector' service scopes to enable / disable.
         };
 

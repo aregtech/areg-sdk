@@ -7,7 +7,7 @@
 The **23_pubdatarate** project demonstrates real-time monitoring of network data rates in a distributed system using the AREG SDK. A **Public Service Provider** generates and transmits bitmap image data to connected **Service Consumers**, allowing developers to observe and optimize data throughput in data-intensive applications.
 
 > [!NOTE]
-> This example requires **Multi-Target Router (`mcrouter`)** for message routing. Ensure `mcrouter` is running on a network-accessible machine and that the `areg.init` file has the correct IP address and port.
+> This example requires **Multi-Target Router (`mtrouter`)** for message routing. Ensure `mtrouter` is running on a network-accessible machine and that the `areg.init` file has the correct IP address and port.
 
 ## Concepts Shown
 
@@ -18,7 +18,7 @@ The **23_pubdatarate** project demonstrates real-time monitoring of network data
 
 ## How It Works
 
-The service provider generates bitmap images based on user input and transmits them to connected consumers via `mcrouter`. Both the provider and consumers display data transfer rates in real-time, enabling developers to assess and optimize throughput. The AREG Framework automates **service discovery** using `serviceConnected()` and manages message routing seamlessly across processes.
+The service provider generates bitmap images based on user input and transmits them to connected consumers via `mtrouter`. Both the provider and consumers display data transfer rates in real-time, enabling developers to assess and optimize throughput. The AREG Framework automates **service discovery** using `serviceConnected()` and manages message routing seamlessly across processes.
 
 The **Object RPC** mechanism handles large payloads efficiently, simplifying inter-process communication for high-data scenarios.
 

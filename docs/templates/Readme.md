@@ -9,10 +9,10 @@ This folder contains the temaplates that developer may use to create projects us
     * Copy file `eclipse-areg.cpproject` to `framework/areg` folder and rename it to `.cpproject`.
     * Open `Eclipse` IDE with the workspace in `areg-sdk` folder and import `areg` project.
     * Compile the project either as a static lbirary or shared (required additional changes in the project settings).
-4. `eclipse-mcrouter.cproject` and `eclipse-mcrouter.project` files -- use these files to compile `mcrouter` service linked with `areg` library.
-    * Copy file `eclipse-mcrouter.project` to `framework/mcrouter`folder and rename to `.project`.
-    * Copy file `eclipse-mcrouter.cproject` to `framework/mcrouter`folder and rename to `.cproject`.
-    * Open `Eclipse` IDE with the workspace in `areg-sdk` folder and import `mcrouter` project.
+4. `eclipse-mtrouter.cproject` and `eclipse-mtrouter.project` files -- use these files to compile `mtrouter` service linked with `areg` library.
+    * Copy file `eclipse-mtrouter.project` to `framework/mtrouter`folder and rename to `.project`.
+    * Copy file `eclipse-mtrouter.cproject` to `framework/mtrouter`folder and rename to `.cproject`.
+    * Open `Eclipse` IDE with the workspace in `areg-sdk` folder and import `mtrouter` project.
     * Compile the project linked with the `areg` library and other dependent libraries.
 5. `eclipse-static.cproject` and `eclipse-static.project` files -- use these files to compile projects as static libraries (for example, generated codes).
     * Copy `eclipse-static.project` to the folder, which sources should be compiled as static libraries, and rename as `.project`.

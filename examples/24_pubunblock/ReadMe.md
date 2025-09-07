@@ -7,20 +7,20 @@
 The **24_pubunblock** project demonstrates handling and manually unblocking service requests in a distributed system using the AREG Framework. When a request is marked as *busy* due to being in progress, subsequent client requests for the same operation receive a failure response. Manual unblocking allows the service provider to continue processing new requests without waiting for previous ones to complete, while responses are sent to the appropriate consumers once ready.
 
 > [!NOTE]
-> This example requires **Multi-Target Router (`mcrouter`)** for message routing. Ensure `mcrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
+> This example requires **Multi-Target Router (`mtrouter`)** for message routing. Ensure `mtrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
 
 ## Concepts Shown
 
 - **Manual Request Unblocking**: Enables the service provider to continue processing new requests while previous requests are still being handled.  
 - **Service Interface Automation**: Uses generated code from the Service Interface document to automate **Object RPC** creation and dispatch, simplifying **IPC**.  
 - **Manual Response Handling**: Developers prepare and send responses manually to ensure each **Service Consumer** receives the correct data.  
-- **Fault-Tolerant Communication**: Combines AREG SDK with `mcrouter` to ensure robust message delivery and service continuity.
+- **Fault-Tolerant Communication**: Combines AREG SDK with `mtrouter` to ensure robust message delivery and service continuity.
 
 ## How It Works
 
 The **Public Service Provider** processes incoming client requests and may mark them as *busy* if a previous request is still active. To avoid stalling, the provider can manually unblock pending requests, allowing new requests to be processed immediately. Once a request is completed, the response is prepared and sent to the correct consumer.
 
-**Service Consumers** continuously send frequent requests. With manual unblocking in place, clients rarely encounter *busy* failures, and responses are received as soon as they are ready. The system leverages `mcrouter` and the AREG Framework to ensure automatic service discovery via `serviceConnected()` and reliable inter-process communication.
+**Service Consumers** continuously send frequent requests. With manual unblocking in place, clients rarely encounter *busy* failures, and responses are received as soon as they are ready. The system leverages `mtrouter` and the AREG Framework to ensure automatic service discovery via `serviceConnected()` and reliable inter-process communication.
 
 ## Sub-Projects
 

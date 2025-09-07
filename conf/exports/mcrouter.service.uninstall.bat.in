@@ -1,8 +1,0 @@
-@echo off
-
-rem : To uninstall the AREG Multicast Router Service on local machine
-rem : run this file under Windows with Administrator rights
-
-@AREG_INSTALL_DST@/tools/@AREG_PACKAGE_NAME@/mcrouter.exe --uninstall
-
-exit

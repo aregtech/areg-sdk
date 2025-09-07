@@ -7,7 +7,7 @@
 The **27_pubsubmulti** project demonstrates a multi-process Pub/Sub (Publish/Subscribe) system where one process acts as a publisher and another process hosts multiple subscribers running in the same thread. The example highlights efficient event delivery by sending updates only when necessary, reducing unnecessary network traffic while ensuring subscribers receive relevant data.
 
 > [!NOTE]
-> This example requires **Multi-Target Router (`mcrouter`)** for message routing. Ensure `mcrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
+> This example requires **Multi-Target Router (`mtrouter`)** for message routing. Ensure `mtrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
 
 ## Concepts Shown
 
@@ -21,7 +21,7 @@ The **27_pubsubmulti** project demonstrates a multi-process Pub/Sub (Publish/Sub
 
 A publisher process continuously generates data and broadcasts it to subscribers using AREG’s Pub/Sub system. Multiple subscribers in a single thread can dynamically connect and receive updates from the publisher. Notifications are delivered based on the subscriber’s selected mode: either only when data changes or every time data is set.
 
-Communication is managed by **mcrouter**, providing reliable inter-process message delivery. The AREG Framework handles automatic service discovery via `serviceConnected()`, allowing subscribers to connect to the publisher regardless of process startup order.
+Communication is managed by **mtrouter**, providing reliable inter-process message delivery. The AREG Framework handles automatic service discovery via `serviceConnected()`, allowing subscribers to connect to the publisher regardless of process startup order.
 
 ## Sub-Projects
 
@@ -42,4 +42,4 @@ Communication is managed by **mcrouter**, providing reliable inter-process messa
 
 ## Takeaway
 
-Illustrates a scalable, multi-process Pub/Sub system with efficient event delivery, supporting multiple subscribers in a single thread and leveraging **Object RPC** and `mcrouter` for fault-tolerant IPC.
+Illustrates a scalable, multi-process Pub/Sub system with efficient event delivery, supporting multiple subscribers in a single thread and leveraging **Object RPC** and `mtrouter` for fault-tolerant IPC.

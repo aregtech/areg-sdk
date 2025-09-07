@@ -272,7 +272,7 @@ Components run in different processes:
 
 ## Testing `multiprocess`
 
-1. Start **mcrouter** (or set IP in [areg.init](../framework/areg/resources/areg.init)).
+1. Start **mtrouter** (or set IP in [areg.init](../framework/areg/resources/areg.init)).
 2. Run `serviceproc` (only one instance).
 3. Run one or more `clientproc` (unique names auto-assigned).
 4. Clients and services discover each other and communicate transparently across processes or devices.

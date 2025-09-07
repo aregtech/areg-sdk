@@ -154,15 +154,15 @@ log::logobserver::db::name          = log_%time%.sqlog              # Logobserve
 log::logobserver::db::location      = ./logs                        # Logobserver: The log database location
 
 # ---------------------------------------------------------------------------
-# Messaging enable states for the logcollector and mcrouter services.
+# Messaging enable states for the logcollector and mtrouter services.
 # ---------------------------------------------------------------------------
 log::logcollector::enable::file     = false     # Log Collector service: do not output log messages in the file
 log::logcollector::enable::debug    = false     # Log Collector service: do not output logs in the debug output window
 log::logcollector::enable::db       = false     # Log Collector service: do not output in the database
-log::mcrouter::enable::file         = false     # MC Router: File logging enable / disable flag
-log::mcrouter::enable::db           = false     # MC Router: Database logging enable / disable flag
-log::mcrouter::enable::debug        = false     # MC Router: Debug output console logging enable / disable flag
-log::mcrouter::enable::remote       = false     # MC Router: Remote logging enable / disable flag
+log::mtrouter::enable::file         = false     # MC Router: File logging enable / disable flag
+log::mtrouter::enable::db           = false     # MC Router: Database logging enable / disable flag
+log::mtrouter::enable::debug        = false     # MC Router: Debug output console logging enable / disable flag
+log::mtrouter::enable::remote       = false     # MC Router: Remote logging enable / disable flag
 
 # ###########################################################################
 # Remote services
@@ -176,7 +176,7 @@ service::*::list            = router | logger               # The list of availa
 # ---------------------------------------------------------------------------
 # Message router settings
 # ---------------------------------------------------------------------------
-router::*::service          = mcrouter                      # The name of the message router service (process name)
+router::*::service          = mtrouter                      # The name of the message router service (process name)
 router::*::connect          = tcpip			                # The list of supported communication protocols
 router::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
 router::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1. Set the real IP-address.
@@ -200,7 +200,7 @@ logger::*::port::tcpip      = 8282			                # Protocol specific connect
 # ###########################################################################
 
 log::*::scope::*			= DEBUG | SCOPE ;               # By default, activate and enable log scopes of all applications.
-log::mcrouter::scope::*     = NOTSET ;                      # The multicast router should output only warnings and errors.
+log::mtrouter::scope::*     = NOTSET ;                      # The Multitarget router should output only warnings and errors.
 log::*::scope::areg_*		= NOTSET ;                      # Activate and enable log scopes of all AREG framework applications.
 log::logcollector::scope::* = NOTSET ;                      # No log messages from the log collector
 log::logobserver::scope::*  = NOTSET ;                      # No log messages from the log collector

@@ -6,7 +6,7 @@
 The **18_pubworker** project demonstrates how to use **Worker Threads** for background processing and custom event communication between **Worker** and **Component Threads** within the same process. It also leverages **Object Remote Procedure Call (Object RPC)** and **Inter-Process Communication (IPC)** to manage service attributes and offload tasks efficiently.
 
 > [!NOTE]
-> Ensure a **Multi-Target Router** (`mcrouter`) is running on a network-accessible machine. The `areg.init` configuration file must include the correct IP and port for the router.
+> Ensure a **Multi-Target Router** (`mtrouter`) is running on a network-accessible machine. The `areg.init` configuration file must include the correct IP and port for the router.
 
 ## Concepts Shown
 - **Worker Threads**: Offload background tasks while keeping component threads responsive.
@@ -16,7 +16,7 @@ The **18_pubworker** project demonstrates how to use **Worker Threads** for back
 - **Multithreaded and Multiprocess Execution**: Demonstrates coordinated operation of multiple threads and processes.
 
 ## How It Works
-Generated code from [PatientInformation.siml](./services/PatientInformation.siml) handles Object RPC communication. The example includes a service provider (`18_pubservice`) and a consumer (`18_pubclient`), each with worker threads that handle background tasks like user input simulation or attribute updates. Messages and events are routed through `mcrouter` to ensure robust inter-thread and inter-process communication.
+Generated code from [PatientInformation.siml](./services/PatientInformation.siml) handles Object RPC communication. The example includes a service provider (`18_pubservice`) and a consumer (`18_pubclient`), each with worker threads that handle background tasks like user input simulation or attribute updates. Messages and events are routed through `mtrouter` to ensure robust inter-thread and inter-process communication.
 
 ## Sub-Projects
 1. **18_generated**: Library with auto-generated Object RPC code for service communication.

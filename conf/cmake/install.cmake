@@ -16,14 +16,14 @@ target_include_directories(aregextend   PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(areglogger   PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(logcollector PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(logobserver  PUBLIC $<INSTALL_INTERFACE:include>)
-target_include_directories(mcrouter     PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(mtrouter     PUBLIC $<INSTALL_INTERFACE:include>)
 
 target_link_directories(areg            PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(aregextend      PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(areglogger      PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(logcollector    PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(logobserver     PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
-target_link_directories(mcrouter        PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+target_link_directories(mtrouter        PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 
 # Copy all header files of AREG Framework
 install(DIRECTORY framework/
@@ -34,7 +34,7 @@ install(DIRECTORY framework/
         PATTERN "*.hpp"
         PATTERN "logcollector"  EXCLUDE
         PATTERN "logobserver"   EXCLUDE
-        PATTERN "mcrouter"      EXCLUDE
+        PATTERN "mtrouter"      EXCLUDE
 )
 
 if (AREG_SQLITE_FOUND)
@@ -110,8 +110,8 @@ install(DIRECTORY tools/
             CONFIGURATIONS Release
 )
 
-# Copy compiled AREG SDK tools: logcollector, logobserver and mcrouter
-install(TARGETS logcollector logobserver mcrouter
+# Copy compiled AREG SDK tools: logcollector, logobserver and mtrouter
+install(TARGETS logcollector logobserver mtrouter
     EXPORT ${AREG_PACKAGE_NAME}
     RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
@@ -161,13 +161,13 @@ if ((WIN32) OR (CYGWIN) OR (MINGW))
 
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.install.bat.in"    exports/logcollector.service.install.bat    @ONLY)
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.uninstall.bat.in"  exports/logcollector.service.uninstall.bat  @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"        exports/mcrouter.service.install.bat        @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"      exports/mcrouter.service.uninstall.bat      @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.install.bat.in"        exports/mtrouter.service.install.bat        @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.uninstall.bat.in"      exports/mtrouter.service.uninstall.bat      @ONLY)
     install(FILES 
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.install.bat"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.uninstall.bat"
-            "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service.install.bat"
-            "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service.uninstall.bat"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mtrouter.service.install.bat"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mtrouter.service.uninstall.bat"
             DESTINATION share/${AREG_PACKAGE_NAME}/service
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
@@ -177,10 +177,10 @@ if ((WIN32) OR (CYGWIN) OR (MINGW))
 else()
 
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.in"    "exports/logcollector.service"  @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.in"        "exports/mcrouter.service"      @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.in"        "exports/mtrouter.service"      @ONLY)
     install(FILES 
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service"
-            "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mtrouter.service"
             DESTINATION share/${AREG_PACKAGE_NAME}/service
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
