@@ -57,7 +57,7 @@ Threads, IPC, and distributed messaging often slow development. **Areg SDK** com
 
 ---
 
-## Why Areg SDK:Benefits and Compare [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk-benefits-and-compare "Why Areg SDK Lightweight C++ Framework")
+## Why Areg SDK: Benefits and Compare[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk-benefits-and-compare "Why Areg SDK Lightweight C++ Framework")
 
 Software complexity rarely comes from algorithms — it comes from **frameworks that don’t scale**. Threads and IPC introduce **manual wiring, hidden bugs, and costly rewrites**. The wrong **communication framework** locks teams into fragile architectures and wastes weeks.
 
@@ -110,7 +110,7 @@ Software complexity rarely comes from algorithms — it comes from **frameworks 
 
 ---
 
-## Getting Started: Build and Integration [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started-build-and-integration)
+## Getting Started: Build and Integration[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started-build-and-integration)
 
 ### Prerequisites
 
@@ -159,6 +159,7 @@ cmake --build build -j 12
 1. [**01\_minimalrpc**](examples/01_minimalrpc/) – minimal RPC example between 2 components.
 2. [**02\_minimalipc**](examples/02_minimalipc/) – minimal IPC example across processes, **requires `mtrouter`**.
 3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using the same components, **requires `mtrouter`**.
+4. [**examples**](examples/README.md#example-projects) – explore more complex multithreaded RPC and IPC examples, and Areg SDK features.
 
 > [!IMPORTANT]
 > For IPC, **`mtrouter` must be running**. See [mtrouter documentation](./docs/wiki/05a-mtrouter.md).
@@ -175,7 +176,7 @@ cmake --build build -j 12
 
 ---
 
-## Core Modules and Architecture [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#core-modules--architecture)
+## Core Modules and Architecture[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#core-modules--architecture)
 
 | Module                                                              | Purpose                                                                                                                                |
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -197,7 +198,7 @@ Supports **Client-Server (Request-Reply)** and **Publish-Subscribe (Pub/Sub)** p
 
 ---
 
-## Use Cases: Distributed, RPC and IPC [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-distributed-rpc-and-ipc)
+## Use Cases: Distributed, RPC and IPC[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-distributed-rpc-and-ipc)
 
 ### IoT: Mist-to-Cloud
 
@@ -245,7 +246,7 @@ Validating distributed systems is expensive and hardware-dependent. **Areg** all
 
 ---
 
-## Roadmap [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
+## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
 
 Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automation, reliability, and performance.
 
@@ -259,7 +260,7 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ---
 
-## Documentation [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#documentation)
+## Documentation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#documentation)
 
 * [Installation and Build](./docs/wiki/README.md#1-installation-and-build) — cross-platform builds, toolchains, CMake integration for embedded and desktop targets
 * [Build Options and Integrations](./docs/wiki/README.md#2-build-options-and-integrations) — FetchContent, packaging, and embedding Areg as a library
@@ -274,7 +275,7 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ---
 
-## License [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#license)
+## License[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#license)
 
 Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permissive and suitable for open-source and commercial use.
 
@@ -284,7 +285,7 @@ Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permi
 
 ---
 
-## Call to Action [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
+## Call to Action[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
 Help grow the Areg SDK community:
 
