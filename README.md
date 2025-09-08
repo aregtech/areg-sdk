@@ -42,7 +42,7 @@ Threads, IPC, and distributed messaging often slow development. **Areg SDK** com
 
 ---
 
-## Table of Contents [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
+## Table of Contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
 - [Why Areg SDK: Benefits and Compare](#why-areg-sdk-benefits-and-compare)
 - [Getting Started: Build and Integration](#getting-started-build-and-integration)
 - [Core Modules and Architecture](#core-modules-and-architecture)
