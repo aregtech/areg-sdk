@@ -1,19 +1,18 @@
-﻿
 # Hello Service!
 
 ```
 
-This file is part of AREG SDK
-Copyright (c) 2021–2023, Aregtech
+This file is part of the AREG SDK
+Copyright (c) 2021–2025, Aregtech
 Contact: info\[at]aregtech.com
 Website: [https://www.aregtech.com](https://www.aregtech.com)
 
 ````
 
-This tutorial walks through building distributed applications with the AREG SDK.
+This tutorial demonstrates how to build multithreaded and multiprocess applications with the AREG SDK by reusing the same service and client components.
 
 > [!NOTE]
-> Full source code is in [03_helloservice](../examples/03_helloservice/).
+> Full source code is available in [03_helloservice](../examples/03_helloservice/).
 
 ---
 
@@ -38,56 +37,64 @@ This tutorial walks through building distributed applications with the AREG SDK.
 
 ## Introduction
 
-This example consists of three projects under `examples/03_helloservice`. Each project reuses the same **ServiceComponent** and **ClientComponent** (in `common/src`) but demonstrates different execution models:
+This example contains three projects under `examples/03_helloservice`.  
+All reuse the same **ServiceComponent** and **ClientComponent** (in `common/src`), but illustrate different execution models:
 
-- **[onethread](../examples/03_helloservice/onethread/):** Both components run in the same thread.  
-- **[twothreads](../examples/03_helloservice/twothreads/):** Components run in separate threads of one process.  
+- **[onethread](../examples/03_helloservice/onethread/):** Both components run in one thread.  
+- **[twothreads](../examples/03_helloservice/twothreads/):** Components run in separate threads within one process.  
 - **[multiprocess](../examples/03_helloservice/multiprocess/):** Components run in separate processes.
 
-By completing the steps, you’ll learn how to create multithreaded and multiprocess applications and understand how AREG SDK enables distributed services in edge (mist) networks.
+By following this tutorial, you’ll learn how to implement multithreaded and multiprocess applications and see how AREG SDK enables distributed services in edge (mist) networks.
 
 ---
 
 ## Demonstrated Features
 
-1. A model defines two components: one providing a service, one consuming it.  
-2. Models can be loaded/unloaded dynamically, managing the service lifecycle.  
+1. A model defines two components: one service provider, one service consumer.  
+2. Models can be dynamically loaded/unloaded, controlling the service lifecycle.  
 3. Components discover each other automatically.  
-4. Once discovered, the client component sends a request.  
-5. The service component processes and responds.  
-6. On response:  
-   - In **onethread** and **twothreads**, the app exits.  
-   - In **multiprocess**, the client exits but the service keeps running.  
-7. **multiprocess** supports multiple clients, regardless of start order.
+4. Once discovered, the client sends a request.  
+5. The service processes the request and returns a response.  
+6. Response handling:  
+   - In **onethread** and **twothreads**, the app exits after response.  
+   - In **multiprocess**, the client exits but the service remains active.  
+7. **multiprocess** supports multiple clients, independent of startup order.
 
 ---
 
 ## Key Notes for Service Implementation
 
 - A **Component** can provide and/or consume multiple services.  
-- Multiple service providers of the same type can exist, but each must have a unique **Role Name**.  
+- Multiple providers of the same service can coexist, but each must have a unique **Role Name**.  
 - Role Names must be unique:  
   - Within a process for _Local_ services.  
   - Across the network for _Public_ services.  
-- Service connection status is tracked via callbacks:  
-  - **Client Component:** `void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)`  
-  - **Service Component:** `bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)`
+- Service connection status is reported via callbacks:  
+  - **Client Component:**  
+    ```cpp
+    void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)
+    ```  
+  - **Service Component:**  
+    ```cpp
+    bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)
+    ```
 
 ---
 
 ## Showcase
 
-These examples show how components can be flexibly arranged across threads or processes. The logic is identical; only the **models** differ in `main.cpp`.
+The examples illustrate how the same components can run in different execution models.  
+The business logic is identical — only the **model definitions** in `main.cpp` change.
 
 ---
 
 ## Directory Structure
 
-- **`generated/src`** → Code generated from the service interface.  
-- **`common/src`** → Shared component implementations (service + client).  
+- **`generated/src`** → Generated code from the service interface.  
+- **`common/src`** → Shared implementations (service + client).  
 - **`service`** → Service interface definition (`.siml` file).  
 
-Before starting, create `common/src` and `service` under `helloservice`.
+Before starting, create `common/src` and `service` directories under `helloservice`.
 
 ---
 
@@ -122,16 +129,30 @@ Create `helloservice/service/HelloService.siml`:
 </ServiceInterface>
 ````
 
-This declares **HelloService** as *Public* (`isRemote="true"`) with a request/response pair.
+This defines **HelloService** as a *Public* interface (`isRemote="true"`) with a request/response pair.
 
 ---
 
 ## Code Generation
 
-> \[!NOTE]
+> [!NOTE]
 > Requires [Java 17+](https://java.com/).
 
-Run in the `helloservice` directory:
+### With CMake
+
+In [`CMakeLists.txt`](../examples/03_helloservice/CMakeLists.txt), call:
+
+```cmake
+# Add service interface files
+addServiceInterface(03_generated examples/03_helloservice/services/HelloService.siml)
+```
+
+* `03_generated`: name of the static library containing generated files.
+* Path: relative to the `.siml` file.
+
+### With MSVC
+
+Either run manually in the `helloservice` directory or include in a `.bat` pre-build script:
 
 ```bash
 java -jar <areg-sdk-root>/tools/codegen.jar \
@@ -140,43 +161,44 @@ java -jar <areg-sdk-root>/tools/codegen.jar \
   --target=helloservice/services
 ```
 
-This generates base classes such as `HelloServiceStub` (service) and `HelloServiceClientBase` (client).
+Generated classes include `HelloServiceStub` (service) and `HelloServiceClientBase` (client).
 
 ---
 
 ## Model
 
-A **model** describes threads, components, and their relationships. Models can be static (declared at compile time) or dynamic (created at runtime).
+A **model** defines threads, components, and their relationships. Models may be:
+
+* **Static** — declared at compile time.
+* **Dynamic** — created at runtime.
 
 ### Concepts
 
-* **Threads & Components:**
-  Each thread hosts at least one component. Each component must provide or consume at least one service.
-* **Lifecycle:**
-  Unloading a model stops all its threads and services.
-* **Role Names:**
-  Components are identified by Role Names, unique per process (local) or across the network (public).
+* **Threads & Components:** each thread hosts one or more components. Each component must provide or consume a service.
+* **Lifecycle:** unloading a model stops its threads and services.
+* **Role Names:** uniquely identify components (per-process for local, global for public).
 
 ### Declaring Static Models
 
-1. **Unique model name** — each app needs at least one.
-2. **Declare with macros:**
+1. Define a unique model name.
+2. Use macros:
 
    * `BEGIN_MODEL` / `END_MODEL`
    * `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD`
    * `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT`
-3. **Register services:**
+3. Register services:
 
    * `REGISTER_IMPLEMENT_SERVICE` (provided by component).
    * `REGISTER_DEPENDENCY` (consumed by component).
 
-> \[!NOTE]
-> Service providers are identified by **Interface Name**; clients refer by **Role Name**.
+> [!NOTE]
+> Service providers are identified by **Interface Name**.
+> Clients refer by **Role Name**.
 
-See [`03_helloservice`](../examples/03_helloservice/) for examples. All reuse [`ServiceComponent`](../examples/03_helloservice/common/src/ServiceComponent.hpp) and [`ClientComponent`](../examples/03_helloservice/common/src/ClientComponent.hpp).
+All examples reuse [`ServiceComponent`](../examples/03_helloservice/common/src/ServiceComponent.hpp) and [`ClientComponent`](../examples/03_helloservice/common/src/ClientComponent.hpp).
 
-> \[!IMPORTANT]
-> Link all projects with the **areg library** (shared or static).
+> [!IMPORTANT]
+> Link all projects with the **areg library** (shared or static). If you build using `CMake` the call of `macro_declare_executable()` automatically links with the `areg` library.
 
 ---
 
@@ -185,8 +207,6 @@ See [`03_helloservice`](../examples/03_helloservice/) for examples. All reuse [`
 ### [`onethread`](../examples/03_helloservice/onethread/)
 
 Both components run in one thread.
-
-**main.cpp:**
 
 ```cpp
 #include "areg/appbase/Application.hpp"
@@ -223,8 +243,6 @@ int main()
 ### [`twothreads`](../examples/03_helloservice/twothreads/)
 
 Components run in separate threads.
-
-**main.cpp:**
 
 ```cpp
 #include "areg/appbase/Application.hpp"
@@ -279,4 +297,4 @@ Components run in different processes:
 
 ---
 
-With this setup, you can build scalable, cross-platform, and distributed applications using AREG SDK.
+With this setup, you can create scalable, cross-platform, distributed applications using the AREG SDK.
