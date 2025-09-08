@@ -261,14 +261,14 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ## Documentation [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#documentation)
 
-* [Installation and Build](./docs/wiki/README.md#1--installation-and-build) — cross-platform builds, toolchains, CMake integration for embedded and desktop targets
-* [Build Options and Integrations](./docs/wiki/README.md#2--build-options-and-integrations) — FetchContent, packaging, and embedding Areg as a library
-* [Development Tools](./docs/wiki/README.md#3--development-tools) — code generation for service-oriented development
-* [Logging and Monitoring](./docs/wiki/README.md#4--logging-and-monitoring) — logcollector and logobserver usage
-* [Networking and Communication](./docs/wiki/README.md#5--networking-and-communication) — Multitarget router for IPC and low-latency messaging
-* [Persistence](./docs/wiki/README.md#6--persistence) — for local data storage in a text file
-* [Troubleshooting](./docs/wiki/README.md#7--troubleshooting) — common issues and recommended solutions
-* [Examples and Tests](./docs/wiki/README.md#8--examples-and-tests) — catalog of sample projects (RPC, IPC, Pub/Sub, FSM, and more)
+* [Installation and Build](./docs/wiki/README.md#1-installation-and-build) — cross-platform builds, toolchains, CMake integration for embedded and desktop targets
+* [Build Options and Integrations](./docs/wiki/README.md#2-build-options-and-integrations) — FetchContent, packaging, and embedding Areg as a library
+* [Development Tools](./docs/wiki/README.md#3-development-tools) — code generation for service-oriented development
+* [Logging and Monitoring](./docs/wiki/README.md#4-logging-and-monitoring) — logcollector and logobserver usage
+* [Networking and Communication](./docs/wiki/README.md#5-networking-and-communication) — Multitarget router for IPC and low-latency messaging
+* [Persistence](./docs/wiki/README.md#6-persistence) — for local data storage in a text file
+* [Troubleshooting](./docs/wiki/README.md#7-troubleshooting) — common issues and recommended solutions
+* [Examples and Tests](./docs/wiki/README.md#8-examples-and-tests) — catalog of sample projects (RPC, IPC, Pub/Sub, FSM, and more)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
