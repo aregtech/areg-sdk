@@ -64,22 +64,22 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 
 ### Top 5 Benefits
 
-1. **No manual threading**  
+1. **No manual threading**
    Threads, components, and watchdogs are auto-created — preventing subtle concurrency bugs and saving time.
 
-2. **Unified API**  
+2. **Unified API**
    Services are called the same way locally or remotely — always async, non-blocking, and consistent.
 
-3. **Self-managed mesh**  
+3. **Self-managed mesh**
    Automatic service discovery and routing across threads, processes, and devices — no manual wiring.
 
-4. **Resilient by design**  
+4. **Resilient by design**
    Components can join or leave dynamically; watchdogs restart failed threads for fault-tolerant systems.
 
-5. **Built-in observability**  
+5. **Built-in observability**
    Integrated logging and scopes help per-method duration measurement to monitor and optimize efficiently.
 
-💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.<br/>  
+💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.<br/>
 ⚠️ **When not to use:** RTOS (at the moment), web, or non-C++ apps — use web/RTOS-specific tools instead.
 
 ### Compared to Alternatives
@@ -97,11 +97,11 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 
 ### Decision Checklist
 
-- [ ] Do **threading** and **synchronization** issues slow your progress?  
-- [ ] Does **debugging** across **threads, processes, or components** take excessive time?  
-- [ ] Is setting up **communication** across **processes or nodes** complex and error-prone?  
-- [ ] Do **remote failures** and **reconnections** create delays and extra work?  
-- [ ] Would a **unified communication model** across **threads, processes, and devices** simplify development?  
+- [ ] Do **threading** and **synchronization** issues slow your progress?
+- [ ] Does **debugging** across **threads, processes, or components** take excessive time?
+- [ ] Is setting up **communication** across **processes or nodes** complex and error-prone?
+- [ ] Do **remote failures** and **reconnections** create delays and extra work?
+- [ ] Would a **unified communication model** across **threads, processes, and devices** simplify development?
 
 💡 If you answer **Yes** to 3+ questions, Areg SDK is likely a good fit.
 
@@ -113,8 +113,8 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 
 ### Prerequisites
 
-* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC, MinGW  
-* **CMake ≥ 3.20**  
+* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC, MinGW
+* **CMake ≥ 3.20**
 * **Java ≥ 17** (required for code generation tools)
 
 > **Supported OS:** Linux, Windows</br>
@@ -158,7 +158,7 @@ cmake --build build -j 12
 1. [**01\_minimalrpc**](examples/01_minimalrpc/) – minimal RPC example between 2 components.
 2. [**02\_minimalipc**](examples/02_minimalipc/) – minimal IPC example across processes, **requires `mtrouter`**.
 3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using the same components, **requires `mtrouter`**.
-4. [**More Examples**](examples/README.md) – additional samples demonstrating simple and advanced Areg SDK features.  
+4. [**More Examples**](examples/README.md) – additional samples demonstrating simple and advanced Areg SDK features.
 
 > [!IMPORTANT]
 > For IPC, **`mtrouter` must be running**. See [mtrouter documentation](./docs/wiki/05a-mtrouter.md).
@@ -216,7 +216,7 @@ Many small devices lack scalable infrastructure. **Areg** transforms embedded ap
 
 <div align="center"><a href="https://GitHub.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
-* **Local Services** – multithreaded within a device  
+* **Local Services** – multithreaded within a device
 * **Public Services** – accessible across processes and applications
 
 **Benefit:** Seamlessly expose services to other apps and devices without modifying code.
