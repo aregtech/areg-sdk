@@ -58,8 +58,7 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 
 ## Why Areg SDK: Benefits and Compare[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk-benefits-and-compare "Why Areg SDK Lightweight C++ Framework")
 
-**Areg SDK is a lightweight framework with built-in middleware that automates threading, service discovery, and inter-node messaging**, so teams can build distributed systems **without boilerplate or fragile wiring**. Unlike gRPC, DDS, or ZeroMQ, it provides a self-managed mesh and a unified API across threads, processes, and devices.
-
+**Areg SDK is a lightweight framework with built-in middleware that automates threading, service discovery, and inter-node messaging**, so teams can build distributed systems **without boilerplate or fragile wiring**. Unlike gRPC, DDS, or ZeroMQ, it provides a self-managed mesh and a unified API across threads, processes, and devices.  
 **Result:** scalable, fault-tolerant systems — faster, simpler, safer.
 
 ### Top 5 Benefits
