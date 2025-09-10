@@ -89,9 +89,9 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 | Ease of Use      | ✅ Automated setup              | ⚠️ Manual, boilerplate, [complex](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc) |
 | Automation       | ✅ Codegen, modeling, dispatch  | ⚠️ Manual setup, [stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview) |
 | Auto-Discovery   | ✅ Self-organizing service mesh | ✅ DDS: [built-in](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
-| Fault-Tolerance  | ✅ Watchdog & auto-restart      | ✅ DDS: [QoS](https://community.rti.com/glossary/qos), ⚠️ gRPC/ZeroMQ: [Retries](https://grpc.io/docs/guides/retry/)/Manual |
+| Fault-Tolerance  | ✅ Watchdog & auto-restart      | ✅ DDS: [QoS](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [Retries](https://grpc.io/docs/guides/retry/)/Manual |
 | Request-Reply    | ✅ Native Object RPC in service | ✅ gRPC: [RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: Over topics/[patterns](https://zguide.zeromq.org/docs/chapter3/) |
-| Pub/Sub          | ✅ Native, built-in in service  | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/dds-3.28.1/devguide/quality_of_service.html), ⚠️ Add-ons/Manual |
+| Pub/Sub          | ✅ Native, built-in in service  | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ Add-ons/Manual |
 | Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ Vendor-specific (DDS) or External                |
 | Dev Time Saved   | ✅ Faster, via automation       | ⚠️ Limited, external tooling                        |
 
