@@ -64,22 +64,22 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 
 ### Top 5 Benefits
 
-1. **No manual threading**
+1. **No manual threading**  
    Threads, components, and watchdogs are auto-created — preventing subtle concurrency bugs and saving time.
 
-2. **Unified API**
+2. **Unified API**  
    Services are called the same way locally or remotely — always async, non-blocking, and consistent.
 
-3. **Self-managed mesh**
+3. **Self-managed mesh**  
    Automatic service discovery and routing across threads, processes, and devices — no manual wiring.
 
-4. **Resilient by design**
+4. **Resilient by design**  
    Components can join or leave dynamically; watchdogs restart failed threads for fault-tolerant systems.
 
-5. **Built-in observability**
+5. **Built-in observability**  
    Integrated logging and scopes help per-method duration measurement to monitor and optimize efficiently.
 
-💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.<br/>
+💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.  
 ⚠️ **When not to use:** RTOS (at the moment), web, or non-C++ apps — use web/RTOS-specific tools instead.
 
 ### Compared to Alternatives
@@ -117,7 +117,7 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 * **CMake ≥ 3.20**
 * **Java ≥ 17** (required for code generation tools)
 
-> **Supported OS:** Linux, Windows</br>
+> **Supported OS:** Linux, Windows  
 > **Supported Hardware:** x86, x86_64, ARM, AArch64
 
 See [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) and [README Wiki](./docs/wiki/README.md) for compiler options, setup instructions, and troubleshooting.
