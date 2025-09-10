@@ -1,9 +1,8 @@
-<h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-  <a name="logo" href="https://www.aregtech.com">
+<h1 align="center" style="font-size:2.5em; font-weight:bold; margin:1em 0;">
+  <a href="https://www.aregtech.com">
     <img 
-      align="center" 
       src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-1280x360px-logo.png" 
-      alt="Areg SDK – C++ Middleware and Framework for Remote Procedure Call (RPC) and Inter-Process Communication (IPC)"
+      alt="Areg SDK – C++ Middleware and Framework for RPC and IPC"
       title="Areg SDK – Lightweight Cross-Platform C++ Framework and Middleware for RPC, IPC, and Distributed Systems"
       style="width:100%;height:100%" 
     />
@@ -19,9 +18,9 @@
 
 ---
 
-*Areg SDK acts as a network operator for C++ applications — automating communication in distributed systems.*
+*Areg SDK is a lightweight C++17 framework that automates communication in distributed applications.*
 
-Threads, IPC, and messaging introduce complexity and overhead. **Areg SDK** unifies async RPC, service discovery, and messaging — so developers can build distributed services across threads, processes, and devices without boilerplate.
+Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, and fragile wiring**. Unlike traditional frameworks, **Areg SDK automates communication**, unifying async RPC, Pub/Sub, and service discovery. Its self-managed service mesh **enables scalable, fault-tolerant systems across threads, processes, and devices — with no boilerplate, no fragile wiring**.
 
 ---
 
@@ -59,41 +58,40 @@ Threads, IPC, and messaging introduce complexity and overhead. **Areg SDK** unif
 
 ## Why Areg SDK: Benefits and Compare[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#why-areg-sdk-benefits-and-compare "Why Areg SDK Lightweight C++ Framework")
 
-In many projects, complexity doesn’t come from algorithms — it comes from frameworks that fail to scale. The wrong communication framework locks teams into fragile architectures, where threads and IPC cause manual wiring, hidden bugs, and rework.
-
-**Areg SDK solves this by automating communication across components.** It eliminates boilerplate and unifies service calls across threads, processes, and devices with async RPC, Pub/Sub, service discovery, and a self-managed mesh.
+**Areg SDK is a lightweight framework with built-in middleware that automates threading, service discovery, and inter-node messaging**, so teams can build distributed systems **without boilerplate or fragile wiring**. Unlike gRPC, DDS, or ZeroMQ, it provides a self-managed mesh and a unified API across threads, processes, and devices.  
+**Result:** scalable, fault-tolerant systems — faster, simpler, safer.
 
 ### Top 5 Benefits
 
-1. **No manual threading**<br/>
-   Load a model; Areg auto-creates threads, components, and watchdogs.
+1. **No manual threading**  
+   Threads, components, and watchdogs are auto-created — preventing subtle concurrency bugs and saving time.
 
-2. **One API, everywhere**<br/>
-   Call services the same way locally or remotely — always async and non-blocking.
+2. **Unified API**  
+   Services are called the same way locally or remotely — always async, non-blocking, and consistent.
 
-3. **Self-managed service mesh**<br/>
-   Areg discovers services and routes calls automatically — no setup required.
+3. **Self-managed mesh**  
+   Automatic service discovery and routing across threads, processes, and devices — no manual wiring.
 
-4. **Fault-tolerant by design**<br/>
-   Components can join or leave without disruption; watchdogs automatically restart failed threads.
+4. **Resilient by design**  
+   Components can join or leave dynamically; watchdogs restart failed threads for fault-tolerant systems.
 
-5. **Lightweight observability**<br/>
-   Integrated scopes, logging and viewer with per-method duration measure.
+5. **Built-in observability**  
+   Integrated logging and scopes help per-method duration measurement to monitor and optimize efficiently.
 
-💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.<br/>
+💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.  
 ⚠️ **When not to use:** RTOS (at the moment), web, or non-C++ apps — use web/RTOS-specific tools instead.
 
 ### Compared to Alternatives
 
 | Feature          | Areg SDK                        | Competitors (gRPC, DDS, ZeroMQ)                      |
 | ---------------- | ------------------------------- | ---------------------------------------------------- |
-| Ease of Use      | ✅ Automated setup              | ⚠️ Manual, boilerplate, complex                     |
-| Automation       | ✅ Codegen, modeling, dispatch  | ⚠️ Manual setup, stubs only                         |
-| Auto-Discovery   | ✅ Self-organizing service mesh | ✅ DDS: built-in, ⚠️ gRPC/ZeroMQ: external          |
-| Fault-Tolerance  | ✅ Watchdog & auto-restart      | ✅ DDS: QoS, ⚠️ gRPC/ZeroMQ: Retries/Manual         |
-| Request-Reply    | ✅ Native Object RPC in service | ✅ gRPC: RPC, ⚠️ DDS/ZeroMQ: Over topics/patterns   |
-| Pub/Sub          | ✅ Native, built-in in service  | ✅ DDS: Topics, ⚠️ Add-ons/Manual                   |
-| Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ Vendor-specific (DDS) or External                |
+| Ease of Use      | ✅ Automated setup              | ⚠️ Manual, boilerplate, [complex](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc) |
+| Automation       | ✅ Codegen, modeling, dispatch  | ⚠️ Manual setup, [stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview) |
+| Auto-Discovery   | ✅ Self-organizing service mesh | ✅ DDS: [built-in](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
+| Fault-Tolerance  | ✅ Watchdog & auto-restart      | ✅ DDS: [QoS](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [Retries](https://grpc.io/docs/guides/retry/)/Manual |
+| Request-Reply    | ✅ Native Object RPC in service | ✅ gRPC: [RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: Over topics/[patterns](https://zguide.zeromq.org/docs/chapter3/) |
+| Pub/Sub          | ✅ Native, built-in in service  | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ Add-ons/Manual |
+| Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) (DDS) or External |
 | Dev Time Saved   | ✅ Faster, via automation       | ⚠️ Limited, external tooling                        |
 
 ### Decision Checklist
@@ -114,11 +112,11 @@ In many projects, complexity doesn’t come from algorithms — it comes from fr
 
 ### Prerequisites
 
-* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC, MinGW  
-* **CMake ≥ 3.20**  
+* **C++17-compatible compiler**: GCC, Clang/LLVM, MSVC, MinGW
+* **CMake ≥ 3.20**
 * **Java ≥ 17** (required for code generation tools)
 
-> **Supported OS:** Linux, Windows</br>
+> **Supported OS:** Linux, Windows  
 > **Supported Hardware:** x86, x86_64, ARM, AArch64
 
 See [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) and [README Wiki](./docs/wiki/README.md) for compiler options, setup instructions, and troubleshooting.
@@ -151,7 +149,7 @@ cmake --build build -j 12
 **Message Flow:**
 
 ```text
-🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer requests → 📥 Provider responds → 🖨 prints → ✅ quit
+🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer requests → 🖨 Provider prints → ✅ quit
 ```
 
 ### Learning Path
@@ -159,7 +157,7 @@ cmake --build build -j 12
 1. [**01\_minimalrpc**](examples/01_minimalrpc/) – minimal RPC example between 2 components.
 2. [**02\_minimalipc**](examples/02_minimalipc/) – minimal IPC example across processes, **requires `mtrouter`**.
 3. [**03\_helloservice**](examples/03_helloservice/) – multithreaded RPC + IPC using the same components, **requires `mtrouter`**.
-4. [**More Examples**](examples/README.md) – additional samples demonstrating simple and advanced Areg SDK features.  
+4. [**More Examples**](examples/README.md) – additional samples demonstrating simple and advanced Areg SDK features.
 
 > [!IMPORTANT]
 > For IPC, **`mtrouter` must be running**. See [mtrouter documentation](./docs/wiki/05a-mtrouter.md).
@@ -217,7 +215,7 @@ Many small devices lack scalable infrastructure. **Areg** transforms embedded ap
 
 <div align="center"><a href="https://GitHub.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
-* **Local Services** – multithreaded within a device  
+* **Local Services** – multithreaded within a device
 * **Public Services** – accessible across processes and applications
 
 **Benefit:** Seamlessly expose services to other apps and devices without modifying code.
@@ -288,7 +286,7 @@ Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permi
 
 ## Call to Action[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
-Help grow the Areg SDK community:
+🚀 **Join the Areg SDK community** — contribute, discuss, and help shape the future of distributed apps.
 
 * Explore [open issues](https://GitHub.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) and contribute
 * Share ideas or request features via [issues](https://GitHub.com/aregtech/areg-sdk/issues) or [discussions](https://GitHub.com/aregtech/areg-sdk/discussions)
