@@ -5,6 +5,7 @@
 #include "chatter/res/stdafx.h"
 #include "chatter/services/ChatParticipantService.hpp"
 #include "areg/component/ComponentThread.hpp"
+#include "areg/component/ComponentLoader.hpp"
 #include "chatter/ui/PageChat.hpp"
 
 NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & /* listParticipants */, NEMemory::uAlign data )
@@ -17,8 +18,8 @@ NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sPar
     NERegistry::DependencyEntry       dependency(serviceName);
     NERegistry::DependencyList        listDependencies( dependency);
     NERegistry::ComponentEntry        componentEntry( threadName, roleName
-                                                    , ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component* {return new ChatParticipantService(e, t); })
-                                                    , ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {delete& c; })
+                                                    , FUNC_CREATE_COMP(ChatParticipantService)
+                                                    , FUNC_DELETE_COMP
                                                     , NERegistry::ServiceList( ), listDependencies, NERegistry::WorkerThreadList( ) );
     componentEntry.setComponentData( data );
     NERegistry::ComponentList         componentList( componentEntry );

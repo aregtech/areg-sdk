@@ -8,6 +8,7 @@
 #include "chatter/ui/DistributedDialog.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "areg/logging/GELog.h"
+#include "areg/component/ComponentLoader.hpp"
 
 #include <Windows.h>
 
@@ -37,8 +38,8 @@ NERegistry::Model DirectConnectionService::GetModel( const String & nickName, ui
     NERegistry::ServiceEntry          serviceEntry( NEDirectConnection::ServiceName, NEDirectConnection::InterfaceVersion );
     NERegistry::ServiceList           serviceList( serviceEntry );
     NERegistry::ComponentEntry        componentEntry(threadName, roleName
-                                                    , ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component * {return new DirectConnectionService(e, t);})
-                                                    , ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {delete& c; })
+                                                    , FUNC_CREATE_COMP(DirectConnectionService)
+                                                    , FUNC_DELETE_COMP
                                                     , serviceList, NERegistry::DependencyList(), NERegistry::WorkerThreadList());
     componentEntry.setComponentData(data);
     NERegistry::ComponentList         componentList(componentEntry);

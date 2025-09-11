@@ -11,6 +11,7 @@
 #include "chatter/ui/PageConnections.hpp"
 #include "chatter/ui/PageChat.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
+#include "areg/component/ComponentLoader.hpp"
 
 DEF_LOG_SCOPE( chatter_DirectChatService_StartupComponent );
 DEF_LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
@@ -41,8 +42,8 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
     NERegistry::ServiceEntry          serviceEntry( NEDirectMessager::ServiceName, NEDirectMessager::InterfaceVersion );
     NERegistry::ServiceList           listServices( serviceEntry );
     NERegistry::ComponentEntry        componentEntry( threadName, roleName
-                                                    , ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component * {return new DirectChatService(e, t);})
-                                                    , ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {delete& c; })
+                                                    , FUNC_CREATE_COMP(DirectChatService)
+                                                    , FUNC_DELETE_COMP
                                                     , listServices, listDependencies, NERegistry::WorkerThreadList( ) );
     componentEntry.setComponentData(data);
     NERegistry::ComponentList         componentList( componentEntry );
