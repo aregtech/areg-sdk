@@ -21,22 +21,9 @@
 #include "logcollector/app/LogCollector.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// LogCollectorConsoleService class implementation, static methods
-//////////////////////////////////////////////////////////////////////////
-Component * LogCollectorConsoleService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW LogCollectorConsoleService( entry, owner, entry.getComponentData( ) );
-}
-
-void LogCollectorConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    delete (&compObject);
-}
-
-//////////////////////////////////////////////////////////////////////////
 // LogCollectorConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
-LogCollectorConsoleService::LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
-    : SystemServiceConsole( &LogCollector::getInstance().getDataRateHelper( ), entry, owner, data )
+LogCollectorConsoleService::LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+    : SystemServiceConsole( &LogCollector::getInstance().getDataRateHelper( ), entry, owner )
 {
 }

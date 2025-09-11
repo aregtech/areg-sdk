@@ -44,16 +44,6 @@ void TrafficLightService::TimerConsumer::processTimer( Timer & timer )
 // TrafficLightService class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Component * TrafficLightService::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW TrafficLightService(entry, owner);
-}
-
-void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component                 ( entry, owner )
     , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )

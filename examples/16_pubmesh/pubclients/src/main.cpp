@@ -30,41 +30,18 @@
 //!<\brief   A local service component. It also contains service client object.
 class ServiceComponent : public Component
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Statics and constants
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Statics and constants
+//////////////////////////////////////////////////////////////////////////
     static constexpr unsigned int   MAIN_TIMEOUT{ 1'000 };  //!< Timeout to send request to main controller remote service
     static constexpr unsigned int   SECOND_TIMEOUT{ 2'000 };  //!< Timeout to send request to second remote service
     static constexpr unsigned int   THIRD_TIMEOUT{ 3'000 };  //!< Timeout to send request to third remote service
     static constexpr unsigned int   LOCAL_TIMEOUT{ 4'000 };  //!< Timeout to send request to a local service.
 
+//////////////////////////////////////////////////////////////////////////
+// Constructor / destructor
+//////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    {
-        return DEBUG_NEW ServiceComponent( entry, owner );
-    }
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     *          entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-    {
-        delete (&compObject);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor / destructor
-    //////////////////////////////////////////////////////////////////////////
-private:
 
     /**
      * \brief   Instantiates the component object.
@@ -78,14 +55,8 @@ private:
         , mSecondClient     ( entry.mDependencyServices[1], static_cast<Component &>(self()), ServiceComponent::SECOND_TIMEOUT )
         , mThirdClient      ( entry.mDependencyServices[2], static_cast<Component &>(self()), ServiceComponent::THIRD_TIMEOUT  )
         , mLocalClient      ( entry.mDependencyServices[3], static_cast<Component &>(self()), ServiceComponent::LOCAL_TIMEOUT  )
-{
-}
-
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~ServiceComponent( void ) = default;
-
+    {
+    }
 private:
     //////////////////////////////////////////////////////////////////////////
     // Member variables

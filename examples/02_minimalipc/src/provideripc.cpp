@@ -27,32 +27,15 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    /**
-     * \brief   Called to instantiate the service component when loading the model.
-     **/
-    static Component* CreateComponent(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
-    {
-        return DEBUG_NEW ServiceProvider(entry, owner);
-    }
-
-    /**
-     * \brief   Called when unloading model to delete service component.
-     **/
-    static void DeleteComponent(Component& compObject, const NERegistry::ComponentEntry& /*entry*/)
-    {
-        delete (&compObject);
-    }
-
-protected:
     ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
-    {
-    }
+    {   }
 
-    //////////////////////////////////////////////////////////////////////////
-    // HelloService Interface Requests
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// HelloService Interface Requests
+//////////////////////////////////////////////////////////////////////////
+protected:
     virtual void requestHelloService(void) override
     {
         std::cout << "\'Hello Service!\'" << std::endl;
@@ -69,11 +52,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Define the model to load and instantiate threads and objects
 //////////////////////////////////////////////////////////////////////////
-//!< The name of model
-constexpr char const _modelName[]{ "ServiceModel" };
-
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
-BEGIN_MODEL(_modelName)
+BEGIN_MODEL("ServiceModel")
     // Thread 1, provides a service
     BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
@@ -81,7 +61,7 @@ BEGIN_MODEL(_modelName)
         END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 // end of model description
-END_MODEL(_modelName)
+END_MODEL("ServiceModel")
 
 //////////////////////////////////////////////////////////////////////////
 // main method
@@ -91,11 +71,9 @@ int main(void)
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     Application::initApplication();
     // load model to initialize components
-    Application::loadModel(_modelName);
+    Application::loadModel("ServiceModel");
     // wait until Application quit signal is set.
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    // stop and unload components
-    Application::unloadModel(_modelName);
     // release and cleanup resources of application.
     Application::releaseApplication();
     return 0;

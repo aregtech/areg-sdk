@@ -50,16 +50,6 @@ void ServicingComponent::TimerConsumer::processTimer( Timer & timer )
 // ServicingComponent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ServicingComponent(entry, owner);
-}
-
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , LargeDataStub     ( static_cast<Component &>(self()) )

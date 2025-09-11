@@ -36,30 +36,20 @@ class TrafficLightService   : public    Component
                             , protected TrafficControllerStub
                             , protected IETrafficLightActionHandler
 {
-//////////////////////////////////////////////////////////////////////////
-// Statics and constants.
-//////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
+     * \brief   Constructor, initializes servicing objects from registry entry.
      **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
+    TrafficLightService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
     /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
+     * \brief   Destructor
      **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
+    virtual ~TrafficLightService( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
-
 /************************************************************************/
 // PowerManagerStub action overrides triggered by state-machine.
 /************************************************************************/
@@ -156,14 +146,6 @@ protected:
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Constructor, initializes servicing objects from registry entry.
-     **/
-    TrafficLightService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~TrafficLightService( void );
     /**
      * \brief   Wrapper of this pointer.
      **/

@@ -22,32 +22,7 @@
 //! \brief   The servicing component, which controls the application shutdown.
 class ControllerComponent   : public    Component
 {
-//////////////////////////////////////////////////////////////////////////
-// Static methods
-//////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-protected:
-    /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     **/
     ControllerComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,32 +52,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 class SecondaryComponent    : public    Component
 {
-//////////////////////////////////////////////////////////////////////////
-// Static methods
-//////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-protected:
-    /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     **/
     SecondaryComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
 private:

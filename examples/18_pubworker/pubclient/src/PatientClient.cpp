@@ -12,16 +12,6 @@
 #include "pubclient/src/PatientClient.hpp"
 #include "areg/appbase/Application.hpp"
 
-Component * PatientClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW PatientClient(entry, owner);
-}
-
-void PatientClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 PatientClient::PatientClient(const NERegistry::ComponentEntry & entry, ComponentThread & /* owner */)
     : Component                     ( entry.mRoleName )
     , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )

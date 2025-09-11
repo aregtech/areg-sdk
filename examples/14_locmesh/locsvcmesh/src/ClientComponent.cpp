@@ -10,16 +10,6 @@
  ************************************************************************/
 #include "locsvcmesh/src/ClientComponent.hpp"
 
-Component * ClientComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ClientComponent(entry, owner);
-}
-
-void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
 

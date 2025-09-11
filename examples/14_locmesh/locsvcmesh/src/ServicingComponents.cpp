@@ -19,16 +19,6 @@
 // ControllerComponent implementations
 //////////////////////////////////////////////////////////////////////////
 
-Component * ControllerComponent::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW ControllerComponent( entry, owner );
-}
-
-void ControllerComponent::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
-{
-    delete (&compObject);
-}
-
 ControllerComponent::ControllerComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component ( entry, owner )
     , mService  ( static_cast<Component &>(self( )), entry.getComponentData( ).alignBool.mElement )
@@ -38,16 +28,6 @@ ControllerComponent::ControllerComponent( const NERegistry::ComponentEntry & ent
 //////////////////////////////////////////////////////////////////////////
 // SecondaryComponent implementations
 //////////////////////////////////////////////////////////////////////////
-
-Component * SecondaryComponent::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW SecondaryComponent( entry, owner );
-}
-
-void SecondaryComponent::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
-{
-    delete (&compObject);
-}
 
 SecondaryComponent::SecondaryComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )

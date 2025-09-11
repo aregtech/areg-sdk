@@ -12,16 +12,6 @@
 
 #include "areg/component/NERegistry.hpp"
 
-Component * PubSubMixed::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW PubSubMixed(entry, owner);
-}
-
-void PubSubMixed::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /*entry*/)
-{
-    delete (&compObject);
-}
-
 PubSubMixed::PubSubMixed(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component (entry, owner)
 

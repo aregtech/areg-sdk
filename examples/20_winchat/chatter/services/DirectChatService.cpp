@@ -40,7 +40,10 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
 
     NERegistry::ServiceEntry          serviceEntry( NEDirectMessager::ServiceName, NEDirectMessager::InterfaceVersion );
     NERegistry::ServiceList           listServices( serviceEntry );
-    NERegistry::ComponentEntry        componentEntry( threadName, roleName, &DirectChatService::CreateComponent, DirectChatService::DeleteComponent, listServices, listDependencies, NERegistry::WorkerThreadList( ) );
+    NERegistry::ComponentEntry        componentEntry( threadName, roleName
+                                                    , ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component * {return new DirectChatService(e, t);})
+                                                    , ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {delete& c; })
+                                                    , listServices, listDependencies, NERegistry::WorkerThreadList( ) );
     componentEntry.setComponentData(data);
     NERegistry::ComponentList         componentList( componentEntry );
     NERegistry::ComponentThreadEntry  threadEntry( threadName, componentList );
@@ -50,25 +53,13 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
     return model;
 }
 
-Component * DirectChatService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    PageChat * page = reinterpret_cast<PageChat *>(entry.getComponentData().alignClsPtr.mElement);
-    ASSERT( page != nullptr );
-    return ( page != nullptr ? new DirectChatService(entry, owner, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
-}
-
-void DirectChatService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    delete (&compObject);
-}
-
-DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, ChatPrticipantHandler & handlerParticipant )
+DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread)
     : Component           ( entry, ownerThread )
     , DirectMessagerStub  ( static_cast<Component &>(self()) )
 
-    , mPaticipantsHandler   ( handlerParticipant )
+    , mPaticipantsHandler   (*reinterpret_cast<ChatPrticipantHandler*>(entry.getComponentData().alignClsPtr.mElement))
     , mListClients          ( )
-    , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, handlerParticipant )
+    , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, *reinterpret_cast<ChatPrticipantHandler*>(entry.getComponentData().alignClsPtr.mElement))
 {
 }
 

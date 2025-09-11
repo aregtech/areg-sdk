@@ -11,16 +11,6 @@
 
 #include <iostream>
 
-Component * ClientComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ClientComponent(entry, owner);
-}
-
-void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( entry, owner )
     , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.getString(), owner )

@@ -18,16 +18,6 @@ DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_clientConne
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
 
-Component * PublicServiceComponent::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW PublicServiceComponent(entry, owner);
-}
-
-void PublicServiceComponent::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    delete (&compObject);
-}
-
 PublicServiceComponent::PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component                 ( entry, owner )
     , SystemShutdownStub        ( static_cast<Component &>(self()) )
@@ -95,5 +85,4 @@ void PublicServiceComponent::requestSystemShutdown( void )
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
     printf("Processing the system shutdown!\n");
     Application::signalAppQuit();
-    Thread::switchThread();
 }

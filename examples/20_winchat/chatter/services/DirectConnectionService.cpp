@@ -11,26 +11,12 @@
 
 #include <Windows.h>
 
-DEF_LOG_SCOPE( chatter_DirectConnectionService_CreateComponent );
-DEF_LOG_SCOPE( chatter_DirectConnectionService_DeleteComponent );
 DEF_LOG_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
 DEF_LOG_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
 DEF_LOG_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
 DEF_LOG_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
 
 DirectConnectionService * DirectConnectionService::mService = nullptr;
-
-Component * DirectConnectionService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    LOG_SCOPE( chatter_DirectConnectionService_CreateComponent );
-    return new DirectConnectionService( entry, owner, entry.getComponentData() );
-}
-
-void DirectConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    LOG_SCOPE( chatter_DirectConnectionService_DeleteComponent );
-    delete (&compObject);
-}
 
 DirectConnectionService * DirectConnectionService::GetService( void )
 {
@@ -50,7 +36,10 @@ NERegistry::Model DirectConnectionService::GetModel( const String & nickName, ui
 
     NERegistry::ServiceEntry          serviceEntry( NEDirectConnection::ServiceName, NEDirectConnection::InterfaceVersion );
     NERegistry::ServiceList           serviceList( serviceEntry );
-    NERegistry::ComponentEntry        componentEntry(threadName, roleName, &DirectConnectionService::CreateComponent, DirectConnectionService::DeleteComponent, serviceList, NERegistry::DependencyList(), NERegistry::WorkerThreadList());
+    NERegistry::ComponentEntry        componentEntry(threadName, roleName
+                                                    , ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component * {return new DirectConnectionService(e, t);})
+                                                    , ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {delete& c; })
+                                                    , serviceList, NERegistry::DependencyList(), NERegistry::WorkerThreadList());
     componentEntry.setComponentData(data);
     NERegistry::ComponentList         componentList(componentEntry);
     NERegistry::ComponentThreadEntry  threadEntry(threadName, componentList);
@@ -60,12 +49,12 @@ NERegistry::Model DirectConnectionService::GetModel( const String & nickName, ui
     return model;
 }
 
-DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data )
+DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component             ( entry, ownerThread )
     , DirectConnectionStub  ( static_cast<Component &>(self()) )
 
-    , mNickName             ( reinterpret_cast<PageConnections *>(data.alignClsPtr.mElement)->GetRegisteredName() )
-    , mCookie               ( reinterpret_cast<PageConnections *>(data.alignClsPtr.mElement)->GetRegisteredCookie() )
+    , mNickName             ( reinterpret_cast<PageConnections *>(entry.getComponentData().alignClsPtr.mElement)->GetRegisteredName() )
+    , mCookie               ( reinterpret_cast<PageConnections *>(entry.getComponentData().alignClsPtr.mElement)->GetRegisteredCookie() )
 {
     DirectConnectionService::mService = this;
 }

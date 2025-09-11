@@ -23,16 +23,6 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 
-Component * ServiceComponent::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW ServiceComponent( entry, owner );
-}
-
-void ServiceComponent::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
-{
-    delete (&compObject);
-}
-
 ServiceComponent::ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , HelloUnblockStub  ( static_cast<Component &>(self()) )

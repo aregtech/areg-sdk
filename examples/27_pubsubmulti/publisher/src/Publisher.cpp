@@ -72,16 +72,6 @@ const OptionParser::sOptionSetup Publisher::ValidOptions[]
     , {"h", "help"   , static_cast<int>(eCommands::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
 };
 
-Component * Publisher::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW Publisher(entry, owner);
-}
-
-void Publisher::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /*entry*/)
-{
-    delete (&compObject);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Publisher class methods
 //////////////////////////////////////////////////////////////////////////

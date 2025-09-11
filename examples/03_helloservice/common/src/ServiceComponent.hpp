@@ -14,30 +14,13 @@
 class ServiceComponent  : public    Component
                         , protected HelloServiceStub
 {
-//////////////////////////////////////////////////////////////////////////
-// static methods
-//////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Called to instantiate the service component when loading the model.
-     * \param   entry   Indicates the component description entry from Registry.
-     * \param   owner   The component owning thread.
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called when unloading model to delete service component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-protected:
     ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
-
-    virtual ~ServiceComponent(void) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloService Interface Requests
 //////////////////////////////////////////////////////////////////////////
+protected:
     /**
      * \brief   The request to output a greeting.
      * \param   client  The name of the client to output the greeting.

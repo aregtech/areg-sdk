@@ -503,10 +503,8 @@ NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( NERegistry
 
 bool NERegistry::ComponentEntry::operator == ( const NERegistry::ComponentEntry & other ) const
 {
-    return (this != &other ? (mRoleName == other.mRoleName)     &&
-                             (mThreadName == other.mThreadName) &&
-                             (mFuncCreate == other.mFuncCreate) &&
-                             (mFuncDelete == other.mFuncDelete)
+    return (this != &other ? (mRoleName   == other.mRoleName)     &&
+                             (mThreadName == other.mThreadName)
                            : true);
 }
 

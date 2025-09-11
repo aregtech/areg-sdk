@@ -49,16 +49,6 @@ const OptionParser::sOptionSetup PubSubController::ValidOptions[]
     , {"h", "help"   , static_cast<int>(eCommands::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
 };
 
-Component * PubSubController::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW PubSubController(entry, owner);
-}
-
-void PubSubController::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /*entry*/)
-{
-    delete (&compObject);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // PubSubController class methods
 //////////////////////////////////////////////////////////////////////////
@@ -71,10 +61,6 @@ PubSubController::PubSubController( const NERegistry::ComponentEntry & entry, Co
     , mSubscriber       ( entry.mDependencyServices[0], static_cast<Component &>(self()), 0 )
 
     , mConsoleThread    (static_cast<IEThreadConsumer &>(self()), entry.mRoleName + "_Thread")
-{
-}
-
-PubSubController::~PubSubController(void)
 {
 }
 

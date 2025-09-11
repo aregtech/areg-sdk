@@ -17,19 +17,9 @@
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
-Component * Subscriber::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW Subscriber( entry, owner );
-}
-
-void Subscriber::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
-{
-    delete (&compObject);
-}
-
 Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), NECommon::Coord1Integer, NECommon::Coord1String)
-    , Component         ( entry, owner )
+    : Component         (entry, owner)
+    , SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), NECommon::Coord1Integer, NECommon::Coord1String)
     , mStateEventCount  ( 0 )
     , mSecond           ( entry.mDependencyServices[1], static_cast<Component &>(self()) )
 {

@@ -30,16 +30,16 @@ class DirectChatService : public Component
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
     static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, const NEMemory::uAlign data );
+
+public:
+    DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    virtual ~DirectChatService( void );
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessager Interface Requests
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
 
     /**
      * \brief   Request call.
@@ -111,13 +111,6 @@ protected:
      *                  which started up.
      **/
     virtual void startupServiceInterface( Component & holder ) override;
-    
-//////////////////////////////////////////////////////////////////////////
-// Hidden constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-private:
-    DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, ChatPrticipantHandler & handlerParticipant );
-    virtual ~DirectChatService( void );
     
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

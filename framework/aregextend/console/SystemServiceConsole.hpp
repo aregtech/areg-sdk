@@ -52,9 +52,8 @@ protected:
      * \param   dataRate    The pointer to the optional data rate helper object to extract send and receive data rates.
      * \param   entry       The component entry object set in the model.
      * \param   owner       The instance of component owner thread.
-     * \param   data        The optional component data set in system. Can be empty / no data.
      **/
-    SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner,  NEMemory::uAlign OPT data );
+    SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
     /**
      * \brief   Destructor.

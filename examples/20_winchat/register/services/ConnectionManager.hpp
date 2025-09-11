@@ -19,19 +19,20 @@ class ComponentThread;
  * \brief   Connection manager, server component implementation
  *          to register all client applications connections.
  **/
-class ConnectionManager : private Component
-                        , public  ConnectionManagerStub
-                        , public  CentralMessagerStub
+class ConnectionManager : public    Component
+                        , public    ConnectionManagerStub
+                        , public    CentralMessagerStub
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
     static ConnectionManager * getService( void );
+
+public:
+    ConnectionManager( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    virtual ~ConnectionManager( void );
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManager Interface Requests
@@ -125,13 +126,6 @@ protected:
      *                  which started up.
      **/
     virtual void startupServiceInterface( Component & holder ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-private:
-    ConnectionManager( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data );
-    virtual ~ConnectionManager( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

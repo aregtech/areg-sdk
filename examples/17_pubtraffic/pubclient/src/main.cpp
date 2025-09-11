@@ -100,7 +100,7 @@ int main()
     // Add component thread entry.
     NERegistry::ComponentThreadEntry & threadEntry = model.addThread("SimpleTrafficLighThread");
     // Add component in the thread and set the service dependency.
-    NERegistry::ComponentEntry & component = threadEntry.addComponent(roleName, TrafficLightClient::CreateComponent, TrafficLightClient::DeleteComponent);
+    NERegistry::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
     component.addDependencyService( NECommon::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.

@@ -42,16 +42,6 @@ namespace
     constexpr Console::Coord    _coordString    { 0, 6 };
 }
 
-Component * Subscriber::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW Subscriber( entry, owner );
-}
-
-void Subscriber::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
-{
-    delete (&compObject);
-}
-
 Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )

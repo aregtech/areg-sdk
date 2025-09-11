@@ -27,43 +27,23 @@
 /**
  * \brief   A service to output statistics..
  **/
-class RouterConsoleService  : private    SystemServiceConsole
+class RouterConsoleService  : public    SystemServiceConsole
 {
 public:
     //!< The console service role name
     static constexpr std::string_view   SERVICE_NAME    { "RouterConcoleService" };
 
 //////////////////////////////////////////////////////////////////////////
-// Static methods
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-//////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
 
     /**
      * \brief   Instantiates the component object.
      * \param   entry   The instance of the component entry that contains the component information.
      * \param   owner   The instance of component owner thread.
-     * \param   data    The optional component data set in system. Can be empty / no data.
      **/
-    RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data );
+    RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
     /**
      * \brief   Destructor.

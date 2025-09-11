@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT /* data */ )
+SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
     , IETimerConsumer   ( )
