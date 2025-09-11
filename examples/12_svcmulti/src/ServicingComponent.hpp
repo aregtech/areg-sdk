@@ -31,37 +31,12 @@ private:
     static const unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
     static const int            TIMER_EVENTS    { 30 };   					    //!< Fired timer count.
 
-//////////////////////////////////////////////////////////////////////////
-// Static methods
-//////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
+    //!< Init component
+    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread);
 
 protected:
-
-    /**
-     * \brief   Instantiates the component object.
-     * \param   entry       The entry of registry, which describes the component.
-     * \param   ownerThread The instance of component owner thread.
-     * \param   data        The optional component data set in system. Can be empty / no data.
-     **/
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT data);
-
-    virtual ~ServicingComponent(void) = default;
-
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
 /************************************************************************/

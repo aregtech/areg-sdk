@@ -12,17 +12,6 @@
 #include "pubservice/src/PatientService.hpp"
 #include "areg/component/ComponentThread.hpp"
 
-
-Component * PatientService::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW PatientService(entry, owner);
-}
-
-void PatientService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 PatientService::PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component             ( entry, owner )
     , PatientInformationStub( static_cast<Component &>(self()) )

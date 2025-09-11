@@ -20,16 +20,6 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
 DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
 DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
-Component * TrafficLightClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW TrafficLightClient(entry, owner);
-}
-
-void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete(&compObject);
-}
-
 TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component                     ( entry, owner )
     , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)

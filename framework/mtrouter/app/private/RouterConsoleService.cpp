@@ -21,22 +21,9 @@
 #include "mtrouter/app/MultitargetRouter.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// RouterConsoleService class implementation, static methods
-//////////////////////////////////////////////////////////////////////////
-Component * RouterConsoleService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    return DEBUG_NEW RouterConsoleService( entry, owner, entry.getComponentData( ) );
-}
-
-void RouterConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    delete (&compObject);
-}
-
-//////////////////////////////////////////////////////////////////////////
 // RouterConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
-RouterConsoleService::RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
-    : SystemServiceConsole( &MultitargetRouter::getInstance().getDataRateHelper(), entry, owner, data)
+RouterConsoleService::RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+    : SystemServiceConsole( &MultitargetRouter::getInstance().getDataRateHelper(), entry, owner)
 {
 }

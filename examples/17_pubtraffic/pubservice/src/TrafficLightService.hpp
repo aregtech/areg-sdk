@@ -131,40 +131,10 @@ private:
     };
 
 //////////////////////////////////////////////////////////////////////////
-// Statics and constants.
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-//////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Private constructor, called from CreateComponent static method.
-     * \param   entry   The component entry that contains role name, provided and dependent services.
-     * \param   owner   The component owning thread.
-     **/
+public:
     TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
-
-    /**
-     * \brief   The destructor.
-     **/
-    virtual ~TrafficLightService( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitch Interface Requests

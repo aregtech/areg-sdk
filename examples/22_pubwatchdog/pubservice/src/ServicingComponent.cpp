@@ -20,16 +20,6 @@ DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface)
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStartSleep);
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStopService);
 
-Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ServicingComponent(entry, owner);
-}
-
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , HelloWatchdogStub ( static_cast<Component &>(self()) )

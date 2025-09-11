@@ -17,8 +17,6 @@
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 
-DEF_LOG_SCOPE( centralapp_ConnectionManager_CreateComponent );
-DEF_LOG_SCOPE( centralapp_ConnectionManager_DeleteComponent );
 DEF_LOG_SCOPE( centralapp_ConnectionManager_startupServiceInterface );
 DEF_LOG_SCOPE( centralapp_ConnectionManager_requestConnect );
 DEF_LOG_SCOPE( centralapp_ConnectionManager_requestRegisterConnection );
@@ -39,29 +37,17 @@ END_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
 
 ConnectionManager *   ConnectionManager::sService   = nullptr;
 
-Component * ConnectionManager::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-{
-    LOG_SCOPE( centralapp_ConnectionManager_CreateComponent );
-    return new ConnectionManager( entry, owner, entry.getComponentData() );
-}
-
-void ConnectionManager::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-{
-    LOG_SCOPE( centralapp_ConnectionManager_DeleteComponent );
-    delete (&compObject);
-}
-
 ConnectionManager * ConnectionManager::getService( void )
 {
     return ConnectionManager::sService;
 }
 
-ConnectionManager::ConnectionManager( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data )
+ConnectionManager::ConnectionManager( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component             ( entry, ownerThread )
     , ConnectionManagerStub ( static_cast<Component &>(self()) )
     , CentralMessagerStub   ( static_cast<Component &>(self()) )
 
-    , mWnd                  ( static_cast<uint64_t>(data.alignInt64.mElement) )
+    , mWnd                  ( static_cast<uint64_t>(entry.getComponentData().alignInt64.mElement))
     , mCookies              ( NEConnectionManager::InvalidCookie )
 {
     ConnectionManager::sService   = this;

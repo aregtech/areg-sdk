@@ -18,11 +18,10 @@ class ChatParticipantService  : private   Component
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
     static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, NEMemory::uAlign data );
+
+public:
+    ChatParticipantService(const NERegistry::ComponentEntry& entry, ComponentThread& ownerThread);
 
 protected:
 /************************************************************************/
@@ -43,10 +42,6 @@ protected:
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
     virtual void shutdownComponent( ComponentThread & comThread ) override;
-
-private:
-    ChatParticipantService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, ChatPrticipantHandler & handlerParticipants );
-    virtual ~ChatParticipantService( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

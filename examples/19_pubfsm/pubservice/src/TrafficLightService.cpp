@@ -29,16 +29,6 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startupComponent);
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdownComponent);
 
-Component * TrafficLightService::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW TrafficLightService(entry, owner);
-}
-
-void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component                     ( entry, owner )
     , PowerManagerStub              ( static_cast<Component &>(self()) )

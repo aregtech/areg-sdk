@@ -15,21 +15,11 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 
-Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ServicingComponent( entry, owner, entry.getComponentData());
-}
-
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_processTimer);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT /* data */)
+ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread)
     : Component ( entry, ownerThread )
     , StubBase  ( self(), NEService::getEmptyInterface() )
 

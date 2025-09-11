@@ -33,46 +33,12 @@ class LocalServiceComponent : public Component
     static constexpr unsigned int TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
 
 public:
-
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    {
-        return DEBUG_NEW LocalServiceComponent( entry, owner );
-    }
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     *          entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
-    {
-        delete (&compObject);
-    }
-
-protected:
-
-    /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     **/
     LocalServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
         : Component         ( entry, owner )
         , mLocalService     ( static_cast<Component &>(self()) )
         , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
     {
     }
-
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~LocalServiceComponent( void ) = default;
 
 private:
     LocalHelloWorldService  mLocalService;

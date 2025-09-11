@@ -29,36 +29,11 @@ class PublicServiceComponent    : public    Component
 //////////////////////////////////////////////////////////////////////////
     static constexpr unsigned  int  LOCAL_TIMEOUT   { 555 };//!< Timeout to output message in local service.
 
-public:
-
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-private:
-
-    /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     **/
+public:
     PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    virtual ~PublicServiceComponent( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

@@ -12,16 +12,6 @@
 #include "pubclient/src/TrafficLightClient.hpp"
 #include "areg/appbase/Application.hpp"
 
-Component * TrafficLightClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW TrafficLightClient(entry, owner);
-}
-
-void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component                     ( entry, owner )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )

@@ -20,16 +20,6 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
 
-Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ServiceClient(entry, owner);
-}
-
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( entry, owner )
     , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )

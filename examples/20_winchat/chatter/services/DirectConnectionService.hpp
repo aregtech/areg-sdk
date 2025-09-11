@@ -14,15 +14,10 @@
 class DirectConnectionService   : public Component
                                 , public DirectConnectionStub
 {
-
 //////////////////////////////////////////////////////////////////////////
-// Operations
+// Statics
 //////////////////////////////////////////////////////////////////////////
 public:
-
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
     static DirectConnectionService * GetService( void );
 
@@ -32,19 +27,14 @@ public:
 
     inline void SetOwnerData(const String & nickName, uint32_t cookie );
 
-private:
-    DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data );
-    virtual ~DirectConnectionService( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
 public:
+    DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    virtual ~DirectConnectionService( void );
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnection Interface Requests
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
 
     /**
      * \brief   Request call.

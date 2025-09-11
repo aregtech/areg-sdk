@@ -17,16 +17,6 @@ DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_responseStartSleep);
 
-Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ServiceClient(entry, owner);
-}
-
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component              ( entry, owner )
     , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )

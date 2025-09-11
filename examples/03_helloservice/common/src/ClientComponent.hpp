@@ -14,27 +14,10 @@
 class ClientComponent   : public    Component
                         , protected HelloServiceClientBase
 {
-//////////////////////////////////////////////////////////////////////////
-// static methods
-//////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Called to instantiate the service component when loading the model.
-     * \param   entry   Indicates the component description entry from Registry.
-     * \param   owner   The component owning thread.
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called when unloading model to delete service component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-protected:
     ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
 
-    virtual ~ClientComponent(void) = default;
-
+protected:
 /************************************************************************
  * Response HelloService
  ************************************************************************/

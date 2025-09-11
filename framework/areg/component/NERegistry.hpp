@@ -27,6 +27,8 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#include <functional>
+
 /************************************************************************
  * Declared classes
  ************************************************************************/
@@ -77,16 +79,27 @@ class IEWorkerThreadConsumer;
  ************************************************************************/
 
 /**
- * \brief   Type of Component Load Function
- *          Used and called to instantiate and load component
+ * \brief   Type of Component Load Function. Called to instantiate and start component
+ * \type NERegistry::ComponentEntry     Component registry entry passed to component constructor.
+ *                                      The component entry contains list of dependencies, services and component data.
+ * \type ComponentThread                The component owning thread object.
+ * \example This function should create and return pointer to component object.
+ *  [](const NERegistry::ComponentEntry& entry, ComponentThread& ownerThread) -> Component *{
+ *      return new MyComponent(entry, ownerThread);
+ *  }
  **/
-typedef Component*    (*FuncCreateComponent)  ( const NERegistry::ComponentEntry & /*entry*/, ComponentThread & /*componentThread*/);
+using  FuncCreateComponent  = std::function<Component* (const NERegistry::ComponentEntry& /*entry*/, ComponentThread& /*ownerThread*/)>;
 
 /**
- * \brief   Type of Component Unload Function
- *          Used and called to unload and delete component
+ * \brief   Type of Component Unload Function. Called to stop and delete component
+ * \type Component                    The component to stop and delete.
+ * \type NERegistry::ComponentEntry   Component registry entry passed to delete function.
+ * \example This function should stop and delete component object.
+ *  [] (Component& comp, const NERegistry::ComponentEntry& entry) {
+ *      delete &comp;
+ *  }
  **/
-typedef void            (*FuncDeleteComponent)  (Component & /*componentItem*/, const NERegistry::ComponentEntry & /*entry*/);
+using FuncDeleteComponent   = std::function<void (Component& /*comp*/, const NERegistry::ComponentEntry& /*entry*/)>;
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry namespace declaration
@@ -438,7 +451,7 @@ namespace NERegistry
 
     /**
      * \brief   NERegistry::WorkerThreadList. Defines list of Worker Thread Entries.
-     *          It is a list of all Worker Threads binded with one Component.
+     *          It is a list of all Worker Threads bound with one Component.
      **/
     class AREG_API WorkerThreadList
     {
@@ -955,20 +968,20 @@ namespace NERegistry
         /**
          * \brief   Adds Worker Thread Entry in Component Entry object.
          *          The Worker Thread Entry is defining Worker Thread object,
-         *          binded with Component. A Component may have zero or more
-         *          binded Worker Threads.
+         *          bound with Component. A Component may have zero or more
+         *          bound Worker Threads.
          * \param   entry   The Worker Thread Entry, defining Worker Thread
-         *                  object binded with Component.
+         *                  object bound with Component.
          **/
         void addWorkerThread( const NERegistry::WorkerThreadEntry & entry );
 
         /**
          * \brief   Adds List of Worker Thread Entries in Component Entry object.
          *          Every Worker Thread Entry in the List is defining Worker Thread object,
-         *          binded with Component. A Component may have zero or more
-         *          binded Worker Threads.
+         *          bound with Component. A Component may have zero or more
+         *          bound Worker Threads.
          * \param   workerList  The List of Worker Thread Entries, defining list of
-         *                      Worker Thread objects binded with Component.
+         *                      Worker Thread objects bound with Component.
          **/
         void addWorkerThread( const NERegistry::WorkerThreadList & workerList );
 
@@ -1115,6 +1128,9 @@ namespace NERegistry
          * \brief   The Master Thread Entry of Component.
          **/
         String              mThreadName;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
         /**
          * \brief   Pointer of function to create component
          **/
@@ -1123,6 +1139,9 @@ namespace NERegistry
          * \brief   Pointer of function to delete component
          **/
         FuncDeleteComponent mFuncDelete;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
         /**
          * \brief   List of supported services
          **/
@@ -1423,6 +1442,9 @@ namespace NERegistry
          *                  model. It checks only within the current component thread entry context.
          **/
         NERegistry::ComponentEntry & addComponent( const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+
+        template<typename ComponentType>
+        inline NERegistry::ComponentEntry& addComponent(const String& roleName);
 
         /**
          * \brief   Searches the component entry by given role name.
@@ -1899,7 +1921,6 @@ namespace NERegistry
      * \brief   Predefined invalid Model.
      **/
     AREG_API const NERegistry::Model & invalidModel( void );
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1934,6 +1955,18 @@ inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::
 inline TIME64 NERegistry::Model::getAliveDuration( void ) const
 {
     return (mLoadState == eModelState::ModelInitialized ? 0 : mAliveDuration.durationSinceStart());
+}
+
+template<typename ComponentType>
+inline NERegistry::ComponentEntry& NERegistry::ComponentThreadEntry::addComponent(const String& roleName)
+{
+    return addComponent(roleName
+        , [](const NERegistry::ComponentEntry& entry, ComponentThread& owner) -> Component* {
+            return new ComponentType(entry, owner);
+        }
+        , [](Component& comp, const NERegistry::ComponentEntry& /*entry*/) -> void {
+            delete static_cast<Component*>(&comp);
+        });
 }
 
 #endif  // AREG_COMPONENT_NEREGISTRY_HPP

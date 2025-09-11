@@ -20,16 +20,6 @@
 DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
 
-Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ServicingComponent(entry, owner);
-}
-
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component     ( entry, owner )
     , HelloWorldStub( static_cast<Component &>(self()) )

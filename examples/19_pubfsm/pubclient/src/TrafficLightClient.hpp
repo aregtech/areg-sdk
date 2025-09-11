@@ -22,24 +22,8 @@
 class TrafficLightClient    : public    Component
                             , private   TrafficControllerClientBase
 {
-//////////////////////////////////////////////////////////////////////////
-// Statics and constants.
-//////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Called by system to instantiate the component.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
-     * \return  Returns instantiated component to run in the system
-     **/
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
-
-    /**
-     * \brief   Called by system to delete component and free resources.
-     * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
-     **/
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
+    TrafficLightClient(const NERegistry::ComponentEntry& entry, ComponentThread& owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -103,28 +87,6 @@ protected:
      * \return  Return true if this service connect notification was relevant to client object.
      **/
     virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor.
-//////////////////////////////////////////////////////////////////////////
-private:
-
-    /**
-     * \brief   Initializes the traffic light controller client.
-     * \param   entry   The registry entry to set the role name and the dependencies of components.
-     * \param   owner   The instance of component thread.
-     **/
-    TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
-
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~TrafficLightClient(void) = default;
-
-    /**
-     * \brief   The wrapper of this pointer.
-     **/
-    TrafficLightClient & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

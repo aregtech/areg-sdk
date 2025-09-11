@@ -18,16 +18,6 @@ DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcastReachedMaximum);
 DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
 
-Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-{
-    return DEBUG_NEW ServiceClient(entry, owner);
-}
-
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
-{
-    delete (&compObject);
-}
-
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( NEUtilities::generateName(entry.mRoleName), owner )
     , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )

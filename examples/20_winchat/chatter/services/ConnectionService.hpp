@@ -9,15 +9,10 @@
 
 class ConnectionService    : public  Component
 {
-//////////////////////////////////////////////////////////////////////////
-// Create and delete component
-//////////////////////////////////////////////////////////////////////////
 public:
-    static Component * CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    ConnectionService(const NERegistry::ComponentEntry& entry, ComponentThread& ownerThread);
 
-    static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
-
-public:
+protected:
 
 /************************************************************************/
 // Component overrides
@@ -37,13 +32,6 @@ public:
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
     virtual void shutdownComponent( ComponentThread & comThread ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-private:
-    ConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
-    virtual ~ConnectionService( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
