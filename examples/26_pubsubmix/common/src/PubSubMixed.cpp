@@ -16,8 +16,8 @@ PubSubMixed::PubSubMixed(const NERegistry::ComponentEntry & entry, ComponentThre
     : Component (entry, owner)
 
     , mPubSubMixedPublisher (static_cast<Component &>(self()))
-    , mControllerSubscriber (entry.mDependencyServices[0], static_cast<Component &>(self()), entry.getComponentData().alignInt.mElement * 2 + 0)
-    , mMixedSubscriber      (entry.mDependencyServices[1], static_cast<Component &>(self()), entry.getComponentData().alignInt.mElement * 2 + 1)
+    , mControllerSubscriber (entry.mDependencyServices[0], static_cast<Component &>(self()), std::any_cast<int>(entry.getComponentData()) * 2 + 0)
+    , mMixedSubscriber      (entry.mDependencyServices[1], static_cast<Component &>(self()), std::any_cast<int>(entry.getComponentData()) * 2 + 1)
 {
 }
 

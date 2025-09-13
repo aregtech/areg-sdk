@@ -117,8 +117,7 @@ int main()
         LOG_SCOPE( example_14_locsvcmesh_main );
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
-        NEMemory::uAlign data;
-        data.alignBool.mElement = true;
+        std::any data = true;
         ComponentLoader::getInstance().setComponentData(_mainServiceName, data );
 
         // load model to initialize components

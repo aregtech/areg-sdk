@@ -90,9 +90,8 @@ bool CentralDialog::StartConnection( const String & ipAddress, unsigned short po
             CString dateStart( DateTime::getNow().formatTime().getString() );
             CString message;
 
-            NEMemory::uAlign compData;
-            compData.alignInt64.mElement    = reinterpret_cast<uint64_t>(dlg->mPageConnections.GetSafeHwnd());
-            ComponentLoader::setComponentData( NECommon::COMP_NAME_CENTRAL_SERVER, compData );
+            std::any data = std::make_any<HWND>(dlg->mPageConnections.GetSafeHwnd());
+            ComponentLoader::setComponentData( NECommon::COMP_NAME_CENTRAL_SERVER, data );
             if ( Application::loadModel( NECommon::MODEL_NAME_CENTRAL_SERVER ) )
             {
                 message     = _T("Successfully started servicing ...");

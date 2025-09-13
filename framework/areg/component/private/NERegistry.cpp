@@ -369,14 +369,13 @@ NERegistry::ComponentEntry::ComponentEntry( void )
     : mRoleName             ( )
 
     , mThreadName           ( )
-    , mFuncCreate           (nullptr)
-    , mFuncDelete           (nullptr)
-
     , mSupportedServices    ( )
     , mWorkerThreads        ( )
     , mDependencyServices   ( )
 
-    , mComponentData        ( NEMemory::InvalidElement )
+    , mFuncCreate           ( )
+    , mFuncDelete           ( )
+    , mComponentData        ( )
 {
 }
 
@@ -384,14 +383,13 @@ NERegistry::ComponentEntry::ComponentEntry( const String & masterThreadName, con
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
-    , mFuncCreate           (funcCreate)
-    , mFuncDelete           (funcDelete)
-
     , mSupportedServices    ( )
     , mWorkerThreads        ( )
     , mDependencyServices   ( )
 
-    , mComponentData        ( NEMemory::InvalidElement )
+    , mFuncCreate           (funcCreate)
+    , mFuncDelete           (funcDelete)
+    , mComponentData        ( )
 {
 }
 
@@ -405,14 +403,13 @@ NERegistry::ComponentEntry::ComponentEntry(   const String & masterThreadName
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
-    , mFuncCreate           (funcCreate)
-    , mFuncDelete           (funcDelete)
-
     , mSupportedServices    (serviceList)
     , mWorkerThreads        (workerList)
     , mDependencyServices   (dependencyList)
 
-    , mComponentData        ( NEMemory::InvalidElement )
+    , mFuncCreate           (funcCreate)
+    , mFuncDelete           (funcDelete)
+    , mComponentData        ( )
 {
 }
 
@@ -426,14 +423,13 @@ NERegistry::ComponentEntry::ComponentEntry(   const String & masterThreadName
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
-    , mFuncCreate           (funcCreate)
-    , mFuncDelete           (funcDelete)
-
     , mSupportedServices    (service)
     , mWorkerThreads        (worker)
     , mDependencyServices   (dependency)
 
-    , mComponentData        ( NEMemory::InvalidElement )
+    , mFuncCreate           (funcCreate)
+    , mFuncDelete           (funcDelete)
+    , mComponentData        ( )
 {
 }
 
@@ -441,13 +437,12 @@ NERegistry::ComponentEntry::ComponentEntry( const NERegistry::ComponentEntry & s
     : mRoleName             (src.mRoleName)
 
     , mThreadName           (src.mThreadName)
-    , mFuncCreate           (src.mFuncCreate)
-    , mFuncDelete           (src.mFuncDelete)
-
     , mSupportedServices    (src.mSupportedServices)
     , mWorkerThreads        (src.mWorkerThreads)
     , mDependencyServices   (src.mDependencyServices)
 
+    , mFuncCreate           (src.mFuncCreate)
+    , mFuncDelete           (src.mFuncDelete)
     , mComponentData        ( src.mComponentData )
 {
 }
@@ -456,13 +451,12 @@ NERegistry::ComponentEntry::ComponentEntry( NERegistry::ComponentEntry && src ) 
     : mRoleName             ( std::move(src.mRoleName) )
 
     , mThreadName           ( std::move(src.mThreadName) )
-    , mFuncCreate           ( std::move(src.mFuncCreate) )
-    , mFuncDelete           ( std::move(src.mFuncDelete) )
-
     , mSupportedServices    ( std::move(src.mSupportedServices) )
     , mWorkerThreads        ( std::move(src.mWorkerThreads) )
     , mDependencyServices   ( std::move(src.mDependencyServices) )
 
+    , mFuncCreate           ( std::move(src.mFuncCreate) )
+    , mFuncDelete           ( std::move(src.mFuncDelete) )
     , mComponentData        ( std::move(src.mComponentData) )
 {
 }
@@ -474,13 +468,12 @@ NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( const NERe
         mRoleName           = src.mRoleName;
 
         mThreadName         = src.mThreadName;
-        mFuncCreate         = src.mFuncCreate;
-        mFuncDelete         = src.mFuncDelete;
-
         mSupportedServices  = src.mSupportedServices;
         mWorkerThreads      = src.mWorkerThreads;
         mDependencyServices = src.mDependencyServices;
 
+        mFuncCreate         = src.mFuncCreate;
+        mFuncDelete         = src.mFuncDelete;
         mComponentData      = src.mComponentData;
     }
 
@@ -491,11 +484,11 @@ NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( NERegistry
 {
     mRoleName           = std::move(src.mRoleName);
     mThreadName         = std::move(src.mThreadName);
-    mFuncCreate         = std::move(src.mFuncCreate);
-    mFuncDelete         = std::move(src.mFuncDelete);
     mSupportedServices  = std::move(src.mSupportedServices);
     mWorkerThreads      = std::move(src.mWorkerThreads);
     mDependencyServices = std::move(src.mDependencyServices);
+    mFuncCreate         = std::move(src.mFuncCreate);
+    mFuncDelete         = std::move(src.mFuncDelete);
     mComponentData      = std::move(src.mComponentData);
 
     return (*this);
@@ -683,12 +676,12 @@ bool NERegistry::ComponentEntry::isValid( void ) const
     return ( (mRoleName.isEmpty() == false) && (mFuncCreate != nullptr) && (mFuncDelete != nullptr) );
 }
 
-void NERegistry::ComponentEntry::setComponentData( const NEMemory::uAlign & compData )
+void NERegistry::ComponentEntry::setComponentData( std::any compData )
 {
-    mComponentData  = compData;
+    mComponentData  = std::move(compData);
 }
 
-NEMemory::uAlign NERegistry::ComponentEntry::getComponentData( void ) const
+std::any NERegistry::ComponentEntry::getComponentData( void ) const
 {
     return mComponentData;
 }
@@ -737,7 +730,7 @@ bool NERegistry::ComponentList::isValid( void ) const
     return (mListComponents.getSize() != 0);
 }
 
-bool NERegistry::ComponentList::setComponentData( const String & roleName, const NEMemory::uAlign & compData )
+bool NERegistry::ComponentList::setComponentData( const String & roleName, std::any compData )
 {
     bool result = false;
     for (uint32_t i = 0; i < mListComponents.getSize(); ++ i )
@@ -850,7 +843,7 @@ bool NERegistry::ComponentThreadEntry::isValid( void ) const
     return ( (mThreadName.isEmpty() == false) && (mComponents.mListComponents.isEmpty() == false) );
 }
 
-bool NERegistry::ComponentThreadEntry::setComponentData( const String & roleName, const NEMemory::uAlign & compData )
+bool NERegistry::ComponentThreadEntry::setComponentData( const String & roleName, std::any compData )
 {
     return mComponents.setComponentData(roleName, compData);
 }
@@ -1053,7 +1046,7 @@ const NERegistry::ComponentThreadList & NERegistry::Model::getThreadList( void )
     return mModelThreads;
 }
 
-bool NERegistry::Model::setComponentData( const String & roleName, const NEMemory::uAlign & compData )
+bool NERegistry::Model::setComponentData( const String & roleName, std::any compData )
 {
     bool result = false;
     for ( uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++ i )

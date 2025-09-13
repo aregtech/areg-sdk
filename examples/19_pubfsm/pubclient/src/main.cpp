@@ -107,9 +107,7 @@ int main()
 
     printf("\n...........................................\n");
 
-    NEMemory::uAlign data;
-    data.alignBool.mElement = isEastWest;
-    ComponentLoader::setComponentData(_compName, data);
+    ComponentLoader::setComponentData(_compName, std::make_any<bool>(isEastWest));
 
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.

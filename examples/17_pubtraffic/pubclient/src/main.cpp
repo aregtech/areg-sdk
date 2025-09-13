@@ -104,8 +104,7 @@ int main()
     component.addDependencyService( NECommon::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.
-    NEMemory::uAlign data;
-    data.alignInt.mElement = static_cast<int>(trafficDirection);
+    std::any data = std::make_any< NECommon::eTrafficDirection>(trafficDirection);
     component.setComponentData( data );
     
     // Add created model to the model list.

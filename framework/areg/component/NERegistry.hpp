@@ -28,6 +28,7 @@
 #include "areg/base/NEUtilities.hpp"
 
 #include <functional>
+#include <any>
 
 /************************************************************************
  * Declared classes
@@ -1105,16 +1106,14 @@ namespace NERegistry
         /**
          * \brief   Sets component data to pass to component create method.
          * \param   compData    The data to set in component which is passed to create method.
-         * \note    The system automatically does not free manually allocated space. This means that
-         *          if as a component data a pointer to manually allocated object is passed,
-         *          it should be as well manually freed.
+         * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        void setComponentData( const NEMemory::uAlign & compData );
+        void setComponentData( std::any compData );
 
         /**
-         * \brief   Returns the pointer to component data.
+         * \brief   Returns component data object. Check if data holds a value before use.
          **/
-        NEMemory::uAlign getComponentData( void ) const;
+        std::any getComponentData( void ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentEntry class, Member variables
@@ -1128,20 +1127,6 @@ namespace NERegistry
          * \brief   The Master Thread Entry of Component.
          **/
         String              mThreadName;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-        /**
-         * \brief   Pointer of function to create component
-         **/
-        FuncCreateComponent mFuncCreate;
-        /**
-         * \brief   Pointer of function to delete component
-         **/
-        FuncDeleteComponent mFuncDelete;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
         /**
          * \brief   List of supported services
          **/
@@ -1154,12 +1139,25 @@ namespace NERegistry
          * \brief   List of dependencies
          **/
         DependencyList      mDependencyServices;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+        /**
+         * \brief   Pointer of function to create component
+         **/
+        FuncCreateComponent mFuncCreate;
+        /**
+         * \brief   Pointer of function to delete component
+         **/
+        FuncDeleteComponent mFuncDelete;
         /**
          * \brief   The data to pass to component create method.
-         * \note    If data is created by allocating memory (for example, via 'new' operator),
-         *          it is not automatically deleted in destructor of Component Registry object.
+         * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        mutable NEMemory::uAlign    mComponentData;
+        mutable std::any    mComponentData;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1264,11 +1262,9 @@ namespace NERegistry
          *          Returns true if found component and the data was successfully set.
          * \param   roleName    The name of component to search in the list.
          * \param   compData    The data to set in component which is passed to create method.
-         * \note    The system automatically does not free manually allocated space. This means that
-         *          if as a component data a pointer to manually allocated object is passed,
-         *          it should be as well manually freed.
+         * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
+        bool setComponentData( const String & roleName, std::any compData );
 
         /**
          * \brief   Searches Component Entry by given Role Name and returns
@@ -1479,11 +1475,9 @@ namespace NERegistry
          *          Returns true if found component and the data was successfully set.
          * \param   roleName    The name of component to search in the list.
          * \param   compData    The data to set in component which is passed to create method.
-         * \note    The system automatically does not free manually allocated space. This means that
-         *          if as a component data a pointer to manually allocated object is passed,
-         *          it should be as well manually freed.
+         * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
+        bool setComponentData( const String & roleName, std::any compData );
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadEntry class, Member variables
@@ -1824,11 +1818,9 @@ namespace NERegistry
          *          Returns true if found component and the data was successfully set.
          * \param   roleName    The name of component to search in the list.
          * \param   compData    The data to set in component which is passed to create method.
-         * \note    The system automatically does not free manually allocated space. This means that
-         *          if as a component data a pointer to manually allocated object is passed,
-         *          it should be as well manually freed.
+         * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
+        bool setComponentData( const String & roleName, std::any compData );
 
         /**
          * \brief   Returns duration in nanoseconds when the model was loaded and alive.

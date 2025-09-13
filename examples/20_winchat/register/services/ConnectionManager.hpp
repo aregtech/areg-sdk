@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Sets the HWMD value of window object to receive messages.
      **/
-    inline void SetHwnd( size_t hWnd );
+    inline void SetHwnd( HWND hWnd );
 
     /**
      * \brief   Search connection entry in the list. On output, if found, 
@@ -132,7 +132,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     static ConnectionManager *    sService;
-    uint64_t    mWnd;
+    HWND        mWnd;
     uint32_t    mCookies;
 
 //////////////////////////////////////////////////////////////////////////
@@ -160,5 +160,5 @@ private:
 inline ConnectionManager & ConnectionManager::self( void )
 {   return (*this);     }
 
-inline void ConnectionManager::SetHwnd( size_t hWnd )
+inline void ConnectionManager::SetHwnd( HWND hWnd )
 {   mWnd    = hWnd;     }

@@ -407,9 +407,8 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
     {
         unloadModel( );
         
-        NEMemory::uAlign compData;
-        compData.alignClsPtr.mElement = reinterpret_cast<NEMemory::_EmptyClass *>(this);
-        NERegistry::Model model = DirectConnectionService::GetModel( nickName, cookie, compData );
+        std::any data = std::make_any< PageConnections *>(this);
+        NERegistry::Model model = DirectConnectionService::GetModel( nickName, cookie, data );
 
         LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().getString(), serviceName.getString() );
 

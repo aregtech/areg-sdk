@@ -21,11 +21,12 @@ DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantJoined );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantLeft );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
 
-DirectMessagingClient::DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler & handlerParticipants )
+DirectMessagingClient::DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler* handlerParticipants )
     : DirectMessagerClientBase  ( roleName, owner )
     , mParticipantsHandler      ( handlerParticipants )
     , mJoinedChat               (false)
 {
+    ASSERT(mParticipantsHandler != nullptr);
 }
 
 void DirectMessagingClient::shutdownChat(void)
@@ -34,7 +35,7 @@ void DirectMessagingClient::shutdownChat(void)
     if (mJoinedChat)
     {
         mJoinedChat = false;
-        requestChatLeave(mParticipantsHandler.GetConnectionOwner(), DateTime::getNow());
+        requestChatLeave(mParticipantsHandler->GetConnectionOwner(), DateTime::getNow());
     }
 }
 
@@ -50,8 +51,8 @@ bool DirectMessagingClient::serviceConnected( NEService::eServiceConnection stat
     if ( isConnected( ) )
     {
         mJoinedChat = true;
-        mParticipantsHandler.SetChatClient( this );
-        requestChatJoin( mParticipantsHandler.GetConnectionOwner( ), DateTime::getNow( ) );
+        mParticipantsHandler->SetChatClient( this );
+        requestChatJoin( mParticipantsHandler->GetConnectionOwner( ), DateTime::getNow( ) );
     }
     else
     {
@@ -66,7 +67,7 @@ void DirectMessagingClient::responseChatJoin( bool succeed, const NEDirectMessag
     LOG_SCOPE( chatter_DirectMessagingClient_responseChatJoin );
 
     postMessage(NEDistributedApp::eWndCommands::CmdChatJoined, succeed ? 1 : 0, 0);
-    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, mParticipantsHandler.GetConnectionOwner( ), succeed ? "Succeeded join chat..." : "Failed join chat...", timeConnect, timeConnected );
+    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, mParticipantsHandler->GetConnectionOwner( ), succeed ? "Succeeded join chat..." : "Failed join chat...", timeConnect, timeConnected );
 
     if ( succeed )
     {
@@ -93,7 +94,7 @@ void DirectMessagingClient::broadcastMessageTyped( const NEDirectMessager::sPart
 void DirectMessagingClient::broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantJoined );
-    if ( participant != mParticipantsHandler.GetConnectionOwner() )
+    if ( participant != mParticipantsHandler->GetConnectionOwner() )
         updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, participant, String( "Joined chat" ), timeJoined, DateTime::getNow() );
 }
 
@@ -122,7 +123,7 @@ void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndComman
     if ( data != nullptr )
     {
         String nickName;
-        if ( mParticipantsHandler.GetConnectionOwner() == participant )
+        if ( mParticipantsHandler->GetConnectionOwner() == participant )
             nickName = "[ " + participant.nickName + " ]";
         else
             nickName = participant.nickName;
@@ -138,7 +139,7 @@ void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndComman
 
 inline void DirectMessagingClient::postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam)
 {
-    HWND hWnd = reinterpret_cast<HWND>(mParticipantsHandler.GetChatWindow());
+    HWND hWnd = reinterpret_cast<HWND>(mParticipantsHandler->GetChatWindow());
     ASSERT(hWnd != nullptr);
 
     ::PostMessage(hWnd, MAKE_MESSAGE(cmdSend), static_cast<WPARAM>(wParam), static_cast<LPARAM>(lParam));

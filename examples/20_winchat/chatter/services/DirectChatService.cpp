@@ -22,7 +22,7 @@ DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
 
 NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticipant & initiator
                                              , const NEDirectMessager::ListParticipants & listParticipants
-                                             , const NEMemory::uAlign data)
+                                             , std::any data)
 {
     String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
     String    threadName  = NEDistributedApp::PREFIX_TRHEAD + roleName;
@@ -58,9 +58,9 @@ DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, 
     : Component           ( entry, ownerThread )
     , DirectMessagerStub  ( static_cast<Component &>(self()) )
 
-    , mPaticipantsHandler   (*reinterpret_cast<ChatPrticipantHandler*>(entry.getComponentData().alignClsPtr.mElement))
+    , mPaticipantsHandler   (std::any_cast<ChatPrticipantHandler*>(entry.getComponentData()))
     , mListClients          ( )
-    , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, *reinterpret_cast<ChatPrticipantHandler*>(entry.getComponentData().alignClsPtr.mElement))
+    , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, mPaticipantsHandler)
 {
 }
 
@@ -73,10 +73,10 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
 {
     LOG_SCOPE( chatter_DirectChatService_StartupComponent );
     Component::startupComponent(comThread);
-    mPaticipantsHandler.SetConnectionService( this );
+    mPaticipantsHandler->SetConnectionService( this );
 
-    const NEDirectConnection::sInitiator & initiator = mPaticipantsHandler.GetInitiator();
-    const NEDirectConnection::ListParticipants & listParticipants = mPaticipantsHandler.GetParticipantList();
+    const NEDirectConnection::sInitiator & initiator = mPaticipantsHandler->GetInitiator();
+    const NEDirectConnection::ListParticipants & listParticipants = mPaticipantsHandler->GetParticipantList();
     uint32_t count {listParticipants.getSize( )};
     for (uint32_t i = 0; i < count; ++ i )
     {
@@ -92,7 +92,7 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
 void DirectChatService::shutdownComponent( ComponentThread & comThread )
 {
     LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
-    mPaticipantsHandler.SetConnectionService( nullptr );
+    mPaticipantsHandler->SetConnectionService( nullptr );
     
     _clearList();    
     Component::shutdownComponent(comThread);
@@ -107,7 +107,7 @@ void DirectChatService::startupServiceInterface( Component & holder )
 void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
-    if ( mPaticipantsHandler.ParticipantExist(participant) )
+    if ( mPaticipantsHandler->ParticipantExist(participant) )
     {
         bool newParticipant = false;
         NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants();

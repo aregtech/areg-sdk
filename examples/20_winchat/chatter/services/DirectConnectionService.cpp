@@ -29,7 +29,7 @@ String DirectConnectionService::GetGeneratedService( const String & nickName, ui
     return NEDistributedApp::getConnectionServiceRole(nickName, cookie);
 }
 
-NERegistry::Model DirectConnectionService::GetModel( const String & nickName, uint32_t cookie, const NEMemory::uAlign data )
+NERegistry::Model DirectConnectionService::GetModel( const String & nickName, uint32_t cookie, std::any data )
 {
     String    roleName    = DirectConnectionService::GetGeneratedService(nickName, cookie);
     String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
@@ -54,8 +54,8 @@ DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEnt
     : Component             ( entry, ownerThread )
     , DirectConnectionStub  ( static_cast<Component &>(self()) )
 
-    , mNickName             ( reinterpret_cast<PageConnections *>(entry.getComponentData().alignClsPtr.mElement)->GetRegisteredName() )
-    , mCookie               ( reinterpret_cast<PageConnections *>(entry.getComponentData().alignClsPtr.mElement)->GetRegisteredCookie() )
+    , mNickName             ( std::any_cast<PageConnections *>(entry.getComponentData())->GetRegisteredName() )
+    , mCookie               ( std::any_cast<PageConnections *>(entry.getComponentData())->GetRegisteredCookie() )
 {
     DirectConnectionService::mService = this;
 }

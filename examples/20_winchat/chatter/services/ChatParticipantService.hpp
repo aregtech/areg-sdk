@@ -18,7 +18,7 @@ class ChatParticipantService  : private   Component
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, NEMemory::uAlign data );
+    static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
     ChatParticipantService(const NERegistry::ComponentEntry& entry, ComponentThread& ownerThread);

@@ -30,7 +30,7 @@ class DirectChatService : public Component
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, const NEMemory::uAlign data );
+    static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
     DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
@@ -125,7 +125,7 @@ private:
 
     static MapDirectConnections _mapDirectConnections;
 
-    ChatPrticipantHandler &     mPaticipantsHandler;
+    ChatPrticipantHandler *     mPaticipantsHandler;
     ListDirectConnectionClients mListClients;
     DirectMessagingClient       mChatParticipant;
 

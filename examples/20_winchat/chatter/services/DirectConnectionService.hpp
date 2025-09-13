@@ -21,7 +21,7 @@ public:
 
     static DirectConnectionService * GetService( void );
 
-    static NERegistry::Model GetModel( const String & nickName, uint32_t cookie, const NEMemory::uAlign data );
+    static NERegistry::Model GetModel( const String & nickName, uint32_t cookie, std::any data );
 
     static String GetGeneratedService( const String & nickName, uint32_t cookie );
 
