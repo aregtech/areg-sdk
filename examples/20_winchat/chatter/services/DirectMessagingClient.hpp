@@ -14,7 +14,7 @@ class ChatPrticipantHandler;
 class DirectMessagingClient   : public DirectMessagerClientBase
 {
 public:
-    DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler & handlerParticipants );
+    DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler * handlerParticipants );
     virtual ~DirectMessagingClient( void ) = default;
 
     /**
@@ -115,7 +115,7 @@ private:
     inline void postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam);
 
 private:
-    ChatPrticipantHandler & mParticipantsHandler;
+    ChatPrticipantHandler * mParticipantsHandler;
     bool                    mJoinedChat;
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

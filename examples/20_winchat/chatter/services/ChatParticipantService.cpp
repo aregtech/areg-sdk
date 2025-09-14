@@ -8,7 +8,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "chatter/ui/PageChat.hpp"
 
-NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & /* listParticipants */, NEMemory::uAlign data )
+NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & /* listParticipants */, std::any data )
 {
     String    serviceName = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
     String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );
@@ -33,7 +33,7 @@ NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sPar
 ChatParticipantService::ChatParticipantService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component         ( entry, ownerThread )
 
-    , mChatParticipant  ( static_cast<Component &>(self()), entry.mDependencyServices[0].mRoleName, *reinterpret_cast<ChatPrticipantHandler*>(entry.getComponentData().alignClsPtr.mElement))
+    , mChatParticipant  ( static_cast<Component &>(self()), entry.mDependencyServices[0].mRoleName, std::any_cast<ChatPrticipantHandler*>(entry.getComponentData()) )
 {
 }
 

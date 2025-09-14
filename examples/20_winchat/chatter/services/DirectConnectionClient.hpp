@@ -13,7 +13,7 @@ class ChatPrticipantHandler;
 class DirectConnectionClient  : public DirectConnectionClientBase
 {
 public:
-    DirectConnectionClient( Component & owner, ChatPrticipantHandler & participantsHandler, const NEDirectConnection::sParticipant & target );
+    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const NEDirectConnection::sParticipant & target );
     virtual ~DirectConnectionClient( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ protected:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    ChatPrticipantHandler &       mParticipantsHandler;
+    ChatPrticipantHandler * mParticipantsHandler;
 
 private:
     DirectConnectionClient( void ) = delete;

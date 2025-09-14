@@ -23,7 +23,7 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component                     ( entry, owner )
     , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)
-    , mIsEastWest                   (entry.getComponentData().alignBool.mElement)
+    , mIsEastWest                   (std::any_cast<bool>(entry.getComponentData()))
 {
 }
 

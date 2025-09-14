@@ -21,7 +21,7 @@
 
 ControllerComponent::ControllerComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component ( entry, owner )
-    , mService  ( static_cast<Component &>(self( )), entry.getComponentData( ).alignBool.mElement )
+    , mService  ( static_cast<Component &>(self( )), std::any_cast<bool>(entry.getComponentData( )) )
 {
 }
 
@@ -31,7 +31,7 @@ ControllerComponent::ControllerComponent( const NERegistry::ComponentEntry & ent
 
 SecondaryComponent::SecondaryComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
-    , mService          ( static_cast<Component &>(self( )), entry.getComponentData( ).alignBool.mElement )
+    , mService          ( static_cast<Component &>(self( )), std::any_cast<bool>(entry.getComponentData()) )
     , mClientMain       ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self( )) )
     , mClientSecondary  ( entry.mDependencyServices[1].mRoleName, static_cast<Component &>(self( )) )
 {

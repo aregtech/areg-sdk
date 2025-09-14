@@ -469,11 +469,9 @@ public:
      *          Returns true if found component and the data was successfully set.
      * \param   roleName    The name of component to search in the list.
      * \param   compData    The data to set in component which is passed to create method.
-     * \note    The system automatically does not free manually allocated space. This means that 
-     *          if as a component data a pointer to manually allocated object is passed,
-     *          it should be as well manually freed.
+     * \note    You should manually free memory if the data was manually allocated in the memory
      **/
-    static bool setComponentData( const String & roleName, NEMemory::uAlign compData );
+    static bool setComponentData( const String & roleName, std::any compData );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructors / Destructor

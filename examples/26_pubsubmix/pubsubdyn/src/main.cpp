@@ -102,11 +102,8 @@ int main()
         console.outputTxt(NECommon::CoordSubtitle, NECommon::Separator);
 
         // Set this value to have correct outputs on console, it plays no other role.
-        NEMemory::uAlign first{}, second{};
-        first.alignInt.mElement = 0;
-        ComponentLoader::setComponentData(SecondRole, first);
-        second.alignInt.mElement = 1;
-        ComponentLoader::setComponentData(ThirddRole, second);
+        ComponentLoader::setComponentData(SecondRole, std::make_any<int>(0));
+        ComponentLoader::setComponentData(ThirddRole, std::make_any<int>(1));
 
         // load model to initialize components
         Application::loadModel(_modelName);

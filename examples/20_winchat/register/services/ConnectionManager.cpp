@@ -47,7 +47,7 @@ ConnectionManager::ConnectionManager( const NERegistry::ComponentEntry & entry, 
     , ConnectionManagerStub ( static_cast<Component &>(self()) )
     , CentralMessagerStub   ( static_cast<Component &>(self()) )
 
-    , mWnd                  ( static_cast<uint64_t>(entry.getComponentData().alignInt64.mElement))
+    , mWnd                  ( std::any_cast<HWND>(entry.getComponentData()) )
     , mCookies              ( NEConnectionManager::InvalidCookie )
 {
     ConnectionManager::sService   = this;
@@ -152,7 +152,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 broadcastConnectionUpdated( mapConnections );
                 notifyConnectionListUpdated( );
 
-                HWND hWnd = MAKE_HWND( mWnd );
+                HWND hWnd = mWnd;
                 if ( ::IsWindow( hWnd ) )
                 {
                     NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
@@ -209,7 +209,7 @@ void ConnectionManager::requestDisconnect( const String & nickName, unsigned int
             broadcastConnectionUpdated( mapConnections );
             notifyConnectionListUpdated( );
 
-            HWND hWnd = MAKE_HWND( mWnd );
+            HWND hWnd = mWnd;
             NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
             if ( data != nullptr )
             {
@@ -252,7 +252,7 @@ void ConnectionManager::requestSendMessage( const String & nickName, unsigned in
         broadcastSendMessage(connection.nickName, cookie, newMessage, dateTime);
         broadcastKeyTyping( connection.nickName, cookie, String::getEmptyString() );
 
-        HWND hWnd = MAKE_HWND( mWnd );
+        HWND hWnd = mWnd;
         NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
         if ( data != nullptr )
         {
@@ -284,7 +284,7 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
         LOG_DBG( "Found registered client [ %s ], broadcasting to client typing message [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(newMessage));
         broadcastKeyTyping( connection.nickName, cookie, newMessage );
 
-        HWND hWnd = MAKE_HWND( mWnd );
+        HWND hWnd = mWnd;
         NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
         if ( data != nullptr )
         {

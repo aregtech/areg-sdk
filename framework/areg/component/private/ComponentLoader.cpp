@@ -228,7 +228,7 @@ bool ComponentLoader::existModel( const String & modelName )
     return result;
 }
 
-bool ComponentLoader::setComponentData( const String & roleName, NEMemory::uAlign compData )
+bool ComponentLoader::setComponentData( const String & roleName, std::any compData )
 {
     bool result = false;
     ComponentLoader & loader = ComponentLoader::getInstance( );
@@ -319,7 +319,7 @@ bool ComponentLoader::addModel( const NERegistry::Model & newModel )
                     for ( uint32_t k = 0; succeed && (k < regComponentList.mListComponents.getSize()); ++ k )
                     {
                         const NERegistry::ComponentEntry & regComponentEntry = regComponentList.mListComponents.getAt(k);
-                        succeed = newModel.hasRegisteredComponent(regComponentEntry);
+                        succeed = !newModel.hasRegisteredComponent(regComponentEntry);
                     } // end of for ( int k = 0; hasError == false && k < newComponentList.GetSize(); k ++ )
                 }
                 else

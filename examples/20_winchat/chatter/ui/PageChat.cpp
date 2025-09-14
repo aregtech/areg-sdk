@@ -131,8 +131,7 @@ BOOL PageChat::OnInitDialog( )
     setTabTitle(caption);
     message = "Parties: " + message;
 
-    NEMemory::uAlign data;
-    data.alignClsPtr.mElement = reinterpret_cast<NEMemory::_EmptyClass *>(this);
+    std::any data = std::make_any< ChatPrticipantHandler *>(this);
     ASSERT(mModelName.isEmpty());
 
     NERegistry::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
