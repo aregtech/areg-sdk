@@ -1915,13 +1915,9 @@ namespace NERegistry
     AREG_API const NERegistry::Model & invalidModel( void );
 }
 
-#endif  // AREG_COMPONENT_NEREGISTRY_HPP
 //////////////////////////////////////////////////////////////////////////
 // NERegistry inline methods
 //////////////////////////////////////////////////////////////////////////
-#ifndef AREG_COMPONENT_NEREGISTRY_INLINE_HPP
-#define AREG_COMPONENT_NEREGISTRY_INLINE_HPP
-#include "areg/component/Component.hpp"
 
 inline const NERegistry::ServiceEntry& NERegistry::ServiceList::operator [] (uint32_t index) const
 {
@@ -1961,9 +1957,9 @@ inline NERegistry::ComponentEntry& NERegistry::ComponentThreadEntry::addComponen
             return new ComponentType(entry, owner);
         }
         , [](Component& comp, const NERegistry::ComponentEntry& /*entry*/) -> void {
-            Component* tmp = &comp;
+            ComponentType* tmp = static_cast<ComponentType *>(&comp);
             delete tmp;
         });
 }
 
-#endif  // AREG_COMPONENT_NEREGISTRY_INLINE_HPP
+#endif  // AREG_COMPONENT_NEREGISTRY_HPP
