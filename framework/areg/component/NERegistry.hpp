@@ -1958,7 +1958,8 @@ inline NERegistry::ComponentEntry& NERegistry::ComponentThreadEntry::addComponen
             return new ComponentType(entry, owner);
         }
         , [](Component& comp, const NERegistry::ComponentEntry& /*entry*/) -> void {
-            delete static_cast<Component*>(&comp);
+            Component* tmp = &comp;
+            delete tmp;
         });
 }
 
