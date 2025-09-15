@@ -20,7 +20,7 @@
 
 Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, and fragile wiring**. Unlike traditional frameworks, **Areg SDK automates communication**, unifying async RPC, Pub/Sub, and service discovery. Its self-managed service mesh **enables scalable, fault-tolerant systems across threads, processes, and devices — with no boilerplate, no fragile wiring**.
 
-*Areg combines the lightweight C++17 framework and multitarget router that automate communication in distributed applications.*
+*Areg SDK combines a lightweight C++17 framework, multitarget router, and developer tools for distributed communication.*
 
 ---
 
