@@ -192,7 +192,7 @@ This 📄 [example source](./examples/01_minimalrpc/src/main.cpp) demonstrates *
 
 ### Architecture
 
-Areg uses an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using generated code and the **Multitarget Router** for inter-process communication. Services, which are logical micro-servers independent of physical network locations, enable a **service-oriented architecture (SOA)**.
+Areg uses an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using generated code and the **Multitarget Router** for inter-process communication. Services, as logical micro-servers independent of physical locations, enable a **service-oriented architecture (SOA)**.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
