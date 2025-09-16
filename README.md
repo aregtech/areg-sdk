@@ -203,7 +203,7 @@ Areg supports both **Client–Server (Request–Reply)** and **Publish–Subscri
 * **`areg` + `codegen.jar`** — build services and projects
 * **`mtrouter`** — IPC and distributed communication
 * **Other tools** — logging and development utilities
-* **Key strengths** — automates service communication, manages threading & IPC, enables scalable C++ distributed apps
+* **Key strengths** — automates service communication, manages threading & IPC, enables distributed apps
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
