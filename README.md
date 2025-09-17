@@ -81,6 +81,8 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.  
 ⚠️ **When not to use:** RTOS (at the moment), web, or non-C++ apps — use web/RTOS-specific tools instead.
 
+---
+
 ### Compared to Alternatives
 
 | Feature          | Areg SDK                        | Competitors (gRPC, DDS, ZeroMQ)                      |
@@ -93,6 +95,8 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 | Pub/Sub          | ✅ Native, built-in in service  | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ Add-ons/Manual |
 | Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) (DDS) or External |
 | Dev Time Saved   | ✅ Faster, via automation       | ⚠️ Limited, external tooling                        |
+
+---
 
 ### Decision Checklist
 
@@ -121,6 +125,8 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 
 See the [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) for detailed setup, compiler options, and troubleshooting tips.
 
+---
+
 ### Build Areg SDK
 
 Clone the repository and build the SDK in one go:
@@ -133,6 +139,8 @@ cmake --build build -j 12
 ```
 
 > 💡 Tip: Copy-paste these commands directly in **Linux Terminal, Windows CMD, or PowerShell**.
+
+---
 
 ### Run Minimal RPC Example
 
@@ -154,6 +162,8 @@ This 📄 [example source](./examples/01_minimalrpc/src/main.cpp) demonstrates *
 🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer request → 🖨 Provider prints → ✅ application exits
 ```
 
+---
+
 ### Learning Path
 
 1. [**01\_minimalrpc**](examples/01_minimalrpc/) – Minimal RPC between two components
@@ -162,6 +172,8 @@ This 📄 [example source](./examples/01_minimalrpc/src/main.cpp) demonstrates *
 4. [**More Examples**](examples/README.md) – Advanced SDK features and usage patterns
 
 > ⚠️ For IPC, ensure **`mtrouter` is running** → see [mtrouter docs](./docs/wiki/05a-mtrouter.md)
+
+---
 
 ### Integration & Extensions
 
@@ -190,6 +202,8 @@ This 📄 [example source](./examples/01_minimalrpc/src/main.cpp) demonstrates *
 | [Lusan (GUI Tool)](https://github.com/aregtech/areg-sdk-tools)      | **Optional developer tool.** Provides visual API design, log inspection, and performance visualization.     |
 | [Examples](./examples/README.md)                                    | **Learning & validation.** Sample projects that demonstrate Areg in action.                                 |
 
+---
+
 ### Architecture
 
 Areg uses an **interface-centric Object RPC (ORPC)** model. Applications expose **Service Providers** and interact via **Service Consumers** using generated code and the **Multitarget Router** for inter-process communication. Services, as logical micro-servers independent of physical locations, enable a **service-oriented architecture (SOA)**.
@@ -197,6 +211,8 @@ Areg uses an **interface-centric Object RPC (ORPC)** model. Applications expose 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
 Areg supports both **Client–Server (Request–Reply)** and **Publish–Subscribe (Pub/Sub)** patterns, optimized for **multithreading**, **multiprocessing**, and **distributed systems** with low-latency requirements.
+
+---
 
 ### ✅ Quick Summary
 
