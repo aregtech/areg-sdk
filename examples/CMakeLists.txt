@@ -36,6 +36,7 @@ if(AREG_BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/25_pubsub/CMakeLists.txt)
     include(${AREG_EXAMPLES}/26_pubsubmix/CMakeLists.txt)
     include(${AREG_EXAMPLES}/27_pubsubmulti/CMakeLists.txt)
+    include(${AREG_EXAMPLES}/28_stlsynch/CMakeLists.txt)
 
     if (AREG_DEVELOP_ENV MATCHES "Win32")
         # This projects are based either on MFC (Microsoft Foundation Classes)

@@ -54,7 +54,7 @@ MSBuild ./areg-sdk.sln
 
 * **IPC Projects**: Multiprocessing examples require **mtrouter** for inter-process communication.
 * **Fault-Tolerance**: Services work reliably regardless of startup order due to automatic discovery and recovery.
-* **Generated Projects**: Projects ending in `_generated` are created from **Service Interface** (`.siml`) documents during build.
+* **Generated Projects**: Projects with names `NN_generated` are created from **Service Interface** (`.siml`) documents during build.
 * **Windows-only Projects**: [20\_winchat](./20_winchat/) requires **MFC** and MSVC/ClangCL compilers.
 
 ---
@@ -90,6 +90,8 @@ MSBuild ./areg-sdk.sln
 | [25\_pubsub](./25_pubsub/)             | 🚀 Multiprocessing | Pub/Sub, IPC                       | Implements the Publish/Subscribe pattern with notifications on change or on every update for subscribed clients.    |
 | [26\_pubsubmix](./26_pubsubmix/)       | 🚀 Multiprocessing | Hybrid Pub/Sub, Fault-Tolerance    | Shows mixed Pub/Sub configuration across threads and processes; maintains reliability during network interruptions. |
 | [27\_pubsubmulti](./27_pubsubmulti/)   | 🚀 Multiprocessing | Multi-Subscriber, Efficient Events | Optimizes Pub/Sub with multiple subscribers per thread, reducing event overhead and improving efficiency.           |
+| [28\_stlsynch](./28_stlsynch/)         | 🧵 Multithreading  | Synchronization Event and STL      | Event-based synchronization with STL threads for safe multithreading.                                               |
+
 
 ---
 
