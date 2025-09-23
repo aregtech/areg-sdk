@@ -12,7 +12,7 @@
 //               mixture of synchronization objects such as Mutex or 
 //               synchronization events.
 //
-//               The synchronization events are not part of POSIX standard, 
+//               The event synchronization primitives are not part of POSIX standard, 
 //               but exists in Windows. By business logic they have similarity
 //               with POSIX signals of conditional variables. Synchronization
 //               events are powerful and useful objects.
@@ -21,7 +21,6 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/SynchObjects.hpp"
 
-#include <chrono>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -31,31 +30,28 @@
     #pragma comment(lib, "areg")
 #endif // _MSC_VER
 
-using namespace std::chrono_literals;
-using chrono_clock  = std::chrono::high_resolution_clock;
-using duration_ms   = std::chrono::duration<double, std::milli>;
-
 //////////////////////////////////////////////////////////////////////////
 // Event synchronization object
 //////////////////////////////////////////////////////////////////////////
-SynchEvent  gEvent(false, true);    //!< non-signaled, auto-reset event
+
+/**
+ * \brief   This example is Areg adapted version of the conditional variable example at cppreference.com
+ *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
+ *          Compare the version of STL and Areg. Both do the same.
+ **/
+SynchEvent  ready(true, true);      //!< non-signaled, auto-reset event
+SynchEvent  processed(true, false); //!< non-signaled, manual-reset event
 std::string data{};                 //!< A text to output
-constexpr auto sleepMs{ 500ms };    //!< A timeout to put thread to the sleep
 
 void workerThread()
 {
-    const auto start = chrono_clock::now();
-    Lock lock(gEvent);
+    Lock lock(ready);
 
     // after the wait, we own the lock
-    duration_ms elapsed = chrono_clock::now() - start;
-    std::cout << "Worker thread is processing data, event waiting timeout " << elapsed.count() << " ms\n";
+    std::cout << "Worker thread is processing data\n";
     data += " after processing";
-
-    std::cout << "Worker thread signals data processing completed, put worker thread to sleep for " << sleepMs.count() << " ms\n";
-    std::this_thread::sleep_for(sleepMs);
-
-    gEvent.setEvent();  // manual set event
+    std::cout << "Worker thread signals data processing completed\n";
+    processed.setEvent();  // manual set event
 }
 
 int main()
@@ -63,16 +59,12 @@ int main()
     data = "Example data";
     std::thread worker(workerThread);
 
-    gEvent.lock();
-    std::cout << "main() signals data ready for processing, put thread to sleep for " << sleepMs.count() << " ms\n";
+    std::cout << "main() signals data ready for processing\n";
+    ready.setEvent();   // signal the worker thread
 
-    std::this_thread::sleep_for(sleepMs);
-    gEvent.setEvent();
-
-    const auto start = chrono_clock::now();
-    gEvent.lock();
-    duration_ms elapsed = chrono_clock::now() - start;
-    std::cout << "Back in main(), data = " << data << ", event waiting timeout " << elapsed.count() << " ms\n";
+    processed.lock();   // wait for worker thread to signal
+    std::cout << "Back in main(), data = " << data << '\n';
 
     worker.join();
+    return 0;
 }
