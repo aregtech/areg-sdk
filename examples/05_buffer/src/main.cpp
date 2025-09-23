@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG. All rights reserved.
 // Description : This project demonstrates the use of a Shared Buffer object, 
 //               initialization streaming, read and write, passing in 
 //               multithreading environment.
@@ -16,107 +16,68 @@
 #include "areg/base/String.hpp"
 
 #include <iostream>
+#include <cmath>    // for M_PI
 
 #ifdef  _MSC_VER
-    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg")
 #endif // _MSC_VER
 
-//! \brief   A thread to run and output message
-class HelloThread   : public    Thread
-                    , protected IEThreadConsumer
+//! \brief Thread to read buffer and output message
+class HelloThread : public Thread, protected IEThreadConsumer
 {
 public:
-    explicit HelloThread( SharedBuffer & buffer )
-        : Thread( self( ), "HelloThread" ) // set consumer and the name
-        , IEThreadConsumer( )
-        , mBuffer( buffer )
+    explicit HelloThread(SharedBuffer& buffer)
+        : Thread(*this, "HelloThread") // set consumer and name
+        , mBuffer(buffer)
     {
     }
-
-    virtual ~HelloThread( void ) = default;
 
 protected:
-
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// IEThreadConsumer interface
 /************************************************************************/
-
-    //! \brief  This callback is triggered when thread runs and fully operable.
-    virtual void onThreadRuns( void ) override;
-
-private:
-    //!< The wrapper of 'this' pointer to call in constructor
-    inline HelloThread & self( void )
+    void onThreadRuns() override
     {
-        return (*this);
+        std::cout << "Thread [" << getName() << "] started..." << std::endl;
+
+        int numDigit{};
+        float numPI{};
+        String strMsg{};
+
+        mBuffer.moveToBegin();
+        mBuffer >> numDigit >> numPI >> strMsg;
+
+        std::cout << "*********************************" << std::endl;
+        std::cout << "BEGIN dump buffer data .........." << std::endl;
+        std::cout << "Saved integer  : " << numDigit << std::endl;
+        std::cout << "Saved PI number: " << numPI << std::endl;
+        std::cout << "Saved string   : " << strMsg.getString() << std::endl;
+        std::cout << "END dump buffer data ............" << std::endl;
+        std::cout << "*********************************" << std::endl;
+
+        std::cout << "Thread [" << getName() << "] completed job." << std::endl;
     }
 
 private:
-    SharedBuffer &  mBuffer;
+    SharedBuffer& mBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// HelloThread implementation
-//////////////////////////////////////////////////////////////////////////
-
-void HelloThread::onThreadRuns( void )
-{
-    std::cout << "The thread [ " << getName( ) << " ] runs, outputing message." << std::endl;
-
-    int numDigit  = 0;
-    float numPI   = 0.0;
-    String strMsg = "";
-
-    mBuffer.moveToBegin();
-    mBuffer >> numDigit;
-    mBuffer >> numPI;
-    mBuffer >> strMsg;
-
-    std::cout << "*********************************" << std::endl;
-    std::cout << "BEGIN dump buffer data .........." << std::endl;
-    std::cout << "Saved number is    : " << numDigit << std::endl;
-    std::cout << "Saved PI number is : " << numPI << std::endl;
-    std::cout << "Saved string is    : " << strMsg.getString() << std::endl;
-    std::cout << "END dump buffer data ............" << std::endl;
-    std::cout << "*********************************" << std::endl;
-
-    std::cout << "The thread [ " << getName( ) << " ] completed job ..." << std::endl;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Demo to write and read data from binary buffer.
+// Demo: write and read data from binary buffer.
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
-    std::cout << "Demo to write and read data from binary buffer ..." << std::endl;
+    std::cout << "Demo: write and read data from binary buffer..." << std::endl;
 
     SharedBuffer buffer;
-    buffer << static_cast<int>(1234);
-    buffer << static_cast<float>(M_PI);
-    buffer << String("!!!Hello World!!!");
+    buffer << 1234 << static_cast<float>(M_PI) << String("!!!Hello World!!!");
 
-    buffer.moveToBegin();
-    int   numDigit{ 0 };
-    float numFloat{ 0.0 };
-    String msgHello{ "" };
-
-    buffer >> numDigit;
-    buffer >> numFloat;
-    buffer >> msgHello;
-
-    // make debug output here, check values.
-    std::cout << "The integer number is .: " << numDigit << std::endl;
-    std::cout << "The floating number is : " << numFloat << std::endl;
-    std::cout << "The string message is .: " << msgHello << std::endl;
-
-    // declare thread object.
     HelloThread aThread(buffer);
 
-    // create and start thread, wait until it is started.
+    // Start thread and wait until it starts
     aThread.createThread(NECommon::WAIT_INFINITE);
 
-    // stop and destroy thread, clean resources. Wait until thread ends.
+    // Stop thread and clean resources
     aThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;

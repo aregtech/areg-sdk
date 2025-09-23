@@ -18,135 +18,128 @@
 #include "areg/base/String.hpp"
 
 #ifdef  _MSC_VER
-    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg")
 #endif // _MSC_VER
 
 namespace
 {
-    //!< Write text to the file.
-    void writeText( FileBase & file )
+    //!< Print a separator line
+    void printSeparator(char ch = '*', int count = 20)
     {
-        std::cout << std::string( 20, '*' ) << std::endl;
-
-        if ( file.isValid( ) )
-        {
-            std::cout << "Writing text to file [ " << file.getName( ) << " ] ..." << std::endl;
-
-            // Write texts
-            file.write( "!!!Hello World!!!" );
-            file << "This is some text.";
-            file << "And this one is another part of text.";
-        }
-        else
-        {
-            std::cerr << "Invalid file " << file.getName( ) << ". Cannot write text ..." << std::endl;
-        }
+        std::cout << std::string(count, ch) << std::endl;
     }
 
-    //!< Generate and write texts line-by-line
-    void writeLines( FileBase & file )
+    //!< Write text to the file
+    void writeText(FileBase & file)
     {
-        std::cout << std::string( 20, '*' ) << std::endl;
-
-        if ( file.isValid( ) )
+        printSeparator();
+        if (!file.isValid())
         {
-            std::cout << "Writing text to file [ " << file.getName( ) << " ] ..." << std::endl;
+            std::cerr << "Invalid file " << file.getName() << ". Cannot write text ..." << std::endl;
+            return;
+        }
 
-            // Write lines.
-            file.writeLine( "!!!Hello World!!!" );
-            file.writeLine( "This is some text." );
-            file.writeLine( "And this one is another part of text." );
-        }
-        else
-        {
-            std::cerr << "Invalid file " << file.getName( ) << ". Cannot write line of texts ..." << std::endl;
-        }
+        std::cout << "Writing text to file [" << file.getName() << "] ..." << std::endl;
+        file.write("!!!Hello World!!!");
+        file << "This is some text." << "And this one is another part of text.";
     }
 
-    //!< Dump the content of the file on console.
-    void dumpText( FileBase & file )
+    //!< Write lines to the file
+    void writeLines(FileBase & file)
     {
-        std::cout << std::string( 20, '*' ) << std::endl;
-
-        if ( file.isValid( ) )
+        printSeparator();
+        if (!file.isValid())
         {
-            file.moveToBegin( );
-
-            // read the file content
-            String text;
-            file >> text;
-
-            // dump the content
-            std::cout << "BEGIN File [ " << file.getName() << " ] content >>>" << std::endl;
-            std::cout << text << std::endl;
-            std::cout << "END File [ " << file.getName( ) << " ] content <<<" << std::endl;
+            std::cerr << "Invalid file " << file.getName() << ". Cannot write lines ..." << std::endl;
+            return;
         }
-        else
+
+        std::cout << "Writing text to file [" << file.getName() << "] ..." << std::endl;
+        file.writeLine("!!!Hello World!!!");
+        file.writeLine("This is some text.");
+        file.writeLine("And this one is another part of text.");
+    }
+
+    //!< Dump file content to console
+    void dumpText(FileBase & file)
+    {
+        printSeparator();
+        if (!file.isValid())
         {
-            std::cerr << "Invalid file " << file.getName( ) << ". Cannot dump text ..." << std::endl;
+            std::cerr << "Invalid file " << file.getName() << ". Cannot dump text ..." << std::endl;
+            return;
         }
+
+        file.moveToBegin();
+        String text;
+        file >> text;
+
+        std::cout << "BEGIN File [" << file.getName() << "] content >>>" << std::endl;
+        std::cout << text << std::endl;
+        std::cout << "END File [" << file.getName() << "] content <<<" << std::endl;
     }
 
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////
-// Some functionalities of file
+// File functionalities demo
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
-    std::cout << "Demo to show file funtionalities ..." << std::endl;
+    std::cout << "Demo to show file functionalities ..." << std::endl;
 
-    // open for read and write text, create if not existing, share for read and write
-    constexpr unsigned int mode{ FileBase::FO_MODE_WRITE | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_SHARE_WRITE };
+    constexpr unsigned int mode = FileBase::FO_MODE_WRITE
+                                | FileBase::FO_MODE_TEXT
+                                | FileBase::FO_MODE_CREATE
+                                | FileBase::FO_MODE_SHARE_READ
+                                | FileBase::FO_MODE_SHARE_WRITE;
 
-    // Create a text file on file system with relative path name
+    // Create a text file on file system
     File txtFile("./Debug/hello.txt", mode);
-    if ( txtFile.open())
+    if (txtFile.open())
     {
-        writeText( txtFile );   // Fill file with some text
-        dumpText( txtFile );    // Dump on console the file content.
+        writeText(txtFile);
+        dumpText(txtFile);
     }
 
-    // Create a file in memory with time-stamp mask in the name
+    // In-memory file with timestamp mask
     FileBuffer buffer;
     if (buffer.open("Buffer_%time%", mode))
     {
-        writeText(buffer);  // Fill file with some text.
-        dumpText(buffer);   // Dump on console the file content.
+        writeText(buffer);
+        dumpText(buffer);
     }
 
-    // Create a file with the application name as file name mask. Set line-by-line content.
+    // File with appname mask, write line-by-line
     File lineFile;
-    if (lineFile.open( "../../../../temp/%appname%.txt", mode))
+    if (lineFile.open("../../../../temp/%appname%.txt", mode))
     {
-        writeLines( lineFile ); // Fill file with line-by-line text.
-        dumpText( lineFile );   // Dump on console the file content.
+        writeLines(lineFile);
+        dumpText(lineFile);
     }
 
-    // Create a binary file, take out the 'text mode' mask
-    File binary( "./Debug/binary.dat", mode & (~FileBase::FO_MODE_TEXT) );
+    // Binary file (text mode removed)
+    File binary("./Debug/binary.dat", mode & ~FileBase::FO_MODE_TEXT);
     if (binary.open())
     {
-        // write data from memory file
-        binary.write( buffer.getDataBuffer( ), buffer.getLength());
-        dumpText(binary);       // Dump on console the file content.
-        binary.reserve( 789 );  // Increase / reserve file space
+        binary.write(buffer.getDataBuffer(), buffer.getLength());
+        dumpText(binary);
+        binary.reserve(789);
     }
 
-    // close all files.
-    txtFile.close( );
-    lineFile.close( );
-    buffer.close( );
-    binary.close( );
+    // Close all files
+    txtFile.close();
+    lineFile.close();
+    buffer.close();
+    binary.close();
 
-    // Make a copy of files and normalize path by resolving mask in the names.
-    String src(File::normalizePath( "./Debug/hello.txt" ));
-    String dst(File::normalizePath( "./Debug/copy_%time%.txt" ));
+    // Copy and normalize paths
+    String src = File::normalizePath("./Debug/hello.txt");
+    String dst = File::normalizePath("./Debug/copy_%time%.txt");
 
-    std::cout << std::string( 20, '.' ) << std::endl;
-    std::cout << "Copying file [ " << src << " ] to the file [ " << dst << " ]" << std::endl ;
-    File::copyFile( src, dst, true );
+    printSeparator('.', 20);
+    std::cout << "Copying file [" << src << "] to [" << dst << "]" << std::endl;
+    File::copyFile(src, dst, true);
 
     std::cout << "Exit application!" << std::endl;
     return 0;
