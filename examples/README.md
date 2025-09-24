@@ -91,6 +91,7 @@ MSBuild ./areg-sdk.sln
 | [26\_pubsubmix](./26_pubsubmix/)       | 🚀 Multiprocessing | Hybrid Pub/Sub, Fault-Tolerance    | Shows mixed Pub/Sub configuration across threads and processes; maintains reliability during network interruptions. |
 | [27\_pubsubmulti](./27_pubsubmulti/)   | 🚀 Multiprocessing | Multi-Subscriber, Efficient Events | Optimizes Pub/Sub with multiple subscribers per thread, reducing event overhead and improving efficiency.           |
 | [28\_stlsynch](./28_stlsynch/)         | 🧵 Multithreading  | Synchronization Event and STL      | Event-based synchronization with STL threads for safe multithreading.                                               |
+| [29_synchevent](./29_synchevent/)     | 🧵 Multithreading  | Auto-Reset Events, Signal Persistence | Demonstrates reliable Areg `SynchEvent` signaling: events stay signaled until locked, no spurious wakeups, works the same on Windows and Linux. |
 
 
 ---

@@ -23,94 +23,64 @@
 #include "areg/logging/GELog.h"
 
 #ifdef  _MSC_VER
-    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg")
 #endif // _MSC_VER
 
-//! \brief   A thread to run.
-class HelloThread   : public    Thread
-                    , protected IEThreadConsumer
+DEF_LOG_SCOPE(logging_main_HelloThread_HelloThread);
+DEF_LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(logging_main_main);
+
+//! \brief Thread to run
+class HelloThread : public Thread, protected IEThreadConsumer
 {
 public:
-    HelloThread( void );
-    virtual ~HelloThread( void ) = default;
+    HelloThread()
+        : Thread(*this, "HelloThread")
+    {
+        LOG_SCOPE(logging_main_HelloThread_HelloThread);
+        LOG_DBG("Initialized thread [ %s ]", getName().getString());
+    }
 
 protected:
-
-/************************************************************************/
-// IEThreadConsumer interface overrides
-/************************************************************************/
-
-    //! \brief  This callback is triggered when thread runs and fully operable.
-    virtual void onThreadRuns( void ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    inline HelloThread & self( void )
+    /************************************************************************/
+    // IEThreadConsumer interface overrides
+    /************************************************************************/
+    void onThreadRuns() override
     {
-        return (*this);
+        LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
+
+        LOG_WARN("Thread [ %s ] running, outputting messages...", getName().getString());
+        LOG_INFO("!!!Hello Thread!!!");
+        LOG_DBG("!!!Hello Tracing!!!");
     }
 };
 
 //////////////////////////////////////////////////////////////////////////
-// HelloThread implementation
-//////////////////////////////////////////////////////////////////////////
-
-DEF_LOG_SCOPE(main_HelloThread_HelloThread);
-DEF_LOG_SCOPE(main_HelloThread_onThreadRuns);
-
-HelloThread::HelloThread( void )
-    : Thread( self( ), "HelloThread" )
-    , IEThreadConsumer  ( )
-{
-    LOG_SCOPE(main_HelloThread_HelloThread);
-    LOG_DBG("Initialized thread [ %s ]", getName().getString());
-}
-
-void HelloThread::onThreadRuns( void )
-{
-    LOG_SCOPE(main_HelloThread_onThreadRuns);
-
-    LOG_WARN("The thread [ %s ] runs, going to output messages ...", getName().getString());
-    LOG_INFO("!!!Hello World!!!");
-    LOG_DBG("!!!Hello Tracing!!!");
-}
-
-//////////////////////////////////////////////////////////////////////////
 // Demo
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(main_main);
-//! \brief   Demo to run tracing / logging.
+
 int main()
 {
     std::cout << "Demo to run tracing / logging ..." << std::endl;
 
-    // Force to start logging. See outputs log files in appropriate "logs" subfolder.
-    // To change the configuration and use dynamic logging, use macro LOGGING_START
-    // and specify the logging configuration file, where you can change logging format,
-    // filter logging priority and scopes.
+    // Forces to start logging with default settings (logs go to appropriate "logs" subfolder)
     LOGGING_CONFIGURE_AND_START(nullptr);
 
     do
     {
-        // After initialization, set scope declaration in the block.
-        // Otherwise, the scope is inactive and logs are written
-        LOG_SCOPE(main_main);
+        LOG_SCOPE(logging_main_main);
 
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
 
         aThread.createThread(NECommon::WAIT_INFINITE);
-        LOG_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
+        LOG_DBG("%s to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
-        LOG_INFO("Going to stop and destroy [ %s ] thread.", aThread.getName().getString());
+        LOG_INFO("Stopping and destroying thread [ %s ]", aThread.getName().getString());
         aThread.shutdownThread(NECommon::WAIT_INFINITE);
-
     } while (false);
 
-    // Stop logging.
+    // Stop logging
     LOGGING_STOP();
 
     std::cout << "Exit application!" << std::endl;

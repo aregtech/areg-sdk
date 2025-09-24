@@ -9,7 +9,6 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
-
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
@@ -17,111 +16,109 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
-
 #include "areg/logging/GELog.h"
 
-
 #ifdef  _MSC_VER
-    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg")
-#endif // _MSC_VER
+#endif
 
-//! A thread class.
-class HelloThread   : public    Thread
+//////////////////////////////////////////////////////////////////////////
+// HelloThread
+//////////////////////////////////////////////////////////////////////////
+
+DEF_LOG_SCOPE(threads_main_HelloThread_Ctor);
+DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
+
+Mutex gSync(false);
+
+class HelloThread   : public Thread
                     , protected IEThreadConsumer
 {
 public:
-    HelloThread( void );
-
-    virtual ~HelloThread( void ) = default;
+    HelloThread()
+        : Thread(*this, "HelloThread")
+    {
+        LOG_SCOPE(threads_main_HelloThread_Ctor);
+        LOG_DBG("Initialized thread [HelloThread]");
+    }
 
 protected:
-
 /************************************************************************/
 // IEThreadConsumer interface overrides
 /************************************************************************/
 
-    /**
-     * \brief   This callback function is called from Thread object, when it is
-     *          running and fully operable. If thread needs run in loop, the loop
-     *          should be implemented here. When consumer exits this function,
-     *          the thread will complete work. To restart thread running,
-     *          createThread() method should be called again.
-     **/
-    virtual void onThreadRuns( void ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    inline HelloThread & self( void )
+    void onThreadRuns() override
     {
-        return (*this);
+        LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
+        LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
+        LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS);
+        do
+        {
+            Lock lock(gSync);
+            std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << NECommon::WAIT_500_MILLISECONDS << " ms" << std::endl;
+
+        } while (false);
+
+        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
     }
 };
 
+
 //////////////////////////////////////////////////////////////////////////
-// HelloThread implementation
+// HelloDispatcher
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(main_HelloThread_HelloThread);
-DEF_LOG_SCOPE(main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
+DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
 
-HelloThread::HelloThread( void )
-    : Thread( self( ), "HelloThread" )
-    , IEThreadConsumer  ( )
-{
-    LOG_SCOPE(main_HelloThread_HelloThread);
-    LOG_DBG( "Initialized thread [ %s ]", "HelloThread" );
-}
-
-void HelloThread::onThreadRuns( void )
-{
-    LOG_SCOPE(main_HelloThread_onThreadRuns);
-
-    LOG_INFO( "!!!Hello World!!! !!!Hello Tracing!!!" );
-    LOG_INFO("The thread [ %s ] runs, going to sleep for [ %u ] ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS );
-
-    Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
-}
-
-//! \brief   A dispatcher thread that runs timer.
-class HelloDispatcher   : public    DispatcherThread
-                        , private   IETimerConsumer
+class HelloDispatcher   : public DispatcherThread
+                        , private IETimerConsumer
 {
 public:
-    HelloDispatcher( void );
-
-    virtual ~HelloDispatcher( void ) = default;
+    HelloDispatcher() 
+        : DispatcherThread("HelloDispatcher")
+        , IETimerConsumer()
+        , mTimer(*this, "aTimer")
+    {
+        LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
+        LOG_DBG("Instantiated hello dispatcher");
+    }
 
 protected:
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
-
-    /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
-     **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents(bool isReady) override
+    {
+        LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
+        DispatcherThread::readyForEvents(isReady);
+        if (isReady)
+        {
+            Lock lock(gSync);
+            LOG_DBG("Dispatcher thread is ready for event dispatching");
+            std::cout << "Dispatcher thread is ready for event dispatching" << std::endl;
+            mTimer.startTimer(100);
+        }
+        else
+        {
+            mTimer.stopTimer();
+        }
+    }
 
 /************************************************************************/
 // IEEventRouter interface overrides
 /************************************************************************/
+    bool dispatchEvent(Event & eventElem) override
+    {
+        LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
+        LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().getString());
 
-    /**
-     * \brief   Triggered to start dispatching valid event.
-     * \param   eventElem   Event element to dispatch
-     * \return  Returns true if at least one consumer processed the event.
-     **/
-    virtual bool dispatchEvent( Event & eventElem ) override;
+        Lock lock(gSync);
+        std::cout << "Received event [" << eventElem.getRuntimeClassName().getString() << "], custom dispatching here" << std::endl;
+        return true; // prevent processTimer()
+    }
 
-    /**
-     * \brief   Posts event and pushes into the internal event queue.
-     * \param   eventElem   The event object to push in the queue.
-     * \return  Returns true if successfully pushed event in the queue.
-     **/
     virtual bool postEvent( Event & eventElem ) override
     {
         return EventDispatcher::postEvent( eventElem );
@@ -130,124 +127,47 @@ protected:
 /************************************************************************/
 // IETimerConsumer interface overrides.
 /************************************************************************/
-
-    /**
-     * \brief   Triggered when Timer is expired.
-     *          timer   The timer object that is expired.
-     **/
-    virtual void processTimer( Timer & /* timer */ ) override
+    void processTimer(Timer &) override
     {
-        // this never happens, since we break dispatching in dispatchEvent() method.
-        ASSERT( false );
+        ASSERT(false);  // this never happens, because we interrupt in dispatchEvent()
     }
 
 private:
-    //! 'this' pointer wrapper
-    inline HelloDispatcher & self( void )
-    {
-        return (*this);
-    }
-
-private:
-
-    Timer   mTimer; // a dummy timer to force to trigger event.
+    Timer mTimer;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// HelloDispatcher class implementation
+// Demo
 //////////////////////////////////////////////////////////////////////////
 
-// Define HelloDispatcher log scopes to make logging
-// The log scopes must be defined before they are used.
-DEF_LOG_SCOPE(main_HelloDispatcher_HelloDispatcher);
-DEF_LOG_SCOPE(main_HelloDispatcher_readyForEvents );
-DEF_LOG_SCOPE(main_HelloDispatcher_dispatchEvent);
+DEF_LOG_SCOPE(threads_main_main);
 
-HelloDispatcher::HelloDispatcher( void )
-    : DispatcherThread( "HelloDispatcher" )
-    , IETimerConsumer   ( )
-
-    , mTimer            ( static_cast<IETimerConsumer &>(self()), "aTimer")
-{
-    LOG_SCOPE(main_HelloDispatcher_HelloDispatcher);
-    LOG_DBG("Instantiated hello dispatcher");
-}
-
-void HelloDispatcher::readyForEvents(bool isReady )
-{
-    LOG_SCOPE( main_HelloDispatcher_readyForEvents );
-    LOG_DBG( "The dispatcher is running. The custom business logic can be set here ..." );
-
-    DispatcherThread::readyForEvents( isReady );
-    if (isReady)
-    {
-        mTimer.startTimer(100);
-    }
-    else
-    {
-        mTimer.stopTimer();
-    }
-}
-
-#if AREG_LOGS
-bool HelloDispatcher::dispatchEvent(Event & eventElem)
-{
-    LOG_SCOPE(main_HelloDispatcher_dispatchEvent);
-    LOG_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
-    return true; // break dispatching event, so that it is never called 'processTimer()' method.
-}
-#else   // AREG_LOGS
-bool HelloDispatcher::dispatchEvent(Event & /*eventElem*/)
-{
-    return true; // break dispatching event, so that it is never called 'processTimer()' method.
-}
-#endif  // AREG_LOGS
-
-DEF_LOG_SCOPE(main_main);
-
-//! \brief   A Demo to create and destroy simple and dispatcher threads.
 int main()
 {
-    std::cout << "A Demo to create and destroy simple and dispatcher threads ..." << std::endl;
-
-    // Force to start logging. See outputs log files in appropriate "logs" subfolder.
-    LOGGING_CONFIGURE_AND_START( nullptr );
-
+    std::cout << "Demo: create and destroy simple + dispatcher threads..." << std::endl;
+    LOGGING_CONFIGURE_AND_START(nullptr);
     do
     {
-        // After initialization, set scope declaration in the block.
-        LOG_SCOPE(main_main);
+        LOG_SCOPE(threads_main_main);
 
-        // Start timer manager
-        Application::startTimerManager( );
+        Application::startTimerManager();
 
-        // Create and start 'Hello Thread'.
-        LOG_DBG("Starting Hello Thread");
         HelloThread helloThread;
         helloThread.createThread(NECommon::WAIT_INFINITE);
-        LOG_DBG("[ %s ] to create thread [ %s ]", helloThread.isValid() ? "SUCCEEDED" : "FAILED", helloThread.getName().getString());
 
-        //Create and start 'Hello Dispatcher' thread.
-        LOG_DBG("Starting Hello Dispatcher");
         HelloDispatcher helloDispatcher;
         helloDispatcher.createThread(NECommon::WAIT_INFINITE);
-        LOG_DBG("[ %s ] to create thread [ %s ]", helloDispatcher.isValid() ? "SUCCEEDED" : "FAILED", helloDispatcher.getName().getString());
 
-        LOG_DBG("Main thread sleep");
-        Thread::sleep( NECommon::WAIT_1_SECOND);
+        Thread::sleep(NECommon::WAIT_1_SECOND);
 
-        // stop and destroy thread, clean resources. Wait until thread ends.
-        LOG_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().getString());
+        LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.getName().getString());
         helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
 
-        LOG_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().getString());
+        LOG_INFO("Stopping thread [%s]", helloThread.getName().getString());
         helloThread.shutdownThread(NECommon::WAIT_INFINITE);
-
     } while (false);
 
-    // Stop logging.
     LOGGING_STOP();
-
-    std::cout << "Exit application, check the logs for details!" << std::endl;
+    std::cout << "Exit application, check logs for details!" << std::endl;
     return 0;
 }

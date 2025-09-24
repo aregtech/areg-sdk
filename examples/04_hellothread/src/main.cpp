@@ -4,7 +4,7 @@
 // Version     :
 // Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project demonstrates creation of a simple thread to 
-//               output "Hello World!" message on console.
+//               output "Hello Thread!" message on console.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
@@ -14,23 +14,17 @@
 #include <iostream>
 
 #ifdef  _MSC_VER
-    // link with areg library, valid only for MSVC
-    #pragma comment(lib, "areg")
+    #pragma comment(lib, "areg")    // valid only for MSVC
 #endif // _MSC_VER
 
 //! \brief   A thread to run and output message.
-class HelloThread   : public    Thread
-                    , protected IEThreadConsumer
+class HelloThread : public Thread, protected IEThreadConsumer
 {
 public:
     HelloThread( void )
-        : Thread( self( ), "HelloThread" ) // set consumer and the name
+        : Thread( static_cast<IEThreadConsumer &>(*this), "HelloThread") // set consumer and the name
         , IEThreadConsumer( )
-    {
-    }
-
-    virtual ~HelloThread( void ) = default;
-
+    {  }
 protected:
 /************************************************************************/
 // IEThreadConsumer interface overrides
@@ -39,15 +33,7 @@ protected:
     //! \brief  This callback is triggered when thread runs and fully operable.
     virtual void onThreadRuns( void ) override
     {
-        std::cout << "The thread " << getName( ) << " runs, output message." << std::endl;
-        std::cout << "!!! Hello World !!!" << std::endl;
-    }
-
-private:
-    //!< The wrapper of 'this' pointer to call in constructor
-    inline HelloThread & self( void )
-    {
-        return (*this);
+        std::cout << "!!! Hello Thread \'" << getName( ) << "\' !!!" << std::endl;
     }
 };
 
