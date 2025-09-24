@@ -64,9 +64,14 @@ public:
         auto start = [&](Timer & t, unsigned int timeout, int count)
         {
             if (t.startTimer(timeout, static_cast<DispatcherThread&>(*this), count))
+            {
                 LOG_DBG("Timer [ %s ] started, timeout [%u]", t.getName().getString(), t.getTimeout());
+
+            }
             else
+            {
                 LOG_ERR("Failed to start timer [ %s ]", t.getName().getString());
+            }
         };
 
         start(mOneTime, TIMEOUT_ONE_TIME, 1);
@@ -146,9 +151,13 @@ int main()
         LOG_SCOPE(timer_main_main);
 
         if (!Application::startTimerManager())
+        {
             LOG_ERR("Failed to start timer manager");
+        }
         else
+        {
             LOG_INFO("Timer manager started successfully");
+        }
 
         TimerDispatcher t1("TimerThread_1");
         TimerDispatcher t2("TimerThread_2");
