@@ -81,7 +81,7 @@
         typedef unsigned long   ptr_type;
     #endif  // _UINTPTR_T_DEFINED
 
-#endif  // ptr_type
+#endif  // BIT64
 
 //! The sequence number type.
 typedef uint64_t        SequenceNumber;

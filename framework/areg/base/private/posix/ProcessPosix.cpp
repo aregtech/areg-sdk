@@ -29,6 +29,14 @@
 
 void Process::_osInitilize( void )
 {
+#ifdef BIT64
+    constexpr const char _fmtCmdLine[] = "/proc/%lu/cmdline";
+    constexpr const char _fmtExePath[] = "/proc/%lu/exe";
+#else   // defined(BIT32)
+    constexpr const char _fmtCmdLine[] = "/proc/%u/cmdline";
+    constexpr const char _fmtExePath[] = "/proc/%u/exe";
+#endif  // BIT64
+
     mProcessId = ::getpid( );
     mProcessHandle = static_cast<void *>(&mProcessId);
 
@@ -38,11 +46,11 @@ void Process::_osInitilize( void )
     ::memset( buffer, 0, File::MAXIMUM_PATH );
     ::memset( path, 0, 256 );
 
-    sprintf( path, "/proc/%lu/cmdline", mProcessId );
+    sprintf( path, _fmtCmdLine, mProcessId );
     FILE * file = ::fopen( path, "r" );
     if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
     {
-        sprintf( path, "/proc/%lu/exe", mProcessId );
+        sprintf( path, _fmtExePath, mProcessId );
         ssize_t len = readlink( path, buffer, File::MAXIMUM_PATH );
         if ((len > 0) && (len < File::MAXIMUM_PATH))
         {
