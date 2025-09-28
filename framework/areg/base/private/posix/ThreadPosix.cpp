@@ -27,13 +27,19 @@
 #include <limits.h>
 #include <pthread.h>
 #include <sched.h>
-#include <time.h> 
+#include <time.h>
 #include <errno.h>
-#include <sys/signal.h>
-#include <sys/unistd.h>
 #include <sys/types.h>
 
-namespace 
+#if __has_include(<sys/unistd.h>)
+#include <sys/signal.h>
+#include <sys/unistd.h>
+#else
+#include <unistd.h>
+#include <signal.h>
+#endif
+
+namespace
 {
 
     //!< POSIX thread structure
@@ -110,7 +116,7 @@ void Thread::_osSleep(unsigned int timeout)
     //      unsigned int micro  = (ms % 1000) * 1000;
     //      sleep(sec);
     //      usleep(micro);
-    
+
     struct timespec ts;
     ts.tv_sec   = timeout / 1'000;
     ts.tv_nsec  = (timeout % 1'000) * 1'000'000 + 1;
@@ -202,7 +208,7 @@ bool Thread::_osCreateSystemThread( void )
 Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
 {
     /**
-     * if priority of a thread is changed, a real-time scheduling policy must be used, 
+     * if priority of a thread is changed, a real-time scheduling policy must be used,
      * possible policies are SCHED_FIFO and SCHED_RR. We use SCHED_RR (round robin) here.
      **/
     static constexpr int schedPolicy{ SCHED_RR };
