@@ -692,6 +692,34 @@ namespace   NEUtilities
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
     };
+
+    /**
+     * \brief   Converts given value to pointer type ToPtr.
+     *          If ToPtr is not a pointer type, it will convert
+     *          the value to the given type.
+     * \tparam  ToPtr       The type to convert. If this is a pointer type,
+     *                      it will convert the value to pointer.
+     * \tparam  FromType    The type of value to convert.
+     * \param   value       The value to convert.
+     * \return  Returns converted value to pointer type ToPtr. If ToPtr is not
+     *          a pointer type, it will convert the value to the given type.
+     **/
+    template <typename ToPtr, typename FromType>
+    inline constexpr ToPtr convToPtr( FromType value );
+
+    /**
+     * \brief   Converts given pointer or value to numeric type ToNum.
+     *          If FromType is a pointer type, it will convert
+     *          the pointer to numeric value. Otherwise, it will
+     *          convert the value to the given type.
+     * \tparam  ToNum       The numeric type to convert.
+     * \tparam  FromType    The type of value to convert. If this is a pointer type,
+     *                      it will convert the pointer to numeric value.
+     * \param   ptrValue    The pointer or value to convert.
+     * \return  Returns converted pointer or value to numeric type ToNum.
+     **/
+    template <typename ToNum, typename FromType>
+    inline constexpr ToNum convToNum( FromType ptrValue );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -769,6 +797,34 @@ inline uint64_t NEUtilities::Duration::passedMinutes( void ) const
 inline uint64_t NEUtilities::Duration::durationSinceStart( void ) const
 {
     return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
+}
+
+// ...existing code...
+
+template <typename ToPtr, typename FromType>
+inline constexpr ToPtr NEUtilities::convToPtr( FromType ptrValue )
+{
+    if constexpr (std::is_pointer_v<ToPtr>)
+    {
+        return reinterpret_cast<ToPtr>(static_cast<std::uintptr_t>(ptrValue));
+    }
+    else
+    {
+        return static_cast<ToPtr>(ptrValue);
+    }
+}
+
+template<typename ToNum, typename FromType>
+inline constexpr ToNum NEUtilities::convToNum(FromType value)
+{
+    if constexpr (std::is_pointer_v<FromType>)
+    {
+        return static_cast<ToNum>(reinterpret_cast<std::uintptr_t>(value));
+    }
+    else
+    {
+        return static_cast<ToNum>(value);
+    }
 }
 
 #endif  // AREG_BASE_NEUTILITIES_HPP

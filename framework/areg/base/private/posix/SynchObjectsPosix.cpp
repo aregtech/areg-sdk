@@ -19,6 +19,7 @@
 
 #include "areg/base/Thread.hpp"
 #include "areg/base/NEMemory.hpp"
+#include "areg/base/NEUtilities.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/IESynchObject.hpp"
 #include "areg/base/private/posix/WaitableEventIX.hpp"
@@ -68,7 +69,7 @@ bool Mutex::_osLockMutex( unsigned int timeout )
 
     if ( NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout) )
     {
-        mOwnerThreadId.store(reinterpret_cast<id_type>(synchMutex->getOwningThreadId()));
+        mOwnerThreadId.store(NEUtilities::convToNum<id_type, pthread_t>(synchMutex->getOwningThreadId()));
         result = true;
     }
 

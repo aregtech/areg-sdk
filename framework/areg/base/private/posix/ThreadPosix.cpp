@@ -19,6 +19,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/NEUtilities.hpp"
 
 #ifndef _POSIX_PRIORITY_SCHEDULING
     #define _POSIX_PRIORITY_SCHEDULING
@@ -32,12 +33,12 @@
 #include <sys/types.h>
 
 #if __has_include(<sys/unistd.h>)
-#include <sys/signal.h>
-#include <sys/unistd.h>
-#else
-#include <unistd.h>
-#include <signal.h>
-#endif
+    #include <sys/signal.h>
+    #include <sys/unistd.h>
+#else   // !__has_include(<sys/unistd.h>)
+    #include <unistd.h>
+    #include <signal.h>
+#endif  // __has_include(<sys/unistd.h>)
 
 namespace
 {
@@ -125,14 +126,14 @@ void Thread::_osSleep(unsigned int timeout)
 
 id_type Thread::_osGetCurrentThreadId( void )
 {
-    return  reinterpret_cast<id_type>( pthread_self() );
+    return NEUtilities::convToNum<id_type, pthread_t>(pthread_self());
 }
 
 Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
     Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
-    pthread_t threadId  = reinterpret_cast<pthread_t>(Thread::INVALID_THREAD_ID);
+    pthread_t threadId  = NEUtilities::convToPtr<pthread_t, id_type>(Thread::INVALID_THREAD_ID);
 
     do
     {
@@ -142,7 +143,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
             return Thread::eCompletionStatus::ThreadInvalid;
         }
 
-        threadId = reinterpret_cast<pthread_t>(mThreadId);
+        threadId = NEUtilities::convToPtr<pthread_t, id_type>(mThreadId);
         _unregisterThread();
 
     } while(false);
@@ -186,7 +187,7 @@ bool Thread::_osCreateSystemThread( void )
             {
                 result          = true;
                 mThreadHandle   = static_cast<THREADHANDLE>(handle);
-                mThreadId       = reinterpret_cast<id_type>(handle->pthreadId);
+                mThreadId       = NEUtilities::convToNum<id_type, pthread_t>(handle->pthreadId);
                 mThreadPriority = Thread::eThreadPriority::PriorityNormal;
 
                 if (_registerThread() == false)
@@ -221,7 +222,7 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
         int schedPrio       { MIN_INT_32 };
-        pthread_t threadId  = reinterpret_cast<pthread_t>(mThreadId);
+        pthread_t threadId  { NEUtilities::convToPtr<pthread_t, id_type>(mThreadId) };
         switch (newPriority)
         {
         case Thread::eThreadPriority::PriorityLowest:
