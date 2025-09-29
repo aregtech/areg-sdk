@@ -770,6 +770,10 @@ inline NELogging::eLogPriority NELogging::stringToLogPrio(const String& prio)
         return NELogging::eLogPriority::PrioError;
     else if (NELogging::PRIO_FATAL_STR == prio)
         return NELogging::eLogPriority::PrioFatal;
+    else if (NELogging::PRIO_SCOPE_STR == prio)
+        return NELogging::eLogPriority::PrioScope;
+    else if (NELogging::PRIO_NOTSET_STR == prio)
+        return NELogging::eLogPriority::PrioNotset;
     else
         return NELogging::eLogPriority::PrioIgnoreLayout;
 }
