@@ -252,7 +252,7 @@ Device drivers are often **slow, complex, and platform-specific**. **Areg** lets
 
 Integrating AI into embedded and edge systems often requires managing concurrency, communication, and synchronization across multiple modules — data collection, preprocessing, inference, decision, monitoring, and connectivity. **Areg SDK** simplifies this by letting each AI stage run as an **independent service** in its own thread or process, with built-in event-driven communication.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Embedded AI modular service architecture diagram" style="width:50%;height:50%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Embedded AI modular service architecture diagram" style="width:40%;height:40%"/></a></div>
 
 **Benefit:** Modular AI pipelines without manual threading or message handling; real-time responsiveness for control tasks; scalable orchestration of distributed AI workloads across devices.
 
