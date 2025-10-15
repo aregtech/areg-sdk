@@ -248,6 +248,16 @@ Device drivers are often **slow, complex, and platform-specific**. **Areg** lets
 
 ---
 
+### Embedded and Distributed AI
+
+Integrating AI into embedded and edge systems often requires managing concurrency, communication, and synchronization across multiple modules — sensors, preprocessors, inference engines, and actuators. **Areg** simplifies this by letting developers implement each AI stage as an **independent service** running in its own thread or process. 
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/embedded-ai-architecture.png" alt="Embedded AI modular service architecture diagram" style="width:70%;height:70%"/></a></div>
+
+**Benefit:** Modular AI pipelines without manual thread or message management; real-time responsiveness for control tasks; scalable orchestration of distributed AI workloads across devices.
+
+---
+
 ### Simulation & Testing
 
 Validating distributed systems is expensive and hardware-dependent. **Areg** allows simulation of **Data Layer services** in external applications, providing realistic environments to test behavior, performance, and fault-tolerance. Services appear **location-transparent** to higher layers.
