@@ -15,8 +15,11 @@
  ************************************************************************/
 #include "areg/base/SharedBuffer.hpp"
 
+#include "areg/appbase/Application.hpp"
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/NEString.hpp"
+#include "areg/persist/ConfigManager.hpp"
+
 #include <atomic>
 
 inline SharedBuffer& SharedBuffer::self( void )
@@ -229,4 +232,18 @@ unsigned int SharedBuffer::getHeaderSize(void) const
 unsigned int SharedBuffer::getAlignedSize(void) const
 {
     return mBlockSize;
+}
+
+uint16_t SharedBuffer::getDefaultBlockSize(void)
+{
+    static std::atomic_uint16_t    _result{ 0 };
+    uint16_t result = _result.load();
+    if (result == 0)
+    {
+        result = Application::getConfigManager().getDefaultBufferBlockSize();
+        _result.store(result);
+        result = result == 0 ? NEMemory::BLOCK_SIZE : result;
+    }
+
+    return result;
 }

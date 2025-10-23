@@ -758,6 +758,12 @@ public:
      **/
     void setLogDatabaseProperty(const String & whichPosition, const String & newValue, bool isTemporary = false);
 
+    uint16_t getDefaultBufferBlockSize(const String& whichModule = NEString::EmptyStringA);
+
+    uint16_t getDefaultMessageQueueSize(const String& whichModule = NEString::EmptyStringA);
+
+    bool getDefaultMessageQueueFixed(const String& whichModule = NEString::EmptyStringA);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////

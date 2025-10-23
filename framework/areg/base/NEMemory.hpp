@@ -246,7 +246,7 @@ namespace NEMemory
      *          Constant. Defines the minimum size of Byte Buffer data
      *          Also defines the size to align buffer allocation.
      **/
-    constexpr unsigned int      BLOCK_SIZE      { sizeof( NEMemory::uAlign ) };
+    constexpr unsigned int      BLOCK_SIZE      { sizeof( NEMemory::uAlign ) * 8 };
     /**
      * \brief   NEMemory::INVALID_SIZE
      *          Constant. Defines invalid buffer size.

@@ -195,7 +195,6 @@
     <ClCompile Include="areg\ipc\private\IERemoteMessageHandler.cpp" />
     <ClCompile Include="areg\ipc\private\NERemoteService.cpp" />
     <ClCompile Include="areg\persist\private\IEDatabaseEngine.cpp" />
-    <ClCompile Include="areg\persist\private\PersistenceManager.cpp" />
     <ClCompile Include="areg\persist\private\Property.cpp" />
     <ClCompile Include="areg\persist\private\PropertyKey.cpp" />
     <ClCompile Include="areg\persist\private\PropertyValue.cpp" />
@@ -380,7 +379,6 @@
     <ClInclude Include="areg\persist\IEDatabaseEngine.hpp" />
     <ClInclude Include="areg\persist\Property.hpp" />
     <ClInclude Include="areg\persist\PropertyValue.hpp" />
-    <ClInclude Include="areg\persist\PersistenceManager.hpp" />
     <ClInclude Include="areg\persist\NEPersistence.hpp" />
     <ClInclude Include="areg\resources\resource.h" />
     <ClInclude Include="areg\logging\IELogDatabaseEngine.hpp" />

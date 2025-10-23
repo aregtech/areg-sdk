@@ -426,9 +426,6 @@
     <ClCompile Include="areg\ipc\private\SendMessageEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\persist\private\PersistenceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\persist\private\Property.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -984,9 +981,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ConnectionConfiguration.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\persist\PersistenceManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\persist\Property.hpp">

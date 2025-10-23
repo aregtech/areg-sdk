@@ -181,7 +181,11 @@ namespace NEPersistence
         , EntryServiceAddress       = 25    //!< The connection address of the remote service.
         , EntryServicePort          = 26    //!< The connection port number of the remote service.
 
-        , EntryAnyKey               = 27    //!< Indicates any key type.
+        , EntryDefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(NEMemory::uAlignt)`
+        , EntryDefaultMessageQueue  = 28    //!< The default size of message queue in the dispatcher thread. The default `0` means to ignore the limitation, increase by need.
+        , EntryDefaultQueueType     = 29
+
+        , EntryAnyKey               = 30    //!< Indicates any key type.
     };
 
     /**
@@ -189,40 +193,44 @@ namespace NEPersistence
      **/
     constexpr sPropertyKey   DefaultPropertyKeys[]
         {
-              {"config" , "*"   , "version" , ""        }   //! 0   , The configuration version property structure.
+              {"config" , "*"   , "version" , ""                }   //! 0   , The configuration version property structure.
 
-            , {"log"    , "*"   , "version" , ""        }   //! 1   , The logging version property structure.
-            , {"log"    , "*"   , "target"  , ""        }   //! 2   , The logging types (targets) property structure.
-            , {"log"    , "*"   , "enable"  , ""        }   //! 3   , The logging enabled / disabled status property structure.
-            , {"log"    , "*"   , "enable"  , "*"       }   //! 4   , The logging type (in target) enabled / disabled flag property structure.
-            , {"log"    , "*"   , "file"    , "location"}   //! 5   , The log file location and file name mask property structure.
-            , {"log"    , "*"   , "file"    , "append"  }   //! 6   , The flag to append logs into the file property structure.
-            , {"log"    , "*"   , "remote"  , "queue"   }   //! 7   , The queue size of remote logging property structure.
-            , {"log"    , "*"   , "remote"  , "service" }   //! 8   , The service name of the remote logging.
+            , {"log"    , "*"   , "version" , ""                }   //! 1   , The logging version property structure.
+            , {"log"    , "*"   , "target"  , ""                }   //! 2   , The logging types (targets) property structure.
+            , {"log"    , "*"   , "enable"  , ""                }   //! 3   , The logging enabled / disabled status property structure.
+            , {"log"    , "*"   , "enable"  , "*"               }   //! 4   , The logging type (in target) enabled / disabled flag property structure.
+            , {"log"    , "*"   , "file"    , "location"        }   //! 5   , The log file location and file name mask property structure.
+            , {"log"    , "*"   , "file"    , "append"          }   //! 6   , The flag to append logs into the file property structure.
+            , {"log"    , "*"   , "remote"  , "queue"           }   //! 7   , The queue size of remote logging property structure.
+            , {"log"    , "*"   , "remote"  , "service"         }   //! 8   , The service name of the remote logging.
         
-            , {"log"    , "*"   , "db"      , "engine"  }   //! 9   , The name of the log database engine.
-            , {"log"    , "*"   , "db"      , "name"    }   //! 10  , The name of the log database.
-            , {"log"    , "*"   , "db"      , "location"}   //! 11  , The location of log database.
-            , {"log"    , "*"   , "db"      , "driver"  }   //! 12  , The log database driver.
-            , {"log"    , "*"   , "db"      , "address" }   //! 13  , The address of the remote log database engine (DB Server).
-            , {"log"    , "*"   , "db"      , "port"    }   //! 14  , The port of the remote log database engine (DB Server).
-            , {"log"    , "*"   , "db"      , "username"}   //! 15  , The user name to log-in into the log database.
-            , {"log"    , "*"   , "db"      , "password"}   //! 16  , The user password to log-in into the log database.
+            , {"log"    , "*"   , "db"      , "engine"          }   //! 9   , The name of the log database engine.
+            , {"log"    , "*"   , "db"      , "name"            }   //! 10  , The name of the log database.
+            , {"log"    , "*"   , "db"      , "location"        }   //! 11  , The location of log database.
+            , {"log"    , "*"   , "db"      , "driver"          }   //! 12  , The log database driver.
+            , {"log"    , "*"   , "db"      , "address"         }   //! 13  , The address of the remote log database engine (DB Server).
+            , {"log"    , "*"   , "db"      , "port"            }   //! 14  , The port of the remote log database engine (DB Server).
+            , {"log"    , "*"   , "db"      , "username"        }   //! 15  , The user name to log-in into the log database.
+            , {"log"    , "*"   , "db"      , "password"        }   //! 16  , The user password to log-in into the log database.
 
-            , {"log"    , "*"   , "layout"  , "enter"   }   //! 17  , The layout of enter scope message property structure.
-            , {"log"    , "*"   , "layout"  , "message" }   //! 18  , The layout of log message property structure.
-            , {"log"    , "*"   , "layout"  , "exit"    }   //! 19  , The layout of exit scope message property structure.
-            , {"log"    , "*"   , "scope"   , "*"       }   //! 20  , The log scope enable / disable flag property structure.
+            , {"log"    , "*"   , "layout"  , "enter"           }   //! 17  , The layout of enter scope message property structure.
+            , {"log"    , "*"   , "layout"  , "message"         }   //! 18  , The layout of log message property structure.
+            , {"log"    , "*"   , "layout"  , "exit"            }   //! 19  , The layout of exit scope message property structure.
+            , {"log"    , "*"   , "scope"   , "*"               }   //! 20  , The log scope enable / disable flag property structure.
 
-            , {"service", "*"   , "list"    , ""        }   //! 21  , The list of supported remote services property structure.
+            , {"service", "*"   , "list"    , ""                }   //! 21  , The list of supported remote services property structure.
 
-            , {"*"      , "*"   , "service" , ""        }   //! 22  , The process name of the remote service property structure.
-            , {"*"      , "*"   , "connect" , ""        }   //! 23  , The list of connection type of the remote service property structure.
-            , {"*"      , "*"   , "enable"  , "*"       }   //! 24  , The connection enable / disable flag of the remote service property structure.
-            , {"*"      , "*"   , "address" , "*"       }   //! 25  , The connection address of the remote service property structure.
-            , {"*"      , "*"   , "port"    , "*"       }   //! 26  , The connection port number of the remote service property structure.
+            , {"*"      , "*"   , "service" , ""                }   //! 22  , The process name of the remote service property structure.
+            , {"*"      , "*"   , "connect" , ""                }   //! 23  , The list of connection type of the remote service property structure.
+            , {"*"      , "*"   , "enable"  , "*"               }   //! 24  , The connection enable / disable flag of the remote service property structure.
+            , {"*"      , "*"   , "address" , "*"               }   //! 25  , The connection address of the remote service property structure.
+            , {"*"      , "*"   , "port"    , "*"               }   //! 26  , The connection port number of the remote service property structure.
 
-            , {"*"      , "*"   , "*"       , "*"       }   //! 27  , Indicates any key type.
+            , {"config" , "*"   , "default" , "blocksize"       }   //! 27  , The default block size in bytes to allocate in shared buffer.
+            , {"config" , "*"   , "default" , "messagequeue"    }   //! 28  , The default message queue size in the dispatcher thread.
+            , {"config" , "*"   , "default" , "fixedqueue"      }   //! 29  , The type of message queue -- either fixed or dynamic.
+
+            , {"*"      , "*"   , "*"       , "*"               }   //! 30  , Indicates any key type.
         };
 
     /**
@@ -355,6 +363,22 @@ namespace NEPersistence
      * \brief   The password to use when connect to the database engine.
      **/
     inline const NEPersistence::sPropertyKey& getLogDatabasePassword(void);
+
+    /**
+     * \brief   The default block size in bytes to allocate in shared buffer to minimize de-fragmentation.
+     **/
+    inline const NEPersistence::sPropertyKey& getDefaultBufferBlockSize(void);
+
+    /**
+     * \brief   The default message queue size in the dispatcher thread.
+     **/
+    inline const NEPersistence::sPropertyKey& getDefaultMessageQueueSize(void);
+
+    /**
+     * \brief   The type of message queue -- either fixed or dynamic.
+     **/
+    inline const NEPersistence::sPropertyKey& getDefaultMessageQueueType(void);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -489,6 +513,21 @@ const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseUser(void)
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabasePassword(void)
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabasePassword)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getDefaultBufferBlockSize(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryDefaultBufferBlock)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getDefaultMessageQueueSize(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryDefaultMessageQueue)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getDefaultMessageQueueType(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryDefaultQueueType)];
 }
 
 #endif  // AREG_PERSIST_NEPERSISTEN_HPP
