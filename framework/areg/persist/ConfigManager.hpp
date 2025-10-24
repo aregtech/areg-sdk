@@ -758,10 +758,26 @@ public:
      **/
     void setLogDatabaseProperty(const String & whichPosition, const String & newValue, bool isTemporary = false);
 
+    /**
+     * \brief   Returns the buffer default block size set in the configuration file.
+     * \param   whichModule     The name of the module or `*` for generic settings.
+     * \return  Returns the buffer block size in bytes to set when grow buffer.
+     **/
     uint16_t getDefaultBufferBlockSize(const String& whichModule = NEString::EmptyStringA);
 
+    /**
+     * \brief   Returns the default message queue size set in the configuration file.
+     * \param   whichModule     The name of the module or `*` for generic settings.
+     * \return  Returns the default message queue size to set for message queues.
+     **/
     uint16_t getDefaultMessageQueueSize(const String& whichModule = NEString::EmptyStringA);
 
+    /**
+     * \brief   Returns the flag indicating whether the default message queue size is fixed or can dynamically grow up.
+     * \param   whichModule     The name of the module or `*` for generic settings.
+     * \return  If returns true, the default message queue size is fixed and cannot grow..
+     *          Otherwise, the message queue size can grow up, but this low level must be the default queue size..
+     **/
     bool getDefaultMessageQueueFixed(const String& whichModule = NEString::EmptyStringA);
 
 //////////////////////////////////////////////////////////////////////////
