@@ -61,11 +61,11 @@ public:
     /**
      * \brief	Default constructor with default parameters
      * \param	mode	    The file open mode. By default file object is opened with write permission and in binary mode
-     * \param	blockSize	The block size to increase. By default the block size is BLOCK_SIZE (64 bytes)
+     * \param	blockSize	The block size to increase. By default the block size is 4 x NEMemory::BLOCK_SIZE (default 64 bytes)
      **/
     explicit FileBuffer( unsigned int mode      = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)
                        , const char*  name      = nullptr
-                       , unsigned int blockSize = BLOCK_SIZE);
+                       , unsigned int blockSize = FileBuffer::BLOCK_SIZE);
 
     /**
      * \brief	Constructor to set by default attached mode

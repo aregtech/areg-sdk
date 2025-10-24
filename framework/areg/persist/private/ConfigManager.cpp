@@ -1067,3 +1067,21 @@ void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const St
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
     setModuleProperty(key.section, key.property, whichPosition, newValue, NEPersistence::EntryAnyKey, isTemporary);
 }
+
+uint16_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= NEString::EmptyStringA*/)
+{
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryDefaultBufferBlock;
+    const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultBufferBlockSize();
+    const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
+    return (prop != nullptr ? prop->getValue().getInteger() : 0u);
+}
+
+uint16_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*= NEString::EmptyStringA*/)
+{
+    return 0;
+}
+
+bool ConfigManager::getDefaultMessageQueueFixed(const String& whichModule /*= NEString::EmptyStringA*/)
+{
+    return false;
+}

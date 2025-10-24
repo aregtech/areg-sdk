@@ -1,5 +1,5 @@
 # ###########################################################################
-# This is a configuration file for logging
+# This is a configuration file for Areg framework based applications
 # ###########################################################################
 
 # ###########################################################################
@@ -99,7 +99,14 @@
 # ---------------------------------------------------------------------------
 # Configuration file version
 # ---------------------------------------------------------------------------
-config::*::version          = 2.0.0
+config::*::version          = 2.0.0                         # The current version of configuration
+
+# ---------------------------------------------------------------------------
+# Global configuration
+# ---------------------------------------------------------------------------
+config::*::default::blocksize       = 64                    # The default block size in bytes to allocate in shared buffer to minimize de-fragmentation. `0` means ignore
+config::*::default::messagequeue    = 0                     # The default message queue size in the dispatcher thread. `0` means ignore
+config::*::default::fixedqueue      = false                 # The type of message queue -- either fixed or dynamic. `true` means increase dynamically by need
 
 # Application logging settings
 
