@@ -168,10 +168,12 @@ bool Thread::_osCreateSystemThread( void )
         mWaitForRun.resetEvent();
         mWaitForExit.resetEvent( );
 
-        unsigned long threadId  = 0;
-        HANDLE handle = ::CreateThread( nullptr, 0,
+        unsigned long threadId  { 0 };
+        unsigned long dwFlags   { mStackSizeKB != NECommon::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
+        unsigned long dwStack   { mStackSizeKB * NECommon::ONE_KILOBYTE };
+        HANDLE handle = ::CreateThread( nullptr, dwStack,
                                       (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine), 
-                                       static_cast<void *>(this), 0 /*CREATE_SUSPENDED*/, &threadId);
+                                       static_cast<void *>(this), dwFlags, &threadId);
         if (handle != nullptr)
         {
             result          = true;
@@ -232,6 +234,12 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     }
 
     return oldPrio;
+}
+
+size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
+{
+    ULONG size{ 0u };
+    return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);
 }
 
 #endif  // _WIN32

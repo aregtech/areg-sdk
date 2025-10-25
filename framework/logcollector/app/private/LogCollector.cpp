@@ -39,7 +39,7 @@ static String _modelName("LogCollectorModel");
 BEGIN_MODEL(_modelName)
 
     // define console service thread.
-    BEGIN_REGISTER_THREAD( "LogCollectorConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "LogCollectorConsoleServiceThread" )
         // Define the console service
         BEGIN_REGISTER_COMPONENT(LogCollectorConsoleService::SERVICE_NAME, LogCollectorConsoleService)
             // register dummy 'empty service'.

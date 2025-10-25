@@ -144,8 +144,9 @@ public:
      *                          It should be unique name to be able to track.
      *                          If nullptr or the name is duplicated, the system will not
      *                          be able to track the thread by name.
+     * \param   stackSizeKb     The thread stack size in kilobytes.
      **/
-    Thread( IEThreadConsumer & threadConsumer, const String & threadName );
+    Thread( IEThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -385,6 +386,11 @@ public:
      **/
     static const ThreadAddress & getThreadAddress( id_type threadId );
 
+    /**
+     * \brief   Returns the stack size of the current thread in bytes.
+     **/
+    static const size_t getCurrentStackSize(void);
+
 /************************************************************************/
 // Thread debugging function
 /************************************************************************/
@@ -465,6 +471,10 @@ protected:
      **/
     bool                    mIsRunning;
     /**
+     * \brief   The thread stack size in kilobytes.
+     **/
+    uint32_t                mStackSizeKB;
+    /**
      * \brief   Object to synchronize data access
      **/
     mutable ResourceLock    mSynchObject;
@@ -504,7 +514,7 @@ private:
     bool _registerThread( void );
 
     /**
-     * \brief   Unregisters thread. Returns true if Thread was valid.
+     * \brief   Unregister thread. Returns true if Thread was valid.
      **/
     void _unregisterThread( void );
 
@@ -602,6 +612,11 @@ private:
      * \brief   OS specific implementation of getting the ID of current thread.
      **/
     static id_type _osGetCurrentThreadId( void );
+
+    /**
+     * \brief   OS specific implementation to get the stack size of current thread in bytes.
+     **/
+    static size_t _osGetCurrentStackSize( THREADHANDLE handle );
 
     /**
      * \brief   OS specific implementation to create and registers thread. Returns true if succeed.

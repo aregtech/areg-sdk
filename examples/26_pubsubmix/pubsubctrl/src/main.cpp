@@ -46,7 +46,7 @@ namespace
 BEGIN_MODEL( _modelName )
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread1", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "TestServiceThread1" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(NECommon::ContollerPublisher, PubSubController )
             // register HelloWorld service implementation.
@@ -58,7 +58,7 @@ BEGIN_MODEL( _modelName )
     END_REGISTER_THREAD( "TestServiceThread1" )
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread2", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "TestServiceThread2" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(SecondRole, PubSubMixed)
             // register HelloWorld service implementation.

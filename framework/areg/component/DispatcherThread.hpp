@@ -138,8 +138,9 @@ public:
      * \brief	The only constructor to create Dispatcher Thread. The dispatcher thread should have unique
      *          name, which is registered in system (in resource mapping). The Dispatcher Thread can be accessed by its unique name.
      * \param	threadName	The unique name of dispatcher. If this parameter is nullptr or empty, system will unique thread name.
+     * \param   stackSizeKb The thread stack size.
      **/
-    explicit DispatcherThread( const String & threadName );
+    explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
     /**
      * \brief   Destructor.
      **/

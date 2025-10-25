@@ -60,7 +60,7 @@ protected:
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL("ServiceModel")
     // Thread 1 without watchdog, contains a service consumer
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceConsumer )
             REGISTER_DEPENDENCY( "ServiceProvider" ) /* dependency reference to the remote service*/
         END_REGISTER_COMPONENT( "ServiceClient" )

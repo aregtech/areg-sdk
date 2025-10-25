@@ -754,20 +754,23 @@ NERegistry::ComponentThreadEntry::ComponentThreadEntry( void )
     : mThreadName       ( )
     , mComponents       ( )
     , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
+    , mStackSizeKB      (NECommon::STACK_SIZE_DEFAULT)
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/)
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/, const uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/ )
     : mThreadName       (threadName)
     , mComponents       ( )
     , mWatchdogTimeout  (watchdogTimeout)
+    , mStackSizeKB      (stackSizeKb)
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList& supCompList, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/)
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList& supCompList, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/, const uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/ )
     : mThreadName       (threadName)
     , mComponents       (supCompList)
     , mWatchdogTimeout  (watchdogTimeout)
+    , mStackSizeKB      (stackSizeKb)
 {
 }
 

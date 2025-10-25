@@ -222,8 +222,7 @@ public:
     TEPointerHashMap(uint32_t hashSize);
 
     /**
-     * \brief   Creates Hash Map where keys are pointers Block Size is MAP_DEFAULT_BLOCK_SIZE (48) and
-     *          Hash Table size is MAP_DEFAULT_HASH_SIZE (40)
+     * \brief   Creates Hash Map where keys are pointers.
      **/
     TEPointerHashMap( void ) = default;
 

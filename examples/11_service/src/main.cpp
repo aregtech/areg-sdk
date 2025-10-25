@@ -32,7 +32,7 @@ constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ServiceThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "Test_ServiceThread")
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServicingComponent", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization

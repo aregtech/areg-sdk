@@ -271,6 +271,8 @@ namespace NECommon
      **/
     constexpr unsigned int   WATCHDOG_IGNORE        { DO_NOT_WAIT };
 
+    constexpr unsigned int   STACK_SIZE_DEFAULT     { 0u };
+
     /**
      * \brief   NECommon::TIMEOUT_1_MS
      *          Timeout 1 millisecond

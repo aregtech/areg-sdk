@@ -29,7 +29,7 @@ constexpr char const _modelName[]  { "TheModel" };   // The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestPatientMonitoring", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "TestPatientMonitoring" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceNameHwManager, PatientClient )
             // register service dependencies

@@ -101,8 +101,9 @@ public:
      *                          If timeout is not zero and it expires before the thread processed
      *                          an event, it terminates and restarts the thread again.
      *                          There is no guarantee that terminated thread will make all cleanups properly.
+     * \param   stackSizeKb     The size of the thread stack size in kilobytes.
      **/
-    explicit ComponentThread( const String & threadName, uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
+    explicit ComponentThread( const String & threadName, uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
 
     /**
      * \brief   Destructor
