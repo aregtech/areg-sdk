@@ -93,11 +93,14 @@ public:
      *                              an event, it terminates and restarts the thread again.
      *                              There is no guarantee that terminated thread will make all cleanups properly.
      *                              Watchdog timeout is ignored if it is equal to NECommon::WATCHDOG_IGNORE.
+     * \param   stackSizeKb         The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
+     *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to use system default stack size.
      **/
     WorkerThread( const String & threadName
                 , Component & bindingComponent
                 , IEWorkerThreadConsumer & threadConsumer
-                , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
+                , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
+                , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT);
 
     /**
      * \brief   Destructor
@@ -138,7 +141,7 @@ public:
 /************************************************************************/
     /**
      * \brief   Posts given event object. If the event addressee is
-     *          not binded with master component or it is an internal
+     *          not bound with master component or it is an internal
      *          event, the event will not be delivered and will be
      *          destroyed.
      * \param   eventElem   The event object to post.
@@ -164,7 +167,7 @@ protected:
      * \brief   Search for consumer thread that can dispatch event.
      *          It will  lookup whether it has consumer or not
      *          registered in worker thread. If does not find,  it will search
-     *          in worker thread list of binded component. 
+     *          in worker thread list of bound  component. 
      * \param   whichClass  The runtime class ID to search registered component
      * \return  If found, returns valid pointer of dispatching thread. 
      *          Otherwise returns nullptr

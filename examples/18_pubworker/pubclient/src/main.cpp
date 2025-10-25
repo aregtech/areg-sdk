@@ -35,7 +35,7 @@ BEGIN_MODEL(_modelName)
             // register service dependencies
             REGISTER_DEPENDENCY( NECommon::ServiceNamePatientInfo )
             // register HW worker thread
-            REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data(), NECommon::WATCHDOG_IGNORE)
+            REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data() )
         // end of component description
         END_REGISTER_COMPONENT( NECommon::ServiceNameHwManager )
     // end of thread description

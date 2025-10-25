@@ -36,7 +36,7 @@ constexpr char const _roleName[]    { "TestServiceComponent" }; //!< Service rol
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD_EX( "TestServiceThread", NEHelloWatchdog::TimeoutWatchdog, NEMemory::IGNORE_VALUE)
+    BEGIN_REGISTER_THREAD_EX( "TestServiceThread", NEHelloWatchdog::TimeoutWatchdog)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(_roleName, ServicingComponent )
             // register HelloWatchdog service implementation.
@@ -44,7 +44,7 @@ BEGIN_MODEL(_modelName)
         // end of component description
         END_REGISTER_COMPONENT(_roleName)
     // end of thread description
-    END_REGISTER_THREAD_EX( "TestServiceThread" )
+    END_REGISTER_THREAD( "TestServiceThread" )
 
     //////////////////////////////////////////////////////////////////////////
     //

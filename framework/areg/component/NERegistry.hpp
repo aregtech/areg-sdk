@@ -382,12 +382,14 @@ namespace NERegistry
          * \param   compRoleName        The name of Component (Role Name) where consumer is registered.
          * \param   compConsumerName    The name of Consumer object to configure, it should not be same as Component name.
          * \param   watchdogTimeout     The timeout in milliseconds to set for watchdog. The value 0 ignores watchdog.
+         * \param   stackSizeKb         The stack size of the thread to set.
          **/
         WorkerThreadEntry( const String & masterThreadName
                          , const String & workerThreadName
                          , const String & compRoleName
                          , const String & compConsumerName
-                         , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
+                         , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
+                         , const uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT);
 
         /**
          * \brief   Copies /move entries from source.
@@ -444,6 +446,10 @@ namespace NERegistry
          * \brief   The watchdog timeout in milliseconds.
          **/
         uint32_t    mWatchdogTimeout;
+        /**
+         * \brief   The stack size of the worker thread in kilobytes.
+         **/
+        uint32_t    mStackSizeKb;
    };
 
     //////////////////////////////////////////////////////////////////////////

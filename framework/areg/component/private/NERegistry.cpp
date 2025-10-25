@@ -211,6 +211,7 @@ NERegistry::WorkerThreadEntry::WorkerThreadEntry(void)
     : mThreadName       ()
     , mConsumerName     ()
     , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
+    , mStackSizeKb      (NECommon::STACK_SIZE_DEFAULT)
 {
 }
 
@@ -218,10 +219,12 @@ NERegistry::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadNam
                                                 , const String & workerThreadName
                                                 , const String & compRoleName
                                                 , const String & compConsumerName
-                                                , const uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE */)
+                                                , const uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE */
+                                                , const uint32_t stackSizeKb     /* = NECommon::STACK_SIZE_DEFAULT*/)
     : mThreadName       (NEUtilities::createComponentItemName(masterThreadName, workerThreadName))
     , mConsumerName     (NEUtilities::createComponentItemName(compRoleName, compConsumerName))
     , mWatchdogTimeout  (watchdogTimeout)
+    , mStackSizeKb      (stackSizeKb)
 {
 }
 

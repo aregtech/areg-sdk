@@ -74,25 +74,38 @@
  *          Every thread should have unique name within application.
  *          Declare as many component thread, as needed for application.
  *
- * \param   thread_name The name of component thread, which should be unique.
- * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
+ * \param   thread_name     The name of component thread, which should be unique.
+ * \param   timeout         The watchdog timeout in milliseconds of the worker thread.
+ *                          The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ * \param   stackSizeKb     The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
+ *                          The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                          and uses system default stack size.
  **/
-#define BEGIN_REGISTER_THREAD_EX(thread_name, timeout, stackSize)                                           \
+#define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb)                                        \
         {                                                                                                   \
             /*  Begin registering component thread                                  */                      \
-            NERegistry::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSize));
+            NERegistry::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb));
 
+/**
+ * \brief   Register component thread with the watchdog timeout and system default thread stack size.
+ *          The watchdog timeout is set if `timeout` is not 0.
+ **/
+#define BEGIN_REGISTER_THREAD_EX(thread_name, timeout)                                                      \
+            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), NECommon::STACK_SIZE_DEFAULT);
+
+/**
+ * \brief   Register component thread with no watchdog and system default stack size.
+ **/
 #define BEGIN_REGISTER_THREAD(thread_name)                                                                  \
-            BEGIN_REGISTER_THREAD_EX((thread_name), NECommon::WATCHDOG_IGNORE, NECommon::STACK_SIZE_DEFAULT)
+            BEGIN_REGISTER_THREAD_EX((thread_name), NECommon::WATCHDOG_IGNORE)
 
-#define END_REGISTER_THREAD_EX(thread_name)                                                                 \
+/**
+ * \brief   Closes component thread registration.
+ **/
+#define END_REGISTER_THREAD(thread_name)                                                                    \
             /*  End registering component thread, add to model                      */                      \
             __model.addThread(thrEntry);                                                                    \
         }
-
-#define END_REGISTER_THREAD(thread_name)                                                                    \
-            END_REGISTER_THREAD_EX((thread_name))
 
  /**
  * \brief   Register Component within every Component Thread scope. Extended version
@@ -166,12 +179,10 @@
                 comEntry.addSupportedService( NERegistry::ServiceEntry((svc_name), (svc_version)) );
 
 /**
- * \brief   Register worker thread if needed by component. Optional.
- *          If component requires Worker thread, declare it within
- *          component registration scope.
+ * \brief   Registers optional worker thread for the component.
+ *          If component requires Worker thread, declare it within component registration scope.
  *          The worker thread name should be unique within application.
- *          This should be called between BEGIN_REGISTER_COMPONENT and
- *          END_REGISTER_COMPONENT scope.
+ *          This should be called between BEGIN_REGISTER_COMPONENT and END_REGISTER_COMPONENT scope.
  *          Every worker thread registration is done by calling REGISTER_WORKER_THREAD.
  *          Declare all worker threads required by component.
  *
@@ -179,15 +190,34 @@
  * \param   consumer_name       The consumer name of worker thread. Differentiate consumer
  *                              names if one component has more than one worker thread.
  * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
+ *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ * \param   stackSizeKb         The stack size of the worker thread in kilobytes. 1 KB = 1024 Bytes.
+ *                              The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                              and uses system default stack size.
  **/
-#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name, timeout)                                  \
+#define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb)                 \
                 /*  Register component worker thread                                */                      \
                 comEntry.addWorkerThread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName            \
                                             , (worker_thread_name)                                          \
                                             , comEntry.mRoleName                                            \
                                             , (consumer_name)                                               \
-                                            , (timeout))  );
+                                            , (timeout)                                                     \
+                                            , (stackSizeKb)) );
+
+/**
+ * \brief   Register worker thread with watchdog timeout and system default stack size.
+ **/
+#define REGISTER_WORKER_THREAD_EX(worker_thread_name, consumer_name, timeout)                               \
+            REGISTER_WORKER_THREAD_EX2(   (worker_thread_name)                                              \
+                                        , (consumer_name)                                                   \
+                                        , (timeout)                                                         \
+                                        , NECommon::STACK_SIZE_DEFAULT)
+
+/**
+ * \brief   Register worker thread with no watchdog and system default stack size.
+ **/
+#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name)                                           \
+            REGISTER_WORKER_THREAD_EX((worker_thread_name), (consumer_name), NECommon::WATCHDOG_IGNORE)
 
 /**
  * \brief   Declare and register component dependency. Optional.
@@ -215,7 +245,7 @@
  *
  *  BEGIN_MODEL("test_model")
  *  
- *      BEGIN_REGISTER_THREAD("test_thread", 0)
+ *      BEGIN_REGISTER_THREAD("test_thread")
  *
  *          BEGIN_REGISTER_COMPONENT_EX("test_component", TestComponent)
  *              REGISTER_IMPLEMENT_SERVICE("test_service_1", Version(1, 0, 0))
@@ -225,13 +255,13 @@
  *          BEGIN_REGISTER_COMPONENT_EX("another_component", AnotherComponent)
  *              REGISTER_IMPLEMENT_SERVICE("another_service_1", Version(1, 0, 0))
  *              REGISTER_IMPLEMENT_SERVICE("another_service_2", Version(1, 0, 0))
- *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name", , NECommon::WATCHDOG_IGNORE)
+ *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name")
  *              REGISTER_DEPENDENCY("secondary_component")
  *          END_REGISTER_COMPONENT("another_component")
  *
  *      END_REGISTER_THREAD("text_thread")
  *
- *      BEGIN_REGISTER_THREAD("secondary_thread", NECommon::WATCHDOG_IGNORE)
+ *      BEGIN_REGISTER_THREAD("secondary_thread")
  *
  *          BEGIN_REGISTER_COMPONENT_EX("secondary_component", SecondaryCompponent)
  *              REGISTER_IMPLEMENT_SERVICE("secondary_service_1", Version(1, 0, 0))

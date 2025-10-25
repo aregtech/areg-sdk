@@ -68,18 +68,18 @@ public:
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL("ServiceModel")
     // Thread 1 without watchdog, contains a service provider
-    BEGIN_REGISTER_THREAD_EX( "Thread1", NECommon::WATCHDOG_IGNORE, NEMemory::IGNORE_VALUE )
+    BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceProvider" )
-    END_REGISTER_THREAD_EX( "Thread1" )
+    END_REGISTER_THREAD( "Thread1" )
 
     // Thread 2 without watchdog, contains a service consumer
-    BEGIN_REGISTER_THREAD_EX( "Thread2", NECommon::WATCHDOG_IGNORE, NEMemory::IGNORE_VALUE)
+    BEGIN_REGISTER_THREAD( "Thread2" )
         BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceConsumer )
             REGISTER_DEPENDENCY( "ServiceProvider" ) /* dependency reference to the remote service*/
         END_REGISTER_COMPONENT( "ServiceClient" )
-    END_REGISTER_THREAD_EX( "Thread2" )
+    END_REGISTER_THREAD( "Thread2" )
 
 // end of model description
 END_MODEL("ServiceModel")

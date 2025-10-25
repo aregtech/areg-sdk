@@ -52,7 +52,7 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
             IEWorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
             if (consumer != nullptr)
             {
-                component->createWorkerThread(wtEntry.mThreadName.getString(), *consumer, componentThread, wtEntry.mWatchdogTimeout);
+                component->createWorkerThread(wtEntry.mThreadName.getString(), *consumer, componentThread, wtEntry.mWatchdogTimeout, wtEntry.mStackSizeKb);
             }
         }
     }
@@ -148,12 +148,16 @@ Component::~Component( void )
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-WorkerThread* Component::createWorkerThread( const String & threadName, IEWorkerThreadConsumer& consumer, ComponentThread & /* ownerThread */, uint32_t watchdogTimeout)
+WorkerThread* Component::createWorkerThread(  const String & threadName
+                                            , IEWorkerThreadConsumer& consumer
+                                            , ComponentThread & /* ownerThread */
+                                            , uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE */
+                                            , uint32_t stackSizeKb     /* = NECommon::STACK_SIZE_DEFAULT */)
 {
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread == nullptr)
     {
-        workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout);
+        workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb);
         if (workThread != nullptr)
         {
             if (workThread->createThread(NECommon::WAIT_INFINITE))

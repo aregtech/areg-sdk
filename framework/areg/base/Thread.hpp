@@ -281,6 +281,13 @@ public:
      **/
     inline Thread::eThreadPriority getPriority( void ) const;
 
+    /**
+     * \brief   Returns predefined stack size of the thread.
+     *          The value `NECommon::STACK_SIZE_DEFAULT` (0) means that the stack size of the thread was not changed
+     *          and the system default stack size is used.
+     **/
+    inline uint32_t getPredefinedStackSize(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // static operations
 //////////////////////////////////////////////////////////////////////////
@@ -790,6 +797,11 @@ inline Thread::eThreadPriority Thread::getPriority( void ) const
 {
     Lock  lock( mSynchObject );
     return (isValid( ) ? mThreadPriority : Thread::eThreadPriority::PriorityUndefined);
+}
+
+inline uint32_t Thread::getPredefinedStackSize(void) const
+{
+    return mStackSizeKB;
 }
 
 inline void Thread::sleep( unsigned int ms )
