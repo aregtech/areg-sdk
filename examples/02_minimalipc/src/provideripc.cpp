@@ -55,7 +55,7 @@ private:
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL("ServiceModel")
     // Thread 1, provides a service
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceProvider" )

@@ -203,8 +203,8 @@ DispatcherThread & DispatcherThread::_getNullDispatherThread( void )
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread::DispatcherThread (const String & threadName )
-    : Thread          ( static_cast<IEThreadConsumer &>(self()), threadName )
+DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/ )
+    : Thread          ( static_cast<IEThreadConsumer &>(self()), threadName, stackSizeKb )
     , EventDispatcher ( threadName )
 
     , mEventStarted     ( true, false )

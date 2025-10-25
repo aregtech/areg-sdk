@@ -28,12 +28,12 @@
  * \brief   Predefined MACRO to model threads, components and services.
  ************************************************************************/
 
-#define FUNC_CREATE_COMP(CompType)                                                                  \
-                    ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component * {   \
+#define FUNC_CREATE_COMP(CompType)                                                                          \
+                    ([](const NERegistry::ComponentEntry& e, ComponentThread& t) -> Component * {           \
                         return new CompType(e, t);})
 
-#define FUNC_DELETE_COMP                                                                            \
-                    ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {            \
+#define FUNC_DELETE_COMP                                                                                    \
+                    ([](Component& c, const NERegistry::ComponentEntry& /*e*/) -> void {                    \
                                         delete static_cast<Component *>(&c);})
 
 /**
@@ -43,52 +43,71 @@
  *          END_MODEL
  * \param   modelName   The name of model.
  **/
-#define BEGIN_MODEL(model_name)                                                                     \
-    /*  Declare Load model method and give name of model                            */              \
-    static NERegistry::Model _createdModelData( const char * _model_name_ )                         \
-    {                                                                                               \
+#define BEGIN_MODEL(model_name)                                                                             \
+    /*  Declare Load model method and give name of model                            */                      \
+    static NERegistry::Model _createdModelData( const char * _model_name_ )                                 \
+    {                                                                                                       \
         NERegistry::Model __model(_model_name_);
 
-#define END_MODEL(model_name)                                                                       \
-        return __model;                                                                             \
-    }                                                                                               \
-    /*  End of Model, call component loader to pass application model object        */              \
+#define END_MODEL(model_name)                                                                               \
+        return __model;                                                                                     \
+    }                                                                                                       \
+    /*  End of Model, call component loader to pass application model object        */                      \
     static ModelDataCreator _modelData(&_createdModelData, model_name);
 
 //////////////////////////////////////////////////////////////////////////
 // declaration of local model, should be manually handled
 
-#define BEGIN_MODEL_LOCAL(model_name)                                                               \
-    /*  Declare local Model object and give name of model. The name should be unique */             \
+#define BEGIN_MODEL_LOCAL(model_name)                                                                       \
+    /*  Declare local Model object and give name of model. The name should be unique */                     \
         NERegistry::Model __model((model_name));
 
-#define END_MODEL_LOCAL(model_name)                                                                 \
-    /*  End of local Model. This will add model to model list of Loader             */              \
+#define END_MODEL_LOCAL(model_name)                                                                         \
+    /*  End of local Model. This will add model to model list of Loader             */                      \
     ModelDataCreator _modelData( __model );
 
 /**
  * \brief   Register thread to start component thread.
  *          This should be called between scopes BEGIN_MODEL and END_MODEL
  *          Every Component Thread registration starts by calling
- *          BEGIN_REGISTER_THREAD and end by calling END_REGISTER_THREAD
+ *          BEGIN_REGISTER_THREAD_EX and end by calling END_REGISTER_THREAD
  *          Every thread should have unique name within application.
  *          Declare as many component thread, as needed for application.
  *
- * \param   thread_name The name of component thread, which should be unique.
- * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
+ * \param   thread_name     The name of component thread, which should be unique.
+ * \param   timeout         The watchdog timeout in milliseconds of the worker thread.
+ *                          The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ * \param   stackSizeKb     The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
+ *                          The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                          and uses system default stack size.
  **/
-#define BEGIN_REGISTER_THREAD(thread_name, timeout)                                                 \
-        {                                                                                           \
-            /*  Begin registering component thread                                  */              \
-            NERegistry::ComponentThreadEntry  thrEntry((thread_name), (timeout));
-
-#define END_REGISTER_THREAD(thread_name)                                                            \
-            /*  End registering component thread, add to model                      */              \
-            __model.addThread(thrEntry);                                                            \
-        }
+#define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb)                                        \
+        {                                                                                                   \
+            /*  Begin registering component thread                                  */                      \
+            NERegistry::ComponentThreadEntry  thrEntry((thread_name), (timeout), (stackSizeKb));
 
 /**
+ * \brief   Register component thread with the watchdog timeout and system default thread stack size.
+ *          The watchdog timeout is set if `timeout` is not 0.
+ **/
+#define BEGIN_REGISTER_THREAD_EX(thread_name, timeout)                                                      \
+            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), NECommon::STACK_SIZE_DEFAULT);
+
+/**
+ * \brief   Register component thread with no watchdog and system default stack size.
+ **/
+#define BEGIN_REGISTER_THREAD(thread_name)                                                                  \
+            BEGIN_REGISTER_THREAD_EX((thread_name), NECommon::WATCHDOG_IGNORE)
+
+/**
+ * \brief   Closes component thread registration.
+ **/
+#define END_REGISTER_THREAD(thread_name)                                                                    \
+            /*  End registering component thread, add to model                      */                      \
+            __model.addThread(thrEntry);                                                                    \
+        }
+
+ /**
  * \brief   Register Component within every Component Thread scope. Extended version
  *          This should be called between BEGIN_REGISTER_THREAD
  *          and END_REGISTER_THREAD scope.
@@ -107,13 +126,13 @@
  *                          NERegistry::FuncDeleteComponent
  *                          to destroy component object. Called by component thread.
  **/
-#define BEGIN_REGISTER_COMPONENT_EX(component_name, data, funcCreate, funcDelete)                   \
-            {                                                                                       \
-                /*  Register component entry                                        */              \
-                NERegistry::ComponentEntry comEntry(   thrEntry.mThreadName                         \
-                                                        , (component_name)                          \
-                                                        , funcCreate                                \
-                                                        , funcDelete );                             \
+#define BEGIN_REGISTER_COMPONENT_EX(component_name, data, funcCreate, funcDelete)                           \
+            {                                                                                               \
+                /*  Register component entry                                        */                      \
+                NERegistry::ComponentEntry comEntry(   thrEntry.mThreadName                                 \
+                                                        , (component_name)                                  \
+                                                        , funcCreate                                        \
+                                                        , funcDelete );                                     \
                 comEntry.setComponentData( data );
 
 /**
@@ -129,15 +148,15 @@
  * \param   component_name  The name of component. Should be unique in application
  *                          This is same as Role Name of component.
  **/
-#define BEGIN_REGISTER_COMPONENT(component_name, component_class)                                   \
-            BEGIN_REGISTER_COMPONENT_EX(  component_name                                            \
-                                        , NEMemory::InvalidElement                                  \
-                                        , FUNC_CREATE_COMP(component_class)                         \
+#define BEGIN_REGISTER_COMPONENT(component_name, component_class)                                           \
+            BEGIN_REGISTER_COMPONENT_EX(  component_name                                                    \
+                                        , NEMemory::InvalidElement                                          \
+                                        , FUNC_CREATE_COMP(component_class)                                 \
                                         , FUNC_DELETE_COMP);
 
-#define END_REGISTER_COMPONENT(comp_name)                                                           \
-                /*  Add and register component entry in component thread            */              \
-                thrEntry.addComponent(comEntry);                                                    \
+#define END_REGISTER_COMPONENT(comp_name)                                                                   \
+                /*  Add and register component entry in component thread            */                      \
+                thrEntry.addComponent(comEntry);                                                            \
             }
 
 /**
@@ -155,17 +174,15 @@
  *                          component scope
  * \param   svc_version     The version number of service in format (major.minor.patch)
  **/
-#define REGISTER_IMPLEMENT_SERVICE(svc_name, svc_version)                                           \
-                /*  Register implemented service in component                       */              \
+#define REGISTER_IMPLEMENT_SERVICE(svc_name, svc_version)                                                   \
+                /*  Register implemented service in component                       */                      \
                 comEntry.addSupportedService( NERegistry::ServiceEntry((svc_name), (svc_version)) );
 
 /**
- * \brief   Register worker thread if needed by component. Optional.
- *          If component requires Worker thread, declare it within
- *          component registration scope.
+ * \brief   Registers optional worker thread for the component.
+ *          If component requires Worker thread, declare it within component registration scope.
  *          The worker thread name should be unique within application.
- *          This should be called between BEGIN_REGISTER_COMPONENT and
- *          END_REGISTER_COMPONENT scope.
+ *          This should be called between BEGIN_REGISTER_COMPONENT and END_REGISTER_COMPONENT scope.
  *          Every worker thread registration is done by calling REGISTER_WORKER_THREAD.
  *          Declare all worker threads required by component.
  *
@@ -173,15 +190,34 @@
  * \param   consumer_name       The consumer name of worker thread. Differentiate consumer
  *                              names if one component has more than one worker thread.
  * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
+ *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ * \param   stackSizeKb         The stack size of the worker thread in kilobytes. 1 KB = 1024 Bytes.
+ *                              The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                              and uses system default stack size.
  **/
-#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name, timeout)                          \
-                /*  Register component worker thread                                */              \
-                comEntry.addWorkerThread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName    \
-                                            , (worker_thread_name)                                  \
-                                            , comEntry.mRoleName                                    \
-                                            , (consumer_name)                                       \
-                                            , (timeout))  );
+#define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb)                 \
+                /*  Register component worker thread                                */                      \
+                comEntry.addWorkerThread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName            \
+                                            , (worker_thread_name)                                          \
+                                            , comEntry.mRoleName                                            \
+                                            , (consumer_name)                                               \
+                                            , (timeout)                                                     \
+                                            , (stackSizeKb)) );
+
+/**
+ * \brief   Register worker thread with watchdog timeout and system default stack size.
+ **/
+#define REGISTER_WORKER_THREAD_EX(worker_thread_name, consumer_name, timeout)                               \
+            REGISTER_WORKER_THREAD_EX2(   (worker_thread_name)                                              \
+                                        , (consumer_name)                                                   \
+                                        , (timeout)                                                         \
+                                        , NECommon::STACK_SIZE_DEFAULT)
+
+/**
+ * \brief   Register worker thread with no watchdog and system default stack size.
+ **/
+#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name)                                           \
+            REGISTER_WORKER_THREAD_EX((worker_thread_name), (consumer_name), NECommon::WATCHDOG_IGNORE)
 
 /**
  * \brief   Declare and register component dependency. Optional.
@@ -196,8 +232,8 @@
  *
  * \param   depend_role_name    The role name of server component
  **/
-#define REGISTER_DEPENDENCY(depend_role_name)                                                       \
-                /*  Register dependency. Server component                           */              \
+#define REGISTER_DEPENDENCY(depend_role_name)                                                               \
+                /*  Register dependency. Server component                           */                      \
                 comEntry.addDependencyService(NERegistry::DependencyEntry(depend_role_name));
 
 
@@ -209,7 +245,7 @@
  *
  *  BEGIN_MODEL("test_model")
  *  
- *      BEGIN_REGISTER_THREAD("test_thread", 0)
+ *      BEGIN_REGISTER_THREAD("test_thread")
  *
  *          BEGIN_REGISTER_COMPONENT_EX("test_component", TestComponent)
  *              REGISTER_IMPLEMENT_SERVICE("test_service_1", Version(1, 0, 0))
@@ -219,13 +255,13 @@
  *          BEGIN_REGISTER_COMPONENT_EX("another_component", AnotherComponent)
  *              REGISTER_IMPLEMENT_SERVICE("another_service_1", Version(1, 0, 0))
  *              REGISTER_IMPLEMENT_SERVICE("another_service_2", Version(1, 0, 0))
- *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name", , NECommon::WATCHDOG_IGNORE)
+ *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name")
  *              REGISTER_DEPENDENCY("secondary_component")
  *          END_REGISTER_COMPONENT("another_component")
  *
  *      END_REGISTER_THREAD("text_thread")
  *
- *      BEGIN_REGISTER_THREAD("secondary_thread", NECommon::WATCHDOG_IGNORE)
+ *      BEGIN_REGISTER_THREAD("secondary_thread")
  *
  *          BEGIN_REGISTER_COMPONENT_EX("secondary_component", SecondaryCompponent)
  *              REGISTER_IMPLEMENT_SERVICE("secondary_service_1", Version(1, 0, 0))

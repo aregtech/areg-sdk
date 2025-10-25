@@ -382,12 +382,15 @@ namespace NERegistry
          * \param   compRoleName        The name of Component (Role Name) where consumer is registered.
          * \param   compConsumerName    The name of Consumer object to configure, it should not be same as Component name.
          * \param   watchdogTimeout     The timeout in milliseconds to set for watchdog. The value 0 ignores watchdog.
+         * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
+         *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          **/
         WorkerThreadEntry( const String & masterThreadName
                          , const String & workerThreadName
                          , const String & compRoleName
                          , const String & compConsumerName
-                         , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
+                         , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
+                         , const uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT);
 
         /**
          * \brief   Copies /move entries from source.
@@ -444,6 +447,10 @@ namespace NERegistry
          * \brief   The watchdog timeout in milliseconds.
          **/
         uint32_t    mWatchdogTimeout;
+        /**
+         * \brief   The stack size of the worker thread in kilobytes.
+         **/
+        uint32_t    mStackSizeKb;
    };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1330,8 +1337,10 @@ namespace NERegistry
          * \param   threadName  The Thread Name to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
          *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
+         * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
+         *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          **/
-        explicit ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
+        explicit ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE, const uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name and given Component List.
@@ -1339,8 +1348,10 @@ namespace NERegistry
          * \param   componentList   The List of Component Entries to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
          *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
+         * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
+         *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          **/
-        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
+        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE, const uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
 
         /**
          * \brief   Copies data from given source.
@@ -1498,6 +1509,11 @@ namespace NERegistry
          * \brief   The watchdog timeout in milliseconds.
          **/
         uint32_t        mWatchdogTimeout;
+
+        /**
+         * \brief   The size of the thread stack in kilobytes.
+         **/
+        uint32_t        mStackSizeKB;
     };
 
     //////////////////////////////////////////////////////////////////////////

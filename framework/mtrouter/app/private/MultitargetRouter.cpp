@@ -40,7 +40,7 @@ static String _modelName("mtrouterModel");
 BEGIN_MODEL(_modelName)
 
     // define console service thread.
-    BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread" )
         // Define the console service
         BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
             // register dummy 'empty service'.

@@ -230,15 +230,19 @@ public:
 
     /**
      * \brief	Creates and run Worker thread by given name
-     * \param	threadName	    Worker thread name to created. 
-     *                          Should be unique within system.
-     * \param   consumer        Worker Thread consumer object, which
-     *                          start and stop functions will be triggered.
+     * \param	threadName	    Worker thread name to created. Should be unique within system.
+     * \param   consumer        Worker Thread consumer object, which start and stop functions will be triggered.
      * \param   ownerThread     The component thread, which owns worker thread,
-     * \param   watchdogTimeout The watchdog timeout in milliseconds.
+     * \param   watchdogTimeout The watchdog timeout in milliseconds. Pass `NECommon::WATCHDOG_IGNORE` (0) to ignore the watchdog timeout.
+     * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
+     *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      * \return	Pointer to created worker thread object.
      **/
-    WorkerThread * createWorkerThread( const String & threadName, IEWorkerThreadConsumer & consumer, ComponentThread & ownerThread, uint32_t watchdogTimeout );
+    WorkerThread * createWorkerThread( const String & threadName
+                                     , IEWorkerThreadConsumer & consumer
+                                     , ComponentThread & ownerThread
+                                     , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
+                                     , uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Stops and deletes worker thread by given name

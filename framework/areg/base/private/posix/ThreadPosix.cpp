@@ -67,6 +67,7 @@ void * Thread::_posixThreadRoutine( void * data )
     ::pthread_setcancelstate(oldState, nullptr);
     ::pthread_setcanceltype(oldType, nullptr);
 
+    ::pthread_exit(nullptr);
     return nullptr;
 }
 
@@ -155,8 +156,8 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadTerminated;
         pthread_cancel(threadId);
-        this->mWaitForRun.resetEvent();
-        this->mWaitForExit.setEvent();
+        mWaitForRun.resetEvent();
+        mWaitForExit.setEvent();
     }
     else
     {
@@ -171,7 +172,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 
 bool Thread::_osCreateSystemThread( void )
 {
-    bool result = false;
+    bool result { false };
 
     if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
     {
@@ -180,20 +181,32 @@ bool Thread::_osCreateSystemThread( void )
         {
             mWaitForRun.resetEvent();
             mWaitForExit.resetEvent( );
-
-            if ((RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr)) &&
-                (RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
-                (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
+            if (RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
             {
-                result          = true;
-                mThreadHandle   = static_cast<THREADHANDLE>(handle);
-                mThreadId       = NEUtilities::convToNum<id_type, pthread_t>(handle->pthreadId);
-                mThreadPriority = Thread::eThreadPriority::PriorityNormal;
-
-                if (_registerThread() == false)
+                if (mStackSizeKB != NECommon::STACK_SIZE_DEFAULT)
                 {
-                    result = false;
-                    _cleanResources(true);
+                    size_t stackSizeBytes = static_cast<size_t>(mStackSizeKB) * 1024u;
+                    ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSizeBytes);
+                }
+                
+                if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
+                    (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
+                {
+                    result          = true;
+                    mThreadHandle   = static_cast<THREADHANDLE>(handle);
+                    mThreadId       = NEUtilities::convToNum<id_type, pthread_t>(handle->pthreadId);
+                    mThreadPriority = Thread::eThreadPriority::PriorityNormal;
+
+                    if (_registerThread() == false)
+                    {
+                        result = false;
+                        _cleanResources(true);
+                    }
+                }
+
+                if (result == false)
+                {
+                    _osCloseHandle(handle);
                 }
             }
             else
@@ -269,6 +282,13 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     }
 
     return oldPrio;
+}
+
+size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
+{
+    size_t size{ 0u };
+    sPosixThread* thread = reinterpret_cast<sPosixThread*>(handle);
+    return ((thread != nullptr) && (RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

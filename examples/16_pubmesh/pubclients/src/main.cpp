@@ -88,7 +88,7 @@ constexpr char const _modelName[]{ "ClientsModel" };
 BEGIN_MODEL( _modelName )
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestClientProcessThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "TestClientProcessThread" )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component

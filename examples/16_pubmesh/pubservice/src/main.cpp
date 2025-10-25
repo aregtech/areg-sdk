@@ -65,7 +65,7 @@ constexpr char  _modelName[]{ "TestModel" };
 BEGIN_MODEL( _modelName )
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "ControllerServiceThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "ControllerServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::PublicControllerService, PublicServiceComponent )
             // register RemoteRegistry, SystemShutdown service implementation and the dependency.

@@ -139,7 +139,7 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
+Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
@@ -148,6 +148,7 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
     , mThreadAddress    (threadName.isEmpty() == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::eThreadPriority::PriorityUndefined)
     , mIsRunning        ( false )
+    , mStackSizeKB      ( stackSizeKb )
 
     , mSynchObject      ( )
     , mWaitForRun       (false, false)
@@ -256,6 +257,12 @@ const ThreadAddress & Thread::getThreadAddress( id_type threadId )
 {
     Thread* threadObj = Thread::findThreadById( threadId);
     return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
+}
+
+const size_t Thread::getCurrentStackSize(void)
+{
+    Thread* threadObj = Thread::getCurrentThread();
+    return (threadObj != nullptr ? _osGetCurrentStackSize(threadObj->mThreadHandle) : 0);
 }
 
 int Thread::_threadEntry( void )

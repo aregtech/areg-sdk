@@ -22,14 +22,14 @@ constexpr char const _modelName[]{ "ServiceModel" };
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL(_modelName)
     // Thread 1, provides a service
-    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceComponent" )
     END_REGISTER_THREAD( "Thread1" )
 
     // Thread 2, is a service client.
-    BEGIN_REGISTER_THREAD( "Thread2", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "Thread2" )
         BEGIN_REGISTER_COMPONENT( "ServiceClient", ClientComponent )
             REGISTER_DEPENDENCY( "ServiceComponent" ) /* reference to the service*/
         END_REGISTER_COMPONENT( "ServiceClient" )

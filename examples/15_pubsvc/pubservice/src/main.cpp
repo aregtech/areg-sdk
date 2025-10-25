@@ -34,7 +34,7 @@ constexpr char const _serviceName[]{ "HelloService" };  //!< The name of provide
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "TestServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(_serviceName, ServicingComponent )
             // register HelloWorld service implementation.

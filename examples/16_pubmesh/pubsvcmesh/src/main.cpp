@@ -109,7 +109,7 @@ constexpr char const _localService[]    { "AnotherLocalService" };
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "MeshFirstThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "MeshFirstThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::PublicSecondService, PublicServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
@@ -132,7 +132,7 @@ BEGIN_MODEL(_modelName)
     // end of thread description
     END_REGISTER_THREAD( "MeshFirstThread" )
 
-    BEGIN_REGISTER_THREAD( "MeshSecondThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "MeshSecondThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::PublicThirdService, PublicServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
