@@ -93,8 +93,8 @@ public:
      *                              an event, it terminates and restarts the thread again.
      *                              There is no guarantee that terminated thread will make all cleanups properly.
      *                              Watchdog timeout is ignored if it is equal to NECommon::WATCHDOG_IGNORE.
-     * \param   stackSizeKb         The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
-     *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to use system default stack size.
+     * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
+     *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
     WorkerThread( const String & threadName
                 , Component & bindingComponent

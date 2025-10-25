@@ -271,6 +271,10 @@ namespace NECommon
      **/
     constexpr unsigned int   WATCHDOG_IGNORE        { DO_NOT_WAIT };
 
+    /**
+     * \brief   NECommon::STACK_SIZE_DEFAULT
+     *          A value used when set the stack size of the thread. It indicates that setting the stack size should be ignored.
+     **/
     constexpr unsigned int   STACK_SIZE_DEFAULT     { 0u };
 
     /**

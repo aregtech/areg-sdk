@@ -144,7 +144,8 @@ public:
      *                          It should be unique name to be able to track.
      *                          If nullptr or the name is duplicated, the system will not
      *                          be able to track the thread by name.
-     * \param   stackSizeKb     The thread stack size in kilobytes.
+     * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
+     *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
     Thread( IEThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
 

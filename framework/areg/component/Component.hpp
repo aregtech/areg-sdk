@@ -234,8 +234,8 @@ public:
      * \param   consumer        Worker Thread consumer object, which start and stop functions will be triggered.
      * \param   ownerThread     The component thread, which owns worker thread,
      * \param   watchdogTimeout The watchdog timeout in milliseconds. Pass `NECommon::WATCHDOG_IGNORE` (0) to ignore the watchdog timeout.
-     * \param   stackSizeKb     The stack size of thread in kilobytes (1 KB = 1024 Bytes). Pass `NECommon::STACK_SIZE_DEFAULT` (0)
-     *                          to ignore changing stack size and use system default stack size.
+     * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
+     *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      * \return	Pointer to created worker thread object.
      **/
     WorkerThread * createWorkerThread( const String & threadName
