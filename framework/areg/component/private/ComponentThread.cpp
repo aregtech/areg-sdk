@@ -60,8 +60,11 @@ inline ComponentThread* ComponentThread::_getCurrentComponentThread( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentThread::ComponentThread( const String & threadName, uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/)
-    : DispatcherThread  ( threadName, stackSizeKb )
+ComponentThread::ComponentThread( const String & threadName
+                                , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
+                                , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */
+                                , uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */ )
+    : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 
     , mCurrentComponent ( nullptr )
     , mWatchdog         ( self(), watchdogTimeout )

@@ -242,7 +242,8 @@ public:
                                      , IEWorkerThreadConsumer & consumer
                                      , ComponentThread & ownerThread
                                      , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
-                                     , uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT);
+                                     , uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT
+                                     , uint32_t maxQeueue       = NECommon::IGNORE_VALUE);
 
     /**
      * \brief	Stops and deletes worker thread by given name

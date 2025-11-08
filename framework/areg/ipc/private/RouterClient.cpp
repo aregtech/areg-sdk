@@ -54,7 +54,7 @@ RouterClient::RouterClient(IEServiceConnectionConsumer& connectionConsumer, IESe
                                     , static_cast<DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
     , IEServiceRegisterProvider     ( )
-    , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD)
+    , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::IGNORE_VALUE)
     , IERemoteEventConsumer         ( )
 
     , mRegisterConsumer (registerConsumer)

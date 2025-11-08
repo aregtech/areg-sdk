@@ -234,10 +234,10 @@ unsigned int SharedBuffer::getAlignedSize(void) const
     return mBlockSize;
 }
 
-uint16_t SharedBuffer::getDefaultBlockSize(void)
+uint32_t SharedBuffer::getDefaultBlockSize(void)
 {
-    static std::atomic_uint16_t    _result{ 0 };
-    uint16_t result = _result.load();
+    static std::atomic_uint32_t    _result{ 0 };
+    uint32_t result = _result.load();
     if (result == 0)
     {
         result = Application::getConfigManager().getDefaultBufferBlockSize();

@@ -79,9 +79,10 @@ protected:
 protected:
     /**
      * \brief   Initialization constructor. Initialized Dispatcher and assigns name.
-     * \param   name            The name of Dispatcher.
+     * \param   name        The name of Dispatcher.
+     * \param   maxQeueue   The maximum number of event elements in the queue.
      **/
-    EventDispatcherBase( const String & name );
+    EventDispatcherBase( const String & name, uint32_t maxQeueue );
     /**
      * \brief   Destructor
      **/

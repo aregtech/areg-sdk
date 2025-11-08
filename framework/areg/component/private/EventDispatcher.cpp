@@ -25,8 +25,8 @@
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcher::EventDispatcher( const String & name )
-    : EventDispatcherBase   ( name )
+EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
+    : EventDispatcherBase   ( name, maxQeueue )
     , IEThreadConsumer      (  )
     , IEEventRouter         (  )
 

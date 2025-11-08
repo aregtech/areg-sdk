@@ -36,9 +36,10 @@ IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 WorkerThread::WorkerThread( const String & threadName
                           , Component & bindingComponent
                           , IEWorkerThreadConsumer & threadConsumer
-                          , uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE    */
-                          , uint32_t stackSizeKb     /* = NECommon::STACK_SIZE_DEFAULT */)
-    : DispatcherThread      ( threadName, stackSizeKb )
+                          , uint32_t watchdogTimeout/* = NECommon::WATCHDOG_IGNORE    */
+                          , uint32_t stackSizeKb    /* = NECommon::STACK_SIZE_DEFAULT */
+                          , uint32_t maxQueue       /* = NECommon::IGNORE_VALUE */ )
+    : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
 
     , mBindingComponent     ( bindingComponent )
     , mWorkerThreadConsumer ( threadConsumer )

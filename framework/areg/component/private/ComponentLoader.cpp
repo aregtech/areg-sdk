@@ -386,7 +386,7 @@ bool ComponentLoader::loadModel( NERegistry::Model & whichModel ) const
             const NERegistry::ComponentThreadEntry& entry = thrList.mListThreads[i];
             if ( entry.isValid( ) && Thread::findThreadByName( entry.mThreadName ) == nullptr )
             {
-                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB );
+                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
                 if ( thrObject != nullptr )
                 {
                     if ( thrObject->createThread( NECommon::WAIT_INFINITE ) == false )

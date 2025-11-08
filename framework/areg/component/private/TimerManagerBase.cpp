@@ -22,7 +22,7 @@
 IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
 
 TimerManagerBase::TimerManagerBase(const String& threadName)
-    : DispatcherThread              (threadName)
+    : DispatcherThread              (threadName, NECommon::STACK_SIZE_DEFAULT, NECommon::IGNORE_VALUE)
     , IETimerManagerEventConsumer   ( )
 {
 }
