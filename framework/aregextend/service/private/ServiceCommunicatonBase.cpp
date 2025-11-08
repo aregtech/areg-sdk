@@ -52,7 +52,7 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( const ITEM_ID & serviceId
     : IERemoteMessageHandler        ( )
     , IEServiceConnectionConsumer   ( )
     , IEServiceConnectionProvider   ( )
-    , DispatcherThread              ( dispatcher )
+    , DispatcherThread              ( dispatcher, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
     , IEServiceEventConsumerBase    ( )
     , IEServiceConnectionHandler    ( )
 

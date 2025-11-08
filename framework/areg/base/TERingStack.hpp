@@ -1168,7 +1168,6 @@ void TERingStack<VALUE>::_copyStack(const TERingStack<VALUE>& source)
 {
     _emptyStack();
     uint32_t srcCapacity{ source.mCapacity };
-    uint32_t srcCount   { source.mElemCount };
     VALUE*   newList    { mStackList };
 
     if (mCapacity < srcCapacity)

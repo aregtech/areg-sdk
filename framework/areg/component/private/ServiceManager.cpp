@@ -221,7 +221,7 @@ void ServiceManager::_requestCreateThread(const String& componentThread)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager( void )
-    : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME, NECommon::STACK_SIZE_DEFAULT, NECommon::IGNORE_VALUE )
+    : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
     , IEServiceManagerEventConsumer ( )
     , IEServiceConnectionConsumer   ( )
     , IEServiceRegisterConsumer     ( )

@@ -183,7 +183,7 @@ void LogManager::forceEnableLogging(void)
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager(void)
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), NECommon::STACK_SIZE_DEFAULT, NECommon::IGNORE_VALUE )
+    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
     , IELoggingEventConsumer  ( )
 
     , mScopeController  ( )
