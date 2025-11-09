@@ -480,11 +480,11 @@
     #endif   // ASSERT_MSG
 
     #ifndef  VERIFY
-        #define VERIFY(x)                       (x)
+        #define VERIFY(x)                       static_cast<void>(x)
     #endif   // VERIFY
 
     #ifndef  VERIFY_MSG
-        #define VERIFY_MSG(x, msg)              (x)
+        #define VERIFY_MSG(x, msg)              static_cast<void>(x)
     #endif   // VERIFY_MSG
 
 #endif   // _DEBUG
