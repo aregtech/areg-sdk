@@ -46,9 +46,10 @@ class AREG_API EventDispatcher  : public    EventDispatcherBase
 protected:
     /**
      * \brief   Initialization constructor.
-     * \param   name    The name of Event Dispatcher
+     * \param   name        The name of Event Dispatcher
+     * \param   maxQeueue   The maximum number of queued external events.
      **/
-    explicit EventDispatcher( const String & name );
+    explicit EventDispatcher( const String & name, uint32_t maxQeueue);
     /**
      * \brief   Destructor.
      **/

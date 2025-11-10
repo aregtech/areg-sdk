@@ -77,7 +77,7 @@ class HelloDispatcher   : public DispatcherThread
 {
 public:
     HelloDispatcher() 
-        : DispatcherThread("HelloDispatcher")
+        : DispatcherThread("HelloDispatcher", NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
         , IETimerConsumer()
         , mTimer(*this, "aTimer")
     {

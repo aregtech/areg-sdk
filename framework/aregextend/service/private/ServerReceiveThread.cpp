@@ -27,7 +27,7 @@
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD )
+    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )

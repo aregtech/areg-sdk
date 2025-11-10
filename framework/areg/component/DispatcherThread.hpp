@@ -140,8 +140,11 @@ public:
      * \param	threadName	    The unique name of dispatcher. If this parameter is nullptr or empty, system will unique thread name.
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
      *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+     * \param   maxQeueue       The maximum number of queued external events.
+     *                          Pass `NECommon::IGNORE_VALUE` to use default value set in configuration or ignore the parameter if not configured.
+     *                          The configuration is set in `areg.init` file under key "config::*::default::messagequeue".
      **/
-    explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+    explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
     /**
      * \brief   Destructor.
      **/

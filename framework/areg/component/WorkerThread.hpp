@@ -100,7 +100,8 @@ public:
                 , Component & bindingComponent
                 , IEWorkerThreadConsumer & threadConsumer
                 , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
-                , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT);
+                , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
+                , uint32_t maxQueue         = NECommon::IGNORE_VALUE);
 
     /**
      * \brief   Destructor

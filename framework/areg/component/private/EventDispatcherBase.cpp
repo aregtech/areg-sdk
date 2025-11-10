@@ -26,13 +26,13 @@
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcherBase::EventDispatcherBase(const String & name )
+EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue)
     : IEEventDispatcher( )
     , IEQueueListener  ( )
 
     , mDispatcherName   ( name )
-    , mExternaEvents    ( static_cast<IEQueueListener &>(self()) )
-    , mInternalEvents   ( )
+    , mExternaEvents    ( static_cast<IEQueueListener &>(self()), maxQeueue)
+    , mInternalEvents   ( maxQeueue )
     , mConsumerMap      ( )
     , mEventExit        ( false, false )
     , mEventQueue       ( true, false )
@@ -71,7 +71,7 @@ void EventDispatcherBase::stopDispatcher( void )
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ) );
+        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
     }
 
     mEventExit.setEvent( );
@@ -92,7 +92,7 @@ void EventDispatcherBase::shutdownDispatcher( void )
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternaEvents.pushEvent(ExitEvent::getExitEvent());
+        mExternaEvents.pushEvent(ExitEvent::getExitEvent(), nullptr);
     }
 
     mEventExit.setEvent( );
@@ -107,12 +107,12 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
         Event::eEventType eventType = eventElem.getEventType();
         if (Event::isInternal(eventType))
         {
-            mInternalEvents.pushEvent(eventElem);
+            mInternalEvents.pushEvent(eventElem, nullptr);
             result = true;
         }
         else if (Event::isExternal(eventType))
         {
-            mExternaEvents.pushEvent(eventElem);
+            mExternaEvents.pushEvent(eventElem, nullptr);
             result = true;
         }
     }

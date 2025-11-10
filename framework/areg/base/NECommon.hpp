@@ -278,6 +278,18 @@ namespace NECommon
     constexpr unsigned int   STACK_SIZE_DEFAULT     { 0u };
 
     /**
+     * \brief   NECommon::QUEUE_SIZE_MAXIMUM
+     *          A value used when declare component thread. It indicates that maximum queue size should be used.
+     **/
+    constexpr unsigned int  QUEUE_SIZE_MAXIMUM      { MAX_UINT_32 };
+
+    /**
+     * \brief   NECommon::IGNORE_VALUE
+     *          A value used to indicate that it should be ignored.
+     **/
+    constexpr unsigned int  IGNORE_VALUE            { 0u };
+
+    /**
      * \brief   NECommon::TIMEOUT_1_MS
      *          Timeout 1 millisecond
      **/

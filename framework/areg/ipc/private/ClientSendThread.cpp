@@ -24,7 +24,7 @@
 DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
 ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
-    : DispatcherThread  ( namePrefix + NEConnection::CLIENT_SEND_MESSAGE_THREAD )
+    : DispatcherThread  ( namePrefix + NEConnection::CLIENT_SEND_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
     , IESendMessageEventConsumer( )
 
     , mRemoteService    ( remoteService )

@@ -203,9 +203,9 @@ DispatcherThread & DispatcherThread::_getNullDispatherThread( void )
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/ )
+DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
     : Thread          ( static_cast<IEThreadConsumer &>(self()), threadName, stackSizeKb )
-    , EventDispatcher ( threadName )
+    , EventDispatcher ( threadName, maxQeueue )
 
     , mEventStarted     ( true, false )
 {
@@ -235,7 +235,7 @@ void DispatcherThread::triggerExit( void )
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ) );
+        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
     }
 
     mEventExit.setEvent( );

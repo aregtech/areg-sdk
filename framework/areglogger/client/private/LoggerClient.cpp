@@ -41,7 +41,7 @@ LoggerClient::LoggerClient(void)
                                  , static_cast<DispatcherThread &>(self())
                                  , LoggerClient::ThreadPrefix)
     , IEConfigurationListener    ( )
-    , DispatcherThread           ( LoggerClient::ThreadName )
+    , DispatcherThread           ( LoggerClient::ThreadName, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
     , IEServiceConnectionConsumer( )
     , IERemoteMessageHandler     ( )
 

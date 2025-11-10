@@ -38,9 +38,9 @@ EventQueue::EventQueue( IEQueueListener & eventListener, SortedEventStack & even
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, methods
 //////////////////////////////////////////////////////////////////////////
-void EventQueue::pushEvent( Event& evendElem )
+void EventQueue::pushEvent( Event& evendElem, Event** OUT removedEvent )
 {
-    mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem) );
+    mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
 }
 
 Event* EventQueue::popEvent( void )
@@ -77,9 +77,9 @@ void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
 // ExternalEventQueue class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener )
+ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener, uint32_t maxQueue)
     : EventQueue( eventListener, mStack )
-    , mStack    ( )
+    , mStack    ( maxQueue)
 {
 }
 
@@ -92,9 +92,9 @@ ExternalEventQueue::~ExternalEventQueue(void)
 // InternalEventQueue class implementation
 //////////////////////////////////////////////////////////////////////////
 
-InternalEventQueue::InternalEventQueue(void)
+InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
     : EventQueue( static_cast<IEQueueListener &>(self()), mStack )
-    , mStack    ( )
+    , mStack    ( maxQueue )
 {
 }
 

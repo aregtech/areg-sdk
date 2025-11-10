@@ -302,7 +302,7 @@ protected:
     /**
      * \brief   Returns the default block size used by Shared Buffer.
      **/
-    static uint16_t getDefaultBlockSize(void);
+    static uint32_t getDefaultBlockSize(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

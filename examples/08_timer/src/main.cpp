@@ -48,7 +48,7 @@ class TimerDispatcher   : public DispatcherThread
 
 public:
     explicit TimerDispatcher(const String & name)
-        : DispatcherThread(name)
+        : DispatcherThread( name, NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
         , IETimerConsumer()
         , mOneTime(*this, name + "_one_time")
         , mPeriodic(*this, name + "_periodic")
