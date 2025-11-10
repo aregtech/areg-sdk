@@ -1,0 +1,17 @@
+name: CLA Check
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+jobs:
+  cla-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check CLA acknowledgement
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            if (!body.includes('I agree to the CLA')) {
+              core.setFailed('CLA not acknowledged. Please check the PR template box.');
+            }
