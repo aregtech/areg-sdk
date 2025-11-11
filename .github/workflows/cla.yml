@@ -14,7 +14,7 @@ jobs:
             const prBody = context.payload.pull_request.body || '';
             // List of required checklist items (must be checked)
             const requiredChecks = [
-              '- [x] I have read and understood the **[AREG-SDK Contributor License Agreement (CLA) v2.0](../CONTRIBUTOR_LICENSE_AGREEMENT.md)**.',
+              '- [x] I have read and understood the **[AREG-SDK Contributor License Agreement (CLA) v1.0](../CONTRIBUTOR_LICENSE_AGREEMENT.md)**.',
               '- [x] By submitting this pull request, I **agree to the CLA**, granting the Project an irrevocable license to use my contribution under Apache 2.0 and/or a commercial license.',
               '- [x] I confirm that the contribution is my original work or I have the right to submit it.',
               '- [x] I have included a copyright notice in my files if I want to retain copyright.'
