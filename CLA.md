@@ -1,10 +1,10 @@
-# AREG-SDK Contributor License Agreement (CLA) v1.0
+# Areg SDK Contributor License Agreement (CLA) v1.0
 
 **Effective upon contribution**
 
 ## 1. Purpose
 
-This CLA clarifies the terms under which contributors provide code, documentation, or other materials (“Contributions”) to the **AREG-SDK** project (“Project”), ensuring freedom for all users while respecting contributors’ rights.
+This CLA clarifies the terms under which contributors provide code, documentation, or other materials (“Contributions”) to the **Areg SDK** project (“Project”), ensuring freedom for all users while respecting contributors’ rights.
 
 ---
 
