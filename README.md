@@ -1,5 +1,5 @@
 <h1 align="center" style="font-size:2.5em; font-weight:bold; margin:1em 0;">
-  <a href="https://www.aregtech.com">
+  <a href="https://www.areg.tech">
     <img 
       src="./docs/img/areg-sdk-1280x360px-logo.png" 
       alt="Areg SDK – C++ Middleware and Framework for RPC and IPC"
@@ -302,9 +302,9 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ## License[![](./docs/img/pin.svg)](#license)
 
-Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permissive and suitable for open-source and commercial use.
+Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)** — permissive and suitable for open-source and commercial use.
 
-**Commercial licensing & services:** Dedicated support, training, and tailored licensing options are available for enterprise customers. Visit **[Aregtech](https://www.aregtech.com/)** or email **info\[at]aregtech\[dot]com** for details.
+**Commercial licensing & services:** Dedicated support, training, and tailored licensing options are available for enterprise customers. Visit **[Aregtech](https://www.areg.tech/)** or email **info\[at]areg\[dot]tech** for details.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -314,12 +314,16 @@ Areg SDK is released under the **[Apache License 2.0](./LICENSE.txt)** — permi
 
 🚀 Join the **Areg SDK community** and help shape the future of distributed C++ apps:
 
-* 🛠️ [Contribute to open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+* 🛠️ [Contribute to open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)  
+  Before contributing, please review the **[Contributor License Agreement (CLA)](CLA.md)** — it must be accepted in each pull request and ensures smooth collaboration for everyone.
 * 💡 Share ideas or request features via [issues](https://github.com/aregtech/areg-sdk/issues) or [discussions](https://github.com/aregtech/areg-sdk/discussions)
 * 🔀 Submit pull requests (see [contribution guidelines](CONTRIBUTING.md))
 * ⭐ **Liked Areg SDK? Give it a star — it helps others discover the project and supports its growth**
+* 🌍 **We’re collecting early adopters!** [Show your project](https://github.com/aregtech/areg-sdk/discussions/new?category=show-and-tell)  
+  Areg SDK gets dozens of unique daily clones — join the growing community of developers exploring it early.  
+  Your project might be featured on the official [Areg SDK website](https://areg.tech)!
 
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>  
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
