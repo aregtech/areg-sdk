@@ -310,7 +310,7 @@ Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)** — permiss
 
 ---
 
-## Call to Action [![](./docs/img/pin.svg)](#call-to-action)
+## Call to Action[![](./docs/img/pin.svg)](#call-to-action)
 
 🚀 Join the **Areg SDK community** and help shape the future of distributed C++ apps:
 
