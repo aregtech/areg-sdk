@@ -2,8 +2,8 @@
 ```
 This file is part of AREG SDK
 Copyright (c) 2021-2023, Aregtech
-Contact: info[at]aregtech.com
-Website: https://www.aregtech.com
+Contact: info[at]areg.tech
+Website: https://www.areg.tech
 ```
 
 This document is a developer guide and describes how to develop a service enabled application.
@@ -68,5 +68,5 @@ You can setup your own project and easily integrate AREG SDK builds in your proj
 
 ## Contact us!
 
-Contact us at info[at]aregtech.com if you need help, training or more information.
+Contact us at info[at]areg.tech if you need help, training or more information.
 If you linked the project and the idea behind, please ![star the AREG SDK project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20the%20AREG%20SDK%20project) at GitHub to thank the contributors and help us to enlarge the community.

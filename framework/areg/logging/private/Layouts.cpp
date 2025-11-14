@@ -4,7 +4,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \file        areg/logging/private/Layouts.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit

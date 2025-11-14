@@ -4,8 +4,8 @@
 
 This file is part of the AREG SDK
 Copyright (c) 2021–2025, Aregtech
-Contact: info\[at]aregtech.com
-Website: [https://www.aregtech.com](https://www.aregtech.com)
+Contact: info\[at]areg.tech
+Website: [https://www.areg.tech](https://www.areg.tech)
 
 ````
 

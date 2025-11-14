@@ -3,7 +3,7 @@
 ```
 This document contains the release notes of AREG SDK project.
 Copyright © Aregtech UG, 2021 - 2023
-Contact: info[at]aregtech.com
+Contact: info[at]areg.tech
 ```
 
 ## Version 1.5.0

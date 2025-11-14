@@ -3,8 +3,8 @@
 ```
 This file is part of AREG SDK
 Copyright (c) 2021-2023, Aregtech
-Contact: info[at]aregtech.com
-Website: https://www.aregtech.com
+Contact: info[at]areg.tech
+Website: https://www.areg.tech
 ```
 
 ## Table of Contents
