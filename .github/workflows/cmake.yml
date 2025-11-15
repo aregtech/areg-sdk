@@ -338,10 +338,10 @@ jobs:
     steps:
 
       - name: Checkout AREG engine (AREG SDK) source codes
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v4.7.1
+        uses: actions/setup-java@v5.0.0
         with: 
           java-version: 17
           java-package: jre
@@ -367,7 +367,7 @@ jobs:
 
       - name: Install cygwin on Windows
         if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        uses: cygwin/cygwin-install-action@v5
+        uses: cygwin/cygwin-install-action@v6
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make
 
@@ -409,7 +409,7 @@ jobs:
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
