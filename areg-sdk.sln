@@ -659,6 +659,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-workflows", "{85EF9AE6-92A6-4DD9-833C-455EEAEA186D}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\accessibility-bot.yml = .github\workflows\accessibility-bot.yml
+		.github\workflows\validate-pr.yml = .github\workflows\validate-pr.yml
 		.github\workflows\cmake.yml = .github\workflows\cmake.yml
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml

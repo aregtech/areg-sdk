@@ -16,13 +16,13 @@
 [![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/watchers)
 [![Wiki Pages](https://img.shields.io/badge/Areg%20Wiki%20Pages-8-brightgreen?style=social&logo=wikipedia)](https://github.com/aregtech/areg-sdk/wiki/)
 
-⭐ If you find Areg SDK useful, please give us a star — it helps the community grow!  
+⭐ If you find Areg SDK useful, please give us a star. It helps the community grow!  
 
 ---
 
-Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, and fragile wiring**. Unlike traditional frameworks, **Areg SDK automates communication**, unifying async RPC, Pub/Sub, and service discovery. Its self-managed service mesh **enables scalable, fault-tolerant systems across threads, processes, and devices — with no boilerplate, no fragile wiring**.
+Most C++ projects don’t fail on algorithms. They fail on **threads, IPC, and fragile wiring**. Unlike traditional frameworks, **Areg SDK automates communication**, unifying async RPC, Pub/Sub, and service discovery. Its self-managed service mesh **enables scalable, fault-tolerant systems across threads, processes, and devices with no boilerplate and no fragile wiring**.
 
-*Areg SDK combines a lightweight C++17 framework, multitarget router, and developer tools for distributed apps.*
+*Areg SDK combines a lightweight C++17 framework, a multitarget router, and developer tools for distributed apps.*
 
 ---
 
@@ -67,22 +67,22 @@ Most C++ projects don’t fail on algorithms — they fail on **threads, IPC, an
 ### Top 5 Benefits
 
 1. **No manual threading**  
-   Threads, components, and watchdogs are auto-created — preventing subtle concurrency bugs and saving time.
+   Threads, components, and watchdogs are auto-created, preventing subtle concurrency bugs and saving time.
 
 2. **Unified API**  
-   Services are called the same way locally or remotely — always async, non-blocking, and consistent.
+   Services are called the same way locally or remotely. Everything is async, non-blocking, and consistent.
 
 3. **Self-managed mesh**  
-   Automatic service discovery and routing across threads, processes, and devices — no manual wiring.
+   Automatic service discovery and routing across threads, processes, and devices. No manual wiring.
 
 4. **Resilient by design**  
-   Components can join or leave dynamically; watchdogs restart failed threads for fault-tolerant systems.
+   Components can join or leave dynamically. Watchdogs restart failed threads for fault-tolerant systems.
 
 5. **Built-in observability**  
-   Integrated logging and scopes help per-method duration measurement to monitor and optimize efficiently.
+   Integrated logging and scopes enable per-method duration measurement for monitoring and optimization.
 
-💡 **When to use:** Linux & Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.  
-⚠️ **When not to use:** RTOS (at the moment), web, or non-C++ apps — use web/RTOS-specific tools instead.
+💡 **When to use:** Linux and Windows, embedded and desktop C++ apps, scaling from prototype to multi-node.  
+⚠️ **When not to use:** RTOS (at the moment), web, or non-C++ apps.
 
 ### Compared to Alternatives
 
@@ -272,12 +272,12 @@ Validating distributed systems is expensive and hardware-dependent. **Areg** all
 
 ## Roadmap[![](./docs/img/pin.svg)](#roadmap)
 
-Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automation, reliability, and performance.
+Areg SDK continues to evolve for Desktop and Embedded. The focus is on automation, reliability, and performance.
 
 **Planned work:**
 
-- Multi-channel support for multiplexed communications
-- RTOS support (**Zephyr OS**) to bring Areg into real-time environments
+- Multi-channel support for multiplexed communications  
+- RTOS support (**Zephyr OS**) to bring Areg into real-time environments  
 - Lusan app improvements: performance, stability, and usability ([Areg SDK Tools](https://github.com/aregtech/areg-sdk-tools))
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -302,9 +302,9 @@ Areg SDK continues to evolve for **Desktop and Embedded**, focusing on automatio
 
 ## License[![](./docs/img/pin.svg)](#license)
 
-Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)** — permissive and suitable for open-source and commercial use.
+Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)**. This license is permissive and suitable for both open-source and commercial use.
 
-**Commercial licensing & services:** Dedicated support, training, and tailored licensing options are available for enterprise customers. Visit **[Aregtech](https://www.areg.tech/)** or email **info\[at]areg\[dot]tech** for details.
+**Commercial licensing & services:** Dedicated support, training, and tailored licensing options are available for enterprise customers. Visit **[Aregtech](https://www.areg.tech/)** or email **info\[at]areg\[dot]tech** for more details.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -314,14 +314,14 @@ Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)** — permiss
 
 🚀 Join the **Areg SDK community** and help shape the future of distributed C++ apps:
 
-* 🛠️ [Contribute to open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)  
-  Before contributing, please review the **[Contributor License Agreement (CLA)](CLA.md)** — it must be accepted in each pull request and ensures smooth collaboration for everyone.
+* 🛠️ [Contribute to open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).  
+  Please review the **[contribution guidelines](CONTRIBUTING.md)** before submitting a pull request.
 * 💡 Share ideas or request features via [issues](https://github.com/aregtech/areg-sdk/issues) or [discussions](https://github.com/aregtech/areg-sdk/discussions)
-* 🔀 Submit pull requests (see [contribution guidelines](CONTRIBUTING.md))
-* ⭐ **Liked Areg SDK? Give it a star — it helps others discover the project and supports its growth**
-* 🌍 **We’re collecting early adopters!** [Show your project](https://github.com/aregtech/areg-sdk/discussions/new?category=show-and-tell)  
-  Areg SDK gets dozens of unique daily clones — join the growing community of developers exploring it early.  
-  Your project might be featured on the official [Areg SDK website](https://areg.tech)!
+* 🔀 Submit pull requests following the [contribution guidelines](CONTRIBUTING.md)
+* ⭐ If you like Areg SDK, give it a star. It helps others discover the project and supports its growth.
+* 🌍 We are collecting early adopters. [Show your project](https://github.com/aregtech/areg-sdk/discussions/new?category=show-and-tell).  
+  Areg SDK receives dozens of unique daily clones. Join the growing community of developers exploring it early.  
+  Your project might be featured on the official [Areg SDK website](https://areg.tech).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
