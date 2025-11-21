@@ -16,16 +16,12 @@ jobs:
             const prBody = context.payload.pull_request.body || '';
             const errors = [];
 
-            if (!prBody.includes('Signed-off-by:')) {
-              errors.push('Missing "Signed-off-by:" line in PR.');
-            }
             if (!prBody.includes('[x] I have read CONTRIBUTING.md')) {
               errors.push('Please check the box confirming you have read CONTRIBUTING.md.');
             }
-            if (!prBody.includes('[x] Code follows the project\'s style and guidelines')) {
-              errors.push('Please check the box confirming code follows project style and guidelines.');
+            if (!prBody.includes('Signed-off-by:')) {
+              errors.push('Missing "Signed-off-by:" line in PR.');
             }
-
             if (errors.length > 0) {
               core.setFailed(errors.join('\n'));
             }

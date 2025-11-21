@@ -1,6 +1,3 @@
-
-Signed-off-by: Your Name or GitHub ID (optional email)
-
 ## Summary
 <!-- One or two sentences explaining the purpose of this PR. -->
 
@@ -15,9 +12,8 @@ Signed-off-by: Your Name or GitHub ID (optional email)
 
 ## Checklist
 
-Please check the boxes ( `[x]` ) that apply:
+Please check the box ( `[x]` ) and sign-off the this PR:
 
-- [ ] I have read CONTRIBUTING.md (obligatory)
-- [ ] Code follows the project's style and guidelines (obligatory)
-- [ ] Tests were added or updated (when needed)
-- [ ] Documentation was updated (when needed)
+[ ] I have read CONTRIBUTING.md
+
+Signed-off-by: Your Name or GitHub ID (optional email)
