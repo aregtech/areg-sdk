@@ -1,7 +1,19 @@
-## Pull Request Checklist
+## Summary
+<!-- One or two sentences explaining the purpose of this PR. -->
 
-Thank you for contributing to **Areg SDK**! Please check the box (`[x]`) to confirm the following before submitting:
+## Changes
+<!-- Key updates, fixes, or features. -->
 
-[ ] I have read, understood and agreed to the **[Areg SDK Contributor License Agreement (CLA) v1.0](../CLA.md)**.
+## Testing
+<!-- Optional: steps to verify the behavior. -->
 
-**Note:** By checking this box and submitting this pull request, you automatically agree to the CLA and you confirm that the contribution is your original work or you have the right to submit it.
+## Notes
+<!-- Optional: extra context for reviewers. -->
+
+## Checklist
+
+Please check the box ( `[x]` ) and sign-off the this PR:
+
+[ ] I have read CONTRIBUTING.md
+
+Signed-off-by: Your Name or GitHub ID (optional email)

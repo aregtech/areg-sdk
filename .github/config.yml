@@ -1,0 +1,6 @@
+# DCO Bot Configuration
+dco:
+  enabled: true
+  require:
+    - pull_request
+  token: ${{ secrets.GITHUB_TOKEN }}
