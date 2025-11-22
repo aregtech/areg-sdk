@@ -337,10 +337,12 @@ jobs:
 
     steps:
 
-      - name: Config Git
-        run: git config --global core.autocrlf input
-
-      - name: Checkout AREG engine (AREG SDK) source codes
+      - name: Mark repository as safe for git and remove CRLF conversion
+        run: |
+            git config --global --add safe.directory $(pwd)
+            git config --global core.autocrlf input
+    
+      - name: Checkout Areg SDK source codes
         uses: actions/checkout@v5
 
       - name: Setup Java JDK to run code generator
