@@ -108,11 +108,11 @@ Small corrections only require a Signed-off-by line.
 
 ## 6. Dual Licensing and Commercial Use
 
-Areg SDK is open source under Apache 2.0.
-It may also be distributed under a commercial license for companies that require commercial support or prefer not to use open source licensing.
+Areg SDK is licensed under the Apache License 2.0.  
+You retain ownership of your contribution, which will always remain available under Apache 2.0.
 
-Your contribution always remains under Apache 2.0.
-The dual license model does not limit your rights or your ownership.
+Project maintainers may also offer Areg SDK under separate commercial terms.  
+By contributing under the DCO and Apache 2.0, you grant the maintainers an irrevocable right to use, modify, sublicense, and distribute your contribution as part of both the open-source and any commercial editions of Areg SDK.
 
 ---
 
