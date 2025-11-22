@@ -4,7 +4,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        aregextend/db/private/LogSqliteDatabase.cpp
@@ -388,7 +388,7 @@ inline void LogSqliteDatabase::_initialize(void)
     String::formatString( sql, SQL_LEN, _fmtVersion.data()
                         , Process::getInstance().getName().getString()
                         , NELogging::LOG_VERSION.data()
-                        , "AREG SDK database logging module. Visit https://aregtech.com for more information."
+                        , "AREG SDK database logging module. Visit https://areg.tech for more information."
                         , "Created by AREG log observer API module."
                         , mDatabase.getPath().getString()
                         , static_cast<uint64_t>(now.getTime())

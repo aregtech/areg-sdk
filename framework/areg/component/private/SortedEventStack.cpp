@@ -4,7 +4,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/SortedEventStack.cpp
@@ -19,7 +19,14 @@
   ************************************************************************/
 #include "areg/component/private/SortedEventStack.hpp"
 
+#include "areg/appbase/Application.hpp"
 #include "areg/component/Event.hpp"
+
+SortedEventStack::SortedEventStack(uint32_t maxQueue)
+    : TELockStack<Event*>( )
+    , mMaxQueueSize      (SortedEventStack::_calcQueueSize(maxQueue))
+{
+}
 
 SortedEventStack::~SortedEventStack(void)
 {
@@ -142,29 +149,100 @@ uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassI
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::pushEvent(Event * newEvent)
+uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** OUT removedEvent)
 {
     ASSERT(newEvent != nullptr);
     Lock lock(mSynchObject);
     switch (newEvent->getEventPriority())
     {
     case Event::eEventPriority::EventPriorityLow:
-        _insertAtEnd(newEvent);
+        if (mValueList.size() < mMaxQueueSize)
+        {
+            _insertAtEnd(newEvent);
+        }
+        else if (removedEvent != nullptr)
+        {
+            *removedEvent = newEvent;
+        }
+        else
+        {
+            newEvent->destroy();
+        }
         break;
 
     case Event::eEventPriority::EventPriorityNormal:
+        if (mValueList.size() >= mMaxQueueSize)
+        {
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
+        }
+
         _insertAfterPrio(newEvent, Event::eEventPriority::EventPriorityNormal);
         break;
 
     case Event::eEventPriority::EventPriorityHigh:
+        if (mValueList.size() >= mMaxQueueSize)
+        {
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
+        }
+
         _insertBeforePrio(newEvent, Event::eEventPriority::EventPriorityNormal);
         break;
 
     case Event::eEventPriority::EventPriorityCritical:
+        if (mValueList.size() >= mMaxQueueSize)
+        {
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
+        }
+
         _insertBeforePrio(newEvent, Event::eEventPriority::EventPriorityHigh);
         break;
 
     case Event::eEventPriority::EventPriorityExit:
+        if (mValueList.size() >= mMaxQueueSize)
+        {
+            ASSERT(mValueList.empty() == false);
+            Event* removed = mValueList.back();
+            mValueList.pop_back();
+            if (removedEvent != nullptr)
+            {
+                *removedEvent = removed;
+            }
+            else
+            {
+                removed->destroy();
+            }
+        }
+
         _insertAtBegin(newEvent);
         break;
 
@@ -178,7 +256,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t  SortedEventStack::popEvent(Event** stackEvent)
+uint32_t  SortedEventStack::popEvent(Event** OUT stackEvent)
 {
     ASSERT(stackEvent != nullptr);
 
@@ -240,4 +318,12 @@ inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::eEventPr
 inline void SortedEventStack::_insertAtBegin(Event* newEvent)
 {
     mValueList.push_front(newEvent);
+}
+
+inline constexpr uint32_t SortedEventStack::_calcQueueSize(uint32_t requestedSize)
+{
+    if (requestedSize == NECommon::IGNORE_VALUE)
+        requestedSize = Application::getConfigManager().getDefaultMessageQueueSize();
+
+    return (requestedSize != NECommon::IGNORE_VALUE ? MACRO_MAX(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
 }

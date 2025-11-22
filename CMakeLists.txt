@@ -27,7 +27,7 @@ set(PROJECT_VERSION ${AREG_PROJECT_VERSION})
 project("${PROJECT_NAME}" 
         VERSION      "${PROJECT_VERSION}" 
         DESCRIPTION  "AREG Communication Framework and Tools" 
-        HOMEPAGE_URL "https://aregtech.com" 
+        HOMEPAGE_URL "https://areg.tech" 
         LANGUAGES    CXX C)
 
 set(CMAKE_CXX_STANDARD 17)

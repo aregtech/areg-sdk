@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcherBase.hpp
@@ -79,9 +79,10 @@ protected:
 protected:
     /**
      * \brief   Initialization constructor. Initialized Dispatcher and assigns name.
-     * \param   name            The name of Dispatcher.
+     * \param   name        The name of Dispatcher.
+     * \param   maxQeueue   The maximum number of event elements in the queue.
      **/
-    EventDispatcherBase( const String & name );
+    EventDispatcherBase( const String & name, uint32_t maxQeueue );
     /**
      * \brief   Destructor
      **/

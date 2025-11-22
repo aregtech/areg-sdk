@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/SortedEventStack.hpp
@@ -50,11 +50,15 @@ class RuntimeClassID;
  **/
 class SortedEventStack  : protected TELockStack<Event *>
 {
+    //!< The maximum size of the event queue stack
+    static constexpr uint32_t   MAX_QUEUE_SIZE  { MAX_UINT_32 };
+    //< The minimum size of the event queue stack
+    static constexpr uint32_t   MIN_QUEUE_SIZE  { 32 };
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    SortedEventStack( void ) = default;
+    SortedEventStack( uint32_t maxQueue );
 
     ~SortedEventStack(void);
 
@@ -99,10 +103,11 @@ public:
     /**
      * \brief   Pushes the event in the stack considering the priority, so that the events
      *          with the higher priority can be processed earlier.
-     * \param   newEvent    The pointer to the event with the priority.
+     * \param   newEvent            The pointer to the event with the priority.
+     * \param   removedEvent [out]  The address of pointer to receive the removed event.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t pushEvent(Event * newEvent);
+    uint32_t pushEvent(Event * newEvent, Event** OUT removedEvent);
 
     /**
      * \brief   Pops the event from the FIFO stack.
@@ -111,6 +116,11 @@ public:
      * \return  Returns the number of elements in the stack.
      **/
     uint32_t popEvent(Event** OUT stackEvent);
+
+    /**
+     * \brief   Returns the maximum size of the stack.
+     **/
+    inline constexpr uint32_t getMaxSize(void) const;
 
     /**
      * \brief   Returns true if the stack is empty.
@@ -169,6 +179,15 @@ private:
      **/
     inline void _insertAtBegin(Event * newEvent);
 
+    inline static constexpr uint32_t _calcQueueSize(uint32_t requestedSize);
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    const uint32_t    mMaxQueueSize; //!< The maximum size of the stack.
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -204,6 +223,11 @@ inline bool SortedEventStack::lockStack(void)
 inline void SortedEventStack::unlockStack(void)
 {
     unlock();
+}
+
+inline constexpr uint32_t SortedEventStack::getMaxSize(void) const
+{
+    return mMaxQueueSize;
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_SORTEDEVENTSTACK_HPP

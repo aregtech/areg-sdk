@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventQueue.hpp
@@ -88,8 +88,12 @@ public:
     /**
      * \brief   Pushes new Event in the Queue and notifies Event Listener
      *          about new Event element availability.
+     * \param   evendElem       The Event object to push in the Queue.
+     * \param   removedEvent    If pushing new Event causes removing old Event and
+     *                          and the parameter is not nullptr, it will return 
+     *                          the removed Event object.
      **/
-    void pushEvent( Event & evendElem );
+    void pushEvent( Event & evendElem, Event** OUT removedEvent);
 
     /**
      * \brief   Pops Event object from Queue and notifies Event Listener if
@@ -175,8 +179,10 @@ public:
      * \param   eventListener   The Event Listener object, which should
      *                          be signaled when receive new Event or when
      *                          the Queue is empty.
+     * \param   maxQueue        The maximum number of event elements in the queue.
+     *                          The value NECommon::IGNORE_VALUE (0) means ignore the maximum size.
      **/
-    ExternalEventQueue( IEQueueListener & eventListener );
+    ExternalEventQueue( IEQueueListener & eventListener, uint32_t maxQueue );
 
     /**
      * \brief   Destructor
@@ -213,9 +219,11 @@ class AREG_API InternalEventQueue   : public    EventQueue
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor.
+     * \brief   Initialize internal queue with the default queue size.
+     * \param   maxQueue        The maximum number of event elements in the queue.
+     *                          The value NECommon::IGNORE_VALUE (0) means ignore the maximum size.
      **/
-    InternalEventQueue( void );
+    InternalEventQueue( uint32_t maxQueue);
 
     /**
      * \brief   Destructor

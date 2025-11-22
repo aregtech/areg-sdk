@@ -1,5 +1,5 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.aregtech.com"><img align="center" src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:70%;height:70%"/></a>
+<a name="logo" href="https://www.areg.tech"><img align="center" src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:70%;height:70%"/></a>
   <br /><br /><strong>AREG SDK Technical Guidance</strong>
 </h1>
 
@@ -53,5 +53,5 @@ Help us to make docs greater.
 See something is wrong, unclear or need a help? 
 Submit a change, open a discussion or ask AREG SDK community a question.
 
-2023-2024 © Aregtech, www.aregtech.com, email: info[at]aregtech.com
+2023-2024 © Aregtech, www.areg.tech, email: info[at]areg.tech
 ```

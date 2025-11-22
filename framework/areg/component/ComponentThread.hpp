@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentThread.hpp
@@ -103,8 +103,13 @@ public:
      *                          There is no guarantee that terminated thread will make all cleanups properly.
      * \param   stackSizeKb     The stack size of thread in kilobytes (1 KB = 1024 Bytes). Pass `NECommon::STACK_SIZE_DEFAULT` (0)
      *                          to ignore changing stack size and use system default stack size.
+     * \param   maxQeueue       The maximum number of events in the internal event queue.
+     *                          Pass NECommon::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
      **/
-    explicit ComponentThread( const String & threadName, uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+    explicit ComponentThread( const String & threadName
+                            , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
+                            , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
+                            , uint32_t maxQeueue        = NECommon::IGNORE_VALUE);
 
     /**
      * \brief   Destructor

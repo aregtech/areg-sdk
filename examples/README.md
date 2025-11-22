@@ -3,8 +3,8 @@
 ```
 This document is part of the AREG SDK and describes its example projects.
 Copyright (c) 2017-2025, Aregtech
-Contact: info[at]aregtech.com
-Website: https://www.aregtech.com
+Contact: info[at]areg.tech
+Website: https://www.areg.tech
 ```
 
 ---

@@ -4,7 +4,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventQueue.cpp
@@ -38,9 +38,9 @@ EventQueue::EventQueue( IEQueueListener & eventListener, SortedEventStack & even
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, methods
 //////////////////////////////////////////////////////////////////////////
-void EventQueue::pushEvent( Event& evendElem )
+void EventQueue::pushEvent( Event& evendElem, Event** OUT removedEvent )
 {
-    mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem) );
+    mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
 }
 
 Event* EventQueue::popEvent( void )
@@ -77,9 +77,9 @@ void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
 // ExternalEventQueue class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener )
+ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener, uint32_t maxQueue)
     : EventQueue( eventListener, mStack )
-    , mStack    ( )
+    , mStack    ( maxQueue)
 {
 }
 
@@ -92,9 +92,9 @@ ExternalEventQueue::~ExternalEventQueue(void)
 // InternalEventQueue class implementation
 //////////////////////////////////////////////////////////////////////////
 
-InternalEventQueue::InternalEventQueue(void)
+InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
     : EventQueue( static_cast<IEQueueListener &>(self()), mStack )
-    , mStack    ( )
+    , mStack    ( maxQueue )
 {
 }
 

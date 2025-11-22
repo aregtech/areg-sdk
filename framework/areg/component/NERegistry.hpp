@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/NERegistry.hpp
@@ -384,13 +384,16 @@ namespace NERegistry
          * \param   watchdogTimeout     The timeout in milliseconds to set for watchdog. The value 0 ignores watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
          *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+         * \param   maxQueue            The maximum size of message queue for the thread.
+         *                              Pass NECommon::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
          **/
         WorkerThreadEntry( const String & masterThreadName
                          , const String & workerThreadName
                          , const String & compRoleName
                          , const String & compConsumerName
                          , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
-                         , const uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT);
+                         , const uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT
+                         , const uint32_t maxQueue        = NECommon::IGNORE_VALUE );
 
         /**
          * \brief   Copies /move entries from source.
@@ -451,6 +454,10 @@ namespace NERegistry
          * \brief   The stack size of the worker thread in kilobytes.
          **/
         uint32_t    mStackSizeKb;
+        /**
+         * \brief   The maximum size of message queue for the thread
+         **/
+        uint32_t    mMaxQueue;
    };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1339,8 +1346,13 @@ namespace NERegistry
          *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
          *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+         * \param   maxQueue            The maximum size of message queue for the thread.
+         *                              Pass NECommon::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
          **/
-        explicit ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE, const uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+        explicit ComponentThreadEntry( const String & threadName
+                                     , const uint32_t watchdogTimeout   = NECommon::WATCHDOG_IGNORE
+                                     , const uint32_t stackSizeKb       = NECommon::STACK_SIZE_DEFAULT
+                                     , const uint32_t maxQueue          = NECommon::IGNORE_VALUE);
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name and given Component List.
@@ -1350,8 +1362,13 @@ namespace NERegistry
          *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
          *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+         * \param   maxQueue            The maximum size of message queue for the thread.
          **/
-        ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList & componentList, const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE, const uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+        ComponentThreadEntry( const String & threadName
+                            , const NERegistry::ComponentList & componentList
+                            , const uint32_t watchdogTimeout= NECommon::WATCHDOG_IGNORE
+                            , const uint32_t stackSizeKb    = NECommon::STACK_SIZE_DEFAULT
+                            , const uint32_t maxQueue       = NECommon::IGNORE_VALUE );
 
         /**
          * \brief   Copies data from given source.
@@ -1514,6 +1531,11 @@ namespace NERegistry
          * \brief   The size of the thread stack in kilobytes.
          **/
         uint32_t        mStackSizeKB;
+
+        /**
+         * \brief   The maximum size of message queue for the thread.
+         **/
+        uint32_t        mMaxQueue;
     };
 
     //////////////////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/GEMacros.h
@@ -480,11 +480,11 @@
     #endif   // ASSERT_MSG
 
     #ifndef  VERIFY
-        #define VERIFY(x)                       (x)
+        #define VERIFY(x)                       static_cast<void>(x)
     #endif   // VERIFY
 
     #ifndef  VERIFY_MSG
-        #define VERIFY_MSG(x, msg)              (x)
+        #define VERIFY_MSG(x, msg)              static_cast<void>(x)
     #endif   // VERIFY_MSG
 
 #endif   // _DEBUG

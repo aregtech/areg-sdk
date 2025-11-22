@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/persist/NEPersistence.hpp
@@ -183,9 +183,8 @@ namespace NEPersistence
 
         , EntryDefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(NEMemory::uAlignt)`
         , EntryDefaultMessageQueue  = 28    //!< The default size of message queue in the dispatcher thread. The default `0` means to ignore the limitation, increase by need.
-        , EntryDefaultQueueType     = 29
 
-        , EntryAnyKey               = 30    //!< Indicates any key type.
+        , EntryAnyKey               = 29    //!< Indicates any key type.
     };
 
     /**
@@ -228,9 +227,8 @@ namespace NEPersistence
 
             , {"config" , "*"   , "default" , "blocksize"       }   //! 27  , The default block size in bytes to allocate in shared buffer.
             , {"config" , "*"   , "default" , "messagequeue"    }   //! 28  , The default message queue size in the dispatcher thread.
-            , {"config" , "*"   , "default" , "fixedqueue"      }   //! 29  , The type of message queue -- either fixed or dynamic.
 
-            , {"*"      , "*"   , "*"       , "*"               }   //! 30  , Indicates any key type.
+            , {"*"      , "*"   , "*"       , "*"               }   //! 29  , Indicates any key type.
         };
 
     /**
@@ -373,12 +371,6 @@ namespace NEPersistence
      * \brief   The default message queue size in the dispatcher thread.
      **/
     inline const NEPersistence::sPropertyKey& getDefaultMessageQueueSize(void);
-
-    /**
-     * \brief   The type of message queue -- either fixed or dynamic.
-     **/
-    inline const NEPersistence::sPropertyKey& getDefaultMessageQueueType(void);
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -523,11 +515,6 @@ const NEPersistence::sPropertyKey& NEPersistence::getDefaultBufferBlockSize(void
 const NEPersistence::sPropertyKey& NEPersistence::getDefaultMessageQueueSize(void)
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryDefaultMessageQueue)];
-}
-
-const NEPersistence::sPropertyKey& NEPersistence::getDefaultMessageQueueType(void)
-{
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryDefaultQueueType)];
 }
 
 #endif  // AREG_PERSIST_NEPERSISTEN_HPP

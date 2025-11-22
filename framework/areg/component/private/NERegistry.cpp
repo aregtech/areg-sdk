@@ -4,7 +4,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/private/NERegistry.cpp
@@ -212,6 +212,7 @@ NERegistry::WorkerThreadEntry::WorkerThreadEntry(void)
     , mConsumerName     ()
     , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
     , mStackSizeKb      (NECommon::STACK_SIZE_DEFAULT)
+    , mMaxQueue         (NECommon::IGNORE_VALUE)
 {
 }
 
@@ -219,12 +220,14 @@ NERegistry::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadNam
                                                 , const String & workerThreadName
                                                 , const String & compRoleName
                                                 , const String & compConsumerName
-                                                , const uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE */
-                                                , const uint32_t stackSizeKb     /* = NECommon::STACK_SIZE_DEFAULT*/)
+                                                , const uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE     */
+                                                , const uint32_t stackSizeKb     /* = NECommon::STACK_SIZE_DEFAULT  */
+                                                , const uint32_t maxQueue        /* = NECommon::IGNORE_VALUE        */ )
     : mThreadName       (NEUtilities::createComponentItemName(masterThreadName, workerThreadName))
     , mConsumerName     (NEUtilities::createComponentItemName(compRoleName, compConsumerName))
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKb      (stackSizeKb)
+    , mMaxQueue         (maxQueue)
 {
 }
 
@@ -758,22 +761,32 @@ NERegistry::ComponentThreadEntry::ComponentThreadEntry( void )
     , mComponents       ( )
     , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
     , mStackSizeKB      (NECommon::STACK_SIZE_DEFAULT)
+    , mMaxQueue         (NECommon::IGNORE_VALUE)
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/, const uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/ )
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
+                                                      , const uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
+                                                      , const uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */ 
+                                                      , const uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */)
     : mThreadName       (threadName)
     , mComponents       ( )
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKB      (stackSizeKb)
+    , mMaxQueue         (maxQueue)
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName, const NERegistry::ComponentList& supCompList, const uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/, const uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/ )
+NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
+                                                      , const NERegistry::ComponentList& supCompList
+                                                      , const uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
+                                                      , const uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */ 
+                                                      , const uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */)
     : mThreadName       (threadName)
     , mComponents       (supCompList)
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKB      (stackSizeKb)
+    , mMaxQueue         (maxQueue)
 {
 }
 

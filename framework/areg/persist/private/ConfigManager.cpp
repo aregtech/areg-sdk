@@ -4,7 +4,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/persist/ConfigManager.cpp
@@ -299,9 +299,9 @@ NEPersistence::ListProperties ConfigManager::getSectionProperties(const String& 
 }
 
 const Property* ConfigManager::getProperty( const String& section
-                                         , const String& property
-                                         , const String& position
-                                         , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                          , const String& property
+                                          , const String& position
+                                          , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -311,9 +311,9 @@ const Property* ConfigManager::getProperty( const String& section
 }
 
 const Property * ConfigManager::getModuleProperty( const String& section
-                                                , const String& property
-                                                , const String& position
-                                                , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                                 , const String& property
+                                                 , const String& position
+                                                 , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -322,11 +322,11 @@ const Property * ConfigManager::getModuleProperty( const String& section
 }
 
 void ConfigManager::setModuleProperty( const String& section
-                                    , const String& property
-                                    , const String& position
-                                    , const String& value
-                                    , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/
-                                    , bool isTemporary /*= false*/)
+                                     , const String& property
+                                     , const String& position
+                                     , const String& value
+                                     , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/
+                                     , bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
@@ -1068,7 +1068,7 @@ void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const St
     setModuleProperty(key.section, key.property, whichPosition, newValue, NEPersistence::EntryAnyKey, isTemporary);
 }
 
-uint16_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= NEString::EmptyStringA*/)
+uint32_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= NEString::EmptyStringA*/)
 {
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryDefaultBufferBlock;
     const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultBufferBlockSize();
@@ -1076,12 +1076,10 @@ uint16_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= 
     return (prop != nullptr ? prop->getValue().getInteger() : 0u);
 }
 
-uint16_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*= NEString::EmptyStringA*/)
+uint32_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*= NEString::EmptyStringA*/)
 {
-    return 0;
-}
-
-bool ConfigManager::getDefaultMessageQueueFixed(const String& whichModule /*= NEString::EmptyStringA*/)
-{
-    return false;
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryDefaultMessageQueue;
+    const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultMessageQueueSize();
+    const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
+    return ( prop != nullptr ? prop->getValue().getInteger() : MAX_UINT_32 );
 }

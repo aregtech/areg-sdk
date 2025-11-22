@@ -1,32 +1,130 @@
-# Contribution
+# CONTRIBUTING TO AREG SDK
 
-We would be glad if you join AREG IoT SDK project or make feature suggestions. The project need people with following skills:
+Thank you for your interest in contributing to Areg SDK.  
+We welcome developers, companies, researchers, and hobbyists who want to help improve the framework.
 
-1. Any developers with C++17 skills to develop AREG Framework and services:
-    - Junior developers may start with unit test implementation. There are many open issues.
-    - Midlevel developers can take small tasks.
-    - Experienced developers can join to discuss design and implementation of complex features.
-    - Any bug discovery is welcomed, when report, please be precise describing how to reproduce.
-    - Any new unit test especially those, which discover bugs, are welcomed.
-2. Any develope with C# skills to develop UI Tools (see [`areg-sdk-toos`](https://github.com/aregtech/areg-sdk-tools/) repo).
-3. Developers with CMake and/or Makefile skills to optimize build tools.
-4. UI designers to improve UI tools.
-5. Technical writers to improve documentation.
+This guide explains how to contribute, how copyrights work, and what you need to do so your contribution can be accepted.
 
-If you have these skills and have nothing against current license, please drop a message. Contributions in this repository are under the [Apache 2 License](http://www.apache.org/licenses/LICENSE-2.0.html).
+---
 
-If modify or create a file, please do not forget to specify your name (or nick-name) as an author / co-author. You may as well leave your contacts if you want.
+## 1. Code Licensing
+
+All contributions are licensed under:
+
+**Apache License, Version 2.0**
+
+By submitting a pull request or commit, you agree that your contribution is provided under Apache 2.0.
+
+---
+
+## 2. Developer Certificate of Origin (DCO)
+
+To contribute, you must confirm that you have the right to submit the code.
+
+Areg SDK uses the **Developer Certificate of Origin (DCO)**. It is a simple and widely adopted alternative to contributor license agreements.
+
+Every commit must include a `Signed-off-by` line:
 
 ```
-5. Submission of Contributions. Unless You explicitly state otherwise,
-   any Contribution intentionally submitted for inclusion in the Work
-   by You to the Licensor shall be under the terms and conditions of
-   this License, without any additional terms or conditions.
-   Notwithstanding the above, nothing herein shall supersede or modify
-   the terms of any separate license agreement you may have executed
-   with Licensor regarding such Contributions.
+
+Signed-off-by: Your Name [email@example.com](mailto:email@example.com)
+
 ```
 
-Contributors must sign-off each commit by adding a `Signed-off-by: ...` line to commit messages to certify that they have the right to submit the code they are contributing to the project according to the [Developer Certificate of Origin (DCO)](https://www.developercertificate.org/).
+Most Git tools can add this automatically:
 
-We keep rights to distribute source codes with the commercial license, which gives the commercial support, full rights to create and distribute software without open source license obligations.
+```
+
+git commit -s
+
+````
+
+By signing off, you state that your contribution is your original work or that you have permission to submit it.  
+More information can be found at https://developercertificate.org/
+
+---
+
+## 3. Copyright Headers
+
+You may add a copyright header if you want your name or organization to appear in the source file.
+
+If you prefer not to add a header, the project may include a default header for clarity and consistent licensing.  
+This does not affect your ownership or your rights in any way.
+
+Example of an optional header:
+
+```cpp
+/************************************************************************
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual licensed under Apache 2.0 and commercial licenses.
+ *
+ * \copyright   (c) 2017-2025 Your Name or Aregtech UG
+ * \file        path/to/YourFile.hpp
+ * \ingroup     Areg SDK
+ * \author      Your Full Name or GitHub ID
+ * \brief       Brief description
+ ************************************************************************/
+````
+
+Minor edits such as typo fixes, grammar corrections, formatting cleanup, comment updates, CMake changes, and YAML updates do not require contributor copyright headers.
+
+---
+
+## 4. Contribution Guidelines
+
+### a. Reporting Bugs
+
+When reporting an issue, please include:
+
+* steps to reproduce
+* expected and actual behavior
+* platform and compiler information
+
+### b. Submitting Code
+
+Pull requests should follow these rules:
+
+* one clear improvement per pull request
+* keep the existing code style
+* include tests when possible
+* include a `Signed-off-by` line in every commit
+
+### c. Documentation
+
+Improvements to guides, examples, comments, and general documentation are welcome.
+Small corrections only require a Signed-off-by line.
+
+---
+
+## 5. Areas Where Help Is Needed
+
+1. C++17 development such as core framework, features, and services
+2. Unit tests and example applications
+3. Build systems and cross compilation setups
+4. UI and UX improvements for the Areg SDK Tools
+5. Technical writing including documentation and guides
+
+---
+
+## 6. Dual Licensing and Commercial Use
+
+Areg SDK is licensed under the Apache License 2.0.  
+You retain ownership of your contribution, which will always remain available under Apache 2.0.
+
+Project maintainers may also offer Areg SDK under separate commercial terms.  
+By contributing under the DCO and Apache 2.0, you grant the maintainers an irrevocable right to use, modify, sublicense, and distribute your contribution as part of both the open-source and any commercial editions of Areg SDK.
+
+---
+
+## 7. Code of Conduct
+
+Always communicate respectfully and constructively.
+We strive to maintain a welcoming community for everyone.
+
+---
+
+## 8. Questions
+
+If you have any questions about licensing, rights, or the contribution process, open an issue or start a discussion.
+
+We are happy to help you get started.

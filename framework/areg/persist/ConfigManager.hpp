@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/persist/ConfigManager.hpp
@@ -368,7 +368,7 @@ public:
      * \brief   Saves the current configuration in the specified file object opened with write access.
      *          When saving, the existing entries are not changed, only module specific entries
      *          that are not marked as 'temporary'.
-     * \param   srcFile     The instance of the file that contains consfiguration information.
+     * \param   srcFile     The instance of the file that contains configuration information.
      * \param   dstFile     The instance of the destination file to save configuration information.
      * \param   listener    The pointer to the configuration listener to notify
      *                      before and after saving configuration to the file.
@@ -763,22 +763,14 @@ public:
      * \param   whichModule     The name of the module or `*` for generic settings.
      * \return  Returns the buffer block size in bytes to set when grow buffer.
      **/
-    uint16_t getDefaultBufferBlockSize(const String& whichModule = NEString::EmptyStringA);
+    uint32_t getDefaultBufferBlockSize(const String& whichModule = NEString::EmptyStringA);
 
     /**
      * \brief   Returns the default message queue size set in the configuration file.
      * \param   whichModule     The name of the module or `*` for generic settings.
      * \return  Returns the default message queue size to set for message queues.
      **/
-    uint16_t getDefaultMessageQueueSize(const String& whichModule = NEString::EmptyStringA);
-
-    /**
-     * \brief   Returns the flag indicating whether the default message queue size is fixed or can dynamically grow up.
-     * \param   whichModule     The name of the module or `*` for generic settings.
-     * \return  If returns true, the default message queue size is fixed and cannot grow..
-     *          Otherwise, the message queue size can grow up, but this low level must be the default queue size..
-     **/
-    bool getDefaultMessageQueueFixed(const String& whichModule = NEString::EmptyStringA);
+    uint32_t getDefaultMessageQueueSize(const String& whichModule = NEString::EmptyStringA);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables

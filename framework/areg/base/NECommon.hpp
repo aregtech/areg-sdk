@@ -6,7 +6,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/NECommon.hpp
@@ -276,6 +276,18 @@ namespace NECommon
      *          A value used when set the stack size of the thread. It indicates that setting the stack size should be ignored.
      **/
     constexpr unsigned int   STACK_SIZE_DEFAULT     { 0u };
+
+    /**
+     * \brief   NECommon::QUEUE_SIZE_MAXIMUM
+     *          A value used when declare component thread. It indicates that maximum queue size should be used.
+     **/
+    constexpr unsigned int  QUEUE_SIZE_MAXIMUM      { MAX_UINT_32 };
+
+    /**
+     * \brief   NECommon::IGNORE_VALUE
+     *          A value used to indicate that it should be ignored.
+     **/
+    constexpr unsigned int  IGNORE_VALUE            { 0u };
 
     /**
      * \brief   NECommon::TIMEOUT_1_MS

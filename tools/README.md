@@ -3,7 +3,7 @@
 ```
 This file is part of AREG SDK, the multitasking application development platform.  
 Copyright (c) Aregtech, 2017-2023  
-Contact: info[at]aregtech.com  
+Contact: info[at]areg.tech  
 ```
 
 ## Running the Code Generator

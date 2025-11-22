@@ -4,7 +4,7 @@
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
- * If not, please contact to info[at]aregtech.com
+ * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/private/SharedBuffer.cpp
@@ -234,10 +234,10 @@ unsigned int SharedBuffer::getAlignedSize(void) const
     return mBlockSize;
 }
 
-uint16_t SharedBuffer::getDefaultBlockSize(void)
+uint32_t SharedBuffer::getDefaultBlockSize(void)
 {
-    static std::atomic_uint16_t    _result{ 0 };
-    uint16_t result = _result.load();
+    static std::atomic_uint32_t    _result{ 0 };
+    uint32_t result = _result.load();
     if (result == 0)
     {
         result = Application::getConfigManager().getDefaultBufferBlockSize();
