@@ -337,11 +337,6 @@ jobs:
 
     steps:
 
-      - name: Mark repository as safe for git and remove CRLF conversion
-        run: |
-            git config --global --add safe.directory $(pwd)
-            git config --global core.autocrlf input
-    
       - name: Checkout Areg SDK source codes
         uses: actions/checkout@v5
 
@@ -368,11 +363,11 @@ jobs:
 
       - name: Set Windows PATH environment variable
         if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        run: echo "PATH=D:\cygwin;D:\cygwin\bin;D:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
         if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        uses: cygwin/cygwin-install-action@master
+        uses: cygwin/cygwin-install-action@v5
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make
 
