@@ -38,6 +38,17 @@
 class LogSqliteDatabase : public IELogDatabaseEngine
 {
 //////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+public:
+    //!< The structure of a filter by scopes and priorities
+    struct sScopeFilter
+    {
+        uint32_t    scopeId     { 0u }; //!< Scope ID
+        uint32_t    scopePrio   { 0u }; //!< Scope log prio
+    };
+
+//////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -428,6 +439,8 @@ public:
      * @return  Returns true if succeeded to setup.
      **/
     static bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+
+    static bool setupStatementFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
