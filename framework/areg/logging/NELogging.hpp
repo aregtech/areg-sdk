@@ -116,6 +116,7 @@ namespace NELogging
         , PrioInfo          = 0x0100  //!< Information log priority,  bit set:  0001 0000 0000
         , PrioDebug         = 0x0200  //!< Debug log priority,        bit set:  0010 0000 0000
         , PrioLogs          = 0x03E0  //!< Log is enabled priority,   bit set:  0011 1110 0000
+        , PrioScopeLogs     = 0x03F0  //!< Scopes and logs with prio, bit set:  0011 1111 0000
         , PrioValidLogs     = 0x03F1  //!< The valid log priority,    bit set:  0011 1111 0001
         , PrioIgnore        = 0x0400  //!< Ignore logging priority,   bit set:  0100 0000 0000
         , PrioMarker        = 0x0401  //!< Ignore Prio, Marker,       bit set:  0100 0000 0001
@@ -672,10 +673,20 @@ inline const char* NELogging::getString(NELogging::eLogPriority prio)
         return "NELogging::PrioDebug";
     case NELogging::eLogPriority::PrioLogs:
         return "NELogging::PrioLogs";
+    case NELogging::eLogPriority::PrioScopeLogs:
+        return "NELogging::PrioScopeLogs";
     case NELogging::eLogPriority::PrioValidLogs:
         return "NELogging::PrioValidLogs";
     case NELogging::eLogPriority::PrioIgnore:
         return "NELogging::PrioIgnore";
+    case NELogging::eLogPriority::PrioMarker:
+        return "NELogging::PrioMarker";
+    case NELogging::eLogPriority::PrioMarkerError:
+        return "NELogging::PrioMarkerError";
+    case NELogging::eLogPriority::PrioMarkerWarning:
+        return "NELogging::PrioMarkerWarning";
+    case NELogging::eLogPriority::PrioMarkerInfo:
+        return "NELogging::PrioMarkerInfo";
     case NELogging::eLogPriority::PrioIgnoreLayout:
         return "NELogging::PrioIgnoreLayout";
     case NELogging::eLogPriority::PrioAny:

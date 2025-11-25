@@ -440,7 +440,7 @@ public:
      **/
     static bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
-    static bool setupStatementFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+    uint32_t filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
@@ -510,6 +510,8 @@ private:
      * \param   scope   The NELogging::sScopeInfo to copy the log scope.
      **/
     inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
+
+    inline bool _tableExists(const char* tableName);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

@@ -296,6 +296,32 @@ namespace
         "SELECT COUNT(cookie_id) from instances;"
     };
 
+    constexpr std::string_view _sqlCheckTable
+    {
+        "SELECT name FROM sqlite_master WHERE type = \'table\' AND name = \'%s\';"
+    };
+
+    constexpr std::string_view _sqlCreateTempScopes
+    {
+        "CREATE TEMP TABLE filter_rules"
+        "   scope_id      INTEGER NOT NULL DEFAULT 0,"
+        "   target_id     INTEGER NOT NULL DEFAULT 0,"
+        "   log_mask      INTEGER NOT NULL DEFAULT 1008"
+        ");"
+        "INSERT INTO filter_rules(scope_id, target_id, log_mask) SELECT scope_id, cookie_id, 1008 FROM scopes;"
+    };
+
+    
+    constexpr std::string_view _sqlFilterScopeLogs
+    {
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, l.msg_log, l.msg_thread, l.msg_module"
+        "   FROM logs AS l"
+        "   JOIN filter_rules AS r"
+        "       ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
+        "   WHERE((l.msg_prio & r.log_mask) != 0)"
+        "   ORDER BY time_created;"
+    };
+
     //! The size of the string buffer to format SQL scripts
     constexpr uint32_t  SQL_LEN     { 768 };
 }
@@ -464,6 +490,20 @@ inline void LogSqliteDatabase::_copyLogScopes(SqliteStatement& stmt, NELogging::
     scope.scopeName = stmt.getText(0);
     scope.scopeId   = static_cast<uint32_t>(stmt.getUint32(1));
     scope.scopePrio = static_cast<uint32_t>(stmt.getUint32(2));
+}
+
+inline bool LogSqliteDatabase::_tableExists(const char* tableName)
+{
+    bool result{ false };
+    SqliteStatement stmt(mDatabase);
+    if (NEString::isEmpty<char>(tableName) == false)
+    {
+        String sql;
+        sql.format(_sqlCheckTable.data(), tableName);
+        result = (stmt.prepare(sql) && (SqliteStatement::eQueryResult::HasMore == stmt.next()));
+    }
+
+    return result;
 }
 
 bool LogSqliteDatabase::isOperable(void) const
@@ -1112,11 +1152,30 @@ bool LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITE
     }
 }
 
+uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<LogSqliteDatabase::sScopeFilter>& IN filter)
+{
+    Lock lock(mLock);
+    if (mDatabase.isOperable() == false)
+        return 0u;
+
+    sqlite3_stmt* stmt;
+    const char* sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='your_table_name';";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            // Table exists
+        }
+        else {
+            // Table does not exist
+        }
+        sqlite3_finalize(stmt);
+    }    return 0u;
+}
+
 uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
 {
     Lock lock(mLock);
     if (mDatabase.isOperable() == false)
-        return 0;
+        return 0u;
 
     SqliteStatement stmt(mDatabase);
     if (instId == NEService::TARGET_ALL)
