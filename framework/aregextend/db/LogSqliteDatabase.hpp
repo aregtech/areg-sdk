@@ -461,6 +461,8 @@ public:
      **/
     uint32_t countLogInstances(void);
 
+    uint32_t countFilterLogs(ITEM_ID instId = NEService::TARGET_ALL);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -511,7 +513,7 @@ private:
      **/
     inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
 
-    inline bool _tableExists(const char* tableName);
+    inline bool _tableExists(const char* master, const char* table);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
