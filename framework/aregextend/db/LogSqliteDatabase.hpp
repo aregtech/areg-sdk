@@ -442,6 +442,8 @@ public:
 
     uint32_t filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
 
+    bool updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+
     /**
      * \brief   Returns number of log messages of specified instance ID.
      *          Returns number of all log messages if the instance ID is `NEService::TARGET_ALL`.
@@ -514,6 +516,8 @@ private:
     inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
 
     inline bool _tableExists(const char* master, const char* table);
+
+    inline void _dropTable(const char* table);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

@@ -321,7 +321,21 @@ namespace
         "INSERT INTO filter_rules(scope_id, target_id, log_mask) SELECT scope_id, cookie_id, 1008 FROM scopes;"
     };
 
-    
+    constexpr std::string_view _sqlCreateTempFilter
+    {
+        "CREATE TEMP TABLE filter_masks"
+        "   scope_id      INTEGER NOT NULL DEFAULT 0,"
+        "   target_id     INTEGER NOT NULL DEFAULT 0,"
+        "   log_mask      INTEGER NOT NULL DEFAULT 1008"
+        ");"
+    };
+
+
+    constexpr std::string_view _sqlInsertTempFilter
+    {
+        "INSERT INTO filter_masks(scope_id, log_mask) VALUES(?, ?, ?);"
+    };
+
     constexpr std::string_view _sqlFilterScopeLogsCountAll
     {
         "SELECT COUNT(l.id)"
@@ -358,6 +372,21 @@ namespace
         "       ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
         "   WHERE (l.cookie_id = ?) AND ((l.msg_prio & r.log_mask) != 0)"
         "   ORDER BY time_created;"
+    };
+
+    constexpr std::string_view _sqlUpdateFilterScopes
+    {
+        "UPDATE filter_rules SET log_mask = ("
+        "       SELECT t.log_mask"
+        "       FROM filter_masks m"
+        "WHERE m.scope_id = filter_rules.scope_id)"
+        "WHERE target_id = ?"
+        "AND scope_id IN(SELECT scope_id FROM filter_masks);"
+    };
+
+    constexpr std::string_view _sqlDropTable
+    {
+        "DROP TABLE IF EXISTS %s;"
     };
 
     //! The size of the string buffer to format SQL scripts
@@ -544,6 +573,18 @@ inline bool LogSqliteDatabase::_tableExists(const char* master, const char* tabl
     return result;
 }
 
+inline void LogSqliteDatabase::_dropTable(const char* table)
+{
+    if (NEString::isEmpty<char>(table))
+        return;
+
+    String sql;
+    sql.format(_sqlDropTable.data(), table);
+    SqliteStatement stmt(mDatabase, sql);
+    stmt.execute();
+    stmt.finalize();
+}
+
 bool LogSqliteDatabase::isOperable(void) const
 {
     return mDatabase.isOperable();
@@ -586,6 +627,7 @@ void LogSqliteDatabase::disconnect(void)
     if (mStmtLogs.isValid())
         mStmtLogs.finalize();
 
+    _dropTable("filter_rules");
     mDatabase.commit(true);
     mDatabase.disconnect();
     mIsInitialized = false;
@@ -1211,18 +1253,48 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
         commit(true);
     }
 
+    uint32_t result = countFilterLogs(instId);
     stmt.reset();
-    stmt.prepare(_sqlFilterScopeLogsCount);
-    if (instId == NEService::TARGET_ALL)
+    if (result > 0)
     {
-        stmt.prepare(_sqlFilterScopeLogsCountAll);
-    }
-    else if (stmt.prepare(_sqlFilterScopeLogsCount))
-    {
-        stmt.bindInt64(0, instId);
+        if (instId == NEService::TARGET_ALL)
+        {
+            stmt.prepare(_sqlFilterScopeLogsAll);
+        }
+        else if (stmt.prepare(_sqlFilterScopeLogsInst))
+        {
+            stmt.bindInt64(0, instId);
+        }
     }
 
-    uint32_t result = (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return result;
+}
+
+bool LogSqliteDatabase::updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
+{
+    Lock lock(mLock);
+    if ((mDatabase.isOperable() == false) || filter.isEmpty())
+        return 0u;
+
+    SqliteStatement stmt(mDatabase);
+    stmt.prepare(_sqlCreateTempFilter);
+    stmt.execute();
+    stmt.reset();
+
+    stmt.prepare(_sqlInsertTempFilter);
+    for (const auto& scope : filter.getData())
+    {
+        stmt.bindUint32(0, scope.scopeId);
+        stmt.bindUint32(1, scope.scopePrio);
+        stmt.execute();
+        stmt.reset();
+        stmt.clearBindings();
+    }
+
+    stmt.prepare(_sqlUpdateFilterScopes);
+    stmt.bindInt64(0, instId);
+    stmt.execute();
+    stmt.finalize();
 }
 
 uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
