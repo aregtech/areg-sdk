@@ -325,7 +325,6 @@ namespace
     {
         "CREATE TEMP TABLE filter_masks"
         "   scope_id      INTEGER NOT NULL DEFAULT 0,"
-        "   target_id     INTEGER NOT NULL DEFAULT 0,"
         "   log_mask      INTEGER NOT NULL DEFAULT 1008"
         ");"
     };
@@ -333,7 +332,7 @@ namespace
 
     constexpr std::string_view _sqlInsertTempFilter
     {
-        "INSERT INTO filter_masks(scope_id, log_mask) VALUES(?, ?, ?);"
+        "INSERT INTO filter_masks(scope_id, log_mask) VALUES(?, ?);"
     };
 
     constexpr std::string_view _sqlFilterScopeLogsCountAll
@@ -1253,6 +1252,9 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
         commit(true);
     }
 
+    if (updaeFilterLogScopes(instId, filter) == false)
+        return 0u;
+
     uint32_t result = countFilterLogs(instId);
     stmt.reset();
     if (result > 0)
@@ -1274,7 +1276,7 @@ bool LogSqliteDatabase::updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLis
 {
     Lock lock(mLock);
     if ((mDatabase.isOperable() == false) || filter.isEmpty())
-        return 0u;
+        return false;
 
     SqliteStatement stmt(mDatabase);
     stmt.prepare(_sqlCreateTempFilter);
@@ -1295,6 +1297,8 @@ bool LogSqliteDatabase::updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLis
     stmt.bindInt64(0, instId);
     stmt.execute();
     stmt.finalize();
+    _dropTable("filter_masks");
+    return true;
 }
 
 uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
