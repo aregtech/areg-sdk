@@ -440,9 +440,14 @@ public:
      **/
     static bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
+    /**
+     * \brief   Sets up the priorities filter to extract logs from database for the given instance and returns the number of filtered logs to extract.
+     * \param   stmt        The statement object to use to extract logs from database.
+     * \param   instId      The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
+     * \param   filter      The list of scope IDs and priority mask to apply to filter data.
+     * \return  Returns number of log entries after applying filter.
+     **/
     uint32_t filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
-
-    bool updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
@@ -515,8 +520,25 @@ private:
      **/
     inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
 
+    /**
+     * \brief   Updates the filter information for the specified instance.
+     * \param   instId  The instance ID to apply filters
+     * \param   filter  The list of scopes and filter mask to apply
+     * \return  Returns true if operation succeeded.
+     **/
+    inline bool _updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+
+    /**
+     * \brief   Checks whether the specified table exists or not.
+     * \param   master  The name of the schema to check the table
+     * \param   table   The name of the table to check
+     * \return  Returns true if specified table exists in the specified schema
+     **/
     inline bool _tableExists(const char* master, const char* table);
 
+    /**
+     * \brief   Drops specified table.
+     **/
     inline void _dropTable(const char* table);
 
 //////////////////////////////////////////////////////////////////////////

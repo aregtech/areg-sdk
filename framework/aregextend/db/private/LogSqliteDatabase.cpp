@@ -1252,7 +1252,7 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
         commit(true);
     }
 
-    if (updaeFilterLogScopes(instId, filter) == false)
+    if (_updaeFilterLogScopes(instId, filter) == false)
         return 0u;
 
     uint32_t result = countFilterLogs(instId);
@@ -1272,7 +1272,7 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
     return result;
 }
 
-bool LogSqliteDatabase::updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
+bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
 {
     Lock lock(mLock);
     if ((mDatabase.isOperable() == false) || filter.isEmpty())
