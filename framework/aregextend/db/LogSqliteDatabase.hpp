@@ -468,7 +468,22 @@ public:
      **/
     uint32_t countLogInstances(void);
 
+    /**
+     * \brief   Returns number of filtered log messages of specified instance ID.
+     **/
     uint32_t countFilterLogs(ITEM_ID instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Resets the logging priority filter mask of the specified instance ID or for all instances.
+     *          Returns true if operation succeeded.
+     **/
+    bool resetFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Disables filtering logs by priority, so that there will be no log.
+     *          Returns true if operation succeeded.
+     **/
+    bool disableFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
