@@ -1225,29 +1225,29 @@ int LogSqliteDatabase::fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, S
     return result;
 }
 
-bool LogSqliteDatabase::setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+uint32_t LogSqliteDatabase::setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
 {
     stmt.reset();
     if (instId == NEService::TARGET_ALL)
     {
-        return stmt.prepare(_sqlGetAllLogScopes);
+        return (stmt.prepare(_sqlGetAllLogScopes) ? countScopeEntries(instId) : 0u);
     }
     else
     {
-        return (stmt.prepare(_sqlGetLogScopes) && stmt.bindInt64(0, instId));
+        return (stmt.prepare(_sqlGetLogScopes) && stmt.bindInt64(0, instId) ? countScopeEntries(instId) : 0u);
     }
 }
 
-bool LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
 {
     stmt.reset();
     if (instId == NEService::TARGET_ALL)
     {
-        return stmt.prepare(_sqlGetAllLogMessages);
+        return (stmt.prepare(_sqlGetAllLogMessages) ? countLogEntries(instId) : 0u);
     }
     else
     {
-        return (stmt.prepare(_sqlGetInstLogMessages) && stmt.bindInt64(0, instId));
+        return (stmt.prepare(_sqlGetInstLogMessages) && stmt.bindInt64(0, instId) ? countLogEntries(instId) : 0u        );
     }
 }
 

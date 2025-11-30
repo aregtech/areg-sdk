@@ -425,9 +425,9 @@ public:
      *          The logging database should be opened for reading data.
      * \param   stmt    The SQLite statement object bound with SQLite logging database.
      * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
-     * @return  Returns true if succeeded to setup.
+     * @return  Returns number of scopes of specified instance.
      **/
-    static bool setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Call to setup statement to read the list of logs from logging database.
@@ -436,9 +436,9 @@ public:
      *          The logging database should be opened for reading data.
      * \param   stmt    The SQLite statement object bound with SQLite logging database.
      * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
-     * @return  Returns true if succeeded to setup.
+     * @return  Returns number of log messages of specified instance ID.
      **/
-    static bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Sets up the priorities filter to extract logs from database for the given instance and returns the number of filtered logs to extract.
