@@ -1251,13 +1251,63 @@ uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt,
     }
 }
 
-uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<LogSqliteDatabase::sScopeFilter>& IN filter)
+bool LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
 {
     Lock lock(mLock);
     if (mDatabase.isOperable() == false)
-        return 0u;
+        return false;
+    else if (_tableExists("sqlite_master", "scopes") == false)
+        return false;
 
-    if (_tableExists("sqlite_master", "scopes") == false)
+    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+    {
+        SqliteStatement stmtTemp(mDatabase, _sqlCreateTempScopes);
+        if (stmtTemp.execute() == false)
+        {
+            commit(false);
+            return false;
+        }
+
+        commit(true);
+    }
+
+    return _updaeFilterLogScopes(instId, filter);
+}
+
+uint32_t LogSqliteDatabase::setupStatementFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if (mDatabase.isOperable() == false)
+        return false;
+    else if (_tableExists("sqlite_master", "scopes") == false)
+        return false;
+    else if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+        return false;
+
+    uint32_t result = countFilterLogs(instId);
+    if (result > 0)
+    {
+        if (instId == NEService::TARGET_ALL)
+        {
+            stmt.prepare(_sqlFilterScopeLogsAll);
+        }
+        else if (stmt.prepare(_sqlFilterScopeLogsInst))
+        {
+            stmt.bindInt64(0, instId);
+        }
+    }
+
+    return result;
+}
+
+uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<LogSqliteDatabase::sScopeFilter>& IN filter)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if (mDatabase.isOperable() == false)
+        return 0u;
+    else if (_tableExists("sqlite_master", "scopes") == false)
         return 0u;
 
     if (_tableExists("sqlite_temp_master", "filter_rules") == false)
@@ -1276,7 +1326,6 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
         return 0u;
 
     uint32_t result = countFilterLogs(instId);
-    stmt.reset();
     if (result > 0)
     {
         if (instId == NEService::TARGET_ALL)

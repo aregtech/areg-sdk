@@ -441,6 +441,22 @@ public:
     uint32_t setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
+     * \brief   Sets up the log filters
+     * \param   instId  The ID of instance to filter.
+     * \param   filter  The scope prio filters to setup
+     * \return  Return true if succeeded to setup filters of logs.
+     **/
+    bool setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+
+    /**
+     * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
+     * \param   stmt    The statement object to use to extract logs from database.
+     * \param   instId  The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
+     * \return  Returns number of log entries after applying filter.
+     **/
+    uint32_t setupStatementFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+
+    /**
      * \brief   Sets up the priorities filter to extract logs from database for the given instance and returns the number of filtered logs to extract.
      * \param   stmt        The statement object to use to extract logs from database.
      * \param   instId      The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
