@@ -376,7 +376,7 @@ namespace
     constexpr std::string_view _sqlUpdateFilterScopes
     {
         "UPDATE filter_rules SET log_mask = ("
-        "       SELECT t.log_mask"
+        "       SELECT m.log_mask"
         "       FROM filter_masks m"
         "WHERE m.scope_id = filter_rules.scope_id)"
         "WHERE target_id = ?"
