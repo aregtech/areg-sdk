@@ -313,7 +313,7 @@ namespace
 
     constexpr std::string_view _sqlCreateTempScopes
     {
-        "CREATE TEMP TABLE filter_rules"
+        "CREATE TEMP TABLE filter_rules ("
         "   scope_id      INTEGER NOT NULL DEFAULT 0,"
         "   target_id     INTEGER NOT NULL DEFAULT 0,"
         "   log_mask      INTEGER NOT NULL DEFAULT 1008"
