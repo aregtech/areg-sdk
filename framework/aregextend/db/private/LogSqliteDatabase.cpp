@@ -318,16 +318,12 @@ namespace
         "   target_id     INTEGER NOT NULL DEFAULT 0,"
         "   log_mask      INTEGER NOT NULL DEFAULT 1008"
         ");"
-    };
-
-    constexpr std::string_view _sqlInitTempScopes
-    {
         "INSERT INTO filter_rules(scope_id, target_id, log_mask) SELECT scope_id, cookie_id, 1008 FROM scopes;"
     };
 
     constexpr std::string_view _sqlCreateTempFilter
     {
-        "CREATE TEMP TABLE filter_masks"
+        "CREATE TEMP TABLE filter_masks ("
         "   scope_id      INTEGER NOT NULL DEFAULT 0,"
         "   log_mask      INTEGER NOT NULL DEFAULT 1008"
         ");"
@@ -1273,13 +1269,6 @@ bool LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sSc
         }
 
         commit(true);
-        stmtTemp.reset();
-        stmtTemp.prepare(_sqlInitTempScopes);
-        if (stmtTemp.execute() == false)
-        {
-            commit(false);
-            return 0u;
-        }
     }
 
     return _updaeFilterLogScopes(instId, filter);
