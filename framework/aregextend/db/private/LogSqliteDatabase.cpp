@@ -1380,6 +1380,7 @@ bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLi
             if (stmt.execute() == false)
                 return false;
 
+            stmt.reset();
             stmt.clearBindings();
         }
 
