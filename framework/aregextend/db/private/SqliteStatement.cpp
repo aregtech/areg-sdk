@@ -70,7 +70,8 @@ bool SqliteStatement::prepare(const String& sql)
 
 bool SqliteStatement::execute()
 {
-    return isValid() && (sqlite3_step(_sqlite_stmt(mStatement)) == SQLITE_DONE);
+    int result = isValid() ? sqlite3_step(_sqlite_stmt(mStatement)) : SQLITE_ERROR;
+    return (result == SQLITE_DONE || result == SQLITE_ROW);
 }
 
 SqliteStatement::eQueryResult SqliteStatement::next()
