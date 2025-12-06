@@ -64,7 +64,7 @@ SqliteStatement::~SqliteStatement(void)
 bool SqliteStatement::prepare(const String& sql)
 {
     mRowPos = 0; // Reset row position
-    if (mDatabase.isOperable() && !sql.isEmpty())
+    if (!mDatabase.isOperable() || sql.isEmpty())
         return false;
 
     int result = ::sqlite3_prepare_v2(_sqlite(mDatabase.mDbObject), sql.getString(), -1, _sqlite_stmt(&mStatement), nullptr);
