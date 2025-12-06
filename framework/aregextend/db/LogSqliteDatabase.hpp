@@ -112,6 +112,9 @@ public:
     inline SqliteDatabase& getDatabase(void);
     inline const SqliteDatabase& getDatabase(void) const;
 
+    inline SqliteStatement& getStatement(void);
+    inline const SqliteStatement& getStatement(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -633,6 +636,16 @@ inline SqliteDatabase& LogSqliteDatabase::getDatabase(void)
 inline const SqliteDatabase& LogSqliteDatabase::getDatabase(void) const
 {
     return mDatabase;
+}
+
+inline SqliteStatement& LogSqliteDatabase::getStatement(void)
+{
+    return mStmtLogs;
+}
+
+inline const SqliteStatement& LogSqliteDatabase::getStatement(void) const
+{
+    return mStmtLogs;
 }
 
 #endif  // AREG_AREGEXTEND_DB_LOGSQLITEDATABASE_HPP
