@@ -1349,11 +1349,14 @@ bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLi
     {
         if (instId == NEService::TARGET_ALL)
         {
-            stmt.prepare(_sqlResetFilterScopesAll);
+            if (stmt.prepare(_sqlResetFilterScopesAll) == false)
+                return false;
         }
         else
         {
-            stmt.prepare(_sqlResetFilterScopes);
+            if (stmt.prepare(_sqlResetFilterScopes) == false)
+                return false;
+
             stmt.bindUint64(0, instId);
         }
 
@@ -1361,21 +1364,29 @@ bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLi
     }
     else
     {
-        stmt.prepare(_sqlCreateTempFilter);
+        if (stmt.prepare(_sqlCreateTempFilter) == false)
+            return false;
+
         stmt.execute();
         stmt.reset();
 
-        stmt.prepare(_sqlInsertTempFilter);
+        if (stmt.prepare(_sqlInsertTempFilter) == false)
+            return false;
+
         for (const auto& scope : filter.getData())
         {
             stmt.bindUint32(0, scope.scopeId);
             stmt.bindUint32(1, scope.scopePrio);
-            stmt.execute();
-            stmt.reset();
+            if (stmt.execute() == false)
+                return false;
+
             stmt.clearBindings();
         }
 
-        stmt.prepare(_sqlUpdateFilterScopes);
+        stmt.reset();
+        if (stmt.prepare(_sqlUpdateFilterScopes) == false)
+            return false;
+
         stmt.bindInt64(0, instId);
         stmt.execute();
         stmt.finalize();
