@@ -380,7 +380,7 @@ namespace
         "       FROM filter_masks m"
         "WHERE m.scope_id = filter_rules.scope_id)"
         "WHERE target_id = ?"
-        "AND scope_id IN(SELECT scope_id FROM filter_masks);"
+        "AND scope_id IN (SELECT scope_id FROM filter_masks);"
     };
 
     constexpr std::string_view _sqlResetFilterScopes
@@ -1343,10 +1343,9 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
 
 bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
 {
-    SqliteStatement stmt(mDatabase);
-
     if (filter.isEmpty())
     {
+        SqliteStatement stmt(mDatabase);
         if (instId == NEService::TARGET_ALL)
         {
             if (stmt.prepare(_sqlResetFilterScopesAll) == false)
@@ -1364,33 +1363,36 @@ bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLi
     }
     else
     {
-        if (stmt.prepare(_sqlCreateTempFilter) == false)
-            return false;
-
-        stmt.execute();
-        stmt.reset();
-
-        if (stmt.prepare(_sqlInsertTempFilter) == false)
-            return false;
-
-        for (const auto& scope : filter.getData())
+        do
         {
-            stmt.bindUint32(0, scope.scopeId);
-            stmt.bindUint32(1, scope.scopePrio);
+
+            SqliteStatement stmt(mDatabase, _sqlCreateTempFilter);
             if (stmt.execute() == false)
                 return false;
+        } while (false);
 
-            stmt.reset();
-            stmt.clearBindings();
-        }
+        do
+        {
+            SqliteStatement stmt(mDatabase, _sqlInsertTempFilter);
+            for (const auto& scope : filter.getData())
+            {
+                stmt.bindUint32(0, scope.scopeId);
+                stmt.bindUint32(1, scope.scopePrio);
+                if (stmt.execute() == false)
+                    return false;
 
-        stmt.reset();
-        if (stmt.prepare(_sqlUpdateFilterScopes) == false)
-            return false;
+                stmt.reset();
+                stmt.clearBindings();
+            }
+        } while (false);
 
-        stmt.bindInt64(0, instId);
-        stmt.execute();
-        stmt.finalize();
+        do
+        {
+            SqliteStatement stmt(mDatabase, _sqlUpdateFilterScopes);
+            stmt.bindInt64(0, instId);
+            stmt.execute();
+        } while (false);
+
         _dropTable("filter_masks");
     }
 
