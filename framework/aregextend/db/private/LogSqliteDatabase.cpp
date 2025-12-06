@@ -317,7 +317,7 @@ namespace
         "   scope_id      INTEGER NOT NULL DEFAULT 0,"
         "   target_id     INTEGER NOT NULL DEFAULT 0,"
         "   log_mask      INTEGER NOT NULL DEFAULT 1008"
-        ");"
+        "); "
         "INSERT INTO filter_rules(scope_id, target_id, log_mask) SELECT scope_id, cookie_id, 1008 FROM scopes;"
     };
 
@@ -378,9 +378,9 @@ namespace
         "UPDATE filter_rules SET log_mask = ("
         "       SELECT m.log_mask"
         "       FROM filter_masks m"
-        "WHERE m.scope_id = filter_rules.scope_id)"
-        "WHERE target_id = ?"
-        "AND scope_id IN (SELECT scope_id FROM filter_masks);"
+        "   WHERE m.scope_id = filter_rules.scope_id)"
+        "   WHERE target_id = ?"
+        "   AND scope_id IN (SELECT scope_id FROM filter_masks);"
     };
 
     constexpr std::string_view _sqlResetFilterScopes
