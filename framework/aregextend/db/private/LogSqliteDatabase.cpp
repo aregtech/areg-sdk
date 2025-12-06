@@ -1365,7 +1365,6 @@ bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLi
     {
         do
         {
-
             SqliteStatement stmt(mDatabase, _sqlCreateTempFilter);
             if (stmt.execute() == false)
                 return false;
@@ -1390,7 +1389,8 @@ bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayLi
         {
             SqliteStatement stmt(mDatabase, _sqlUpdateFilterScopes);
             stmt.bindInt64(0, instId);
-            stmt.execute();
+            if (stmt.execute() == false)
+                return false;
         } while (false);
 
         _dropTable("filter_masks");
