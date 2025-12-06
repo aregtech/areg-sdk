@@ -387,6 +387,26 @@ namespace
         "AND scope_id IN(SELECT scope_id FROM filter_masks);"
     };
 
+    constexpr std::string_view _sqlResetFilterScopes
+    {
+        "UPDATE filter_rules SET log_mask = 1008 WHERE target_id = ?;"
+    };
+
+    constexpr std::string_view _sqlResetFilterScopesAll
+    {
+        "UPDATE filter_rules SET log_mask = 1008;"
+    };
+
+    constexpr std::string_view _sqlDisableFilterScopes
+    {
+        "UPDATE filter_rules SET log_mask = 1008 WHERE target_id = ?;"
+    };
+
+    constexpr std::string_view _sqlDisableFilterScopesAll
+    {
+        "UPDATE filter_rules SET log_mask = 1008;"
+    };
+
     constexpr std::string_view _sqlDropTable
     {
         "DROP TABLE IF EXISTS %s;"
@@ -1209,40 +1229,39 @@ int LogSqliteDatabase::fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, S
     return result;
 }
 
-bool LogSqliteDatabase::setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+uint32_t LogSqliteDatabase::setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
 {
     stmt.reset();
     if (instId == NEService::TARGET_ALL)
     {
-        return stmt.prepare(_sqlGetAllLogScopes);
+        return (stmt.prepare(_sqlGetAllLogScopes) ? countScopeEntries(instId) : 0u);
     }
     else
     {
-        return (stmt.prepare(_sqlGetLogScopes) && stmt.bindInt64(0, instId));
+        return (stmt.prepare(_sqlGetLogScopes) && stmt.bindInt64(0, instId) ? countScopeEntries(instId) : 0u);
     }
 }
 
-bool LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
 {
     stmt.reset();
     if (instId == NEService::TARGET_ALL)
     {
-        return stmt.prepare(_sqlGetAllLogMessages);
+        return (stmt.prepare(_sqlGetAllLogMessages) ? countLogEntries(instId) : 0u);
     }
     else
     {
-        return (stmt.prepare(_sqlGetInstLogMessages) && stmt.bindInt64(0, instId));
+        return (stmt.prepare(_sqlGetInstLogMessages) && stmt.bindInt64(0, instId) ? countLogEntries(instId) : 0u        );
     }
 }
 
-uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<LogSqliteDatabase::sScopeFilter>& IN filter)
+bool LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
 {
     Lock lock(mLock);
     if (mDatabase.isOperable() == false)
-        return 0u;
-
-    if (_tableExists("sqlite_master", "scopes") == false)
-        return 0u;
+        return false;
+    else if (_tableExists("sqlite_master", "scopes") == false)
+        return false;
 
     if (_tableExists("sqlite_temp_master", "filter_rules") == false)
     {
@@ -1250,7 +1269,7 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
         if (stmtTemp.execute() == false)
         {
             commit(false);
-            return 0u;
+            return false;
         }
 
         commit(true);
@@ -1263,11 +1282,21 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
         }
     }
 
-    if (updaeFilterLogScopes(instId, filter) == false)
-        return 0u;
+    return _updaeFilterLogScopes(instId, filter);
+}
+
+uint32_t LogSqliteDatabase::setupStatementFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId)
+{
+    Lock lock(mLock);
+    stmt.reset();
+    if (mDatabase.isOperable() == false)
+        return false;
+    else if (_tableExists("sqlite_master", "scopes") == false)
+        return false;
+    else if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+        return false;
 
     uint32_t result = countFilterLogs(instId);
-    stmt.reset();
     if (result > 0)
     {
         if (instId == NEService::TARGET_ALL)
@@ -1283,32 +1312,87 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
     return result;
 }
 
-bool LogSqliteDatabase::updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
+uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<LogSqliteDatabase::sScopeFilter>& IN filter)
 {
     Lock lock(mLock);
-    if ((mDatabase.isOperable() == false) || filter.isEmpty())
-        return false;
-
-    SqliteStatement stmt(mDatabase);
-    stmt.prepare(_sqlCreateTempFilter);
-    stmt.execute();
     stmt.reset();
+    if (mDatabase.isOperable() == false)
+        return 0u;
+    else if (_tableExists("sqlite_master", "scopes") == false)
+        return 0u;
 
-    stmt.prepare(_sqlInsertTempFilter);
-    for (const auto& scope : filter.getData())
+    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
     {
-        stmt.bindUint32(0, scope.scopeId);
-        stmt.bindUint32(1, scope.scopePrio);
-        stmt.execute();
-        stmt.reset();
-        stmt.clearBindings();
+        SqliteStatement stmtTemp(mDatabase, _sqlCreateTempScopes);
+        if (stmtTemp.execute() == false)
+        {
+            commit(false);
+            return 0u;
+        }
+
+        commit(true);
     }
 
-    stmt.prepare(_sqlUpdateFilterScopes);
-    stmt.bindInt64(0, instId);
-    stmt.execute();
-    stmt.finalize();
-    _dropTable("filter_masks");
+    if (_updaeFilterLogScopes(instId, filter) == false)
+        return 0u;
+
+    uint32_t result = countFilterLogs(instId);
+    if (result > 0)
+    {
+        if (instId == NEService::TARGET_ALL)
+        {
+            stmt.prepare(_sqlFilterScopeLogsAll);
+        }
+        else if (stmt.prepare(_sqlFilterScopeLogsInst))
+        {
+            stmt.bindInt64(0, instId);
+        }
+    }
+
+    return result;
+}
+
+bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
+{
+    SqliteStatement stmt(mDatabase);
+
+    if (filter.isEmpty())
+    {
+        if (instId == NEService::TARGET_ALL)
+        {
+            stmt.prepare(_sqlResetFilterScopesAll);
+        }
+        else
+        {
+            stmt.prepare(_sqlResetFilterScopes);
+            stmt.bindUint64(0, instId);
+        }
+
+        stmt.execute();
+    }
+    else
+    {
+        stmt.prepare(_sqlCreateTempFilter);
+        stmt.execute();
+        stmt.reset();
+
+        stmt.prepare(_sqlInsertTempFilter);
+        for (const auto& scope : filter.getData())
+        {
+            stmt.bindUint32(0, scope.scopeId);
+            stmt.bindUint32(1, scope.scopePrio);
+            stmt.execute();
+            stmt.reset();
+            stmt.clearBindings();
+        }
+
+        stmt.prepare(_sqlUpdateFilterScopes);
+        stmt.bindInt64(0, instId);
+        stmt.execute();
+        stmt.finalize();
+        _dropTable("filter_masks");
+    }
+
     return true;
 }
 
@@ -1377,4 +1461,42 @@ uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
     }
 
     return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+}
+
+bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL*/)
+{
+    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+        return false;
+
+    SqliteStatement stmt(mDatabase);
+    if (instId == NEService::TARGET_ALL)
+    {
+        stmt.prepare(_sqlResetFilterScopesAll);
+    }
+    else
+    {
+        stmt.prepare(_sqlResetFilterScopes);
+        stmt.bindUint64(0, instId);
+    }
+
+    return stmt.execute();
+}
+
+bool LogSqliteDatabase::disableFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL*/)
+{
+    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+        return false;
+
+    SqliteStatement stmt(mDatabase);
+    if (instId == NEService::TARGET_ALL)
+    {
+        stmt.prepare(_sqlDisableFilterScopesAll);
+    }
+    else
+    {
+        stmt.prepare(_sqlDisableFilterScopes);
+        stmt.bindUint64(0, instId);
+    }
+
+    return stmt.execute();
 }
