@@ -1503,3 +1503,8 @@ bool LogSqliteDatabase::disableFilterMask(ITEM_ID instId /*= NEService::TARGET_A
 
     return stmt.execute();
 }
+
+bool LogSqliteDatabase::tableExists(const char* master, const char* table)
+{
+    return isOperable() && _tableExists(master, table);
+}
