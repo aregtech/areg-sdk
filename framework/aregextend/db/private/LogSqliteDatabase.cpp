@@ -316,27 +316,12 @@ namespace
         "CREATE TEMP TABLE filter_rules ("
         "   scope_id      INTEGER NOT NULL DEFAULT 0,"
         "   target_id     INTEGER NOT NULL DEFAULT 0,"
-        "   log_mask      INTEGER NOT NULL DEFAULT 1008"
-        ");"
+        "   log_mask      INTEGER NOT NULL DEFAULT 1008);"
     };
 
     constexpr std::string_view _sqlInitTempScopes
     {
         "INSERT INTO filter_rules(scope_id, target_id, log_mask) SELECT scope_id, cookie_id, 1008 FROM scopes;"
-    };
-
-    constexpr std::string_view _sqlCreateTempFilter
-    {
-        "CREATE TEMP TABLE filter_masks ("
-        "   scope_id      INTEGER NOT NULL DEFAULT 0,"
-        "   log_mask      INTEGER NOT NULL DEFAULT 1008"
-        ");"
-    };
-
-
-    constexpr std::string_view _sqlInsertTempFilter
-    {
-        "INSERT INTO filter_masks(scope_id, log_mask) VALUES(?, ?);"
     };
 
     constexpr std::string_view _sqlFilterScopeLogsCountAll
@@ -345,7 +330,7 @@ namespace
         "   FROM logs AS l"
         "   JOIN filter_rules AS r"
         "       ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
-        "   WHERE ((l.msg_prio & r.log_mask) != 0)"
+        "   WHERE ((l.msg_prio & r.log_mask) != 0);"
     };
 
     constexpr std::string_view _sqlFilterScopeLogsCount
@@ -354,7 +339,7 @@ namespace
         "   FROM logs AS l"
         "   JOIN filter_rules AS r"
         "       ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
-        "   WHERE (l.cookie_id = ?) AND ((l.msg_prio & r.log_mask) != 0)"
+        "   WHERE (l.cookie_id = ?) AND ((l.msg_prio & r.log_mask) != 0);"
     };
 
     constexpr std::string_view _sqlFilterScopeLogsAll
@@ -377,14 +362,15 @@ namespace
         "   ORDER BY time_created;"
     };
 
-    constexpr std::string_view _sqlUpdateFilterScopes
+
+    constexpr std::string_view _sqlUpdateFilterRuleInst
     {
-        "UPDATE filter_rules SET log_mask = ("
-        "       SELECT m.log_mask"
-        "       FROM filter_masks m"
-        "   WHERE m.scope_id = filter_rules.scope_id)"
-        "   WHERE target_id = ?"
-        "   AND scope_id IN (SELECT scope_id FROM filter_masks);"
+        "UPDATE filter_rules SET log_mask = ? WHERE target_id = %u AND scope_id = ?;"
+    };
+
+    constexpr std::string_view _sqlUpdateFilterRuleAll
+    {
+        "UPDATE filter_rules SET log_mask = ? WHERE scope_id = ?;"
     };
 
     constexpr std::string_view _sqlResetFilterScopes
@@ -582,32 +568,6 @@ inline void LogSqliteDatabase::_copyLogScopes(SqliteStatement& stmt, NELogging::
     scope.scopePrio = static_cast<uint32_t>(stmt.getUint32(2));
 }
 
-inline bool LogSqliteDatabase::_tableExists(const char* master, const char* table)
-{
-    bool result{ false };
-    SqliteStatement stmt(mDatabase);
-    if ((NEString::isEmpty<char>(master) == false) && (NEString::isEmpty<char>(table) == false))
-    {
-        String sql;
-        sql.format(_sqlCheckTable.data(), master, table);
-        result = (stmt.prepare(sql) && (SqliteStatement::eQueryResult::HasMore == stmt.next()));
-    }
-
-    return result;
-}
-
-inline void LogSqliteDatabase::_dropTable(const char* table)
-{
-    if (NEString::isEmpty<char>(table))
-        return;
-
-    String sql;
-    sql.format(_sqlDropTable.data(), table);
-    SqliteStatement stmt(mDatabase, sql);
-    stmt.execute();
-    stmt.finalize();
-}
-
 bool LogSqliteDatabase::isOperable(void) const
 {
     return mDatabase.isOperable();
@@ -650,7 +610,7 @@ void LogSqliteDatabase::disconnect(void)
     if (mStmtLogs.isValid())
         mStmtLogs.finalize();
 
-    _dropTable("filter_rules");
+    dropTable("filter_rules");
     mDatabase.commit(true);
     mDatabase.disconnect();
     mIsInitialized = false;
@@ -1260,10 +1220,10 @@ bool LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sSc
     Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return false;
-    else if (_tableExists("sqlite_master", "scopes") == false)
+    else if (tableExists("scopes", "sqlite_master") == false)
         return false;
 
-    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+    if (tableExists("filter_rules", "sqlite_temp_master") == false)
     {
         SqliteStatement stmt(mDatabase, _sqlCreateTempScopes);
         if (stmt.execute() == false)
@@ -1291,9 +1251,9 @@ uint32_t LogSqliteDatabase::setupStatementFilterLogs(SqliteStatement& IN OUT stm
     stmt.reset();
     if (mDatabase.isOperable() == false)
         return 0u;
-    else if (_tableExists("sqlite_master", "scopes") == false)
+    else if (tableExists("scopes", "sqlite_master") == false)
         return 0u;
-    else if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+    else if (tableExists("filter_rules", "sqlite_temp_master") == false)
         return 0u;
 
     uint32_t result = countFilterLogs(instId);
@@ -1318,10 +1278,10 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
     stmt.reset();
     if (mDatabase.isOperable() == false)
         return 0u;
-    else if (_tableExists("sqlite_master", "scopes") == false)
+    else if (tableExists("scopes", "sqlite_master") == false)
         return 0u;
 
-    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+    if (tableExists("filter_rules", "sqlite_temp_master") == false)
     {
         SqliteStatement stmtTemp(mDatabase, _sqlCreateTempScopes);
         if (stmtTemp.execute() == false)
@@ -1354,60 +1314,36 @@ uint32_t LogSqliteDatabase::filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_I
 
 bool LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter)
 {
-    if (filter.isEmpty())
+    if (filter.isEmpty() == false)
     {
-        SqliteStatement stmt(mDatabase);
+        String sql;
         if (instId == NEService::TARGET_ALL)
         {
-            if (stmt.prepare(_sqlResetFilterScopesAll) == false)
-                return false;
+            sql = _sqlUpdateFilterRuleAll;
         }
         else
         {
-            if (stmt.prepare(_sqlResetFilterScopes) == false)
-                return false;
-
-            stmt.bindUint64(0, instId);
+            sql.format(_sqlUpdateFilterRuleInst.data(), instId);
         }
 
-        stmt.execute();
+        SqliteStatement stmt(mDatabase, sql);
+        for (const auto& scope : filter.getData())
+        {
+            stmt.bindUint32(0, scope.scopePrio);
+            stmt.bindUint32(1, scope.scopeId);
+            if (stmt.execute() == false)
+                return false;
+
+            stmt.reset();
+            stmt.clearBindings();
+        }
+
+        return true;
     }
     else
     {
-        do
-        {
-            SqliteStatement stmt(mDatabase, _sqlCreateTempFilter);
-            if (stmt.execute() == false)
-                return false;
-        } while (false);
-
-        do
-        {
-            SqliteStatement stmt(mDatabase, _sqlInsertTempFilter);
-            for (const auto& scope : filter.getData())
-            {
-                stmt.bindUint32(0, scope.scopeId);
-                stmt.bindUint32(1, scope.scopePrio);
-                if (stmt.execute() == false)
-                    return false;
-
-                stmt.reset();
-                stmt.clearBindings();
-            }
-        } while (false);
-
-        do
-        {
-            SqliteStatement stmt(mDatabase, _sqlUpdateFilterScopes);
-            stmt.bindInt64(0, instId);
-            if (stmt.execute() == false)
-                return false;
-        } while (false);
-
-        _dropTable("filter_masks");
+        return resetFilterMask(instId);
     }
-
-    return true;
 }
 
 uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
@@ -1479,7 +1415,7 @@ uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
 
 bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL*/)
 {
-    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+    if (tableExists("filter_rules", "sqlite_temp_master") == false)
         return false;
 
     SqliteStatement stmt(mDatabase);
@@ -1498,7 +1434,7 @@ bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL
 
 bool LogSqliteDatabase::disableFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL*/)
 {
-    if (_tableExists("sqlite_temp_master", "filter_rules") == false)
+    if (tableExists("filter_rules", "sqlite_temp_master") == false)
         return false;
 
     SqliteStatement stmt(mDatabase);
@@ -1515,7 +1451,31 @@ bool LogSqliteDatabase::disableFilterMask(ITEM_ID instId /*= NEService::TARGET_A
     return stmt.execute();
 }
 
-bool LogSqliteDatabase::tableExists(const char* master, const char* table)
+bool LogSqliteDatabase::tableExists(const char* table, const char* master /*= nullptr*/)
 {
-    return isOperable() && _tableExists(master, table);
+    bool result{ false };
+    master = NEString::isEmpty<char>(master) ? "sqlite_master" : master;
+    if (isOperable() && (NEString::isEmpty<char>(master) == false) && (NEString::isEmpty<char>(table) == false))
+    {
+        String sql;
+        sql.format(_sqlCheckTable.data(), master, table);
+        SqliteStatement stmt(mDatabase, sql);
+        result = (SqliteStatement::eQueryResult::HasMore == stmt.next());
+    }
+
+    return result;
+
+}
+
+bool LogSqliteDatabase::dropTable(const char* table)
+{
+    if (NEString::isEmpty<char>(table))
+        return false;
+
+    String sql;
+    sql.format(_sqlDropTable.data(), table);
+    SqliteStatement stmt(mDatabase, sql);
+    bool result = stmt.execute();
+    stmt.finalize();
+    return result;
 }

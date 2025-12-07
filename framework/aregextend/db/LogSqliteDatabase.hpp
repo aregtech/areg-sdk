@@ -115,7 +115,18 @@ public:
     inline SqliteStatement& getStatement(void);
     inline const SqliteStatement& getStatement(void) const;
 
-    bool tableExists(const char* master, const char* table);
+    /**
+     * \brief   Checks whether the specified table exists or not.
+     * \param   table   The name of the table to check
+     * \param   master  The name of the schema to check the table. If empty or nullptr, will check the "sqlite_master" schema.
+     * \return  Returns true if specified table exists in the specified schema.
+     **/
+    bool tableExists(const char* table, const char* master = nullptr);
+
+    /**
+     * \brief   Drops specified table.
+     **/
+    bool dropTable(const char* table);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -563,19 +574,6 @@ private:
      * \return  Returns true if operation succeeded.
      **/
     inline bool _updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
-
-    /**
-     * \brief   Checks whether the specified table exists or not.
-     * \param   master  The name of the schema to check the table
-     * \param   table   The name of the table to check
-     * \return  Returns true if specified table exists in the specified schema
-     **/
-    inline bool _tableExists(const char* master, const char* table);
-
-    /**
-     * \brief   Drops specified table.
-     **/
-    inline void _dropTable(const char* table);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
