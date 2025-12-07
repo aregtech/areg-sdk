@@ -1290,11 +1290,11 @@ uint32_t LogSqliteDatabase::setupStatementFilterLogs(SqliteStatement& IN OUT stm
     Lock lock(mLock);
     stmt.reset();
     if (mDatabase.isOperable() == false)
-        return false;
+        return 0u;
     else if (_tableExists("sqlite_master", "scopes") == false)
-        return false;
+        return 0u;
     else if (_tableExists("sqlite_temp_master", "filter_rules") == false)
-        return false;
+        return 0u;
 
     uint32_t result = countFilterLogs(instId);
     if (result > 0)
