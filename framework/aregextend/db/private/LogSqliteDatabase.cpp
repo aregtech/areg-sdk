@@ -344,27 +344,27 @@ namespace
 
     constexpr std::string_view _sqlFilterScopeLogsAll
     {
-
-        "(SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, l.msg_log, l.msg_thread, l.msg_module"
-        "    FROM logs AS l"
-        "    WHERE l.scope_id = 0) "
-        "UNION ALL "
-        "(SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, l.msg_log, l.msg_thread, l.msg_module"
-        "    FROM logs AS l"
-        "    JOIN filter_rules AS r"
-        "        ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
-        "    WHERE ((l.msg_prio & r.log_mask) != 0)) "
-        "ORDER BY time_created;"
+        "SELECT * FROM ("
+        "   SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, l.time_created AS tc, l.time_received, l.time_duration, l.scope_id, l.session_id, l.msg_log, l.msg_thread, l.msg_module"
+        "       FROM logs AS l"
+        "       WHERE l.scope_id = 0 "
+        "   UNION ALL "
+        "   SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, l.msg_log, l.msg_thread, l.msg_module"
+        "       FROM logs AS l"
+        "       JOIN filter_rules AS r"
+        "           ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
+        "       WHERE (l.msg_prio & r.log_mask) != 0 "
+        ") ORDER BY tc;"
     };
 
     constexpr std::string_view _sqlFilterScopeLogsInst
     {
-        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, l.time_created, l.time_received, l.time_duration, l.scope_id, l.session_id, l.msg_log, l.msg_thread, l.msg_module"
+        "SELECT l.msg_type, l.msg_prio, l.cookie_id, l.msg_module_id, l.msg_thread_id, l.time_created AS tc, l.time_received, l.time_duration, l.scope_id, l.session_id, l.msg_log, l.msg_thread, l.msg_module"
         "   FROM logs AS l"
         "   JOIN filter_rules AS r"
         "       ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
         "   WHERE (l.cookie_id = ?) AND ((l.msg_prio & r.log_mask) != 0)"
-        "   ORDER BY time_created;"
+        "   ORDER BY tc;"
     };
 
 
