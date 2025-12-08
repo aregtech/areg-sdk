@@ -1237,6 +1237,7 @@ bool LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sSc
 
     if (tableExists("filter_rules", _temp) == false)
     {
+        mDatabase.begin();
         SqliteStatement stmt(mDatabase, _sqlCreateTempScopes);
         if (stmt.execute() == false)
         {
@@ -1245,6 +1246,7 @@ bool LogSqliteDatabase::setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sSc
         }
 
         stmt.reset();
+        stmt.finalize();
         if (stmt.prepare(_sqlInitTempScopes) == false)
         {
             commit(false);
