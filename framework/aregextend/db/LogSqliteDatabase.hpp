@@ -38,6 +38,17 @@
 class LogSqliteDatabase : public IELogDatabaseEngine
 {
 //////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+public:
+    //!< The structure of a filter by scopes and priorities
+    struct sScopeFilter
+    {
+        uint32_t    scopeId     { 0u }; //!< Scope ID
+        uint32_t    scopePrio   { 0u }; //!< Scope log prio
+    };
+
+//////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -100,6 +111,22 @@ public:
      **/
     inline SqliteDatabase& getDatabase(void);
     inline const SqliteDatabase& getDatabase(void) const;
+
+    inline SqliteStatement& getStatement(void);
+    inline const SqliteStatement& getStatement(void) const;
+
+    /**
+     * \brief   Checks whether the specified table exists or not.
+     * \param   table   The name of the table to check
+     * \param   master  The name of the schema to check the table. If empty or nullptr, will check the "sqlite_master" schema.
+     * \return  Returns true if specified table exists in the specified schema.
+     **/
+    bool tableExists(const char* table, const char* master = nullptr);
+
+    /**
+     * \brief   Drops specified table.
+     **/
+    bool dropTable(const char* table);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -414,9 +441,9 @@ public:
      *          The logging database should be opened for reading data.
      * \param   stmt    The SQLite statement object bound with SQLite logging database.
      * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
-     * @return  Returns true if succeeded to setup.
+     * @return  Returns number of scopes of specified instance.
      **/
-    static bool setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Call to setup statement to read the list of logs from logging database.
@@ -425,9 +452,25 @@ public:
      *          The logging database should be opened for reading data.
      * \param   stmt    The SQLite statement object bound with SQLite logging database.
      * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
-     * @return  Returns true if succeeded to setup.
+     * @return  Returns number of log messages of specified instance ID.
      **/
-    static bool setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Sets up the log filters
+     * \param   instId  The ID of instance to filter.
+     * \param   filter  The scope prio filters to setup
+     * \return  Returns number of log entries after applying filter.
+     **/
+    uint32_t setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+
+    /**
+     * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
+     * \param   stmt    The statement object to use to extract logs from database.
+     * \param   instId  The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
+     * \return  Returns number of log entries after applying filter.
+     **/
+    uint32_t setupStatementReadFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
@@ -447,6 +490,17 @@ public:
      * \brief   Returns number of log instances.
      **/
     uint32_t countLogInstances(void);
+
+    /**
+     * \brief   Returns number of filtered log messages of specified instance ID.
+     **/
+    uint32_t countFilterLogs(ITEM_ID instId = NEService::TARGET_ALL);
+
+    /**
+     * \brief   Resets the logging priority filter mask of the specified instance ID or for all instances.
+     *          Returns true if operation succeeded.
+     **/
+    bool resetFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -497,6 +551,14 @@ private:
      * \param   scope   The NELogging::sScopeInfo to copy the log scope.
      **/
     inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
+
+    /**
+     * \brief   Updates the filter information for the specified instance.
+     * \param   instId  The instance ID to apply filters
+     * \param   filter  The list of scopes and filter mask to apply
+     * \return  Returns true if operation succeeded.
+     **/
+    inline uint32_t _updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -559,6 +621,16 @@ inline SqliteDatabase& LogSqliteDatabase::getDatabase(void)
 inline const SqliteDatabase& LogSqliteDatabase::getDatabase(void) const
 {
     return mDatabase;
+}
+
+inline SqliteStatement& LogSqliteDatabase::getStatement(void)
+{
+    return mStmtLogs;
+}
+
+inline const SqliteStatement& LogSqliteDatabase::getStatement(void) const
+{
+    return mStmtLogs;
 }
 
 #endif  // AREG_AREGEXTEND_DB_LOGSQLITEDATABASE_HPP

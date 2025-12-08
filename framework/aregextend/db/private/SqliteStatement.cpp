@@ -63,14 +63,16 @@ SqliteStatement::~SqliteStatement(void)
 
 bool SqliteStatement::prepare(const String& sql)
 {
-    bool result{ (mDatabase.isOperable() && !sql.isEmpty() && (SQLITE_OK == ::sqlite3_prepare_v2(_sqlite(mDatabase.mDbObject), sql.getString(), -1, _sqlite_stmt(&mStatement), nullptr))) };
     mRowPos = 0; // Reset row position
-    return result;
+    if ((mDatabase.isOperable() == false) || sql.isEmpty())
+        return false;
+
+    return (SQLITE_OK == ::sqlite3_prepare_v2(_sqlite(mDatabase.mDbObject), sql.getString(), -1, _sqlite_stmt(&mStatement), nullptr));
 }
 
 bool SqliteStatement::execute()
 {
-    return isValid() && (sqlite3_step(_sqlite_stmt(mStatement)) == SQLITE_DONE);
+    return (isValid() && (SQLITE_DONE == sqlite3_step(_sqlite_stmt(mStatement))));
 }
 
 SqliteStatement::eQueryResult SqliteStatement::next()
