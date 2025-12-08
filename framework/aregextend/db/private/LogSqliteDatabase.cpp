@@ -353,7 +353,7 @@ namespace
         "    FROM logs AS l"
         "    JOIN filter_rules AS r"
         "        ON l.scope_id = r.scope_id AND l.cookie_id = r.target_id"
-        "    WHERE(l.msg_prio & r.log_mask) != 0) "
+        "    WHERE ((l.msg_prio & r.log_mask) != 0)) "
         "ORDER BY time_created;"
     };
 
@@ -1267,7 +1267,7 @@ uint32_t LogSqliteDatabase::setupStatementReadFilterLogs(SqliteStatement& IN OUT
     {
         if (instId == NEService::TARGET_ALL)
         {
-            stmt.prepare(_sqlFilterScopeLogsAll);
+            VERIFY(stmt.prepare(_sqlFilterScopeLogsAll));
         }
         else if (stmt.prepare(_sqlFilterScopeLogsInst))
         {
@@ -1323,7 +1323,7 @@ uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
     SqliteStatement stmt(mDatabase);
     if (instId == NEService::TARGET_ALL)
     {
-        stmt.prepare(_sqlCountAllLogs);
+        VERIFY(stmt.prepare(_sqlCountAllLogs));
     }
     else if (stmt.prepare(_sqlCountInstanceLogs))
     {
@@ -1342,7 +1342,7 @@ uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
     SqliteStatement stmt(mDatabase);
     if (instId == NEService::TARGET_ALL)
     {
-        stmt.prepare(_sqlCountAllScopes);
+        VERIFY(stmt.prepare(_sqlCountAllScopes));
     }
     else if (stmt.prepare(_sqlCountInstanceScopes))
     {
@@ -1371,7 +1371,7 @@ uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
     SqliteStatement stmt(mDatabase);
     if (instId == NEService::TARGET_ALL)
     {
-        stmt.prepare(_sqlFilterScopeLogsCountAll);
+        VERIFY(stmt.prepare(_sqlFilterScopeLogsCountAll));
     }
     else if (stmt.prepare(_sqlFilterScopeLogsCount))
     {
@@ -1389,11 +1389,11 @@ bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL
     SqliteStatement stmt(mDatabase);
     if (instId == NEService::TARGET_ALL)
     {
-        stmt.prepare(_sqlResetFilterScopesAll);
+        VERIFY(stmt.prepare(_sqlResetFilterScopesAll));
     }
     else
     {
-        stmt.prepare(_sqlResetFilterScopes);
+        VERIFY(stmt.prepare(_sqlResetFilterScopes));
         stmt.bindUint64(0, instId);
     }
 
