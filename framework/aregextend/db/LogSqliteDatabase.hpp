@@ -460,9 +460,9 @@ public:
      * \brief   Sets up the log filters
      * \param   instId  The ID of instance to filter.
      * \param   filter  The scope prio filters to setup
-     * \return  Return true if succeeded to setup filters of logs.
+     * \return  Returns number of log entries after applying filter.
      **/
-    bool setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+    uint32_t setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
 
     /**
      * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
@@ -470,16 +470,7 @@ public:
      * \param   instId  The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupStatementFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
-
-    /**
-     * \brief   Sets up the priorities filter to extract logs from database for the given instance and returns the number of filtered logs to extract.
-     * \param   stmt        The statement object to use to extract logs from database.
-     * \param   instId      The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
-     * \param   filter      The list of scope IDs and priority mask to apply to filter data.
-     * \return  Returns number of log entries after applying filter.
-     **/
-    uint32_t filterLogScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+    uint32_t setupStatementReadFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
@@ -510,12 +501,6 @@ public:
      *          Returns true if operation succeeded.
      **/
     bool resetFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
-
-    /**
-     * \brief   Disables filtering logs by priority, so that there will be no log.
-     *          Returns true if operation succeeded.
-     **/
-    bool disableFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -573,7 +558,7 @@ private:
      * \param   filter  The list of scopes and filter mask to apply
      * \return  Returns true if operation succeeded.
      **/
-    inline bool _updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+    inline uint32_t _updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
