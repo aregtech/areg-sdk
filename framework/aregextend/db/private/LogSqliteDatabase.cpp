@@ -306,25 +306,12 @@ namespace
         "SELECT name FROM sqlite_master WHERE type = \'table\' AND name = \'scopes\';"
     };
 
-    constexpr std::string_view _tableTempFilter
+    constexpr std::string_view _sqlCreateTempScopes
     {
         "CREATE TEMP TABLE filter_rules ("
         "   scope_id      INTEGER NOT NULL DEFAULT 0,"
         "   target_id     INTEGER NOT NULL DEFAULT 0,"
         "   log_mask      INTEGER NOT NULL DEFAULT 1008);"
-    };
-
-    constexpr std::string_view _tableFilter
-    {
-        "CREATE TABLE filter_rules ("
-        "   scope_id      INTEGER NOT NULL DEFAULT 0,"
-        "   target_id     INTEGER NOT NULL DEFAULT 0,"
-        "   log_mask      INTEGER NOT NULL DEFAULT 1008);"
-    };
-
-    constexpr std::string_view _sqlCreateTempScopes
-    {
-        _tableFilter
     };
 
     constexpr std::string_view _sqlInitTempScopes
@@ -410,8 +397,7 @@ namespace
     constexpr uint32_t  SQL_LEN     { 768 };
 
     constexpr char const _master[]   { "sqlite_master" };
-    constexpr char const _temp[]     { "sqlite_master" };
-    // constexpr char* const _temp     { "sqlite_temp_master" };
+    constexpr char const _temp[]     { "sqlite_temp_master" };
 }
 
 //////////////////////////////////////////////////////////////////////////
