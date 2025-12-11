@@ -502,6 +502,12 @@ public:
      **/
     bool resetFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
 
+    /**
+     * \brief   Disables the logging priority filter mask of the specified instance ID or for all instances.
+     *          Returns true if operation succeeded.
+     **/
+    bool disableFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////

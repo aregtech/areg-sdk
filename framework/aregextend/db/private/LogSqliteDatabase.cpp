@@ -388,6 +388,16 @@ namespace
         "UPDATE filter_rules SET log_mask = 1008;"
     };
 
+    constexpr std::string_view _sqlDisableFilterScopes
+    {
+        "UPDATE filter_rules SET log_mask = 0 WHERE target_id = ?;"
+    };
+
+    constexpr std::string_view _sqlDisableFilterScopesAll
+    {
+        "UPDATE filter_rules SET log_mask = 0;"
+    };
+
     constexpr std::string_view _sqlDropTable
     {
         "DROP TABLE IF EXISTS %s;"
@@ -1394,6 +1404,25 @@ bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL
     else
     {
         VERIFY(stmt.prepare(_sqlResetFilterScopes));
+        stmt.bindUint64(0, instId);
+    }
+
+    return stmt.execute();
+}
+
+bool LogSqliteDatabase::disableFilterMask(ITEM_ID instId)
+{
+    if (tableExists("filter_rules", _temp) == false)
+        return false;
+
+    SqliteStatement stmt(mDatabase);
+    if (instId == NEService::TARGET_ALL)
+    {
+        VERIFY(stmt.prepare(_sqlDisableFilterScopesAll));
+    }
+    else
+    {
+        VERIFY(stmt.prepare(_sqlDisableFilterScopes));
         stmt.bindUint64(0, instId);
     }
 
