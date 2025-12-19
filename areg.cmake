@@ -37,6 +37,8 @@ include("${AREG_CMAKE_CONFIG_DIR}/setup.cmake")
 message(STATUS "AREG: >>> Including \'${AREG_CMAKE_CONFIG_DIR}/common.cmake\'")
 include("${AREG_CMAKE_CONFIG_DIR}/common.cmake")
 
+set(AREG_RESOURCES "${AREG_FRAMEWORK}/areg/resources")
+
 # Set the 'framework' in the include directories
 include_directories("${AREG_FRAMEWORK}")
 # Now the header files of the areg framework can be included in the projects.
