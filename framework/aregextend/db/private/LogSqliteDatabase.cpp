@@ -202,7 +202,7 @@ namespace
     //! A script to create index of the logs table
     constexpr std::string_view  _sqlCreateIdxLogs
     {
-        "CREATE INDEX idx_logs ON logs(scope_id, cookie_id);"
+        "CREATE INDEX idx_logs ON logs(scope_id, msg_prio, cookie_id);"
     };
 
     //! A script to extract the names of connected log instances
