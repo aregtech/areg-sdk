@@ -370,6 +370,9 @@ jobs:
         uses: cygwin/cygwin-install-action@v6
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make
+          install-dir: 'C:\cygwin'
+          add-to-path: false
+          work-vol: 'C:'
 
       - name: Configure CMake by selecting compiler family
         if: matrix.config.extend == 'ON'
