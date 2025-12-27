@@ -129,8 +129,8 @@ void TrafficLightService::startupServiceInterface(Component & holder)
     TrafficSwitchEvent::addListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
 }
 
-void TrafficLightService::shutdownServiceIntrface(Component & holder)
+void TrafficLightService::shutdownServiceInterface(Component & holder)
 {
-    SimpleTrafficLightStub::shutdownServiceIntrface(holder);
+    SimpleTrafficLightStub::shutdownServiceInterface(holder);
     TrafficSwitchEvent::removeListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
 }

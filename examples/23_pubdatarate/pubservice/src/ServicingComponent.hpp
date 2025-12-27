@@ -214,7 +214,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    virtual void shutdownServiceIntrface ( Component & holder ) override;
+    virtual void shutdownServiceInterface ( Component & holder ) override;
 
 /************************************************************************/
 // StubBase overrides

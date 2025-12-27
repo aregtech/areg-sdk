@@ -115,7 +115,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     LargeDataStub::startupServiceInterface(holder);
 }
 
-void ServicingComponent::shutdownServiceIntrface(Component& holder)
+void ServicingComponent::shutdownServiceInterface(Component& holder)
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_shutdownServiceIntrface);
 
@@ -128,7 +128,7 @@ void ServicingComponent::shutdownServiceIntrface(Component& holder)
     mInputThread.shutdownThread(NECommon::WAIT_INFINITE);
     mImageThread.shutdownThread(NECommon::WAIT_INFINITE);
 
-    LargeDataStub::shutdownServiceIntrface(holder);
+    LargeDataStub::shutdownServiceInterface(holder);
 }
 
 bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus )

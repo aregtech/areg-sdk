@@ -294,7 +294,7 @@ inline void Component::_shutdownServices(void)
         StubBase* stub = mServerList.valueAtPosition(pos);
         ASSERT(stub != nullptr);
 
-        stub->shutdownServiceIntrface(self());
+        stub->shutdownServiceInterface(self());
         ServiceManager::requestUnregisterServer(stub->getAddress(), NEService::eDisconnectReason::ReasonProviderDisconnected);
     }
 }

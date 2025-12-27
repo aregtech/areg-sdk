@@ -58,10 +58,10 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
     console.unlockConsole( );
 }
 
-void SystemServiceConsole::shutdownServiceIntrface( Component & holder )
+void SystemServiceConsole::shutdownServiceInterface( Component & holder )
 {
     mTimer.stopTimer( );
-    StubBase::shutdownServiceIntrface( holder );
+    StubBase::shutdownServiceInterface( holder );
 }
 
 #ifdef DEBUG
