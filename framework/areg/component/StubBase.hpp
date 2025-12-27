@@ -284,7 +284,7 @@ public:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    virtual void shutdownServiceIntrface(Component& holder);
+    virtual void shutdownServiceInterface(Component& holder);
 
 /************************************************************************/
 // StubBase overrides. 

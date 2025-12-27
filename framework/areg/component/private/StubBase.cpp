@@ -278,7 +278,7 @@ void StubBase::startupServiceInterface( Component&  holder )
     StubConnectEvent::addListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
-void StubBase::shutdownServiceIntrface( Component & holder )
+void StubBase::shutdownServiceInterface( Component & holder )
 {
     LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );

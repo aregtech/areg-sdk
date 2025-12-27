@@ -39,13 +39,13 @@ void ServicingComponent::startupServiceInterface(Component & holder)
     printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
-void ServicingComponent::shutdownServiceIntrface(Component & holder)
+void ServicingComponent::shutdownServiceInterface(Component & holder)
 {
     LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
     LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
     mTimer.stopTimer();
-    StubBase::shutdownServiceIntrface(holder);
+    StubBase::shutdownServiceInterface(holder);
 
     std::cout << "Local servicing stopped..." << std::endl;
 }
