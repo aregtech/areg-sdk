@@ -224,6 +224,15 @@ public:
      **/
     virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName );
 
+    /**
+     * \brief   This function is called when worker thread is started.
+     *          Override this function to perform additional operations
+     *          when worker thread is started.
+     * \param   consumer        The worker thread consumer object
+     * \param   workerThread    The worker thread, which is started.
+     **/
+    virtual void notifyWorkerThreadStarted(IEWorkerThreadConsumer& consumer, WorkerThread & workerThread);
+
 /************************************************************************/
 // Component operations
 /************************************************************************/

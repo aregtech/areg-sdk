@@ -196,6 +196,12 @@ bool ServiceClientConnectionBase::isServiceHostConnected(void) const
     return isConnectionStarted();
 }
 
+bool ServiceClientConnectionBase::isServiceHostPending(void) const
+{
+    Lock lock(mLock);
+    return isConnectionPending();
+}
+
 bool ServiceClientConnectionBase::isServiceHostSetup( void ) const
 {
     Lock lock(mLock);

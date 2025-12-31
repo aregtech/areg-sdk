@@ -222,6 +222,11 @@ protected:
     virtual bool isServiceHostConnected( void ) const override;
 
     /**
+     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     **/
+    virtual bool isServiceHostPending(void) const override;
+
+    /**
      * \brief   Returns true if service is configured and ready to start
      **/
     virtual bool isServiceHostSetup( void ) const override;
@@ -314,9 +319,14 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Returns true if client socket connection is started.
+     * \brief   Returns true if client socket connection is started, connected with the remove service and ready to operate.
      **/
     inline bool isConnectionStarted(void) const;
+
+    /**
+     * \brief   Returns true if client socket connection is started, but not connected yet and not ready to operate.
+     **/
+    inline bool isConnectionPending(void) const;
 
     /**
      * \brief   Call to send an event with the command to process.
@@ -549,6 +559,11 @@ inline bool ServiceClientConnectionBase::isConnectionStarted(void) const
 {
     const ITEM_ID & cookie = mClientConnection.getCookie();
     return (mClientConnection.isValid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
+}
+
+inline bool ServiceClientConnectionBase::isConnectionPending(void) const
+{
+    return (mClientConnection.isValid() && (mConnectionState == ServiceClientConnectionBase::eConnectionState::ConnectionStarting));
 }
 
 inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::eConnectionState newState)

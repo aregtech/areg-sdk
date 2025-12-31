@@ -271,6 +271,13 @@ public:
      **/
     static bool isRouterConnected( void );
 
+
+    /**
+     * \brief   Returns true if application successfully triggered connection to Message Routing Service,
+     *          but the connection is not established yet and not ready to communicate.
+     **/
+    static bool isRouterConnectionPending(void);
+
     /**
      * \brief   Returns true if an element exists in the application storage
      * \param   elemName    The name of element stored in application storage.

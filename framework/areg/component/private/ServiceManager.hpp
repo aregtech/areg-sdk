@@ -277,6 +277,11 @@ private:
     static bool _isRoutingServiceStarted( void );
 
     /**
+     * \brief   Returns true if Routing Service client is started, bot not ready to operate yet.
+     **/
+    static bool _isRoutingServicePending( void );
+
+    /**
      * \brief   Returns true if Routing Service client is configured and ready to start.
      **/
     static bool _isRoutingServiceConfigured( void );

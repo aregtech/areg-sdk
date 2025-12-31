@@ -52,7 +52,17 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
             IEWorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
             if (consumer != nullptr)
             {
-                component->createWorkerThread(wtEntry.mThreadName.getString(), *consumer, componentThread, wtEntry.mWatchdogTimeout, wtEntry.mStackSizeKb, wtEntry.mMaxQueue);
+                WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
+                                                                      , *consumer
+                                                                      , componentThread
+                                                                      , wtEntry.mWatchdogTimeout
+                                                                      , wtEntry.mStackSizeKb
+                                                                      , wtEntry.mMaxQueue);
+
+                if (wThread != nullptr)
+                {
+                    component->notifyWorkerThreadStarted(*consumer, *wThread);
+                }
             }
         }
     }
@@ -274,6 +284,10 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
 IEWorkerThreadConsumer* Component::workerThreadConsumer( const String & /* consumerName */, const String & /* workerThreadName */)
 {
     return nullptr;
+}
+
+void Component::notifyWorkerThreadStarted(IEWorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
+{
 }
 
 unsigned int Component::_magicNumber(Component & comp)
