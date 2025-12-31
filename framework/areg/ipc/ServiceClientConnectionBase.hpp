@@ -563,7 +563,9 @@ inline bool ServiceClientConnectionBase::isConnectionStarted(void) const
 
 inline bool ServiceClientConnectionBase::isConnectionPending(void) const
 {
-    return (mClientConnection.isValid() && (mConnectionState == ServiceClientConnectionBase::eConnectionState::ConnectionStarting));
+    const ITEM_ID& cookie = mClientConnection.getCookie();
+    return (mClientConnection.isValid() &&
+           ((mConnectionState == ServiceClientConnectionBase::eConnectionState::ConnectionStarting) || (cookie == NEService::COOKIE_LOCAL) || (cookie == NEService::COOKIE_UNKNOWN)));
 }
 
 inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::eConnectionState newState)
