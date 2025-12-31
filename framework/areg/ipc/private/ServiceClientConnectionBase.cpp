@@ -199,7 +199,7 @@ bool ServiceClientConnectionBase::isServiceHostConnected(void) const
 bool ServiceClientConnectionBase::isServiceHostPending(void) const
 {
     Lock lock(mLock);
-    return isConnectionPending();
+    return ((mClientConnection.isValid() == false) && (getConnectionState() == ServiceClientConnectionBase::eConnectionState::ConnectionStarting));
 }
 
 bool ServiceClientConnectionBase::isServiceHostSetup( void ) const

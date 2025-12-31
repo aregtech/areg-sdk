@@ -150,7 +150,7 @@ inline DispatcherThread * EventDispatcher::getDispatcherThread( void ) const
 
 inline bool EventDispatcher::hasMoreEvents( void ) const
 {
-    return (mExternaEvents.isEmpty() == false);
+    return (mExternalEvents.isEmpty() == false);
 }
 
 #endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

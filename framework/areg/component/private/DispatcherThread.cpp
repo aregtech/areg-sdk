@@ -231,15 +231,15 @@ void DispatcherThread::triggerExit( void )
                , static_cast<id_type>(getId( ))
                , mHasStarted ? "STARTED" : "NOT STARTED" );
 
-    mExternaEvents.lockQueue( );
+    mExternalEvents.lockQueue( );
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
+        mExternalEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
     }
 
     mEventExit.setEvent( );
-    mExternaEvents.unlockQueue( );
+    mExternalEvents.unlockQueue( );
 }
 
 Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )

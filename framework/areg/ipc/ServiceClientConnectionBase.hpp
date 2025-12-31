@@ -324,11 +324,6 @@ protected:
     inline bool isConnectionStarted(void) const;
 
     /**
-     * \brief   Returns true if client socket connection is started, but not connected yet and not ready to operate.
-     **/
-    inline bool isConnectionPending(void) const;
-
-    /**
      * \brief   Call to send an event with the command to process.
      * \param   cmd         The command to send and process.
      * \param   eventPrio   The priority of the event. By default, the priority is normal.
@@ -559,13 +554,6 @@ inline bool ServiceClientConnectionBase::isConnectionStarted(void) const
 {
     const ITEM_ID & cookie = mClientConnection.getCookie();
     return (mClientConnection.isValid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
-}
-
-inline bool ServiceClientConnectionBase::isConnectionPending(void) const
-{
-    const ITEM_ID& cookie = mClientConnection.getCookie();
-    return (mClientConnection.isValid() &&
-           ((mConnectionState == ServiceClientConnectionBase::eConnectionState::ConnectionStarting) || (cookie == NEService::COOKIE_LOCAL) || (cookie == NEService::COOKIE_UNKNOWN)));
 }
 
 inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::eConnectionState newState)
