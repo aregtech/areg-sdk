@@ -319,7 +319,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Returns true if client socket connection is started, connected with the remove service and ready to operate.
+     * \brief   Returns true if client socket connection is started, connected with the remote service and ready to operate.
      **/
     inline bool isConnectionStarted(void) const;
 

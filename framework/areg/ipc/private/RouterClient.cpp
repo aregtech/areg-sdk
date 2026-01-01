@@ -105,7 +105,8 @@ void RouterClient::onServiceExit(void)
 
 bool RouterClient::isServiceHostPending(void) const
 {
-    return (isRunning() && (mClientConnection.isValid() == false));
+    Lock lock(mLock);
+    return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::eConnectionState::ConnectionStarting)));
 }
 
 bool RouterClient::registerServiceProvider( const StubAddress & stubService )
