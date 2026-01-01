@@ -341,7 +341,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v5.0.0
+        uses: actions/setup-java@v5.1.0
         with: 
           java-version: 17
           java-package: jre
@@ -412,7 +412,7 @@ jobs:
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
