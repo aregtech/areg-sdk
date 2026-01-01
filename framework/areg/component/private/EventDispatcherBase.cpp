@@ -31,7 +31,7 @@ EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue
     , IEQueueListener  ( )
 
     , mDispatcherName   ( name )
-    , mExternaEvents    ( static_cast<IEQueueListener &>(self()), maxQeueue)
+    , mExternalEvents    ( static_cast<IEQueueListener &>(self()), maxQeueue)
     , mInternalEvents   ( maxQeueue )
     , mConsumerMap      ( )
     , mEventExit        ( false, false )
@@ -67,36 +67,36 @@ bool EventDispatcherBase::startDispatcher( void )
 
 void EventDispatcherBase::stopDispatcher( void )
 {
-    mExternaEvents.lockQueue( );
+    mExternalEvents.lockQueue( );
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
+        mExternalEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
     }
 
     mEventExit.setEvent( );
-    mExternaEvents.unlockQueue( );
+    mExternalEvents.unlockQueue( );
 }
 
 void EventDispatcherBase::exitDispatcher(void)
 {
     mInternalEvents.removeAllEvents();
-    mExternaEvents.removeAllEvents();
+    mExternalEvents.removeAllEvents();
 
     mEventExit.setEvent();
 }
 
 void EventDispatcherBase::shutdownDispatcher( void )
 {
-    mExternaEvents.lockQueue( );
+    mExternalEvents.lockQueue( );
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternaEvents.pushEvent(ExitEvent::getExitEvent(), nullptr);
+        mExternalEvents.pushEvent(ExitEvent::getExitEvent(), nullptr);
     }
 
     mEventExit.setEvent( );
-    mExternaEvents.unlockQueue( );
+    mExternalEvents.unlockQueue( );
 }
 
 bool EventDispatcherBase::queueEvent( Event& eventElem )
@@ -112,7 +112,7 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
         }
         else if (Event::isExternal(eventType))
         {
-            mExternaEvents.pushEvent(eventElem, nullptr);
+            mExternalEvents.pushEvent(eventElem, nullptr);
             result = true;
         }
     }
@@ -267,14 +267,14 @@ bool EventDispatcherBase::runDispatcher( void )
 
 void EventDispatcherBase::readyForEvents( bool isReady )
 {
-    mExternaEvents.lockQueue( );
+    mExternalEvents.lockQueue( );
     mHasStarted = isReady;
-    mExternaEvents.unlockQueue( );
+    mExternalEvents.unlockQueue( );
 }
 
 Event* EventDispatcherBase::pickEvent( void )
 {
-    return mExternaEvents.popEvent();
+    return mExternalEvents.popEvent();
 }
 
 bool EventDispatcherBase::prepareDispatchEvent( Event* eventElem )

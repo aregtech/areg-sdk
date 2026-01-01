@@ -87,6 +87,11 @@ protected:
      **/
     virtual void onServiceExit(void) override;
 
+    /**
+     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     **/
+    virtual bool isServiceHostPending(void) const override;
+
 /************************************************************************/
 // IERemoteMessageHandler interface overrides
 /************************************************************************/

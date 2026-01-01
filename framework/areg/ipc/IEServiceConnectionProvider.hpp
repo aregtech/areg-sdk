@@ -108,6 +108,11 @@ public:
     virtual bool isServiceHostConnected( void ) const = 0;
 
     /**
+     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     **/
+    virtual bool isServiceHostPending(void) const = 0;
+
+    /**
      * \brief   Returns true if service is configured and ready to start
      **/
     virtual bool isServiceHostSetup( void ) const = 0;

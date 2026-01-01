@@ -75,9 +75,13 @@ bool RouterClient::connectServiceHost(void)
             shutdownThread(NECommon::WAIT_INFINITE);
         }
     }
+    else if (mClientConnection.isValid() == false)
+    {
+        result = ServiceClientConnectionBase::connectServiceHost();
+    }
     else
     {
-        result = mClientConnection.isValid();
+        result = false;
     }
 
     return result;
@@ -97,6 +101,12 @@ void RouterClient::onServiceExit(void)
 {
     ServiceClientConnectionBase::onServiceExit();
     triggerExit();
+}
+
+bool RouterClient::isServiceHostPending(void) const
+{
+    Lock lock(mLock);
+    return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::eConnectionState::ConnectionStarting)));
 }
 
 bool RouterClient::registerServiceProvider( const StubAddress & stubService )

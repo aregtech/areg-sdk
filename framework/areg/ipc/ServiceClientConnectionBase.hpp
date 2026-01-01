@@ -222,6 +222,11 @@ protected:
     virtual bool isServiceHostConnected( void ) const override;
 
     /**
+     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     **/
+    virtual bool isServiceHostPending(void) const override;
+
+    /**
      * \brief   Returns true if service is configured and ready to start
      **/
     virtual bool isServiceHostSetup( void ) const override;
@@ -314,7 +319,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Returns true if client socket connection is started.
+     * \brief   Returns true if client socket connection is started, connected with the remote service and ready to operate.
      **/
     inline bool isConnectionStarted(void) const;
 

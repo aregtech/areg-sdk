@@ -204,6 +204,11 @@ bool ServiceManager::_isRoutingServiceStarted(void)
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostConnected( );
 }
 
+bool ServiceManager::_isRoutingServicePending(void)
+{
+    return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostPending();
+}
+
 bool ServiceManager::_isRoutingServiceConfigured(void)
 {
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostSetup( );

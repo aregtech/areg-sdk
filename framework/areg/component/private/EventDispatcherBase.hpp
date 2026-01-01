@@ -314,7 +314,7 @@ protected:
      * \brief   External Event Queue element. One External queue per one dispatcher.
      *          It is locking queue. Any thread can queue elements
      **/
-    ExternalEventQueue  mExternaEvents;
+    ExternalEventQueue  mExternalEvents;
 
     /**
      * \brief   Internal Event Queue element. One Internal queue per one dispatcher.
@@ -386,23 +386,23 @@ inline bool EventDispatcherBase::isReady( void ) const
 
 inline void EventDispatcherBase::removeEvents(bool keepSpecials)
 {
-    mExternaEvents.lockQueue();
+    mExternalEvents.lockQueue();
     mInternalEvents.removeEvents( false );
-    mExternaEvents.removeEvents( keepSpecials );
-    mExternaEvents.unlockQueue();
+    mExternalEvents.removeEvents( keepSpecials );
+    mExternalEvents.unlockQueue();
 }
 
 inline void EventDispatcherBase::removeAllEvents(void)
 {
-    mExternaEvents.lockQueue();
+    mExternalEvents.lockQueue();
     mInternalEvents.removeAllEvents( );
-    mExternaEvents.removeAllEvents( );
-    mExternaEvents.unlockQueue();
+    mExternalEvents.removeAllEvents( );
+    mExternalEvents.unlockQueue();
 }
 
 inline void EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
 {
-    mExternaEvents.removeEvents(eventClassId);
+    mExternalEvents.removeEvents(eventClassId);
 }
 
 inline EventDispatcherBase& EventDispatcherBase::self( void )

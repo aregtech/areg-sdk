@@ -183,6 +183,12 @@ bool ServiceCommunicatonBase::isServiceHostConnected(void) const
     return (mServerConnection.isValid() && isRunning());
 }
 
+bool ServiceCommunicatonBase::isServiceHostPending(void) const
+{
+    Lock lock(mLock);
+    return ((mServerConnection.isValid() == false) && isRunning());
+}
+
 bool ServiceCommunicatonBase::isServiceHostSetup(void) const
 {
     Lock lock(mLock);

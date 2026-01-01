@@ -258,6 +258,11 @@ bool Application::isRouterConnected( void )
     return ServiceManager::_isRoutingServiceStarted();
 }
 
+bool Application::isRouterConnectionPending(void)
+{
+    return ServiceManager::_isRoutingServicePending();
+}
+
 bool Application::isMessageRoutingConfigured(void)
 {
     return ServiceManager::_isRoutingServiceConfigured();
