@@ -387,6 +387,9 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
     Lock lock(mSynchObj);
 
     RESOURCE_OBJECT result{ nullptr };
+    if (HashMap::isEmpty())
+        return result;
+
     HashMap::find(Key, result);
     return result;
 }
@@ -501,7 +504,7 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
     Lock lock(mSynchObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    typename HashMap::MAPPOS pos = HashMap::find( nextKey );
+    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(nextKey);
     if (HashMap::isValidPosition(pos))
     {
         HashMap::nextEntry(pos, nextKey, result);
