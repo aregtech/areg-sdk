@@ -289,14 +289,9 @@ private:
     void _localProcessConnectEvent( StubConnectEvent & notifyConnect );
 
 private:
-    /**
-     * \brief   The address of stub object, which is handling consumer
-     **/
+    //!< The address of stub object, which is handling consumer.
     const StubAddress & mStubAddress;
-
-    /**
-     * \brief   The pointer to the currently processing event object.
-     */
+    //!< The pointer to the currently processing event object.
     Event *             mCurEvent;
 
 //////////////////////////////////////////////////////////////////////////
