@@ -455,7 +455,7 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashM
 {
     Lock lock( mSynchObj );
 
-    typename HashMap::MAPPOS pos = HashMap::find(Key);
+    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     if (HashMap::isValidPosition(pos))
     {
         ResourceList & resList = HashMap::valueAtPosition(pos);
@@ -502,7 +502,7 @@ inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceL
 {
     Lock lock( mSynchObj );
 
-    typename HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
@@ -515,7 +515,7 @@ inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, Res
 {
     Lock lock( mSynchObj );
 
-    typename HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
@@ -528,7 +528,7 @@ inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceL
 {
     Lock lock( mSynchObj );
 
-    typename HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 
@@ -541,7 +541,7 @@ inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, Res
 {
     Lock lock( mSynchObj );
 
-    typename HashMap::MAPPOS pos = HashMap::find( Key );
+    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
 }
 

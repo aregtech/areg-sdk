@@ -91,6 +91,7 @@ void StubEvent::deliverEvent( void )
 IEStubEventConsumer::IEStubEventConsumer( const StubAddress & stubAddress )
     : IEEventConsumer   ( )
     , mStubAddress      ( stubAddress )
+    , mCurEvent         ( nullptr )
 {
 }
 
@@ -153,6 +154,7 @@ inline void IEStubEventConsumer::_localProcessConnectEvent( StubConnectEvent & n
 //////////////////////////////////////////////////////////////////////////
 void IEStubEventConsumer::startEventProcessing( Event & eventElem )
 {
+    mCurEvent = &eventElem;
     StubEvent* stubEvent = RUNTIME_CAST(&eventElem, StubEvent);
     if ( stubEvent != nullptr )
     {
@@ -193,4 +195,6 @@ void IEStubEventConsumer::startEventProcessing( Event & eventElem )
     {
         processGenericEvent(eventElem);
     }
+
+    mCurEvent = nullptr;
 }

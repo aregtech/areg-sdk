@@ -192,6 +192,11 @@ protected:
      **/
     virtual ~IEStubEventConsumer( void ) = default;
 
+    /**
+     * \brief   Returns the pointer to the currently processing event object.
+     **/
+    inline const Event* getCurrentEvent(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides, event processing functions.
 //////////////////////////////////////////////////////////////////////////
@@ -284,10 +289,10 @@ private:
     void _localProcessConnectEvent( StubConnectEvent & notifyConnect );
 
 private:
-    /**
-     * \brief   The address of stub object, which is handling consumer
-     **/
+    //!< The address of stub object, which is handling consumer.
     const StubAddress & mStubAddress;
+    //!< The pointer to the currently processing event object.
+    Event *             mCurEvent;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -308,6 +313,11 @@ private:
 inline const StubAddress & StubEvent::getTargetStub( void ) const
 {
     return mTargetStubAddress;
+}
+
+inline const Event* IEStubEventConsumer::getCurrentEvent(void) const
+{
+    return mCurEvent;
 }
 
 #endif  // AREG_COMPONENT_STUBEVENT_HPP
