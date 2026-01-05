@@ -28,7 +28,6 @@ target_link_directories(mtrouter        PUBLIC $<INSTALL_INTERFACE:lib> $<INSTAL
 # Copy all header files of AREG Framework
 install(DIRECTORY framework/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development
-    CONFIGURATIONS Release
     FILES_MATCHING
         PATTERN "*.h" 
         PATTERN "*.hpp"
@@ -54,7 +53,6 @@ else()
     # Copy all header files of AREG Framework
     install(DIRECTORY thirdparty/sqlite3/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development
-        CONFIGURATIONS Release
         FILES_MATCHING
             PATTERN "*.h" 
     )
@@ -75,7 +73,6 @@ install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-            CONFIGURATIONS Release
 )
 
 # Copy AREG SDK open source license
@@ -84,14 +81,12 @@ install(FILES LICENSE.txt
             COMPONENT Development   COMPONENT Runtime
             RENAME copyright
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-            CONFIGURATIONS Release
 )
 
 # Copy all CMake and MSVC configuration files.
 install(DIRECTORY ${AREG_SDK_ROOT}/conf/
             DESTINATION share/${AREG_PACKAGE_NAME}/conf
             COMPONENT Development   COMPONENT Runtime
-            CONFIGURATIONS Release
 )
 
 # Copy 'areg.cmake' configuration file.
@@ -99,7 +94,6 @@ install(FILES ${AREG_SDK_ROOT}/areg.cmake
             DESTINATION share/${AREG_PACKAGE_NAME}/
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-            CONFIGURATIONS Release
 )
 
 # Copy all tools
@@ -107,7 +101,6 @@ install(DIRECTORY tools/
             DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development
             DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-            CONFIGURATIONS Release
 )
 
 # Copy compiled AREG SDK tools: logcollector, logobserver and mtrouter
@@ -116,7 +109,6 @@ install(TARGETS logcollector logobserver mtrouter
     RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-            CONFIGURATIONS Release
 )
 
 if (AREG_SQLITE_FOUND)
@@ -124,14 +116,12 @@ if (AREG_SQLITE_FOUND)
     install(TARGETS areg areglogger
         LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
                 COMPONENT Development   COMPONENT Runtime
-                CONFIGURATIONS Release
     )
 else()
     # Copy additionally areg and areglogger dynamic libraries
     install(TARGETS areg areglogger
         LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
                 COMPONENT Development   COMPONENT Runtime
-                CONFIGURATIONS Release
     )
 endif()
 
@@ -140,7 +130,6 @@ install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
             DESTINATION tools/${AREG_PACKAGE_NAME}/config
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-            CONFIGURATIONS Release
 )
 
 # Configure and install `pkg_config` files
@@ -171,7 +160,6 @@ if ((WIN32) OR (CYGWIN) OR (MINGW))
             DESTINATION share/${AREG_PACKAGE_NAME}/service
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-            CONFIGURATIONS Release
     )
 
 else()
@@ -184,7 +172,6 @@ else()
             DESTINATION share/${AREG_PACKAGE_NAME}/service
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-            CONFIGURATIONS Release
     )
 
 endif()
@@ -228,5 +215,4 @@ install(EXPORT ${AREG_PACKAGE_NAME}
 install(DIRECTORY ${AREG_EXPORTS_DIR}/example
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
-            CONFIGURATIONS Release
 )
