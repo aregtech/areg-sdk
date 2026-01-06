@@ -333,13 +333,16 @@ The following are the available CMake options to configure the AREG SDK build. O
    - **Description**: Specifies if the SDK installation process should be enabled. When set to `ON`, all necessary components will be prepared for installation on the specified system.
    - **Possible Values**: `ON`, `OFF`
    - **Default**: `ON`
-   - **Example**: `cmake -B ./build -DAREG_INSTALL=OFF` to disable installation
+   - **Example**: to disable installation:  
+     ```bash
+     cmake -B ./build -DAREG_INSTALL=OFF
+     ```
    - **Example**: to enable installation to the custom location, build and install headers and binaries:  
      ```bash
-     cmake -B ./build -DAREG_INSTALL_PATH=/custom/install/location
+     cmake -B ./build -DAREG_INSTALL=ON -DAREG_INSTALL_PATH=/custom/install/location
      sudo cmake --build ./build -j16 --target install
      ```  
-     or to enable installation in default location `/usr/local`:  
+   - **Example**: to use default settings and enable installation in default location `/usr/local`:  
      ```bash
      cmake -B ./build  
      cmake --build ./build -j16
