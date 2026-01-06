@@ -392,30 +392,30 @@ sudo cmake --install ./product/cache/llvm
 
 - **Disable AREG SDK Outputs**: Set `AREG_ENABLE_OUTPUTS` to `OFF`, to use CMake defaults or custom locations for builds.
 
-- **Print AREG Configuration Status**: Include `setup.cmake` CMake file in your `CMakeLists.txt` file and use `printAregConfigStatus()` function to print configuration status like this:
-  ```txt
--- =======================================================================================
--- ----------------------> AREG project CMake Status Report Begin <-----------------------
--- =======================================================================================
--- AREG: >>> CMAKE_SOURCE_DIR    = '/mnt/c/projects/areg-sdk', build type 'Debug'
--- AREG: >>> Build Environment ..: System 'Linux', 64-bit 'x86_64' platform, Env 'Posix'
--- AREG: >>> Used CXX-Compiler ..: '/usr/bin/clang++'
--- AREG: >>> Used C-Compiler ....: '/usr/bin/clang'
--- AREG: >>> Compiler Version ...: C++ standard 'c++17', compiler family 'llvm', target 'x86_64-linux-llvm'
--- AREG: >>> AREG SDK Root ......: '/mnt/c/projects/areg-sdk'
--- AREG: >>> CMake Build Dir ....: '/mnt/c/projects/areg-sdk/build'
--- AREG: >>> Binary Output Dir ..: '/mnt/c/projects/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-debug-shared/bin''
--- AREG: >>> Generated Files Dir : '/mnt/c/projects/areg-sdk/product/generate'
--- AREG: >>> Packages Dir .......: '/mnt/c/projects/areg-sdk/build/packages'
--- AREG: >>> Build Modules ......: areg = 'shared', aregextend = static, areglogger = 'shared', executable extension '.elf'
--- AREG: >>> Java Version .......: '17.0.16', Java executable = '/usr/bin/java', minimum version required = 17
--- AREG: >>> Packages Use .......: SQLite3 package use = 'ON', GTest package use = 'OFF'
--- AREG: >>> Other Options ......: Examples = 'ON', Unit Tests = 'ON', AREG Extended = 'OFF', Logs = 'ON'
--- AREG: >>> Installation .......: Enabled = 'ON', location = '/usr/local'
--- =======================================================================================
--- -----------------------> AREG project CMake Status Report End <------------------------
--- =======================================================================================
-```
+- **Print AREG Configuration Status**: Include `setup.cmake` CMake file in your `CMakeLists.txt` file and use `printAregConfigStatus()` function to print configuration status like this:  
+  ```text
+  -- =======================================================================================
+  -- ----------------------> AREG project CMake Status Report Begin <-----------------------
+  -- =======================================================================================
+  -- AREG: >>> CMAKE_SOURCE_DIR    = '/mnt/c/projects/areg-sdk', build type 'Debug'
+  -- AREG: >>> Build Environment ..: System 'Linux', 64-bit 'x86_64' platform, Env 'Posix'
+  -- AREG: >>> Used CXX-Compiler ..: '/usr/bin/clang++'
+  -- AREG: >>> Used C-Compiler ....: '/usr/bin/clang'
+  -- AREG: >>> Compiler Version ...: C++ standard 'c++17', compiler family 'llvm', target 'x86_64-linux-llvm'
+  -- AREG: >>> AREG SDK Root ......: '/mnt/c/projects/areg-sdk'
+  -- AREG: >>> CMake Build Dir ....: '/mnt/c/projects/areg-sdk/build'
+  -- AREG: >>> Binary Output Dir ..: '/mnt/c/projects/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-debug-shared/bin''
+  -- AREG: >>> Generated Files Dir : '/mnt/c/projects/areg-sdk/product/generate'
+  -- AREG: >>> Packages Dir .......: '/mnt/c/projects/areg-sdk/build/packages'
+  -- AREG: >>> Build Modules ......: areg = 'shared', aregextend = static, areglogger = 'shared', executable extension '.elf'
+  -- AREG: >>> Java Version .......: '17.0.16', Java executable = '/usr/bin/java', minimum version required = 17
+  -- AREG: >>> Packages Use .......: SQLite3 package use = 'ON', GTest package use = 'OFF'
+  -- AREG: >>> Other Options ......: Examples = 'ON', Unit Tests = 'ON', AREG Extended = 'OFF', Logs = 'ON'
+  -- AREG: >>> Installation .......: Enabled = 'ON', location = '/usr/local'
+  -- =======================================================================================
+  -- -----------------------> AREG project CMake Status Report End <------------------------
+  -- =======================================================================================
+  ```
 
 These options allow you to customize AREG SDK to align with specific project needs, simplifying integration.
 
