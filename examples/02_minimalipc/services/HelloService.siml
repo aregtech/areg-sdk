@@ -5,7 +5,7 @@
     </Overview>
     <MethodList>
         <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
-            <Description>The request to output Hello Service!.</Description>
+            <Description>The request to output Hello Service!</Description>
         </Method>
         <Method ID="4" Name="HelloService" MethodType="Response">
             <Description>The response indicating success request has been executed.</Description>
