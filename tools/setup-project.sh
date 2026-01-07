@@ -58,14 +58,14 @@ if (NOT areg_FOUND)
  	set(AREG_SDK_ROOT         "\${areg_SOURCE_DIR}")
  	set(AREG_CMAKE_CONFIG_DIR "\${AREG_SDK_ROOT}/conf/cmake")
  	set(AREG_CMAKE            "\${AREG_SDK_ROOT}/areg.cmake")
- 	message(STATUS ">>> Fetched Areg SDK from to \${FETCHCONTENT_BASE_DIR}")
+ 	message(STATUS ">>> Fetched Areg SDK from GitHub to \${FETCHCONTENT_BASE_DIR}")
  	message(STATUS ">>> Location of 'areg.cmake' \${AREG_CMAKE}")
 
 else()
  	# AREG SDK package found
  	message(STATUS ">>> Found AREG package at '\${areg_DIR}',")
  	message(STATUS ">>> Libs: '\${areg_LIBRARY}', Configs: '\${areg_CONFIG}', Package Root: '\${areg_ROOT}'")
-  message(STATUS ">>> Tools: '\${AREG_SDK_TOOLS}', 'areg.cmake': \${AREG_CMAKE}")
+    message(STATUS ">>> Tools: '\${AREG_SDK_TOOLS}', 'areg.cmake': \${AREG_CMAKE}")
 endif()
 
 include(\${AREG_CMAKE})

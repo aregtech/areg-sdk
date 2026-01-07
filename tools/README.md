@@ -47,9 +47,9 @@ From a terminal:
 
 ```bash
 java -jar <areg-sdk-root>/tools/codegen.jar \
-  --root=<project-root> \
-  --doc=<relative-path-to-siml> \
-  --target=<relative-path-to-output>
+    --root=<project-root>                   \
+    --doc=<relative-path-to-siml>           \
+    --target=<relative-path-to-output>
 ```
 
 #### Parameters
@@ -64,10 +64,10 @@ java -jar <areg-sdk-root>/tools/codegen.jar \
 #### Example
 
 ```bash
-java -jar ~/areg-sdk/tools/codegen.jar \
-  --root=./my_project \
-  --doc=src/services/HelloService.siml \
-  --target=src/services
+java -jar ~/areg-sdk/tools/codegen.jar   \
+    --root=./my_project                  \
+    --doc=src/services/HelloService.siml \
+    --target=src/services
 ```
 
 This generates C++ headers and sources next to your `.siml` file.
@@ -176,13 +176,13 @@ Areg provides scripts to bootstrap a **working example project** in one step.
 
 ### How to Run
 
-From the `tools/` directory:`
-a. Run on Linux/macOS:
+From the `tools/` directory:
+* Run on Linux/macOS:
 
    ```bash
    sh ./setup-project.sh
    ```
-b.Or run on Windows:
+* Run on Windows:
    ```bat
    ./setup-project.bat
    ```
