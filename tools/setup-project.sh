@@ -26,45 +26,43 @@ project(\${PROJECT_NAME} VERSION \${PROJECT_VERSION} LANGUAGES C CXX)
 find_package(areg CONFIG)
 
 if (NOT areg_FOUND)
-	# ##################################################################
-  # AREG SDK not found as a package, fetching from GitHub.
- 	# ##################################################################
+    # ##################################################################
+    # AREG SDK not found as a package, fetching from GitHub.
+    # ##################################################################
 
- 	# Specify the root directory for AREG SDK build outputs.
- 	if (NOT DEFINED AREG_BUILD_ROOT OR "\${AREG_BUILD_ROOT}" STREQUAL "")
- 		set(AREG_BUILD_ROOT "\${AREG_SDK_DEMO_ROOT}/product")
- 	endif()
+    # The root directory for AREG SDK build outputs.
+    set(AREG_BUILD_ROOT "\${CMAKE_BINARY_DIR}")
+    # Location of fetched third-party sources (including AREG SDK).
+    set(AREG_PACKAGES   "\${CMAKE_BINARY_DIR}/packages")
+    # Build Areg shared library.
+    set(AREG_BINARY    shared)
+    # Disable building AREG SDK examples, unit tests and build structures.
+    option(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF)
+    option(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF)
+    option(AREG_GTEST_PACKAGE  "Build GTest"             OFF)
+    option(AREG_ENABLE_OUTPUTS "AREG build structure"    OFF)
 
- 	# Specify where to fetch third-party sources (including AREG SDK).
- 	if (NOT DEFINED AREG_PACKAGES OR "\${AREG_PACKAGES}" STREQUAL "")
- 		set(AREG_PACKAGES "\${CMAKE_BINARY_DIR}/packages")
- 	endif()
+    include(FetchContent)
+    set(FETCHCONTENT_BASE_DIR "\${AREG_PACKAGES}")
 
- 	# Disable building AREG SDK examples and unit tests for this demo.
- 	option(AREG_BUILD_EXAMPLES  "Build areg-sdk examples" OFF)
- 	option(AREG_BUILD_TESTS     "Build areg-sdk tests"    OFF)
+    FetchContent_Declare(
+        areg
+        GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
+        GIT_TAG "master"
+    )
+    FetchContent_MakeAvailable(areg)
 
- 	include(FetchContent)
- 	set(FETCHCONTENT_BASE_DIR "\${AREG_PACKAGES}")
-
- 	FetchContent_Declare(
- 		areg
- 		GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
- 		GIT_TAG "master"
- 	)
- 	FetchContent_MakeAvailable(areg)
-
- 	# Set the root directory of the fetched AREG SDK
- 	set(AREG_SDK_ROOT         "\${areg_SOURCE_DIR}")
- 	set(AREG_CMAKE_CONFIG_DIR "\${AREG_SDK_ROOT}/conf/cmake")
- 	set(AREG_CMAKE            "\${AREG_SDK_ROOT}/areg.cmake")
- 	message(STATUS ">>> Fetched Areg SDK from GitHub to \${FETCHCONTENT_BASE_DIR}")
- 	message(STATUS ">>> Location of 'areg.cmake' \${AREG_CMAKE}")
+    # Set the root directory of the fetched AREG SDK
+    set(AREG_SDK_ROOT        "\${areg_SOURCE_DIR}")
+    set(AREG_CMAKE_CONFIG_DIR "\${AREG_SDK_ROOT}/conf/cmake")
+    set(AREG_CMAKE          "\${AREG_SDK_ROOT}/areg.cmake")
+    message(STATUS ">>> Fetched Areg SDK from GitHub to \${FETCHCONTENT_BASE_DIR}")
+    message(STATUS ">>> Location of 'areg.cmake' \${AREG_CMAKE}")
 
 else()
- 	# AREG SDK package found
- 	message(STATUS ">>> Found AREG package at '\${areg_DIR}',")
- 	message(STATUS ">>> Libs: '\${areg_LIBRARY}', Configs: '\${areg_CONFIG}', Package Root: '\${areg_ROOT}'")
+    # AREG SDK package found
+    message(STATUS ">>> Found AREG package at '\${areg_DIR}',")
+    message(STATUS ">>> Libs: '\${areg_LIBRARY}', Configs: '\${areg_CONFIG}', Package Root: '\${areg_ROOT}'")
     message(STATUS ">>> Tools: '\${AREG_SDK_TOOLS}', 'areg.cmake': \${AREG_CMAKE}")
 endif()
 
@@ -77,17 +75,17 @@ EOF
 cat > "$PROJ_ROOT/src/services/HelloService.siml" <<EOF
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
-     <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public">
-         <Description>The hello service minimal RPC application with request and response</Description>
-     </Overview>
-     <MethodList>
-         <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
-             <Description>The request to output Hello Service!</Description>
-         </Method>
-         <Method ID="4" Name="HelloService" MethodType="Response">
-             <Description>The response indicating success request has been executed.</Description>
-         </Method>
-     </MethodList>
+    <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public">
+        <Description>The hello service minimal RPC application with request and response</Description>
+    </Overview>
+    <MethodList>
+        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
+           <Description>The request to output Hello Service!</Description>
+        </Method>
+        <Method ID="4" Name="HelloService" MethodType="Response">
+           <Description>The response indicating success request has been executed.</Description>
+        </Method>
+    </MethodList>
 </ServiceInterface>
 EOF
 
@@ -115,18 +113,18 @@ cat > "$PROJ_ROOT/src/main.cpp" <<EOF
 
 //!< Service Provider: ServiceProvider declaration
 class ServiceProvider   : public    Component
-                        , protected HelloServiceStub
+                    , protected HelloServiceStub
 {
 public:
    ServiceProvider( const NERegistry::ComponentEntry& entry, ComponentThread& owner )
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+       : Component(entry, owner)
+       , HelloServiceStub(static_cast<Component&>(self()))
    { }
 
     virtual void requestHelloService(void) override
     {
-        std::cout << "'Hello Service!'" << std::endl;
-        responseHelloService();
+       std::cout << "'Hello Service!'" << std::endl;
+       responseHelloService();
     }
 
 private:
@@ -136,39 +134,39 @@ private:
 
 //!< ServiceConsumer declaration
 class ServiceConsumer   : public    Component
-                        , protected HelloServiceClientBase
+                    , protected HelloServiceClientBase
 {
 public:
     ServiceConsumer( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component( entry, owner )
-        , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+       : Component( entry, owner )
+       , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
     { }
 
     virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase& proxy ) override
     {
-        if ( HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status) )
-            requestHelloService();
-        return true;
+       if ( HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status) )
+          requestHelloService();
+       return true;
     }
 
     virtual void responseHelloService(void) override
     {
-        std::cout << "Received response, end application" << std::endl;
-        Application::signalAppQuit();
+       std::cout << "Received response, end application" << std::endl;
+       Application::signalAppQuit();
     }
 };
 
 BEGIN_MODEL("ServiceModel")
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
-        END_REGISTER_COMPONENT( "ServiceProvider" )
+       BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
+          REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+       END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 
     BEGIN_REGISTER_THREAD( "Thread2" )
-        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceConsumer )
-            REGISTER_DEPENDENCY( "ServiceProvider" )
-        END_REGISTER_COMPONENT( "ServiceClient" )
+       BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceConsumer )
+          REGISTER_DEPENDENCY( "ServiceProvider" )
+       END_REGISTER_COMPONENT( "ServiceClient" )
     END_REGISTER_THREAD( "Thread2" )
 END_MODEL("ServiceModel")
 

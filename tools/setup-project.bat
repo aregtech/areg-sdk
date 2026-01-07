@@ -25,46 +25,44 @@ echo.
 echo find_package^(areg CONFIG^)
 echo.
 echo if ^(NOT areg_FOUND^)
-echo ^	# ##################################################################
-echo ^  # AREG SDK not found as a package, fetching from GitHub.
-echo ^ 	# ##################################################################
+echo ^    # ##################################################################
+echo ^    # AREG SDK not found as a package, fetching from GitHub.
+echo ^    # ##################################################################
 echo.
-echo ^ 	# Specify the root directory for AREG SDK build outputs.
-echo ^ 	if ^(NOT DEFINED AREG_BUILD_ROOT OR "^${AREG_BUILD_ROOT}" STREQUAL ""^)
-echo ^ 		set^(AREG_BUILD_ROOT "${AREG_SDK_DEMO_ROOT}/product"^)
-echo ^ 	endif^(^)
+echo ^    # The root directory for AREG SDK build outputs.
+echo ^    set^(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}"^)
+echo ^    # Location of fetched third-party sources ^(including AREG SDK^).
+echo ^    set^(AREG_PACKAGES   "${CMAKE_BINARY_DIR}/packages"^)
+echo ^    # Build Areg shared library.
+echo ^    set^(AREG_BINARY     shared^)
+echo ^    # Disable building AREG SDK examples, unit tests and build structures.
+echo ^    option^(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF^)
+echo ^    option^(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF^)
+echo ^    option^(AREG_GTEST_PACKAGE  "Build GTest"             OFF^)
+echo ^    option^(AREG_ENABLE_OUTPUTS "AREG build structure"    OFF^)
 echo.
-echo ^ 	# Specify where to fetch third-party sources ^(including AREG SDK^).
-echo ^ 	if ^(NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL ""^)
-echo ^ 		set^(AREG_PACKAGES "${CMAKE_BINARY_DIR}/packages"^)
-echo ^ 	endif^(^)
+echo ^    include^(FetchContent^)
+echo ^    set^(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}"^)
 echo.
-echo ^ 	# Disable building AREG SDK examples and unit tests for this demo.
-echo ^ 	option^(AREG_BUILD_EXAMPLES  "Build areg-sdk examples" OFF^)
-echo ^ 	option^(AREG_BUILD_TESTS     "Build areg-sdk tests"    OFF^)
+echo ^    FetchContent_Declare^(
+echo ^        areg
+echo ^        GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
+echo ^        GIT_TAG "master"
+echo ^    ^)
+echo ^    FetchContent_MakeAvailable^(areg^)
 echo.
-echo ^ 	include^(FetchContent^)
-echo ^ 	set^(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}"^)
-echo.
-echo ^ 	FetchContent_Declare^(
-echo ^ 		areg
-echo ^ 		GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
-echo ^ 		GIT_TAG "master"
-echo ^ 	^)
-echo ^ 	FetchContent_MakeAvailable^(areg^)
-echo.
-echo ^ 	# Set the root directory of the fetched AREG SDK
-echo ^ 	set^(AREG_SDK_ROOT         "${areg_SOURCE_DIR}"^)
-echo ^ 	set^(AREG_CMAKE_CONFIG_DIR "${AREG_SDK_ROOT}/conf/cmake"^)
-echo ^ 	set^(AREG_CMAKE            "${AREG_SDK_ROOT}/areg.cmake"^)
-echo ^ 	message^(STATUS ">>> Fetched Areg SDK from to ${FETCHCONTENT_BASE_DIR}"^)
-echo ^ 	message^(STATUS ">>> Location of \'areg.cmake\' ${AREG_CMAKE}"^)
+echo ^    # Set the root directory of the fetched AREG SDK
+echo ^    set^(AREG_SDK_ROOT         "${areg_SOURCE_DIR}"^)
+echo ^    set^(AREG_CMAKE_CONFIG_DIR "${AREG_SDK_ROOT}/conf/cmake"^)
+echo ^    set^(AREG_CMAKE            "${AREG_SDK_ROOT}/areg.cmake"^)
+echo ^    message^(STATUS ">>> Fetched Areg SDK from to ${FETCHCONTENT_BASE_DIR}"^)
+echo ^    message^(STATUS ">>> Location of \'areg.cmake\' ${AREG_CMAKE}"^)
 echo.
 echo else^(^)
-echo ^ 	# AREG SDK package found
-echo ^ 	message^(STATUS ">>> Found AREG package at '${areg_DIR}',"^)
-echo ^ 	message^(STATUS ">>> Libs: '${areg_LIBRARY}', Configs: '${areg_CONFIG}', Package Root: '${areg_ROOT}'"^)
-echo ^  message^(STATUS ">>> Tools: '${AREG_SDK_TOOLS}', \'areg.cmake\': ${AREG_CMAKE}"^)
+echo ^    # AREG SDK package found
+echo ^    message^(STATUS ">>> Found AREG package at '${areg_DIR}',"^)
+echo ^    message^(STATUS ">>> Libs: '${areg_LIBRARY}', Configs: '${areg_CONFIG}', Package Root: '${areg_ROOT}'"^)
+echo ^    message^(STATUS ">>> Tools: '${AREG_SDK_TOOLS}', \'areg.cmake\': ${AREG_CMAKE}"^)
 echo endif^(^)
 echo.
 echo include^(${AREG_CMAKE}^)
