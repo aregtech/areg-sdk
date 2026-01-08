@@ -2682,7 +2682,8 @@ inline void TEString<CharType>::trimRight(std::basic_string<CharType>& OUT strRe
         uint32_t count = 0;
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace(static_cast<int>(*cit)) == 0)
+            int32_t ch = static_cast<int32_t>(*cit);
+            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
                 break;
 
             ++count;
@@ -2705,7 +2706,8 @@ inline TEString<CharType>& TEString<CharType>::trimAll(void)
         uint32_t left = 0;
         for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
         {
-            if (std::isspace(static_cast<int>(*cit)) == 0)
+            int32_t ch = static_cast<int32_t>(*cit);
+            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
                 break;
 
             ++left;
@@ -2714,7 +2716,8 @@ inline TEString<CharType>& TEString<CharType>::trimAll(void)
         uint32_t right = 0;
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace(static_cast<int>(*cit)) == 0)
+            int32_t ch = static_cast<int32_t>(*cit);
+            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
                 break;
 
             ++right;
@@ -2750,7 +2753,8 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
         uint32_t left = 0;
         for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
         {
-            if (std::isspace(static_cast<int>(*cit)) == 0)
+            int32_t ch = static_cast<int32_t>(*cit);
+            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
                 break;
 
             ++left;
@@ -2759,7 +2763,8 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
         uint32_t right = 0;
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace(static_cast<int>(*cit)) == 0)
+            int32_t ch = static_cast<int32_t>(*cit);
+            if ((ch <= 0xFF) && (std::isspace(ch) == 0))
                 break;
 
             ++right;

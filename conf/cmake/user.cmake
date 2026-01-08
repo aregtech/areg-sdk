@@ -72,6 +72,12 @@
 # Example Command with AREG_BUILD_ROOT to output binaries in custom directory:
 # $ cmake -B ./build -DAREG_BUILD_ROOT="/home/developer/projects/my_project/product"
 #
+# Example of installing AREG SDK to custom location:
+# $ cmake -B ./build -DAREG_INSTALL_PATH="/custom/install/path"
+# $ cmake --build ./build -j16 --target install
+# or if permission is required:
+# $ sudo cmake --build ./build -j16 --target install
+#
 # Hint:
 # To use AREG SDK cmake options in other project, the 'user.cmake' file should be included before first call of "project()".
 # Otherwise, AREG SDK settings uses cmake options CMAKE_CXX_COMPILER and CMAKE_BUILD_TYPE options.
