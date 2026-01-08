@@ -111,7 +111,7 @@ Most C++ projects don’t fail on algorithms. They fail on **threads, IPC, and f
 
 ---
 
-## Getting Started: Build and Integration [![](./docs/img/pin.svg)](#getting-started-build-and-integration)
+## Getting Started: Build and Integration[![](./docs/img/pin.svg)](#getting-started-build-and-integration)
 
 ### Prerequisites
 
