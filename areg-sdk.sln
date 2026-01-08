@@ -27,9 +27,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F-814D-4F13-9F2F-87B667937FC7}"
 	ProjectSection(SolutionItems) = preProject
 		tools\codegen.jar = tools\codegen.jar
-		tools\generate.bat = tools\generate.bat
-		tools\generate.sh = tools\generate.sh
+		tools\codegenerate.bat = tools\codegenerate.bat
 		tools\README.md = tools\README.md
+		tools\codegenerate.sh = tools\codegenerate.sh
+		tools\setup-project.bat = tools\setup-project.bat
+		tools\setup-project.sh = tools\setup-project.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}"
@@ -659,10 +661,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-workflows", "{85EF9AE6-92A6-4DD9-833C-455EEAEA186D}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\accessibility-bot.yml = .github\workflows\accessibility-bot.yml
-		.github\workflows\validate-pr.yml = .github\workflows\validate-pr.yml
 		.github\workflows\cmake.yml = .github\workflows\cmake.yml
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
 		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml
+		.github\workflows\validate-pr.yml = .github\workflows\validate-pr.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{11AEF28F-83CA-493A-B507-F271FCB35DBA}"

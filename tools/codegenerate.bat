@@ -2,7 +2,7 @@ echo on
 cls
 
 :: set the AREG_SDK_ROOT directory here
-if (%AREG_SDK_ROOT%=="") (set AREG_SDK_ROOT="E:\Projects\aregtech\areg-sdk")
+if (%AREG_SDK_ROOT%=="") (set AREG_SDK_ROOT="c:\path\to\areg-sdk")
 
 
 echo %AREG_SDK_ROOT%

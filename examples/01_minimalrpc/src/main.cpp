@@ -64,7 +64,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Define the model to load and instantiate threads and objects
 //////////////////////////////////////////////////////////////////////////
-//!< The name of model
 // Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL("ServiceModel")
     // Thread 1 without watchdog, contains a service provider
