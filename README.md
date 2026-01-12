@@ -2,8 +2,8 @@
   <a href="https://www.areg.tech">
     <img 
       src="./docs/img/areg-sdk-1280x360px-logo.png" 
-      alt="Areg SDK – C++ Middleware and Framework for RPC and IPC"
-      title="Areg SDK – Lightweight Cross-Platform C++ Framework and Middleware for RPC, IPC, and Distributed Systems"
+      alt="Areg SDK - C++ Middleware and Framework for RPC and IPC"
+      title="Areg SDK - Lightweight Cross-Platform C++ Framework and Middleware for RPC, IPC, and Distributed Systems"
       style="width:100%;height:auto" 
     />
   </a>
@@ -159,10 +159,11 @@ This 📄 [example source](./examples/01_minimalrpc/src/main.cpp) demonstrates *
 
 ### Learning Path
 
-1. [**01\_minimalrpc**](examples/01_minimalrpc/) – Minimal RPC between two components
-2. [**02\_minimalipc**](examples/02_minimalipc/) – IPC across processes, **requires `mtrouter`**
-3. [**03\_helloservice**](examples/03_helloservice/) – Multithreaded RPC + IPC example
-4. [**More Examples**](examples/README.md) – Advanced SDK features and usage patterns
+1. [**01\_minimalrpc**](examples/01_minimalrpc/): Minimal RPC between two components
+2. [**02\_minimalipc**](examples/02_minimalipc/): IPC across processes, **requires `mtrouter`**
+3. [**03\_helloservice**](examples/03_helloservice/): Multithreaded RPC + IPC example
+4. [**More Examples**](examples/README.md): Advanced SDK features and usage patterns
+5. [**Areg and Edge AI**](https://github.com/aregtech/areg-edgeai): Practical use cases with Edge AI inference
 
 > ⚠️ For IPC, ensure **`mtrouter` is running** → see [mtrouter docs](./docs/wiki/05a-mtrouter.md)
 
@@ -199,7 +200,23 @@ Areg uses an **interface-centric Object RPC (ORPC)** model. Applications expose 
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="./docs/img/interface-centric.png" alt="Interface-centric communication diagram" style="width:50%;height:50%"/></a></div>
 
-Areg supports both **Client–Server (Request–Reply)** and **Publish–Subscribe (Pub/Sub)** patterns, optimized for **multithreading**, **multiprocessing**, and **distributed systems** with low-latency requirements.
+Areg supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (Pub/Sub)** patterns, optimized for **multithreading**, **multiprocessing**, and **distributed systems** with low-latency requirements.
+
+### Lusan Application
+
+**Lusan** is a graphical development and diagnostics tool built on the AREG Framework. It streamlines the design, configuration, and monitoring of distributed AREG systems. The [open-source version](https://github.com/aregtech/areg-sdk-tools) focuses on core developer workflows: visual service interface design and centralized log collection.
+
+**Service Interface Design**  
+Lusan’s visual **Service Interface Designer** lets developers define, inspect, and maintain service interfaces with clarity and consistency. The existing code generator produces ready-to-use code for Service Providers and Consumers, reducing manual errors and speeding up development.
+
+<!-- TODO: Insert screenshot of Service Interface Design view here -->
+
+**Live and Offline Log Viewer**  
+Lusan’s **log viewer** aggregates logs from multiple instances, supporting real-time monitoring and offline analysis. It simplifies request tracing, system behavior analysis, and debugging of distributed interactions.
+
+<!-- TODO: Insert screenshot of Log Viewer here -->
+
+**In summary**, Lusan unifies service design and runtime observability in one tool, shortening development cycles and enabling faster, safer testing and debugging of distributed applications.
 
 ### ✅ Quick Summary
 
@@ -231,8 +248,8 @@ Many small devices lack scalable infrastructure. **Areg** transforms embedded ap
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="./docs/img/areg-services.png" alt="Service types and message handling diagram" style="width:70%;height:70%"/></a></div>
 
-* **Local Services** – multithreaded within a device
-* **Public Services** – accessible across processes and applications
+* **Local Services:** multithreaded within a device
+* **Public Services:** accessible across processes and applications
 
 **Benefit:** Seamlessly expose services to other apps and devices without modifying code.
 
@@ -255,6 +272,9 @@ Integrating AI into embedded and edge systems often requires managing concurrenc
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Embedded AI modular service architecture diagram" style="width:40%;height:40%"/></a></div>
 
 **Benefit:** Modular AI pipelines without manual threading or message handling; real-time responsiveness for control tasks; scalable orchestration of distributed AI workloads across devices.
+
+> [!TIP]
+> A practical examples of using Areg with an Edge AI system is available in the [`areg-edgeai` 📄](https://github.com/aregtech/areg-edgeai) repository.
 
 ---
 
