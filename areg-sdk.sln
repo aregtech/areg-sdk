@@ -715,11 +715,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\07b-troubleshooting-cmake-linux-builds.md = docs\wiki\07b-troubleshooting-cmake-linux-builds.md
 		docs\wiki\07c-troubleshooting-integration.md = docs\wiki\07c-troubleshooting-integration.md
 		docs\wiki\08a-examples-and-tests.md = docs\wiki\08a-examples-and-tests.md
-		09a-areg-sdk-tools-general.md = 09a-areg-sdk-tools-general.md
-		09b-build-lusan.md = 09b-build-lusan.md
-		09c-use-lusan.md = 09c-use-lusan.md
-		09d-create-service-interface.md = 09d-create-service-interface.md
-		09e-use-logging.md = 09e-use-logging.md
+		docs\wiki\09a-areg-sdk-tools-general.md = docs\wiki\09a-areg-sdk-tools-general.md
+		docs\wiki\09b-build-lusan.md = docs\wiki\09b-build-lusan.md
+		docs\wiki\09c-use-lusan.md = docs\wiki\09c-use-lusan.md
+		docs\wiki\09d-create-service-interface.md = docs\wiki\09d-create-service-interface.md
+		docs\wiki\09e-use-logging.md = docs\wiki\09e-use-logging.md
 		docs\wiki\README.md = docs\wiki\README.md
 	EndProjectSection
 EndProject
