@@ -88,7 +88,7 @@ Launch Lusan from the build output or installation directory.
 
 On startup, if `Lusan` is started for the first time, it prompts to create new workspace:
 
-<div align="center"><a href="../img/lusan-workspace-setup.png"><img src="../img/lusan-workspace-setup.png" alt="Lusan workspace setup" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../img/lusan-workspace-setup.png"><img src="../img/lusan-workspace-setup.png" alt="Lusan workspace setup" style="width:60%;height:60%"/></a></div>
 
 If `Lusan` has been used before, initializes the list of workspaces and offers the last accessed workspace as the default to load.
 
@@ -109,11 +109,11 @@ The workspace concept allows Lusan to adapt and browse different structures of t
 
 All directories of the workspace, except the project (workspace) directory are optional, they are displayed in the `Workspace` navigation tab of `Lusan` and can be changed at any time by accessing menu `Tools` => `Options` => `Directories`:
 
-<div align="center"><a href="../img/lusan-option-workspace-dirs.png"><img src="../img/lusan-option-workspace-dirs.png" alt="Lusan option workspace directories" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../img/lusan-option-workspace-dirs.png"><img src="../img/lusan-option-workspace-dirs.png" alt="Lusan option workspace directories" style="width:60%;height:60%"/></a></div>
 
 The developer can remove any workspace entry, except the currently opened one, from the list of available workspaces:
 
-<div align="center"><a href="../img/lusan-option-workspace-list.png"><img src="../img/lusan-option-workspace-list.png" alt="Lusan option list of workspaces" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../img/lusan-option-workspace-list.png"><img src="../img/lusan-option-workspace-list.png" alt="Lusan option list of workspaces" style="width:60%;height:60%"/></a></div>
 
 These paths can be updated at any time to match project layout. The updates are immediately saved in the workspace configuration.
 
@@ -123,7 +123,7 @@ These paths can be updated at any time to match project layout. The updates are 
 
 Beside setting and changing workspace settings, the users of `lusan` can set, change and test the connection to the `logcollector` service:
 
-<div align="center"><a href="../img/lusan-option-logcollector.png"><img src="../img/lusan-option-logcollector.png" alt="Lusan Logcollector settings" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../img/lusan-option-logcollector.png"><img src="../img/lusan-option-logcollector.png" alt="Lusan Logcollector settings" style="width:60%;height:60%"/></a></div>
 
 If change the `logcollector` connection settings, the user can test the connection by pressing the `Test` button. The result of connection success is displayed in the `Test Status` box. The connection settings are saved in the `lusan.init` configuration used when `lusan` starts.
 
