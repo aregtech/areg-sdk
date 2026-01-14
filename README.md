@@ -206,14 +206,16 @@ Areg supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (Pu
 
 **Lusan** is a graphical development and diagnostics tool built on the AREG Framework. It streamlines the design, configuration, and monitoring of distributed AREG systems. The [open-source version](https://github.com/aregtech/areg-sdk-tools) focuses on core developer workflows: visual service interface design and centralized log collection.
 
-**Service Interface Design**  
+#### Service Interface Design
+
 Lusan’s visual **Service Interface Designer** lets developers define, inspect, and maintain service interfaces with clarity and consistency. The existing code generator produces ready-to-use code for Service Providers and Consumers, reducing manual errors and speeding up development.
 
 <div align="center"><a href="./docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan Service Interface" style="width:80%;height:80%"/></a></div>
 
 <!-- TODO: Add reference to the of Service Interface Design document here -->
 
-**Live and Offline Log Viewer**  
+#### Live and Offline Log Viewer
+
 Lusan’s **log viewer** aggregates logs from multiple instances, supporting real-time monitoring and offline analysis. It simplifies request tracing, system behavior analysis, and debugging of distributed interactions.
 
 <div align="center"><a href="./docs/img/lusan-live-log-scope-prio.png"><img src="./docs/img/lusan-live-log-scope-prio.png" alt="Lusan Log Scope Priority change" style="width:80%;height:80%"/></a></div>
