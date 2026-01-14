@@ -88,7 +88,7 @@ Launch Lusan from the build output or installation directory.
 
 On startup, if `Lusan` is started for the first time, it prompts to create new workspace:
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-workspace-setup.png"><img src="./docs/img/lusan-workspace-setup.png" alt="Lusan workspace setup" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-workspace-setup.png"><img src="../docs/img/lusan-workspace-setup.png" alt="Lusan workspace setup" style="width:80%;height:80%"/></a></div>
 
 If `Lusan` has been used before, initializes the list of workspaces and offers the last accessed workspace as the default to load.
 
@@ -105,15 +105,15 @@ A **workspace** in Lusan defines the environment in which users work. It groups 
 
 The workspace concept allows Lusan to adapt and browse different structures of the project to visualize service interfaces and logs. Within the workspace, the user can configure folders to open **Service interface files**, used for interface design and code generation, and **Log file**, which by default are saved in the log storage directory.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-app.png"><img src="./docs/img/lusan-app.png" alt="Lusan Application" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-app.png"><img src="../docs/img/lusan-app.png" alt="Lusan Application" style="width:80%;height:80%"/></a></div>
 
 All directories of the workspace, except the project (workspace) directory are optional, they are displayed in the `Workspace` navigation tab of `Lusan` and can be changed at any time by accessing menu `Tools` => `Options` => `Directories`:
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-option-workspace-dirs.png"><img src="./docs/img/lusan-option-workspace-dirs.png" alt="Lusan option workspace directories" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-option-workspace-dirs.png"><img src="../docs/img/lusan-option-workspace-dirs.png" alt="Lusan option workspace directories" style="width:80%;height:80%"/></a></div>
 
 The developer can remove any workspace entry, except the currently opened one, from the list of available workspaces:
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-option-workspace-list.png"><img src="./docs/img/lusan-option-workspace-list.png" alt="Lusan option list of workspaces" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-option-workspace-list.png"><img src="../docs/img/lusan-option-workspace-list.png" alt="Lusan option list of workspaces" style="width:80%;height:80%"/></a></div>
 
 These paths can be updated at any time to match project layout. The updates are immediately saved in the workspace configuration.
 
@@ -123,7 +123,7 @@ These paths can be updated at any time to match project layout. The updates are 
 
 Beside setting and changing workspace settings, the users of `lusan` can set, change and test the connection to the `logcollector` service:
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-option-logcollector.png"><img src="./docs/img/lusan-option-logcollector.png" alt="Lusan Logcollector settings" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-option-logcollector.png"><img src="../docs/img/lusan-option-logcollector.png" alt="Lusan Logcollector settings" style="width:80%;height:80%"/></a></div>
 
 If change the `logcollector` connection settings, the user can test the connection by pressing the `Test` button. The result of connection success is displayed in the `Test Status` box. The connection settings are saved in the `lusan.init` configuration used when `lusan` starts.
 
@@ -136,7 +136,7 @@ If change the `logcollector` connection settings, the user can test the connecti
 Within the workspace, the user can create or open service interface documents.  
 Lusan provides a structured, visual editor to define data types, data attributes, methods, constants and additional include files specific for the service.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan Service Interface" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-service-if-general.png"><img src="../docs/img/lusan-service-if-general.png" alt="Lusan Service Interface" style="width:80%;height:80%"/></a></div>
 
 These interfaces are validated and later consumed by the Areg code generator during build when calling `addServiceInterface()` (or `addServiceInterfaceEx()`) `CMake` function like explained in [Creating Service Interface Documents with Lusan](./09d-create-service-interface.md) document.
 
@@ -152,7 +152,7 @@ Developers can:
 - Trace request execution
 - Control logging behavior at runtime
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-live-log-gen.png"><img src="./docs/img/lusan-live-log-gen.png" alt="Lusan Live Logging app" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-live-log-gen.png"><img src="../docs/img/lusan-live-log-gen.png" alt="Lusan Live Logging app" style="width:80%;height:80%"/></a></div>
 
 ---
 
@@ -165,7 +165,7 @@ This mode is useful for:
 - Investigating intermittent issues
 - Sharing logs with other team members
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-offline-log-gen.png"><img src="./docs/img/lusan-offline-log-gen.png" alt="Lusan Offline Logging app" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-offline-log-gen.png"><img src="../docs/img/lusan-offline-log-gen.png" alt="Lusan Offline Logging app" style="width:80%;height:80%"/></a></div>
 
 ---
 
@@ -177,7 +177,7 @@ Lusan allows users to modify configuration settings without restarting applicati
 
 Changes take effect immediately and can be adjusted dynamically during development.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/lusan-live-log-scope-prio.png"><img src="./docs/img/lusan-live-log-scope-prio.png" alt="Lusan Log Scope Priority change" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../docs/img/lusan-live-log-scope-prio.png"><img src="../docs/img/lusan-live-log-scope-prio.png" alt="Lusan Log Scope Priority change" style="width:80%;height:80%"/></a></div>
 
 When log priorities are updated, the user can save the current configuration to a file by pressing the `Save` button. The saved configuration file ensures that on next start applications will start with the specified log priority.
 
