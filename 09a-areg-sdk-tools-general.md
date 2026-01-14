@@ -94,7 +94,7 @@ Key capabilities include:
 ```bash
 cmake -B build
 cmake --build build
-````
+```
 
 After building, the executable is located in the SDK output `bin` directory.
 

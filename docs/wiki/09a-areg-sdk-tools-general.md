@@ -92,9 +92,9 @@ Key capabilities include:
 `logcollector` is built as part of the **areg-sdk** build process.
 
 ```bash
-cmake -B build
-cmake --build build
-````
+cmake -B ./build
+cmake --build ./build -j20
+```
 
 After building, the executable is located in the SDK output `bin` directory.
 
@@ -130,8 +130,8 @@ After building, the executable is located in the SDK output `bin` directory.
 `logobserver` is built together with Areg SDK:
 
 ```bash
-cmake -B build
-cmake --build build
+cmake -B ./build
+cmake --build ./build -j20
 ```
 
 The executable is placed in the SDK `bin` output directory.
@@ -154,8 +154,7 @@ Key capabilities include:
 
 ### Repository
 
-Lusan is hosted in a separate repository:
-
+Lusan is hosted in a separate repository:  
 👉 [https://github.com/aregtech/areg-sdk-tools](https://github.com/aregtech/areg-sdk-tools)
 
 ### Build Instructions
@@ -165,8 +164,8 @@ Lusan is built independently from the main SDK.
 ```bash
 git clone https://github.com/aregtech/areg-sdk-tools.git
 cd areg-sdk-tools
-cmake -B build
-cmake --build build
+cmake -B ./build
+cmake --build ./build -j20
 ```
 
 > [!IMPORTANT]
@@ -181,7 +180,7 @@ Service Interfaces
         ↓
    codegen.jar
         ↓
- Service Providers / Consumers
+ Service Providers / Consumers Base
         ↓
    Areg-based Applications
         ↓
