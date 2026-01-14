@@ -209,12 +209,16 @@ Areg supports both **Client-Server (Request-Reply)** and **Publish-Subscribe (Pu
 **Service Interface Design**  
 Lusan’s visual **Service Interface Designer** lets developers define, inspect, and maintain service interfaces with clarity and consistency. The existing code generator produces ready-to-use code for Service Providers and Consumers, reducing manual errors and speeding up development.
 
-<!-- TODO: Insert screenshot of Service Interface Design view here -->
+<div align="center"><a href="./docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan Service Interface" style="width:80%;height:80%"/></a></div>
+
+<!-- TODO: Add reference to the of Service Interface Design document here -->
 
 **Live and Offline Log Viewer**  
 Lusan’s **log viewer** aggregates logs from multiple instances, supporting real-time monitoring and offline analysis. It simplifies request tracing, system behavior analysis, and debugging of distributed interactions.
 
-<!-- TODO: Insert screenshot of Log Viewer here -->
+<div align="center"><a href="./docs/img/lusan-live-log-scope-prio.png"><img src="./docs/img/lusan-live-log-scope-prio.png" alt="Lusan Log Scope Priority change" style="width:80%;height:80%"/></a></div>
+
+<!-- TODO: Add reference to the log viewer here -->
 
 **In summary**, Lusan unifies service design and runtime observability in one tool, shortening development cycles and enabling faster, safer testing and debugging of distributed applications.
 
