@@ -212,6 +212,7 @@ Lusan’s visual **Service Interface Designer** lets developers define, inspect,
 
 <div align="center"><a href="./docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan Service Interface" style="width:80%;height:80%"/></a></div>
 
+For more details, see the 📄 [Service Interface Design Guide](./docs/wiki/09c-use-lusan.md).
 <!-- TODO: Add reference to the of Service Interface Design document here -->
 
 #### Live and Offline Log Viewer
@@ -220,6 +221,7 @@ Lusan’s **log viewer** aggregates logs from multiple instances, supporting rea
 
 <div align="center"><a href="./docs/img/lusan-live-log-scope-prio.png"><img src="./docs/img/lusan-live-log-scope-prio.png" alt="Lusan Log Scope Priority change" style="width:80%;height:80%"/></a></div>
 
+For more details, see the 📄 [Log Viewer Guide](./docs/wiki/09c-use-lusan.md).
 <!-- TODO: Add reference to the log viewer here -->
 
 **In summary**, Lusan unifies service design and runtime observability in one tool, shortening development cycles and enabling faster, safer testing and debugging of distributed applications.
