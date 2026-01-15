@@ -84,7 +84,7 @@ Before creating Service Interface documents, ensure the following conditions are
 
 Start the Lusan application from the build output or installation directory. Select or create a workspace with project specific directories. These directories are displayed in the `Workspace` navigation tab.
 
-<div align="center"><a href="../img/lusan-service-if-general.png"><img src="../img/lusan-service-if-general.png" alt="Lusan File System Navigation Bar" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../img/lusan-si-start-app.png"><img src="../img/lusan-si-start-app.png" alt="Lusan File System Navigation Bar" style="width:80%;height:80%"/></a></div>
 
 ---
 
@@ -146,7 +146,7 @@ Attributes are defined in the `Data Attributes` section and support two notifica
 - `OnChange` sends updates only when the value changes
 - `Always` sends updates on every modification
 
-<div align="center"><a href="../img/lusan-service-if-data-types.png"><img src="../img/lusan-service-if-data-types.png" alt="Lusan service interface data attributes" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../img/lusan-service-if-attributes.png"><img src="../img/lusan-service-if-attributes.png" alt="Lusan service interface data attributes" style="width:80%;height:80%"/></a></div>
 
 Service Consumers may subscribe or unsubscribe at runtime. The Service Provider is responsible for publishing updates. This mechanism enables reactive and event driven communication.
 
@@ -160,15 +160,15 @@ Supported method types include:
 
 - **Requests** initiated by Service Consumers
 - **Responses** sent by Service Providers
-- **Broadcasts** used for event notifications
+- **Broadcasts** used for event notifications and sending multiple data at once
 
 <div align="center"><a href="../img/lusan-service-if-methods.png"><img src="../img/lusan-service-if-methods.png" alt="Lusan service interface methods" style="width:80%;height:80%"/></a></div>
 
-Requests may be blocking or fire-and-forget. Blocking requests are paired with responses and enforce sequential execution. Fire-and-forget requests allow parallel invocation. Advanced scenarios allow manual request unblocking and response ordering using system generated session identifiers.
+- **Requests** may be blocking or fire-and-forget. Blocking requests are paired with responses and enforce sequential execution. Fire-and-forget requests allow parallel invocation. Advanced scenarios allow manual request unblocking and response ordering using system generated session identifiers.
 
-Responses always belong to a request and may carry output parameters.
+- **Responses** always belong to a request and may carry output parameters.
 
-Broadcasts are independent notifications that may be subscribed to by multiple Service Consumers.
+- **Broadcasts** are independent notifications that may be subscribed to by multiple Service Consumers.
 
 Lusan validates method relationships and ensures correct request response pairing.
 
