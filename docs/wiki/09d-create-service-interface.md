@@ -84,7 +84,7 @@ Before creating Service Interface documents, ensure the following conditions are
 
 Start the Lusan application from the build output or installation directory. Select or create a workspace with project specific directories. These directories are displayed in the `Workspace` navigation tab.
 
-<div align="center"><a href="../img/lusan-si-start-app.png"><img src="../img/lusan-si-start-app.png" alt="Lusan File System Navigation Bar" style="width:80%;height:80%"/></a></div>
+<div align="center"><a href="../img/lusan-si-start-app.png"><img src="../img/lusan-si-start-app.png" alt="Lusan File System Navigation Bar" style="width:50%;height:50%"/></a></div>
 
 ---
 
