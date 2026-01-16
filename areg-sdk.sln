@@ -719,8 +719,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A
 		docs\wiki\09b-build-lusan.md = docs\wiki\09b-build-lusan.md
 		docs\wiki\09c-use-lusan.md = docs\wiki\09c-use-lusan.md
 		docs\wiki\09d-create-service-interface.md = docs\wiki\09d-create-service-interface.md
-		docs\wiki\09e-use-logging.md = docs\wiki\09e-use-logging.md
 		docs\wiki\README.md = docs\wiki\README.md
+		docs\wiki\09e-use-live-logging.md = docs\wiki\09e-use-live-logging.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02_minimalipc", "02_minimalipc", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
