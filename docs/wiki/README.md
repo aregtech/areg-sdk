@@ -19,6 +19,22 @@ This wiki serves as the **authoritative technical reference and learning hub** f
 
 ---
 
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [1. Installation and Build](#1-installation-and-build)
+- [2. Build Options and Integrations](#2-build-options-and-integrations)
+- [3. Networking and Communication](#3-networking-and-communication)
+- [4. Logging and Monitoring](#4-logging-and-monitoring)
+- [5. Persistence](#5-persistence)
+- [6. Development Tools](#6-development-tools)
+- [7. Troubleshooting](#7-troubleshooting)
+- [8. Examples and Tests](#8-examples-and-tests)
+- [9. Areg SDK Tools](#9-areg-sdk-tools)
+- [Contribute and Improve](#contribute-and-improve)
+
+---
+
 ## Getting Started
 
 The following sections are organized to help you progress from **installation** to **advanced system design**, with each document focusing on a specific aspect of the Areg SDK ecosystem.
@@ -64,12 +80,12 @@ Configuration, customization, and integration of Areg SDK into existing projects
 
 ---
 
-## 3. Development Tools
+## 3. Networking and Communication
 
-Tools that accelerate development and enforce architectural consistency.
+Advanced communication routing for distributed deployments.
 
-- **[Areg SDK Code Generator (`codegen.jar`)](./03a-code-generator.md)**  
-  Generate service interfaces, stubs, and proxies from interface definition files.
+- **[Areg SDK Multitarget Router](./03a-mtrouter.md)**  
+  Configure and deploy multitarget routing for cross-network service communication.
 
 ---
 
@@ -91,21 +107,39 @@ Centralized logging and diagnostics for distributed and multi-process systems.
 
 ---
 
-## 5. Networking and Communication
-
-Advanced communication routing for distributed deployments.
-
-- **[Areg SDK Multitarget Router](./05a-mtrouter.md)**  
-  Configure and deploy multitarget routing for cross-network service communication.
-
----
-
-## 6. Persistence
+## 5. Persistence
 
 Built-in persistent storage support.
 
-- **[Key-Value Data Persistence Syntax in Areg SDK](./06a-persistence-syntax.md)**  
+- **[Key-Value Data Persistence Syntax in Areg SDK](./05a-persistence-syntax.md)**  
   Define and manage persistent key-value data across application restarts.
+
+---
+
+## 6. Development Tools
+
+Tools that accelerate development and enforce architectural consistency.
+
+- **[Areg SDK Tools](./06a-areg-sdk-tools.md)**  
+  Overview of all tools shipped with Areg SDK.
+
+- **[Areg SDK Code Generator (`codegen.jar`)](./06b-code-generator.md)**  
+  Generate service interfaces, stubs, and proxies from interface definition files.
+
+- **[Building Lusan with CMake or Qt Creator](./06c-build-lusan.md)**  
+  Build the Lusan GUI application.
+
+- **[Setup and Using Lusan](./06d-setup-lusan.md)**  
+  Initial setup and core workflows in Lusan.
+
+- **[Creating Service Interface Documents with Lusan](./06e-lusan-service-interface.md)**  
+  Design service interfaces visually using Lusan.
+
+- **[Lusan Live Log Viewer](./06f-lusan-live-logging.md)**  
+  Monitor and analyze logs from running systems in real time.
+
+- **[Lusan Offline Log Viewer](./06g-lusan-offline-logging.md)**  
+  Perform post-mortem analysis using recorded log sessions.
 
 ---
 
@@ -139,30 +173,6 @@ Hands-on examples and real-world demos.
 
 - **[Qt Integration with Areg SDK](https:github.com/aregtech/areg-sdk-tools)**  
   Lusan: a control plane for designing, debugging, and monitoring Areg-based systems.
-
----
-
-## 9. Areg SDK Tools
-
-Graphical and command-line tools for system design and diagnostics.
-
-- **[Areg SDK Development Tools](./09a-areg-sdk-tools-general.md)**  
-  Overview of all tools shipped with Areg SDK.
-
-- **[Building Lusan with CMake or Qt Creator](./09b-build-lusan.md)**  
-  Build the Lusan GUI application.
-
-- **[Setup and Using Lusan](./09c-use-lusan.md)**  
-  Initial setup and core workflows in Lusan.
-
-- **[Creating Service Interface Documents with Lusan](./09d-create-service-interface.md)**  
-  Design service interfaces visually using Lusan.
-
-- **[Lusan Live Log Viewer](./09e-lusan-live-log-viewer.md)**  
-  Monitor and analyze logs from running systems in real time.
-
-- **[Lusan Offline Log Viewer](./09f-lusan-offline-log-viewer.md)**  
-  Perform post-mortem analysis using recorded log sessions.
 
 ---
 

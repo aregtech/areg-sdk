@@ -103,19 +103,19 @@ Answer these 5 questions to evaluate fit:
 
 ### Compared to Alternatives
 
-| Feature | Areg SDK | Competitors (gRPC, DDS, ZeroMQ) |
-| --- | --- | --- |
-| **Ease of Use** | ✅ Automated setup and code generation | ⚠️ Manual configuration, boilerplate, [complex setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc) |
-| **Threading Model** | ✅ Fully automated thread management | ⚠️ Manual thread creation and synchronization |
-| **Code Automation** | ✅ Complete codegen: providers, consumers, dispatch, lifecycle | ⚠️ Limited: [transport stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview) |
-| **Service Discovery** | ✅ Self-organizing service mesh, zero configuration | ✅ DDS: [built-in](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external required](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
-| **Fault Tolerance** | ✅ Watchdog monitoring + automatic component restart | ✅ DDS: [QoS-based](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [Retries](https://grpc.io/docs/guides/retry/) or manual recovery |
-| **Request-Reply (RPC)** | ✅ Native Object RPC in service interfaces | ✅ gRPC: [native](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: Over topics or [patterns](https://zguide.zeromq.org/docs/chapter3/) |
-| **Pub/Sub** | ✅ Native, built-in within service interfaces | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: Add-ons or manual implementation |
-| **Unified Local/Remote API** | ✅ Same code works across threads, processes, devices | ⚠️ Different APIs for different communication scopes |
-| **Built-in Logging** | ✅ Integrated distributed logging with GUI viewer (Lusan) | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) (DDS) or external tools required |
-| **Learning Curve** | ✅ Low - automation reduces complexity | ⚠️ Moderate to high - manual setup and configuration |
-| **Development Speed** | ✅ Faster - automation eliminates boilerplate | ⚠️ Slower - more manual integration work |
+| Feature                       | Areg SDK                                                      | Competitors (gRPC, DDS, ZeroMQ) |
+|-------------------------------|---------------------------------------------------------------|---------------------------------|
+| **Ease of Use**               | ✅ Automated setup and code generation                         | ⚠️ Manual configuration, boilerplate, [complex setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc) |
+| **Threading Model**           | ✅ Fully automated thread management                           | ⚠️ Manual thread creation and synchronization |
+| **Code Automation**           | ✅ Complete codegen: providers, consumers, dispatch, lifecycle | ⚠️ Limited: [transport stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview) |
+| **Service Discovery**         | ✅ Self-organizing service mesh, zero configuration            | ✅ DDS: [built-in](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external required](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
+| **Fault Tolerance**           | ✅ Watchdog monitoring + automatic component restart           | ✅ DDS: [QoS-based](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [Retries](https://grpc.io/docs/guides/retry/) or manual recovery |
+| **Request-Reply (RPC)**       | ✅ Native Object RPC in service interfaces                     | ✅ gRPC: [native](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: Over topics or [patterns](https://zguide.zeromq.org/docs/chapter3/) |
+| **Pub/Sub**                   | ✅ Native, built-in within service interfaces                  | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: Add-ons or manual implementation |
+| **Unified Local/Remote API**  | ✅ Same code works across threads, processes, devices          | ⚠️ Different APIs for different communication scopes |
+| **Built-in Logging**          | ✅ Integrated distributed logging with GUI viewer (Lusan)      | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) (DDS) or external tools required |
+| **Learning Curve**            | ✅ Low - automation reduces complexity                         | ⚠️ Moderate to high - manual setup and configuration |
+| **Development Speed**         | ✅ Faster - automation eliminates boilerplate                  | ⚠️ Slower - more manual integration work |
 
 **Key Differentiators:**
 - **Complete Automation**: Areg automates threading, dispatch, and lifecycle - not just transport
@@ -129,7 +129,7 @@ Answer these 5 questions to evaluate fit:
 
 ## What is Areg SDK[![](./docs/img/pin.svg)](#what-is-areg-sdk)
 
-**Areg SDK** is a **complete Software Development Kit** built around the **Areg Framework** - a C++17 middleware that automates distributed system development. Named after the ancient Armenian word for "Sun", Areg creates a star network where services orbit around a central message router (`mtrouter`), enabling automatic discovery and fault-tolerant communication.
+**Areg SDK** is a **complete Software Development Kit** built around the **Areg Framework** - a C++17 framework with built-in middleware that automates distributed system development. Named after the ancient Armenian word for "Sun", Areg creates a star network where services orbit around a central multi-target message router (`mtrouter`), enabling automatic discovery and fault-tolerant communication.
 
 ### SDK Components
 
@@ -139,7 +139,7 @@ The SDK includes everything needed for distributed C++ development:
 - **Multitarget Router** (`mtrouter`) - Message routing service for inter-process communication
 - **Code Generator** (`codegen.jar`) - Generates service providers and consumers from interface definitions
 - **Log Collector** (`logcollector`) - Aggregates logs from distributed applications for centralized monitoring
-- **Log Observer** (`logobserver`) - Console tool for real-time log viewing and analysis
+- **Log Observer** (`logobserver`) - Console tool for real-time log recording
 - **Areg Extend** (`aregextend`) - Extension library with additional utilities
 - **Lusan GUI** - Visual service designer and distributed log viewer ([separate repository](https://github.com/aregtech/areg-sdk-tools))
 
@@ -147,7 +147,7 @@ The SDK includes everything needed for distributed C++ development:
 
 Areg uses an **interface-centric Object RPC (ORPC)** model where:
 1. You define service interfaces (methods, attributes, events)
-2. Code generator creates provider and consumer classes
+2. Code generator creates service provider and consumer base classes
 3. Services automatically discover each other through `mtrouter`
 4. Communication works identically whether local (thread) or remote (process/network)
 
@@ -155,7 +155,7 @@ This **location transparency** means you can:
 - Develop as multithreaded application
 - Deploy as multiprocess system
 - Scale to multi-device network
-- **All without changing service code**
+- **All without changing service code** (example: [`03_helloservice`](./examples/03_helloservice))
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -184,24 +184,25 @@ Clone the repository and build the SDK:
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 cmake -B build
-cmake --build build -j 12
+cmake --build build -j20
 ```
 
-> 💡 **Tip:** Copy-paste these commands directly in **Linux Terminal, Windows CMD, or PowerShell**.
+> [!TIP]
+> Copy-paste these commands directly in **Linux Terminal, Windows CMD, or PowerShell**.
 
 ---
 
 ### Run Your First Example
 
-The minimal RPC example demonstrates **multithreaded RPC** in a single process:
+The [minimal RPC example](./examples/01_minimalrpc/) demonstrates **multithreaded RPC** in a single process:
 
 **Example location after build:**
 ```bash
 # Linux example path:
-./product/build/gcc/linux-x86_64-release-shared/bin/01_minimalrpc
+.product/build/gnu-g++/linux-64-x86_64-release-shared/bin/01_minimalrpc
 
 # Windows example path (adjust for your compiler):
-.\product\build\msvc\windows-x86_64-release-shared\bin\01_minimalrpc.exe
+.\product\build\msvc-cl\windows-64-amd64-release-shared\bin\01_minimalrpc.exe
 ```
 
 **What this example demonstrates:**
@@ -229,7 +230,8 @@ Follow this progressive path to master Areg SDK:
 4. **[More Examples](examples/README.md)** - Advanced SDK features and usage patterns
 5. **[Areg and Edge AI](https://github.com/aregtech/areg-edgeai)** - Practical use cases with Edge AI inference
 
-> ⚠️ **For IPC examples:** Ensure **`mtrouter` is running** first. See [mtrouter documentation](./docs/wiki/05a-mtrouter.md).
+> [!IMPORTANT]
+> **For _IPC_ examples:** Ensure **`mtrouter` is running**. See [mtrouter documentation](./docs/wiki/05a-mtrouter.md).
 
 ---
 
@@ -238,6 +240,7 @@ Follow this progressive path to master Areg SDK:
 - **CMake FetchContent integration:** [Integration Guide](./docs/wiki/02c-cmake-integrate.md)
 - **Demo Project:** [areg-sdk-demo](https://github.com/aregtech/areg-sdk-demo)
 - **Qt Integration & Tools (Lusan):** [areg-sdk-tools](https://github.com/aregtech/areg-sdk-tools)
+- **Edge AI Cases:** [areg-edgeai](https://github.com/aregtech/areg-edgeai)
 
 > 💡 **Advanced builds** (IDE setup, cross-compilation, disabling tests/examples) → consult the [Wiki](./docs/wiki/)
 
@@ -251,14 +254,14 @@ Follow this progressive path to master Areg SDK:
 
 ### Modules Overview
 
-| Module | Role & Purpose | Required |
-| --- | --- | --- |
-| [Areg Library (`areg`)](./docs/HelloService.md) | **Core framework + middleware.** Automates Object RPC (ORPC), IPC, threading, routing, and fault recovery. | ✅ Always |
-| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md) | **Build-time tool.** Generates code from service APIs to eliminate manual coding and automate RPC. | ✅ Build-time |
-| [Multitarget Router (`mtrouter`)](./docs/wiki/05a-mtrouter.md) | **Required for IPC.** Routes messages across processes and devices to form a service mesh. | ⚠️ IPC only |
-| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md) | **Optional developer tool.** Aggregates logs from distributed apps for monitoring, debugging, and analysis. | ❌ Optional |
-| [Lusan (GUI Tool)](https://github.com/aregtech/areg-sdk-tools) | **Optional developer tool.** Provides visual API design, log inspection, and performance visualization. | ❌ Optional |
-| [Examples](./examples/README.md) | **Learning & validation.** Sample projects that demonstrate Areg SDK in action. | ❌ Optional |
+| Module                                                                    | Role & Purpose                                                                                                    | Required      |
+|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------|
+| [Areg Library (`areg`)](./docs/HelloService.md)                           | **Core framework + middleware.** Automates Object RPC (ORPC),</br> IPC, threading, routing, and fault recovery.   | ✅ Always      |
+| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md)       | **Build-time tool.** Generates code from service APIs</br>to eliminate manual coding and automate RPC.            | ✅ Build-time  |
+| [Multitarget Router (`mtrouter`)](./docs/wiki/05a-mtrouter.md)            | **Required for IPC.** Routes messages across processes</br>and devices to form a service mesh.                    | ⚠️ IPC only    |
+| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)         | **Optional developer tool.** Aggregates logs from</br>distributed apps for monitoring, debugging, and analysis.   | ❌ Optional    |
+| [Lusan (GUI Tool)(`lusan`)](https://github.com/aregtech/areg-sdk-tools)   | **Optional developer tool.** Provides visual API design,</br>log inspection, and performance visualization.       | ❌ Optional    |
+| [Examples](./examples/README.md)                                          | **Learning & validation.** Sample projects that demonstrate</br>Areg SDK in action.                               | ❌ Optional    |
 
 ---
 
@@ -286,13 +289,12 @@ For more details, see the 📄 [Service Interface Design Guide](./docs/wiki/09c-
 
 #### Live and Offline Log Viewer
 
-Lusan's **log viewer** aggregates logs from multiple instances, supporting both real-time monitoring and offline analysis. It simplifies request tracing, system behavior analysis, and debugging of distributed interactions with features like:
+Lusan's **log viewer** aggregates logs from multiple instances, supporting both real-time monitoring and offline analysis. It helps multiprocess application monitoring, system behavior analysis, and debugging of distributed interactions with features like:
 
 - **Real-time log aggregation** across distributed systems
 - **Dynamic scope filtering** and priority control at runtime
 - **Offline analysis** of recorded sessions for post-mortem debugging
 - **Performance analysis** with per-method execution timing
-- **Request flow tracing** across multiple components and processes
 
 <div align="center"><a href="./docs/img/lusan-live-log-scope-prio.png"><img src="./docs/img/lusan-live-log-scope-prio.png" alt="Lusan Log Scope Priority change" style="width:80%;height:80%"/></a></div>
 
@@ -361,7 +363,7 @@ Traditional device drivers are **slow to develop, complex to maintain, and platf
 
 ---
 
-### Embedded and Distributed AI
+### Embedded and Distributed Edge AI
 
 Integrating AI into embedded and edge systems requires managing concurrency, communication, and synchronization across multiple modules - data collection, preprocessing, inference, decision-making, monitoring, and connectivity. **Areg SDK** simplifies this by letting each AI stage run as an **independent service** in its own thread or process, with built-in event-driven communication.
 
@@ -401,6 +403,7 @@ Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on
 **2026 Priorities:**
 
 - **Multi-channel support** - Multiplexed communications for higher throughput and efficiency
+- **Enhanced security** - encryption, authentication, and authorization mechanisms
 - **RTOS support (Zephyr OS)** - Bring Areg SDK into real-time embedded environments
 - **Lusan application improvements** - Enhanced performance, stability, and usability ([Areg SDK Tools](https://github.com/aregtech/areg-sdk-tools))
 - **Expanded documentation** - More tutorials, guides, and real-world examples
@@ -408,7 +411,7 @@ Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on
 
 **Future Vision:**
 
-- Cross-language bindings (Python, Rust) for polyglot systems
+- Cross-language bindings (Python, Rust, etc.) for polyglot systems
 - Cloud integration patterns and deployment guides
 - Container orchestration support (Kubernetes, Docker Compose)
 - Advanced debugging and profiling tools
@@ -423,10 +426,11 @@ Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on
 
 - **[Installation and Build](./docs/wiki/README.md#1-installation-and-build)** - Cross-platform builds, toolchains, CMake integration for embedded and desktop targets
 - **[Build Options and Integrations](./docs/wiki/README.md#2-build-options-and-integrations)** - FetchContent, packaging, and embedding Areg SDK as a library
-- **[Development Tools](./docs/wiki/README.md#3-development-tools)** - Code generation for service-oriented development
+- **[Networking and Communication](./docs/wiki/README.md#3-networking-and-communication)** - Multitarget router for IPC and low-latency 
 - **[Logging and Monitoring](./docs/wiki/README.md#4-logging-and-monitoring)** - Log collector and observer usage for distributed systems
-- **[Networking and Communication](./docs/wiki/README.md#5-networking-and-communication)** - Multitarget router for IPC and low-latency messaging
-- **[Persistence](./docs/wiki/README.md#6-persistence)** - Local data storage in text files
+messaging
+- **[Persistence](./docs/wiki/README.md#5-persistence)** - Local data storage in text files
+- **[Development and Testing Tools](./docs/wiki/README.md#6-development-tools)** - Core and optional tools for design, development, testing, and diagnostics
 - **[Troubleshooting](./docs/wiki/README.md#7-troubleshooting)** - Common issues and recommended solutions
 - **[Examples and Tests](./docs/wiki/README.md#8-examples-and-tests)** - Catalog of sample projects (RPC, IPC, Pub/Sub, FSM, and more)
 - **[HOWTO Guide](docs/HOWTO.md)** - Practical reference for common development tasks
