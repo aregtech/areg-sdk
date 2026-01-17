@@ -254,14 +254,14 @@ Follow this progressive path to master Areg SDK:
 
 ### Modules Overview
 
-| Module                                                                    | Role & Purpose                                                                                                    | Required      |
-|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------|
-| [Areg Library (`areg`)](./docs/HelloService.md)                           | **Core framework + middleware.** Automates Object RPC (ORPC),</br> IPC, threading, routing, and fault recovery.   | ✅ Always      |
-| [Code Generator (`codegen.jar`)](./docs/wiki/03a-code-generator.md)       | **Build-time tool.** Generates code from service APIs</br>to eliminate manual coding and automate RPC.            | ✅ Build-time  |
-| [Multitarget Router (`mtrouter`)](./docs/wiki/05a-mtrouter.md)            | **Required for IPC.** Routes messages across processes</br>and devices to form a service mesh.                    | ⚠️ IPC only    |
-| [Log Collector (`logcollector`)](./docs/wiki/04d-logcollector.md)         | **Optional developer tool.** Aggregates logs from</br>distributed apps for monitoring, debugging, and analysis.   | ❌ Optional    |
-| [Lusan (GUI Tool)(`lusan`)](https://github.com/aregtech/areg-sdk-tools)   | **Optional developer tool.** Provides visual API design,</br>log inspection, and performance visualization.       | ❌ Optional    |
-| [Examples](./examples/README.md)                                          | **Learning & validation.** Sample projects that demonstrate</br>Areg SDK in action.                               | ❌ Optional    |
+| Module                                                                       | Role & Purpose                                                                                                    | Required       |
+|------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------|
+| [Areg Library</br>(`areg`)](./docs/HelloService.md)                          | **Core framework + middleware.** Automates Object RPC (ORPC),</br>IPC, threading, routing, and fault recovery.    | ✅ Always      |
+| [Code Generator</br>(`codegen.jar`)](./docs/wiki/03a-code-generator.md)      | **Build-time tool.** Generates code from service APIs</br>to eliminate manual coding and automate RPC.            | ✅ Build-time  |
+| [Multitarget Router</br>(`mtrouter`)](./docs/wiki/05a-mtrouter.md)           | **Required for IPC.** Routes messages across processes</br>and devices to form a service mesh.                    | ⚠️ IPC only    |
+| [Log Collector</br>(`logcollector`)](./docs/wiki/04d-logcollector.md)        | **Optional developer tool.** Aggregates logs from</br>distributed apps for monitoring, debugging, and analysis.   | ❌ Optional    |
+| [Lusan (GUI Tool)</br>(`lusan`)](https://github.com/aregtech/areg-sdk-tools) | **Optional developer tool.** Provides visual API design,</br>log inspection, and performance visualization.       | ❌ Optional    |
+| [Examples](./examples/README.md)                                             | **Learning & validation.** Sample projects that demonstrate</br>Areg SDK in action.                               | ❌ Optional    |
 
 ---
 
