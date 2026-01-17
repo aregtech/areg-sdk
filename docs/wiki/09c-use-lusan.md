@@ -1,4 +1,4 @@
-﻿# Building and Using Lusan
+﻿# Setup and Using Lusan
 
 This document provides an overview of how to build and use **Lusan**, the graphical development and diagnostics tool of the **Areg SDK** ecosystem. It explains how to build the application, set up a workspace, configure folders and connections, adjust runtime settings, and use Lusan for everyday development and diagnostics tasks.
 
