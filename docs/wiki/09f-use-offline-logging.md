@@ -191,7 +191,7 @@ You can also configure the log storage directory:
 
 Open logs directly from the `Workspace` navigation pane:
 
-<div align="center"><a href="../img/lusan-navigation-logs.png"><img src="../img/lusan-navigation-logs.png" alt="Lusan Log Directory of Workspace Navigation pane" style="width:60%;height:60%"/></a></div>
+<div align="center"><a href="../img/lusan-navigation-logs.png"><img src="../img/lusan-navigation-logs.png" alt="Lusan Log Directory of Workspace Navigation pane" style="width:30%;height:30%"/></a></div>
 
 **Method 2: From File Menu**
 
