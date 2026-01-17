@@ -22,7 +22,7 @@
 
 Most C++ projects don't fail on algorithms. They fail on **threads, IPC, and fragile wiring**. Unlike traditional frameworks, **Areg SDK automates communication**, unifying async RPC, Pub/Sub, and service discovery. Its self-managed service mesh **enables scalable, fault-tolerant systems across threads, processes, and devices with no boilerplate and no fragile wiring**.
 
-*Named after the ancient Armenian God of "Sun", Areg creates a star network where services orbit around a central router - enabling automatic discovery, fault tolerance, and seamless distributed computing.*
+*Named after the ancient Armenian word of "Sun", Areg creates a star network where services orbit around a central router - enabling automatic discovery, fault tolerance, and seamless distributed computing.*
 
 ---
 
