@@ -100,8 +100,8 @@ After building, the executable is located in the SDK output `bin` directory.
 
 ### Configuration
 
-* Uses the `areg.init` configuration file
-* Requires correct IP address and port settings for TCP/IP-based logging
+- Uses the `areg.init` configuration file
+- Requires correct IP address and port settings for TCP/IP-based logging
 
 ---
 
@@ -111,19 +111,19 @@ After building, the executable is located in the SDK output `bin` directory.
 
 `logobserver` is a **lightweight, console-based tool** used to control and inspect the logging system at runtime. It allows developers to:
 
-* Enable or disable log priorities
-* Enable or disable log scopes
-* Adjust logging behavior dynamically
-* Save logs to files for offline analysis
+- Enable or disable log priorities
+- Enable or disable log scopes
+- Adjust logging behavior dynamically
+- Save logs to files for offline analysis
 
 > [!IMPORTANT]
 > `logobserver` does **not** collect logs. Its role is to **control**, **observe**, and **record** logging behavior.
 
 ### Typical Use Cases
 
-* Debugging without GUI tools
-* Fine-grained runtime control of logging scopes and priorities
-* Embedded or headless environments
+- Debugging without GUI tools
+- Fine-grained runtime control of logging scopes and priorities
+- Embedded or headless environments
 
 ### Build Instructions
 
@@ -146,11 +146,11 @@ The executable is placed in the SDK `bin` output directory.
 
 Key capabilities include:
 
-* Visual **Service Interface Design**
-* Centralized **log collection**
-* **Live and offline** log visualization
-* Log filtering, correlation, and performance analysis
-* Runtime control of logging scopes and priorities
+- Visual **Service Interface Design**
+- Centralized **log collection**
+- **Live and offline** log visualization
+- Log filtering, correlation, and performance analysis
+- Runtime control of logging scopes and priorities
 
 ### Repository
 
@@ -193,9 +193,9 @@ Service Interfaces
 
 ## Summary
 
-* **`codegen.jar`** automates service code generation at build time
-* **`logcollector`** aggregates logs from distributed applications
-* **`logobserver`** controls and records logging behavior
-* **`lusan`** enables visual service design and advanced log analysis
+- **`codegen.jar`** automates service code generation at build time
+- **`logcollector`** aggregates logs from distributed applications
+- **`logobserver`** controls and records logging behavior
+- **`lusan`** enables visual service design and advanced log analysis
 
 Together, these tools form a **complete development and diagnostics ecosystem** for building, testing, debugging, and scaling distributed C++ applications with Areg SDK.

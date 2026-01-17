@@ -80,9 +80,9 @@ cd areg-sdk-tools
 
 The repository contains:
 
-* CMake build configuration
-* Lusan application sources
-* Dependency integration logic
+- CMake build configuration
+- Lusan application sources
+- Dependency integration logic
 
 ---
 
@@ -97,10 +97,10 @@ cmake --build build -j20
 
 During the build:
 
-* Areg SDK is automatically cloned and built if not found
-* `areg` and `aregextend` are compiled as dependencies
-* Qt libraries are dynamically linked
-* Required runtime libraries are copied to the output directory
+- Areg SDK is automatically cloned and built if not found
+- `areg` and `aregextend` are compiled as dependencies
+- Qt libraries are dynamically linked
+- Required runtime libraries are copied to the output directory
 
 After a successful build, the Lusan executable is available in `./build/bin`
 
@@ -116,8 +116,8 @@ Steps:
 2. Select **Open Project**
 3. Open `CMakeLists.txt` from the `areg-sdk-tools` directory
 4. Configure:
-   * Compiler toolchain
-   * Build type (Debug or Release)
+   - Compiler toolchain
+   - Build type (Debug or Release)
 5. Select or configure a Qt Kit
 6. Build the project
 
@@ -131,8 +131,8 @@ Lusan uses only a minimal subset of Qt.
 
 Required modules:
 
-* **Qt Core**
-* **Qt Widgets**
+- **Qt Core**
+- **Qt Widgets**
 
 After the build, Qt runtime libraries are automatically copied into the `build/bin` directory. This allows Lusan to run without a global Qt installation at runtime.
 
@@ -142,12 +142,12 @@ After the build, Qt runtime libraries are automatically copied into the `build/b
 
 After a successful build, the output directory contains:
 
-* `lusan` executable
-* Areg Framework libraries
-* `mtrouter` and `logcollector` executables
+- `lusan` executable
+- Areg Framework libraries
+- `mtrouter` and `logcollector` executables
   (can run as console applications or system services)
-* Required Qt runtime libraries
-* Configuration files
+- Required Qt runtime libraries
+- Configuration files
 
 This layout allows Lusan to be executed directly from the build output directory.
 
@@ -155,10 +155,10 @@ This layout allows Lusan to be executed directly from the build output directory
 
 ## Notes and Recommendations
 
-* Prefer **Qt Creator** when Qt is not installed system-wide
-* Ensure internet access for the initial dependency fetch
-* Use **Release** builds for daily development and diagnostics
-* Run `logcollector` alongside Lusan for live log visualization
+- Prefer **Qt Creator** when Qt is not installed system-wide
+- Ensure internet access for the initial dependency fetch
+- Use **Release** builds for daily development and diagnostics
+- Run `logcollector` alongside Lusan for live log visualization
 
 ---
 
