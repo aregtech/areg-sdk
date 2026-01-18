@@ -330,7 +330,7 @@ Follow this progressive path to master Areg SDK:
 | [Multitarget Router</br>(`mtrouter`)](./docs/wiki/05a-mtrouter.md)           | **Required for IPC.** Routes messages across processes and devices<br/>to form a servicemesh.                  | ⚠️ IPC only  |
 | [Log Collector</br>(`logcollector`)](./docs/wiki/04d-logcollector.md)        | **Optional developer tool.** Aggregates logs from distributed apps<br/>for monitoring, debugging, and analysis. | ❌ Optional  |
 | [Lusan (GUI Tool)</br>(`lusan`)](https://github.com/aregtech/areg-sdk-tools) | **Optional developer tool.** Provides visual API design, log inspection,<br/>andperformance visualization.     | ❌ Optional  |
-| [Examples](./examples/README.md)                                             | **Learning & validation.** Sample projects that demonstrate Areg SDK in action.                             | ❌ Optional  |
+| [Examples](./examples/README.md)                                             | **Learning & validation.** Sample projects that demonstrate Areg SDK<br/>in action.                             | ❌ Optional  |
 
 ---
 
