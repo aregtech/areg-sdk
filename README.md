@@ -226,14 +226,14 @@ Implementation of Service Provider:
 ```cpp
 class ServiceProvider : public Component, protected HelloServiceStub {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
-        : Component(entry, owner), HelloServiceStub(static_cast<Component&>(*this))
-    {   }
+  ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    : Component(entry, owner), HelloServiceStub(static_cast<Component&>(*this))
+  {   }
 
-    virtual void requestHelloService(void) override {
-        std::cout << "\'Hello Service!\'" << std::endl;
-        Application::signalAppQuit(); // quit application is if received response
-    }
+  virtual void requestHelloService(void) override {
+    std::cout << "\'Hello Service!\'" << std::endl;
+    Application::signalAppQuit(); // quit application is if received response
+  }
 };
 ```
 
@@ -241,46 +241,46 @@ Implementation of Service Consumer:
 ```cpp
 class ServiceConsumer : public Component, protected HelloServiceClientBase {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-		: Component( entry, owner ), HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+  ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+		: Component(entry, owner), HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
 	{   }
 
-    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
-        if (HelloServiceClientBase::serviceConnected(status, proxy)) {
-            if (NEService::isServiceConnected(status))
-                requestHelloService();  // Call of method of remote "ServiceProvider" object.
-            return true;
-        }
-        return false;
+  virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
+    if (HelloServiceClientBase::serviceConnected(status, proxy)) {
+      if (NEService::isServiceConnected(status))
+        requestHelloService();  // Call of method of remote "ServiceProvider" object.
+      return true;
     }
+    return false;
+  }
 };
 ```
 
 Define a model - automates threading, automates creating objects, used for service discovery:
 ```cpp
 BEGIN_MODEL("ServiceModel")
-    BEGIN_REGISTER_THREAD("Thread1")
-        BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
-            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
-        END_REGISTER_COMPONENT("ServiceProvider")
-    END_REGISTER_THREAD("Thread1")
+  BEGIN_REGISTER_THREAD("Thread1")
+    BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
+      REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+    END_REGISTER_COMPONENT("ServiceProvider")
+  END_REGISTER_THREAD("Thread1")
 
-    BEGIN_REGISTER_THREAD("Thread2")
-        BEGIN_REGISTER_COMPONENT("ServiceClient", ServiceConsumer)
-            REGISTER_DEPENDENCY("ServiceProvider") /* dependency reference to the remote service*/
-        END_REGISTER_COMPONENT("ServiceClient")
-    END_REGISTER_THREAD("Thread2")
+  BEGIN_REGISTER_THREAD("Thread2")
+    BEGIN_REGISTER_COMPONENT("ServiceClient", ServiceConsumer)
+      REGISTER_DEPENDENCY("ServiceProvider") /* dependency reference to the remote service*/
+    END_REGISTER_COMPONENT("ServiceClient")
+  END_REGISTER_THREAD("Thread2")
 END_MODEL("ServiceModel")
 ```
 
 Full version of `main()` function:
 ```cpp
 int main(void) {
-    Application::initApplication();
-    Application::loadModel("ServiceModel"); // Start threads, create objects, establish connections
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-    Application::releaseApplication();
-    return 0;
+  Application::initApplication();
+  Application::loadModel("ServiceModel"); // Start threads, create objects, establish connections
+  Application::waitAppQuit(NECommon::WAIT_INFINITE);
+  Application::releaseApplication();
+  return 0;
 }
 ```
 
