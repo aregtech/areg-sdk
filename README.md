@@ -242,7 +242,8 @@ Implementation of Service Consumer:
 class ServiceConsumer : public Component, protected HelloServiceClientBase {
 public:
   ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-		: Component(entry, owner), HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
+		: Component(entry, owner)
+        , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
 	{   }
 
   virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
