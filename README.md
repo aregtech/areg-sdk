@@ -230,7 +230,7 @@ public:
     : Component(entry, owner), HelloServiceStub(static_cast<Component&>(*this))
   {   }
 
-  virtual void requestHelloService(void) override {
+  void requestHelloService() override {
     std::cout << "\'Hello Service!\'" << std::endl;
     Application::signalAppQuit(); // quit application is if received response
   }
@@ -246,7 +246,7 @@ public:
         , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
 	{   }
 
-  virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
+  bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
     if (HelloServiceClientBase::serviceConnected(status, proxy)) {
       if (NEService::isServiceConnected(status))
         requestHelloService();  // Call of method of remote "ServiceProvider" object.
@@ -276,7 +276,7 @@ END_MODEL("ServiceModel")
 
 Full version of `main()` function:
 ```cpp
-int main(void) {
+int main() {
   Application::initApplication();
   Application::loadModel("ServiceModel"); // Start threads, create objects, establish connections
   Application::waitAppQuit(NECommon::WAIT_INFINITE);
