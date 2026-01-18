@@ -1,4 +1,4 @@
-# Building and Running AREG SDK Examples and Unit Tests
+﻿# Building and Running AREG SDK Examples and Unit Tests
 
 The AREG SDK provides a comprehensive set of examples and unit tests to demonstrate its features and ensure reliability. This guide explains how to include or exclude Examples and Unit Tests during the build process, as well as how to execute them after building.
 
@@ -17,6 +17,7 @@ The AREG SDK provides a comprehensive set of examples and unit tests to demonstr
 - [Running AREG SDK Tests with CTest](#running-areg-sdk-tests-with-ctest)
   - [Running Tests with `ctest`](#running-tests-with-ctest)
   - [Running Tests with `make test`](#running-tests-with-make-test)
+- [Try Edge AI Demo](#try-edge-ai-demo)
 - [Notes](#notes)
 
 ---
@@ -200,6 +201,28 @@ make test ARGS="-R 'DateTimeTest'"
 Both methods offer flexibility and provide a detailed report on test results, including pass/fail statuses and execution times. Choose the one that fits best with your workflow.
 
 For additional options, refer to [CTest Documentation](https://cmake.org/cmake/help/latest/manual/ctest.1.html).
+
+---
+
+### Try Edge AI Demo
+
+Experience Areg SDK's power with a real LLM inference system:
+```bash
+# Clone the Edge AI demo
+git clone https://github.com/aregtech/areg-edgeai.git
+cd areg-edgeai
+# Follow setup in README.md
+```
+
+This demo shows how Areg SDK orchestrates:
+- **LLM inference service** (Llama.cpp integration)
+- **Multiple concurrent clients** sending prompts
+- **Automatic request queuing** and response routing
+- **Zero manual threading** or synchronization code
+
+**Case:** A single AI agent processes text requests from multiple clients connected over a local network. Clients may join or leave at any time. When the AI agent is online, it accepts requests, queues them internally, and returns each response to the correct client without mixing results.
+
+📄 See [areg-edgeai documentation](https://github.com/aregtech/areg-edgeai) for use cases that Areg SDK can manage, complete setup and build.
 
 ---
 

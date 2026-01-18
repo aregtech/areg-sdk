@@ -137,17 +137,22 @@ This enables:
 - **Stateful services:** Objects maintain state across calls
 - **Lifecycle management:** Automatic registration, discovery, and cleanup
 
-### SDK Components
+### What's Included
 
-The SDK includes everything needed for distributed C++ development:
+The SDK provides a complete toolkit for distributed C++ development:
 
-- **Areg Framework** (`areg`) - Core C++17 library with Object RPC, IPC, Pub/Sub, and service mesh
-- **Multitarget Router** (`mtrouter`) - Message routing service for inter-process communication
-- **Code Generator** (`codegen.jar`) - Generates service providers and consumers from interface definitions
-- **Log Collector** (`logcollector`) - Aggregates logs from distributed applications for centralized monitoring
-- **Log Observer** (`logobserver`) - Console tool for real-time log recording
-- **Areg Extend** (`aregextend`) - Extension library with additional utilities
-- **Lusan GUI** - Visual service designer and distributed log viewer ([separate repository](https://github.com/aregtech/areg-sdk-tools))
+**Core Runtime:**
+- Areg Framework (`areg`) + Multitarget Router (`mtrouter`) - The engine that automates threading, IPC, and service mesh
+
+**Design and Development Tools:**
+- Code Generator (`codegen.jar`) - Eliminates boilerplate with automated code generation
+- [Lusan GUI](https://github.com/aregtech/areg-sdk-tools) - Visual service designer and distributed log viewer
+
+**Monitoring & Debug:**
+- Log Collector (`logcollector`) + Observer (`logobserver`) - Distributed logging and real-time analysis
+- Areg Extend - Additional utilities and extensions
+
+> 📦 **All components** work together seamlessly - no integration glue needed.
 
 ### How It Works
 
@@ -296,8 +301,9 @@ Follow this progressive path to master Areg SDK:
 1. **[01_minimalrpc](examples/01_minimalrpc/)** - Minimal RPC between two components (start here)
 2. **[02_minimalipc](examples/02_minimalipc/)** - IPC across processes (**requires `mtrouter`**)
 3. **[03_helloservice](examples/03_helloservice/)** - Multithreaded RPC + IPC combined
-4. **[More Examples](examples/README.md)** - Advanced SDK features and usage patterns
-5. **[Areg and Edge AI](https://github.com/aregtech/areg-edgeai)** - Practical use cases with Edge AI inference
+4. **[23_pubdatarate](examples/23_pubdatarate/)** - High-throughput data benchmark (test your system)
+5. **[More Examples](examples/README.md)** - Advanced SDK features and usage patterns
+6. **[Areg and Edge AI](https://github.com/aregtech/areg-edgeai)** - Practical use cases with Edge AI inference
 
 > [!IMPORTANT]
 > **For _IPC_ examples:** Ensure **`mtrouter` is running**. See [mtrouter documentation](./docs/wiki/05a-mtrouter.md).
@@ -388,6 +394,23 @@ For more details, see:
 
 ## Use Cases: Distributed, RPC and IPC[![](./docs/img/pin.svg)](#use-cases-distributed-rpc-and-ipc)
 
+### Embedded and Distributed Edge AI
+
+Integrating AI into embedded and edge systems requires managing concurrency, communication, and synchronization across multiple modules - data collection, preprocessing, inference, decision-making, monitoring, and connectivity. **Areg SDK** simplifies this by letting each AI stage run as an **independent service** in its own thread or process, with built-in event-driven communication.
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Embedded AI modular service architecture diagram" style="width:40%;height:40%"/></a></div>
+
+**Benefits:**
+- **Modular AI pipelines** - Each stage (capture, preprocess, inference, decision) is an independent service
+- **No manual threading** - Automatic concurrency management and event-driven communication
+- **Real-time responsiveness** - Non-blocking architecture enables fast control loop reactions
+- **Scalable orchestration** - Distribute AI workloads across multiple devices seamlessly
+
+> [!TIP]
+> **Featured Project:** [areg-edgeai](https://github.com/aregtech/areg-edgeai) - Practical examples of using Areg SDK with Edge AI systems, demonstrating real-world AI inference integration patterns.
+
+---
+
 ### IoT: Mist-to-Cloud
 
 Edge devices often stream raw data to central servers, increasing latency, network load, and privacy risks. With **Areg SDK**, services run on devices, forming a **mist network of micro-servers** that process and aggregate data locally before sending refined results to the cloud.
@@ -399,6 +422,20 @@ Edge devices often stream raw data to central servers, increasing latency, netwo
 - **Autonomous operation** - Edge mesh continues working during network outages
 - **Enhanced privacy** - Sensitive data stays on-device, only insights sent to cloud
 - **Reduced cloud costs** - Less data transmission and cloud computing needed
+
+---
+
+### Simulation & Testing
+
+Validating distributed systems is expensive and hardware-dependent. **Areg SDK** allows simulation of **Data Layer services** in external applications, providing realistic environments to test behavior, performance, and fault-tolerance. Services appear **location-transparent** to higher layers, enabling comprehensive testing without physical hardware.
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="./docs/img/software-layers.png" alt="Software 4 Layer Architecture: Simulate Data Layer" style="width:70%;height:70%"/></a></div>
+
+**Benefits:**
+- **Hardware-independent testing** - Test higher-layer logic without physical devices
+- **Continuous integration** - Automated testing without hardware dependencies
+- **Fault injection** - Simulate failures and test recovery mechanisms safely
+- **Cost reduction** - Reduce need for expensive test hardware and lab time
 
 ---
 
@@ -429,37 +466,6 @@ Traditional device drivers are **slow to develop, complex to maintain, and platf
 - **Platform independence** - Hardware abstracted as services, not platform-specific drivers
 - **Network accessibility** - Devices accessible from anywhere on the network
 - **Early bug detection** - Test hardware integration before full driver implementation
-
----
-
-### Embedded and Distributed Edge AI
-
-Integrating AI into embedded and edge systems requires managing concurrency, communication, and synchronization across multiple modules - data collection, preprocessing, inference, decision-making, monitoring, and connectivity. **Areg SDK** simplifies this by letting each AI stage run as an **independent service** in its own thread or process, with built-in event-driven communication.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Embedded AI modular service architecture diagram" style="width:40%;height:40%"/></a></div>
-
-**Benefits:**
-- **Modular AI pipelines** - Each stage (capture, preprocess, inference, decision) is an independent service
-- **No manual threading** - Automatic concurrency management and event-driven communication
-- **Real-time responsiveness** - Non-blocking architecture enables fast control loop reactions
-- **Scalable orchestration** - Distribute AI workloads across multiple devices seamlessly
-
-> [!TIP]
-> Practical examples of using Areg SDK with Edge AI systems are available in the [areg-edgeai](https://github.com/aregtech/areg-edgeai) repository, demonstrating real-world AI inference integration patterns.
-
----
-
-### Simulation & Testing
-
-Validating distributed systems is expensive and hardware-dependent. **Areg SDK** allows simulation of **Data Layer services** in external applications, providing realistic environments to test behavior, performance, and fault-tolerance. Services appear **location-transparent** to higher layers, enabling comprehensive testing without physical hardware.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="./docs/img/software-layers.png" alt="Software 4 Layer Architecture: Simulate Data Layer" style="width:70%;height:70%"/></a></div>
-
-**Benefits:**
-- **Hardware-independent testing** - Test higher-layer logic without physical devices
-- **Continuous integration** - Automated testing without hardware dependencies
-- **Fault injection** - Simulate failures and test recovery mechanisms safely
-- **Cost reduction** - Reduce need for expensive test hardware and lab time
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
