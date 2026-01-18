@@ -20,9 +20,9 @@
 
 ---
 
-Most C++ projects don't fail on algorithms. They fail on **threads, IPC, and fragile wiring**. Unlike traditional frameworks, **Areg SDK automates communication**, unifying async RPC, Pub/Sub, and service discovery. Its self-managed service mesh **enables scalable, fault-tolerant systems across threads, processes, and devices with no boilerplate and no fragile wiring**.
+Most C++ projects don't fail on algorithms. They fail on **threads, IPC, and fragile wiring**. Unlike traditional frameworks, **Areg SDK uses Object RPC to automate communication**, unifying async RPC, Pub/Sub, and service discovery. Its self-managed service mesh enables scalable, fault-tolerant systems across threads, processes, and devices with no boilerplate and no fragile wiring.
 
-*Named after the ancient Armenian word of "Sun", Areg creates a star network where services orbit around a central router - enabling automatic discovery, fault tolerance, and seamless distributed computing.*
+*Named after the ancient Armenian word for "Sun", Areg creates a star network where services orbit around a central router - enabling automatic discovery, fault tolerance, and seamless distributed computing.*
 
 ---
 
@@ -129,7 +129,13 @@ Answer these 5 questions to evaluate fit:
 
 ## What is Areg SDK[![](./docs/img/pin.svg)](#what-is-areg-sdk)
 
-**Areg SDK** is a **complete Software Development Kit** built around the **Areg Framework** - a C++17 framework with built-in middleware that automates distributed system development. Named after the ancient Armenian word for "Sun", Areg creates a star network where services orbit around a central multi-target message router (`mtrouter`), enabling automatic discovery and fault-tolerant communication.
+**Areg SDK** is a **Software Development Kit** built around the **Areg Framework** - a C++17 framework with built-in middleware that automates distributed system development. Areg uses an **interface-centric Object RPC (ORPC)** model where services are represented as objects with methods, attributes (pub/sub), and events - rather than simple function calls like many other traditional RPC solutions.
+
+This enables:
+- **Location transparency:** Same code works locally and remotely
+- **Built-in pub/sub:** Attributes automatically broadcast updates
+- **Stateful services:** Objects maintain state across calls
+- **Lifecycle management:** Automatic registration, discovery, and cleanup
 
 ### SDK Components
 
@@ -216,7 +222,69 @@ The [minimal RPC example](./examples/01_minimalrpc/) demonstrates **multithreade
 🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer request → 🖨 Provider prints → ✅ application exits
 ```
 
-📄 **Source code:** [examples/01_minimalrpc/src/main.cpp](./examples/01_minimalrpc/src/main.cpp)
+Implementation of Service Provider:
+```cpp
+class ServiceProvider : public Component, protected HelloServiceStub {
+public:
+    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+        : Component(entry, owner), HelloServiceStub(static_cast<Component&>(*this))
+    {   }
+
+    virtual void requestHelloService(void) override {
+        std::cout << "\'Hello Service!\'" << std::endl;
+        Application::signalAppQuit(); // quit application is if received response
+    }
+};
+```
+
+Implementation of Service Consumer:
+```cpp
+class ServiceConsumer : public Component, protected HelloServiceClientBase {
+public:
+    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+		: Component( entry, owner ), HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+	{   }
+
+    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
+        if (HelloServiceClientBase::serviceConnected(status, proxy)) {
+            if (NEService::isServiceConnected(status))
+                requestHelloService();  // Call of method of remote "ServiceProvider" object.
+            return true;
+        }
+        return false;
+    }
+};
+```
+
+Define a model - automates threading, automates creating objects, used for service discovery:
+```cpp
+BEGIN_MODEL("ServiceModel")
+    BEGIN_REGISTER_THREAD("Thread1")
+        BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
+            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+        END_REGISTER_COMPONENT("ServiceProvider")
+    END_REGISTER_THREAD("Thread1")
+
+    BEGIN_REGISTER_THREAD("Thread2")
+        BEGIN_REGISTER_COMPONENT("ServiceClient", ServiceConsumer)
+            REGISTER_DEPENDENCY("ServiceProvider") /* dependency reference to the remote service*/
+        END_REGISTER_COMPONENT("ServiceClient")
+    END_REGISTER_THREAD("Thread2")
+END_MODEL("ServiceModel")
+```
+
+Full version of `main()` function:
+```cpp
+int main(void) {
+    Application::initApplication();
+    Application::loadModel("ServiceModel"); // Start threads, create objects, establish connections
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::releaseApplication();
+    return 0;
+}
+```
+
+📄 **Full source code:** [examples/01_minimalrpc/src/main.cpp](./examples/01_minimalrpc/src/main.cpp)
 
 ---
 
