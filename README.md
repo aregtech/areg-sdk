@@ -96,7 +96,7 @@ Answer these 5 questions to evaluate fit:
 5. **Built-in observability**  
    Integrated logging with visual analysis tools. Per-method duration measurement enables performance monitoring and optimization.
 
-💡 **When to use:** Linux and Windows, embedded and desktop C++ apps, scaling from prototype to multi-node production systems.  
+💡 **When to use:** Linux and Windows, C++ apps, scaling from prototype to multi-node production systems.  
 ⚠️ **When not to use:** RTOS (planned for future), web services, or non-C++ applications.
 
 ---
@@ -117,7 +117,7 @@ Answer these 5 questions to evaluate fit:
 | **Learning Curve**            | ✅ Low - automation reduces complexity                         | ⚠️ Moderate to high - manual setup and configuration |
 | **Development Speed**         | ✅ Faster - automation eliminates boilerplate                  | ⚠️ Slower - more manual integration work |
 
-**Key Differentiators:**
+🔹**Key Differentiators:**
 - **Complete Automation**: Areg automates threading, dispatch, and lifecycle - not just transport
 - **True Location Transparency**: Same interface whether services are in thread, process, or network
 - **Zero Configuration**: Services discover each other automatically - no registry, no broker setup
@@ -141,14 +141,14 @@ This enables:
 
 The SDK provides a complete toolkit for distributed C++ development:
 
-**Core Runtime:**
+🔹**Core Runtime:**
 - Areg Framework (`areg`) + Multitarget Router (`mtrouter`) - The engine that automates threading, IPC, and service mesh
 
-**Design and Development Tools:**
+🔹**Design and Development Tools:**
 - Code Generator (`codegen.jar`) - Eliminates boilerplate with automated code generation
 - [Lusan GUI](https://github.com/aregtech/areg-sdk-tools) - Visual service designer and distributed log viewer
 
-**Monitoring & Debug:**
+🔹**Monitoring & Debug:**
 - Log Collector (`logcollector`) + Observer (`logobserver`) - Distributed logging and real-time analysis
 - Areg Extend - Additional utilities and extensions
 
@@ -179,9 +179,8 @@ This **location transparency** means you can:
 - **C++17 compiler**: GCC, Clang/LLVM, MSVC, or MinGW
 - **CMake >= 3.20**
 - **Java >= 17** (required for code generation tools)
-
-> **Supported OS:** Linux, Windows  
-> **Supported Hardware:** x86, x86_64, ARM, AArch64
+- **Supported OS:** Linux, Windows  
+- **Supported Hardware:** x86, x86_64, ARM, AArch64
 
 See the [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) for detailed setup, compiler options, and troubleshooting tips.
 
@@ -227,7 +226,7 @@ The [minimal RPC example](./examples/01_minimalrpc/) demonstrates **multithreade
 🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer request → 🖨 Provider prints → ✅ application exits
 ```
 
-Implementation of Service Provider:
+1️ Implementation of Service Provider:
 ```cpp
 class ServiceProvider : public Component, protected HelloServiceStub {
 public:
@@ -242,7 +241,7 @@ public:
 };
 ```
 
-Implementation of Service Consumer:
+2️ Implementation of Service Consumer:
 ```cpp
 class ServiceConsumer : public Component, protected HelloServiceClientBase {
 public:
@@ -262,7 +261,7 @@ public:
 };
 ```
 
-Define a model - automates threading, automates creating objects, used for service discovery:
+3️ Define a model - automates threading, automates creating objects, automates service discovery:
 ```cpp
 BEGIN_MODEL("ServiceModel")
   BEGIN_REGISTER_THREAD("Thread1")
@@ -279,7 +278,7 @@ BEGIN_MODEL("ServiceModel")
 END_MODEL("ServiceModel")
 ```
 
-Full version of `main()` function:
+4️ Full version of `main()` function:
 ```cpp
 int main() {
   Application::initApplication();
@@ -400,7 +399,7 @@ Integrating AI into embedded and edge systems requires managing concurrency, com
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-for-embedded-ai.png"><img src="./docs/img/areg-for-embedded-ai.png" alt="Embedded AI modular service architecture diagram" style="width:40%;height:40%"/></a></div>
 
-**Benefits:**
+🔹**Benefits:**
 - **Modular AI pipelines** - Each stage (capture, preprocess, inference, decision) is an independent service
 - **No manual threading** - Automatic concurrency management and event-driven communication
 - **Real-time responsiveness** - Non-blocking architecture enables fast control loop reactions
@@ -417,7 +416,7 @@ Edge devices often stream raw data to central servers, increasing latency, netwo
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="./docs/img/mist-network.png" alt="IoT Mist-to-Cloud network diagram" style="width:70%;height:70%"/></a></div>
 
-**Benefits:**
+🔹**Benefits:**
 - **Low-latency processing** - Data processed at the edge, not in distant cloud
 - **Autonomous operation** - Edge mesh continues working during network outages
 - **Enhanced privacy** - Sensitive data stays on-device, only insights sent to cloud
@@ -431,7 +430,7 @@ Validating distributed systems is expensive and hardware-dependent. **Areg SDK**
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="./docs/img/software-layers.png" alt="Software 4 Layer Architecture: Simulate Data Layer" style="width:70%;height:70%"/></a></div>
 
-**Benefits:**
+🔹**Benefits:**
 - **Hardware-independent testing** - Test higher-layer logic without physical devices
 - **Continuous integration** - Automated testing without hardware dependencies
 - **Fault injection** - Simulate failures and test recovery mechanisms safely
@@ -448,7 +447,7 @@ Many small devices lack scalable infrastructure for complex applications. **Areg
 - **Local Services** - Multithreading within a single device or application
 - **Public Services** - Accessible across processes, applications, and devices
 
-**Benefits:**
+🔹**Benefits:**
 - **Seamless scaling** - Start with local services, expose as public without code changes
 - **Location transparency** - Services work identically whether local or remote
 - **Platform independence** - Same code runs on embedded, desktop, and server platforms
@@ -461,7 +460,7 @@ Traditional device drivers are **slow to develop, complex to maintain, and platf
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="./docs/img/driverless-solution.png" alt="Areg driverless service-enabled diagram" style="width:70%;height:70%"/></a></div>
 
-**Benefits:**
+🔹**Benefits:**
 - **Faster development** - Accelerates prototyping, testing, and iteration cycles
 - **Platform independence** - Hardware abstracted as services, not platform-specific drivers
 - **Network accessibility** - Devices accessible from anywhere on the network
@@ -475,8 +474,7 @@ Traditional device drivers are **slow to develop, complex to maintain, and platf
 
 Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on automation, reliability, platform expansion, and developer experience.
 
-**2026 Priorities:**
-
+🔹**2026 Priorities:**  
 - **Multi-channel support** - Multiplexed communications for higher throughput and efficiency
 - **Enhanced security** - encryption, authentication, and authorization mechanisms
 - **RTOS support (Zephyr OS)** - Bring Areg SDK into real-time embedded environments
@@ -484,8 +482,7 @@ Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on
 - **Expanded documentation** - More tutorials, guides, and real-world examples
 - **Performance optimization** - Profiling tools and benchmark suite
 
-**Future Vision:**
-
+🔹**Future Vision:**
 - Cross-language bindings (Python, Rust, etc.) for polyglot systems
 - Cloud integration patterns and deployment guides
 - Container orchestration support (Kubernetes, Docker Compose)
@@ -505,7 +502,7 @@ Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on
 - **[Logging and Monitoring](./docs/wiki/README.md#4-logging-and-monitoring)** - Log collector and observer usage for distributed systems
 messaging
 - **[Persistence](./docs/wiki/README.md#5-persistence)** - Local data storage in text files
-- **[Development and Testing Tools](./docs/wiki/README.md#6-development-tools)** - Core and optional tools for design, development, testing, and diagnostics
+- **[Development and Testing Tools](./docs/wiki/README.md#6-development-and-testing-tools)** - Core and optional tools that accelerate development and enforce architectural consistency
 - **[Troubleshooting](./docs/wiki/README.md#7-troubleshooting)** - Common issues and recommended solutions
 - **[Examples and Tests](./docs/wiki/README.md#8-examples-and-tests)** - Catalog of sample projects (RPC, IPC, Pub/Sub, FSM, and more)
 - **[HOWTO Guide](docs/HOWTO.md)** - Practical reference for common development tasks

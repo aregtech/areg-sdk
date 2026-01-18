@@ -27,10 +27,9 @@ This wiki serves as the **authoritative technical reference and learning hub** f
 - [3. Networking and Communication](#3-networking-and-communication)
 - [4. Logging and Monitoring](#4-logging-and-monitoring)
 - [5. Persistence](#5-persistence)
-- [6. Development Tools](#6-development-tools)
+- [6. Development and Testing Tools](#6-development-and-testing-tools)
 - [7. Troubleshooting](#7-troubleshooting)
 - [8. Examples and Tests](#8-examples-and-tests)
-- [9. Areg SDK Tools](#9-areg-sdk-tools)
 - [Contribute and Improve](#contribute-and-improve)
 
 ---
@@ -116,7 +115,7 @@ Built-in persistent storage support.
 
 ---
 
-## 6. Development Tools
+## 6. Development and Testing Tools
 
 Tools that accelerate development and enforce architectural consistency.
 
