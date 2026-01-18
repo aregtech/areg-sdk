@@ -226,7 +226,7 @@ The [minimal RPC example](./examples/01_minimalrpc/) demonstrates **multithreade
 🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer request → 🖨 Provider prints → ✅ application exits
 ```
 
-1️ Implementation of Service Provider:
+1️⃣ **Implementation of Service Provider:**
 ```cpp
 class ServiceProvider : public Component, protected HelloServiceStub {
 public:
@@ -241,7 +241,7 @@ public:
 };
 ```
 
-2️ Implementation of Service Consumer:
+2️⃣ **Implementation of Service Consumer:**
 ```cpp
 class ServiceConsumer : public Component, protected HelloServiceClientBase {
 public:
@@ -251,17 +251,15 @@ public:
 	{   }
 
   bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
-    if (HelloServiceClientBase::serviceConnected(status, proxy)) {
-      if (NEService::isServiceConnected(status))
-        requestHelloService();  // Call of method of remote "ServiceProvider" object.
-      return true;
-    }
-    return false;
+    HelloServiceClientBase::serviceConnected(status, proxy);
+    if (NEService::isServiceConnected(status))
+      requestHelloService();  // Call of method of remote "ServiceProvider" object.
+    return true;
   }
 };
 ```
 
-3️ Define a model - automates threading, automates creating objects, automates service discovery:
+3️⃣ **Define a model - automates threading, automates creating objects, automates service discovery:**
 ```cpp
 BEGIN_MODEL("ServiceModel")
   BEGIN_REGISTER_THREAD("Thread1")
@@ -278,7 +276,7 @@ BEGIN_MODEL("ServiceModel")
 END_MODEL("ServiceModel")
 ```
 
-4️ Full version of `main()` function:
+4️⃣ **Full version of `main()` function:**
 ```cpp
 int main() {
   Application::initApplication();
@@ -488,7 +486,8 @@ Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on
 - Container orchestration support (Kubernetes, Docker Compose)
 - Advanced debugging and profiling tools
 
-> 💡 Want to influence the roadmap? Join [discussions](https://github.com/aregtech/areg-sdk/discussions) or contribute via [issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
+> [!TIP]
+> Want to influence the roadmap? Join [discussions](https://github.com/aregtech/areg-sdk/discussions) or contribute via [issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
