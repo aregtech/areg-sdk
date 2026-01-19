@@ -528,3 +528,17 @@ Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)**. This permi
 - 🔀 Submit pull requests following the [contribution guidelines](CONTRIBUTING.md)
 - ⭐ **Give us a star** if you like Areg SDK - it helps others discover the project
 - 🌍 **Show your project** - We're collecting early adopters. [Share your work](https://github.com/aregtech/areg-sdk/discussions/new?category=show-and-tell)!
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+**Used by**  
+[![Contact us](https://img.shields.io/badge/Projects%20Using%20Areg-Contact%20Us%20to%20be%20listed-blue)](mailto:info@areg.tech)
+
+**Follow Us**  
+[![X Follow](https://img.shields.io/twitter/follow/aregtech)](https://x.com/aregtech?lang=en)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin\&logoColor=b0c0c0\&labelColor=363D44)](https://www.linkedin.com/company/aregtech)
+[![Gitter](https://badges.gitter.im/areg-sdk/community.svg)](https://gitter.im/areg-sdk/community)
+
+---
