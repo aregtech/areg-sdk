@@ -140,16 +140,16 @@ This enables:
 
 The SDK provides a complete toolkit for distributed C++ development:
 
-🔹**Core Runtime:**
-- Areg Framework (`areg`) + Multitarget Router (`mtrouter`) - The engine that automates threading, IPC, and service mesh
+**Core Runtime:**  
+🔹 Areg Framework (`areg`) + Multitarget Router (`mtrouter`) - The engine that automates threading, IPC, and service mesh
 
-🔹**Design and Development Tools:**
-- Code Generator (`codegen.jar`) - Eliminates boilerplate with automated code generation
-- [Lusan GUI](https://github.com/aregtech/areg-sdk-tools) - Visual service designer and distributed log viewer
+**Design and Development Tools:**  
+🔹 Code Generator (`codegen.jar`) - Eliminates boilerplate with automated code generation  
+🔹 [Lusan GUI](https://github.com/aregtech/areg-sdk-tools) - Visual service designer and distributed log viewer
 
-🔹**Monitoring & Debug:**
-- Log Collector (`logcollector`) + Observer (`logobserver`) - Distributed logging and real-time analysis
-- Areg Extend - Additional utilities and extensions
+**Monitoring & Debug:**  
+🔹 Log Collector (`logcollector`) + Observer (`logobserver`) - Distributed logging and real-time analysis  
+🔹 Areg Extend - Additional utilities and extensions
 
 > 📦 **All components** work together seamlessly - no integration glue needed.
 
@@ -356,7 +356,7 @@ Lusan's visual **Service Interface Designer** lets developers define, inspect, a
 
 <div align="center"><a href="./docs/img/lusan-service-if-general.png"><img src="./docs/img/lusan-service-if-general.png" alt="Lusan Service Interface" style="width:80%;height:80%"/></a></div>
 
-For more details, see the 📄 [Service Interface Design Guide](./docs/wiki/09c-use-lusan.md).
+For more details, see the 📄 [Service Interface Design Guide](./docs/wiki/06d-setup-lusan.md).
 
 #### Live and Offline Log Viewer
 
@@ -370,8 +370,8 @@ Lusan's **log viewer** aggregates logs from multiple instances, supporting both 
 <div align="center"><a href="./docs/img/lusan-live-log-scope-prio.png"><img src="./docs/img/lusan-live-log-scope-prio.png" alt="Lusan Log Scope Priority change" style="width:80%;height:80%"/></a></div>
 
 For more details, see:
-- 📄 [Live Log Viewer Guide](./docs/wiki/09e-use-live-logging.md) - Real-time monitoring and debugging
-- 📄 [Offline Log Viewer Guide](./docs/wiki/09f-use-offline-logging.md) - Post-mortem analysis and collaboration
+- 📄 [Live Log Viewer Guide](./docs/wiki/06f-lusan-live-logging.md) - Real-time monitoring and debugging
+- 📄 [Offline Log Viewer Guide](./docs/wiki/06g-lusan-offline-logging.md) - Post-mortem analysis and collaboration
 
 **In summary**, Lusan unifies service design and runtime observability in one tool, shortening development cycles and enabling faster, safer testing and debugging of distributed applications.
 
