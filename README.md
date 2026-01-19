@@ -103,19 +103,18 @@ Answer these 5 questions to evaluate fit:
 
 ### Compared to Alternatives
 
-| Feature                       | Areg SDK                                                      | Competitors (gRPC, DDS, ZeroMQ) |
-|-------------------------------|---------------------------------------------------------------|---------------------------------|
-| **Ease of Use**               | ✅ Automated setup and code generation                         | ⚠️ Manual configuration, boilerplate, [complex setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc) |
-| **Threading Model**           | ✅ Fully automated thread management                           | ⚠️ Manual thread creation and synchronization |
-| **Code Automation**           | ✅ Complete codegen: providers, consumers, dispatch, lifecycle | ⚠️ Limited: [transport stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview) |
-| **Service Discovery**         | ✅ Self-organizing service mesh, zero configuration            | ✅ DDS: [built-in](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external required](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
-| **Fault Tolerance**           | ✅ Watchdog monitoring + automatic component restart           | ✅ DDS: [QoS-based](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [Retries](https://grpc.io/docs/guides/retry/) or manual recovery |
-| **Request-Reply (RPC)**       | ✅ Native Object RPC in service interfaces                     | ✅ gRPC: [native](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: Over topics or [patterns](https://zguide.zeromq.org/docs/chapter3/) |
-| **Pub/Sub**                   | ✅ Native, built-in within service interfaces                  | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: Add-ons or manual implementation |
-| **Unified Local/Remote API**  | ✅ Same code works across threads, processes, devices          | ⚠️ Different APIs for different communication scopes |
-| **Built-in Logging**          | ✅ Integrated distributed logging with GUI viewer (Lusan)      | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) (DDS) or external tools required |
-| **Learning Curve**            | ✅ Low - automation reduces complexity                         | ⚠️ Moderate to high - manual setup and configuration |
-| **Development Speed**         | ✅ Faster - automation eliminates boilerplate                  | ⚠️ Slower - more manual integration work |
+| Feature          | Areg SDK                        | Competitors (gRPC, DDS, ZeroMQ)                      |
+| ---------------- | ------------------------------- | ---------------------------------------------------- |
+| Ease of Use      | ✅ Automated setup              | ⚠️ Manual, boilerplate, [complex](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc) |
+| Threading Model  | ✅ Automated threading          | ⚠️ Manual threading and sync |
+| Automation       | ✅ Codegen, modeling, dispatch  | ⚠️ Limited, [stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview) |
+| Auto-Discovery   | ✅ Self-organizing service mesh | ✅ DDS: [built-in](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
+| Fault Tolerance  | ✅ Watchdog & auto-restart      | ✅ DDS: [QoS](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [Retries](https://grpc.io/docs/guides/retry/)/Manual |
+| Request-Reply    | ✅ Native, built-in Object RPC  | ✅ gRPC: [RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: Over topics/[patterns](https://zguide.zeromq.org/docs/chapter3/) |
+| Pub/Sub          | ✅ Native, built-in Attributes  | ✅ DDS: [Topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ Add-ons/Manual |
+| Unified API      | ✅ Same, multithreads and IPC   | ⚠️ Different APIs for multithreads and IPC |
+| Built-in Logging | ✅ Integrated, dynamic + viewer | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) (DDS) or External |
+| Dev Speed        | ✅ Faster, via automation       | ⚠️ Slower, more manual work                |
 
 🔹**Key Differentiators:**
 - **Complete Automation**: Areg automates threading, dispatch, and lifecycle - not just transport
