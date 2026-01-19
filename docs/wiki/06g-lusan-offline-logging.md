@@ -98,7 +98,7 @@ log::logcollector::db::name     = log_%time%.sqlog  # Log Collector: database na
 log::logcollector::db::location = ./logs            # Log Collector: database location
 ```
 
-**Benefits:**
+🔹**Benefits:**
 - Automatic recording of all aggregated logs
 - Structured storage in database format
 - No application code changes required
@@ -119,7 +119,7 @@ log::logobserver::db::name      = log_%time%.sqlog  # Logobserver: database name
 log::logobserver::db::location  = ./logs            # Logobserver: database location
 ```
 
-**Benefits:**
+🔹**Benefits:**
 - Selective recording of specific sessions
 - Lightweight and flexible
 - Command-line scriptable
@@ -144,17 +144,18 @@ Record directly from Lusan's live view:
 
 <div align="center"><a href="../img/lusan-live-log-connect.png"><img src="../img/lusan-live-log-connect.png" alt="Lusan Live Log to Log Collector" style="width:50%;height:50%"/></a></div>
 
-**Benefits:**
+🔹**Benefits:**
 - Visual confirmation of recorded data
 - Pause, resume, and manage recordings
 - Collection of scopes and priorities of interest
 - User-friendly interface
 
-**Recorded Log Formats:**
+🔹**Recorded Log Formats:**
 - **`.sqlog`** - SQLite3 database format (recommended for Lusan offline analysis)
 - **`.log`** - Plain text format (can be opened with any text editor)
 
-**Best Practice:** Use SQLite3 database format (`.sqlog`) for primary storage to enable full-featured analysis with Lusan's offline log viewer.
+🔹**Best Practice:**  
+  Use SQLite3 database format (`.sqlog`) for primary storage to enable full-featured analysis with Lusan's offline log viewer.
 
 ---
 
@@ -169,7 +170,6 @@ Launch Lusan and open previously recorded logs. If the `Project Log Directory` i
 If the `Project Log Directory` of the workspace is configured, the Workspace Navigation pane will display the directory contents, and saved logs can be opened directly from the navigation pane.
 
 **To configure the Project Log Directory:**
-
 1. Go to menu `Tools` → `Options`
 2. In the opened dialog, select `Directories` option
 3. Update the `Project Log Directory` field to display the content in the `Workspace` navigation pane
@@ -179,7 +179,6 @@ If the `Project Log Directory` of the workspace is configured, the Workspace Nav
 **Alternative: Configure Log Settings**
 
 You can also configure the log storage directory:
-
 1. In the Options dialog, select `Log settings`
 2. In the `Logs location:` field, specify the path to the log file storage directory
 
@@ -187,13 +186,13 @@ You can also configure the log storage directory:
 
 #### Opening Log Files
 
-**Method 1: From Workspace Navigation Pane**
+🔹**Method 1: From Workspace Navigation Pane**
 
 Open logs directly from the `Workspace` navigation pane:
 
 <div align="center"><a href="../img/lusan-navigation-logs.png"><img src="../img/lusan-navigation-logs.png" alt="Lusan Log Directory of Workspace Navigation pane" style="width:30%;height:30%"/></a></div>
 
-**Method 2: From File Menu**
+🔹**Method 2: From File Menu**
 
 Open logs via menu: `File` → `Open Offline Logs`, or press `Ctrl + F`
 
@@ -212,15 +211,15 @@ Once loaded, Lusan presents a complete recorded session.
 
 **Navigation Tools:**
 
-**Timeline Scrubber:**
-- Visual representation of the entire session duration
-- Click to jump to any point in time
-- Color-coded sections showing activity intensity
+🔹**Timeline Scrubber:**
+  - Visual representation of the entire session duration
+  - Click to jump to any point in time
+  - Color-coded sections showing activity intensity
 
-**Scope Tree:**
-- Hierarchical view of all instances and scopes in the log
-- Show and hide logs of specific priorities on individual scopes
-- Expandable tree structure for drilling down into components
+🔹**Scope Tree:**
+  - Hierarchical view of all instances and scopes in the log
+  - Show and hide logs of specific priorities on individual scopes
+  - Expandable tree structure for drilling down into components
 
 ---
 
@@ -246,7 +245,7 @@ Filter by message priority level in the log message window, functioning the same
 
 Multiple filtering criteria can be selected simultaneously. Click the arrow on the column header to apply filters.
 
-**Currently Supported Filtering Criteria:**
+🔹**Currently Supported Filtering Criteria:**
 - **Filtering by Priority Level** - Show only messages of selected priority levels
 - **Filtering by Duration** - Show only messages with duration values greater than or equal to the specified value
 - **Filtering by Source** - Show only messages from the specified source name
@@ -260,7 +259,6 @@ Multiple filtering criteria can be selected simultaneously. Click the arrow on t
 Filtering in the output `Log Analyzes` window works the same way as in live logging. Double-click on a message to select logs of the scope and session you want to analyze. This marks messages from the session of the selected scope and displays them in the Output Log Analyzer Window at the bottom of the application.
 
 Use the following radio buttons to display filtered log messages:
-
 - **Session Logs** - Show only messages of the selected scope session
 - **Session Sublogs** - Show only messages of the selected scope session and all its child scopes
 - **Scope Logs** - Show only messages of the selected scope, regardless of session
@@ -309,7 +307,6 @@ Use SQL query language for complex searches directly in the SQLite database for 
 ## Use Cases for Offline Analysis
 
 Offline analysis is ideal for:
-
 - **Post-mortem debugging** - Investigate production incidents after they occur
 - **Root cause analysis** - Deep-dive into complex issues without time pressure
 - **Reviewing logs from customer environments** - Analyze issues reported by customers

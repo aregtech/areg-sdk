@@ -36,13 +36,13 @@ The **Areg SDK** provides a built-in logging infrastructure optimized for **dist
 
 Lusan acts as a centralized live log viewer that aggregates logs from multiple threads, processes, and devices into a **single, unified interface**. This provides immediate visibility into system behavior and significantly reduces the time required to debug complex interactions.
 
-**Use Cases:**
+🔹**Use Cases:**
 - Interactive development and debugging
 - Real-time performance monitoring
 - Cross-service and cross-process interaction tracing
 - Runtime troubleshooting without restarting applications
 
-**Key Components:**
+🔹**Key Components:**
 - **Areg-based applications**  
   Generate structured runtime logs.
 - **logcollector**  
@@ -57,7 +57,6 @@ Lusan does not generate logs itself. It connects to the Areg logging infrastruct
 ## Why Use Live Log Viewing?
 
 Live log viewing with Lusan enables:
-
 - Immediate visibility into distributed system behavior
 - Centralized logs from multiple applications and machines
 - Correlation of events across processes and threads
@@ -73,6 +72,7 @@ These capabilities make Lusan especially valuable for diagnosing timing issues, 
 Before starting live log monitoring, ensure the following components are available and correctly configured.
 
 ### Required Components
+
 - **Lusan application**, built from the [areg-sdk-tools repository](https://github.com/aregtech/areg-sdk-tools)
 - **`logcollector` service**, built from the Areg SDK
 - **Areg-based applications** with logging enabled
@@ -102,19 +102,18 @@ logger::*::port::tcpip      = 8282          # Port number (default: 8282)
 Run `logcollector` as a console application or as a system service on a reachable machine.
 
 Ensure that:
-
 - The `areg.init` file is accessible
 - The TCP/IP address and port are correctly configured
 
 `logcollector` acts as the central aggregation point for all runtime logs.
 
-**Option A: Console Mode (Development)**
+🔹**Option A: Console Mode (Development)**
 
 ```bash
 ./logcollector
 ```
 
-**Option B: Service Mode (Testing or Production)**
+🔹**Option B: Service Mode (Testing or Production)**
 
 On Linux (systemd):
 
@@ -133,14 +132,12 @@ net start logger.service
 > [!TIP]
 > More details about running `logcollector` as a service can be found in [Areg SDK Log Collector Service](./04d-logcollector.md) document.
 
-**Verification Checklist**
-
+🔹**Verification Checklist**
 - Confirm successful startup in console or service logs
 - Verify that the service listens on the configured port (default: 8282)
 - Ensure the `areg.init` file is accessible to `logcollector`
 
-**Common Issues**
-
+🔹**Common Issues**
 - Port already in use: change the port in `areg.init`
 - Permission denied: run with appropriate privileges
 - Configuration not found: ensure `./config/areg.init` exists or specify its path
@@ -151,8 +148,7 @@ net start logger.service
 
 Launch `Lusan` and establish a connection to the running `logcollector` service.
 
-**Connection Process**
-
+🔹**Connection Process**
 1. Start the `Lusan` application
 2. In the menu, select `File` -> `New Live Logs`, or click the `New Live Logs` toolbar button
 3. Alternatively, switch to the `Live Logs` tab in the Navigation pane and click `Connect to Log Collector`
@@ -161,13 +157,14 @@ Launch `Lusan` and establish a connection to the running `logcollector` service.
 
 <div align="center"><a href="../img/lusan-live-log-connect.png"><img src="../img/lusan-live-log-connect.png" alt="Lusan Live Log to Log Collector" style="width:50%;height:50%"/></a></div>
 
-**Connection Indicator**
-You should see the message `Log observer connected to Log Collector service.`
+🔹**Connection Indicator**
+  You should see the message `Log observer connected to Log Collector service.`
 
-**Recorded Log Format**  
-The logs are recorded in the `.sqlog` SQLite3 database format, which can be later analyzed using Lusan's offline log viewer, and as a plain text `.log` file, which can be opened with any text editor.
+🔹**Recorded Log Format**  
+  The logs are recorded in the `.sqlog` SQLite3 database format, which can be later analyzed using Lusan's offline log viewer, and as a plain text `.log` file, which can be opened with any text editor.
 
-**Best Practice:** Use SQLite3 database format for primary storage to analyze later with Lusan's offline log viewer.
+🔹**Best Practice:**  
+  Use SQLite3 database format for primary storage to analyze later with Lusan's offline log viewer.
 
 ---
 
@@ -175,21 +172,19 @@ The logs are recorded in the `.sqlog` SQLite3 database format, which can be late
 
 With `logcollector` running and `Lusan` connected, start your Areg-based applications. Applications may also be started before Lusan connects.
 
-**Application Configuration Requirements**
-
+🔹**Application Configuration Requirements**
 - The `areg.init` file is present
 - Logging is enabled in configuration
 - Applications automatically connect to `logcollector` at startup
 
-**Multi-Source Logging**
+🔹**Multi-Source Logging**  
 Lusan can monitor logs from:
-
 - Multiple applications on the same machine
 - Distributed processes on different machines
 - Multiple threads within each process
 - Different devices in the network
 
-**Expected Behavior**
+🔹**Expected Behavior**  
 As applications connect, initialization logs appear in Lusan and log scopes become visible in the Navigation pane.
 
 <div align="center"><a href="../img/lusan-live-log-connected-apps.png"><img src="../img/lusan-live-log-connected-apps.png" alt="Lusan Live Log and connected applications" style="width:80%;height:80%"/></a></div>
@@ -202,8 +197,7 @@ Logs are displayed in a structured, time-ordered format, making it easy to follo
 
 Once applications are connected, Lusan displays logs in real time with rich contextual information.
 
-**Available Log Columns**
-
+🔹**Available Log Columns**
 - **Priority**: `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `SCOPE` log priorities
 - **Created Timestamp**: Time when the log was generated
 - **Received Timestamp**: Time when the log was received by `Lusan`
@@ -224,8 +218,7 @@ All columns except `Message` can be shown, hidden, and reordered using drag-and-
 
 <div align="center"><a href="../img/lusan-live-log-duration.png"><img src="../img/lusan-live-log-duration.png" alt="Lusan Live Log Duration" style="width:80%;height:80%"/></a></div>
 
-**Visual Features**
-
+🔹**Visual Features**
 - Color-coded priorities for fast issue detection
 - Chronological log ordering
 - Scope-based duration measurement
@@ -259,7 +252,7 @@ Filter by message priority level in the log message window to filter already rec
 
 Multiple filtering criteria can be selected simultaneously. Filtering by message priority level allows you to filter already received logs without requesting the source application to change the scope priority level. Click the arrow on the column header to apply filters.
 
-**Currently Supported Filtering Criteria:**
+🔹**Currently Supported Filtering Criteria:**
 - **Filtering by Priority Level** - Show only messages of selected priority levels
 - **Filtering by Duration** - Show only messages with duration values greater than or equal to the specified value
 - **Filtering by Source** - Show only messages from the specified source name
@@ -280,8 +273,7 @@ Filter by selecting and double-clicking on a message. This marks messages from t
 
 <div align="center"><a href="../img/lusan-live-log-scope-analyzes.png"><img src="../img/lusan-live-log-scope-analyzes.png" alt="Lusan Live Log Scope Analyzes" style="width:80%;height:80%"/></a></div>
 
-**Filtering Best Practices**
-
+🔹**Filtering Best Practices**
 - Start with broad filters
 - Narrow down progressively
 - Combine multiple filters for precise investigation
@@ -294,22 +286,22 @@ Lusan enables dynamic control of logging behavior without restarting application
 
 **Dynamic Control Capabilities:**
 
-**Enable/Disable Log Scopes:**
+🔹**Enable/Disable Log Scopes:**
 - Turn specific component logging on or off, or change logging priority
 - Reduce noise from verbose components
 - Enable detailed logging for components under investigation
 
-**Adjust Priority Levels:**
+🔹**Adjust Priority Levels:**
 - Increase verbosity (e.g., `INFO` → `DEBUG` → `SCOPE`)
 - Reduce verbosity to minimize overhead
 - Per-scope node (component) priority control
 
-**Application-Wide Settings:**
+🔹**Application-Wide Settings:**
 - Enable/disable all logging for an application
 - Bulk scope management
 - Quick toggles for emergency situations
 
-**Save Configuration:**
+🔹**Save Configuration:**
 - Save current logging configuration (IP address and port number of `logcollector`)
 - Save logging priorities of scopes for source applications, so that on next start, applications use the saved priorities
 
@@ -320,13 +312,13 @@ To save the current configuration, press the `Save log settings` tool button on 
 > [!NOTE]
 > Logs are generated if lower-level logging is enabled. For example, if a scope has `INFO` level logging enabled, all logs with priority `INFO` and higher (`WARN`, `ERROR`, `FATAL`) will be generated. This does not apply to `SCOPE` priority. Disabling `SCOPE` priority must be explicitly specified. This means users can disable any log priority on a scope while still enabling `SCOPE` priority, so the system will generate `Enter Scope` and `Exit Scope` logs. If `SCOPE` priority is not enabled, no scope messages are generated, as shown in the screenshot.
 
-**Benefits of Runtime Control:**
+🔹**Benefits of Runtime Control:**
 - **No downtime** - Adjust logging without service interruption
 - **Performance optimization** - Disable verbose logging in production
 - **Targeted debugging** - Enable detailed logs only where needed
 - **Production diagnostics** - Safely investigate issues in live systems
 
-**Best Practices:**
+🔹**Best Practices:**
 - Keep production logging at `INFO` or `WARN` level by default
 - Enable `DEBUG` and/or `SCOPE` only when actively investigating
 - Disable `SCOPE` logging after capturing necessary information
@@ -374,13 +366,13 @@ nc -zv 127.0.0.1 8282
 
 ### Performance Issues
 
-**High log volume:**
+🔹**High log volume:**
 - Increase filter specificity
 - Disable unnecessary scopes
 - Reduce priority verbosity
 - Consider offline analysis for intensive logging
 
-**Network latency:**
+🔹**Network latency:**
 - Ensure `logcollector` runs on the same network segment
 - Check for network congestion
 - Consider local `logcollector` instances for remote sites

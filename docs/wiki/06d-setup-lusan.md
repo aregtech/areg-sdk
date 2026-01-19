@@ -36,7 +36,6 @@ Lusan is part of the Areg SDK toolchain, for live log collection it works togeth
 ## What Is Lusan Used For
 
 Lusan is commonly used to:
-
 - Design and maintain **service interface documents** (`.siml` files)
 - Monitor logs from distributed applications in real time
 - Analyze recorded logs offline
@@ -49,7 +48,6 @@ It is intended for **daily development**, **debugging**, **system analysis**, an
 ## Prerequisites
 
 Before using Lusan, ensure that:
-
 - Lusan is built and installed  
   👉 https://github.com/aregtech/areg-sdk-tools
 - Qt libraries are installed
@@ -75,7 +73,7 @@ cmake --build build
 If Areg SDK package is not installed on the system, it will automatically fetch the sources from GitHub and build the dependent libraries of Areg SDK. The users should make sure that internet connection is available during the build.
 
 > [!IMPORTANT]
-> Lusan requires Qt libraries and operates together with `logcollector`. If Qt library package is not installed, it is recommended to use Qt-Creator to build the application:
+> 🔹Lusan requires Qt libraries and operates together with `logcollector`. If Qt library package is not installed, it is recommended to use Qt-Creator to build the application:
 >  - Open `areg-sdk-tools` directory in Qt-Creator;
 >  - Setup compiler configuration (it supports GCC, Clang, MSVC, MinGW) and the build configuration (Debug or Release)
 >  - Build the system. All required dependencies, including Areg Framework library, are automatically copied in the build directory
@@ -146,7 +144,7 @@ These interfaces are validated and later consumed by the Areg code generator dur
 
 When connected to a running `logcollector`, Lusan displays logs in real time from one or multiple applications.
 
-Developers can:
+🔹Developers can:
 - Filter logs
 - Correlate events across components
 - Trace request execution
@@ -160,7 +158,7 @@ Developers can:
 
 Previously recorded logs can be loaded directly into Lusan for offline analysis.
 
-This mode is useful for:
+🔹This mode is useful for:
 - Post-mortem debugging
 - Investigating intermittent issues
 - Sharing logs with other team members

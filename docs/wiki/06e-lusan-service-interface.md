@@ -36,7 +36,6 @@ Lusan provides a visual and validated environment to design these interfaces cor
 ## Service Interface Concept in Areg SDK
 
 A Service Interface defines the following elements:
-
 - Service Interface name, version, and type
 - Service specific custom data types
 - Data attributes with notification behavior
@@ -53,7 +52,6 @@ Service Interfaces are **implementation independent**. They describe what the se
 Although Service Interface files can be written manually, Lusan provides a safer and more productive approach.
 
 Key advantages include:
-
 - Visual modeling instead of manual XML editing
 - Immediate validation of interface structure
 - Guaranteed compatibility with the Areg code generator
@@ -67,7 +65,6 @@ Lusan enforces correct relationships between interface elements and prevents man
 ## Prerequisites
 
 Before creating Service Interface documents, ensure the following conditions are met:
-
 - Lusan is built and available  
   https://github.com/aregtech/areg-sdk-tools
 - Areg SDK is available in the development environment
@@ -102,15 +99,15 @@ A newly created interface is initialized with the name `NewServiceInterface`, ty
 
 In the `Overview` section, define the core metadata:
 
-- **Service Interface Type**  
+🔹**Service Interface Type**  
   `Private` is used for multithreading only and is not remotely accessible.  
   `Public` supports both multithreading and inter process communication.  
   `Internet` is currently reserved and not selectable.
 
-- **Version**  
+🔹**Version**  
   Defines compatibility rules between providers and consumers.
 
-- **Description**  
+🔹**Description**  
   Optional documentation for long term maintenance.
 
 > [!IMPORTANT]
@@ -125,7 +122,6 @@ In the `Overview` section, define the core metadata:
 Custom data types are defined in the `Data Types` section.
 
 Supported types include:
-
 - Structures with primitive or complex fields
 - Enumerations with named values
 - Imported types from external headers
@@ -142,7 +138,6 @@ All data types are generated within the Service Interface namespace and are avai
 Data Attributes represent shared state published by the Service Provider and consumed by Service Consumers.
 
 Attributes are defined in the `Data Attributes` section and support two notification modes:
-
 - `OnChange` sends updates only when the value changes
 - `Always` sends updates on every modification
 
@@ -157,7 +152,6 @@ Service Consumers may subscribe or unsubscribe at runtime. The Service Provider 
 Service methods define callable operations and notifications.
 
 Supported method types include:
-
 - **Requests** initiated by Service Consumers
 - **Responses** sent by Service Providers
 - **Broadcasts** used for event notifications and sending multiple data at once
@@ -197,7 +191,6 @@ These headers are automatically included in the generated code.
 ## Using the Service Interface in a Project
 
 After saving the document, integrate it into the project build:
-
 - Use `addServiceInterface()` or `addServiceInterfaceEx()` in CMake
 - Specify the static library name and path to the `.siml` file
 - The build triggers `codegen.jar` automatically

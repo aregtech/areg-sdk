@@ -24,7 +24,6 @@ Lusan is built from the [`areg-sdk-tools`](https://github.com/aregtech/areg-sdk-
 ## Overview
 
 **Lusan** is a graphical development and diagnostics application that complements **Areg SDK**. It is used for:
-
 - Service interface design
 - Centralized log collection
 - Live log monitoring
@@ -42,16 +41,16 @@ Lusan is built on top of the **Areg Framework** and the **Qt Framework**, and us
 
 ### Core Components
 
-- **Areg Framework (`areg`)**  
+🔹**Areg Framework (`areg`)**  
   Core middleware providing service communication, threading, IPC, and logging infrastructure.
 
-- **Areg Extend Library (`aregextend`)**  
+🔹**Areg Extend Library (`aregextend`)**  
   Utility layer optimized for:
   - Logging control
   - Log persistence (save and load)
   - Log parsing and visualization support
 
-- **Qt Framework**  
+🔹**Qt Framework**  
   Used exclusively for the graphical user interface.
 
 If the Areg SDK is not installed on the system, Lusan automatically fetches the required Areg sources from GitHub and builds them as part of the build process.
@@ -61,7 +60,6 @@ If the Areg SDK is not installed on the system, Lusan automatically fetches the 
 ## Prerequisites
 
 Before building Lusan, ensure the following are available:
-
 - C++17 compatible compiler (GCC, Clang, MSVC, or MinGW)
 - CMake **3.20+**
 - Qt **5 or newer**
@@ -79,7 +77,6 @@ cd areg-sdk-tools
 ```
 
 The repository contains:
-
 - CMake build configuration
 - Lusan application sources
 - Dependency integration logic
@@ -96,7 +93,6 @@ cmake --build build -j20
 ```
 
 During the build:
-
 - Areg SDK is automatically cloned and built if not found
 - `areg` and `aregextend` are compiled as dependencies
 - Qt libraries are dynamically linked
@@ -111,7 +107,6 @@ After a successful build, the Lusan executable is available in `./build/bin`
 Qt Creator is recommended when Qt is not installed system-wide or when an IDE-based workflow is preferred.
 
 Steps:
-
 1. Open **Qt Creator**
 2. Select **Open Project**
 3. Open `CMakeLists.txt` from the `areg-sdk-tools` directory
@@ -129,8 +124,7 @@ Qt Creator automatically resolves Qt dependencies. All required Areg SDK compone
 
 Lusan uses only a minimal subset of Qt.
 
-Required modules:
-
+🔹Required modules:
 - **Qt Core**
 - **Qt Widgets**
 
@@ -141,7 +135,6 @@ After the build, Qt runtime libraries are automatically copied into the `build/b
 ## Build Output
 
 After a successful build, the output directory contains:
-
 - `lusan` executable
 - Areg Framework libraries
 - `mtrouter` and `logcollector` executables
