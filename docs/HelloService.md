@@ -7,7 +7,7 @@ Copyright (c) 2021–2025, Aregtech
 Contact: info\[at]areg.tech
 Website: [https://www.areg.tech](https://www.areg.tech)
 
-````
+```
 
 This tutorial demonstrates how to build multithreaded and multiprocess applications with the AREG SDK by reusing the same service and client components.
 
@@ -127,7 +127,7 @@ Create `helloservice/service/HelloService.siml`:
         </Method>
     </MethodList>
 </ServiceInterface>
-````
+```
 
 This defines **HelloService** as a *Public* interface (`isRemote="true"`) with a request/response pair.
 

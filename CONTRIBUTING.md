@@ -37,7 +37,7 @@ Most Git tools can add this automatically:
 
 git commit -s
 
-````
+```
 
 By signing off, you state that your contribution is your original work or that you have permission to submit it.  
 More information can be found at https://developercertificate.org/
@@ -64,7 +64,7 @@ Example of an optional header:
  * \author      Your Full Name or GitHub ID
  * \brief       Brief description
  ************************************************************************/
-````
+```
 
 Minor edits such as typo fixes, grammar corrections, formatting cleanup, comment updates, CMake changes, and YAML updates do not require contributor copyright headers.
 

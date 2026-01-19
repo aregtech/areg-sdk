@@ -1,4 +1,4 @@
-# AREG SDK Log Collector Service
+# Areg SDK Log Collector Service
 
 The **AREG SDK Log Collector** is a centralized service designed to gather, manage, and route log data from distributed applications within the AREG SDK environment. It forwards collected log entries to designated log observers for streamlined analysis and handling, enabling real-time monitoring, troubleshooting, and performance optimization in complex multiprocess systems.
 
@@ -33,7 +33,7 @@ To configure and run the `logcollector` application as a Linux-managed service, 
    - Copy the `logcollector.service` file to the `/etc/systemd/system/` directory.
 
 2. **Copy the Executable**:
-   - Copy the built `logcollector.elf` executable to the desired location, such as `/usr/local/bin`.
+   - Copy the built `logcollector.elf` executable, `areg.so` library and `config/areg.init` files to the desired location, such as `/usr/local/bin`.
 
 3. **Ensure Library Access (if applicable)**:
    - If the AREG Framework was built as a shared library, ensure that `logcollector` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
@@ -70,7 +70,7 @@ To configure and run the `logcollector` application as a Linux-managed service, 
 To configure and run the `logcollector` application as a Windows-managed service, follow these steps:
 
 1. **Copy the Binaries**:
-   - Copy the `logcollector.exe` and `areg.dll` binaries to the desired location.
+   - Copy the `logcollector.exe` and `areg.dll` binaries, and `config/areg.init` file to the desired location.
 
 2. **Install the Service**:
    - Open **PowerShell** as the Administrator.
@@ -83,10 +83,16 @@ To configure and run the `logcollector` application as a Windows-managed service
 3. **Start the Service**:
    - Open the **Services** application (or run `services.msc` in the Command Prompt).
    - Locate the service named **AREG Log Collector Service**.
-   - Start the service by right-clicking it and selecting **Start**.
+   - Start the service by right-clicking it and selecting **Start** or call from command line:
+     ```powershell
+     net start logger.service
+     ```
 
 4. **Stop and Uninstall the Service**:
-   - Stop the service using the **Services** application or the `services.msc` command.
+   - Stop the service using the **Services** application or the `services.msc` command or run from command line:
+     ```powershell
+     net stop logger.service
+     ```
    - Uninstall the service by running the following command in PowerShell:
      ```powershell
      .\logcollector.exe --uninstall
