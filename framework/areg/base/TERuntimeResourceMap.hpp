@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/TERuntimeResourceMap.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -29,7 +29,7 @@
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/base/TEResourceMap.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
 /************************************************************************
  * Hierarchies and list of declared classes
@@ -101,9 +101,9 @@ protected:
     /**
      * \brief   Initialization constructor. The only public available.
      *          Requires instance of synchronization object.
-     * \param   synchObject Reference to synchronization object.
+     * \param   syncObject Reference to synchronization object.
      **/
-    TERuntimeResourceMap( IEResourceLock & synchObject );
+    TERuntimeResourceMap( IEResourceLock & syncObject );
 
     /**
      * \brief   Destructor.
@@ -157,7 +157,7 @@ private:
      * \brief   Non-locking synchronization object.
      *          It will not lock thread on access.
      **/
-    NolockSynchObject mNoLock;
+    NolockSyncObject mNoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -223,8 +223,8 @@ private:
 // TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <class RUNTIME_DELEGATE, class Deleter>
-TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TERuntimeResourceMap( IEResourceLock& synchObject )
-    : TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (synchObject)
+TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TERuntimeResourceMap( IEResourceLock& syncObject )
+    : TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
 {
 }
 

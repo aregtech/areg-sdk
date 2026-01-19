@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/TEResourceMap.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -23,7 +23,7 @@
  ************************************************************************/
 #include "areg/base/TETemplateBase.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
 /************************************************************************
  * Hierarchies. Following class are declared.
@@ -85,7 +85,7 @@ protected:
     /**
      * \brief   Default Constructor
      **/
-    explicit TEResourceMap( IEResourceLock & synchObject );
+    explicit TEResourceMap( IEResourceLock & syncObject );
 
     /**
      * \brief   Destructor
@@ -240,7 +240,7 @@ private:
     /**
      * \brief   Synchronization object to synchronize access to resource data
      **/
-    IEResourceLock &    mSynchObj;
+    IEResourceLock &    mSyncObj;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
@@ -339,7 +339,7 @@ private:
     /**
      * \brief   Instance of non-locking synchronization object. No thread locking will happen.
      **/
-    NolockSynchObject mNoLock;
+    NolockSyncObject mNoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
@@ -357,24 +357,24 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TEResourceMap( IEResourceLock & synchObject )
+TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TEResourceMap( IEResourceLock & syncObject )
     : HashMap   ( )
     , Deleter   ( )
-    , mSynchObj (synchObject)
+    , mSyncObj  (syncObject)
 {
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     HashMap::setAt(Key, Resource);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unregisterResourceObject(const RESOURCE_KEY & Key)
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
     HashMap::removeAt(Key, result);
@@ -384,7 +384,7 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::findResourceObject(const RESOURCE_KEY & Key) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
     if (HashMap::isEmpty())
@@ -397,46 +397,46 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::existResource(const RESOURCE_KEY & Key) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     return HashMap::contains(Key);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::lock( void ) const
 {
-    mSynchObj.lock(NECommon::WAIT_INFINITE);
+    mSyncObj.lock(NECommon::WAIT_INFINITE);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unlock( void ) const
 {
-    mSynchObj.unlock( );
+    mSyncObj.unlock( );
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::tryLock( void ) const
 {
-    return mSynchObj.tryLock( );
+    return mSyncObj.tryLock( );
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline uint32_t TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize( void ) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     return HashMap::getSize();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::isEmpty( void ) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     return HashMap::isEmpty();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceObject( RESOURCE_OBJECT Resource )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     bool result{ false };
     for ( auto pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
@@ -455,7 +455,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeAllResources( void )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     for ( auto pos = HashMap::firstPosition(); HashMap::isValidPosition(pos); pos = HashMap::nextPosition(pos))
     {
@@ -471,7 +471,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & OUT firstElement )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     bool result{ false };
     typename HashMap::MAPPOS pos  = HashMap::firstPosition();
     if (HashMap::isValidPosition(pos))
@@ -486,7 +486,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & OUT firstKey ) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
     typename HashMap::MAPPOS pos = HashMap::firstPosition();
@@ -501,7 +501,7 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
     typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(nextKey);

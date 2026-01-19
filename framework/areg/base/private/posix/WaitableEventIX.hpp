@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableEventIX.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -42,11 +42,11 @@
  *                              the event automatically switches to not signaled state. Multiple 
  *                              waiting threads can be released at the same time. The threads are
  *                              released by priority order.
- *          A thread can wait for one, any or all events. For more details see @SynchLockAndWaitIX.
+ *          A thread can wait for one, any or all events. For more details see @SyncLockAndWaitIX.
  *          If Event is in signaled state, multiple calls to signal Event are ignored.
  *          If Event is in non-signaled state, multiple calls to reset signal state are ignored.
  *
- * \see     SynchLockAndWaitIX
+ * \see     SyncLockAndWaitIX
  **/
 class WaitableEventIX : public IEWaitableBaseIX
 {
@@ -84,17 +84,17 @@ public:
 public:
     /**
      * \brief   Returns the reset information of synchronization Event.
-     *          The Event object can be either NESynchTypesIX::EventResetManual
-     *          or NESynchTypesIX::EventResetAutomatic. The EventResetManual
+     *          The Event object can be either NESyncTypesIX::EventResetManual
+     *          or NESyncTypesIX::EventResetAutomatic. The EventResetManual
      *          reset Events are manually set to signaled and non-signaled state.
      *          The EventResetAutomatic Events are manually signaled and
      *          automatically reset as soon as any waiting thread is released.
      **/
-    inline NESynchTypesIX::eEventResetInfo  getResetInfo( void ) const;
+    inline NESyncTypesIX::eEventResetInfo  getResetInfo( void ) const;
 
     /**
      * \brief   Call to set waitable Event signaled. If Event is signaled, all waiting threads
-     *          are released. If Event type is NESynchTypesIX::EventResetAutomatic, it is
+     *          are released. If Event type is NESyncTypesIX::EventResetAutomatic, it is
      *          automatically reset. Otherwise, it remains signaled until it is not manually reset.
      *          Waitable Event signal are received by all waiting threads.
      * \return  Returns true if operation succeeded.
@@ -103,8 +103,8 @@ public:
 
     /**
      * \brief   Call to reset the signal state of waitable Event, i.e. make non-signaled.
-     *          Only NESynchTypesIX::EventResetManual type Events can be manually reset.
-     *          The call is ignored if event type is NESynchTypesIX::EventResetAutomatic,
+     *          Only NESyncTypesIX::EventResetManual type Events can be manually reset.
+     *          The call is ignored if event type is NESyncTypesIX::EventResetAutomatic,
      *          because automatic events are automatically reset after threads get released.
      * \return  Returns true if operation succeeded. The operation may fail if the waitable
      *          Event is created with auto-reset flag.
@@ -163,7 +163,7 @@ private:
     /**
      * \brief   Specifies whether the event is manual- or auto-reset.
      **/
-    const NESynchTypesIX::eEventResetInfo   mEventReset;
+    const NESyncTypesIX::eEventResetInfo   mEventReset;
     /**
      * \brief   Flag that indicates the signaled state of the event.
      **/
@@ -181,7 +181,7 @@ private:
 // WaitableEventIX class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NESynchTypesIX::eEventResetInfo WaitableEventIX::getResetInfo( void ) const
+inline NESyncTypesIX::eEventResetInfo WaitableEventIX::getResetInfo( void ) const
 {
     ObjectLockIX lock(*this);
     return mEventReset;

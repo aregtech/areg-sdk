@@ -1,14 +1,14 @@
-﻿# 28_stlsynch
+﻿# 28_stlsync
 
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **28_stlsynch** project demonstrates how Areg’s **event synchronization object (`SynchEvent`)** can be used in STL-based applications. It adapts the [std::condition_variable](https://en.cppreference.com/w/cpp/thread/condition_variable.html) demo to use `SynchEvent` with `std::thread`, showing event waiting and signaling with sleep-based timing.
+The **28_stlsync** project demonstrates how Areg’s **event synchronization object (`SyncEvent`)** can be used in STL-based applications. It adapts the [std::condition_variable](https://en.cppreference.com/w/cpp/thread/condition_variable.html) demo to use `SyncEvent` with `std::thread`, showing event waiting and signaling with sleep-based timing.
 
 ## Concepts Shown
-- **Thread Synchronization** — coordinate access to shared resources with `SynchEvent`.
+- **Thread Synchronization** — coordinate access to shared resources with `SyncEvent`.
 - **Locking Styles** — demonstrate automatic RAII lock (`Lock`) and manual lock handling.
-- **Auto-reset Events** — `SynchEvent` resets automatically after being signaled; requires explicit `setEvent()` to trigger.
+- **Auto-reset Events** — `SyncEvent` resets automatically after being signaled; requires explicit `setEvent()` to trigger.
 - **Conditional Waiting** — threads block until the event is signaled.
 - **Cross-Platform Consistency** — unified behavior across Windows and Linux.
 
@@ -21,4 +21,4 @@ Two threads share a `std::string data`. The main thread signals when data is rea
 - Safely manage shared resources while preventing race conditions.
 
 ## Takeaway
-The **28_stlsynch** example shows how to use Areg’s **synchronization event object** in pure STL-based applications. It demonstrates that Areg’s synchronization primitives work cross-platform, independent of the Areg service framework.
+The **28_stlsync** example shows how to use Areg’s **synchronization event object** in pure STL-based applications. It demonstrates that Areg’s synchronization primitives work cross-platform, independent of the Areg service framework.

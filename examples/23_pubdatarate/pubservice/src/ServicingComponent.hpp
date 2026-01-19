@@ -19,7 +19,7 @@
 #include "areg/component/TEEvent.hpp"
 #include "examples/23_pubdatarate/services/LargeDataStub.hpp"
 
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
 #include "aregextend/console/Console.hpp"
@@ -277,7 +277,7 @@ private:
     std::atomic_bool            mOptionChanged;
     //! The event to pause generate image.
     //! The data generating thread should be paused when non-signaled and should run when signaled.
-    SynchEvent                  mPauseEvent;
+    SyncEvent                   mPauseEvent;
     //!< Number of connected clients.
     int32_t                     mClients;
     //!< Data Rate in bytes

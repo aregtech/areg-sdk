@@ -2,7 +2,7 @@
 
 ```
 This document is part of the AREG SDK and describes its example projects.
-Copyright (c) 2017-2025, Aregtech
+Copyright (c) 2017-2026, Aregtech
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
 ```
@@ -72,7 +72,7 @@ MSBuild ./areg-sdk.sln
 | [07\_logging](./07_logging/)           | 🧵 Multithreading  | Logging, Tracing                   | Shows application method call tracing and message logging for debugging and runtime analysis.                       |
 | [08\_timer](./08_timer/)               | 🧵 Multithreading  | Timers, Real-Time Events           | Demonstrates one-shot, periodic, and continuous timers for real-time event handling in threads.                     |
 | [09\_threads](./09_threads/)           | 🧵 Multithreading  | Event Dispatching, Threads         | Illustrates creating custom event dispatching threads for real-time multithreaded applications.                     |
-| [10\_synch](./10_synch/)               | 🧵 Multithreading  | Mutex, Events                      | Demonstrates synchronization primitives (mutexes, events) for safe multithreaded operations.                        |
+| [10\_sync](./10_sync/)                 | 🧵 Multithreading  | Mutex, Events                      | Demonstrates synchronization primitives (mutexes, events) for safe multithreaded operations.                        |
 | [11\_service](./11_service/)           | 🧵 Multithreading  | Service Provider                   | Shows single-threaded service provider creation and deployment within an application model.                         |
 | [12\_svcmulti](./12_svcmulti/)         | 🧵 Multithreading  | Service Reuse                      | Demonstrates service reuse across multiple threads and processes within an application model.                       |
 | [13\_locsvc](./13_locsvc/)             | 🧵 Multithreading  | Local Service                      | Introduces a local service; demonstrates Service Provider and Consumer communication in a single process.           |
@@ -90,8 +90,8 @@ MSBuild ./areg-sdk.sln
 | [25\_pubsub](./25_pubsub/)             | 🚀 Multiprocessing | Pub/Sub, IPC                       | Implements the Publish/Subscribe pattern with notifications on change or on every update for subscribed clients.    |
 | [26\_pubsubmix](./26_pubsubmix/)       | 🚀 Multiprocessing | Hybrid Pub/Sub, Fault-Tolerance    | Shows mixed Pub/Sub configuration across threads and processes; maintains reliability during network interruptions. |
 | [27\_pubsubmulti](./27_pubsubmulti/)   | 🚀 Multiprocessing | Multi-Subscriber, Efficient Events | Optimizes Pub/Sub with multiple subscribers per thread, reducing event overhead and improving efficiency.           |
-| [28\_stlsynch](./28_stlsynch/)         | 🧵 Multithreading  | Synchronization Event and STL      | Event-based synchronization with STL threads for safe multithreading.                                               |
-| [29_synchevent](./29_synchevent/)     | 🧵 Multithreading  | Auto-Reset Events, Signal Persistence | Demonstrates reliable Areg `SynchEvent` signaling: events stay signaled until locked, no spurious wakeups, works the same on Windows and Linux. |
+| [28\_stlsync](./28_stlsync/)           | 🧵 Multithreading  | Synchronization Event and STL      | Event-based synchronization with STL threads for safe multithreading.                                               |
+| [29_syncevent](./29_syncevent/)        | 🧵 Multithreading  | Auto-Reset Events, Signal Persistence | Demonstrates reliable Areg `SyncEvent` signaling: events stay signaled until locked, no spurious wakeups, works the same on Windows and Linux. |
 
 
 ---

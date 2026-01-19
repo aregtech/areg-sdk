@@ -1,6 +1,6 @@
 # ###########################################################################
 # AREG SDK Examples with example specific functions
-# Copyright 2022-2023 Aregtech
+# Copyright 2022-2026 Aregtech
 # ###########################################################################
 
 # ###########################################################################
@@ -19,7 +19,7 @@ if(AREG_BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/07_logging/CMakeLists.txt)
     include(${AREG_EXAMPLES}/08_timer/CMakeLists.txt)
     include(${AREG_EXAMPLES}/09_threads/CMakeLists.txt)
-    include(${AREG_EXAMPLES}/10_synch/CMakeLists.txt)
+    include(${AREG_EXAMPLES}/10_sync/CMakeLists.txt)
     include(${AREG_EXAMPLES}/11_service/CMakeLists.txt)
     include(${AREG_EXAMPLES}/12_svcmulti/CMakeLists.txt)
     include(${AREG_EXAMPLES}/13_locsvc/CMakeLists.txt)
@@ -36,8 +36,8 @@ if(AREG_BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/25_pubsub/CMakeLists.txt)
     include(${AREG_EXAMPLES}/26_pubsubmix/CMakeLists.txt)
     include(${AREG_EXAMPLES}/27_pubsubmulti/CMakeLists.txt)
-    include(${AREG_EXAMPLES}/28_stlsynch/CMakeLists.txt)
-    include(${AREG_EXAMPLES}/29_synchevent/CMakeLists.txt)
+    include(${AREG_EXAMPLES}/28_stlsync/CMakeLists.txt)
+    include(${AREG_EXAMPLES}/29_syncevent/CMakeLists.txt)
 
     if (AREG_DEVELOP_ENV MATCHES "Win32")
         # This projects are based either on MFC (Microsoft Foundation Classes)

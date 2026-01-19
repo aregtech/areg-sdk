@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/TEResourceListMap.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -25,7 +25,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/Containers.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
   /************************************************************************
    * Hierarchies. Following class are declared.
@@ -90,7 +90,7 @@ protected:
     /**
      * \brief   Initializes the locking object.
      **/
-    explicit TEResourceListMap( IEResourceLock & synchObject );
+    explicit TEResourceListMap( IEResourceLock & syncObject );
 
     /**
      * \brief   Destructor.
@@ -254,7 +254,7 @@ private:
     /**
      * \brief   Synchronization object to synchronize access to resource data
      **/
-    IEResourceLock &     mSynchObj;
+    IEResourceLock &     mSyncObj;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
@@ -312,7 +312,7 @@ private:
      * \brief   Instance of non-locking synchronization object.
      *          No thread locking will happen.
      **/
-    NolockSynchObject mNoLock;
+    NolockSyncObject mNoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
@@ -385,11 +385,11 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
          , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TEResourceListMap( IEResourceLock & synchObject )
+TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TEResourceListMap( IEResourceLock & syncObject )
     : HashMap   ( )
     , Tracker   ( )
 
-    , mSynchObj ( synchObject )
+    , mSyncObj  ( syncObject )
 {
 }
 
@@ -410,7 +410,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::lock( void ) const
 {
-    mSynchObj.lock( NECommon::WAIT_INFINITE );
+    mSyncObj.lock( NECommon::WAIT_INFINITE );
 }
 
 template < typename RESOURCE_KEY
@@ -420,7 +420,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unlock( void ) const
 {
-    mSynchObj.unlock( );
+    mSyncObj.unlock( );
 }
 
 template < typename RESOURCE_KEY
@@ -430,7 +430,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::tryLock( void ) const
 {
-    return mSynchObj.tryLock( );
+    return mSyncObj.tryLock( );
 }
 
 template < typename RESOURCE_KEY
@@ -440,7 +440,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     ResourceList & resourceList = HashMap::operator[](Key);
     addResourceObject( resourceList, Resource );
@@ -453,7 +453,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty /*= true*/ )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     if (HashMap::isValidPosition(pos))
@@ -474,7 +474,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline ResourceList & TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::registerResource( const RESOURCE_KEY & Key )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     return HashMap::getAt(Key);
 }
@@ -486,7 +486,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline ResourceList TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unregisterResource( const RESOURCE_KEY & Key )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     ResourceList result;
     HashMap::removeAt( Key, result );
@@ -500,7 +500,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::findResource( const RESOURCE_KEY & Key )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
@@ -513,7 +513,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::findResource( const RESOURCE_KEY & Key ) const
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
@@ -526,7 +526,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getResource( const RESOURCE_KEY & Key )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
@@ -539,7 +539,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline const ResourceList * TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getResource( const RESOURCE_KEY & Key ) const
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
     return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
@@ -552,7 +552,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeResourceObject( RESOURCE_OBJECT Resource, bool remEmptyList )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     bool result = false;
     for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); )
@@ -583,7 +583,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeAllResources( void )
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
 
     for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); pos = HashMap::nextPosition( pos ) )
     {
@@ -610,7 +610,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline uint32_t TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getSize( void ) const
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
     return HashMap::getSize( );
 }
 
@@ -621,7 +621,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::isEmpty( void ) const
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
     return HashMap::isEmpty( );
 }
 
@@ -632,7 +632,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline bool TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::existResource( const RESOURCE_KEY & Key ) const
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
     return HashMap::contains( Key );
 }
 

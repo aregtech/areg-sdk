@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableSemaphoreIX.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -21,14 +21,14 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableSemaphoreIX class implementation.
 //////////////////////////////////////////////////////////////////////////
 
 WaitableSemaphoreIX::WaitableSemaphoreIX(int maxCount, int initCount /*= 0*/, const char * asciiName /*= nullptr */)
-    : IEWaitableBaseIX  ( NESynchTypesIX::eSynchObject::SoWaitSemaphore, true, asciiName )
+    : IEWaitableBaseIX  ( NESyncTypesIX::eSyncObject::SoWaitSemaphore, true, asciiName )
 
     , mMaxCount         ( maxCount  )
     , mCurCount         ( initCount )
@@ -51,7 +51,7 @@ bool WaitableSemaphoreIX::releaseSemaphore(void)
 
     if (sendSignal)
     {
-        SynchLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitIX::eventSignaled(*this);
     }
 
     return sendSignal;

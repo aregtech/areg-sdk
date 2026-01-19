@@ -7,9 +7,9 @@
     <Import Project="$(AregConfigDir)compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E5605BA4-CC97-4635-B9B6-E73F10A8704F}</ProjectGuid>
-    <ProjectName>29_synchevent</ProjectName>
-    <RootNamespace>29_synchevent</RootNamespace>
+    <ProjectGuid>{57D67BC9-C172-47F0-A379-6DA93E845202}</ProjectGuid>
+    <ProjectName>28_stlsync</ProjectName>
+    <RootNamespace>28_stlsync</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project demonstrates use of timers. The demo initializes,
 //               starts and stops multiple timers processed in different 
 //               threads. The timers require the start of Timer Manager (timer 

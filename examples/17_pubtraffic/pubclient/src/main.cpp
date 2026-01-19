@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project contains an instance service client, which model
 //               is defined dynamically during run-time. This approach 
 //               guaranties to start and run several instance of the same 

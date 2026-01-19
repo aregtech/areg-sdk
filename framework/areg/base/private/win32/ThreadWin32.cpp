@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/ThreadWin32.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -101,7 +101,7 @@ id_type Thread::_osGetCurrentThreadId( void )
 
 Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 {
-    mSynchObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(NECommon::WAIT_INFINITE);
 
     Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
 
@@ -109,7 +109,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     if (handle != Thread::INVALID_THREAD_HANDLE)
     {
         _unregisterThread();
-        mSynchObject.unlock();  // unlock, to let thread complete exit task.
+        mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
         if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
         {
@@ -147,7 +147,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
             ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
         }
 
-        mSynchObject.lock(NECommon::WAIT_INFINITE);
+        mSyncObject.lock(NECommon::WAIT_INFINITE);
     }
     else
     {
@@ -155,7 +155,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         result = Thread::eCompletionStatus::ThreadInvalid;
     }
 
-    mSynchObject.unlock(); // nothing to do, the thread is already destroyed
+    mSyncObject.unlock(); // nothing to do, the thread is already destroyed
 
     return result;
 }
@@ -194,7 +194,7 @@ bool Thread::_osCreateSystemThread( void )
 
 Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
 {
-    Lock  lock(mSynchObject);
+    Lock  lock(mSyncObject);
     Thread::eThreadPriority oldPrio{ mThreadPriority };
 
     if (_isValidNoLock() && (newPriority != mThreadPriority))

@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/posix/TimerPosix.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -24,7 +24,7 @@
 #include "areg/component/private/Watchdog.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "areg/base/private/posix/NESynchTypesIX.hpp"
+#include "areg/base/private/posix/NESyncTypesIX.hpp"
 #include "areg/base/NEMemory.hpp"
 
 #include <signal.h>
@@ -123,7 +123,7 @@ void TimerPosix::timerExpired(void)
     {
         if (mContext->getEventCount() > TimerBase::ONE_TIME)
         {
-            NESynchTypesIX::convTimeout(mDueTime, mContext->getTimeout());
+            NESyncTypesIX::convTimeout(mDueTime, mContext->getTimeout());
         }
         else if (_isStarted())
         {
@@ -167,7 +167,7 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
 
             struct itimerspec interval;
             NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-            NESynchTypesIX::convTimeout(interval.it_value, msTimeout);
+            NESyncTypesIX::convTimeout(interval.it_value, msTimeout);
             if (eventCount > 1)
             {
                 interval.it_interval.tv_sec = interval.it_value.tv_sec;
@@ -176,7 +176,7 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
 
             if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
             {
-                NESynchTypesIX::convTimeout(mDueTime, msTimeout);
+                NESyncTypesIX::convTimeout(mDueTime, msTimeout);
                 result = true;
 
                 if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))

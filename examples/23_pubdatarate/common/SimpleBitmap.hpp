@@ -12,7 +12,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/File.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 #include "common/NELargeData.hpp"
 
 #include <string>

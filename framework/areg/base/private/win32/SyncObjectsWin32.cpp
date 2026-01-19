@@ -6,14 +6,14 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/base/private/win32/ESynchObjectsWin32.cpp
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/private/win32/SyncObjectsWin32.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Synchronization objects. Windows specific methods
  *
  ************************************************************************/
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
 #ifdef  _WIN32
 #include "areg/base/NEMemory.hpp"
@@ -22,19 +22,19 @@
 #include <Windows.h>
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class implementation
+// IESyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class methods
+// IESyncObject class methods
 //////////////////////////////////////////////////////////////////////////
 
-void IESynchObject::_osDestroySynchObject( void )
+void IESyncObject::_osDestroySyncObject( void )
 {
-    if ( mSynchObject != nullptr )
+    if ( mSyncObject != nullptr )
     {
-        CloseHandle( static_cast<HANDLE>(mSynchObject) );
-        mSynchObject = nullptr;
+        CloseHandle( static_cast<HANDLE>(mSyncObject) );
+        mSyncObject = nullptr;
     }
 }
 
@@ -44,8 +44,8 @@ void IESynchObject::_osDestroySynchObject( void )
 
 void Mutex::_osCreateMutex( bool initLock )
 {
-    SYNCHANDLE synchObj = static_cast<SYNCHANDLE>(CreateMutex( nullptr, initLock ? TRUE : FALSE, nullptr ));
-    mSynchObject = synchObj;
+    SYNCHANDLE syncObj = static_cast<SYNCHANDLE>(CreateMutex( nullptr, initLock ? TRUE : FALSE, nullptr ));
+    mSyncObject = syncObj;
     if ( initLock )
     {
         mOwnerThreadId.store( Thread::getCurrentThreadId( ) );
@@ -56,7 +56,7 @@ bool Mutex::_osLockMutex( unsigned int timeout )
 {
     bool result = false;
 
-    if (WaitForSingleObject(static_cast<HANDLE>(mSynchObject), timeout) == WAIT_OBJECT_0)
+    if (WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0)
     {
         mOwnerThreadId.store( Thread::getCurrentThreadId( ) );
         result = true;
@@ -68,7 +68,7 @@ bool Mutex::_osLockMutex( unsigned int timeout )
 bool Mutex::_osUnlockMutex( void )
 {
     bool result = false;
-    if (ReleaseMutex(static_cast<HANDLE>(mSynchObject)))
+    if (ReleaseMutex(static_cast<HANDLE>(mSyncObject)))
     {
         mOwnerThreadId.store( 0 );
         result = true;
@@ -78,37 +78,37 @@ bool Mutex::_osUnlockMutex( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchEvent class implementation
+// SyncEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void SynchEvent::_osCreateEvent( bool initLock )
+void SyncEvent::_osCreateEvent( bool initLock )
 {
-    mSynchObject = static_cast<void *>(CreateEvent( nullptr, mAutoReset ? FALSE : TRUE, initLock ? FALSE : TRUE, nullptr ));
+    mSyncObject = static_cast<void *>(CreateEvent( nullptr, mAutoReset ? FALSE : TRUE, initLock ? FALSE : TRUE, nullptr ));
 }
 
-bool SynchEvent::_osUnlockEvent( void * /* eventHandle */ )
+bool SyncEvent::_osUnlockEvent( void * /* eventHandle */ )
 {
-    return ( ::SetEvent( static_cast<HANDLE>(mSynchObject) ) != FALSE );
+    return ( ::SetEvent( static_cast<HANDLE>(mSyncObject) ) != FALSE );
 }
 
-bool SynchEvent::_osLockEvent(unsigned int timeout)
+bool SyncEvent::_osLockEvent(unsigned int timeout)
 {
-    return ( WaitForSingleObject(static_cast<HANDLE>(mSynchObject), timeout) == WAIT_OBJECT_0 );
+    return ( WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0 );
 }
 
-bool SynchEvent::_osSetEvent( void )
+bool SyncEvent::_osSetEvent( void )
 {
-    return (::SetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE);
+    return (::SetEvent(static_cast<HANDLE>(mSyncObject)) != FALSE);
 }
 
-bool SynchEvent::_osResetEvent( void )
+bool SyncEvent::_osResetEvent( void )
 {
-    return (::ResetEvent(static_cast<HANDLE>(mSynchObject)) != FALSE);
+    return (::ResetEvent(static_cast<HANDLE>(mSyncObject)) != FALSE);
 }
 
-void SynchEvent::_osPulseEvent( void )
+void SyncEvent::_osPulseEvent( void )
 {
-    ::PulseEvent(static_cast<HANDLE>(mSynchObject));
+    ::PulseEvent(static_cast<HANDLE>(mSyncObject));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ void SynchEvent::_osPulseEvent( void )
 
 void Semaphore::_osCreateSemaphore( void )
 {
-    mSynchObject= static_cast<void *>(CreateSemaphore(nullptr, mCurrCount.load(), mMaxCount, nullptr));
+    mSyncObject= static_cast<void *>(CreateSemaphore(nullptr, mCurrCount.load(), mMaxCount, nullptr));
 }
 
 void Semaphore::_osReleaseSemaphore( void )
@@ -126,12 +126,12 @@ void Semaphore::_osReleaseSemaphore( void )
 
 bool Semaphore::_osLock(unsigned int timeout)
 {
-    return (WaitForSingleObject( static_cast<HANDLE>(mSynchObject), timeout ) == WAIT_OBJECT_0);
+    return (WaitForSingleObject( static_cast<HANDLE>(mSyncObject), timeout ) == WAIT_OBJECT_0);
 }
 
 bool Semaphore::_osUnlock( void )
 {
-    return (ReleaseSemaphore( static_cast<HANDLE>(mSynchObject), 1, nullptr ) == TRUE);
+    return (ReleaseSemaphore( static_cast<HANDLE>(mSyncObject), 1, nullptr ) == TRUE);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -140,34 +140,34 @@ bool Semaphore::_osUnlock( void )
 
 void CriticalSection::_osCreateCriticalSection( void )
 {
-    mSynchObject = static_cast<void *>( DEBUG_NEW unsigned char [sizeof(CRITICAL_SECTION)] );
-    NEMemory::constructElems<CRITICAL_SECTION>( mSynchObject, 1 );
-    InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject) );
+    mSyncObject = static_cast<void *>( DEBUG_NEW unsigned char [sizeof(CRITICAL_SECTION)] );
+    NEMemory::constructElems<CRITICAL_SECTION>( mSyncObject, 1 );
+    InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
 }
 
 void CriticalSection::_osReleaseCriticalSection( void )
 {
-    LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject) );
-    DeleteCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject) );
-    delete[] reinterpret_cast<unsigned char *>(mSynchObject);
-    mSynchObject = nullptr;
+    LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
+    DeleteCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
+    delete[] reinterpret_cast<unsigned char *>(mSyncObject);
+    mSyncObject = nullptr;
 }
 
 bool CriticalSection::_osLock( void )
 {
-    EnterCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject) );
+    EnterCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     return true;
 }
 
 bool CriticalSection::_osUnlock( void )
 {
-    LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject) );
+    LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     return true;
 }
 
 bool CriticalSection::_osTryLock( void )
 {
-    return (TryEnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject)) == TRUE);
+    return (TryEnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject)) == TRUE);
 }
 
 #if 0 // TODO: Probably don't need anymore and should be removed
@@ -177,52 +177,52 @@ bool CriticalSection::_osTryLock( void )
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock( void )
-    : IEResourceLock( IESynchObject::eSyncObject::SoSpinlock )
+    : IEResourceLock( IESyncObject::eSyncObject::SoSpinlock )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    mSynchObject    = DEBUG_NEW SpinLockWin32( );
+    mSyncObject    = DEBUG_NEW SpinLockWin32( );
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    mSynchObject    = DEBUG_NEW CriticalSection( );
+    mSyncObject    = DEBUG_NEW CriticalSection( );
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 
 SpinLock::~SpinLock( void )
 {
-    if ( mSynchObject != nullptr )
+    if ( mSyncObject != nullptr )
     {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-        delete reinterpret_cast<SpinLockWin32 *>(mSynchObject);
+        delete reinterpret_cast<SpinLockWin32 *>(mSyncObject);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-        delete reinterpret_cast<CriticalSection *>(mSynchObject);
+        delete reinterpret_cast<CriticalSection *>(mSyncObject);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
-        mSynchObject = nullptr;
+        mSyncObject = nullptr;
     }
 }
 
 bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSynchObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSynchObject)->lock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->lock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSynchObject != nullptr ? reinterpret_cast<CriticalSection *>(mSynchObject)->lock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<CriticalSection *>(mSyncObject)->lock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 
 bool SpinLock::unlock( void )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSynchObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSynchObject)->unlock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->unlock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSynchObject != nullptr ? reinterpret_cast<CriticalSection *>(mSynchObject)->unlock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<CriticalSection *>(mSyncObject)->unlock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 
 bool SpinLock::tryLock( void )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSynchObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSynchObject)->tryLock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->tryLock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSynchObject != nullptr ? reinterpret_cast<CriticalSection *>(mSynchObject)->tryLock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<CriticalSection *>(mSyncObject)->tryLock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
 #endif
@@ -234,14 +234,14 @@ bool SpinLock::tryLock( void )
 void ResourceLock::_osCreateResourceLock( bool initLock )
 {
 #if 0
-    mSynchObject = new Mutex( initLock );
+    mSyncObject = new Mutex( initLock );
 
 #else
 
-    mSynchObject = new CriticalSection( );
+    mSyncObject = new CriticalSection( );
     if ( initLock )
     {
-        reinterpret_cast<IEResourceLock *>(mSynchObject)->lock( NECommon::WAIT_INFINITE );
+        reinterpret_cast<IEResourceLock *>(mSyncObject)->lock( NECommon::WAIT_INFINITE );
     }
 
 #endif
@@ -250,31 +250,31 @@ void ResourceLock::_osCreateResourceLock( bool initLock )
 
 void ResourceLock::_osReleaseResourceLock( void )
 {
-    reinterpret_cast<IEResourceLock *>(mSynchObject)->unlock( );
-    delete reinterpret_cast<IEResourceLock *>(mSynchObject);
-    mSynchObject = nullptr;
+    reinterpret_cast<IEResourceLock *>(mSyncObject)->unlock( );
+    delete reinterpret_cast<IEResourceLock *>(mSyncObject);
+    mSyncObject = nullptr;
 }
 
 bool ResourceLock::_osLock(unsigned int timeout)
 {
-    return reinterpret_cast<IEResourceLock *>(mSynchObject)->lock(timeout);
+    return reinterpret_cast<IEResourceLock *>(mSyncObject)->lock(timeout);
 }
 
 bool ResourceLock::_osUnlock( void )
 {
-    return reinterpret_cast<IEResourceLock *>(mSynchObject)->unlock( );
+    return reinterpret_cast<IEResourceLock *>(mSyncObject)->unlock( );
 }
 
 bool ResourceLock::_osTryLock(void)
 {
-    return reinterpret_cast<IEResourceLock *>(mSynchObject)->tryLock();
+    return reinterpret_cast<IEResourceLock *>(mSyncObject)->tryLock();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchTimer implementation
+// SyncTimer implementation
 //////////////////////////////////////////////////////////////////////////
 
-void SynchTimer::_osCreateTimer( bool isSteady )
+void SyncTimer::_osCreateTimer( bool isSteady )
 {
     DWORD flag = 0;
     if (isSteady)
@@ -287,33 +287,33 @@ void SynchTimer::_osCreateTimer( bool isSteady )
         flag |= CREATE_WAITABLE_TIMER_MANUAL_RESET;
     }
 
-    mSynchObject = static_cast<SYNCHANDLE>(::CreateWaitableTimerEx(nullptr, nullptr, flag, TIMER_ALL_ACCESS));
+    mSyncObject = static_cast<SYNCHANDLE>(::CreateWaitableTimerEx(nullptr, nullptr, flag, TIMER_ALL_ACCESS));
 }
 
-void SynchTimer::_osReleaseTime( void )
+void SyncTimer::_osReleaseTime( void )
 {
-    CancelWaitableTimer( static_cast<HANDLE>(mSynchObject) );
-    CloseHandle( static_cast<HANDLE>(mSynchObject) );
+    CancelWaitableTimer( static_cast<HANDLE>(mSyncObject) );
+    CloseHandle( static_cast<HANDLE>(mSyncObject) );
 }
 
-bool SynchTimer::_osLock( unsigned int timeout )
+bool SyncTimer::_osLock( unsigned int timeout )
 {
-    return (WaitForSingleObject( static_cast<HANDLE>(mSynchObject), timeout ) == WAIT_OBJECT_0);
+    return (WaitForSingleObject( static_cast<HANDLE>(mSyncObject), timeout ) == WAIT_OBJECT_0);
 }
 
-bool SynchTimer::_osSetTimer( void )
+bool SyncTimer::_osSetTimer( void )
 {
     constexpr int NANOSECONDS_COEF_100  { 10'000 };
 
     LARGE_INTEGER dueTime{};
     dueTime.QuadPart = -(static_cast<LONGLONG>(mTimeout) * NANOSECONDS_COEF_100);
     LONG lPeriod = mIsPeriodic ? static_cast<LONG>(mTimeout) : 0;
-    return (SetWaitableTimer( static_cast<HANDLE>(mSynchObject), &dueTime, lPeriod, nullptr, nullptr, FALSE ) != FALSE);
+    return (SetWaitableTimer( static_cast<HANDLE>(mSyncObject), &dueTime, lPeriod, nullptr, nullptr, FALSE ) != FALSE);
 }
 
-bool SynchTimer::_osCancelTimer( void )
+bool SyncTimer::_osCancelTimer( void )
 {
-    return (CancelWaitableTimer( static_cast<HANDLE>(mSynchObject) ) != FALSE);
+    return (CancelWaitableTimer( static_cast<HANDLE>(mSyncObject) ) != FALSE);
 }
 
 //////////////////////////////////////////////////////////////////////////

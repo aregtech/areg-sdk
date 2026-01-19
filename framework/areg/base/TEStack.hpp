@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/TEStack.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -25,7 +25,7 @@
 #include "areg/base/TETemplateBase.hpp"
 #include <deque>
 
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 #include "areg/base/IEIOStream.hpp"
 
 #include <algorithm>
@@ -71,31 +71,31 @@ protected:
      *          Receives reference to synchronization object.
      *          It is declared as protected to prevent direct call.
      *          Use TENolockStack or TELockStack objects instead.
-     * \param   synchObject Reference to synchronization object.
+     * \param   syncObject  Reference to synchronization object.
      **/
-    explicit TEStack( IEResourceLock & synchObject );
+    explicit TEStack( IEResourceLock & syncObject );
 
     /**
      * \brief   Initializes the resource lock object and copies elements from given source.
-     * \param   synchObject     The instance of synchronization object
-     * \param   source          The Stack source, which contains elements to copy.
+     * \param   syncObject  The instance of synchronization object
+     * \param   source      The Stack source, which contains elements to copy.
      **/
-    TEStack( IEResourceLock & synchObject, const TEStack<VALUE> & source );
+    TEStack( IEResourceLock & syncObject, const TEStack<VALUE> & source );
 
     /**
      * \brief   Initializes the resource lock object and move elements from given source.
-     * \param   synchObject     The instance of synchronization object
-     * \param   source          The Stack source, which contains elements to move.
+     * \param   syncObject  The instance of synchronization object
+     * \param   source      The Stack source, which contains elements to move.
      **/
-    TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept;
+    TEStack( IEResourceLock & syncObject, TEStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Compiles entries from the given array of objects.
-     * \param   synchObject     The instance of synchronization object
-     * \param   list            The list of entries to copy.
-     * \param   count           The number of entries in the array.
+     * \param   syncObject  The instance of synchronization object
+     * \param   list        The list of entries to copy.
+     * \param   count       The number of entries in the array.
      **/
-    TEStack(IEResourceLock& synchObject, const VALUE* list, uint32_t count);
+    TEStack(IEResourceLock& syncObject, const VALUE* list, uint32_t count);
 
     /**
      * \brief   Destructor. Public
@@ -269,7 +269,7 @@ public:
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
-     *          In case if NolockSynchObject is used, no locking will happen,
+     *          In case if NolockSyncObject is used, no locking will happen,
      *          the function will return immediately and thread will continue to run.
      * \return  Returns true if stack successfully locked
      **/
@@ -277,7 +277,7 @@ public:
 
     /**
      * \brief   If stack previously was locked by thread, it will unlock stack
-     *          In case if NolockSynchObject is used, nothing will happen.
+     *          In case if NolockSyncObject is used, nothing will happen.
      * \return  Returns true if stack successfully unlocked
      **/
     inline bool unlock( void ) const;
@@ -426,7 +426,7 @@ protected:
     std::deque<VALUE>   mValueList;
 
      //! The instance of synchronization object to be used to make object thread-safe.
-    IEResourceLock &    mSynchObject;
+    IEResourceLock &    mSyncObject;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -640,7 +640,7 @@ private:
     /**
      * \brief   Synchronization object simulation.
      **/
-    mutable NolockSynchObject mNoLock;
+    mutable NolockSyncObject mNoLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -651,38 +651,38 @@ private:
 // TEStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-TEStack<VALUE>::TEStack( IEResourceLock & synchObject )
+TEStack<VALUE>::TEStack( IEResourceLock & syncObject )
     : Constless<std::deque<VALUE>>( )
     , mValueList    ( )
-    , mSynchObject  ( synchObject )
+    , mSyncObject   ( syncObject )
 {
 }
 
 template <typename VALUE>
-TEStack<VALUE>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE> & source )
+TEStack<VALUE>::TEStack( IEResourceLock & syncObject, const TEStack<VALUE> & source )
     : Constless<std::deque<VALUE>>( )
     , mValueList    ( )
-    , mSynchObject  ( synchObject )
+    , mSyncObject   ( syncObject )
 {
-    Lock lock(source.mSynchObject);
+    Lock lock(source.mSyncObject);
     mValueList = source.mValueList;
 }
 
 template <typename VALUE>
-TEStack<VALUE>::TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept
+TEStack<VALUE>::TEStack( IEResourceLock & syncObject, TEStack<VALUE> && source ) noexcept
     : Constless<std::deque<VALUE>>( )
     , mValueList    ( )
-    , mSynchObject  ( synchObject )
+    , mSyncObject   ( syncObject )
 {
-    Lock lock(source.mSynchObject);
+    Lock lock(source.mSyncObject);
     mValueList = std::move(source.mValueList);
 }
 
 template<typename VALUE>
-TEStack<VALUE>::TEStack(IEResourceLock& synchObject, const VALUE* list, uint32_t count)
+TEStack<VALUE>::TEStack(IEResourceLock& syncObject, const VALUE* list, uint32_t count)
     : Constless<std::deque<VALUE>>()
-    , mValueList()
-    , mSynchObject(synchObject)
+    , mValueList ()
+    , mSyncObject(syncObject)
 {
     mValueList.resize(count);
     for (uint32_t i = 0; i < count; ++i)
@@ -694,9 +694,9 @@ TEStack<VALUE>::TEStack(IEResourceLock& synchObject, const VALUE* list, uint32_t
 template <typename VALUE>
 TEStack<VALUE>::~TEStack( void )
 {
-    mSynchObject.lock();
+    mSyncObject.lock();
     mValueList.clear();
-    mSynchObject.unlock();
+    mSyncObject.unlock();
 }
 
 template <typename VALUE>
@@ -716,65 +716,65 @@ inline TEStack<VALUE> & TEStack<VALUE>::operator = ( TEStack<VALUE> && source ) 
 template <typename VALUE>
 inline const VALUE& TEStack<VALUE>::operator [] (STACKPOS atPosition) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return (*atPosition);
 }
 
 template <typename VALUE>
 inline VALUE& TEStack<VALUE>::operator [] (STACKPOS atPosition)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return (*atPosition);
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::operator == (const TEStack<VALUE>& other) const
 {
-    Lock lock(mSynchObject);
-    Lock lockOther(other.mSynchObject);
+    Lock lock(mSyncObject);
+    Lock lockOther(other.mSyncObject);
     return (mValueList == other.mValueList);
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::operator != (const TEStack<VALUE>& other) const
 {
-    Lock lock(mSynchObject);
-    Lock lockOther(other.mSynchObject);
+    Lock lock(mSyncObject);
+    Lock lockOther(other.mSyncObject);
     return (mValueList != other.mValueList);
 }
 
 template <typename VALUE>
 inline uint32_t TEStack<VALUE>::getSize( void ) const
 {
-    Lock lock( mSynchObject );
+    Lock lock( mSyncObject );
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::isEmpty( void ) const
 {
-    Lock lock( mSynchObject );
+    Lock lock( mSyncObject );
     return mValueList.empty();
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::isFirstPosition(STACKPOS pos) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return (pos == mValueList.begin());
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::isLastPosition(STACKPOS pos) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
 template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition(void) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     auto end = mValueList.end();
     return Constless<std::deque<VALUE>>::iter(mValueList, end);
 }
@@ -782,21 +782,21 @@ inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition(void) c
 template <typename VALUE>
 inline bool TEStack<VALUE>::isValidPosition(STACKPOS pos) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return (pos != mValueList.end());
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::isInvalidPosition(STACKPOS pos) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return (pos == mValueList.end());
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::checkPosition(STACKPOS pos) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
         ++it;
@@ -825,21 +825,21 @@ inline const std::deque<VALUE>& TEStack<VALUE>::getData(void) const
 template <typename VALUE>
 inline void TEStack<VALUE>::clear(void)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.clear();
 }
 
 template <typename VALUE>
 inline void TEStack<VALUE>::freeExtra(void)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.shrink_to_fit();
 }
 
 template <typename VALUE>
 inline void TEStack<VALUE>::release(void)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.clear();
     mValueList.shrink_to_fit();
 }
@@ -847,41 +847,41 @@ inline void TEStack<VALUE>::release(void)
 template <typename VALUE>
 inline bool TEStack<VALUE>::lock( void ) const
 {
-    return mSynchObject.lock(NECommon::WAIT_INFINITE);
+    return mSyncObject.lock(NECommon::WAIT_INFINITE);
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::unlock( void ) const
 {
-    return mSynchObject.unlock();
+    return mSyncObject.unlock();
 }
 
 template<typename VALUE >
 inline void TEStack< VALUE >::resize(uint32_t newSize)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
 }
 
 template <typename VALUE>
 inline const VALUE & TEStack<VALUE>::firstEntry( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return mValueList.front();
 }
 
 template <typename VALUE>
 inline const VALUE & TEStack<VALUE>::lastEntry( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return mValueList.back();
 }
 
 template <typename VALUE>
 inline uint32_t TEStack<VALUE>::copy( const TEStack<VALUE> & source )
 {
-    Lock lock(mSynchObject);
-    Lock lockSource(source.mSynchObject);
+    Lock lock(mSyncObject);
+    Lock lockSource(source.mSyncObject);
 
     mValueList = source.mValueList;
     return static_cast<uint32_t>(mValueList.size());
@@ -890,8 +890,8 @@ inline uint32_t TEStack<VALUE>::copy( const TEStack<VALUE> & source )
 template <typename VALUE>
 inline uint32_t TEStack<VALUE>::move( TEStack<VALUE> && source ) noexcept
 {
-    Lock lock(mSynchObject);
-    Lock lockSource(source.mSynchObject);
+    Lock lock(mSyncObject);
+    Lock lockSource(source.mSyncObject);
 
     mValueList = std::move(source.mValueList);
     return static_cast<uint32_t>(mValueList.size());
@@ -900,7 +900,7 @@ inline uint32_t TEStack<VALUE>::move( TEStack<VALUE> && source ) noexcept
 template <typename VALUE>
 inline uint32_t TEStack<VALUE>::pushLast( const VALUE & newElement )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.push_back(newElement);
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -908,7 +908,7 @@ inline uint32_t TEStack<VALUE>::pushLast( const VALUE & newElement )
 template <typename VALUE>
 inline uint32_t TEStack<VALUE>::pushLast(VALUE && newElement)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.push_back(std::move(newElement));
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -916,7 +916,7 @@ inline uint32_t TEStack<VALUE>::pushLast(VALUE && newElement)
 template <typename VALUE>
 inline uint32_t TEStack<VALUE>::pushFirst( const VALUE & newElement )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.push_front(newElement);
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -924,7 +924,7 @@ inline uint32_t TEStack<VALUE>::pushFirst( const VALUE & newElement )
 template <typename VALUE>
 inline uint32_t TEStack<VALUE>::pushFirst(VALUE && newElement)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mValueList.push_front(std::move(newElement));
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -932,7 +932,7 @@ inline uint32_t TEStack<VALUE>::pushFirst(VALUE && newElement)
 template <typename VALUE>
 VALUE TEStack<VALUE>::popFirst( void )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
 
     VALUE result = mValueList.front();
     mValueList.pop_front();
@@ -942,7 +942,7 @@ VALUE TEStack<VALUE>::popFirst( void )
 template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE& Value) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     auto it = std::find(mValueList.begin(), mValueList.end(), Value);
     return Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
@@ -950,7 +950,7 @@ inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE& Value
 template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE & Value, STACKPOS searchAfter ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     STACKPOS end = invalidPosition();
     return (searchAfter != end ? std::find(++searchAfter, end, Value) : end);
 }
@@ -958,7 +958,7 @@ inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE & Valu
 template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::firstPosition( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     auto it = mValueList.begin();
     return Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
@@ -966,7 +966,7 @@ inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::firstPosition( void ) c
 template <typename VALUE>
 inline const VALUE & TEStack<VALUE>::getAt( const STACKPOS pos ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
 
     ASSERT(pos != mValueList.end());
     return (*pos);
@@ -975,7 +975,7 @@ inline const VALUE & TEStack<VALUE>::getAt( const STACKPOS pos ) const
 template <typename VALUE>
 inline VALUE & TEStack<VALUE>::getAt( STACKPOS pos )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
 
     ASSERT(pos != mValueList.end());
     return (*pos);
@@ -984,7 +984,7 @@ inline VALUE & TEStack<VALUE>::getAt( STACKPOS pos )
 template <typename VALUE>
 inline const VALUE & TEStack<VALUE>::valueAtPosition( const STACKPOS atPosition ) const
 {
-    Lock lock( mSynchObject );
+    Lock lock( mSyncObject );
 
     ASSERT( atPosition != mValueList.end( ) );
     return (*atPosition);
@@ -993,7 +993,7 @@ inline const VALUE & TEStack<VALUE>::valueAtPosition( const STACKPOS atPosition 
 template <typename VALUE>
 inline VALUE & TEStack<VALUE>::valueAtPosition( STACKPOS atPosition )
 {
-    Lock lock( mSynchObject );
+    Lock lock( mSyncObject );
 
     ASSERT( atPosition != mValueList.end( ) );
     return (*atPosition);
@@ -1002,7 +1002,7 @@ inline VALUE & TEStack<VALUE>::valueAtPosition( STACKPOS atPosition )
 template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::nextPosition( STACKPOS pos ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
 
     ASSERT(pos != mValueList.end());
     return (++pos);
@@ -1187,7 +1187,7 @@ inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TEStack<VALUE> 
 template<typename V>
 const IEInStream & operator >> ( const IEInStream & stream, TEStack<V> & input )
 {
-    Lock lock(input.mSynchObject);
+    Lock lock(input.mSyncObject);
 
     input.mValueList.clear();
     uint32_t size = 0;
@@ -1204,7 +1204,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEStack<V> & input )
 template<typename V>
 IEOutStream & operator << ( IEOutStream & stream, const TEStack<V> & output )
 {
-    Lock lock(output.mSynchObject);
+    Lock lock(output.mSyncObject);
 
     uint32_t size = output.getSize();
     stream << size;

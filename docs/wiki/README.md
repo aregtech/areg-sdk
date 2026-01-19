@@ -193,6 +193,6 @@ See something is wrong, unclear or need a help?
 Submit a change, open a discussion or ask Areg SDK community a question.
 ```
 
-© 2023–2024 Aregtech  
+© 2023–2026 Aregtech  
 https://www.areg.tech  
 Contact: info[at]areg.tech

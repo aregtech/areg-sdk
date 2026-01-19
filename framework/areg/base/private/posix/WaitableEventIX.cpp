@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableEventIX.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -21,16 +21,16 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableEventIX class implementation
 //////////////////////////////////////////////////////////////////////////
 
 WaitableEventIX::WaitableEventIX( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
-    : IEWaitableBaseIX  ( NESynchTypesIX::eSynchObject::SoWaitEvent, true, asciiName )
+    : IEWaitableBaseIX  ( NESyncTypesIX::eSyncObject::SoWaitEvent, true, asciiName )
 
-    , mEventReset       ( isAutoReset ? NESynchTypesIX::eEventResetInfo::EventResetAutomatic : NESynchTypesIX::eEventResetInfo::EventResetManual )
+    , mEventReset       ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
     , mIsSignaled       ( isInitSignaled )
 {
 }
@@ -64,7 +64,7 @@ bool WaitableEventIX::setEvent(void)
 
     if (sendSignal)
     {
-        SynchLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitIX::eventSignaled(*this);
     }
 
     return result;
@@ -79,7 +79,7 @@ bool WaitableEventIX::resetEvent(void)
 #ifdef DEBUG
         if (mIsSignaled)
         {
-            if (NESynchTypesIX::eEventResetInfo::EventResetAutomatic == mEventReset)
+            if (NESyncTypesIX::eEventResetInfo::EventResetAutomatic == mEventReset)
             {
                 OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
             }
@@ -112,7 +112,7 @@ void WaitableEventIX::pulseEvent(void)
                 mIsSignaled = true;
                 lock.unlock();
 
-                SynchLockAndWaitIX::eventSignaled(*this);
+                SyncLockAndWaitIX::eventSignaled(*this);
 
                 lock.lock();
                 mIsSignaled = false;
@@ -141,9 +141,9 @@ void WaitableEventIX::notifyReleasedThreads(int numThreads)
 {
     ObjectLockIX lock(*this);
 
-    if ((mEventReset == NESynchTypesIX::eEventResetInfo::EventResetAutomatic) && (numThreads > 0))
+    if ((mEventReset == NESyncTypesIX::eEventResetInfo::EventResetAutomatic) && (numThreads > 0))
     {
-        OUTPUT_DBG("There were [ %d ] released threads, automatically reseting waitable event [ %p ].", numThreads, this);
+        OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
         mIsSignaled = false;
     }
 }

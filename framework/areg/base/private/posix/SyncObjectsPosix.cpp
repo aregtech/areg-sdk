@@ -6,14 +6,14 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/ESynchObjectsWin.cpp
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/private/posix/SyncObjectsPosix.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Synchronization objects. POSIX specific methods
  *
  ************************************************************************/
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
 #if  defined(_POSIX) || defined(POSIX)
 
@@ -21,35 +21,35 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/IESynchObject.hpp"
+#include "areg/base/IESyncObject.hpp"
 #include "areg/base/private/posix/WaitableEventIX.hpp"
 #include "areg/base/private/posix/WaitableMutexIX.hpp"
 #include "areg/base/private/posix/WaitableSemaphoreIX.hpp"
 #include "areg/base/private/posix/CriticalSectionIX.hpp"
 #include "areg/base/private/posix/WaitableTimerIX.hpp"
 #include "areg/base/private/posix/SpinLockIX.hpp"
-#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 
 #include <string.h>
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class implementation
+// IESyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class methods
+// IESyncObject class methods
 //////////////////////////////////////////////////////////////////////////
 
-void IESynchObject::_osDestroySynchObject( void )
+void IESyncObject::_osDestroySyncObject( void )
 {
-    if (mSynchObject != nullptr)
+    if (mSyncObject != nullptr)
     {
-        IESynchObjectBaseIX * synchObject = reinterpret_cast<IESynchObjectBaseIX *>(mSynchObject);
-        mSynchObject = nullptr;
+        IESyncObjectBaseIX * syncObject = reinterpret_cast<IESyncObjectBaseIX *>(mSyncObject);
+        mSyncObject = nullptr;
 
-        synchObject->freeResources();
-        delete synchObject;
+        syncObject->freeResources();
+        delete syncObject;
     }
 }
 
@@ -59,17 +59,17 @@ void IESynchObject::_osDestroySynchObject( void )
 
 void Mutex::_osCreateMutex( bool initLock )
 {
-    mSynchObject = DEBUG_NEW WaitableMutexIX(initLock, "POSIX_Mutex");
+    mSyncObject = DEBUG_NEW WaitableMutexIX(initLock, "POSIX_Mutex");
 }
 
 bool Mutex::_osLockMutex( unsigned int timeout )
 {
     bool result{ false };
-    WaitableMutexIX * synchMutex{ reinterpret_cast<WaitableMutexIX *>(mSynchObject) };
+    WaitableMutexIX * syncMutex{ reinterpret_cast<WaitableMutexIX *>(mSyncObject) };
 
-    if ( NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout) )
+    if ( NESyncTypesIX::SyncObject0 == SyncLockAndWaitIX::waitForSingleObject(*syncMutex, timeout) )
     {
-        mOwnerThreadId.store(NEUtilities::convToNum<id_type, pthread_t>(synchMutex->getOwningThreadId()));
+        mOwnerThreadId.store(NEUtilities::convToNum<id_type, pthread_t>(syncMutex->getOwningThreadId()));
         result = true;
     }
 
@@ -79,9 +79,9 @@ bool Mutex::_osLockMutex( unsigned int timeout )
 bool Mutex::_osUnlockMutex( void )
 {
     bool result{ false };
-    WaitableMutexIX * synchMutex{ reinterpret_cast<WaitableMutexIX *>(mSynchObject) };
+    WaitableMutexIX * syncMutex{ reinterpret_cast<WaitableMutexIX *>(mSyncObject) };
 
-    if ( synchMutex->releaseMutex() )
+    if ( syncMutex->releaseMutex() )
     {
         mOwnerThreadId.store(0);
         result = true;
@@ -91,38 +91,38 @@ bool Mutex::_osUnlockMutex( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchEvent class implementation
+// SyncEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void SynchEvent::_osCreateEvent( bool initLock )
+void SyncEvent::_osCreateEvent( bool initLock )
 {
-    mSynchObject    = static_cast<void *>( DEBUG_NEW WaitableEventIX(!initLock, mAutoReset, "POSIX_Event") );
+    mSyncObject    = static_cast<void *>( DEBUG_NEW WaitableEventIX(!initLock, mAutoReset, "POSIX_Event") );
 }
 
-bool SynchEvent::_osUnlockEvent( void * eventHandle )
+bool SyncEvent::_osUnlockEvent( void * eventHandle )
 {
     return reinterpret_cast<WaitableEventIX *>(eventHandle)->setEvent();
 }
 
-bool SynchEvent::_osLockEvent(unsigned int timeout)
+bool SyncEvent::_osLockEvent(unsigned int timeout)
 {
-    WaitableEventIX * synchEvent{ reinterpret_cast<WaitableEventIX *>(mSynchObject) };
-    return (NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchEvent, timeout));
+    WaitableEventIX * syncEvent{ reinterpret_cast<WaitableEventIX *>(mSyncObject) };
+    return (NESyncTypesIX::SyncObject0 == SyncLockAndWaitIX::waitForSingleObject(*syncEvent, timeout));
 }
 
-bool SynchEvent::_osSetEvent( void )
+bool SyncEvent::_osSetEvent( void )
 {
-    return reinterpret_cast<WaitableEventIX *>(mSynchObject)->setEvent();
+    return reinterpret_cast<WaitableEventIX *>(mSyncObject)->setEvent();
 }
 
-bool SynchEvent::_osResetEvent( void )
+bool SyncEvent::_osResetEvent( void )
 {
-    return reinterpret_cast<WaitableEventIX *>(mSynchObject)->resetEvent();
+    return reinterpret_cast<WaitableEventIX *>(mSyncObject)->resetEvent();
 }
 
-void SynchEvent::_osPulseEvent( void )
+void SyncEvent::_osPulseEvent( void )
 {
-    reinterpret_cast<WaitableEventIX *>(mSynchObject)->pulseEvent();
+    reinterpret_cast<WaitableEventIX *>(mSyncObject)->pulseEvent();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -131,23 +131,23 @@ void SynchEvent::_osPulseEvent( void )
 
 void Semaphore::_osCreateSemaphore( )
 {
-    mSynchObject = DEBUG_NEW WaitableSemaphoreIX(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
+    mSyncObject = DEBUG_NEW WaitableSemaphoreIX(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
 }
 
 void Semaphore::_osReleaseSemaphore( void )
 {
-    static_cast<WaitableSemaphoreIX *>(mSynchObject)->releaseSemaphore( );
+    static_cast<WaitableSemaphoreIX *>(mSyncObject)->releaseSemaphore( );
 }
 
 bool Semaphore::_osLock( unsigned int timeout )
 {
-    WaitableSemaphoreIX * synchSemaphore{ static_cast<WaitableSemaphoreIX *>(mSynchObject) };
-    return (NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject( *synchSemaphore, timeout ));
+    WaitableSemaphoreIX * syncSemaphore{ static_cast<WaitableSemaphoreIX *>(mSyncObject) };
+    return (NESyncTypesIX::SyncObject0 == SyncLockAndWaitIX::waitForSingleObject( *syncSemaphore, timeout ));
 }
 
 bool Semaphore::_osUnlock( void )
 {
-    return static_cast<WaitableSemaphoreIX *>(mSynchObject)->releaseSemaphore( );
+    return static_cast<WaitableSemaphoreIX *>(mSyncObject)->releaseSemaphore( );
 }
 
 
@@ -157,7 +157,7 @@ bool Semaphore::_osUnlock( void )
 
 void CriticalSection::_osCreateCriticalSection( void )
 {
-    mSynchObject = static_cast<void *>( DEBUG_NEW CriticalSectionIX(false) );
+    mSyncObject = static_cast<void *>( DEBUG_NEW CriticalSectionIX(false) );
 }
 
 void CriticalSection::_osReleaseCriticalSection( void )
@@ -167,18 +167,18 @@ void CriticalSection::_osReleaseCriticalSection( void )
 
 bool CriticalSection::_osLock( void )
 {
-    return reinterpret_cast<CriticalSectionIX *>(mSynchObject)->lock();
+    return reinterpret_cast<CriticalSectionIX *>(mSyncObject)->lock();
 }
 
 bool CriticalSection::_osUnlock( void )
 {
-    reinterpret_cast<CriticalSectionIX *>(mSynchObject)->unlock( );
+    reinterpret_cast<CriticalSectionIX *>(mSyncObject)->unlock( );
     return true;
 }
 
 bool CriticalSection::_osTryLock( void )
 {
-    return reinterpret_cast<CriticalSectionIX *>(mSynchObject)->tryLock();
+    return reinterpret_cast<CriticalSectionIX *>(mSyncObject)->tryLock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -187,30 +187,30 @@ bool CriticalSection::_osTryLock( void )
 #if 0 // TODO: Probably don't need anymore and should be removed
 
 SpinLock::SpinLock( void )
-    : IEResourceLock( IESynchObject::eSyncObject::SoSpinlock )
+    : IEResourceLock( IESyncObject::eSyncObject::SoSpinlock )
 {
-    mSynchObject    = DEBUG_NEW SpinLockIX( );
+    mSyncObject    = DEBUG_NEW SpinLockIX( );
 }
 
 SpinLock::~SpinLock( void )
 {
-    delete reinterpret_cast<SpinLockIX *>(mSynchObject);
-    mSynchObject = nullptr;
+    delete reinterpret_cast<SpinLockIX *>(mSyncObject);
+    mSyncObject = nullptr;
 }
 
 bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
 {
-    return reinterpret_cast<SpinLockIX *>(mSynchObject)->lock();
+    return reinterpret_cast<SpinLockIX *>(mSyncObject)->lock();
 }
 
 bool SpinLock::unlock( void )
 {
-    return reinterpret_cast<SpinLockIX *>(mSynchObject)->unlock( );
+    return reinterpret_cast<SpinLockIX *>(mSyncObject)->unlock( );
 }
 
 bool SpinLock::tryLock( void )
 {
-    return reinterpret_cast<SpinLockIX *>(mSynchObject)->tryLock( );
+    return reinterpret_cast<SpinLockIX *>(mSyncObject)->tryLock( );
 }
 #endif //0
 
@@ -220,7 +220,7 @@ bool SpinLock::tryLock( void )
 
 void ResourceLock::_osCreateResourceLock( bool initLock )
 {
-    mSynchObject  = DEBUG_NEW MutexIX(initLock, "ResourceLock");
+    mSyncObject  = DEBUG_NEW MutexIX(initLock, "ResourceLock");
 }
 
 void ResourceLock::_osReleaseResourceLock( void )
@@ -230,47 +230,47 @@ void ResourceLock::_osReleaseResourceLock( void )
 
 bool ResourceLock::_osLock(unsigned int timeout)
 {
-    return reinterpret_cast<MutexIX *>(mSynchObject)->lock(timeout);
+    return reinterpret_cast<MutexIX *>(mSyncObject)->lock(timeout);
 }
 
 bool ResourceLock::_osUnlock(void)
 {
-    reinterpret_cast<MutexIX *>(mSynchObject)->unlock( );
+    reinterpret_cast<MutexIX *>(mSyncObject)->unlock( );
     return true;
 }
 
 bool ResourceLock::_osTryLock(void)
 {
-    return reinterpret_cast<MutexIX *>(mSynchObject)->tryLock();
+    return reinterpret_cast<MutexIX *>(mSyncObject)->tryLock();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchTimer implementation
+// SyncTimer implementation
 //////////////////////////////////////////////////////////////////////////
 
-void SynchTimer::_osCreateTimer( bool /* isSteady */ )
+void SyncTimer::_osCreateTimer( bool /* isSteady */ )
 {
-    mSynchObject= static_cast<void *>(DEBUG_NEW WaitableTimerIX( mIsAutoReset, "POSIX_WaitableTimer" ));
+    mSyncObject= static_cast<void *>(DEBUG_NEW WaitableTimerIX( mIsAutoReset, "POSIX_WaitableTimer" ));
 }
 
-void SynchTimer::_osReleaseTime( void )
+void SyncTimer::_osReleaseTime( void )
 {
-    reinterpret_cast<WaitableTimerIX *>(mSynchObject)->cancelTimer( );
+    reinterpret_cast<WaitableTimerIX *>(mSyncObject)->cancelTimer( );
 }
 
-bool SynchTimer::_osLock( unsigned int timeout )
+bool SyncTimer::_osLock( unsigned int timeout )
 {
-    return (SynchLockAndWaitIX::waitForSingleObject( *reinterpret_cast<IEWaitableBaseIX *>(mSynchObject), timeout ) == NESynchTypesIX::SynchObject0);
+    return (SyncLockAndWaitIX::waitForSingleObject( *reinterpret_cast<IEWaitableBaseIX *>(mSyncObject), timeout ) == NESyncTypesIX::SyncObject0);
 }
 
-bool SynchTimer::_osSetTimer( void )
+bool SyncTimer::_osSetTimer( void )
 {
-    return reinterpret_cast<WaitableTimerIX *>(mSynchObject)->setTimer( mTimeout, mIsPeriodic );
+    return reinterpret_cast<WaitableTimerIX *>(mSyncObject)->setTimer( mTimeout, mIsPeriodic );
 }
 
-bool SynchTimer::_osCancelTimer( void )
+bool SyncTimer::_osCancelTimer( void )
 {
-    return reinterpret_cast<WaitableTimerIX *>(mSynchObject)->cancelTimer( );
+    return reinterpret_cast<WaitableTimerIX *>(mSyncObject)->cancelTimer( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -279,20 +279,20 @@ bool SynchTimer::_osCancelTimer( void )
 
 int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
 {
-    IEWaitableBaseIX * synchHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
+    IEWaitableBaseIX * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i )
     {
-        synchHandles[i] = reinterpret_cast<IEWaitableBaseIX *>(mSyncObjArray[i]->getHandle( ));
+        syncHandles[i] = reinterpret_cast<IEWaitableBaseIX *>(mSyncObjArray[i]->getHandle( ));
     }
 
     int index = MultiLock::LOCK_INDEX_INVALID;
     do
     {
-        int result = SynchLockAndWaitIX::waitForMultipleObjects(synchHandles, mSizeCount, waitForAll, timeout);
+        int result = SyncLockAndWaitIX::waitForMultipleObjects(syncHandles, mSizeCount, waitForAll, timeout);
 
         switch (result)
         {
-        case static_cast<int>(NESynchTypesIX::SynchObjectAll):
+        case static_cast<int>(NESyncTypesIX::SyncObjectAll):
             index = MultiLock::LOCK_INDEX_ALL;
             for ( int i = 0; i < mSizeCount; ++ i)
             {
@@ -300,7 +300,7 @@ int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, boo
             }
             break;
 
-        case static_cast<int>(NESynchTypesIX::SynchAsynchSignal):
+        case static_cast<int>(NESyncTypesIX::SyncAsyncSignal):
                 if (isAlertable)
                 {
                     index = MultiLock::LOCK_INDEX_COMPLETION;
@@ -312,12 +312,12 @@ int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, boo
                 }
             break;
 
-        case static_cast<int>(NESynchTypesIX::SynchObjectTimeout):
+        case static_cast<int>(NESyncTypesIX::SyncObjectTimeout):
             index = MultiLock::LOCK_INDEX_TIMEOUT;
             break;
 
         default:
-            if ( (result >= static_cast<int>(NESynchTypesIX::SynchObject0)) && (result < mSizeCount) )
+            if ( (result >= static_cast<int>(NESyncTypesIX::SyncObject0)) && (result < mSizeCount) )
             {
                 index = result;
                 mLockedStates[result] = MultiLock::eLockedState::StateLocked;

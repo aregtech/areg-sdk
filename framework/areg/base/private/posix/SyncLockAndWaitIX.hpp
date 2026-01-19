@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
+#ifndef AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -8,8 +8,8 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/SynchLockAndWaitIX.hpp
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/private/posix/SyncLockAndWaitIX.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Lock and wait object for POSIX synchronization objects.
@@ -24,8 +24,8 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/NECommon.hpp"
-#include "areg/base/private/posix/NESynchTypesIX.hpp"
-#include "areg/base/IESynchObject.hpp"
+#include "areg/base/private/posix/NESyncTypesIX.hpp"
+#include "areg/base/IESyncObject.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/TELinkedList.hpp"
 #include "areg/base/TEFixedArray.hpp"
@@ -38,11 +38,10 @@
   * dependencies.
   ************************************************************************/
 class IEWaitableBaseIX;
-class SynchLockAndWaitIX;
-class SynchLockAndWaitIX;
+class SyncLockAndWaitIX;
 
 //////////////////////////////////////////////////////////////////////////
-// SynchLockAndWaitIX class declaration
+// SyncLockAndWaitIX class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   LockAndWait object that makes locking of single and multiple objects and waits until
@@ -51,12 +50,12 @@ class SynchLockAndWaitIX;
  *          equal to NECommon::MAXIMUM_WAITING_OBJECTS.
  *          Use static methods for waiting functionalities. The internal methods are hidden.
  **/
-class SynchLockAndWaitIX
+class SyncLockAndWaitIX
 {
     /**
      * \brief   The list of LockAndWait objects.
      **/
-    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *>;
+    using ListLockAndWait       = TELinkedList<SyncLockAndWaitIX *>;
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
@@ -68,7 +67,7 @@ class SynchLockAndWaitIX
     /**
      * \brief   The helper class of resource list map that contains helper functions implementation.
      **/
-    class ImplResourceListMap : public TEResourceListMapImpl<IEWaitableBaseIX *, SynchLockAndWaitIX, ListLockAndWait>
+    class ImplResourceListMap : public TEResourceListMapImpl<IEWaitableBaseIX *, SyncLockAndWaitIX, ListLockAndWait>
     {
     public:
         /**
@@ -88,7 +87,7 @@ class SynchLockAndWaitIX
          * \param   List        The list of resource objects.
          * \param   Resource    The resource object to add to the list.
          **/
-        inline void implAddResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
+        inline void implAddResource( ListLockAndWait & List, SyncLockAndWaitIX * Resource )
         {
         	List.pushLast(Resource);
         }
@@ -98,7 +97,7 @@ class SynchLockAndWaitIX
          * \param   List        The list of resource objects.
          * \param   Resource    The resource object to remove from the list.
          **/
-        inline bool implRemoveResource( ListLockAndWait & List, SynchLockAndWaitIX * Resource )
+        inline bool implRemoveResource( ListLockAndWait & List, SyncLockAndWaitIX * Resource )
         {
         	return List.removeEntry( Resource );
         }
@@ -109,7 +108,7 @@ class SynchLockAndWaitIX
      *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
      *          objects in the entire map are not unique, but should be unique in the list.
      **/
-    using SynchResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SynchLockAndWaitIX *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
+    using SyncResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SyncLockAndWaitIX *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // The resource map for timer.
@@ -117,16 +116,16 @@ class SynchLockAndWaitIX
     /**
      * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
      **/
-    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *>;
+    using MapWaitID         = TEIdHashMap<SyncLockAndWaitIX *>;
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
-    using ImplWaitIDResource= TEResourceMapImpl<ptr_type, SynchLockAndWaitIX *>;
+    using ImplWaitIDResource= TEResourceMapImpl<ptr_type, SyncLockAndWaitIX *>;
     /**
      * \brief   Resource map of waitable where the keys are pthread_t (thread ID) and the values are
      *          LockAndWait objects. It is used in the timer.
      **/
-    using MapWaitIDResource = TELockResourceMap<ptr_type, SynchLockAndWaitIX *, MapWaitID, ImplWaitIDResource>;
+    using MapWaitIDResource = TELockResourceMap<ptr_type, SyncLockAndWaitIX *, MapWaitID, ImplWaitIDResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
@@ -139,7 +138,7 @@ class SynchLockAndWaitIX
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   SynchLockAndWaitIX::eWaitType
+     * \brief   SyncLockAndWaitIX::eWaitType
      *          Describes the waiting type.
      **/
     typedef enum class E_WaitType
@@ -150,7 +149,7 @@ private:
     } eWaitType;
 
     /**
-     * \brief   SynchLockAndWaitIX::eEventFired
+     * \brief   SyncLockAndWaitIX::eEventFired
      *          Describes the fired state of each event.
      **/
     typedef enum class E_EventFired
@@ -176,17 +175,17 @@ public:
      *          of some waitable such as Mutex, this call takes the ownership. in case of Synchronization Events
      *          this may reset signaled state or leave in signaled state, depending on Synchronization Event types.
      *          For more details see the description of each waitable object.
-     * \param   synchWait   The waitable object to check the signaled state.
+     * \param   syncWait    The waitable object to check the signaled state.
      * \param   msTimeout   The timeout in milliseconds to wait until waitable is signaled.
      *                      If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                      Any other value indicates timeout to wait.
      * \return  It returns one of following values:
-     *              - NESynchTypesIX::SynchObject0 if waitable was signaled;
-     *              - NESynchTypesIX::SynchObjectTimeout if waiting timeout is expired;
-     *              - NESynchTypesIX::SynchWaitInterrupted if waiting was interrupted by such event like timer;
-     *              - NESynchTypesIX::SynchObject0Error if error happened. For example, the waitable is invalidated.
+     *              - NESyncTypesIX::SyncObject0 if waitable was signaled;
+     *              - NESyncTypesIX::SyncObjectTimeout if waiting timeout is expired;
+     *              - NESyncTypesIX::SyncWaitInterrupted if waiting was interrupted by such event like timer;
+     *              - NESyncTypesIX::SyncObject0Error if error happened. For example, the waitable is invalidated.
      **/
-    static int waitForSingleObject( IEWaitableBaseIX & synchWait, unsigned int msTimeout = NECommon::WAIT_INFINITE );
+    static int waitForSingleObject( IEWaitableBaseIX & syncWait, unsigned int msTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Call to lock and wait the list of synchronization objects until one or all objects are signaled.
@@ -206,42 +205,42 @@ public:
      *                          If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                          Any other value indicates timeout to wait.
      * \return  It returns one of following values:
-     *              - NESynchTypesIX::SynchObject0 + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
-     *              - NESynchTypesIX::SynchObjectAll if 'waitAll' flag is true and all waitables are signaled.
-     *              - NESynchTypesIX::SynchObjectTimeout if waiting timeout is expired;
-     *              - NESynchTypesIX::SynchWaitInterrupted if waiting was interrupted by such event like timer;
-     *              - NESynchTypesIX::SynchObject0Error + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
+     *              - NESyncTypesIX::SyncObject0 + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
+     *              - NESyncTypesIX::SyncObjectAll if 'waitAll' flag is true and all waitables are signaled.
+     *              - NESyncTypesIX::SyncObjectTimeout if waiting timeout is expired;
+     *              - NESyncTypesIX::SyncWaitInterrupted if waiting was interrupted by such event like timer;
+     *              - NESyncTypesIX::SyncObject0Error + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
      **/
     static int waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
 
     /**
      * \brief   Called by waitable object to indicate that it is in signaled state.
-     * \param   synchWaitable   The waitable object that is in signaled state.
+     * \param   syncWaitable    The waitable object that is in signaled state.
      * \return  Returns the number of threads that are notified.
      *          In case of Mutex this should be one. In case of Synchronization Event there can be multiple threads.
      *          For more details see description of each waitable object
      **/
-    static int eventSignaled( IEWaitableBaseIX & synchWaitable );
+    static int eventSignaled( IEWaitableBaseIX & syncWaitable );
 
     /**
      * \brief   Called by waitable object to indicate wait failure. For example, when waitable object is invalidated.
      *          This call unlocks all threads that wait for event and the waiting return indicates error.
-     * \param   synchWaitable   The waitable object that should indicate error.
+     * \param   syncWaitable    The waitable object that should indicate error.
      **/
-    static void eventFailed( IEWaitableBaseIX & synchWaitable );
+    static void eventFailed( IEWaitableBaseIX & syncWaitable );
 
     /**
      * \brief   Call to remove waitable object from the waiting list.
-     * \param   synchWaitable   The waitable object to remove from the list.
+     * \param   syncWaitable    The waitable object to remove from the list.
      **/
-    static void eventRemove( IEWaitableBaseIX & synchWaitable );
+    static void eventRemove( IEWaitableBaseIX & syncWaitable );
 
     /**
      * \brief   Checks whether the waitable is registered or not.
-     * \param   synchWaitable   Waitable to check the registration.
+     * \param   syncWaitable    Waitable to check the registration.
      * \return  Returns true if waitable is registered.
      **/
-    static bool isWaitableRegistered( IEWaitableBaseIX & synchWaitable );
+    static bool isWaitableRegistered( IEWaitableBaseIX & syncWaitable );
 
     /**
      * \brief   Notifies the asynchronous execution within a locked thread. This call breaks waiting process of thread
@@ -249,7 +248,7 @@ public:
      * \param   threadId    The ID of the thread that is going to break waiting.
      * \return  Returns true if operation succeeded. The operation can fail if thread is not locked.
      **/
-    static bool notifyAsynchSignal( id_type threadId );
+    static bool notifyAsyncSignal( id_type threadId );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -263,12 +262,12 @@ private:
      *                          or it should wait for any event to be in signaled state.
      * \param   msTimeout       Initializes the timeout in milliseconds to wait.
      **/
-    SynchLockAndWaitIX( IEWaitableBaseIX ** listWaitables, int count, NESynchTypesIX::eMatchCondition matchCondition, unsigned int msTimeout );
+    SyncLockAndWaitIX( IEWaitableBaseIX ** listWaitables, int count, NESyncTypesIX::eMatchCondition matchCondition, unsigned int msTimeout );
 
     /**
      * \brief   Destructor.
      **/
-    ~SynchLockAndWaitIX( void );
+    ~SyncLockAndWaitIX( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -277,12 +276,12 @@ private:
     /**
      * \brief   Returns static list of waitables, where keys are id_type and values are waitables.
      **/
-    static SynchLockAndWaitIX::MapWaitIDResource& _mapWaitResourceIds(void);
+    static SyncLockAndWaitIX::MapWaitIDResource& _mapWaitResourceIds(void);
 
     /**
      * \brief   Returns the static instance of synchronization resource map.
      */
-    static SynchResourceMapIX& _mapSynchResources(void);
+    static SyncResourceMapIX& _mapSyncResources(void);
 
     /**
      * \brief   Returns true if no event in the list is fired.
@@ -292,12 +291,12 @@ private:
     /**
      * \brief   Initializes internal POSIX objects. Returns true if initialization succeeded.
      **/
-    inline bool _initPosixSynchObjects( void );
+    inline bool _initPosixSyncObjects( void );
 
     /**
      * \brief   Releases internal POSIX objects to free resources.
      **/
-    inline void _releasePosixSynchObjects( void );
+    inline void _releasePosixSyncObjects( void );
 
     /**
      * \brief   Returns true if object is valid. The LockAndWait object is valid if internal POSIX objects are
@@ -325,9 +324,9 @@ private:
 
     /**
      * \brief   Returns the index of registered waitable in the list.
-     * \param   synchWaitable   The instance of waitable object to lookup in the list.
+     * \param   syncWaitable   The instance of waitable object to lookup in the list.
      **/
-    inline int _getWaitableIndex( const IEWaitableBaseIX & synchWaitable ) const;
+    inline int _getWaitableIndex( const IEWaitableBaseIX & syncWaitable ) const;
 
     /**
      * \brief   Called to notify the event has been fired.
@@ -342,17 +341,17 @@ private:
 
     /**
      * \brief   Checks whether the waitable event is fired or not.
-     * \param   synchObject The waitable object to check.
+     * \param   syncObject The waitable object to check.
      * \return  Returns one of event fired state.
      **/
-    NESynchTypesIX::eSynchObjectFired _checkEventFired( IEWaitableBaseIX & synchObject );
+    NESyncTypesIX::eSyncObjectFired _checkEventFired( IEWaitableBaseIX & syncObject );
 
     /**
      * \brief   Called to notify threads to take fired event ownership.
      * \param   firedEvent  The index of fired event in the list that notifies the threads to take ownership.
      * \return  Returns true if threads are notified or took ownership.
      **/
-    bool _requestOwnership( const NESynchTypesIX::eSynchObjectFired firedEvent );
+    bool _requestOwnership( const NESyncTypesIX::eSyncObjectFired firedEvent );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -361,68 +360,68 @@ private:
     /**
      * \brief   Describes the waiting type. Either should wait for all events or for any.
      **/
-    const eWaitType                         mDescribe;
+    const eWaitType                     mDescribe;
     /**
      * \brief   Describes the lock and wait condition.
      **/
-    const NESynchTypesIX::eMatchCondition   mMatchCondition;
+    const NESyncTypesIX::eMatchCondition   mMatchCondition;
     /**
      * \brief   Timeout in milliseconds to wait when blocks the thread.
      **/
-    const unsigned int                      mWaitTimeout;
+    const unsigned int                  mWaitTimeout;
     /**
      * \brief   The ID of thread that instantiated LockAndWait object.
      **/
-    const pthread_t                         mContext;
+    const pthread_t                     mContext;
     /**
      * \brief   Internal POSIX mutex object to synchronize data access.
      **/
-    mutable pthread_mutex_t                 mPosixMutex;
+    mutable pthread_mutex_t             mPosixMutex;
     /**
      * \brief   The POSIX mutex validity flag.
      **/
-    mutable bool                            mMutexValid;
+    mutable bool                        mMutexValid;
     /**
      * \brief   Internal POSIX mutex attribute to initialize mutex.
      **/
-    mutable pthread_mutexattr_t             mPosixMutexAttr;
+    mutable pthread_mutexattr_t         mPosixMutexAttr;
     /**
      * \brief   The POSIX mutex attribute validity flag.
      **/
-    mutable bool                            mMutexAttrValid;
+    mutable bool                        mMutexAttrValid;
     /**
      * \brief   Internal POSIX conditional variable.
      **/
-    pthread_cond_t                          mCondVariable;
+    pthread_cond_t                      mCondVariable;
     /**
      * \brief   The POSIX conditional variable validity flag.
      **/
-    bool                                    mCondVarValid;
+    bool                                mCondVarValid;
     /**
      * \brief   Internal POSIX conditional variable attribute
      **/
-    pthread_condattr_t                      mCondAttribute;
+    pthread_condattr_t                  mCondAttribute;
     /**
      * \brief   The POSIX conditional variable attribute validity flag.
      **/
-    bool                                    mCondAttrValid;
+    bool                                mCondAttrValid;
     /**
      * \brief   Indicates the fired event object or error code.
      **/
-    NESynchTypesIX::eSynchObjectFired       mFiredEntry;
+    NESyncTypesIX::eSyncObjectFired     mFiredEntry;
     /**
      * \brief   The list of waitables.
      **/
-    WaitingList                             mWaitingList;
+    WaitingList                         mWaitingList;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    SynchLockAndWaitIX( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( SynchLockAndWaitIX );
+    SyncLockAndWaitIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( SyncLockAndWaitIX );
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)
 
-#endif  // AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
+#endif  // AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITIX_HPP

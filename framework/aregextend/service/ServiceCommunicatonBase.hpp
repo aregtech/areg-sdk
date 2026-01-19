@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        aregextend/service/ServiceCommunicatonBase.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -28,7 +28,7 @@
 #include "aregextend/service/IEServiceConnectionHandler.hpp"
 
 #include "areg/base/TEMap.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "aregextend/service/ServerConnection.hpp"
@@ -501,7 +501,7 @@ protected:
     ServiceServerEventConsumer              mEventConsumer;     //!< The custom event consumer object
     ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
     NEService::MapInstances                 mInstanceMap;       //!< The map of connected instance.
-    SynchEvent                              mEventSendStop;     //!< The event set when cannot send and receive data anymore.
+    SyncEvent                               mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock                    mLock;              //!< The synchronization object to be accessed from different threads.
 
 //////////////////////////////////////////////////////////////////////////////

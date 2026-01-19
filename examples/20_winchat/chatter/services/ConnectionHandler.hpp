@@ -6,7 +6,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 #include "common/NECommon.hpp"
 
 class ConnectionHandler

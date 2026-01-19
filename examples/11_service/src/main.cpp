@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of simple local servicing 
 //               objects to create multithreading applications.It instantiates
 //               a dummy ( empty ) local service interface, which is not 
@@ -16,7 +16,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/GELog.h"
 #include "src/ServicingComponent.hpp"

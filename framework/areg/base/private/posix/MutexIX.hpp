@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/MutexIX.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IESynchObjectBaseIX.hpp"
+#include "areg/base/private/posix/IESyncObjectBaseIX.hpp"
 #include <pthread.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@
  *          waitable synchronization objects that can trigger event to
  *          a waiting thread.
  **/
-class MutexIX   : public IESynchObjectBaseIX
+class MutexIX   : public IESyncObjectBaseIX
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -70,7 +70,7 @@ protected:
      *          if locks object again. Only owning thread can unlock locked object.
      *          Objects created with this constructor can be used event waiting operations.
      *          This constructor is used by child objects.
-     * \param   synchType       The type of synchronization object.
+     * \param   syncType        The type of synchronization object.
      * \param   isRecursive     If true, the object can be recursively locked
      *                          by the same thread. If set fails, once the
      *                          object is locked, second call to lock the object
@@ -78,7 +78,7 @@ protected:
      *                          locked the object.
      * \param   asciiName       The name of synchronization object.
      **/
-    MutexIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char * asciiName = nullptr );
+    MutexIX( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char * asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -122,7 +122,7 @@ public:
     void unlock( void ) const;
 
 /************************************************************************/
-// IESynchObjectBaseIX overrides.
+// IESyncObjectBaseIX overrides.
 /************************************************************************/
     /**
      * \brief   Returns true if synchronization object is valid.

@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableMutexIX.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -21,14 +21,14 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableMutexIX class implementation.
 //////////////////////////////////////////////////////////////////////////
 
 WaitableMutexIX::WaitableMutexIX(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
-    : IEWaitableBaseIX  ( NESynchTypesIX::eSynchObject::SoWaitMutex, true, asciiName             )
+    : IEWaitableBaseIX  ( NESyncTypesIX::eSyncObject::SoWaitMutex, true, asciiName             )
 
     , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
     , mLockCount        ( initOwned ? 1 : 0                                      )
@@ -77,7 +77,7 @@ bool WaitableMutexIX::releaseMutex(void)
 
     if (sendSignal)
     {
-        SynchLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitIX::eventSignaled(*this);
     }
     return result;
 }

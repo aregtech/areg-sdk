@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        aregextend/console/Console.hpp
  * \author      Artak Avetyan
  * \ingroup     AREG platform, Console with or without extended features
@@ -21,7 +21,7 @@
 
 #include "areg/base/NEMath.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
 #include <functional>
 
@@ -379,7 +379,7 @@ private:
     /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
-    mutable SynchEvent      mEnable;
+    mutable SyncEvent       mEnable;
     /**
      * \brief   The synchronization object used in multithreading environment.
      **/

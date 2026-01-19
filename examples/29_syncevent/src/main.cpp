@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of synchronization objects,
 //               including waiting for multiple synchronization objects such 
 //               as mutex and synchronization events, that differ by types 
@@ -20,7 +20,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 #include "areg/base/Thread.hpp"
 
 #include <iostream>
@@ -41,9 +41,9 @@
  *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
  *          Compare the version of STL and Areg. Both do the same.
  **/
-SynchEvent  gEvtReady(true, true);      //!< non-signaled, auto-reset event
-SynchEvent  gEvtProcess(true, true);  //!< non-signaled, auto-reset event
-std::string gData{};                 //!< A text to output
+SyncEvent   gEvtReady(true, true);      //!< non-signaled, auto-reset event
+SyncEvent   gEvtProcess(true, true);    //!< non-signaled, auto-reset event
+std::string gData{};                    //!< A text to output
 
 //! \brief  This callback is triggered when thread runs and fully operable.
 void WorkerThread(void)
@@ -69,7 +69,7 @@ int main()
     VERIFY(!gEvtProcess.lock(NECommon::WAIT_100_MILLISECONDS)); // should timeout, since event is non-signaled
 
     gData = "Example data";
-    std::cout << "29_synchevent::main() signals data ready for processing\n";
+    std::cout << "29_syncevent::main() signals data ready for processing\n";
     VERIFY(gEvtReady.setEvent());   // verify and signal auto-reset event before worker thread starts and owns
 
     std::thread worker(WorkerThread);
