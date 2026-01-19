@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of synchronization objects,
 //               including waiting for multiple synchronization objects such 
 //               as mutex and synchronization events, that differ by types 
@@ -38,17 +38,17 @@
 // Global synchronization objects
 //////////////////////////////////////////////////////////////////////////
 
-static SynchEvent gEventExit(true, false);   //!< Manual-reset event, initially non-signaled
-static SynchEvent gEventRun(true, true);     //!< Auto-reset event, initially signaled
-static Mutex      gMutexWait(false);         //!< Initially unlocked
-static Mutex      gMutexDummy(false);        //!< Initially unlocked
+static SyncEvent    gEventExit(true, false);    //!< Manual-reset event, initially non-signaled
+static SyncEvent    gEventRun(true, true);      //!< Auto-reset event, initially signaled
+static Mutex        gMutexWait(false);          //!< Initially unlocked
+static Mutex        gMutexDummy(false);         //!< Initially unlocked
 
 //////////////////////////////////////////////////////////////////////////
 // HelloThread: simple demo worker
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(synch_main_HelloThread_HelloThread);
-DEF_LOG_SCOPE(synch_main_HelloThread_onThreadRuns);
+DEF_LOG_SCOPE(sync_main_HelloThread_HelloThread);
+DEF_LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
 
 class HelloThread : public Thread, protected IEThreadConsumer
 {
@@ -56,16 +56,16 @@ public:
     HelloThread()
         : Thread(static_cast<IEThreadConsumer &>(*this), "HelloThread"), IEThreadConsumer(), mQuit(true, true)
     {
-        LOG_SCOPE(synch_main_HelloThread_HelloThread);
+        LOG_SCOPE(sync_main_HelloThread_HelloThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
     }
 
-    SynchEvent mQuit; //!< Signaled when the thread completes
+    SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
     void onThreadRuns() override
     {
-        LOG_SCOPE(synch_main_HelloThread_onThreadRuns);
+        LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
         LOG_INFO("!!! Hello Thread !!!, The thread [ %s ] started", getName().getString());
 
         mQuit.resetEvent();
@@ -75,7 +75,7 @@ protected:
         LOG_INFO("Auto-reset event 'gEventRun' is signaled");
 
         // Multi-lock with multiple objects
-        IESynchObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
+        IESyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
         MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), false);
 
         constexpr unsigned int waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
@@ -111,8 +111,8 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // GoodbyeThread: simple demo worker
 //////////////////////////////////////////////////////////////////////////
-DEF_LOG_SCOPE(synch_main_GoodbyeThread_GoodbyeThread);
-DEF_LOG_SCOPE(synch_main_GoodbyeThread_onThreadRuns);
+DEF_LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
+DEF_LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
 
 class GoodbyeThread : public Thread, protected IEThreadConsumer
 {
@@ -120,22 +120,22 @@ public:
     GoodbyeThread()
         : Thread(static_cast<IEThreadConsumer &>(*this), "GoodbyeThread"), IEThreadConsumer(), mQuit(false, true)
     {
-        LOG_SCOPE(synch_main_GoodbyeThread_GoodbyeThread);
+        LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
     }
 
-    SynchEvent mQuit; //!< Signaled when the thread completes
+    SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
     void onThreadRuns() override
     {
-        LOG_SCOPE(synch_main_GoodbyeThread_onThreadRuns);
+        LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
         LOG_INFO("!!! Goodbye World !!! Thread [ %s ] started", getName().getString());
 
         mQuit.resetEvent();
 
         // Multi-lock with exit event + dummy mutex
-        IESynchObject* objects[] = { &gEventExit, &gMutexDummy };
+        IESyncObject* objects[] = { &gEventExit, &gMutexDummy };
         MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), false);
 
         int waitResult = multiLock.lock(NECommon::WAIT_INFINITE, false, false);
@@ -154,7 +154,7 @@ protected:
 // Main: demo entry point
 //////////////////////////////////////////////////////////////////////////
 
-DEF_LOG_SCOPE(synch_main_main);
+DEF_LOG_SCOPE(sync_main_main);
 
 int main()
 {
@@ -163,7 +163,7 @@ int main()
     LOGGING_CONFIGURE_AND_START(nullptr);
 
     {
-        LOG_SCOPE(synch_main_main);
+        LOG_SCOPE(sync_main_main);
 
         gMutexWait.lock();
         gEventRun.resetEvent();
@@ -186,7 +186,7 @@ int main()
 
         Thread::sleep(NECommon::WAIT_1_SECOND);
 
-        IESynchObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
+        IESyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
         gEventExit.setEvent();
         gEventRun.setEvent();
 
@@ -200,7 +200,7 @@ int main()
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);
 
         DateTime start{ DateTime::getNow() };
-        SynchEvent localEvent(false, false);
+        SyncEvent localEvent(false, false);
         localEvent.lock(eventTimeout);
         DateTime end{ DateTime::getNow() };
         uint64_t duration = end.getTime() - start.getTime();

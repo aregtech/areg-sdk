@@ -1,6 +1,6 @@
 # ###########################################################################
 # GNU compiler and linker options for POSIX API
-# Copyright 2022-2023 Aregtech
+# Copyright 2022-2026 Aregtech
 # ###########################################################################
 
 message(STATUS "AREG: >>> Preparing settings for GNU compiler under \'${AREG_OS}\' platform, Cygwin = \'${CYGWIN}\', MINGW = \'${MINGW}\'")

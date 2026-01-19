@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/CriticalSectionIX.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -23,7 +23,7 @@
 
 #if  defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IESynchObjectBaseIX.hpp"
+#include "areg/base/private/posix/IESyncObjectBaseIX.hpp"
 #include "areg/base/private/posix/SpinLockIX.hpp"
 #include <pthread.h>
 
@@ -36,7 +36,7 @@
  *          The Critical Section can be used only for the communication between threads.
  *          The Critical Section can be owned only by one thread at a time.
  **/
-class CriticalSectionIX   : protected IESynchObjectBaseIX
+class CriticalSectionIX   : protected IESyncObjectBaseIX
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -83,7 +83,7 @@ public:
 
 protected:
 /************************************************************************/
-// IESynchObjectBaseIX overrides.
+// IESyncObjectBaseIX overrides.
 /************************************************************************/
     
     /**

@@ -2,7 +2,7 @@
 
 ```
 This file is part of the AREG SDK
-Copyright (c) Aregtech, 2021-2023
+Copyright (c) Aregtech, 2021-2026
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
 ```

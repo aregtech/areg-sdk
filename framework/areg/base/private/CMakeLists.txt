@@ -13,7 +13,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/IECursorPosition.cpp
 	areg/base/private/IEGenericObject.cpp
 	areg/base/private/IEIOStream.cpp
-	areg/base/private/IESynchObject.cpp
+	areg/base/private/IESyncObject.cpp
 	areg/base/private/IEThreadConsumer.cpp
 	areg/base/private/NECommon.cpp
 	areg/base/private/NEDebug.cpp
@@ -35,7 +35,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/SocketClient.cpp
 	areg/base/private/SocketServer.cpp
 	areg/base/private/String.cpp
-	areg/base/private/SynchObjects.cpp
+	areg/base/private/SyncObjects.cpp
 	areg/base/private/Thread.cpp
 	areg/base/private/ThreadAddress.cpp
 	areg/base/private/ThreadLocalStorage.cpp

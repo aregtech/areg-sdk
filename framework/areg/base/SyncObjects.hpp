@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_SYNCHOBJECTS_HPP
-#define AREG_BASE_SYNCHOBJECTS_HPP
+#ifndef AREG_BASE_SYNCOBJECTS_HPP
+#define AREG_BASE_SYNCOBJECTS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -8,21 +8,21 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/base/SynchObjects.hpp
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/SyncObjects.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Synchronization objects
  *              Declared following synchronization objects:
  *              IEResourceLock      - blocking synchronization object interface.
  *              Mutex               - Mutex synchronization object.
- *              SynchEvent          - Event synchronization object.
+ *              SyncEvent           - Event synchronization object.
  *              Semaphore           - Semaphore synchronization object.
  *              CriticalSection     - Critical Section synchronization object.
  *              SpinLock            - Spin-Lock synchronization object.
  *              ResourceLock        - An OS specific resource lock object.
- *              NolockSynchObject   - No Locking synchronization object (makes no locking).
- *              SynchTimer          - Timer synchronization object.
+ *              NolockSyncObject    - No Locking synchronization object (makes no locking).
+ *              SyncTimer           - Timer synchronization object.
  *              Lock                - Single synchronization auto locking object.
  *              MultiLock           - Multiple synchronization auto locking object.
  *
@@ -31,7 +31,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IESynchObject.hpp"
+#include "areg/base/IESyncObject.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -39,12 +39,12 @@
 /**
  * \brief   This file contains synchronization objects used to synchronize data access
  *          in multi-threading environment. All Synchronization objects are instances of 
- *          IESynchObject interface. The instance of IEResourceLock can be 
+ *          IESyncObject interface. The instance of IEResourceLock can be 
  *          used in auto-locking objects to synchronize data access.
  *
- *          A special NolockSynchObject is defined to support synchronization functionalities, 
+ *          A special NolockSyncObject is defined to support synchronization functionalities, 
  *          but the object does not block any thread and must not be used in multi-locking operations. 
- *          The purpose of this class to support unified IESynchObject interface and use in containers
+ *          The purpose of this class to support unified IESyncObject interface and use in containers
  *          that do not require synchronization operations.
  *
  *          Lock and MultiLock classes are supporting auto-locking
@@ -55,16 +55,16 @@
 /************************************************************************
  * List of declared classes and hierarchy
  ************************************************************************/
-/* class IESynchObject; */
+/* class IESyncObject; */
     class IEResourceLock;
         class Mutex;
         class Semaphore;
         class CriticalSection;
         class SpinLock;
         class ResourceLock;
-        class NolockSynchObject;
-    class SynchEvent;
-    class SynchTimer;
+        class NolockSyncObject;
+    class SyncEvent;
+    class SyncTimer;
 
 class Lock;
 class MultiLock;
@@ -73,7 +73,7 @@ class Wait;
 //////////////////////////////////////////////////////////////////////////
 // IEResourceLock class declaration
 //////////////////////////////////////////////////////////////////////////
-class AREG_API IEResourceLock   : public IESynchObject
+class AREG_API IEResourceLock   : public IESyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -83,7 +83,7 @@ protected:
      * \brief   Protected constructor. Should not be accessed directly.
      *          Only via derived classes
      **/
-    IEResourceLock( IESynchObject::eSyncObject synchObjectType );
+    IEResourceLock( IESyncObject::eSyncObject syncObjectType );
 
 public:
     /**
@@ -150,7 +150,7 @@ public:
     virtual ~Mutex( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -244,7 +244,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// class SynchEvent declaration
+// class SyncEvent declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   An event object is a synchronization object which state can be explicitly set 
@@ -266,7 +266,7 @@ private:
  *          state of event object to be signaled. The creating thread specifies the initial state 
  *          of the object in Constructor and whether it is a manual-reset or auto-reset event object.
  **/
-class AREG_API SynchEvent  : public IESynchObject
+class AREG_API SyncEvent  : public IESyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -286,15 +286,15 @@ public:
      *                      state to non-signaled.
      *                      By default, creates auto-reset Synchronization Event.
      **/
-    explicit SynchEvent ( bool initLock = true, bool autoReset = true );
+    explicit SyncEvent ( bool initLock = true, bool autoReset = true );
 
     /**
      * \brief   Destructor. Sets Event to signal state first.
      **/
-    virtual ~SynchEvent( void );
+    virtual ~SyncEvent( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -396,7 +396,7 @@ private:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SynchEvent );
+    DECLARE_NOCOPY_NOMOVE( SyncEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -456,7 +456,7 @@ public:
     virtual ~Semaphore( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -586,7 +586,7 @@ public:
     virtual ~CriticalSection( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
 
@@ -698,7 +698,7 @@ public:
     virtual ~SpinLock( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -790,7 +790,7 @@ public:
     virtual ~ResourceLock( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
 
@@ -860,14 +860,14 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// NolockSynchObject class declaration
+// NolockSyncObject class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   No Lock Synchronization object is a dummy class
  *          doing no synchronization action, but having implementation
  *          of overrides. Some classes might need having synchronization
  *          of data access and some other might not need.
- *          For this reason, the reference to IESynchObject might be
+ *          For this reason, the reference to IESyncObject might be
  *          passed as a main synchronization object and by calling
  *          lock() / unlock() either data access would be really
  *          synchronized or synchronization is imitated / ignored.
@@ -876,7 +876,7 @@ private:
  *          The locking might be imitated only by using Lock object
  *          or calling lock() / unlock() directly.
  **/
-class AREG_API NolockSynchObject   : public IEResourceLock
+class AREG_API NolockSyncObject   : public IEResourceLock
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -886,15 +886,15 @@ public:
     /**
      * \brief   Constructor.
      **/
-    NolockSynchObject( void );
+    NolockSyncObject( void );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~NolockSynchObject( void ) = default;
+    virtual ~NolockSyncObject( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -925,11 +925,11 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( NolockSynchObject );
+    DECLARE_NOCOPY_NOMOVE( NolockSyncObject );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// class SynchTimer declaration
+// class SyncTimer declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A waitable timer object is a synchronization object
@@ -947,7 +947,7 @@ private:
  *              or canceled. A periodic timer is either a periodic manual-reset
  *              timer or a periodic synchronization timer.
  **/
-class AREG_API SynchTimer: public IESynchObject
+class AREG_API SyncTimer: public IESyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -960,15 +960,15 @@ public:
      * \param	isAutoReset	If true, it is synchronization timer, otherwise it is manual-reset timer.
      * \param   isSteady    If true, it uses steady high resolution timer;
      **/
-    SynchTimer( unsigned int msTimeout, bool isPeriodic = false, bool isAutoReset = true, bool isSteady = true );
+    SyncTimer( unsigned int msTimeout, bool isPeriodic = false, bool isAutoReset = true, bool isSteady = true );
 
     /**
      * \brief   Destructor. Signals and Destroys waitable timer.
      **/
-    virtual ~SynchTimer( void );
+    virtual ~SyncTimer( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESynchObject interface
+// Override operations, IESyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -1081,8 +1081,8 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    SynchTimer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( SynchTimer );
+    SyncTimer( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( SyncTimer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1090,7 +1090,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Class to use auto-locking for a single locking object.
- *          This class can be used for all instances of IESynchObject.
+ *          This class can be used for all instances of IESyncObject.
  *          The purpose of using this object is to lock synchronization
  *          object in a certain code scope.
  *
@@ -1155,7 +1155,7 @@ public:
      *                      synchronization will not be automatically
      *                      unlocked in destructor
      **/
-    explicit Lock( IESynchObject &syncObj, bool autoLock = true );
+    explicit Lock( IESyncObject &syncObj, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-locking was enabled, it will call
@@ -1190,14 +1190,14 @@ private:
     /**
      * \brief   Reference to Synchronization object passed in constructor
      **/
-    IESynchObject &   mSynchObject;
+    IESyncObject &  mSyncObject;
     /**
      * \brief   Auto-locking flag. Indicates whether synchronization
      *          object is locked / unlocked automatically or manually
      *          If true, the object automatically is locked / unlocked
      *          in constructor and in destructor
      **/
-    const bool          mAutoLock;
+    const bool      mAutoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -1280,7 +1280,7 @@ public:
      *                      synchronization objects and wait for all objects
      *                      to be signaled.
      **/
-    MultiLock( IESynchObject* pObjects[], int count, bool autoLock = true );
+    MultiLock( IESyncObject* pObjects[], int count, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-lock is enabled, unlocks all synchronization
@@ -1351,20 +1351,20 @@ private:
     /**
      * \brief   Locking state of every object within array.
      **/
-    eLockedState                mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
+    eLockedState            mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
-    IESynchObject * const *     mSyncObjArray;
+    IESyncObject * const *  mSyncObjArray;
     /**
      * \brief   Size of synchronization object. 
      *          Cannot be more than MAX_SIZE_OF_ARRAY (64)
      **/
-    const int                   mSizeCount;
+    const int               mSizeCount;
     /**
      * \brief   Flag, indicating whether auto-locking is enabled or disabled.
      **/
-    const bool                  mAutoLock;
+    const bool              mAutoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -1564,7 +1564,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline bool Mutex::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osLockMutex( timeout );
 }
 
@@ -1575,7 +1575,7 @@ inline bool Mutex::tryLock( void )
 
 inline bool Mutex::unlock( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osUnlockMutex( );
 }
 
@@ -1590,37 +1590,37 @@ inline id_type Mutex::getOwnerThreadId( void ) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchEvent class inline functions
+// SyncEvent class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SynchEvent::isAutoReset( void ) const
+inline bool SyncEvent::isAutoReset( void ) const
 {
     return mAutoReset;
 }
 
-inline bool SynchEvent::unlock( void )
+inline bool SyncEvent::unlock( void )
 {
-    return (mSynchObject != nullptr ? _osUnlockEvent(mSynchObject) : false);
+    return (mSyncObject != nullptr ? _osUnlockEvent(mSyncObject) : false);
 }
 
-inline bool SynchEvent::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+inline bool SyncEvent::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
 {
-    return (mSynchObject != nullptr ? _osLockEvent(timeout) : false);
+    return (mSyncObject != nullptr ? _osLockEvent(timeout) : false);
 }
 
-inline bool SynchEvent::setEvent( void )
+inline bool SyncEvent::setEvent( void )
 {
-    return (mSynchObject != nullptr ? _osSetEvent( ) : false);
+    return (mSyncObject != nullptr ? _osSetEvent( ) : false);
 }
 
-inline bool SynchEvent::resetEvent( void )
+inline bool SyncEvent::resetEvent( void )
 {
-    return (mSynchObject != nullptr ? _osResetEvent( ) : false);
+    return (mSyncObject != nullptr ? _osResetEvent( ) : false);
 }
 
-inline void SynchEvent::pulseEvent( void )
+inline void SyncEvent::pulseEvent( void )
 {
-    if (mSynchObject != nullptr)
+    if (mSyncObject != nullptr)
     {
         _osPulseEvent();
     }
@@ -1645,19 +1645,19 @@ inline long Semaphore::getCurrentCount( void ) const
 
 inline bool CriticalSection::lock( unsigned int  /*timeout = NECommon::WAIT_INFINITE */ )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osLock( );
 }
 
 inline bool CriticalSection::unlock( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osUnlock( );
 }
 
 inline bool CriticalSection::tryLock( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osTryLock( );
 }
 
@@ -1687,90 +1687,90 @@ inline bool SpinLock::lock( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchTimer class inline functions
+// ResourceLock class inline functions
 //////////////////////////////////////////////////////////////////////////
 
 inline bool ResourceLock::lock( unsigned int timeout /*= NECommon::WAIT_INFINITE */ )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osLock( timeout );
 }
 
 inline bool ResourceLock::unlock( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osUnlock( );
 }
 
 inline bool ResourceLock::tryLock( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osTryLock( );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceLock class inline functions
+// NolockSyncObject class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NolockSynchObject::lock( void )
+inline bool NolockSyncObject::lock( void )
 {
     return true;
 }
 
-inline bool NolockSynchObject::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+inline bool NolockSyncObject::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
 {
     return true;
 }
 
-inline bool NolockSynchObject::unlock( void )
+inline bool NolockSyncObject::unlock( void )
 {
     return true;
 }
 
-inline bool NolockSynchObject::tryLock( void )
+inline bool NolockSyncObject::tryLock( void )
 {
     return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchTimer class inline functions
+// SyncTimer class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SynchTimer::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+inline bool SyncTimer::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osLock( timeout );
 }
 
-inline bool SynchTimer::unlock( void )
+inline bool SyncTimer::unlock( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osCancelTimer( );
 }
 
-inline bool SynchTimer::setTimer( void )
+inline bool SyncTimer::setTimer( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osSetTimer( );
 }
 
-inline bool SynchTimer::cancelTimer( void )
+inline bool SyncTimer::cancelTimer( void )
 {
-    ASSERT( mSynchObject != nullptr );
+    ASSERT( mSyncObject != nullptr );
     return _osCancelTimer( );
 }
 
-inline unsigned int SynchTimer::dueTime( void ) const
+inline unsigned int SyncTimer::dueTime( void ) const
 {
     return mTimeout;
 }
 
-inline bool SynchTimer::isPeriodic( void ) const
+inline bool SyncTimer::isPeriodic( void ) const
 {
     return mIsPeriodic;
 }
 
-inline bool SynchTimer::isAutoreset( void ) const
+inline bool SyncTimer::isAutoreset( void ) const
 {
     return mIsAutoReset;
 }
@@ -1780,12 +1780,12 @@ inline bool SynchTimer::isAutoreset( void ) const
 //////////////////////////////////////////////////////////////////////////
 inline bool Lock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */)
 {
-    return mSynchObject.lock(timeout);
+    return mSyncObject.lock(timeout);
 }
 
 inline bool Lock::unlock( void )
 {
-    return mSynchObject.unlock();
+    return mSyncObject.unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1840,4 +1840,4 @@ inline Wait::eWaitResult Wait::waitUntil(const Wait::SteadyTime& future) const
     return _osWaitFor(future - std::chrono::steady_clock::now());
 }
 
-#endif  // AREG_BASE_SYNCHOBJECTS_HPP
+#endif  // AREG_BASE_SYNCOBJECTS_HPP

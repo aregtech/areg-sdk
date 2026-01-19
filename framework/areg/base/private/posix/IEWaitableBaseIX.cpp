@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/IEWaitableBaseIX.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -21,25 +21,25 @@
 
 #if   defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// SynchWaitable class implementation
+// SyncWaitable class implementation
 //////////////////////////////////////////////////////////////////////////
 
-IEWaitableBaseIX::IEWaitableBaseIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char* asciiName /* = nullptr */ )
-    : MutexIX     ( synchType, isRecursive, asciiName )
+IEWaitableBaseIX::IEWaitableBaseIX( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
+    : MutexIX     ( syncType, isRecursive, asciiName )
 {
 }
 
 IEWaitableBaseIX::~IEWaitableBaseIX( void )
 {
-    ASSERT(SynchLockAndWaitIX::isWaitableRegistered(*this) == false);
+    ASSERT(SyncLockAndWaitIX::isWaitableRegistered(*this) == false);
 }
 
 void IEWaitableBaseIX::freeResources(void)
 {
-    SynchLockAndWaitIX::eventRemove(*this);
+    SyncLockAndWaitIX::eventRemove(*this);
 }
 
 #endif  //  defined(_POSIX) || defined(POSIX)

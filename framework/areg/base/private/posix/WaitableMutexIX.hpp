@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableMutexIX.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -48,7 +48,7 @@ public:
      * \brief   Initializes the synchronization waitable Mutex object, sets the Mutex owned flag.
      * \param   initOwned   If true, the Mutex is created non-signaled and owned by the 
      *                      current thread. The waitable Mutex gets ownership by calling one of
-     *                      wait methods defined in SynchLockAndWaitIX. Once the thread gets 
+     *                      wait methods defined in SyncLockAndWaitIX. Once the thread gets 
      *                      ownership, any further waiting functions calls of the same thread
      *                      will not be blocked and stopped, so that the waiting Mutex can be
      *                      waited recursive. Any other thread that tries to get the ownership

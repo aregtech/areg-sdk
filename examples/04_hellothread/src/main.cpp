@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project demonstrates creation of a simple thread to 
 //               output "Hello Thread!" message on console.
 //============================================================================

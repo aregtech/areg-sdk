@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/TERingStack.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -23,7 +23,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TETemplateBase.hpp"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
@@ -74,12 +74,12 @@ protected:
      * \brief   Ring Stack initialization. Gets instance of synchronization object,
      *          initial capacity value and the overlapping flag, used when
      *          ring stack is full and new element should be pushed.
-     * \param   synchObject     Reference to synchronization object.
+     * \param   syncObject      Reference to synchronization object.
      * \param   initCapacity    The initial capacity size of ring stack.
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          it is required to insert new element.
      **/
-    explicit TERingStack( IEResourceLock & synchObject, uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    explicit TERingStack( IEResourceLock & syncObject, uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
 
     /**
      * \brief   Destructor. Public
@@ -89,17 +89,17 @@ protected:
 protected:
     /**
      * \brief   Creates a Ring Stack object and copies elements from the given source.
-     * \param   synchObject     Reference to synchronization object.
-     * \param   source          The source of Ring Stack elements.
+     * \param   syncObject  Reference to synchronization object.
+     * \param   source      The source of Ring Stack elements.
      **/
-    explicit TERingStack(IEResourceLock& synchObject, const TERingStack<VALUE>& source);
+    explicit TERingStack(IEResourceLock& syncObject, const TERingStack<VALUE>& source);
 
     /**
      * \brief   Creates a Ring Stack object and moves elements from the given source.
-     * \param   synchObject     Reference to synchronization object.
-     * \param   source          The source of Ring Stack elements.
+     * \param   syncObject  Reference to synchronization object.
+     * \param   source      The source of Ring Stack elements.
      **/
-    explicit TERingStack(IEResourceLock& synchObject, TERingStack<VALUE> && source) noexcept;
+    explicit TERingStack(IEResourceLock& syncObject, TERingStack<VALUE> && source) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -192,7 +192,7 @@ public:
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
-     *          In case if NolockSynchObject is used, no locking will happen,
+     *          In case if NolockSyncObject is used, no locking will happen,
      *          the function will return immediately and thread will continue to run.
      * \return  Returns true if stack successfully locked
      **/
@@ -200,7 +200,7 @@ public:
 
     /**
      * \brief   If stack previously was locked by thread, it will unlock stack
-     *          In case if NolockSynchObject is used, nothing will happen.
+     *          In case if NolockSyncObject is used, nothing will happen.
      * \return  Returns true if stack successfully unlocked
      **/
     bool unlock( void ) const;
@@ -348,7 +348,7 @@ protected:
     /**
      * \brief   The instance of synchronization object to be used to make object thread-safe.
      **/
-    IEResourceLock &                mSynchObj;
+    IEResourceLock &                mSyncObj;
 
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
@@ -626,7 +626,7 @@ private:
     /**
      * \brief   Synchronization object simulation.
      **/
-    NolockSynchObject mNoLock;
+    NolockSyncObject mNoLock;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -637,8 +637,8 @@ private:
 // TERingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-TERingStack<VALUE>::TERingStack( IEResourceLock & synchObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
-    : mSynchObj ( synchObject )
+TERingStack<VALUE>::TERingStack( IEResourceLock & syncObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+    : mSyncObj  ( syncObject )
     , mOnOverlap( onOverlap )
     , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
     , mElemCount( 0u )
@@ -649,8 +649,8 @@ TERingStack<VALUE>::TERingStack( IEResourceLock & synchObject, uint32_t initCapa
 }
 
 template <typename VALUE>
-TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, const TERingStack<VALUE> & source)
-    : mSynchObj ( synchObject )
+TERingStack<VALUE>::TERingStack(IEResourceLock& syncObject, const TERingStack<VALUE> & source)
+    : mSyncObj  ( syncObject )
     , mOnOverlap( source.mOnOverlap )
     , mStackList( nullptr )
     , mElemCount( 0u )
@@ -658,13 +658,13 @@ TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, const TERingStack<V
     , mHeadPos  ( 0u )
     , mTailPos  ( 0u )
 {
-    Lock lock(source.mSynchObj);
+    Lock lock(source.mSyncObj);
     _copyStack(source);
 }
 
 template <typename VALUE>
-TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, TERingStack<VALUE> && source) noexcept
-    : mSynchObj ( synchObject )
+TERingStack<VALUE>::TERingStack(IEResourceLock& syncObject, TERingStack<VALUE> && source) noexcept
+    : mSyncObj  ( syncObject )
     , mOnOverlap( source.mOnOverlap )
     , mStackList( source.mStackList )
     , mElemCount( source.mElemCount )
@@ -672,7 +672,7 @@ TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, TERingStack<VALUE> 
     , mHeadPos  ( source.mHeadPos )
     , mTailPos  ( source.mTailPos )
 {
-    Lock lock(source.mSynchObj);
+    Lock lock(source.mSyncObj);
 
     source.mStackList   = nullptr;
     source.mCapacity    = 0;
@@ -710,8 +710,8 @@ bool TERingStack<VALUE>::operator == (const TERingStack<VALUE>& other) const
     if (static_cast<const TERingStack<VALUE> *>(this) == &other)
         return true;
 
-    Lock lock1(mSynchObj);
-    Lock lock2(other.mSynchObj);
+    Lock lock1(mSyncObj);
+    Lock lock2(other.mSyncObj);
     bool result{ false };
 
     if (mElemCount == other.mElemCount)
@@ -728,8 +728,8 @@ bool TERingStack<VALUE>::operator != (const TERingStack<VALUE>& other) const
     if (static_cast<const TERingStack<VALUE> *>(this) == &other)
         return false;
 
-    Lock lock1(mSynchObj);
-    Lock lock2(other.mSynchObj);
+    Lock lock1(mSyncObj);
+    Lock lock2(other.mSyncObj);
     bool result{ true };
 
     if (mElemCount == other.mElemCount)
@@ -755,14 +755,14 @@ VALUE& TERingStack<VALUE>::operator [] (uint32_t index)
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::getSize( void ) const
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
     return mElemCount;
 }
 
 template <typename VALUE>
 bool TERingStack<VALUE>::isEmpty( void ) const
 {
-    Lock lock( mSynchObj );
+    Lock lock( mSyncObj );
     return (mElemCount == 0);
 }
 
@@ -775,40 +775,40 @@ NECommon::eRingOverlap TERingStack<VALUE>::getOverlap(void) const
 template <typename VALUE>
 bool TERingStack<VALUE>::lock( void ) const
 {
-    return mSynchObj.lock(NECommon::WAIT_INFINITE);
+    return mSyncObj.lock(NECommon::WAIT_INFINITE);
 }
 
 template <typename VALUE>
 bool TERingStack<VALUE>::unlock( void ) const
 {
-    return mSynchObj.unlock();
+    return mSyncObj.unlock();
 }
 
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::capacity( void ) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     return mCapacity;
 }
 
 template <typename VALUE>
 bool TERingStack<VALUE>::isFull( void ) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOverlap) && (mElemCount == mCapacity);
 }
 
 template <typename VALUE>
 bool TERingStack<VALUE>::isValidIndex(uint32_t index) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     return (index < mElemCount);
 }
 
 template <typename VALUE>
 const VALUE& TERingStack<VALUE>::getAt(uint32_t index) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
     ASSERT(mCapacity != 0);
     index = _norm2RingIndex(index);
@@ -818,7 +818,7 @@ const VALUE& TERingStack<VALUE>::getAt(uint32_t index) const
 template <typename VALUE>
 VALUE& TERingStack<VALUE>::getAt(uint32_t index)
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
     ASSERT(mCapacity != 0);
     index = _norm2RingIndex(index);
@@ -828,7 +828,7 @@ VALUE& TERingStack<VALUE>::getAt(uint32_t index)
 template <typename VALUE>
 void TERingStack<VALUE>::setAt(uint32_t index, const VALUE& newValue)
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
     ASSERT(mCapacity != 0);
     index = _norm2RingIndex(index);
@@ -838,14 +838,14 @@ void TERingStack<VALUE>::setAt(uint32_t index, const VALUE& newValue)
 template <typename VALUE>
 void TERingStack<VALUE>::clear( void )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     _emptyStack();
 }
 
 template<typename VALUE>
 void TERingStack<VALUE>::release(void)
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     _emptyStack();
     delete[] reinterpret_cast<unsigned char*>(mStackList);
     mStackList = nullptr;
@@ -891,7 +891,7 @@ void TERingStack<VALUE>::freeExtra(void)
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     if ( mElemCount < mCapacity )
     {
@@ -963,7 +963,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
 template <typename VALUE>
 VALUE TERingStack<VALUE>::pop( void )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     ASSERT( isEmpty() == false );
     VALUE result{ };
 
@@ -990,11 +990,11 @@ VALUE TERingStack<VALUE>::pop( void )
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::add( const TERingStack<VALUE> & source )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
     uint32_t initial = mElemCount;
     if (static_cast<const TERingStack<VALUE> *>(this) != &source)
     {
-        Lock lock2(source.mSynchObj);
+        Lock lock2(source.mSyncObj);
         for (uint32_t i = 0u; i < source.mElemCount; ++i)
         {
             push(source[i]);
@@ -1007,7 +1007,7 @@ uint32_t TERingStack<VALUE>::add( const TERingStack<VALUE> & source )
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     if ( newCapacity > mCapacity )
     {
@@ -1038,8 +1038,8 @@ void TERingStack<VALUE>::copy(const TERingStack<VALUE>& source)
 {
     if (static_cast<const TERingStack<VALUE> *>(this) != &source)
     {
-        Lock lock1(mSynchObj);
-        Lock lock2(source.mSynchObj);
+        Lock lock1(mSyncObj);
+        Lock lock2(source.mSyncObj);
         _copyStack(source);
     }
 }
@@ -1049,8 +1049,8 @@ void TERingStack<VALUE>::move(TERingStack<VALUE> && source) noexcept
 {
     if (static_cast<const TERingStack<VALUE> *>(this) != &source)
     {
-        Lock lock1(mSynchObj);
-        Lock lock2(source.mSynchObj);
+        Lock lock1(mSyncObj);
+        Lock lock2(source.mSyncObj);
 
         std::swap(mStackList, source.mStackList);
         std::swap(mElemCount, source.mElemCount);
@@ -1063,7 +1063,7 @@ void TERingStack<VALUE>::move(TERingStack<VALUE> && source) noexcept
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NECommon::RING_START_POSITION*/) const
 {
-    Lock lock(mSynchObj);
+    Lock lock(mSyncObj);
 
     uint32_t result = static_cast<uint32_t>(NECommon::INVALID_INDEX);
     startAt = startAt == NECommon::RING_START_POSITION ? 0u : startAt;
@@ -1356,7 +1356,7 @@ bool TENolockRingStack<VALUE>::operator != (const TERingStack<VALUE>& other) con
 template <typename V>
 const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & input )
 {
-    Lock lock(input.mSynchObj);
+    Lock lock(input.mSyncObj);
 
     uint32_t size = 0;
     stream >> size;
@@ -1381,7 +1381,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & inp
 template <typename V>
 IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V> & output )
 {
-    Lock lock(output.mSynchObj);
+    Lock lock(output.mSyncObj);
 
     uint32_t size = output.mElemCount;
     stream << size;

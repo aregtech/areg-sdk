@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableTimerIX.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -24,8 +24,8 @@
 
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/base/private/posix/NESynchTypesIX.hpp"
-#include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
+#include "areg/base/private/posix/NESyncTypesIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 #include <signal.h>
 
 
@@ -42,9 +42,9 @@ void WaitableTimerIX::_posixTimerRoutine(union sigval si)
 
 
 WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
-    : IEWaitableBaseIX  ( NESynchTypesIX::eSynchObject::SoWaitTimer, false, name )
+    : IEWaitableBaseIX  ( NESyncTypesIX::eSyncObject::SoWaitTimer, false, name )
 
-    , mResetInfo        ( isAutoReset ? NESynchTypesIX::eEventResetInfo::EventResetAutomatic : NESynchTypesIX::eEventResetInfo::EventResetManual )
+    , mResetInfo        ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
     , mTimerId          ( static_cast<timer_t>(0) )
     , mTimeout          ( 0 )
     , mIsSignaled       ( false )
@@ -80,7 +80,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
     {
         struct itimerspec interval;
         NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-        NESynchTypesIX::convTimeout(interval.it_value, msTimeout);
+        NESyncTypesIX::convTimeout(interval.it_value, msTimeout);
         if ( isPeriodic )
         {
             interval.it_interval.tv_sec = interval.it_value.tv_sec;
@@ -118,7 +118,7 @@ bool WaitableTimerIX::stopTimer(void)
 
     if (sendSignal)
     {
-        SynchLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitIX::eventSignaled(*this);
     }
 
     return true;
@@ -141,7 +141,7 @@ bool WaitableTimerIX::cancelTimer(void)
 
     if (sendSignal)
     {
-        SynchLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitIX::eventSignaled(*this);
     }
 
     return true;
@@ -172,7 +172,7 @@ bool WaitableTimerIX::checkCanSignalMultipleThreads(void) const
 void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
 {
     ObjectLockIX lock(*this);
-    if (mResetInfo == NESynchTypesIX::eEventResetInfo::EventResetAutomatic)
+    if (mResetInfo == NESyncTypesIX::eEventResetInfo::EventResetAutomatic)
     {
         OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
         mIsSignaled = false;
@@ -218,7 +218,7 @@ inline void WaitableTimerIX::_timerExpired(void)
         if ( mTimerId != static_cast<timer_t>(0) )
         {
             ++ mFiredCount;
-            NESynchTypesIX::convTimeout(mDueTime, mTimeout);
+            NESyncTypesIX::convTimeout(mDueTime, mTimeout);
             
             mIsSignaled = true;
             sendSignal  = true;
@@ -236,8 +236,8 @@ inline void WaitableTimerIX::_timerExpired(void)
 
     if (sendSignal)
     {
-        SynchLockAndWaitIX::eventSignaled(*this);
-        SynchLockAndWaitIX::notifyAsynchSignal(mThreadId);
+        SyncLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitIX::notifyAsyncSignal(mThreadId);
     }
 }
 

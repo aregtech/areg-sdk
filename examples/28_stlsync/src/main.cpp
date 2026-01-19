@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of synchronization objects,
 //               including waiting for multiple synchronization objects such 
 //               as mutex and synchronization events, that differ by types 
@@ -19,7 +19,7 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/SynchObjects.hpp"
+#include "areg/base/SyncObjects.hpp"
 
 #include <iostream>
 #include <string>
@@ -39,8 +39,8 @@
  *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
  *          Compare the version of STL and Areg. Both do the same.
  **/
-SynchEvent  ready(true, true);      //!< non-signaled, auto-reset event
-SynchEvent  processed(true, false); //!< non-signaled, manual-reset event
+SyncEvent   ready(true, true);      //!< non-signaled, auto-reset event
+SyncEvent   processed(true, false); //!< non-signaled, manual-reset event
 std::string data{};                 //!< A text to output
 
 void workerThread()

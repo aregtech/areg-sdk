@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_IESYNCHOBJECT_HPP
-#define AREG_BASE_IESYNCHOBJECT_HPP
+#ifndef AREG_BASE_IESYNCOBJECT_HPP
+#define AREG_BASE_IESYNCOBJECT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -8,8 +8,8 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/base/IESynchObject.hpp
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/IESyncObject.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Base Synchronization object interface.
@@ -22,13 +22,13 @@
 #include "areg/base/NECommon.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class declaration
+// IESyncObject class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Base class of synchronization objects. Contains locking and unlocking 
  *          functions  and has basic attributes for all synchronization objects.
  **/
-class AREG_API IESynchObject
+class AREG_API IESyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Class typed and constants
@@ -60,14 +60,14 @@ protected:
      *          overwritten pure virtual functions.
      * \param	synchObjectType	Type of synchronization object
      **/
-    explicit IESynchObject( IESynchObject::eSyncObject synchObjectType );
+    explicit IESyncObject( IESyncObject::eSyncObject syncObjectType );
 
 public:
     /**
      * \brief   Public destructor. The system synchronization objects are automatically closed
      *          and resources are freed when destructor is closed.
      **/
-    virtual ~IESynchObject( void );
+    virtual ~IESyncObject( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -91,7 +91,7 @@ public:
     /**
      * \brief   Returns type of synchronization object
      **/
-    inline IESynchObject::eSyncObject getObjectType( void ) const;
+    inline IESyncObject::eSyncObject getObjectType( void ) const;
 
     /**
      * \brief   Returns true if a synchronization object is valid.
@@ -129,7 +129,7 @@ private:
     /**
      * \brief   Destroys the synchronization object. Normally called in the destructor.
      **/
-    void _osDestroySynchObject( void );
+    void _osDestroySyncObject( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -138,19 +138,19 @@ protected:
     /**
      * \brief   Handle to synchronization object
      **/
-    SYNCHANDLE                          mSynchObject;
+    SYNCHANDLE                       mSyncObject;
 
     /**
      * \brief   Synchronization object type
      **/
-    const IESynchObject::eSyncObject    mSynchObjectType;
+    const IESyncObject::eSyncObject mSyncObjectType;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IESynchObject( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IESynchObject );
+    IESyncObject( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IESyncObject );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,26 +158,26 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class inline functions
+// IESyncObject class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline IESynchObject::operator SYNCHANDLE ( void )
+inline IESyncObject::operator SYNCHANDLE ( void )
 {
-    return mSynchObject;
+    return mSyncObject;
 }
 
-inline SYNCHANDLE IESynchObject::getHandle( void ) const
+inline SYNCHANDLE IESyncObject::getHandle( void ) const
 {
-    return mSynchObject;
+    return mSyncObject;
 }
 
-inline IESynchObject::eSyncObject IESynchObject::getObjectType( void ) const
+inline IESyncObject::eSyncObject IESyncObject::getObjectType( void ) const
 {
-    return mSynchObjectType;
+    return mSyncObjectType;
 }
 
-inline bool IESynchObject::isValid( void ) const
+inline bool IESyncObject::isValid( void ) const
 {
-    return (mSynchObjectType == IESynchObject::eSyncObject::SoNolock) || (mSynchObject != nullptr);
+    return (mSyncObjectType == IESyncObject::eSyncObject::SoNolock) || (mSyncObject != nullptr);
 }
 
-#endif  // AREG_BASE_IESYNCHOBJECT_HPP
+#endif  // AREG_BASE_IESYNCOBJECT_HPP

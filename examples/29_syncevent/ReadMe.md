@@ -1,10 +1,10 @@
-﻿# 29_synchevent
+﻿# 29_syncevent
 
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
 
-This demo shows how Areg’s **`SynchEvent`** keeps signals safe — no spurious wakeups, no missed notifications. Two auto-reset events are signaled in different threads, proving that once an event is set, it stays signaled until a thread consumes it.  
+This demo shows how Areg’s **`SyncEvent`** keeps signals safe — no spurious wakeups, no missed notifications. Two auto-reset events are signaled in different threads, proving that once an event is set, it stays signaled until a thread consumes it.  
 
 Unlike `std::condition_variable`, you don’t need extra boilerplate or worry about losing signals.
 
@@ -28,4 +28,4 @@ Unlike `std::condition_variable`, you don’t need extra boilerplate or worry ab
 - Avoiding race conditions in **shared state updates**.  
 
 ## Takeaway
-**`SynchEvent`** is a drop-in, cross-platform event primitive that delivers **guaranteed signals, no spurious wakeups, and simpler code** than `std::condition_variable`.
+**`SyncEvent`** is a drop-in, cross-platform event primitive that delivers **guaranteed signals, no spurious wakes up, and simpler code** than `std::condition_variable`.

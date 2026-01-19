@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcherBase.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -209,7 +209,7 @@ bool EventDispatcherBase::runDispatcher( void )
 {
     readyForEvents( true );
 
-    IESynchObject* syncObjects[2] {&mEventExit, &mEventQueue};
+    IESyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
     int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();

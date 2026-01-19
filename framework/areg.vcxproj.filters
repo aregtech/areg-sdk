@@ -108,7 +108,7 @@
     <ClCompile Include="areg\logging\private\NELogging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\IESynchObject.cpp">
+    <ClCompile Include="areg\base\private\IESyncObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\NESocket.cpp">
@@ -132,7 +132,7 @@
     <ClCompile Include="areg\base\private\win32\NEUtilitiesWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\IESynchObjectBaseIX.cpp">
+    <ClCompile Include="areg\base\private\posix\IESyncObjectBaseIX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\appbase\private\Application.cpp">
@@ -159,7 +159,7 @@
     <ClCompile Include="areg\base\private\posix\ProcessPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SynchLockAndWaitIX.cpp">
+    <ClCompile Include="areg\base\private\posix\SyncLockAndWaitIX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\ThreadPosix.cpp">
@@ -258,16 +258,16 @@
     <ClCompile Include="areg\base\private\RemoteMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\SynchObjects.cpp">
+    <ClCompile Include="areg\base\private\SyncObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\Containers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\SynchObjectsWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\SyncObjectsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SynchObjectsPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\SyncObjectsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp">
@@ -587,7 +587,7 @@
     <ClInclude Include="areg\base\Containers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\SynchObjects.hpp">
+    <ClInclude Include="areg\base\SyncObjects.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\GEGlobal.h">
@@ -728,7 +728,7 @@
     <ClInclude Include="areg\base\TEResourceListMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\IESynchObject.hpp">
+    <ClInclude Include="areg\base\IESyncObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\TETemplateBase.hpp">
@@ -737,10 +737,10 @@
     <ClInclude Include="areg\base\private\posix\IEWaitableBaseIX.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\NESynchTypesIX.hpp">
+    <ClInclude Include="areg\base\private\posix\NESyncTypesIX.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\IESynchObjectBaseIX.hpp">
+    <ClInclude Include="areg\base\private\posix\IESyncObjectBaseIX.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\appbase\Application.hpp">
@@ -755,7 +755,7 @@
     <ClInclude Include="areg\base\private\posix\MutexIX.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\SynchLockAndWaitIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SyncLockAndWaitIX.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\posix\WaitableEventIX.hpp">

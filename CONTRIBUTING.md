@@ -58,7 +58,7 @@ Example of an optional header:
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual licensed under Apache 2.0 and commercial licenses.
  *
- * \copyright   (c) 2017-2025 Your Name or Aregtech UG
+ * \copyright   (c) 2017-2026 Your Name or Aregtech UG
  * \file        path/to/YourFile.hpp
  * \ingroup     Areg SDK
  * \author      Your Full Name or GitHub ID

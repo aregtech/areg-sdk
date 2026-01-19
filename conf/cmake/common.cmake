@@ -1,6 +1,6 @@
 # ###########################################################################
 # Common settings for all projects
-# Copyright 2022-2023 Aregtech
+# Copyright 2022-2026 Aregtech
 # ###########################################################################
 
 set(AREG_PACKAGE_NAME   "areg")

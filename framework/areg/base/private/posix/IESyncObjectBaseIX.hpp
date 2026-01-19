@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
+#ifndef AREG_BASE_PRIVATE_POSIX_IESYNCOBJECTBASEIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_IESYNCOBJECTBASEIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -8,8 +8,8 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/IESynchObjectBaseIX.hpp
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/private/posix/IESyncObjectBaseIX.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, POSIX based Synchronization object base.
@@ -23,27 +23,27 @@
 
 #if  defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/NESynchTypesIX.hpp"
-#include "areg/base/IESynchObject.hpp"
+#include "areg/base/private/posix/NESyncTypesIX.hpp"
+#include "areg/base/IESyncObject.hpp"
 #include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
-class IESynchObjectBaseIX;
+class IESyncObjectBaseIX;
     class MutexIX;
         class WaitableBaseIX;
             class WaitableEventIX;
             class WaitableMutexIX;
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObjectBaseIX class declaration
+// IESyncObjectBaseIX class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   POSIX specific Synchronization object base class.
  *          All synchronization objects should inherit from this class.
  **/
-class IESynchObjectBaseIX
+class IESyncObjectBaseIX
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants, types and static members.
@@ -60,10 +60,10 @@ public:
 protected:
     /**
      * \brief   Initialization constructor.
-     * \param   synchType   The type of synchronization object.
+     * \param   syncType    The type of synchronization object.
      * \param   asciiName   The name of synchronization object.
      **/
-    IESynchObjectBaseIX( NESynchTypesIX::eSynchObject synchType, const char* asciiName = nullptr );
+    IESyncObjectBaseIX( NESyncTypesIX::eSyncObject syncType, const char* asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Public destructor.
@@ -72,20 +72,20 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IESynchObjectBaseIX( void ) = default;
+    virtual ~IESyncObjectBaseIX( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IESynchObjectBaseIX attributes.
+// IESyncObjectBaseIX attributes.
 /************************************************************************/
     
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline NESynchTypesIX::eSynchObject getSynchType( void ) const;
+    inline NESyncTypesIX::eSyncObject getSyncType( void ) const;
 
     /**
      * \brief   Returns synchronization object name.
@@ -93,7 +93,7 @@ public:
     inline const String & getName( void ) const;
 
 /************************************************************************/
-// IESynchObjectBaseIX overrides.
+// IESyncObjectBaseIX overrides.
 /************************************************************************/
     
     /**
@@ -115,35 +115,35 @@ protected:
     /**
      * \brief   The type of synchronization object.
      **/
-    const NESynchTypesIX::eSynchObject  mSynchType;
+    const NESyncTypesIX::eSyncObject  mSyncType;
 
     /**
      * \brief   The name of synchronization object.
      **/
-    String  mSynchName;
+    String  mSyncName;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IESynchObjectBaseIX( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IESynchObjectBaseIX );
+    IESyncObjectBaseIX( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( IESyncObjectBaseIX );
 };
 
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObjectBaseIX class inline implementation
+// IESyncObjectBaseIX class inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline NESynchTypesIX::eSynchObject IESynchObjectBaseIX::getSynchType( void ) const
+inline NESyncTypesIX::eSyncObject IESyncObjectBaseIX::getSyncType( void ) const
 {
-    return mSynchType;
+    return mSyncType;
 }
 
-inline const String & IESynchObjectBaseIX::getName( void ) const
+inline const String & IESyncObjectBaseIX::getName( void ) const
 {
-    return mSynchName;
+    return mSyncName;
 }
 
 #endif //  defined(_POSIX) || defined(POSIX)
 
-#endif // AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
+#endif // AREG_BASE_PRIVATE_POSIX_IESYNCOBJECTBASEIX_HPP

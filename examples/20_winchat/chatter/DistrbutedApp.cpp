@@ -10,7 +10,7 @@
 // All rights reserved.
 
 // DistrbutedApp.cpp : Defines the class behaviors for the application.
-// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2026 Aregtech UG.All rights reserved.
 //
 
 #include "chatter/res/stdafx.h"

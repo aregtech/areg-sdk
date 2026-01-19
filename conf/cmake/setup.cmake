@@ -6,7 +6,7 @@
 #
 # The variable 'AREG_SDK_ROOT' should be already set.
 # 
-# Copyright (c) 2022-2023 Aregtech
+# Copyright (c) 2022-2026 Aregtech
 # ###########################################################################
 
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")

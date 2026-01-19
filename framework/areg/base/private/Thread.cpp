@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Thread.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -82,7 +82,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         do 
         {
             // Check if initialization is completed and ready to run.
-            Lock lock(threadObj->mSynchObject);
+            Lock lock(threadObj->mSyncObject);
         } while (false);
 
         // instantiate thread local storage before starting running
@@ -150,7 +150,7 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName, uint
     , mIsRunning        ( false )
     , mStackSizeKB      ( stackSizeKb )
 
-    , mSynchObject      ( )
+    , mSyncObject       ( )
     , mWaitForRun       (false, false)
     , mWaitForExit      (false, false)
 {
@@ -177,7 +177,7 @@ bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT
 
     do 
     {
-        Lock  lock(mSynchObject);
+        Lock  lock(mSyncObject);
         result = _osCreateSystemThread();
     } while (false);
 
@@ -204,10 +204,10 @@ Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* 
 {
     Thread::eCompletionStatus result{ _osDestroyThread( waitForStopMs ) };
 
-    if ( mSynchObject.tryLock( ) )
+    if ( mSyncObject.tryLock( ) )
     {
         _cleanResources( true );
-        mSynchObject.unlock( );
+        mSyncObject.unlock( );
     }
 
     return result;
@@ -220,19 +220,19 @@ Thread::eCompletionStatus Thread::terminateThread( void )
 
 bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
 {
-    mSynchObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(NECommon::WAIT_INFINITE);
 
     bool result = false;
     THREADHANDLE  handle = mThreadHandle;
     if (handle != Thread::INVALID_THREAD_HANDLE)
     {
-        mSynchObject.unlock();  // unlock, to let thread complete exit task.
+        mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
         result = (waitForCompleteMs == NECommon::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
     }
     else
     {
-        mSynchObject.unlock();  // unlock, to let thread complete exit task.
+        mSyncObject.unlock();  // unlock, to let thread complete exit task.
         result = true;
     }
     return result;
@@ -295,7 +295,7 @@ int Thread::_threadEntry( void )
 
 void Thread::_cleanResources(bool unregister)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
 
     if (unregister)
     {

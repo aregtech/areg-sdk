@@ -6,8 +6,8 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/base/private/IESynchObject.cpp
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/private/IESyncObject.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Base Synchronization object interface.
@@ -17,37 +17,37 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/IESynchObject.hpp"
+#include "areg/base/IESyncObject.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class implementation
+// IESyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class, Constructor / Destructor
+// IESyncObject class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-IESynchObject::IESynchObject(IESynchObject::eSyncObject synchObjectType)
-    : mSynchObject      ( nullptr )
-    , mSynchObjectType  (synchObjectType)
+IESyncObject::IESyncObject(IESyncObject::eSyncObject syncObjectType)
+    : mSyncObject      ( nullptr )
+    , mSyncObjectType  (syncObjectType)
 {
-    ASSERT( mSynchObjectType != IESynchObject::eSyncObject::SoUnknown );
+    ASSERT( mSyncObjectType != IESyncObject::eSyncObject::SoUnknown );
 }
 
-IESynchObject::~IESynchObject( void )
+IESyncObject::~IESyncObject( void )
 {
-    _osDestroySynchObject();
+    _osDestroySyncObject();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IESynchObject class, Methods
+// IESyncObject class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool IESynchObject::lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
+bool IESyncObject::lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
 {
     return false;
 }
 
-bool IESynchObject::unlock(void)
+bool IESyncObject::unlock(void)
 {
     return false;
 }

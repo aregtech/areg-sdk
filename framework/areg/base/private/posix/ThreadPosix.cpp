@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/ThreadWin.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -138,7 +138,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 
     do
     {
-        Lock lock(mSynchObject);
+        Lock lock(mSyncObject);
         if (mThreadHandle == Thread::INVALID_THREAD_HANDLE)
         {
             return Thread::eCompletionStatus::ThreadInvalid;
@@ -230,7 +230,7 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     static const int maxPriority{ sched_get_priority_max( schedPolicy ) };
     static const int deltaPrio  { (maxPriority - minPriority) / 4 };
 
-    Lock  lock(mSynchObject);
+    Lock  lock(mSyncObject);
     Thread::eThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {

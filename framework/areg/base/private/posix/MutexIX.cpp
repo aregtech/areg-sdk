@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/MutexIX.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
@@ -27,12 +27,12 @@
 //////////////////////////////////////////////////////////////////////////
 
 MutexIX::MutexIX( bool initLocked /*= false*/, const char * asciiName /* = nullptr */)
-    : IESynchObjectBaseIX   ( NESynchTypesIX::eSynchObject::SoMutex, asciiName)
+    : IESyncObjectBaseIX( NESyncTypesIX::eSyncObject::SoMutex, asciiName)
 
-    , mPosixMutex           ( )
-    , mMutexValid           ( false )
-    , mPosixMutexAttr       ( )
-    , mMutexAttrValid       ( false )
+    , mPosixMutex       ( )
+    , mMutexValid       ( false )
+    , mPosixMutexAttr   ( )
+    , mMutexAttrValid   ( false )
 {
     _initPosixMutex( true );
     if (initLocked)
@@ -41,13 +41,13 @@ MutexIX::MutexIX( bool initLocked /*= false*/, const char * asciiName /* = nullp
     }
 }
 
-MutexIX::MutexIX( NESynchTypesIX::eSynchObject synchType, bool isRecursive, const char * asciiName /* = nullptr */ )
-    : IESynchObjectBaseIX   ( synchType, asciiName )
+MutexIX::MutexIX( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
+    : IESyncObjectBaseIX( syncType, asciiName )
 
-    , mPosixMutex           ( )
-    , mMutexValid           ( false )
-    , mPosixMutexAttr       ( )
-    , mMutexAttrValid       ( false )
+    , mPosixMutex       ( )
+    , mMutexValid       ( false )
+    , mPosixMutexAttr   ( )
+    , mMutexAttrValid   ( false )
 {
     _initPosixMutex( isRecursive );
 }
@@ -107,7 +107,7 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
         else
         {
             timespec now;
-            NESynchTypesIX::timeoutFromNow(now, msTimeout);
+            NESyncTypesIX::timeoutFromNow(now, msTimeout);
             result = RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &now );
         }
     }

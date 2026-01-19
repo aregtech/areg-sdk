@@ -8,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
- * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/base/Thread.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
@@ -485,15 +485,15 @@ protected:
     /**
      * \brief   Object to synchronize data access
      **/
-    mutable ResourceLock    mSynchObject;
+    mutable ResourceLock    mSyncObject;
     /**
      * \brief   Synchronization Event object, signaled when new created thread starts running
      **/
-    SynchEvent              mWaitForRun;
+    SyncEvent               mWaitForRun;
     /**
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
-    SynchEvent              mWaitForExit;
+    SyncEvent               mWaitForExit;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods
@@ -718,31 +718,31 @@ inline bool Thread::_isValidNoLock( void ) const
 
 inline bool Thread::isRunning( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return mIsRunning;
 }
 
 inline bool Thread::isValid( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return _isValidNoLock();
 }
 
 inline id_type Thread::getId( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return mThreadId;
 }
 
 inline const String& Thread::getName( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return mThreadAddress.getThreadName();
 }
 
 inline const ThreadAddress & Thread::getAddress( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     return mThreadAddress;
 }
 
@@ -775,7 +775,7 @@ inline const ThreadAddress& Thread::findThreadAddressByName(const String & threa
 
 inline void Thread::_setRunning( bool isRunning )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSyncObject);
     mIsRunning  = isRunning;
 }
 
@@ -796,7 +796,7 @@ inline const ThreadAddress & Thread::getCurrentThreadAddress( void )
 
 inline Thread::eThreadPriority Thread::getPriority( void ) const
 {
-    Lock  lock( mSynchObject );
+    Lock  lock( mSyncObject );
     return (isValid( ) ? mThreadPriority : Thread::eThreadPriority::PriorityUndefined);
 }
 

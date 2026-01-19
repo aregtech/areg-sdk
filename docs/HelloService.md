@@ -3,7 +3,7 @@
 ```
 
 This file is part of the AREG SDK
-Copyright (c) 2021–2025, Aregtech
+Copyright (c) 2021–2026, Aregtech
 Contact: info\[at]areg.tech
 Website: [https://www.areg.tech](https://www.areg.tech)
 

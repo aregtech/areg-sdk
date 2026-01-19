@@ -1,6 +1,6 @@
 # ###########################################################################
 # Settings for external projects to integrate AREG framework
-# Copyright (c) 2022-2023 Aregtech
+# Copyright (c) 2022-2026 Aregtech
 # ###########################################################################
 
 # include this cmake file in the project if want to use
