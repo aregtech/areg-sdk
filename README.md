@@ -530,16 +530,16 @@ Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)**. This permi
 - 💡 Share ideas or request features via [issues](https://github.com/aregtech/areg-sdk/issues) or [discussions](https://github.com/aregtech/areg-sdk/discussions)
 - 🔀 Submit pull requests following the [contribution guidelines](CONTRIBUTING.md)
 - ⭐ **Give us a star** if you like Areg SDK - it helps others discover the project
-- 🌍 **Show your project** - We're collecting early adopters. [Share your work](https://github.com/aregtech/areg-sdk/discussions/new?category=show-and-tell)!
+- 🌍 **Show your project** - Building with Areg SDK? [Share your work](https://github.com/aregtech/areg-sdk/discussions/new?category=show-and-tell) and be featured in our showcase!
+
+**Add this badge to projects built with Areg SDK:**
+```markdown
+[![Built with Areg SDK](https://img.shields.io/badge/Built%20with-Areg%20SDK-blue?style=flat-square&logo=cplusplus)](https://github.com/aregtech/areg-sdk)
+```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
-
-**Used by**  
-[![Contact us](https://img.shields.io/badge/Projects%20Using%20Areg-Contact%20Us%20to%20be%20listed-blue)](mailto:info@areg.tech)  
-🔹[Edge AI Agents](https://github.com/aregtech/areg-edgeai): Distributed Edge AI agent service providers and consumers built on top of the Areg SDK
-🔹[Lusan application](https://github.com/aregtech/areg-sdk-tools): Design and monitoring tool  
 
 **Follow Us**  
 [![X Follow](https://img.shields.io/twitter/follow/aregtech)](https://x.com/aregtech?lang=en)
