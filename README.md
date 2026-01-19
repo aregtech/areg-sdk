@@ -535,8 +535,8 @@ Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)**. This permi
 
 **Used by**  
 [![Contact us](https://img.shields.io/badge/Projects%20Using%20Areg-Contact%20Us%20to%20be%20listed-blue)](mailto:info@areg.tech)  
-🔹[Lusan application](https://github.com/aregtech/areg-sdk-tools): Design and monitoring tool  
 🔹[Edge AI Agents](https://github.com/aregtech/areg-edgeai): Distributed Edge AI agent service providers and consumers built on top of the Areg SDK
+🔹[Lusan application](https://github.com/aregtech/areg-sdk-tools): Design and monitoring tool  
 
 **Follow Us**  
 [![X Follow](https://img.shields.io/twitter/follow/aregtech)](https://x.com/aregtech?lang=en)
