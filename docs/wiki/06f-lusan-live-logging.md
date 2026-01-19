@@ -425,4 +425,4 @@ Lusan's live log viewer transforms distributed logging from a challenge into a p
 - ✅ Runtime control without application restarts
 - ✅ Essential tool for distributed system and multithreading application development
 
-**Next Step:** Explore [Offline Log Analysis](./09f-use-offline-logging.md) for post-mortem debugging.
+**Next Step:** Explore [Offline Log Analysis](./06g-lusan-offline-logging.md) for post-mortem debugging.

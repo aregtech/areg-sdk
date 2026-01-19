@@ -170,7 +170,7 @@ Hands-on examples and real-world demos.
 - **[Areg SDK and Edge AI agent](https://github.com/aregtech/areg-edgeai)**  
   Edge AI service provider and consumer architecture powered by Areg SDK.
 
-- **[Qt Integration with Areg SDK](https:github.com/aregtech/areg-sdk-tools)**  
+- **[Qt Integration with Areg SDK](https://github.com/aregtech/areg-sdk-tools)**  
   Lusan: a control plane for designing, debugging, and monitoring Areg-based systems.
 
 ---

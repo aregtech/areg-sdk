@@ -136,7 +136,7 @@ Lusan provides a structured, visual editor to define data types, data attributes
 
 <div align="center"><a href="../img/lusan-service-if-general.png"><img src="../img/lusan-service-if-general.png" alt="Lusan Service Interface" style="width:80%;height:80%"/></a></div>
 
-These interfaces are validated and later consumed by the Areg code generator during build when calling `addServiceInterface()` (or `addServiceInterfaceEx()`) `CMake` function like explained in [Creating Service Interface Documents with Lusan](./09d-create-service-interface.md) document.
+These interfaces are validated and later consumed by the Areg code generator during build when calling `addServiceInterface()` (or `addServiceInterfaceEx()`) `CMake` function like explained in [Creating Service Interface Documents with Lusan](./06e-lusan-service-interface.md) document.
 
 ---
 

@@ -65,13 +65,11 @@ Lusan enforces correct relationships between interface elements and prevents man
 ## Prerequisites
 
 Before creating Service Interface documents, ensure the following conditions are met:
-- Lusan is built and available  
-  https://github.com/aregtech/areg-sdk-tools
+- Lusan is built and available https://github.com/aregtech/areg-sdk-tools
 - Areg SDK is available in the development environment
 - Java is installed for later code generation
 - Basic understanding of services, methods, and shared data
-- Project workspace is configured according to  
-  [Using Lusan](./09c-use-lusan.md)
+- Project workspace is configured according to [Setup Lusan](./06d-setup-lusan.md)
 
 ---
 
@@ -197,7 +195,7 @@ After saving the document, integrate it into the project build:
 - Generated sources are compiled into a static library
 - The library is linked by Service Providers and Service Consumers
 
-More details are available in [`addServiceInterface()`](./02b-cmake-functions.md#addserviceinterface) and [Code Generator documentation](./03a-code-generator.md).
+More details are available in [`addServiceInterface()`](./02b-cmake-functions.md#addserviceinterface) and [Code Generator documentation](./06b-code-generator.md).
 
 ---
 
