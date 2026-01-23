@@ -3,15 +3,20 @@ set -eu
 
 # ---------------- Defaults ----------------
 DEF_NAME="areg_hello"
+DEF_MODE="1"
 
-printf "Specify the name of your new project [default name %s]: " "$DEF_NAME"
+printf "Specify the name of your new project [default: %s]: " "$DEF_NAME"
 read -r PROJ_NAME
 [ -z "$PROJ_NAME" ] && PROJ_NAME="$DEF_NAME"
 
 DEF_ROOT="./$PROJ_NAME"
-printf "Specify the root directory of your new project [default path %s]: " "$DEF_ROOT"
+printf "Specify the root directory of your new project [default: %s]: " "$DEF_ROOT"
 read -r PROJ_ROOT
 [ -z "$PROJ_ROOT" ] && PROJ_ROOT="$DEF_ROOT"
+
+printf "Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: %s]: " "$DEF_MODE"
+read -r APP_MODE
+[ -z "$APP_MODE" ] && APP_MODE="$DEF_MODE"
 
 mkdir -p "$PROJ_ROOT/src/services"
 
@@ -58,10 +63,9 @@ if (NOT areg_FOUND)
     set(AREG_CMAKE          "\${AREG_SDK_ROOT}/areg.cmake")
     message(STATUS ">>> Fetched Areg SDK from GitHub to \${FETCHCONTENT_BASE_DIR}")
     message(STATUS ">>> Location of 'areg.cmake' \${AREG_CMAKE}")
-
 else()
     # AREG SDK package found
-    message(STATUS ">>> Found AREG package at '\${areg_DIR}',")
+    message(STATUS ">>> Found AREG package at '\${areg_DIR}'")
     message(STATUS ">>> Libs: '\${areg_LIBRARY}', Configs: '\${areg_CONFIG}', Package Root: '\${areg_ROOT}'")
     message(STATUS ">>> Tools: '\${AREG_SDK_TOOLS}', 'areg.cmake': \${AREG_CMAKE}")
 endif()
@@ -89,14 +93,127 @@ cat > "$PROJ_ROOT/src/services/HelloService.siml" <<EOF
 </ServiceInterface>
 EOF
 
-# ---------------- src/CMakeLists.txt ----------------
-cat > "$PROJ_ROOT/src/CMakeLists.txt" <<EOF
-addServiceInterface(gen_$PROJ_NAME src/services/HelloService.siml)
-macro_declare_executable($PROJ_NAME gen_$PROJ_NAME main.cpp)
+if [ "$APP_MODE" = "1" ]; then
+    # ---------------- Multiprocessing Mode ----------------
+    
+    # provider.cpp
+    cat > "$PROJ_ROOT/src/provider.cpp" <<EOF
+#include <iostream>
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentLoader.hpp"
+#include "areg/component/ComponentThread.hpp"
+#include "src/services/HelloServiceStub.hpp"
+
+//!< Service Provider: ServiceProvider class declaration
+class ServiceProvider   : public    Component
+                        , protected HelloServiceStub
+{
+public:
+    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+        : Component(entry, owner)
+        , HelloServiceStub(static_cast<Component&>(self()))
+    { }
+
+protected:
+    virtual void requestHelloService(void) override
+    {
+        std::cout << "'Hello Service!'" << std::endl;
+        responseHelloService();
+        Application::signalAppQuit();
+    }
+
+private:
+    inline ServiceProvider& self(void)
+    { return (*this); }
+};
+
+BEGIN_MODEL("ProviderModel")
+    BEGIN_REGISTER_THREAD("Thread1")
+        BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
+            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+        END_REGISTER_COMPONENT("ServiceProvider")
+    END_REGISTER_THREAD("Thread1")
+END_MODEL("ProviderModel")
+
+int main(void)
+{
+    Application::initApplication();
+    Application::loadModel("ProviderModel");
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::releaseApplication();
+    return 0;
+}
 EOF
 
-# ---------------- main.cpp ----------------
-cat > "$PROJ_ROOT/src/main.cpp" <<EOF
+    # consumer.cpp
+    cat > "$PROJ_ROOT/src/consumer.cpp" <<EOF
+#include <iostream>
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentLoader.hpp"
+#include "areg/component/ComponentThread.hpp"
+#include "src/services/HelloServiceClientBase.hpp"
+
+//!< Service Consumer: ServiceConsumer class declaration
+class ServiceConsumer   : public    Component
+                        , protected HelloServiceClientBase
+{
+public:
+    ServiceConsumer(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+        : Component             (entry, owner)
+        , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
+    {   }
+
+protected:
+    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
+    {
+        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+            requestHelloService();
+        else if (NEService::isServiceConnected(status) == false)
+            Application::signalAppQuit();
+
+        return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
+    }
+
+    virtual void responseHelloService(void) override
+    {
+        std::cout << "'Good bye Service!'" << std::endl;
+        Application::signalAppQuit();
+    }
+};
+
+BEGIN_MODEL("ConsumerModel")
+    BEGIN_REGISTER_THREAD("Thread1")
+        BEGIN_REGISTER_COMPONENT("ServiceConsumer", ServiceConsumer)
+            REGISTER_DEPENDENCY("ServiceProvider")
+        END_REGISTER_COMPONENT("ServiceConsumer")
+    END_REGISTER_THREAD("Thread1")
+END_MODEL("ConsumerModel")
+
+int main(void)
+{
+    Application::initApplication();
+    Application::loadModel("ConsumerModel");
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::releaseApplication();
+    return 0;
+}
+EOF
+
+    # CMakeLists.txt for multiprocessing
+    cat > "$PROJ_ROOT/src/CMakeLists.txt" <<EOF
+addServiceInterface(gen_$PROJ_NAME src/services/HelloService.siml)
+macro_declare_executable(${PROJ_NAME}_provider gen_$PROJ_NAME provider.cpp)
+macro_declare_executable(${PROJ_NAME}_consumer gen_$PROJ_NAME consumer.cpp)
+EOF
+
+else
+    # ---------------- Multithreading Mode ----------------
+    
+    cat > "$PROJ_ROOT/src/main.cpp" <<EOF
 /**
  * \file    main.cpp
  * \brief   Minimal RPC example with request and response running in different threads.
@@ -111,20 +228,20 @@ cat > "$PROJ_ROOT/src/main.cpp" <<EOF
 #include "src/services/HelloServiceStub.hpp"
 #include "src/services/HelloServiceClientBase.hpp"
 
-//!< Service Provider: ServiceProvider declaration
+//!< Service Provider: ServiceProvider class declaration
 class ServiceProvider   : public    Component
-                    , protected HelloServiceStub
+                        , protected HelloServiceStub
 {
 public:
-   ServiceProvider( const NERegistry::ComponentEntry& entry, ComponentThread& owner )
-       : Component(entry, owner)
-       , HelloServiceStub(static_cast<Component&>(self()))
-   { }
+    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+        : Component(entry, owner)
+        , HelloServiceStub(static_cast<Component&>(self()))
+    { }
 
     virtual void requestHelloService(void) override
     {
-       std::cout << "'Hello Service!'" << std::endl;
-       responseHelloService();
+        std::cout << "'Hello Service!'" << std::endl;
+        responseHelloService();
     }
 
 private:
@@ -132,41 +249,41 @@ private:
     { return (*this); }
 };
 
-//!< ServiceConsumer declaration
+//!< Service Consumer: ServiceConsumer class declaration
 class ServiceConsumer   : public    Component
-                    , protected HelloServiceClientBase
+                        , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-       : Component( entry, owner )
-       , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
+    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+        : Component(entry, owner)
+        , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
     { }
 
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase& proxy ) override
+    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
     {
-       if ( HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status) )
-          requestHelloService();
-       return true;
+        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+            requestHelloService();
+        return true;
     }
 
     virtual void responseHelloService(void) override
     {
-       std::cout << "Received response, end application" << std::endl;
-       Application::signalAppQuit();
+        std::cout << "Received response, end application" << std::endl;
+        Application::signalAppQuit();
     }
 };
 
 BEGIN_MODEL("ServiceModel")
     BEGIN_REGISTER_THREAD( "Thread1" )
-       BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-          REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
-       END_REGISTER_COMPONENT( "ServiceProvider" )
+        BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+        END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 
     BEGIN_REGISTER_THREAD( "Thread2" )
-       BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceConsumer )
-          REGISTER_DEPENDENCY( "ServiceProvider" )
-       END_REGISTER_COMPONENT( "ServiceClient" )
+        BEGIN_REGISTER_COMPONENT( "ServiceConsumer", ServiceConsumer )
+            REGISTER_DEPENDENCY( "ServiceProvider" )
+        END_REGISTER_COMPONENT( "ServiceConsumer" )
     END_REGISTER_THREAD( "Thread2" )
 END_MODEL("ServiceModel")
 
@@ -180,8 +297,15 @@ int main(void)
 }
 EOF
 
+    cat > "$PROJ_ROOT/src/CMakeLists.txt" <<EOF
+addServiceInterface(gen_$PROJ_NAME services/HelloService.siml)
+macro_declare_executable($PROJ_NAME gen_$PROJ_NAME main.cpp)
+EOF
+
+fi
+
 echo
-echo "AREG Hello Service project created at: $PROJ_ROOT"
+echo "AREG $APP_MODE project created at: $PROJ_ROOT"
 echo "Build instructions:"
 echo "  cd $PROJ_ROOT"
 echo "  cmake -B ./build"
