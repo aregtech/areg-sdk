@@ -11,13 +11,8 @@
 
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
 [![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://github.com/aregtech/areg-sdk/compare/v1.5.0...master)
-[![Latest tag](https://img.shields.io/github/v/tag/aregtech/areg-sdk?include_prereleases&style=social&logo=wiki&label=Latest%20tag)](https://github.com/aregtech/areg-sdk/tags)
 [![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/stargazers)
-[![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/network/members)
-[![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/watchers)
 [![Wiki Pages](https://img.shields.io/badge/Areg%20Wiki%20Pages-8-brightgreen?style=social&logo=wikipedia)](https://github.com/aregtech/areg-sdk/wiki/)
-
-
 
 ⭐ **If you find Areg SDK useful, please give us a star. It helps the community grow!**
 
@@ -51,6 +46,7 @@ Most C++ projects don't fail on algorithms. They fail on **threads, IPC, and fra
 - [Why Areg SDK: Benefits and Comparison](#why-areg-sdk-benefits-and-comparison)
 - [What is Areg SDK](#what-is-areg-sdk)
 - [Getting Started: Build and Integration](#getting-started-build-and-integration)
+- [Set Up an Areg-Based Project](#set-up-an-areg-based-project)
 - [Core Modules and Architecture](#core-modules-and-architecture)
 - [Use Cases: Distributed, RPC and IPC](#use-cases-distributed-rpc-and-ipc)
 - [Roadmap](#roadmap)
@@ -255,13 +251,13 @@ public:
   bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
     HelloServiceClientBase::serviceConnected(status, proxy);
     if (NEService::isServiceConnected(status))
-      requestHelloService();  // Call of method of remote "ServiceProvider" object.
+      requestHelloService();  // "ServiceProvider" object found, call remote method here.
     return true;
   }
 };
 ```
 
-3️⃣ **Define a model - automates threading, automates creating objects, automates service discovery:**
+3️⃣ **Define a model with the structure of threads, services, and dependencies to enable automated threading, and service instantiation:**
 ```cpp
 BEGIN_MODEL("ServiceModel")
   BEGIN_REGISTER_THREAD("Thread1")
@@ -319,6 +315,52 @@ Follow this progressive path to master Areg SDK:
 > 💡 **Advanced builds** (IDE setup, cross-compilation, disabling tests/examples) → consult the [Wiki](./docs/wiki/)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Set Up an Areg-Based Project[![](./docs/img/pin.svg)](#set-up-an-areg-based-project)
+
+To quickly bootstrap an Areg-based project, the Areg SDK provides a setup script that automates project creation and initial configuration. The tool generates a ready-to-build project structure, prepares CMake files, integrates the Areg SDK as a dependency, and creates a minimal “Hello Service” example for either multithreaded or multiprocess architectures.
+
+This allows you to start developing Areg-based services immediately, without manual configuration.
+
+### Project Creation Steps
+
+**Step 1:** Clone the `areg-sdk` repository:
+```bash
+git clone https://github.com/aregtech/areg-sdk.git
+````
+
+**Step 2:** Run the project setup script from the command line.
+
+*On Linux:*  
+```bash
+./areg-sdk/tools/setup-project.sh
+```
+
+*On Windows:*  
+```bash
+.\areg-sdk\tools\setup-project.bat
+```
+
+> [!TIP]
+> During execution, the script will prompt you to specify:
+> * the project name
+> * the project location
+> * the execution model: **multiprocessing (option 1)** or **multithreading (option 2)**
+
+**Step 3:** After the script completes, navigate to the generated project directory and build it using CMake:
+
+```bash
+cd <your_project_folder>
+cmake -B ./build
+cmake --build ./build -j20
+```
+
+The resulting binaries are placed in the `./build/bin` directory. Run the binaries to verify the build.  
+⚡For multiprocessing projects, ensure that `mtrouter` is running.
+
+Once the basic setup is complete, you can begin defining and implementing your own services.
 
 ---
 
@@ -472,8 +514,7 @@ Traditional device drivers are **slow to develop, complex to maintain, and platf
 
 ## Roadmap[![](./docs/img/pin.svg)](#roadmap)
 
-Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on automation, reliability, platform expansion, and developer experience.
-
+Areg SDK continues to evolve with a strong focus on automation, reliability, scalability, and developer experience.
 🔹**2026 Priorities:**  
 - **Multi-channel support** - Multiplexed communications for higher throughput and efficiency
 - **Enhanced security** - encryption, authentication, and authorization mechanisms
@@ -497,7 +538,7 @@ Areg SDK continues to evolve for Desktop and Embedded platforms. The focus is on
 
 ## Documentation[![](./docs/img/pin.svg)](#documentation)
 
-- **[Installation and Build](./docs/wiki/README.md#1-installation-and-build)** - Cross-platform builds, toolchains, CMake integration for embedded and desktop targets
+- **[Installation and Build](./docs/wiki/README.md#1-installation-and-build)** - Cross-platform builds, toolchains, and CMake integration
 - **[Build Options and Integrations](./docs/wiki/README.md#2-build-options-and-integrations)** - FetchContent, packaging, and embedding Areg SDK as a library
 - **[Networking and Communication](./docs/wiki/README.md#3-networking-and-communication)** - Multitarget router for IPC and low-latency 
 - **[Logging and Monitoring](./docs/wiki/README.md#4-logging-and-monitoring)** - Log collector and observer usage for distributed systems
