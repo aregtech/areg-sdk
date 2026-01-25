@@ -195,7 +195,7 @@ After saving the document, integrate it into the project build:
 - Generated sources are compiled into a static library
 - The library is linked by Service Providers and Service Consumers
 
-More details are available in [`addServiceInterface()`](./02b-cmake-functions.md#addserviceinterface) and [Code Generator documentation](./06b-code-generator.md).
+More details are available in [`addServiceInterface()`](./02e-cmake-functions.md#addserviceinterface) and [Code Generator documentation](./06b-code-generator.md).
 
 ---
 

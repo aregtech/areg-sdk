@@ -1,9 +1,9 @@
 # ###########################################################################
-# Configuration file to install AREG SDK modules.
+# Configuration file to install Areg SDK modules.
 # Copyright 2022-2026 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing AREG SDK installation settings, Package name = '${AREG_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")
+message(STATUS "AREG: >>> Preparing Areg SDK installation settings, Package name = '${AREG_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -25,7 +25,7 @@ target_link_directories(logcollector    PUBLIC $<INSTALL_INTERFACE:lib> $<INSTAL
 target_link_directories(logobserver     PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(mtrouter        PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 
-# Copy all header files of AREG Framework
+# Copy all header files of Areg Framework
 install(DIRECTORY framework/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development
     FILES_MATCHING
@@ -50,7 +50,7 @@ if (AREG_SQLITE_FOUND)
 else()
     target_include_directories(aregsqlite3     PUBLIC $<INSTALL_INTERFACE:include>)
     target_include_directories(aregsqlite3     PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
-    # Copy all header files of AREG Framework
+    # Copy all header files of Areg Framework
     install(DIRECTORY thirdparty/sqlite3/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development
         FILES_MATCHING
@@ -68,14 +68,14 @@ else()
     )
 endif()
 
-# Copy AREG configuration file
+# Copy Areg configuration file
 install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
 )
 
-# Copy AREG SDK open source license
+# Copy Areg SDK open source license
 install(FILES LICENSE.txt
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
@@ -103,7 +103,7 @@ install(DIRECTORY tools/
             DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
 )
 
-# Copy compiled AREG SDK tools: logcollector, logobserver and mtrouter
+# Copy compiled Areg SDK tools: logcollector, logobserver and mtrouter
 install(TARGETS logcollector logobserver mtrouter
     EXPORT ${AREG_PACKAGE_NAME}
     RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}
@@ -125,7 +125,7 @@ else()
     )
 endif()
 
-# Copy AREG configuration file
+# Copy Areg configuration file
 install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
             DESTINATION tools/${AREG_PACKAGE_NAME}/config
             COMPONENT Development   COMPONENT Runtime

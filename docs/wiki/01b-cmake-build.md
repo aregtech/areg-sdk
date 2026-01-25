@@ -1,288 +1,578 @@
-# Building AREG SDK with CMake
+﻿# Building Areg SDK with CMake
 
-## Introduction
-This guide provides step-by-step instructions for building the **AREG SDK** on Linux, Windows, and Cygwin platforms using **CMake**. It also covers IDE setups for **Microsoft Visual Studio** and **Visual Studio Code**. Follow these steps to set up your build environment and efficiently compile AREG SDK projects. For troubleshooting, refer to the [AREG SDK documentation](https://github.com/aregtech/areg-sdk).
+This guide covers building Areg SDK on Linux, Windows, and Cygwin using CMake, including cross-compilation for different architectures and IDE setup for Visual Studio and VS Code.
+
+---
 
 ## Table of Contents
-1. [System Requirements](#1-system-requirements)
-   - [General Requirements](#general-requirements)
-   - [Platform-Specific Requirements](#platform-specific-requirements)
-2. [Configuration and Build Steps](#2-configuration-and-build-steps)
-   - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
-     - [Linux](#linux)
-     - [Windows](#windows)
-     - [Cygwin](#cygwin)
-   - [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository)
-   - [Step 3: Configuring the Build](#step-3-configuring-the-build)
-   - [Step 4: Building the Project](#step-4-building-the-project)
-   - [Step 5: Running Tests and Installing](#step-5-running-tests-and-installing)
-     - [Run Unit Tests:](#run-unit-tests)
-     - [Install AREG SDK:](#install-areg-sdk)
-3. [Cross-Compiling AREG SDK](#3-cross-compiling-areg-sdk)
-   - [Supported Compilers,[ Platforms, and Architectures](#supported-compilers-platforms-and-architectures)
-   - [Cross-Compiling for 32-bit Systems](#cross-compiling-for-32-bit-systems)
-   - [Cross-Compiling for ARM Processors](#cross-compiling-for-arm-processors)
-   - [Cross-Compiling for AARCH64 (64-bit ARM)](#cross-compiling-for-aarch64-64-bit-arm)
-4. [Additional IDE Configurations](#4-additional-ide-configurations)
-5. [Troubleshooting](#5-Troubleshooting)
+
+1. [Prerequisites](#prerequisites)
+2. [Quick Start](#quick-start)
+3. [Step-by-Step Build Instructions](#step-by-step-build-instructions)
+4. [Cross-Compilation](#cross-compilation)
+5. [IDE Configuration](#ide-configuration)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 1. System Requirements
+## Prerequisites
 
-### General Requirements
-Ensure your system includes the following:
-- **CMake** (version 3.20+)
-- **Git** for repository cloning
-- **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer
-- **Java** (version 17+ for code generation tools)
+### Required Tools
+
+- **CMake 3.20+** - Build system generator
+- **Git** - Version control
+- **C++17 Compiler** - GCC, Clang/LLVM, or MSVC
+- **Java 17+** - For code generation tools
 
 ### Platform-Specific Requirements
-- **Linux**: Install **ncurses** (required by `aregextend` extended objects).
-- **Windows**: Requires Microsoft Visual C++, including packages **CMake** and **CLang compiler for Windows**, and **MFC** for GUI examples.
-- **Optional Libraries**:
-  - **Google Test (GTest)** for unit tests (or build from sources).
-  - **SQLite3** (optional, or use the version in AREG SDK's `thirdparty` directory).
 
-If your system does not meet these requirements, proceed to [Step 1: Installing Dependencies](#step-1-installing-dependencies); otherwise, start from [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository).
+**Linux:**
+- `ncurses` library (required by `aregextend`)
+- GCC or Clang toolchain
+
+**Windows:**
+- Visual Studio with C++ workload
+- CMake tools for Visual Studio
+- Clang compiler for Windows (optional)
+- MFC libraries (for GUI examples)
+
+**Optional:**
+- **Google Test** - For unit tests (or built from sources)
+- **SQLite3** - For database features (or use bundled version in `thirdparty/`)
+
+> [!TIP]
+> If dependencies are already installed, skip to [Quick Start](#quick-start).
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 2. Configuration and Build Steps
+## Quick Start
 
-Follow these steps to configure and build the AREG SDK on your system.
+**Build Areg SDK in 4 commands:**
+
+```bash
+git clone https://github.com/aregtech/areg-sdk.git
+cd areg-sdk
+cmake -B ./build
+cmake --build ./build -j20
+```
+
+**Binaries location:**
+- **Linux:** `./product/build/<compiler>/<platform>-<arch>-release-shared/bin/`
+- **Windows:** `.\product\build\<compiler>\<platform>-<arch>-release-shared\bin\`
+
+**Example:** `./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/`
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-### Step 1: Installing Dependencies
+## Step-by-Step Build Instructions
 
-#### Linux
-To install the necessary packages:
+### Step 1: Install Dependencies
+
+#### Linux (Ubuntu/Debian)
+
 ```bash
 sudo apt-get update && sudo apt-get upgrade -y
 sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
 ```
-This command installs essential tools and libraries, including `ncurses` for Linux builds.
+
+**What gets installed:**
+- `git` - Version control
+- `cmake` - Build system
+- `build-essential` - GCC compiler and tools
+- `clang` - Alternative C++ compiler
+- `libncurses-dev` - Terminal UI library (required by `aregextend`)
+- `openjdk-17-jre` - Java runtime for code generator
 
 > [!NOTE]
-> You may need additional dependencies if compile for different target (**cross-compiling**). For additional information, refer to [Cross-Compiling AREG SDK](#crosscompiling-areg-sdk) section.
+> For cross-compilation, additional toolchains may be required. See [Cross-Compilation](#cross-compilation).
 
 #### Windows
-1. Download and install [Visual Studio](https://visualstudio.microsoft.com/), including packages **CMake** and **CLang compiler for Windows**.
-2. Install [Java](https://www.java.com/download/) and [Git](https://git-scm.com/download/win).
 
-After installing these tools, Windows will be ready for AREG SDK builds.
+1. **Install Visual Studio:**
+   - Download from [visualstudio.microsoft.com](https://visualstudio.microsoft.com/)
+   - Select **Desktop development with C++** workload
+   - Include **CMake tools** and **Clang compiler for Windows**
+
+2. **Install Java:**
+   - Download from [java.com/download](https://www.java.com/download/)
+   - Verify installation: `java -version`
+
+3. **Install Git:**
+   - Download from [git-scm.com/download/win](https://git-scm.com/download/win)
+   - Verify installation: `git --version`
 
 #### Cygwin
-Install required packages with the **[Cygwin installer](https://cygwin.com/install.html)** or by running:
+
+Install packages via [Cygwin installer](https://cygwin.com/install.html) or command line:
+
 ```powershell
-c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake, dos2unix, flexdll, gcc-g++, make, git, ncurses, libncurses-devel
+c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake,dos2unix,flexdll,gcc-g++,make,git,ncurses,libncurses-devel
 ```
 
----
+**Packages installed:**
+- `cmake`, `make` - Build tools
+- `gcc-g++` - C++ compiler
+- `git` - Version control
+- `ncurses`, `libncurses-devel` - Terminal library
 
-### Step 2: Cloning the AREG SDK Repository
+### Step 2: Clone Repository
 
-Clone the AREG SDK repository to obtain the latest source code:
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 ```
-Navigate to the project directory to proceed with build commands.
 
----
+**Expected output:**
+```
+Cloning into 'areg-sdk'...
+remote: Enumerating objects: 12345, done.
+remote: Counting objects: 100% (1234/1234), done.
+...
+```
 
-### Step 3: Configuring the Build
+### Step 3: Configure Build
 
-Initialize build configurations with default settings:
+**Basic configuration (uses defaults):**
+
 ```bash
 cmake -B ./build
 ```
-To customize the build, modify options as needed. Below is an example of configuring and building the AREG SDK sources in Debug mode, without Unit Tests and Examples:
+
+**Custom configuration example:**
+
 ```bash
-cmake -B ./build -DAREG_BUILD_TYPE=Debug -DAREG_EXAMPLES=OFF -DAREG_TESTS=OFF
+cmake -B ./build \
+  -DAREG_BUILD_TYPE=Debug \
+  -DAREG_EXAMPLES=OFF \
+  -DAREG_TESTS=OFF
 ```
-For additional configurations, refer to the [CMake Configuration Guide](./02a-cmake-config.md).
 
----
+**Common configuration options:**
 
-### Step 4: Building the Project
+| Option | Values | Description |
+|--------|--------|-------------|
+| `AREG_BUILD_TYPE` | `Release`, `Debug` | Build configuration |
+| `AREG_EXAMPLES` | `ON`, `OFF` | Build example projects |
+| `AREG_TESTS` | `ON`, `OFF` | Build unit tests |
+| `AREG_EXTENDED` | `ON`, `OFF` | Build extended library (requires ncurses) |
+| `AREG_LOGGER` | `ON`, `OFF` | Enable logging infrastructure |
 
-Compile the AREG SDK:
+> [!TIP]
+> For complete configuration options, see [CMake Configuration Guide](./02d-cmake-config.md).
+
+**Expected output:**
+```
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting CXX compiler ABI info
+-- Configuring done
+-- Generating done
+-- Build files written to: /path/to/areg-sdk/build
+```
+
+### Step 4: Build Project
+
+**Build with all available CPU cores:**
+
 ```bash
-cmake --build ./build -j
+cmake --build ./build -j20
 ```
-This command utilizes available cores to speed up the build process.
 
----
+**Build with specific number of cores:**
 
-### Step 5: Running Tests and Installing
+```bash
+cmake --build ./build -j20
+```
 
-#### Run Unit Tests:
-To execute unit tests (if enabled):
+**Build specific target:**
+
+```bash
+cmake --build ./build --target areg
+```
+
+**Expected output:**
+```
+[  1%] Building CXX object framework/areg/CMakeFiles/areg.dir/base/File.cpp.o
+[  2%] Building CXX object framework/areg/CMakeFiles/areg.dir/base/Process.cpp.o
+...
+[100%] Built target areg
+```
+
+**Build time:** 2-10 minutes depending on configuration and CPU cores.
+
+### Step 5: Run Tests (Optional)
+
+**Run all unit tests:**
+
 ```bash
 ctest --test-dir ./build
 ```
-To save test results to a file:
+
+**Run tests with detailed output:**
+
+```bash
+ctest --test-dir ./build --output-on-failure
+```
+
+**Save test results to JUnit XML:**
+
 ```bash
 ctest --test-dir ./build --output-on-failure --output-junit test_results.xml
 ```
 
-#### Install AREG SDK:
+**Expected output:**
+```
+Test project /path/to/areg-sdk/build
+    Start 1: NEMath.StringTest
+1/5 Test #1: NEMath.StringTest ................   Passed    0.12 sec
+    Start 2: NEMath.BufferTest
+2/5 Test #2: NEMath.BufferTest ................   Passed    0.08 sec
+...
+100% tests passed, 0 tests failed out of 5
+```
 
-Install AREG SDK binaries and headers to develop multithreaded and multiprocessing applications based on the AREG Framework.
+### Step 6: Install (Optional)
 
-- **Linux**:
-  ```bash
-  sudo cmake --install ./build
-  ```
-- **Windows** (run as Administrator):
-  ```powershell
-  cmake --install ./build
-  ```
+Install Areg SDK libraries and headers system-wide for use in other projects.
 
----
+**Linux:**
+```bash
+sudo cmake --install ./build
+```
 
-## 3. Cross-Compiling AREG SDK
+**Windows (run as Administrator):**
+```powershell
+cmake --install ./build
+```
 
-Cross-compiling enables building applications for architectures different from the native environment. Below are instructions for configuring AREG SDK to target 32-bit systems, as well as ARM and AARCH64 (64-bit ARM) processors.
+**Default installation locations:**
+- **Linux:** `/usr/local/lib/`, `/usr/local/include/`
+- **Windows:** `C:\Program Files (x86)\areg\`
 
-### Supported Compilers, Platforms, and Architectures
-
-| **Compiler** | **Platform**    | **API**        | **CPU Architecture**      |
-|--------------|-----------------|----------------|---------------------------|
-| GNU          | Linux, macOS    | POSIX          | x86, x86_64, arm, aarch64 |
-| Clang        | Linux, Windows  | POSIX, Win32   | x86, x86_64, arm, aarch64 |
-| MSVC         | Windows         | Win32          | x86, x86_64               |
-| Cygwin GNU   | Windows         | POSIX          | x86, x86_64               |
+**Custom installation prefix:**
+```bash
+cmake --install ./build --prefix /opt/areg
+```
 
 > [!NOTE]
-> Compilation with **Clang** compiler for all specified processors where tested only under Linux platform.
+> System-wide installation is optional. You can use Areg SDK directly from the build directory or via [CMake FetchContent](./02b-cmake-integrate.md).
 
-**Important Notes**
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
-- **Dependencies:**
-  While the core AREG SDK has no external dependencies, the extended library `aregextend` may require additional libraries. When cross-compiling, consider the following:
-  - If unsure about the availability of required libraries on the target platform, set `AREG_EXTENDED` to `OFF`:
-    ```bash
-    cmake -DAREG_EXTENDED=OFF <source-dir>
-    ```
-  - Ensure that dependencies like `ncurses` or `sqlite3` (if SQLite3 is used) are available for the target platform. Missing dependencies will cause the build to fail.
+---
 
-- **Binary Compatibility:**
-  Use the `macro_check_module_architect` macro in your CMake script to validate the compatibility of dependent libraries with the target processor architecture. Provide the full path to the library (static or shared), the target name, and the processor architecture as arguments. For detailed usage, see the [macro_check_module_architect documentation](./02b-cmake-functions.md#macro_check_module_architect).
+## Cross-Compilation
+
+Cross-compilation enables building Areg SDK for architectures different from your host system.
+
+### Supported Platforms and Architectures
+
+| Compiler | Platform | API | CPU Architecture |
+|----------|----------|-----|------------------|
+| **GCC** | Linux, macOS | POSIX | x86, x86_64, arm, aarch64 |
+| **Clang** | Linux, Windows | POSIX, Win32 | x86, x86_64, arm, aarch64 |
+| **MSVC** | Windows | Win32 | x86, x86_64 |
+| **Cygwin GCC** | Windows | POSIX | x86, x86_64 |
+
+> [!NOTE]
+> Clang cross-compilation for ARM processors has been tested only on Linux.
+
+### Important Considerations
+
+**Dependencies:**
+
+The core Areg Framework has no external dependencies, but the extended library (`aregextend`) requires:
+- `ncurses` (Linux/Cygwin)
+- `sqlite3` (optional, or use bundled version)
+
+When cross-compiling, ensure target platform has these libraries or disable `aregextend`:
+
+```bash
+cmake -B ./build -DAREG_EXTENDED=OFF -DAREG_PROCESSOR=arm
+```
+
+**Binary Compatibility:**
+
+Use `macro_check_module_architect` in your CMake scripts to validate library compatibility with target architecture. See [CMake Functions Guide](./02e-cmake-functions.md#macro_check_module_architect).
+
+**Toolchain Files:**
+
+For complex cross-compilation, use CMake toolchain files. Examples available in [conf/export/example/toolchains/](../../conf/export/example/toolchains/).
+
+### Cross-Compile for 32-bit x86
+
+**1. Install 32-bit development libraries:**
+
+```bash
+sudo apt-get install -y gcc-multilib g++-multilib
+```
+
+**2. Configure for 32-bit:**
+
+```bash
+cmake -B ./build -DAREG_PROCESSOR=x86 -DAREG_COMPILER_FAMILY=llvm
+```
+
+**3. Build:**
+
+```bash
+cmake --build ./build -j20
+```
+
+**4. Verify binary architecture:**
+
+```bash
+file ./product/build/llvm-clang/linux-32-x86-release-shared/bin/mtrouter
+```
+
+**Expected output:**
+```
+mtrouter: ELF 32-bit LSB pie executable, Intel 80386, version 1 (GNU/Linux), ...
+```
+
+**Alternative verification:**
+
+```bash
+od -t x1 -t c ./product/build/llvm-clang/linux-32-x86-release-shared/bin/mtrouter | head -n 2
+```
+
+**Expected output:**
+```
+0000000  7f  45  4c  46  01  01  01  00  00  00  00  00  00  00  00  00
+        177   E   L   F 001 001 001  \0  \0  \0  \0  \0  \0  \0  \0  \0
+```
+
+The 5th byte `01` indicates 32-bit, `02` indicates 64-bit. See [ELF Header format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header).
+
+
+### Cross-Compile for ARM (32-bit)
+
+**1. Install ARM toolchain:**
+
+```bash
+sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+```
 
 > [!TIP]
-> To simplify cross-compilation, create or use pre-existing toolchain files. Examples of toolchain files are available in the [toolchain directory](../../conf/export/example/toolchains/) for reference. These files help configure the compiler and architecture settings for the desired target platform.
+> Use `gcc-arm-linux-gnueabihf` for modern ARM processors with hardware floating-point. For older processors, use `gcc-arm-linux-gnueabi`.
 
-### Cross-Compiling for 32-bit Systems
+**2. Configure for ARM:**
 
-To compile AREG SDK for a 32-bit system, you need to specify the target processor and ensure you have the correct 32-bit libraries installed.
-
-**Steps**
-
-1. **Install Required Libraries**
-  ```bash
-  sudo apt-get install -y gcc-multilib g++-multilib
-  ```
-2. **Configure CMake for 32-bit x86 Architecture**
-  Optionally select compiler (here it is `clang++`)
-  ```bash
-  cmake -B ./build -DAREG_PROCESSOR=x86 -DAREG_COMPILER_FAMILY=llvm
-  ```
-3. **Build AREG SDK**
-  ```bash
-  cmake --build ./build -j20
-  ```
-
-To verify that a binary is 32-bit, navigate to the build directory and run:
 ```bash
-file ./mtrouter.elf
+cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
 ```
-This command should output something like:
-> ./mtrouter.elf: ELF **32-bit** LSB pie executable, **Intel 80386**, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=3df1d5e3d1b90b9533b93a906cece6ff95fa816c, for GNU/Linux 3.2.0, not stripped
 
-Alternatively, you can run:
+**3. Build:**
+
 ```bash
-od -t x1 -t c ./mtrouter | head -n 2
+cmake --build ./build -j20
 ```
-In the ELF Header, the 5th byte `001` indicates a 32-bit executable, while `002` indicates 64-bit.
-> ```plaintext
-> 0000000  7f  45  4c  46  01  01  01  00  00  00  00  00  00  00  00  00
->         177   E   L   F 001 001 001  \0  \0  \0  \0  \0  \0  \0  \0  \0
-> ```
-For further details, refer to the **[ELF Header](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header)** Wikipedia page.
 
-### Cross-Compiling for ARM Processors
+**4. Verify:**
 
-Cross-compiling for ARM processors requires an ARM-compatible toolchain and configuring CMake for ARM architecture.
-
-**Steps**
-
-1. **Install ARM Toolchain**
-  ```bash
-  sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
-  ```
-  > [!NOTE]
-  > For most 32-bit modern ARM processors, `gcc-arm-linux-gnueabihf` is recommended over `gcc-arm-linux-gnueab`.
-
-2. **Configure CMake for ARM Architecture**
-  ```bash
-  cmake -B ./build -DAREG_PROCESSOR=arm -DAREG_COMPILER_FAMILY=gnu
-  ```
-3. **Build AREG SDK**
-  ```bash
-  cmake --build ./build -j 20
-  ```
-
-Verify the architecture of the compiled binary with:
 ```bash
-file ./mtrouter.elf
+file ./product/build/gnu-g++/linux-32-arm-release-shared/bin/mtrouter
 ```
-This should output message `ELF 32-bit LSB executable, ARM, ...`.
 
-### Cross-Compiling for AARCH64 (64-bit ARM)
+**Expected output:**
+```
+mtrouter: ELF 32-bit LSB executable, ARM, EABI5 version 1 (GNU/Linux), ...
+```
 
-For AARCH64 architecture, install the 64-bit ARM toolchain and configure CMake accordingly.
 
-**Steps**
-1. **Install AARCH64 Toolchain**
-  ```bash
-  sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
-  ```
+### Cross-Compile for AArch64 (64-bit ARM)
 
-2. **Configure CMake for AARCH64 Architecture**
-  ```bash
-  cmake -B ./build -DAREG_PROCESSOR=aarch64 -DAREG_COMPILER_FAMILY=gnu
-  ```
+**1. Install AArch64 toolchain:**
 
-3. **Build AREG SDK**
-  ```bash
-  cmake --build ./build -j 20
-  ```
-
-Verify the binary architecture:
 ```bash
-file ./mtrouter.elf
+sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
 ```
-This should output message `ELF 64-bit LSB executable, ARM aarch64, ...`.
+
+**2. Configure for AArch64:**
+
+```bash
+cmake -B ./build -DAREG_PROCESSOR=aarch64 -DAREG_COMPILER_FAMILY=gnu
+```
+
+**3. Build:**
+
+```bash
+cmake --build ./build -j20
+```
+
+**4. Verify:**
+
+```bash
+file ./product/build/gnu-g++/linux-64-aarch64-release-shared/bin/mtrouter
+```
+
+**Expected output:**
+```
+mtrouter: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), ...
+```
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 4. Additional IDE Configurations
+## IDE Configuration
 
-For **Microsoft Visual Studio** or **Visual Studio Code**:
-1. Open the `<areg-sdk>` directory in your IDE.
-2. Right-click `CMakeLists.txt` and select *Configure*.
-3. Adjust [AREG SDK settings](./02a-cmake-config.md) in the CMake cache if necessary, then build the project directly in the IDE.
+### Visual Studio
 
-**Further Resources**:
-For additional setup information, refer to [Visual Studio CMake Projects](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio) or [VS Code CMake Quickstart](https://code.visualstudio.com/docs/cpp/cmake-quickstart).
+**1. Open Areg SDK in Visual Studio:**
+   - **File → Open → Folder**
+   - Navigate to `areg-sdk` directory
+
+**2. Configure CMake:**
+   - Right-click `CMakeLists.txt` → **CMake Settings**
+   - Adjust configuration options as needed
+   - Visual Studio auto-detects CMake projects
+
+**3. Build:**
+   - **Build → Build All** (or `Ctrl+Shift+B`)
+
+**4. Run examples:**
+   - Select target from dropdown (e.g., `01_minimalrpc`)
+   - **Debug → Start Without Debugging** (`Ctrl+F5`)
+
+> [!TIP]
+> For detailed Visual Studio CMake setup, see [Visual Studio CMake Projects](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio).
+
+
+### Visual Studio Code
+
+**1. Install extensions:**
+   - **C/C++ Extension Pack** (Microsoft)
+   - **CMake Tools** (Microsoft)
+
+**2. Open Areg SDK:**
+   - **File → Open Folder**
+   - Select `areg-sdk` directory
+
+**3. Configure CMake:**
+   - Press `Ctrl+Shift+P` → **CMake: Configure**
+   - Select compiler kit (GCC, Clang, or MSVC)
+
+**4. Build:**
+   - Press `F7` or click **Build** in status bar
+
+**5. Debug:**
+   - Set breakpoints in source files
+   - Press `F5` to start debugging
+
+> [!TIP]
+> For VS Code CMake setup, see [VS Code CMake Quickstart](https://code.visualstudio.com/docs/cpp/cmake-quickstart).
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 5. Troubleshooting
+## Troubleshooting
 
-If you have difficulties to compile AREG SDK binaries or integrate in your project, refer to the [Troubleshooting CMake Builds on Linux](./07b-troubleshooting-cmake-linux-builds.md) or [Integration Troubleshooting](./07c-troubleshooting-integration.md) documents. If your problem is not listed or you could not solve the problem, open a [topic for discussion](https://github.com/aregtech/areg-sdk/discussions) at `areg-sdk` repository.
+### Build Configuration Issues
+
+**Problem:** CMake cannot find compiler.
+
+**Solution:** Ensure compiler is in PATH or specify explicitly:
+
+```bash
+cmake -B ./build -DCMAKE_CXX_COMPILER=/usr/bin/g++-11
+```
+
+### Missing Dependencies
+
+**Problem:** `ncurses` not found during configuration.
+
+**Solution:** Install ncurses development package:
+
+**Linux:**
+```bash
+sudo apt-get install libncurses-dev
+```
+
+**Or disable extended library:**
+```bash
+cmake -B ./build -DAREG_EXTENDED=OFF
+```
+
+
+### Java Not Found
+
+**Problem:** Code generator fails with "Java not found".
+
+**Solution:** Install Java 17+ and verify:
+
+```bash
+java -version
+```
+
+Should output Java version 17 or higher. Install from [Adoptium](https://adoptium.net/) or package manager.
+
+
+### Cross-Compilation Errors
+
+**Problem:** Build fails when cross-compiling.
+
+**Solution:**
+1. Verify toolchain is installed:
+   ```bash
+   arm-linux-gnueabihf-g++ --version
+   ```
+2. Check target dependencies are available
+3. Use toolchain file for complex setups:
+   ```bash
+   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=conf/export/example/toolchains/arm-linux.cmake
+   ```
+
+### Windows Build Issues
+
+**Problem:** Build fails with "MSVC not found".
+
+**Solution:**
+1. Launch **Developer Command Prompt for VS**
+2. Navigate to `areg-sdk` directory
+3. Run CMake commands from this prompt
+
+**Or specify generator explicitly:**
+```powershell
+cmake -B ./build -G "Visual Studio 17 2022"
+```
+
+### Unit Test Failures
+
+**Problem:** Some unit tests fail.
+
+**Solution:**
+1. Run tests with verbose output:
+   ```bash
+   ctest --test-dir ./build --output-on-failure --verbose
+   ```
+2. Check test logs in `./build/Testing/Temporary/LastTest.log`
+3. Report issues at [areg-sdk discussions](https://github.com/aregtech/areg-sdk/discussions)
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
+
+## Additional Resources
+
+**Build Guides:**
+- [CMake Configuration Options](./02d-cmake-config.md) - Complete configuration reference
+- [CMake Integration Guide](./02b-cmake-integrate.md) - Using Areg SDK in your projects
+- [vcpkg Installation](./02d-cmake-vcpkg.md) - Alternative installation method
+
+**Troubleshooting:**
+- [Linux Build Troubleshooting](./07b-troubleshooting-cmake-linux-builds.md)
+- [Integration Troubleshooting](./07c-troubleshooting-integration.md)
+
+**Help:**
+If you encounter issues not covered here, open a [discussion](https://github.com/aregtech/areg-sdk/discussions) or [issue](https://github.com/aregtech/areg-sdk/issues) on GitHub.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+Copyright © 2026, Aregtech

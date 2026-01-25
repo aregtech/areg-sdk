@@ -62,19 +62,22 @@ Guides for installing and building the Areg SDK across supported platforms and t
 
 Configuration, customization, and integration of Areg SDK into existing projects.
 
-- **[CMake Configuration Options for Building Areg SDK](./02a-cmake-config.md)**  
-  Complete reference of CMake options controlling features, modules, and build behavior.
+- **[Quick Project Setup with Areg SDK](./02a-quick-project-setup.md)** ⭐ NEW
+  Create ready-to-build projects in 30 seconds using the project setup tool.
 
-- **[Areg SDK CMake Functions and Macros](./02b-cmake-functions.md)**  
-  Description of helper CMake functions and macros provided by Areg SDK.
-
-- **[Integrating Areg Framework with CMake](./02c-cmake-integrate.md)**  
+- **[Integrating Areg Framework with CMake](./02b-cmake-integrate.md)**  
   Best practices for consuming Areg SDK from external CMake-based projects.
 
-- **[Integrating Areg Framework with Microsoft Visual Studio](./02d-msvc-integrate.md)**  
+- **[Integrating Areg Framework with Microsoft Visual Studio](./02c-msvc-integrate.md)**  
   How to integrate Areg SDK binaries or sources into Visual Studio solutions.
 
-- **[Areg SDK Preprocessor Definitions Guide: Configuration and Usage Across Toolchains](./02e-preprocessor-definitions.md)**  
+- **[CMake Configuration Options for Building Areg SDK](./02d-cmake-config.md)**  
+  Complete reference of CMake options controlling features, modules, and build behavior.
+
+- **[Areg SDK CMake Functions and Macros](./02e-cmake-functions.md)**  
+  Description of helper CMake functions and macros provided by Areg SDK.
+
+- **[Areg SDK Preprocessor Definitions Guide: Configuration and Usage Across Toolchains](./02f-preprocessor-definitions.md)**  
   Detailed guide to preprocessor switches affecting logging, IPC, threading, and runtime behavior.
 
 ---
@@ -120,7 +123,7 @@ Built-in persistent storage support.
 Tools that accelerate development and enforce architectural consistency.
 
 - **[Areg SDK Tools](./06a-areg-sdk-tools.md)**  
-  Overview of all tools shipped with Areg SDK.
+  Overview of all tools shipped with Areg SDK, including [Quick Project Setup Guide](./02a-quick-project-setup.md).
 
 - **[Areg SDK Code Generator (`codegen.jar`)](./06b-code-generator.md)**  
   Generate service interfaces, stubs, and proxies from interface definition files.

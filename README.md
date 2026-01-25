@@ -187,7 +187,7 @@ With Areg SDK, you:
 - **OS:** Linux or Windows  
 - **Hardware:** x86, x86_64, ARM, AArch64
 
-See [CMake Configuration Guide](./docs/wiki/02a-cmake-config.md) for detailed setup and troubleshooting.
+See [CMake Configuration Guide](./docs/wiki/02d-cmake-config.md) for detailed setup and troubleshooting.
 
 ---
 
@@ -344,7 +344,7 @@ For multiprocess projects, ensure `mtrouter` is running to enable Service Consum
 
 ### Integration Options
 
-- **CMake FetchContent:** [Integration Guide](./docs/wiki/02c-cmake-integrate.md)
+- **CMake FetchContent:** [Integration Guide](./docs/wiki/02b-cmake-integrate.md)
 - **Demo Project:** [areg-sdk-demo](https://github.com/aregtech/areg-sdk-demo)
 - **Qt Tools (Lusan):** [areg-sdk-tools](https://github.com/aregtech/areg-sdk-tools)
 - **Edge AI Use Cases:** [areg-edgeai](https://github.com/aregtech/areg-edgeai)

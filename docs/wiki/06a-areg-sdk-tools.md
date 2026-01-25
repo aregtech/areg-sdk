@@ -8,6 +8,7 @@ This document describes the available tools, their purpose, and how to build or 
 
 ## Table of Contents
 - [Overview of Tools](#overview-of-tools)
+- [Project Setup Tool]
 - [1. Code Generator (`codegen.jar`)](#1-code-generator-codegenjar)
   - [Purpose](#purpose)
   - [Usage Model](#usage-model)
@@ -34,10 +35,49 @@ This document describes the available tools, their purpose, and how to build or 
 
 | Tool           | Type        | Purpose                                                                  |
 |----------------|-------------|--------------------------------------------------------------------------|
+| `project-setup`| Script      | A script to run in command line to setup a new project in 30 seconds     |
 | `codegen.jar`  | Build-time  | Generates service-related C++ code from service interface definitions    |
 | `logcollector` | Runtime     | Collects logs from one or multiple Areg-based applications               |
 | `logobserver`  | Runtime     | Controls and records logging behavior (scopes, priorities)               |
 | `lusan`        | GUI Tool    | Visual service design, log collection, visualization, and analysis       |
+
+---
+
+## Project Setup Tool
+
+**Scripts:** 
+- Linux/macOS: `tools/project-setup.sh`
+- Windows: `tools/project-setup.bat`
+
+**Purpose:** Create ready-to-build Areg SDK projects interactively
+
+**Features:**
+- Interactive project creation
+- Choose multithreading or multiprocessing
+- Automatic CMakeLists.txt generation
+- Service interface template included
+- Example source code generated
+
+**Project Modes:**
+1. **Multiprocessing** - Provider and consumer as separate processes
+2. **Multithreading** - Provider and consumer in same process, different threads
+
+**Generated Files:**
+- `CMakeLists.txt` - Project build configuration
+- `src/services/HelloService.siml` - Service interface definition
+- Source files - Provider and/or consumer implementation
+- `src/CMakeLists.txt` - Source build configuration
+
+**Usage:**
+```bash
+# Linux/macOS
+./areg-sdk/tools/project-setup.sh
+
+# Windows
+.\areg-sdk\tools\project-setup.bat
+```
+
+**Complete Guide:** [Quick Project Setup](./02a-quick-project-setup.md)
 
 ---
 

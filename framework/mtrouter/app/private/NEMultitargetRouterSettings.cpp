@@ -21,25 +21,25 @@ wchar_t *   NEMultitargetRouterSettings::SERVICE_NAME_WIDE     { NEApplication::
 
 char        NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII[]
 {
-          'A', 'R', 'E', 'G', ' '
-        , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
+          'A', 'r', 'e', 'g', ' '
+        , 'M', 'u', 'l', 't', 'i', 't', 'a', 'r', 'g', 'e', 't', ' '
         , 'R', 'o', 'u', 't', 'e', 'r', ' '
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
 wchar_t     NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE[]
 {
-          'A', 'R', 'E', 'G', ' '
-        , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
+          'A', 'r', 'e', 'g', ' '
+        , 'M', 'u', 'l', 't', 'i', 't', 'a', 'r', 'g', 'e', 't', ' '
         , 'R', 'o', 'u', 't', 'e', 'r', ' '
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
 char        NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII[]
 {
-          'A', 'R', 'E', 'G', ' '
+          'A', 'r', 'e', 'g', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
-        , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
+        , 'M', 'u', 'l', 't', 'i', 't', 'a', 'r', 'g', 'e', 't', ' '
         , 'R', 'o', 'u', 't', 'e', 'r', ' '
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e'
         , 't', 'o', ' ', 'a', 'u', 't', 'o', 'm', 'a', 't', 'e', ' '
@@ -48,9 +48,9 @@ char        NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII[]
 
 wchar_t     NEMultitargetRouterSettings::SERVICE_DESCRIBE_WIDE[]
 {
-          'A', 'R', 'E', 'G', ' '
+          'A', 'r', 'e', 'g', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
-        , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
+        , 'M', 'u', 'l', 't', 'i', 't', 'a', 'r', 'g', 'e', 't', ' '
         , 'R', 'o', 'u', 't', 'e', 'r', ' '
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e'
         , 't', 'o', ' ', 'a', 'u', 't', 'o', 'm', 'a', 't', 'e', ' '

@@ -57,7 +57,7 @@ namespace
 {
     constexpr std::string_view _msgHelp []
     {
-          {"Usage of AREG Message Router (mtrouter) :"}
+          {"Usage of Areg Multi-target Message Router (mtrouter) :"}
         , NESystemService::MSG_SEPARATOR
         , {"-c, --console   : Command to run mtrouter as a console application (default option). Usage: \'mtrouter --console\'"}
         , {"-h, --help      : Command to display this message on console."}

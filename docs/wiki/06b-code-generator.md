@@ -46,7 +46,7 @@ Use AREG **CMake functions** from [functions.cmake](./../../conf/cmake/functions
 - **addServiceInterfaceEx**: Allows files to be generated in any specified location.
 - **macro_add_service_interface**: Uses the specified code generator and location for generated files.
 
-For automated code generation and inclusion **with Microsoft Visual Studio**, refer to [Integrating AREG Framework with Microsoft Visual Studio](./02d-msvc-integrate.md).
+For automated code generation and inclusion **with Microsoft Visual Studio**, refer to [Integrating AREG Framework with Microsoft Visual Studio](./02c-msvc-integrate.md).
 
 ## 4. Example Workflow
 

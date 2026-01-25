@@ -65,7 +65,7 @@ namespace NEMultitargetRouterSettings
     /**
      * \brief   The title to display on console when run application.
      **/
-    constexpr std::string_view   APP_TITLE  { "AREG Message Router console application ..." };
+    constexpr std::string_view   APP_TITLE  { "Areg Multi-target Message Router console application ..." };
 
 } // namespace NEMultitargetRouterSettings
 

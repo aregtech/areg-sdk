@@ -23,7 +23,7 @@ This document replies to several **howto** questions, which are listed in the _T
 
 ## 1. How to use preprocessor defines
 
-The AREG SDK provides a range of preprocessor defines that developers can utilize during the code compilation process. These defines enable developers to customize the SDK's behavior according to their specific requirements. The [AREG SDK Preprocessor Definitions Guide](./wiki/02e-preprocessor-definitions.md) page in the AREG SDK Wiki document is a comprehensive guide, offering detailed explanations and examples on how to modify these defines during compilation.
+The AREG SDK provides a range of preprocessor defines that developers can utilize during the code compilation process. These defines enable developers to customize the SDK's behavior according to their specific requirements. The [AREG SDK Preprocessor Definitions Guide](./wiki/02f-preprocessor-definitions.md) page in the AREG SDK Wiki document is a comprehensive guide, offering detailed explanations and examples on how to modify these defines during compilation.
 
 By modifying the preprocessor defines, developers can enable or disable features, configure behaviors, and customize the SDK to suit their application's needs. The Wiki page acts as a valuable reference, ensuring a clear understanding of each define's purpose.
 
@@ -45,7 +45,7 @@ The AREG SDK source codes have a minimum requirement of **C++17**, CMake 3.20 or
 
 ## 3. How to create a project or integrate in project
 
-You can setup your own project and easily integrate AREG SDK builds in your project. To integrate using CMake, refer to the [Integrating AREG Framework with CMake](./../docs/wiki/02c-cmake-integrate.md) document. To integrate using MSBuild (Microsoft Visual Studio), refer to the [Integrating AREG Framework with Microsoft Visual Studio](./../docs/wiki/02d-msvc-integrate.md) document. As a working example of integrated project, see [AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo) repository.
+You can setup your own project and easily integrate AREG SDK builds in your project. To integrate using CMake, refer to the [Integrating AREG Framework with CMake](./../docs/wiki/02b-cmake-integrate.md) document. To integrate using MSBuild (Microsoft Visual Studio), refer to the [Integrating AREG Framework with Microsoft Visual Studio](./../docs/wiki/02c-msvc-integrate.md) document. As a working example of integrated project, see [AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo) repository.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
