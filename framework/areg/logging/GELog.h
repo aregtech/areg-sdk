@@ -171,6 +171,28 @@
      **/
     #define LOG_FATAL(...)                            if (_messager.isFatalEnabled()) _messager.logMessage( NELogging::PrioFatal    , __VA_ARGS__ )
 
+
+    /**
+     * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)
+     **/
+    #define LOG_DBG_IF(cond, ...)                       if (_messager.isDbgEnabled() && (cond))   _messager.logMessage( NELogging::PrioDebug    , __VA_ARGS__ )
+    /**
+     * \brief   Use this macro to log Information priority messages in logging target (file or remote host)
+     **/
+    #define LOG_INFO_IF(cond, ...)                      if (_messager.isInfoEnabled() && (cond))  _messager.logMessage( NELogging::PrioInfo     , __VA_ARGS__ )
+    /**
+     * \brief   Use this macro to log Warning priority messages in logging target (file or remote host)
+     **/
+    #define LOG_WARN_IF(cond, ...)                      if (_messager.isWarnEnabled() && (cond))  _messager.logMessage( NELogging::PrioWarning  , __VA_ARGS__ )
+    /**
+     * \brief   Use this macro to log Error priority messages in logging target (file or remote host)
+     **/
+    #define LOG_ERR_IF(cond, ...)                       if (_messager.isErrEnabled() && (cond))   _messager.logMessage( NELogging::PrioError    , __VA_ARGS__ )
+    /**
+     * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
+     **/
+    #define LOG_FATAL_IF(cond, ...)                     if (_messager.isFatalEnabled() && (cond)) _messager.logMessage( NELogging::PrioFatal    , __VA_ARGS__ )
+
     /**
      * \brief   Use this macro to define global scope and global message object.
      *          There can be only one global scope defined in the every single source file.
@@ -319,6 +341,27 @@
      * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define LOG_FATAL(...)
+
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define LOG_DBG_IF(cond, ...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define LOG_INFO_IF(cond, ...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define LOG_WARN_IF(cond, ...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define LOG_ERR_IF(cond, ...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define LOG_FATAL_IF(cond, ...)
 
     /**
      * \brief   If !AREG_LOGS, does nothing, no global scope is initialized.

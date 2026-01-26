@@ -1,220 +1,341 @@
 # ###########################################################################
-# This is a configuration file for Areg framework based applications
+# Areg Framework Configuration File (areg.init)
 # ###########################################################################
-
-# ###########################################################################
-# 
-# How to configure logging?
-# 
-#   There are at least 4 ways to log messages.
-#   1. Log on File System
-#   2. Log on Remote Host (via TCP/IP connection)
-#   3. Log on Database (in planning)
-#   4. Log on output console
 #
-#   Logging to file system: To log to file, enable in the setting 'log::*::enable::file'
-#                           and specify the file location in the 'log::*::file::location'. 
-#                           The file location can be absolute or relative, and may contain mask.
-#                           For example, the location './logs/%appname%_%time%.log' means to create
-#                           files in the subdirectory 'logs' where each log file starts with the name of
-#                           the module (process) and timestamp. The path is relative.
-#                           The 'log::*::enable::file' should be enabled to save logs in the file.
-#
-#   Logging to remote host: To log to remote host, specify the IP-address and the port number listed
-#                           in the section of service specified in 'log::*::remote::service'.
-#                           For example, if 'log::*::remote::service = logcollector', change the settings
-#                           in the section 'logcollector' to set IP-address and port number.
-#                           The 'log::*::enable::remote' should be enabled to make remote logging.
-#
-#   Log scopes and prio:    To set the logging priority, use logging scopes specified in the 'log' section.
-#                           You may specify single scope or group of scopes to set the priority.
-#                           For example, the 'log::*::scope::*' refers to all scopes of all modules (processes).
-#                           The 'log::*::scope::areg_*' refers to all scopes that start with 'areg_'.
-#                           The 'log::*::scope::areg_bases_File_open' refers to a single scope
-#                           'areg_bases_File_open' in all applications.
-#                           The 'log::my_app::scope::areg_*' refers to log scopes that start with 'areg_' 
-#                           in the 'my_app' module (process)
-#
-#   Meaning of log scope priorities:
-#       The value of scopes is a priority or a combination of priority and the scope message.
-#       The priority specifies what type of messages should be logged. The priorities can be changed during runtime.
-#       Every single scope should have specified logging priority to log. There are following valid logging priority values
-#           1.  DEBUG       -- Debug level priority. Has lowest logging priority, all logs will be logged: DEBUG, INFO, WARN, ERROR, FATAL
-#           2.  INFO        -- Information level priority. The priority is higher than DEBUG and will log following logs: INFO, WARN, ERROR, FATAL
-#           3.  WARN        -- Warning level priority. The priority is higher than INFO and will log following logs: WARN, ERROR, FATAL
-#           4.  ERROR       -- Error  level priority. The priority is higher than WARN and will log following logs: ERROR, FATAL
-#           5.  FATAL       -- Fatal errors, abnormal run. The highest priority level. It will log only FATAL logs
-#           6.  SCOPE       -- Display scope 'enter' and 'exit' message. Normally this priority is used with combination of others, but can be as well used alone.
-#           7.  NOTSET      -- Disable any tracing of concrete scope or group of scopes.
-#       The scope priorities are combined with logical OR ( '|' ) symbol like "WARN | SCOPE"
-#
-#       Example specifying scope priority:
-#
-#       Example 1:  In this example the logging level 'WARN' is applied to the single scope
-#       log::AppName::scope::project_applications_components_graphics_MyClass_FunctionName   = WARN
-#
-#       Example 2:  In this example the logging level 'DEBUG' is applied to the entire scope group that start with 'project_applications_components_graphics_ui_'
-#       log::AppName::scope::project_applications_components_graphics_ui_*  = DEBUG
-#
-#       Example 3: In this example, the logging level 'ERROR' with combination of 'SCOPE' is applied to the scope group
-#       scope::AppName::project_applications_components_graphics_ui_controls_*  = ERROR | SCOPE
-#       In this example, the scope 'enter' and 'exit' message is displayed independent whether there was a log with ERROR priority or not.
-#
-#   Meaning of Layout format:
-#       The Layout Format is relevant only when logs the messages in the plain text file.
-#       The Layout Format specification fields are following:
-#           %a      -- outputs the ID of a logging object set by the log collector.
-#           %c      -- output tick-count value since process start
-#           %d      -- output day and time data
-#           %e      -- output module (process) ID
-#           %m      -- output logging message (text). The '%m' and '%z' are mutually exclusive.
-#           %n      -- output end-of-line character
-#           %p      -- output message priority
-#           %s      -- output message scope ID
-#           %t      -- output thread ID
-#           %x      -- output module (process) name
-#           %y      -- output thread name
-#           %z      -- output scope name
-#
-#       The layouts are specified in the properties 'log::*::layout::enter', 'log::*::layout::message' and 'log::*::layout::exit'.
-#       Example of enter scope layout: log::*::layout::enter   = %d: [ %t  %x.%z: Enter -->]%n
-#       Example of log message layout: log::*::layout::message = %d: [ %t  %p >>> ] %m%n
-#       Example of exit scope layout : log::*::layout::exit    = %d: [ %t  %x.%z: Exit <-- ]%n
-#       If layout is not set, the message will not be printed.
-#
-#   Meaning of mask in the file names:
-#       The paths in the configuration and the file names may contain masks.
-#       For example, the path %user%/logs/%appname%_%time%.log will create a file, where:
-#           1. The file name contains the name of the application and the timestamp;
-#           2. The file is located in the 'logs' subfolder of the user profile folder.
-#
-#   NOTE: The database logging is not implemented yet.
+# This configuration file controls the behavior of all Areg Framework-based
+# applications. It uses a simple key-value syntax with support for wildcards
+# and module-specific overrides.
 #
 # ###########################################################################
 
 # ###########################################################################
-# Begin of global configuration
+# LOGGING CONFIGURATION GUIDE
+# ###########################################################################
+#
+# The Areg Framework supports multiple logging targets and flexible
+# configuration through a hierarchical key-value system.
+#
+# ---------------------------------------------------------------------------
+# LOGGING TARGETS
+# ---------------------------------------------------------------------------
+#
+#   1. File System Logging
+#      - Enable: Set 'log::*::enable::file = true'
+#      - Location: Specify path in 'log::*::file::location'
+#      - Supports absolute/relative paths with masks
+#      - Example: './logs/%appname%_%time%.log' creates timestamped files
+#                 in the 'logs' subdirectory, named by module and timestamp
+#
+#   2. Remote Host Logging (via TCP/IP)
+#      - Enable: Set 'log::*::enable::remote = true'
+#      - Configure: Specify service in 'log::*::remote::service'
+#      - Connection: Set IP address and port in the service section
+#      - Example: If 'log::*::remote::service = logger', configure the
+#                 'logger' section with IP address and port number
+#
+#   3. Database Logging (planned feature)
+#      - Enable: Set 'log::*::enable::db = true'
+#      - Note: Not currently implemented
+#
+#   4. Debug Output Console
+#      - Enable: Set 'log::*::enable::debug = true'
+#      - Outputs to system debug console (platform-specific)
+#
+# ---------------------------------------------------------------------------
+# LOG SCOPES AND PRIORITIES
+# ---------------------------------------------------------------------------
+#
+#   Scopes are hierarchical logging categories that can be enabled/disabled
+#   individually or in groups using wildcards.
+#
+#   Scope Key Format:
+#     log::<module>::scope::<scope_pattern>
+#
+#   Examples:
+#     log::*::scope::*                           # All scopes, all modules
+#     log::*::scope::areg_*                      # All scopes starting with 'areg_'
+#     log::*::scope::areg_base_File_open         # Single specific scope (all modules)
+#     log::myapp::scope::areg_*                  # Scopes starting with 'areg_' in 'myapp'
+#     log::myapp::scope::database_*              # Database scopes in 'myapp' only
+#
+# ---------------------------------------------------------------------------
+# PRIORITY LEVELS
+# ---------------------------------------------------------------------------
+#
+#   Each scope must have a priority to enable logging. Priorities determine
+#   which message types are logged. Multiple priorities can be combined using
+#   the pipe '|' operator (logical OR).
+#
+#   Available Priorities (in ascending order):
+#
+#     DEBUG  - Lowest priority. Logs all messages:
+#              DEBUG, INFO, WARN, ERROR, FATAL
+#
+#     INFO   - Information level. Logs:
+#              INFO, WARN, ERROR, FATAL
+#
+#     WARN   - Warning level. Logs:
+#              WARN, ERROR, FATAL
+#
+#     ERROR  - Error level. Logs:
+#              ERROR, FATAL
+#
+#     FATAL  - Highest priority. Logs only:
+#              FATAL
+#
+#     SCOPE  - Logs scope entry/exit messages (function boundaries).
+#              Typically combined with other priorities: DEBUG | SCOPE
+#
+#     NOTSET - Disables logging for the scope or scope group.
+#              Use to silence specific scopes.
+#
+#   Priority Examples:
+#
+#     # Single priority
+#     log::myapp::scope::network = WARN
+#
+#     # Combined priorities (scope boundaries + warnings)
+#     log::myapp::scope::ui_* = WARN | SCOPE
+#
+#     # Disable specific scope group
+#     log::*::scope::areg_* = NOTSET
+#
+# ---------------------------------------------------------------------------
+# LAYOUT FORMAT SPECIFICATIONS
+# ---------------------------------------------------------------------------
+#
+#   Layout formats control how log messages are formatted when written to
+#   plain text files. They only apply to file-based logging.
+#
+#   Format Tokens:
+#
+#     %a  - Logging object ID (assigned by log collector)
+#     %c  - Tick-count value since process start
+#     %d  - Date and time (full timestamp)
+#     %e  - Module (process) ID
+#     %m  - Log message text (mutually exclusive with %z)
+#     %n  - End-of-line character (platform-specific newline)
+#     %p  - Message priority (DEBUG, INFO, WARN, ERROR, FATAL)
+#     %s  - Message scope ID (numeric identifier)
+#     %t  - Thread ID
+#     %x  - Module (process) name
+#     %y  - Thread name
+#     %z  - Scope name (function signature, mutually exclusive with %m)
+#
+#   Layout Properties:
+#
+#     log::*::layout::enter   - Format for scope entry messages
+#     log::*::layout::message - Format for regular log messages
+#     log::*::layout::exit    - Format for scope exit messages
+#
+#   Layout Examples:
+#
+#     # Scope entry: timestamp, thread, module.scope
+#     log::*::layout::enter = %d: [ %t  %x.%z: Enter -->]%n
+#
+#     # Log message: timestamp, thread, priority, message
+#     log::*::layout::message = %d: [ %t  %p >>> ] %m%n
+#
+#     # Scope exit: timestamp, thread, module.scope
+#     log::*::layout::exit = %d: [ %t  %x.%z: Exit <-- ]%n
+#
+#   Note: If a layout is not set, corresponding messages will not be printed.
+#
+# ---------------------------------------------------------------------------
+# FILE PATH MASKS
+# ---------------------------------------------------------------------------
+#
+#   Configuration paths and file names support dynamic masks that are
+#   expanded at runtime:
+#
+#     %appname%  - Replaced with the application (module) name
+#     %time%     - Replaced with current timestamp
+#     %user%     - Replaced with user profile directory
+#
+#   Mask Examples:
+#
+#     # File in user's logs folder, named by app and time
+#     %user%/logs/%appname%_%time%.log
+#
+#     # Relative path with timestamp
+#     ./logs/%appname%_%time%.log
+#
+#     # Absolute path with application name
+#     /var/log/areg/%appname%.log
+#
+# ---------------------------------------------------------------------------
+# IMPORTANT NOTES
+# ---------------------------------------------------------------------------
+#
+#   - Database logging is not yet implemented (planned feature)
+#   - Wildcard '*' in module position applies to all executables
+#   - Module-specific settings override wildcard defaults
+#   - Comments must have a space after '#' to be recognized: '# comment'
+#   - Values can end with optional ';' terminator
+#   - Multi-value lists use '|' separator: value1 | value2 | value3
+#
+# ###########################################################################
+
+# ###########################################################################
+# GLOBAL CONFIGURATION
 # ###########################################################################
 
 # ---------------------------------------------------------------------------
-# Configuration file version
+# Configuration File Version
 # ---------------------------------------------------------------------------
-config::*::version          = 2.0.0                         # The current version of configuration
+config::*::version          = 2.0.0                         # Configuration schema version
 
 # ---------------------------------------------------------------------------
-# Global configuration
+# Global Runtime Settings
 # ---------------------------------------------------------------------------
-config::*::default::blocksize       = 64                    # The default block size in bytes to allocate in shared buffer to minimize de-fragmentation. `0` means ignore
-config::*::default::messagequeue    = 0                     # The default message queue size in the dispatcher thread. `0` means ignore, make no limitation
+config::*::default::blocksize       = 64                    # Default block size (bytes) for shared buffer allocation to minimize fragmentation. 0 = ignore
+config::*::default::messagequeue    = 0                     # Default message queue size in dispatcher threads. 0 = ignore, no limitation
 
-# Application logging settings
-
-# ---------------------------------------------------------------------------
-# Global logging settings
-# ---------------------------------------------------------------------------
-log::*::version             = 2.0.0                         # Logging version
-log::*::target              = remote | file | debug | db    # Log targets: remote, file, debug output, database
-log::*::enable              = true                          # Global logging enable / disable flag
-log::*::enable::remote      = true                          # Remote logging enable / disable flag
-log::*::enable::file        = false                         # File logging enable / disable flag
-log::*::enable::debug       = false                         # Debug output console logging enable / disable flag
-log::*::enable::db          = false                         # Database logging enable / disable flag
-log::*::file::location      = ./logs/%appname%_%time%.log   # Log file location and masks
-log::*::file::append        = false                         # Append logs at the end of file
-log::*::remote::queue       = 100                           # Queue stack size in remote logging, 0 means no queuing
-log::*::remote::service     = logger                        # The service name of the remote logging
+# ###########################################################################
+# APPLICATION LOGGING SETTINGS
+# ###########################################################################
 
 # ---------------------------------------------------------------------------
-# Database logging settings (not supported at the moment!!!)
+# Global Logging Settings
 # ---------------------------------------------------------------------------
-log::*::db::engine          =                               # The database engine
-log::*::db::name            =                               # The database name
-log::*::db::location        =                               # Database location
-log::*::db::driver          =                               # Database driver
-log::*::db::address         =                               # Database connection IP-address
-log::*::db::port            =                               # Database connection IP-port
-log::*::db::username        =                               # Database connection user name
+log::*::version             = 2.0.0                         # Logging configuration version
+log::*::target              = remote | file | debug | db    # Enabled log targets (multiple targets supported)
+log::*::enable              = true                          # Master logging enable/disable switch
+log::*::enable::remote      = true                          # Remote logging enable/disable flag
+log::*::enable::file        = false                         # File logging enable/disable flag
+log::*::enable::debug       = false                         # Debug console output enable/disable flag
+log::*::enable::db          = false                         # Database logging enable/disable flag (not implemented)
+log::*::file::location      = ./logs/%appname%_%time%.log   # Log file path with masks (supports %appname%, %time%, %user%)
+log::*::file::append        = false                         # Append mode: true = append to existing file, false = create new file
+log::*::remote::queue       = 100                           # Remote logging queue size. 0 = no queuing, >0 = buffered async logging
+log::*::remote::service     = logger                        # Name of remote logging service (see service configuration below)
+
+# ---------------------------------------------------------------------------
+# Database Logging Settings (Feature Not Implemented)
+# ---------------------------------------------------------------------------
+log::*::db::engine          =                               # Database engine type (e.g., sqlite3, mysql, postgresql)
+log::*::db::name            =                               # Database name
+log::*::db::location        =                               # Database file location or connection string
+log::*::db::driver          =                               # Database driver library
+log::*::db::address         =                               # Database server IP address
+log::*::db::port            =                               # Database server port number
+log::*::db::username        =                               # Database connection username
 log::*::db::password        =                               # Database connection password
 
 # ---------------------------------------------------------------------------
-# Log message layout in the file
+# Log Message Layout for File Output
 # ---------------------------------------------------------------------------
-log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n    # Enter scope layout
-log::*::layout::message     = %d: [ %t  %p >>> ] %m%n          # Log message layout
-log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layout
+# These layouts define the format of log messages written to files.
+# See "LAYOUT FORMAT SPECIFICATIONS" section above for token descriptions.
+# ---------------------------------------------------------------------------
+log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n    # Scope entry format: timestamp [thread module.scope: Enter]
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n          # Log message format: timestamp [thread priority] message
+log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Scope exit format: timestamp [thread module.scope: Exit]
 
 # ---------------------------------------------------------------------------
-# Message layout for log observer
+# Log Observer Message Layout
 # ---------------------------------------------------------------------------
-log::logobserver::layout::enter     = %d: [ %a.%x.%t.%z: Enter -->]%n   # Enter scope layout
-log::logobserver::layout::message   = %d: [ %a.%x.%t.%p >>> ] %m%n      # Log message layout
-log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit scope layout
+# Log observer uses extended layout with logging object ID (%a).
+# This is useful when collecting logs from multiple distributed sources.
+# ---------------------------------------------------------------------------
+log::logobserver::layout::enter     = %d: [ %a.%x.%t.%z: Enter -->]%n   # Entry: timestamp [logID.module.thread.scope: Enter]
+log::logobserver::layout::message   = %d: [ %a.%x.%t.%p >>> ] %m%n      # Message: timestamp [logID.module.thread.priority] message
+log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit: timestamp [logID.module.thread.scope: Exit]
 
 # ---------------------------------------------------------------------------
-# Log observer specific database logging settings
+# Log Observer Database Settings
 # ---------------------------------------------------------------------------
-log::logobserver::enable::file      = false                         # Logobserver: File logging enable / disable flag
-log::logobserver::enable::db        = true                          # Logobserver: Database logging enable / disable flag
-log::logobserver::db::engine        = sqlite3                       # Logobserver: The database engine
-log::logobserver::db::name          = log_%time%.sqlog              # Logobserver: The log database name
-log::logobserver::db::location      = ./logs                        # Logobserver: The log database location
+# Log observer can store logs in a database for centralized log management.
+# ---------------------------------------------------------------------------
+log::logobserver::enable::file      = false                         # Log observer: disable file logging
+log::logobserver::enable::db        = true                          # Log observer: enable database logging
+log::logobserver::db::engine        = sqlite3                       # Database engine: SQLite 3
+log::logobserver::db::name          = log_%time%.sqlog              # Database file name with timestamp mask
+log::logobserver::db::location      = ./logs                        # Database file directory
 
 # ---------------------------------------------------------------------------
-# Messaging enable states for the logcollector and mtrouter services.
+# Service-Specific Logging Overrides
 # ---------------------------------------------------------------------------
-log::logcollector::enable::file     = false     # Log Collector service: do not output log messages in the file
-log::logcollector::enable::debug    = false     # Log Collector service: do not output logs in the debug output window
-log::logcollector::enable::db       = false     # Log Collector service: do not output in the database
-log::mtrouter::enable::file         = false     # MC Router: File logging enable / disable flag
-log::mtrouter::enable::db           = false     # MC Router: Database logging enable / disable flag
-log::mtrouter::enable::debug        = false     # MC Router: Debug output console logging enable / disable flag
-log::mtrouter::enable::remote       = false     # MC Router: Remote logging enable / disable flag
-
-# ###########################################################################
-# Remote services
-# ###########################################################################
-
+# Disable logging for framework services to reduce noise in production.
+# These services handle logging infrastructure and should remain silent.
 # ---------------------------------------------------------------------------
-# List of remote services
-# ---------------------------------------------------------------------------
-service::*::list            = router | logger               # The list of available remote services
-
-# ---------------------------------------------------------------------------
-# Message router settings
-# ---------------------------------------------------------------------------
-router::*::service          = mtrouter                      # The name of the message router service (process name)
-router::*::connect          = tcpip			                # The list of supported communication protocols
-router::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-router::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1. Set the real IP-address.
-router::*::port::tcpip      = 8181			                # Protocol specific connection port number, default port is 8181
-
-# ---------------------------------------------------------------------------
-# Remote logger settings
-# ---------------------------------------------------------------------------
-logger::*::service          = logcollector                  # The name of the log collector service (process name)
-logger::*::connect          = tcpip			                # The list of supported communication protocols
-logger::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-logger::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1. Set the real IP-address.
-logger::*::port::tcpip      = 8282			                # Protocol specific connection port number, default port is 8282
-
-# #######################################
-# Application(s) Scopes
-# #######################################
+log::logcollector::enable::file     = false     # Log Collector: disable file output
+log::logcollector::enable::debug    = false     # Log Collector: disable debug console output
+log::logcollector::enable::db       = false     # Log Collector: disable database logging
+log::mtrouter::enable::file         = false     # Message Router: disable file logging
+log::mtrouter::enable::db           = false     # Message Router: disable database logging
+log::mtrouter::enable::debug        = false     # Message Router: disable debug console output
+log::mtrouter::enable::remote       = false     # Message Router: disable remote logging
 
 # ###########################################################################
-# Logging scopes
+# REMOTE SERVICES CONFIGURATION
 # ###########################################################################
 
-log::*::scope::*			= DEBUG | SCOPE ;               # By default, activate and enable log scopes of all applications.
-log::mtrouter::scope::*     = NOTSET ;                      # The Multitarget router should output only warnings and errors.
-log::*::scope::areg_*		= NOTSET ;                      # Activate and enable log scopes of all AREG framework applications.
-log::logcollector::scope::* = NOTSET ;                      # No log messages from the log collector
-log::logobserver::scope::*  = NOTSET ;                      # No log messages from the log collector
+# ---------------------------------------------------------------------------
+# Available Remote Services
+# ---------------------------------------------------------------------------
+service::*::list            = router | logger               # List of remote services available to applications
+
+# ---------------------------------------------------------------------------
+# Message Router Settings
+# ---------------------------------------------------------------------------
+# The message router (mtrouter) handles inter-process communication (IPC)
+# for distributed Areg applications.
+# ---------------------------------------------------------------------------
+router::*::service          = mtrouter                      # Service executable name
+router::*::connect          = tcpip			                # Supported connection protocols (currently: tcpip only)
+router::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
+router::*::address::tcpip   = localhost                     # Router IP address (127.0.0.1). Change for remote router.
+router::*::port::tcpip      = 8181			                # Router TCP port number (default: 8181)
+
+# ---------------------------------------------------------------------------
+# Remote Logger Settings
+# ---------------------------------------------------------------------------
+# The log collector (logcollector) aggregates logs from multiple distributed
+# applications for centralized logging.
+# ---------------------------------------------------------------------------
+logger::*::service          = logcollector                  # Service executable name
+logger::*::connect          = tcpip			                # Supported connection protocols (currently: tcpip only)
+logger::*::enable::tcpip    = true			                # TCP/IP protocol enable/disable flag
+logger::*::address::tcpip   = localhost                     # Log collector IP address (127.0.0.1). Change for remote collector.
+logger::*::port::tcpip      = 8282			                # Log collector TCP port number (default: 8282)
 
 # ###########################################################################
-# End of global configuration
+# APPLICATION-SPECIFIC LOG SCOPES
+# ###########################################################################
+
+# ---------------------------------------------------------------------------
+# Global Scope Settings (Read-Only Defaults)
+# ---------------------------------------------------------------------------
+# These settings apply to all applications unless overridden by
+# module-specific settings below.
+# ---------------------------------------------------------------------------
+log::*::scope::*			= DEBUG | SCOPE ;               # Default: enable all scopes for all applications (debug + scope boundaries)
+log::mtrouter::scope::*     = NOTSET ;                      # Message router: disable logging (infrastructure service)
+log::*::scope::areg_*		= NOTSET ;                      # Framework internal scopes: disable logging to reduce noise
+log::logcollector::scope::* = NOTSET ;                      # Log collector: disable logging (infrastructure service)
+log::logobserver::scope::*  = NOTSET ;                      # Log observer: disable logging (infrastructure service)
+
+# ###########################################################################
+# END OF GLOBAL CONFIGURATION
 # ###########################################################################
 
 # ###########################################################################
-# Module specific settings
+# MODULE-SPECIFIC SETTINGS
+# ###########################################################################
+#
+# Add application-specific configuration overrides below this line.
+# Module-specific settings take precedence over global wildcard settings.
+#
+# Examples:
+#
+#   # Enable verbose logging for 'myapp' only
+#   log::myapp::scope::* = DEBUG | SCOPE
+#
+#   # Disable database scopes in 'server'
+#   log::server::scope::database_* = NOTSET
+#
+#   # Set custom file location for 'worker'
+#   log::worker::file::location = /var/log/worker/worker_%time%.log
+#
 # ###########################################################################

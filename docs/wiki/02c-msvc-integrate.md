@@ -690,4 +690,4 @@ For questions, open a [discussion](https://github.com/aregtech/areg-sdk/discussi
 
 ---
 
-Copyright © 2026, Aregtech
+Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech

@@ -383,4 +383,4 @@ After successfully installing Areg SDK with vcpkg:
 
 ---
 
-Copyright © 2026, Aregtech
+Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech

@@ -575,4 +575,4 @@ If you encounter issues not covered here, open a [discussion](https://github.com
 
 ---
 
-Copyright © 2026, Aregtech
+Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech
