@@ -95,7 +95,7 @@ Advanced communication routing for distributed deployments.
 
 Centralized logging and diagnostics for distributed and multi-process systems.
 
-- **[Areg SDK Logging Configuration Guide](./04a-logging-config.md)**  
+- **[Areg SDK Logging Configuration](./04a-logging-config.md)**  
   Configure logging scopes, priorities, and outputs.
 
 - **[Developing with Areg Logging System](./04b-logging-develop.md)**  

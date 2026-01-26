@@ -106,4 +106,4 @@ Activated log scope enables developers to trace method calls and monitor executi
 
 ## 5. Logging Configuration
 
-Configure logging settings via a configuration file (e.g., `areg.init`) located in the `./config` folder post-compilation. This file allows defining log files, activating specific scopes, and setting message priorities. See the [Logging Configuration guide](./04a-logging-config.md) for detailed setup instructions, which enable customized log management and integration with the [Log Collector](./04d-logcollector.md).
+Configure logging settings via a configuration file (e.g., `areg.init`) located in the `./config` folder post-compilation. This file allows defining log files, activating specific scopes, and setting message priorities. See the [Logging Configuration](./04a-logging-config.md) for detailed setup instructions, which enable customized log management and integration with the [Log Collector](./04d-logcollector.md).

@@ -1,9 +1,9 @@
-﻿# Areg SDK Multitarget Router (mtrouter) Guide
+﻿# Areg SDK Multitarget Router (mtrouter)
 
 The Multitarget Router enables inter-process and networked communication between Service Provider and Consumer nodes in distributed Areg SDK applications.
 
 > [!TIP]
-> For single-process multithreading applications, mtrouter is not required. See [Quick Project Setup](./02a-quick-project-setup.md) for creating projects.
+> For single-process multithreading applications, `mtrouter` is not required. See [Quick Project Setup](./02a-quick-project-setup.md) for creating projects.
 
 ---
 
@@ -11,12 +11,13 @@ The Multitarget Router enables inter-process and networked communication between
 
 1. [Quick Start](#quick-start)
 2. [Overview](#overview)
-3. [Running as Console Application](#running-as-console-application)
-4. [Running as System Service](#running-as-system-service)
-5. [Configuration](#configuration)
-6. [Command Reference](#command-reference)
-7. [Application Integration](#application-integration)
-8. [Troubleshooting](#troubleshooting)
+3. [Installation](#installation)
+4. [Running as Console Application](#running-as-console-application)
+5. [Running as System Service](#running-as-system-service)
+6. [Configuration](#configuration)
+7. [Command Reference](#command-reference)
+8. [Application Integration](#application-integration)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -24,19 +25,21 @@ The Multitarget Router enables inter-process and networked communication between
 
 ### Run mtrouter in 10 Seconds
 
-If run from `areg-sdk` root build with default settings for **Linux**:
+**Linux/macOS:**
 ```bash
+cd areg-sdk
 ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf --console
 ```
 
-If run from `areg-sdk` root build with default settings for **Windows**:
+**Windows:**
 ```powershell
+cd areg-sdk
 .\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe --console
 ```
 
 **Expected output:**
 ```
-Areg Message Router console application ...
+Areg Multi-target Message Router console application ...
 ---------------------------------------------------------------------------------------------
 Send data with the rate:    0.00  Bytes / sec.
 Recv data with the rate:    0.00  Bytes / sec.
@@ -46,7 +49,7 @@ Type '-q' or '--quit' to quit the application ...:
 
 **Test connection:** Run executable of any IPC example, for example `15_pubclient.exe`, and type `-n` in `mtrouter` console to see connected clients like this: 
 ```
-Areg Message Router console application ...
+Areg Multi-target Message Router console application ...
 ---------------------------------------------------------------------------------------------
 Send data with the rate:    0.00  Bytes / sec.
 Recv data with the rate:    0.00  Bytes / sec.
@@ -61,7 +64,7 @@ Type '-q' or '--quit' to quit the application ...:
 ---------------------------------------------------------------------------------------------
 ```
 
-**Type '-q' to quit**
+**Type `-q` to quit**
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -76,28 +79,19 @@ The **Multitarget Message Router** (mtrouter) is a message routing service that:
 - ✅ Routes messages between distributed processes
 - ✅ Enables inter-process communication (IPC)
 - ✅ Supports network communication (TCP/IP)
-- ✅ Helps to manage service discovery
-- ✅ Handles multiple software connections
+- ✅ Manages service discovery
+- ✅ Handles multiple client connections
 
 ### When Do You Need mtrouter?
 
-| Application Type                      | Requires mtrouter | Communication     |
-|---------------------------------------|-------------------|-------------------|
-| **Multithreading** (single process)   | ❌ No              | In-process        |
-| **Multiprocessing** (same machine)    | ✅ Yes             | Local IPC         |
-| **Distributed** (network)             | ✅ Yes             | Network (TCP/IP)  |
+| Application Type | Requires mtrouter | Communication |
+|------------------|-------------------|---------------|
+| **Multithreading** (single process) | ❌ No | In-process |
+| **Multiprocessing** (same machine) | ✅ Yes | Inter-process (IPC) |
+| **Distributed** (network) | ✅ Yes | Network (TCP/IP) |
 
-**Without mtrouter:**
-- Multiprocessing applications run as isolated multithreading applications
-- Internal (local) services work within each process
-- External (public) services cannot be accessed by other processes
-- No inter-process communication possible
-
-**With mtrouter:**
-- Processes can communicate via centralized message routing
-- Service discovery enables automatic connection
-- Public services become accessible across processes
-- Seamless scaling from local to network deployment
+> [!IMPORTANT]
+> Without mtrouter, multiprocessing applications cannot communicate with each other. They will run as standalone multithreading applications where only internal (local) services work within each process, but external (public) services remain inaccessible to other processes.
 
 ### Architecture
 
@@ -124,7 +118,7 @@ The **Multitarget Message Router** (mtrouter) is a message routing service that:
 **Console Application:**
 - Run manually for development/testing
 - Easy debugging and monitoring
-- Stop with `-q`, `--quit` or Ctrl+C
+- Stop with `-q` or `--quit`
 
 **System Service:**
 - Automatic startup at boot
@@ -135,54 +129,187 @@ The **Multitarget Message Router** (mtrouter) is a message routing service that:
 
 ---
 
-## Running as Console Application
+## Installation
 
-### Basic Usage
+### Option 1: Use from Build Directory
 
-**Linux/macOS:**
+After building Areg SDK, `mtrouter` is available in the build output directory.
+
+**Default build paths:**
+
+**Linux:**
 ```bash
-./mtrouter --console
+./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf
 ```
 
 **Windows:**
 ```powershell
-.\mtrouter.exe --console
+.\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe
+```
+
+> [!NOTE]
+> Build output paths follow pattern: `product/build/<compiler>/<platform>-<arch>-<config>/bin/`
+
+---
+
+### Option 2: Install via CMake
+
+**Install Areg SDK system-wide:**
+
+```bash
+# Configure and build
+cmake -B ./build
+cmake --build ./build
+
+# Install (requires sudo on Linux)
+sudo cmake --install ./build
+```
+
+**Default installation locations:**
+
+**Linux:**
+- Executables: `/usr/local/tools/areg/mtrouter`
+- Libraries: `/usr/local/lib/libareg.so`
+- Headers: `/usr/local/include/areg/`
+- Config: `/usr/local/share/areg/areg.init`
+- Service files: `/usr/local/share/areg/service/`
+
+**Windows:**
+- Executables: `C:\Program Files\areg\tools\areg\mtrouter.exe`
+- Libraries: `C:\Program Files\areg\bin\areg.dll`
+- Headers: `C:\Program Files\areg\include\areg\`
+- Config: `C:\Program Files\areg\share\areg\areg.init`
+- Service files: `C:\Program Files\areg\share\areg\service\`
+
+**Custom installation prefix:**
+
+```bash
+cmake --install ./build --prefix /opt/areg
+```
+
+**What gets installed:**
+
+**Libraries:**
+- `areg` - Core framework library
+- `aregextend` - Extended utilities library
+- `areglogger` - Log observer API library
+
+**Executables:**
+- `mtrouter` - Message router
+- `logcollector` - Log collector service
+- `logobserver` - Log observer application
+
+**Tools:**
+- `codegen.jar` - Service interface code generator
+- `project-setup.sh` / `project-setup.bat` - Project creation scripts
+
+**Configuration:**
+- `areg.init` - Default configuration file
+- Service installation scripts (Linux/Windows)
+
+**Development files:**
+- Headers (`.h`, `.hpp`)
+- CMake configuration files
+- pkg-config files (`.pc`)
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Running as Console Application
+
+### Basic Usage
+
+**From build directory:**
+
+**Linux/macOS:**
+```bash
+./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf --console
+```
+
+**Windows:**
+```powershell
+.\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe --console
+```
+
+**From installed location:**
+
+**Linux:**
+```bash
+/usr/local/tools/areg/mtrouter --console
+```
+
+**Windows:**
+```powershell
+& "C:\Program Files\areg\tools\areg\mtrouter.exe" --console
 ```
 
 **Expected output:**
 ```
-Areg Message Router console application ...
+Areg Multi-target Message Router console application ...
 ---------------------------------------------------------------------------------------------
-Type '-q' or '--quit' to quit the application ...: -n
+Send data with the rate:    0.00  Bytes / sec.
+Recv data with the rate:    0.00  Bytes / sec.
+
+Type '-q' or '--quit' to quit the application ...:
 ```
 
 ---
 
 ### Console Commands
 
-While mtrouter is running, use these single-key commands:
+While mtrouter is running, type commands starting with `-` (short) or `--` (long):
 
-| Key    | Command   | Description                           |
-|--------|-----------|---------------------------------------|
-| **-h** | Help      | Display available commands            |
-| **-n** | Instances | Show connected clients                |
-| **-p** | Pause     | Pause message routing                 |
-| **-r** | Restart   | Restart connections                   |
-| **-q** | Quit      | Stop mtrouter                         |
-| **-t** | Silent    | Toggle silent mode (no output)        |
-| **-v** | Verbose   | Toggle verbose mode (detailed output) |
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `--help` | `-h` | Display command list |
+| `--instances` | `-n` | Show connected clients |
+| `--pause` | `-p` | Pause message routing |
+| `--restart` | `-r` | Restart all connections |
+| `--quit` | `-q` | Stop mtrouter |
+| `--silent` | `-t` | Toggle silent mode (hide data rates) |
+| `--verbose` | `-v` | Toggle verbose mode (show data rates) |
 
 **Example - Check connected clients:**
 
-Press **'-n'**:
+Type `--instances` or `-n`:
 ```
+Areg Multi-target Message Router console application ...
+---------------------------------------------------------------------------------------------
+Send data with the rate:    0.00  Bytes / sec.
+Recv data with the rate:    0.00  Bytes / sec.
+
+Type '-q' or '--quit' to quit the application ...:
+
 ---------------------------------------------------------------------------------------------
    Nr. |  Instance ID  |  Bitness  |  Name
 ---------------------------------------------------------------------------------------------
-    1. |          256  |    64     |  15_pubclient.exe
-    2. |          257  |    64     |  15_pubservice.exe
+    1. |          256  |    64     |  provider.exe
+    2. |          257  |    64     |  consumer.exe
 ---------------------------------------------------------------------------------------------
 ```
+
+---
+
+### Verbose Mode
+
+**Toggle verbose mode:**
+
+Type `--verbose` or `-v`:
+
+**When verbose ON (default):**
+```
+Send data with the rate:    1.23  Bytes / sec.
+Recv data with the rate:    0.87  Bytes / sec.
+```
+
+**When verbose OFF (silent):**
+```
+Type '-q' or '--quit' to quit the application ...:
+```
+
+> [!NOTE]
+> Verbose mode shows data transfer rates, not individual messages.
 
 ---
 
@@ -191,31 +318,8 @@ Press **'-n'**:
 **Load custom configuration file:**
 
 ```bash
-./mtrouter --console --load="./config/custom.init"
+./mtrouter.elf --console --load="./config/custom.init"
 ```
-
----
-
-### Silent Mode
-
-**Run without console output:**
-
-```bash
-./mtrouter --console --silent
-```
-
-**Use case:** Background operation during development
-
----
-
-### Verbose Mode
-
-**Show detailed message routing:**
-```bash
-./mtrouter --console --verbose
-```
-
-**Expected output:** no data rate shown.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -227,14 +331,24 @@ Press **'-n'**:
 
 #### Step 1: Prepare Files
 
-**Copy executable and library (if build areg-sdk with default setting):**
+**Option A: Install via CMake (recommended)**
+
+```bash
+# Install Areg SDK system-wide
+sudo cmake --install ./build
+
+# Service file location
+ls -l /usr/local/share/areg/service/mtrouter.service
+```
+
+**Option B: Manual installation**
 
 ```bash
 # Copy executable
-sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter /usr/local/bin/mtrouter
+sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf /usr/local/bin/mtrouter
 
 # Copy library (if shared build)
-sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/libareg.so /usr/lib/libareg.so
+sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/lib/libareg.so /usr/lib/libareg.so
 
 # Make executable
 sudo chmod +x /usr/local/bin/mtrouter
@@ -248,9 +362,15 @@ sudo ldconfig
 /usr/local/bin/mtrouter --help
 ```
 
-#### Step 2: Create Service File
+#### Step 2: Install Service File
 
-**Copy service configuration:**
+**If installed via CMake:**
+
+```bash
+sudo cp /usr/local/share/areg/service/mtrouter.service /etc/systemd/system/
+```
+
+**If manual installation:**
 
 ```bash
 sudo cp ./framework/mtrouter/resources/mtrouter.service /etc/systemd/system/
@@ -265,7 +385,7 @@ sudo nano /etc/systemd/system/mtrouter.service
 **Content:**
 ```ini
 [Unit]
-Description=AREG Multitarget Router Service
+Description=Areg Multitarget Router Service
 After=network.target
 
 [Service]
@@ -280,13 +400,6 @@ WantedBy=multi-user.target
 
 > [!IMPORTANT]
 > The `--service` flag is required for service mode.
-
-
-> [!TIP]
-> You may as well install the `areg-sdk` libraries, executables and resources using the provided CMake install target:
-> ```bash
-> sudo cmake --install ./build --prefix /usr/local
-> ```
 
 #### Step 3: Enable and Start Service
 
@@ -317,9 +430,9 @@ sudo systemctl status mtrouter.service
 
 **Expected output:**
 ```
-● mtrouter.service - AREG Multitarget Router Service
+● mtrouter.service - Areg Multitarget Router Service
      Loaded: loaded (/etc/systemd/system/mtrouter.service; enabled)
-     Active: active (running) since Sun 2026-01-26 10:30:00 UTC; 5s ago
+     Active: active (running) since Mon 2026-01-27 10:30:00 UTC; 5s ago
    Main PID: 12345 (mtrouter)
       Tasks: 3
      Memory: 8.5M
@@ -351,8 +464,8 @@ sudo journalctl -u mtrouter.service -f
 
 **Expected log output:**
 ```
-Jan 26 10:30:00 hostname mtrouter[12345]: Router service started
-Jan 26 10:30:01 hostname mtrouter[12345]: Listening on 127.0.0.1:8181
+Jan 27 10:30:00 hostname mtrouter[12345]: Router service started
+Jan 27 10:30:01 hostname mtrouter[12345]: Listening on 127.0.0.1:8181
 ```
 
 <div align="right"><kbd><a href="#running-as-system-service">↑ Back to service setup ↑</a></kbd></div>
@@ -363,20 +476,31 @@ Jan 26 10:30:01 hostname mtrouter[12345]: Listening on 127.0.0.1:8181
 
 #### Step 1: Prepare Binaries
 
-**Copy executable and DLL:**
+**Option A: Install via CMake (recommended)**
+
+```powershell
+# Open PowerShell as Administrator
+# Install Areg SDK
+cmake --install .\build --prefix "C:\Program Files\areg"
+
+# Service installation script location
+dir "C:\Program Files\areg\share\areg\service\mtrouter.service.install.bat"
+```
+
+**Option B: Manual installation**
 
 ```powershell
 # Create installation directory
-New-Item -Path "C:\Program Files\areg\mtrouter" -ItemType Directory -Force
+New-Item -Path "C:\Program Files\areg\tools\areg" -ItemType Directory -Force
 
 # Copy binaries
-Copy-Item .\build\bin\Release\mtrouter.exe "C:\Program Files\areg\mtrouter\"
-Copy-Item .\build\bin\Release\areg.dll "C:\Program Files\areg\mtrouter\"
+Copy-Item .\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe "C:\Program Files\areg\tools\areg\"
+Copy-Item .\product\build\msvc-v143\windows_nt-x64-release\bin\areg.dll "C:\Program Files\areg\tools\areg\"
 ```
 
 **Verify:**
 ```powershell
-& "C:\Program Files\areg\mtrouter\mtrouter.exe" --help
+& "C:\Program Files\areg\tools\areg\mtrouter.exe" --help
 ```
 
 #### Step 2: Install Service
@@ -385,53 +509,50 @@ Copy-Item .\build\bin\Release\areg.dll "C:\Program Files\areg\mtrouter\"
 
 Right-click PowerShell → **Run as Administrator**
 
-**Install service:**
+**Option A: Using installation script (if CMake installed)**
 
 ```powershell
-cd "C:\Program Files\areg\mtrouter"
+cd "C:\Program Files\areg\share\areg\service"
+.\mtrouter.service.install.bat
+```
+
+**Option B: Using mtrouter executable**
+
+```powershell
+cd "C:\Program Files\areg\tools\areg"
 .\mtrouter.exe --install
 ```
 
 **Expected output:**
 ```
-Service 'Areg Multitarget Router' installed successfully
-```
-
-**Or use batch file:**
-
-```powershell
-# Copy batch file
-Copy-Item .\framework\mtrouter\resources\mtrouter.service.install.bat "C:\Program Files\areg\mtrouter\"
-
-# Run as Administrator
-.\mtrouter.service.install.bat
+Service 'Areg Multitarget Router Service' installed successfully
 ```
 
 #### Step 3: Start Service
 
-**Using Services application:**
+**Using Services GUI:**
 
 1. Press `Win + R`, type `services.msc`, press Enter
-2. Find **AREG Multitarget Router**
+2. Find **Areg Multitarget Router Service**
 3. Right-click → **Start**
 
 **Using PowerShell:**
 
 ```powershell
-Start-Service "AREG Multitarget Router"
+Start-Service "mtrouter.service"
 ```
 
 **Verify status:**
 
 ```powershell
-Get-Service "AREG Multitarget Router"
+Get-Service "mtrouter.service"
 ```
 
 **Expected output:**
 ```
 Status   Name               DisplayName
 ------   ----               -----------
-Running  AREGRouter         AREG Multitarget Router
+Running  mtrouter.service   Areg Multitarget Router Service
 ```
 
 #### Step 4: Configure Startup Type
@@ -439,13 +560,13 @@ Running  AREGRouter         AREG Multitarget Router
 **Automatic startup:**
 
 ```powershell
-Set-Service "AREG Multitarget Router" -StartupType Automatic
+Set-Service "mtrouter.service" -StartupType Automatic
 ```
 
 **Manual startup:**
 
 ```powershell
-Set-Service "AREG Multitarget Router" -StartupType Manual
+Set-Service "mtrouter.service" -StartupType Manual
 ```
 
 #### Step 5: Manage Service
@@ -453,29 +574,38 @@ Set-Service "AREG Multitarget Router" -StartupType Manual
 **Stop service:**
 
 ```powershell
-Stop-Service "AREG Multitarget Router"
+Stop-Service "mtrouter.service"
 ```
 
 **Restart service:**
 
 ```powershell
-Restart-Service "AREG Multitarget Router"
+Restart-Service "mtrouter.service"
 ```
 
 **Uninstall service:**
 
+**Option A: Using uninstall script**
+
+```powershell
+cd "C:\Program Files\areg\share\areg\service"
+.\mtrouter.service.uninstall.bat
+```
+
+**Option B: Using mtrouter executable**
+
 ```powershell
 # Stop first
-Stop-Service "AREG Multitarget Router"
+Stop-Service "mtrouter.service"
 
 # Uninstall
-cd "C:\Program Files\AREG\mtrouter"
+cd "C:\Program Files\areg\tools\areg"
 .\mtrouter.exe --uninstall
 ```
 
 **Expected output:**
 ```
-Service 'AREG Multitarget Router' uninstalled successfully
+Service 'Areg Multitarget Router Service' uninstalled successfully
 ```
 
 **View service logs:**
@@ -484,7 +614,7 @@ Open Event Viewer: `Win + R` → `eventvwr.msc`
 
 Navigate: **Windows Logs → Application**
 
-Filter for **Source: AREGRouter** or **mtrouter**
+Filter for **Source: mtrouter**
 
 <div align="right"><kbd><a href="#running-as-system-service">↑ Back to service setup ↑</a></kbd></div>
 
@@ -494,7 +624,11 @@ Filter for **Source: AREGRouter** or **mtrouter**
 
 ### Configuration File Location
 
-**Default:** `areg.init` in executable directory or Areg SDK resources
+**Default:** `areg.init` in Areg SDK resources directory
+
+**Installed location:**
+- Linux: `/usr/local/share/areg/areg.init`
+- Windows: `C:\Program Files\areg\share\areg\areg.init`
 
 **Custom location:**
 ```bash
@@ -635,9 +769,9 @@ Options used when starting mtrouter:
 | `--install` | `-i` | Windows | Install as Windows service |
 | `--load` | `-l` | All | Load custom configuration file |
 | `--service` | `-s` | Linux | Run as Linux service |
-| `--silent` | `-t` | All | Run without console output |
+| `--silent` | `-t` | All | Run without showing data rates |
 | `--uninstall` | `-u` | Windows | Uninstall Windows service |
-| `--verbose` | `-v` | All | Show detailed output |
+| `--verbose` | `-v` | All | Show data transfer rates |
 
 **Examples:**
 
@@ -648,10 +782,10 @@ mtrouter --console
 # Console with custom config
 mtrouter -c -l="./my-config.init"
 
-# Silent console mode
+# Silent console mode (no data rates)
 mtrouter -c -t
 
-# Verbose console mode
+# Verbose console mode (show data rates)
 mtrouter -c -v
 
 # Linux service
@@ -665,19 +799,19 @@ mtrouter.exe --install
 
 ### Interactive Console Commands
 
-Commands available while mtrouter runs in console mode:
+Commands available while mtrouter runs in console mode (must start with `-` or `--`):
 
-| Key | Command | Description |
-|-----|---------|-------------|
-| `h` | Help | Display command list |
-| `n` | Instances | Show connected clients |
-| `p` | Pause | Pause message routing |
-| `r` | Restart | Restart all connections |
-| `q` | Quit | Stop mtrouter |
-| `t` | Silent | Toggle silent mode (no output) |
-| `v` | Verbose | Toggle verbose mode (detailed output) |
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `--help` | `-h` | Display command list |
+| `--instances` | `-n` | Show connected clients |
+| `--pause` | `-p` | Pause message routing |
+| `--restart` | `-r` | Restart all connections |
+| `--quit` | `-q` | Stop mtrouter |
+| `--silent` | `-t` | Toggle silent mode (hide data rates) |
+| `--verbose` | `-v` | Toggle verbose mode (show data rates) |
 
-**Usage:** Press the key while mtrouter is running in console mode.
+**Usage:** Type the command (e.g., `-n` or `--instances`) and press Enter.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -687,7 +821,10 @@ Commands available while mtrouter runs in console mode:
 
 ### Connecting to mtrouter
 
-Applications connect to mtrouter by initializing the Application class with router client enabled.
+Applications connect to `mtrouter` by initializing the Application class with router client enabled.
+
+> [!IMPORTANT]
+> For inter-process communication, `mtrouter` must be running. Start `mtrouter` before or after starting provider and consumer processes. There is no required startup order - applications will automatically connect when `mtrouter` becomes available. For network communication, configure `mtrouter` address in application configuration file (`areg.init`). By default, applications communicate via `localhost`.
 
 ---
 
@@ -721,7 +858,7 @@ int main()
 }
 ```
 
-> [!IMPORTANT]
+> [!NOTE]
 > The third parameter (`true`) enables router client connection.
 
 ---
@@ -826,7 +963,7 @@ router::*::address::tcpip = 192.168.1.100
 router::*::port::tcpip    = 8181
 
 # Start router
-./mtrouter -c -l="config/router.init"
+./mtrouter --console --load="config/router.init"
 ```
 
 **Machine 2 (192.168.1.101) - Provider:**
@@ -883,10 +1020,10 @@ cat areg.init | grep router
 
 ```bash
 # Make executable
-chmod +x mtrouter
+chmod +x mtrouter.elf
 
 # Check file permissions
-ls -l mtrouter
+ls -l mtrouter.elf
 ```
 
 ---
@@ -944,18 +1081,9 @@ ps aux | grep mtrouter  # Linux
 tasklist | findstr mtrouter  # Windows
 ```
 
-**2. Check mtrouter configuration:**
+**2. Check mtrouter console for connections:**
 
-```bash
-./mtrouter -c -v  # Verbose mode shows connection info
-```
-
-**Expected output:**
-```
-IP address: 127.0.0.1
-Port: 8181
-Router started
-```
+Type `--instances` or `-n` in mtrouter console to see connected applications.
 
 **3. Verify application configuration:**
 
@@ -965,7 +1093,20 @@ router::*::address::tcpip = 127.0.0.1  # Must match mtrouter
 router::*::port::tcpip    = 8181       # Must match mtrouter
 ```
 
-**4. Test network connectivity:**
+**4. Verify router client is enabled:**
+
+Check application code:
+```cpp
+Application::initApplication(
+    true,   // logging
+    true,   // service manager
+    true,   // router client ← Must be true
+    true,   // timer
+    true    // watchdog
+);
+```
+
+**5. Test network connectivity:**
 
 **Same machine:**
 ```bash
@@ -1009,7 +1150,7 @@ sudo firewall-cmd --reload
 
 ```powershell
 # Add rule
-New-NetFirewallRule -DisplayName "AREG mtrouter" -Direction Inbound -Protocol TCP -LocalPort 8181 -Action Allow
+New-NetFirewallRule -DisplayName "Areg mtrouter" -Direction Inbound -Protocol TCP -LocalPort 8181 -Action Allow
 ```
 
 ---
@@ -1049,7 +1190,7 @@ ls -l /usr/local/bin/mtrouter
 ldd /usr/local/bin/mtrouter
 
 # Copy missing library
-sudo cp ./build/lib/libareg.so /usr/lib/
+sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/lib/libareg.so /usr/lib/
 sudo ldconfig
 ```
 
@@ -1071,7 +1212,7 @@ sudo chmod +x /usr/local/bin/mtrouter
 
 1. `Win + R` → `eventvwr.msc`
 2. **Windows Logs → Application**
-3. Look for mtrouter or AREGRouter errors
+3. Look for mtrouter errors
 
 **Common issues:**
 
@@ -1094,7 +1235,7 @@ sudo chmod +x /usr/local/bin/mtrouter
 
 ### No Connected Instances Shown
 
-**Problem:** Press 'n' but shows "Connected instances: 0"
+**Problem:** Type `-n` but shows no instances
 
 **Cause:** No applications connected yet.
 
@@ -1107,19 +1248,16 @@ sudo chmod +x /usr/local/bin/mtrouter
 ./build/myapp_provider
 ```
 
-**2. Check connection:**
+**2. Check connection in mtrouter:**
 
-Press 'n' in mtrouter console:
-```
-Connected instances: 1
-  1. myapp_provider (127.0.0.1:12345)
-```
+Type `-n` or `--instances` in mtrouter console.
 
-**3. If still shows 0:**
+**3. If still shows 0 instances:**
 
-- Check application configuration
-- Verify `Application::initApplication()` has router enabled (3rd parameter = true)
+- Check application configuration (mtrouter address/port)
+- Verify `Application::initApplication()` has router enabled (3rd parameter = `true`)
 - Check application logs for connection errors
+- Verify mtrouter is listening on correct address/port
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -1135,6 +1273,9 @@ Connected instances: 1
 **Configuration Files:**
 - [areg.init](../../framework/areg/resources/areg.init) - Default configuration
 - [mtrouter.service](../../framework/mtrouter/resources/mtrouter.service) - Linux service file
+
+**Installation:**
+- [install.cmake](../../conf/cmake/install.cmake) - CMake installation script
 
 **Source Code:**
 - [mtrouter Module](../../framework/mtrouter/) - Router implementation

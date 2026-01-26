@@ -55,7 +55,7 @@ You can setup your own project and easily integrate AREG SDK builds in your proj
 
 The projects based on AREG SDK can be compiled with or without logs. If a projects are compiled with logs, the logs, log scopes and group of scopes can be activated or deactivated during runtime.
 
-- The [AREG SDK Logging Configuration Guide](./wiki/04a-logging-config.md) page of AREG SDK Wiki provides a detailed explanation and examples on how to configure the logs.
+- The [Areg SDK Logging Configuration](./wiki/04a-logging-config.md) page of AREG SDK Wiki provides a detailed explanation and examples on how to configure the logs.
 - The [Developing with AREG Logging System](./wiki/04b-logging-develop.md) page of AREG SDK Wiki provides a detailed explanation and examples on how to develop with logs.
 - Other logging related documents are:
   - [AREG SDK Log Observer Application](./wiki/04c-logobserver.md)

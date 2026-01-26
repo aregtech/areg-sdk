@@ -684,7 +684,7 @@ For **multiprocessing** projects, `mtrouter` is required for inter-process commu
 ./build/bin/mtrouter
 ```
 
-Without `mtrouter`, multiprocessing applications will run as isolated multithreading applications - internal services work within each process, but public services cannot communicate across processes. For network communication across machines, configure mtrouter address in your application's configuration file. See [Areg SDK Multitarget Router (mtrouter) Guide](./03a-mtrouter.md) for details.
+Without `mtrouter`, multiprocessing applications will run as isolated multithreading applications - internal services work within each process, but public services cannot communicate across processes. For network communication across machines, configure mtrouter address in your application's configuration file. See [Areg SDK Multitarget Router (mtrouter)](./03a-mtrouter.md) for details.
 
 > [!NOTE]
 > Multithreading projects do not need `mtrouter` - all communication is in-process.
