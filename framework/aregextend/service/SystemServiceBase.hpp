@@ -1,18 +1,18 @@
 #ifndef AREG_AREGEXTEND_SERVICE_SYSTEMSERVICEBASE_HPP
 #define AREG_AREGEXTEND_SERVICE_SYSTEMSERVICEBASE_HPP
 /************************************************************************
- * This file is part of the AREG SDK core engine.
- * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
- * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        aregextend/service/SystemServiceBase.hpp
- * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, base class to create system services.
+ * \brief       Areg Platform, base class to create system services.
  ************************************************************************/
 
 /************************************************************************
@@ -33,7 +33,7 @@ class IEConfigurationListener;
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The message routing service is a separate process, which routs messages
- *          to components. Applications, developed based on AREG SDK,
+ *          to components. Applications, developed based on Areg SDK,
  *          should connect to message routing service to send and receive IPC messages.
  *          The business logic of message router to know logical relationship
  *          of running components and know where to redirect messages.

@@ -3,14 +3,14 @@
 # Copyright 2022-2026 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing Areg SDK installation settings, Package name = '${AREG_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")
+message(STATUS "Areg: >>> Preparing Areg SDK installation settings, Package name = '${AREG_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 set(AREG_EXPORTS_DIR "${AREG_CMAKE_CONFIG_DIR}/../exports")
 set(AREG_INSTALL_DST "${CMAKE_INSTALL_PREFIX}")
 
-# Setup AREG SDK exporting targets.
+# Setup Areg SDK exporting targets.
 target_include_directories(areg         PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(aregextend   PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(areglogger   PUBLIC $<INSTALL_INTERFACE:include>)

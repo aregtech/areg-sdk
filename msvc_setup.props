@@ -6,7 +6,7 @@
     <!-- *************************************************************************************************************************************  -->
     <!-- 1) Copy this file and paste in the solution directory of your own project                                                              -->
     <!-- 2) Edit Properties to adapt to your project structure. In most of the cases you'd probably need to change only these parameters:       -->
-    <!--    a) AregSdkRoot    : set the root directory of AREG SDK project, for example '<my project>\thirdparty\areg-sdk'                      -->
+    <!--    a) AregSdkRoot    : set the root directory of Areg SDK project, for example '<my project>\thirdparty\areg-sdk'                      -->
     <!--    b) AregOutputRoot : set the root folder of the build to output binaries and generate files. For example, '<my project>\product'     -->
     <!-- 3) Include $(AregFramework) in the Include Paths of your project(s), and link projects with 'areg' library.                            -->
 
@@ -23,15 +23,15 @@
     <PropertyGroup Label="UserMacros">
 
         <!-- ********************************************************************************************************************************** -->
-        <!-- Setup the AREG SDK settings                                                                                                        -->
+        <!-- Setup the Areg SDK settings                                                                                                        -->
         <!-- ********************************************************************************************************************************** -->
 
         <!-- ********************************************************************************************************************************** -->
-        <!-- Set the AREG SDK root directory. By default, it is $(SolutionDir). Change if you integrate in your project.                        -->
+        <!-- Set the Areg SDK root directory. By default, it is $(SolutionDir). Change if you integrate in your project.                        -->
         <!-- ********************************************************************************************************************************** -->
         <AregSdkRoot>$(SolutionDir)</AregSdkRoot>
         <!-- ********************************************************************************************************************************** -->
-        <!-- Property to set the location of MS Visual Studio configuration files for AREG SDK. Normally, it is in '$(AregSdkRoot)conf\msvc\'   -->
+        <!-- Property to set the location of MS Visual Studio configuration files for Areg SDK. Normally, it is in '$(AregSdkRoot)conf\msvc\'   -->
         <!-- Only 'msvc_setup.props' file should be located in the $(SolutionDir). Other files should be in 'AregConfigDir'                     -->
         <!-- ********************************************************************************************************************************** -->
         <AregConfigDir>$(AregSdkRoot)conf\msvc\</AregConfigDir>
@@ -50,7 +50,7 @@
         <!-- ********************************************************************************************************************************** -->
         <AregPackages>$(AregOutputRoot)packages\</AregPackages>
         <!-- ********************************************************************************************************************************** -->
-        <!-- Property to set the location of AREG Framework header.                                                                             -->
+        <!-- Property to set the location of Areg Framework header.                                                                             -->
         <!-- ********************************************************************************************************************************** -->
         <AregFramework>$(AregSdkRoot)framework\</AregFramework>
         <!-- ********************************************************************************************************************************** -->
@@ -70,7 +70,7 @@
         <AregOutputObj></AregOutputObj>
 
         <!-- ********************************************************************************************************************************** -->
-        <!-- Property to compile the extended features of AREG SDK. By default, it is not compiled with extended features.                      -->
+        <!-- Property to compile the extended features of Areg SDK. By default, it is not compiled with extended features.                      -->
         <!-- Set 1 to compile with extended features. Set 0 or ignore setting to compile without extended features.                             -->
         <!-- ********************************************************************************************************************************** -->
         <AregExtended>1</AregExtended>
@@ -82,7 +82,7 @@
         <!-- ********************************************************************************************************************************** -->
         <!-- Add Build type specific preprocessor defines here for Debug and Release to set for all projects.                                   -->
         <!-- If use in other projects, set following preprocessor definitions:                                                                  -->
-        <!--   * IMP_AREG_DLL to import objects from areg.dll and IMP_AREG_LIB to import objects from AREG static library.                      -->
+        <!--   * IMP_AREG_DLL to import objects from areg.dll and IMP_AREG_LIB to import objects from Areg static library.                      -->
         <!--   * IMP_LOGGER_DLL to import objects from areglogger.dll and IMP_AREG_LIB to import objects from 'areglogger' static library.      -->
         <!-- An example of setting preprocessor defines for Debug build: OUTPUT_DEBUG=1;OUTPUT_DEBUG_LEVEL=3                                    -->
         <!-- ********************************************************************************************************************************** -->

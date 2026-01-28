@@ -5,7 +5,7 @@
  * \file        areg/system/windows/GEWindows.h
  * \ingroup     Framework globals
  * \author      Artak Avetyan
- * \brief       AREG Framework, platform dependent includes. Win32 specific directives
+ * \brief       Areg Framework, platform dependent includes. Win32 specific directives
  *
  ************************************************************************/
 /************************************************************************

@@ -51,7 +51,7 @@ Specify the name of your new project [default: areg_hello]:
 Specify the root directory of your new project [default: ./areg_hello]: 
 Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: 1]: 2
 
-AREG 2 project created at: ./areg_hello
+Areg 2 project created at: ./areg_hello
 Build instructions:
   cd ./areg_hello
   cmake -B ./build
@@ -189,7 +189,7 @@ Specify the name of your new project [default: areg_hello]: chat_service
 Specify the root directory of your new project [default: ./chat_service]: 
 Choose mode - (1) 'multiprocessing' or (2) 'multithreading' [default: 1]: 2
 
-AREG 2 project created at: ./chat_service
+Areg 2 project created at: ./chat_service
 Build instructions:
   cd chat_service
   cmake -B ./build
@@ -363,7 +363,7 @@ if (NOT areg_FOUND)
     option(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF)
     option(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF)
     option(AREG_GTEST_PACKAGE  "Build GTest"             OFF)
-    option(AREG_ENABLE_OUTPUTS "AREG build structure"    OFF)
+    option(AREG_ENABLE_OUTPUTS "Areg build structure"    OFF)
     
     # Fetch Areg SDK from GitHub
     include(FetchContent)
@@ -381,7 +381,7 @@ if (NOT areg_FOUND)
     set(AREG_CMAKE          "${AREG_SDK_ROOT}/areg.cmake")
 else()
     # Areg SDK package found (via vcpkg or system install)
-    message(STATUS ">>> Found AREG package at '${areg_DIR}'")
+    message(STATUS ">>> Found Areg package at '${areg_DIR}'")
 endif()
 
 # Include Areg CMake utilities

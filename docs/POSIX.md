@@ -1,5 +1,5 @@
 ```
-This file is part of AREG SDK.
+This file is part of Areg SDK.
 Copyright (c) Aregtech, 2021-2026
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
@@ -7,18 +7,18 @@ Website: https://www.areg.tech
 
 # POSIX API
 
-To build the AREG framework using the *POSIX API*, it is necessary to define the preprocessor symbol **POSIX**. Detailed information about the `POSIX` preprocessor symbol can be found in the [`POSIX` define](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols#posix-define) page of the AREG SDK Wiki. To utilize the POSIX API in your software development process, please refer to the [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page of the AREG SDK Wiki.
+To build the Areg framework using the *POSIX API*, it is necessary to define the preprocessor symbol **POSIX**. Detailed information about the `POSIX` preprocessor symbol can be found in the [`POSIX` define](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols#posix-define) page of the Areg SDK Wiki. To utilize the POSIX API in your software development process, please refer to the [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page of the Areg SDK Wiki.
 
-The AREG SDK relies on the _POSIX1.c_ API for multithreading and synchronization. Along with the standard runtime library, the AREG framework incorporates the use of `pthread`. If the `AREG_EXTENDED` option is enabled during compilation, it also utilizes `ncurses`. To demonstrate, consider the following example commands:
+The Areg SDK relies on the _POSIX1.c_ API for multithreading and synchronization. Along with the standard runtime library, the Areg framework incorporates the use of `pthread`. If the `AREG_EXTENDED` option is enabled during compilation, it also utilizes `ncurses`. To demonstrate, consider the following example commands:
 
 ```bash
 cmake -B ./build -DAREG_EXTENDED:BOOL=ON
 cmake --build ./build
 ```
 
-Executing the above commands will build the AREG framework, taking into account the extended functionality provided by `ncurses` when the `AREG_EXTENDED` option is enabled.
+Executing the above commands will build the Areg framework, taking into account the extended functionality provided by `ncurses` when the `AREG_EXTENDED` option is enabled.
 
-**The list of POSIX API functions and macro used in AREG SDK (including Multitarget message router):**
+**The list of POSIX API functions and macro used in Areg SDK (including Multitarget message router):**
 
 ```
 accept

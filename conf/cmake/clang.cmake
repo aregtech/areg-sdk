@@ -3,7 +3,7 @@
 # Copyright 2022-2026 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing settings for CLang compiler under \'${AREG_OS}\' platform, WIN32 = \'${WIN32}\'")
+message(STATUS "Areg: >>> Preparing settings for CLang compiler under \'${AREG_OS}\' platform, WIN32 = \'${WIN32}\'")
 
 if (AREG_OS STREQUAL "Windows")
 

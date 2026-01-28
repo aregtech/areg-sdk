@@ -2,7 +2,7 @@
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="PubSubMix" Version="1.1.0" Category="Public">
         <Description>This is an interface to test the PubSub features (data-driven communication) of the
-AREG framework, where each service provider is a Publisher and each service consumer is a Subscriber that dynamically
+Areg framework, where each service provider is a Publisher and each service consumer is a Subscriber that dynamically
 subscribes on data update and get notified. The agenda of this example to demonstrate mixture of Publishers and Subscribers
 and testing the correct behavior of notifications when Subscribers run in the same or different processes.
 </Description>

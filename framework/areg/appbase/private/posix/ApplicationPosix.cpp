@@ -1,8 +1,8 @@
 /************************************************************************
 * \file        areg/appbase/private/ApplicationWin.cpp
-* \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
+* \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
 * \author      Artak Avetyan
-* \brief       AREG Platform, Windows OS specific Application methods implementation
+* \brief       Areg Platform, Windows OS specific Application methods implementation
 *              Windows apecifix API calls.
 ************************************************************************/
 #include "areg/appbase/Application.hpp"

@@ -2,14 +2,14 @@
 
 ```
 
-This file is part of the AREG SDK
+This file is part of the Areg SDK
 Copyright (c) 2021–2026, Aregtech
 Contact: info\[at]areg.tech
 Website: [https://www.areg.tech](https://www.areg.tech)
 
 ```
 
-This tutorial demonstrates how to build multithreaded and multiprocess applications with the AREG SDK by reusing the same service and client components.
+This tutorial demonstrates how to build multithreaded and multiprocess applications with the Areg SDK by reusing the same service and client components.
 
 > [!NOTE]
 > Full source code is available in [03_helloservice](../examples/03_helloservice/).
@@ -44,7 +44,7 @@ All reuse the same **ServiceComponent** and **ClientComponent** (in `common/src`
 - **[twothreads](../examples/03_helloservice/twothreads/):** Components run in separate threads within one process.  
 - **[multiprocess](../examples/03_helloservice/multiprocess/):** Components run in separate processes.
 
-By following this tutorial, you’ll learn how to implement multithreaded and multiprocess applications and see how AREG SDK enables distributed services in edge (mist) networks.
+By following this tutorial, you’ll learn how to implement multithreaded and multiprocess applications and see how Areg SDK enables distributed services in edge (mist) networks.
 
 ---
 
@@ -297,4 +297,4 @@ Components run in different processes:
 
 ---
 
-With this setup, you can create scalable, cross-platform, distributed applications using the AREG SDK.
+With this setup, you can create scalable, cross-platform, distributed applications using the Areg SDK.

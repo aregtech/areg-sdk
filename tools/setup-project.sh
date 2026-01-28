@@ -32,20 +32,20 @@ find_package(areg CONFIG)
 
 if (NOT areg_FOUND)
     # ##################################################################
-    # AREG SDK not found as a package, fetching from GitHub.
+    # Areg SDK not found as a package, fetching from GitHub.
     # ##################################################################
 
-    # The root directory for AREG SDK build outputs.
+    # The root directory for Areg SDK build outputs.
     set(AREG_BUILD_ROOT "\${CMAKE_BINARY_DIR}")
-    # Location of fetched third-party sources (including AREG SDK).
+    # Location of fetched third-party sources (including Areg SDK).
     set(AREG_PACKAGES   "\${CMAKE_BINARY_DIR}/packages")
     # Build Areg shared library.
     set(AREG_BINARY    shared)
-    # Disable building AREG SDK examples, unit tests and build structures.
+    # Disable building Areg SDK examples, unit tests and build structures.
     option(AREG_BUILD_TESTS    "Build areg-sdk tests"    OFF)
     option(AREG_BUILD_EXAMPLES "Build areg-sdk examples" OFF)
     option(AREG_GTEST_PACKAGE  "Build GTest"             OFF)
-    option(AREG_ENABLE_OUTPUTS "AREG build structure"    OFF)
+    option(AREG_ENABLE_OUTPUTS "Areg build structure"    OFF)
 
     include(FetchContent)
     set(FETCHCONTENT_BASE_DIR "\${AREG_PACKAGES}")
@@ -57,15 +57,15 @@ if (NOT areg_FOUND)
     )
     FetchContent_MakeAvailable(areg)
 
-    # Set the root directory of the fetched AREG SDK
+    # Set the root directory of the fetched Areg SDK
     set(AREG_SDK_ROOT        "\${areg_SOURCE_DIR}")
     set(AREG_CMAKE_CONFIG_DIR "\${AREG_SDK_ROOT}/conf/cmake")
     set(AREG_CMAKE          "\${AREG_SDK_ROOT}/areg.cmake")
     message(STATUS ">>> Fetched Areg SDK from GitHub to \${FETCHCONTENT_BASE_DIR}")
     message(STATUS ">>> Location of 'areg.cmake' \${AREG_CMAKE}")
 else()
-    # AREG SDK package found
-    message(STATUS ">>> Found AREG package at '\${areg_DIR}'")
+    # Areg SDK package found
+    message(STATUS ">>> Found Areg package at '\${areg_DIR}'")
     message(STATUS ">>> Libs: '\${areg_LIBRARY}', Configs: '\${areg_CONFIG}', Package Root: '\${areg_ROOT}'")
     message(STATUS ">>> Tools: '\${AREG_SDK_TOOLS}', 'areg.cmake': \${AREG_CMAKE}")
 endif()
@@ -305,7 +305,7 @@ EOF
 fi
 
 echo
-echo "AREG $APP_MODE project created at: $PROJ_ROOT"
+echo "Areg $APP_MODE project created at: $PROJ_ROOT"
 echo "Build instructions:"
 echo "  cd $PROJ_ROOT"
 echo "  cmake -B ./build"

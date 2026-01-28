@@ -4,7 +4,7 @@ libdir=@CMAKE_INSTALL_FULL_LIBDIR@
 includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
 Name: aregextend
-Description: Extended objects of AREG communication framework
+Description: Extended objects of Areg communication framework
 Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
 Requires: areg >= @PROJECT_VERSION@

@@ -1,6 +1,6 @@
-# Directory Overview: AREG Multitarget Router Application (`mtrouter`)
+# Directory Overview: Areg Multitarget Router Application (`mtrouter`)
 
-This directory contains the source code for the Multitarget Router (`mtrouter`), a core application that facilitates inter-process communication (IPC) for creating connected networks of Things at the network edge. Applications using the AREG framework require `mtrouter` to send and receive messages, making it an essential component of the AREG SDK. The `mtrouter` can operate as a console application or an OS-managed service, depending on the configuration.
+This directory contains the source code for the Multitarget Router (`mtrouter`), a core application that facilitates inter-process communication (IPC) for creating connected networks of Things at the network edge. Applications using the Areg framework require `mtrouter` to send and receive messages, making it an essential component of the Areg SDK. The `mtrouter` can operate as a console application or an OS-managed service, depending on the configuration.
 
 ### Directory Contents
 
@@ -17,7 +17,7 @@ This directory contains the source code for the Multitarget Router (`mtrouter`),
 
 - **Linux**:
   The `mtrouter` runs as a console or OS-managed service application, and can be built with or without the `ncurses` library:
-  - To enable `ncurses` features, compile the AREG extended static library by defining setting option `-DAREG_EXTENDED:BOOL=ON`.
+  - To enable `ncurses` features, compile the Areg extended static library by defining setting option `-DAREG_EXTENDED:BOOL=ON`.
   - To disable `ncurses`, omit `AREG_EXTENDED` option or set it to `OFF`, using only the ANSI C API.
 
 - **Windows**:
@@ -44,7 +44,7 @@ To configure and run the `mtrouter` application as a Linux-managed service, foll
    - Copy the built `mtrouter.elf` executable to the desired location, such as `/usr/local/bin`.
 
 3. **Ensure Library Access (if applicable)**:
-   - If the AREG Framework was built as a shared library, ensure that `mtrouter` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
+   - If the Areg Framework was built as a shared library, ensure that `mtrouter` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
 
 4. **Edit the Service Configuration**:
    - Open the `mtrouter.service` file and verify that the `ExecStart` path points to the correct location of the `mtrouter.elf` executable. For example:
@@ -88,7 +88,7 @@ To configure and run the `mtrouter` application as a Windows-managed service, fo
 
 3. **Start the Service**:
    - Open the **Services** application (or run `services.msc` in the Command Prompt).
-   - Locate the service named **AREG Log Collector Service**.
+   - Locate the service named **Areg Log Collector Service**.
    - Start the service by right-clicking it and selecting **Start**.
 
 4. **Stop and Uninstall the Service**:
@@ -99,7 +99,7 @@ To configure and run the `mtrouter` application as a Windows-managed service, fo
      ```
 
 ---
-## Usage of AREG Multitarget Router (`mtrouter`)
+## Usage of Areg Multitarget Router (`mtrouter`)
 
 The `mtrouter` provides flexible command-line and console commands for managing communication and connected instances.
 

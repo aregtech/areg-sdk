@@ -3,7 +3,7 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **09_thread** project demonstrates how to create and manage **event-dispatching threads** (`DispatcherThread`) in the AREG Framework. This example highlights how timers can trigger tasks in **event-driven threads** within a **multithreaded environment**, showcasing the difference between standard threads and event-driven threads.
+The **09_thread** project demonstrates how to create and manage **event-dispatching threads** (`DispatcherThread`) in the Areg Framework. This example highlights how timers can trigger tasks in **event-driven threads** within a **multithreaded environment**, showcasing the difference between standard threads and event-driven threads.
 
 ## Concepts Shown
 - **Event-Dispatching Threads**: Learn how to create custom threads that handle dispatched events in your application.
@@ -21,4 +21,4 @@ The project creates **DispatcherThread** objects that run independently and are 
 - Demonstrate **timer-triggered event workflows**, useful for scheduling, monitoring, or periodic task execution.
 
 ## Takeaway
-The **09_thread** example provides a practical guide for creating **custom, event-driven threads** with **timer-based triggers** in a **multithreaded environment** using the AREG Framework.
+The **09_thread** example provides a practical guide for creating **custom, event-driven threads** with **timer-based triggers** in a **multithreaded environment** using the Areg Framework.

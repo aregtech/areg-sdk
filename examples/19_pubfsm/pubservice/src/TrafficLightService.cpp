@@ -1,8 +1,8 @@
 /************************************************************************
  * \file        pubservice/src/TrafficLightService.hpp
- * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
- * \brief       Collection of AREG SDK examples.
+ * \brief       Collection of Areg SDK examples.
  *              This is a Traffic Light controller, which uses finite-state machine (FSM),
  *              implementation of services and a thread consumer.
  ************************************************************************/

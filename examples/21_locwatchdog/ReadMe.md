@@ -3,13 +3,13 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **21_locwatchdog** project demonstrates the use of a **Watchdog** within a **Local Service** environment, showing how AREG SDK can monitor and maintain thread activity. The watchdog enforces timeouts for threads, automatically restarting any that become unresponsive, and logs thread restarts for debugging and system monitoring.
+The **21_locwatchdog** project demonstrates the use of a **Watchdog** within a **Local Service** environment, showing how Areg SDK can monitor and maintain thread activity. The watchdog enforces timeouts for threads, automatically restarting any that become unresponsive, and logs thread restarts for debugging and system monitoring.
 
 ## Concepts Shown
 
 - **Watchdog for Thread Monitoring**: Automatically detects unresponsive threads and restarts them to maintain system stability.
 - **Local Service with Multithreading**: Implements multiple threads within the same process, including separate **Service Provider** and **Service Consumer** threads.
-- **Service Interface Automation**: Uses AREG SDK’s Service Interface and code generator to automate **Object RPC** message creation.
+- **Service Interface Automation**: Uses Areg SDK’s Service Interface and code generator to automate **Object RPC** message creation.
 - **Fault Tolerance**: Ensures continuous operation by monitoring thread health and handling unresponsive threads.
 - **Logging and Observability**: Provides detailed logs of thread activity, watchdog actions, and service interactions.
 
@@ -27,4 +27,4 @@ Generated code from [HelloWatchdog.siml](./services/HelloWatchdog.siml) automate
 
 ## Takeaway
 
-This project illustrates how a **Watchdog** can maintain thread health and ensure fault-tolerant, multithreaded services using AREG SDK.
+This project illustrates how a **Watchdog** can maintain thread health and ensure fault-tolerant, multithreaded services using Areg SDK.

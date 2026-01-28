@@ -1,7 +1,7 @@
-﻿# AREG SDK Examples
+﻿# Areg SDK Examples
 
 ```
-This document is part of the AREG SDK and describes its example projects.
+This document is part of the Areg SDK and describes its example projects.
 Copyright (c) 2017-2026, Aregtech
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
@@ -11,14 +11,14 @@ Website: https://www.areg.tech
 
 ## Introduction
 
-The **AREG SDK** is a framework for building **high-performance, real-time, and distributed applications**. It excels in:
+The **Areg SDK** is a framework for building **high-performance, real-time, and distributed applications**. It excels in:
 
 * 🧵 **Multithreading** – Efficient handling of concurrent tasks within a single process.
 * 🚀 **Multiprocessing / IPC** – Seamless inter-process communication across distributed systems.
 * ⚙️ **Service Discovery & Fault-Tolerance** – Automatic service registration, recovery, and resilient operation.
 * ⏱ **Event-Driven Architecture** – Real-time event handling with **timers**, **state-machines**, and **worker threads**.
 
-This repository contains **example projects** illustrating AREG SDK capabilities. Each example provides practical insights into building scalable, robust, and efficient applications.
+This repository contains **example projects** illustrating Areg SDK capabilities. Each example provides practical insights into building scalable, robust, and efficient applications.
 
 ---
 
@@ -42,7 +42,7 @@ cmake --build ./build -j 20
 ```
 
 > [!NOTE]
-> By default, `AREG_EXAMPLES` is `ON` to include examples. For advanced build options, see [Building AREG SDK with CMake](./../docs/wiki/01b-cmake-build.md).
+> By default, `AREG_EXAMPLES` is `ON` to include examples. For advanced build options, see [Building Areg SDK with CMake](./../docs/wiki/01b-cmake-build.md).
 
 3. **Build with Visual Studio**
 
@@ -98,11 +98,11 @@ MSBuild ./areg-sdk.sln
 
 ## Conclusion
 
-These examples demonstrate **AREG SDK's core strengths**:
+These examples demonstrate **Areg SDK's core strengths**:
 
 * Scalable **multithreaded** and **multi-process** applications
 * **Fault-tolerant** services with automatic recovery
 * **Real-time, event-driven** systems
 * Complex **Publish/Subscribe** and **service mesh** architectures
 
-Use them as **practical references** for understanding patterns, best practices, and high-performance solutions provided by AREG SDK.
+Use them as **practical references** for understanding patterns, best practices, and high-performance solutions provided by Areg SDK.

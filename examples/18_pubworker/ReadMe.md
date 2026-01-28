@@ -30,4 +30,4 @@ Generated code from [PatientInformation.siml](./services/PatientInformation.siml
 - **Event-Driven Architectures**: Demonstrates handling of user-triggered custom events in a multithreaded environment.
 
 ## Takeaway
-The **18_pubworker** example shows how **Worker Threads**, combined with **Object RPC** and **IPC**, enable efficient background processing and event handling in **multithreaded, distributed service applications**, providing a template for scalable and responsive systems using the AREG SDK.
+The **18_pubworker** example shows how **Worker Threads**, combined with **Object RPC** and **IPC**, enable efficient background processing and event handling in **multithreaded, distributed service applications**, providing a template for scalable and responsive systems using the Areg SDK.

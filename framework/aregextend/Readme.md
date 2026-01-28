@@ -1,6 +1,6 @@
-# Directory Overview: AREG Extend Library
+# Directory Overview: Areg Extend Library
 
-This directory contains the source code for the AREG Extend library (`aregextend`), which provides optional extended features. These features may depend on additional libraries and resources, enabling enhanced functionality. The library is compiled as a static library to link with projects requiring these extensions.
+This directory contains the source code for the Areg Extend library (`aregextend`), which provides optional extended features. These features may depend on additional libraries and resources, enabling enhanced functionality. The library is compiled as a static library to link with projects requiring these extensions.
 
 ### Compilation Options
 To include extended features, define `AREG_EXTENDED=1` during compilation (CMake option `-DAREG_EXTENDED=ON`). If omitted or set to `AREG_EXTENDED=0` (CMake option `-DAREG_EXTENDED=OFF`), the library will be compiled with limited functionality. In this case, while the library can be linked, extended features may not function as originally intended.

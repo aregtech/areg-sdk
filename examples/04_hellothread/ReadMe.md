@@ -3,7 +3,7 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **04_hellothread** example demonstrates the basics of **multithreading** in the AREG Framework.  
+The **04_hellothread** example demonstrates the basics of **multithreading** in the Areg Framework.  
 It creates a simple thread that prints "Hello World!" to the console, showing how to safely manage thread creation, execution, and lifecycle.  
 
 This example addresses common beginner challenges in multithreaded applications: setting up threads correctly, controlling execution flow, and managing resources without errors.
@@ -20,7 +20,7 @@ The project contains **source code** that demonstrates creating a single thread.
 - Execution is independent of the main application flow, illustrating how multithreaded operations can run concurrently in a controlled manner.
 
 ## Use Cases
-- Learn **multithreading basics** in AREG for new developers.  
+- Learn **multithreading basics** in Areg for new developers.  
 - Understand how to implement **thread lifecycle management** using `IEThreadConsumer`.  
 - Use as a foundation for building **more complex multithreaded applications**.
 

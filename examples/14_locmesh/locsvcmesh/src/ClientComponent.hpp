@@ -2,9 +2,9 @@
 
 /************************************************************************
  * \file        locsvcmesh/src/ClientComponent.hpp
- * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
- * \brief       Collection of AREG SDK examples.
+ * \brief       Collection of Areg SDK examples.
  *              The component that contains service clients.
  ************************************************************************/
 /************************************************************************

@@ -2,9 +2,9 @@
 
 /************************************************************************
  * \file        subscribermulti/src/NECommon.hpp
- * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
- * \brief       Collection of AREG SDK examples.
+ * \brief       Collection of Areg SDK examples.
  *              This file is a demonstration of PubSub feature service consumer.
  *              Common header
  ************************************************************************/

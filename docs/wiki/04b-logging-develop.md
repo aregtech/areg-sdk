@@ -171,12 +171,12 @@ cmake --build ./build
 
 **Expected output when enabled:**
 ```
--- AREG: >>> Logs: ENABLED
+-- Areg: >>> Logs: ENABLED
 ```
 
 **Expected output when disabled:**
 ```
--- AREG: >>> Logs: DISABLED
+-- Areg: >>> Logs: DISABLED
 ```
 
 ---

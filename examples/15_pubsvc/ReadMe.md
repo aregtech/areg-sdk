@@ -3,7 +3,7 @@
 🚀 **Type:** IPC / Multi-Process
 
 ## Overview
-The **15_pubsvc** project demonstrates a *Public Service* in a **multi-process environment** using **Object Remote Procedure Call (Object RPC)** for inter-process communication (IPC). It involves a *Service Provider* and a *Service Consumer*, showing how AREG Framework handles distributed services, automatic discovery, and robust IPC.
+The **15_pubsvc** project demonstrates a *Public Service* in a **multi-process environment** using **Object Remote Procedure Call (Object RPC)** for inter-process communication (IPC). It involves a *Service Provider* and a *Service Consumer*, showing how Areg Framework handles distributed services, automatic discovery, and robust IPC.
 
 > [!NOTE]
 > To run this example, a **Multi-Target Router** (`mtrouter`) must be running on a network-accessible machine. Ensure the `areg.init` configuration file contains the correct IP address and port for the router.

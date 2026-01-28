@@ -4,7 +4,7 @@
 
 ## Overview
 
-The **22_pubwatchdog** project demonstrates the use of a **Watchdog** in a distributed **Public Service** environment using the AREG Framework. The Watchdog monitors service threads, automatically restarting any that fail to respond, and notifies connected **Service Providers** and **Service Consumers**, ensuring fault-tolerant and reliable system operation.
+The **22_pubwatchdog** project demonstrates the use of a **Watchdog** in a distributed **Public Service** environment using the Areg Framework. The Watchdog monitors service threads, automatically restarting any that fail to respond, and notifies connected **Service Providers** and **Service Consumers**, ensuring fault-tolerant and reliable system operation.
 
 > [!NOTE]
 > This example requires **Multi-Target Router (`mtrouter`)** to route messages between processes. Ensure `mtrouter` is running on a network-accessible machine and that the `areg.init` file contains the correct IP address and port.
@@ -12,7 +12,7 @@ The **22_pubwatchdog** project demonstrates the use of a **Watchdog** in a distr
 ## Concepts Shown
 
 - **Watchdog-Controlled Threads**: Automatically monitors and restarts unresponsive service threads.  
-- **Service Interface Automation**: Uses the AREG SDK's code generator to automate **Object RPC** creation and dispatching.  
+- **Service Interface Automation**: Uses the Areg SDK's code generator to automate **Object RPC** creation and dispatching.  
 - **Fault-Tolerant Public Services**: Demonstrates real-time thread recovery and uninterrupted service operation.  
 - **Consumer Notifications**: Sends **serviceConnected()** or disconnect notifications to all connected consumers.  
 
@@ -20,7 +20,7 @@ The **22_pubwatchdog** project demonstrates the use of a **Watchdog** in a distr
 
 The project consists of a public service provider and consumer applications communicating via `mtrouter`. The provider runs service threads monitored by the Watchdog. If a thread becomes unresponsive, the Watchdog terminates it, sends a **service disconnected** notification to all consumers, restarts the thread, and sends a **service connected** notification. Consumers automatically resume communication with the restarted service.
 
-The AREG Framework automates service discovery using `serviceConnected()` and manages inter-process communication (IPC) reliably, regardless of the startup order of the processes.
+The Areg Framework automates service discovery using `serviceConnected()` and manages inter-process communication (IPC) reliably, regardless of the startup order of the processes.
 
 ## Sub-Projects
 

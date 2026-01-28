@@ -1,5 +1,5 @@
 ﻿[Unit]
-Description=AREG TCP/IP Logging Service to collect application logs
+Description=Areg TCP/IP Logging Service to collect application logs
 StartLimitIntervalSec=1
 
 [Service]
@@ -13,7 +13,7 @@ RestartSec=1
 WantedBy=multi-user.target
 Alias=logcollector.service
 
-# Run this file under Linux with admin rights to enable, start or stop AREG Log Collector Service.
+# Run this file under Linux with admin rights to enable, start or stop Areg Log Collector Service.
 # Example:
 # Enable service: sudo systemctl enable logcollector.service
 # Start  service: sudo systemctl start  logcollector.service

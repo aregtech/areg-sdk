@@ -1,4 +1,4 @@
-# Directory Overview: AREG Logger Library
+# Directory Overview: Areg Logger Library
 
 This directory contains the source code for the `areglogger` library, designed to facilitate log observation and management. It serves as a client for the `logcollector` service, which aggregates logs from multiple applications and forwards them to log observers. The `areglogger` library simplifies the connection and initialization of log observers, enabling them to receive logs seamlessly. It also includes C-style methods, making it suitable for use in managed code environments.
 

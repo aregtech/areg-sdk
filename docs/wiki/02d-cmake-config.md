@@ -585,23 +585,23 @@ printAregConfigStatus()
 **Example output:**
 ```
 -- =======================================================================================
--- ----------------------> AREG project CMake Status Report Begin <-----------------------
+-- ----------------------> Areg project CMake Status Report Begin <-----------------------
 -- =======================================================================================
--- AREG: >>> CMAKE_SOURCE_DIR    = '/home/user/areg-sdk', build type 'Debug'
--- AREG: >>> Build Environment ..: System 'Linux', 64-bit 'x86_64' platform, Env 'Posix'
--- AREG: >>> Used CXX-Compiler ..: '/usr/bin/clang++'
--- AREG: >>> Used C-Compiler ....: '/usr/bin/clang'
--- AREG: >>> Compiler Version ...: C++ standard 'c++17', compiler family 'llvm'
--- AREG: >>> AREG SDK Root ......: '/home/user/areg-sdk'
--- AREG: >>> CMake Build Dir ....: '/home/user/areg-sdk/build'
--- AREG: >>> Binary Output Dir ..: '/home/user/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-debug-shared/bin'
--- AREG: >>> Build Modules ......: areg = 'shared', aregextend = 'static', areglogger = 'shared'
--- AREG: >>> Java Version .......: '17.0.16', minimum version required = 17
--- AREG: >>> Packages Use .......: SQLite3 package = 'ON', GTest package = 'OFF'
--- AREG: >>> Other Options ......: Examples = 'ON', Unit Tests = 'ON', Extended = 'OFF', Logs = 'ON'
--- AREG: >>> Installation .......: Enabled = 'ON', location = '/usr/local'
+-- Areg: >>> CMAKE_SOURCE_DIR    = '/home/user/areg-sdk', build type 'Debug'
+-- Areg: >>> Build Environment ..: System 'Linux', 64-bit 'x86_64' platform, Env 'Posix'
+-- Areg: >>> Used CXX-Compiler ..: '/usr/bin/clang++'
+-- Areg: >>> Used C-Compiler ....: '/usr/bin/clang'
+-- Areg: >>> Compiler Version ...: C++ standard 'c++17', compiler family 'llvm'
+-- Areg: >>> Areg SDK Root ......: '/home/user/areg-sdk'
+-- Areg: >>> CMake Build Dir ....: '/home/user/areg-sdk/build'
+-- Areg: >>> Binary Output Dir ..: '/home/user/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-debug-shared/bin'
+-- Areg: >>> Build Modules ......: areg = 'shared', aregextend = 'static', areglogger = 'shared'
+-- Areg: >>> Java Version .......: '17.0.16', minimum version required = 17
+-- Areg: >>> Packages Use .......: SQLite3 package = 'ON', GTest package = 'OFF'
+-- Areg: >>> Other Options ......: Examples = 'ON', Unit Tests = 'ON', Extended = 'OFF', Logs = 'ON'
+-- Areg: >>> Installation .......: Enabled = 'ON', location = '/usr/local'
 -- =======================================================================================
--- -----------------------> AREG project CMake Status Report End <------------------------
+-- -----------------------> Areg project CMake Status Report End <------------------------
 -- =======================================================================================
 ```
 

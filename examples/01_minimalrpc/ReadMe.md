@@ -4,7 +4,7 @@
 
 ## Overview
 
-The **01\_minimalrpc** example demonstrates the most minimal use of **RPC between threads** in a single process using the AREG Framework.
+The **01\_minimalrpc** example demonstrates the most minimal use of **RPC between threads** in a single process using the Areg Framework.
 It defines a simple model with **two threads** and **two components**: a **Service Provider** and a **Service Consumer**.
 The consumer waits for `serviceConnected()` to confirm the provider is available before calling `requestHelloService()`. Once invoked, the application terminates — keeping the logic as simple as possible.
 

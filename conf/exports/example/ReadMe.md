@@ -1,7 +1,7 @@
 ### Project Overview
 This `example` is a small project that demonstrates linking with the `areg` library. It also outputs the `AREG_SHARE_INIT` constant, which shows the location of the `areg.init` file template.
 
-> **Note:** AREG requires a minimum of C++17.
+> **Note:** Areg requires a minimum of C++17.
 
 ---
 

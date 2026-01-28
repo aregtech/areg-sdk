@@ -1,5 +1,5 @@
 # ###########################################################################
-# AREG SDK Examples with example specific functions
+# Areg SDK Examples with example specific functions
 # Copyright 2022-2026 Aregtech
 # ###########################################################################
 
@@ -50,8 +50,8 @@ if(AREG_BUILD_EXAMPLES)
             # Otherwise, output warning message and exclude from the build.
             include(${AREG_EXAMPLES}/20_winchat/CMakeLists.txt)
         else(MFC_FOUND)
-            message(NOTICE " AREG Examples: >>> Due to missing installed MFC library, escaping compile projects:")
-            message(NOTICE " AREG Examples: >>> ${AREG_EXAMPLES}/20_winchat")
+            message(NOTICE " Areg Examples: >>> Due to missing installed MFC library, escaping compile projects:")
+            message(NOTICE " Areg Examples: >>> ${AREG_EXAMPLES}/20_winchat")
         endif(MFC_FOUND)
 
     endif()

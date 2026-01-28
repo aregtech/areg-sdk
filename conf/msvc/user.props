@@ -54,7 +54,7 @@
         <!-- Add preprocessor defines here to set for all projects.                                                                         -->
         <!-- ****************************************************************************************************************************** -->
         <!-- AREG_LOGS 	        : enable compilation with logging; remove if no logging required.                                           -->
-        <!-- AREG_EXTENDED      : enable or disable extensions in AREG extended static library, which contain additional features.          -->
+        <!-- AREG_EXTENDED      : enable or disable extensions in Areg extended static library, which contain additional features.          -->
         <AregCommonDefines>AREG_LOGS=$(AregLogs);AREG_EXTENDED=$(AregExtended);$(AregCommonDefines)</AregCommonDefines>
 
         <!-- ****************************************************************************************************************************** -->
@@ -71,24 +71,24 @@
         <AregGenerateDir Condition="'$(AregGenerateDir)'==''">$(AregOutputRoot)generate\</AregGenerateDir>
         <!-- Set the directory to download thirdparty packages. If change, also change the location in nuget.config file.                   -->
         <AregPackages Condition="'$(AregPackages)'==''">$(AregOutputRoot)packages\</AregPackages>
-        <!-- Set the AREG Framework path.                                                                                                   -->
+        <!-- Set the Areg Framework path.                                                                                                   -->
         <AregFramewor>$(AregSdkRoot)framework\</AregFramewor>
-        <!-- Set the path of AREG Framework resources                                                                                       -->
+        <!-- Set the path of Areg Framework resources                                                                                       -->
         <AregFrameworkResources>$(AregFramewor)areg\resources\</AregFrameworkResources>
         <!-- Set the path of thirdparty software components. Set for all projects.                                                          -->
         <AregThirdpartyDir>$(AregSdkRoot)thirdparty\</AregThirdpartyDir>
-        <!-- Set the path of AREG SDK Examples.                                                                                             -->
+        <!-- Set the path of Areg SDK Examples.                                                                                             -->
         <AregExamplesDir>$(AregSdkRoot)examples\</AregExamplesDir>
-        <!-- Set the path of AREG SDK unit tests.                                                                                           -->
+        <!-- Set the path of Areg SDK unit tests.                                                                                           -->
         <AregTestsDir>$(AregSdkRoot)tests\</AregTestsDir>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Common compiler and linker options. Set for all projects.                                                                      -->
         <!-- ****************************************************************************************************************************** -->
 
-        <!-- AREG Framework specific includes. The value may change when integrate in other projects.                                       -->
+        <!-- Areg Framework specific includes. The value may change when integrate in other projects.                                       -->
         <AregCommonIncludes>$(AregFramewor);$(AregOutputRoot);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
-        <!-- AREG Framework specific library search paths. The value may change when integrate in other projects.                           -->
+        <!-- Areg Framework specific library search paths. The value may change when integrate in other projects.                           -->
         <AregCommonLibs>$(AregOutputLib);$(AregOutputBin)</AregCommonLibs>
 
         <!-- ****************************************************************************************************************************** -->

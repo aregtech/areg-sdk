@@ -3,7 +3,7 @@
 🧵🚀 **Type:** Multithreading + IPC
 
 ## Overview
-The **20_winchat** project is a **Windows-exclusive GUI application** demonstrating a fault-tolerant, distributed communication system using the AREG SDK. It features **dynamic model creation**, **runtime service subscription**, and **inter-process communication (IPC)**. Built with **MFC (Microsoft Foundation Classes)**, it requires Microsoft Visual C++ for development.
+The **20_winchat** project is a **Windows-exclusive GUI application** demonstrating a fault-tolerant, distributed communication system using the Areg SDK. It features **dynamic model creation**, **runtime service subscription**, and **inter-process communication (IPC)**. Built with **MFC (Microsoft Foundation Classes)**, it requires Microsoft Visual C++ for development.
 
 > [!NOTE]
 > Ensure a **Multi-Target Router** (`mtrouter`) is running on a network-accessible machine. Verify that the `areg.init` configuration file includes the correct IP address and port for the router.
@@ -29,4 +29,4 @@ Generated code from [CentralMessager.siml](./services/CentralMessager.siml), [Co
 - **Message Routing**: Shows how to route messages across networked services using `mtrouter` in a Windows environment.
 
 ## Takeaway
-The **20_winchat** example illustrates how to build a **Windows-exclusive, MFC-based distributed system** with **dynamic models**, **automatic service discovery**, and **robust IPC** using the AREG SDK, making it an essential reference for developers designing scalable, real-time communication systems.
+The **20_winchat** example illustrates how to build a **Windows-exclusive, MFC-based distributed system** with **dynamic models**, **automatic service discovery**, and **robust IPC** using the Areg SDK, making it an essential reference for developers designing scalable, real-time communication systems.

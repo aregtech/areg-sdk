@@ -4,7 +4,7 @@ libdir=@CMAKE_INSTALL_FULL_LIBDIR@
 includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
 Name: areg
-Description: AREG communication framework
+Description: Areg communication framework
 Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
 Libs: -L${libdir} -lareg

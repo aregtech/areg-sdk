@@ -4,7 +4,7 @@
  * \file        areg/system/GEPlatform.h
  * \ingroup     platform dependent files
  * \author      Artak Avetyan
- * \brief       AREG Framework, platform dependent includes
+ * \brief       Areg Framework, platform dependent includes
  *
  ************************************************************************/
 /************************************************************************

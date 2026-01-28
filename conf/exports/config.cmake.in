@@ -2,7 +2,7 @@
 include(CMakeFindDependencyMacro)
 
 # ##################################################
-# Set AREG SDK essentials
+# Set Areg SDK essentials
 # ##################################################
 
 # Set C and CXX compiler targets
@@ -17,20 +17,20 @@ endif()
 set(AREG_SDK_ROOT           "@CMAKE_INSTALL_PREFIX@")
 # Location of 'areg', 'aregextend' and 'areglogger' header files
 set(AREG_FRAMEWORK          "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
-# Location of configuration, initialization and other shared files of AREG SDK
+# Location of configuration, initialization and other shared files of Areg SDK
 set(AREG_SHARE_DIR          "@CMAKE_INSTALL_PREFIX@/share/@AREG_PACKAGE_NAME@")
 # Location of initialization file to copy as a template in the processes
 set(AREG_SHARE_INIT         "${AREG_SHARE_DIR}/areg.init")
 # Location of cmake configuration directory
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SHARE_DIR}/conf/cmake")
-# Location of AREG SDK tools.
+# Location of Areg SDK tools.
 set(AREG_SDK_TOOLS          "@CMAKE_INSTALL_PREFIX@/tools/@AREG_PACKAGE_NAME@")
-# Location of the AREG SDK code generator
+# Location of the Areg SDK code generator
 set(AREG_TOOL_CODEGEN       "${AREG_SDK_TOOLS}/codegen.jar")
 # Full path to 'areg.cmake' to include in projects
 set(AREG_CMAKE              "${AREG_SHARE_DIR}/areg.cmake")
 
-# The build type of AREG libraries.
+# The build type of Areg libraries.
 set(AREG_BUILD_TYPE         @AREG_BUILD_TYPE@)
 # The library type of 'areg'. Static or dynamic
 set(AREG_BINARY             @AREG_BINARY@)
@@ -44,9 +44,9 @@ set(AREG_BITNESS        @AREG_BITNESS@)
 set(AREG_PROCESSOR      @AREG_PROCESSOR@)
 
 # Specify whether 'aregextend' is compiled with enabled extended objects flag
-option(AREG_EXTENDED        "AREG Extended object flag"         @AREG_EXTENDED@)
+option(AREG_EXTENDED        "Areg Extended object flag"         @AREG_EXTENDED@)
 # Specify whether the libraries where compiled with enabled logging.
-option(AREG_LOGS            "AREG logging enable flag"          @AREG_LOGS@)
+option(AREG_LOGS            "Areg logging enable flag"          @AREG_LOGS@)
 # Specify whether to use installed or compiled SQLite3 package
 option(AREG_SQLITE_PACKAGE  "Use installed SQLite3 library"     @AREG_SQLITE_PACKAGE@)
 
@@ -59,14 +59,14 @@ set(AREG_CXX_STANDARD ${AREG_CXX_STANDARD})
 if (NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD  ${AREG_CXX_STANDARD})
 elseif (${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
-    message(WARNING "AREG: >>> AREG requires minimum C++${AREG_CXX_STANDARD}, current is C++${CMAKE_CXX_STANDARD}. Forcing to change to avoid compilation errors.")
+    message(WARNING "Areg: >>> Areg requires minimum C++${AREG_CXX_STANDARD}, current is C++${CMAKE_CXX_STANDARD}. Forcing to change to avoid compilation errors.")
     set(CMAKE_CXX_STANDARD  ${AREG_CXX_STANDARD})
 endif()
 
 # Unit tests are ignored
-option(AREG_BUILD_TESTS     "No AREG Unit Tests"    OFF)
+option(AREG_BUILD_TESTS     "No Areg Unit Tests"    OFF)
 # Examples are ignored
-option(AREG_BUILD_EXAMPLES  "No AREG Examples"      OFF)
+option(AREG_BUILD_EXAMPLES  "No Areg Examples"      OFF)
 
 # Change the build root directory if compiled fines are copied somewhere else.
 # set to 'CMAKE_CURRENT_BINARY_DIR' if it should be in the compiled binaries directory

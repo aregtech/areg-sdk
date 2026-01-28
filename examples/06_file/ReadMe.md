@@ -3,7 +3,7 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **06_file** example demonstrates how to handle **file operations** in both text and binary formats using the AREG Framework.  
+The **06_file** example demonstrates how to handle **file operations** in both text and binary formats using the Areg Framework.  
 It covers creating, copying, and managing files, as well as dynamically generating file names with masks like `%time%` and `%appname%`.  
 
 This example addresses common challenges in application development: managing files reliably, supporting dynamic file naming, and handling different file formats efficiently.

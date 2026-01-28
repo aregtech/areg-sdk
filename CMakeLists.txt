@@ -1,5 +1,5 @@
 # ###########################################################################
-#               CMake options of AREG SDK
+#               CMake options of Areg SDK
 # Copyright 2022-2026 Aregtech
 # ###########################################################################
 
@@ -17,7 +17,7 @@ include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 # set CMake tool settings
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
 
-# AREG SDK project name and version
+# Areg SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
 set(AREG_PROJECT_VERSION "1.9.99.111")
 
@@ -26,7 +26,7 @@ set(PROJECT_NAME ${AREG_PROJECT_NAME})
 set(PROJECT_VERSION ${AREG_PROJECT_VERSION})
 project("${PROJECT_NAME}" 
         VERSION      "${PROJECT_VERSION}" 
-        DESCRIPTION  "AREG Communication Framework and Tools" 
+        DESCRIPTION  "Areg Communication Framework and Tools" 
         HOMEPAGE_URL "https://areg.tech" 
         LANGUAGES    CXX C)
 
@@ -46,22 +46,22 @@ add_custom_command( TARGET areg-dummy PRE_BUILD
 include_directories(${AREG_FRAMEWORK})
 include_directories(${AREG_THIRDPARTY})
 
-# build AREG Framework thirdparty software
+# build Areg Framework thirdparty software
 include(${AREG_THIRDPARTY}/CMakeLists.txt)
 if (NOT AREG_SQLITE_FOUND)
     add_dependencies(aregsqlite3 areg-dummy)
 endif()
 
-# build AREG Framework software
+# build Areg Framework software
 include(${AREG_FRAMEWORK}/CMakeLists.txt)
 add_dependencies(areg areg-dummy)
 
-# build optional AREG project examples, if required
+# build optional Areg project examples, if required
 if(AREG_BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/CMakeLists.txt)
 endif()
 
-# build optional AREG Framework unit tests, if required
+# build optional Areg Framework unit tests, if required
 if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
     if (NOT AREG_GTEST_FOUND)
@@ -83,6 +83,6 @@ endif()
 printAregConfigStatus(
     TRUE
     "AREG"
-    "----------------------> AREG project CMake Status Report Begin <-----------------------"
-    "-----------------------> AREG project CMake Status Report End <------------------------"
+    "----------------------> Areg project CMake Status Report Begin <-----------------------"
+    "-----------------------> Areg project CMake Status Report End <------------------------"
 )

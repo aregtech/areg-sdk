@@ -1,8 +1,8 @@
 /************************************************************************
  * \file        common/src/PubSubMixed.cpp
- * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
- * \brief       Collection of AREG SDK examples.
+ * \brief       Collection of Areg SDK examples.
  *              Mixed Publisher and Subscriber component.
  ************************************************************************/
  /************************************************************************

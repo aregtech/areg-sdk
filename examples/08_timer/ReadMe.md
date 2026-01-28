@@ -4,19 +4,19 @@
 
 ## Overview
 
-The **08\_timer** project demonstrates how to implement and manage **timers** (or *Timer Events*) in **multithreaded applications** using the AREG Framework. It shows how to initialize, execute, and terminate timers, ensuring that tasks are triggered and processed safely within their owning threads.
+The **08\_timer** project demonstrates how to implement and manage **timers** (or *Timer Events*) in **multithreaded applications** using the Areg Framework. It shows how to initialize, execute, and terminate timers, ensuring that tasks are triggered and processed safely within their owning threads.
 
 ## Concepts Shown
 
 * **Timer Management**: Initialize, start, pause, and stop different types of timers safely in a multithreaded context.
-* **Timer Service**: Utilize the AREG *Timer Service* to handle timer events efficiently across threads.
+* **Timer Service**: Utilize the Areg *Timer Service* to handle timer events efficiently across threads.
 * **Thread-Specific Timers**: Each timer executes in the context of its owning thread, ensuring thread-safe processing.
 * **Timer Types**: One-time, periodic, and continuous timers illustrate different scheduling strategies.
 * **Task Execution**: Timers can be linked to tasks, demonstrating controlled execution across multiple threads.
 
 ## How It Works
 
-The project creates multiple timers within threads managed by the AREG Framework.
+The project creates multiple timers within threads managed by the Areg Framework.
 
 * **One-time Timer** executes a task once after a delay.
 * **Periodic Timer** triggers a task repeatedly for a defined number of times.

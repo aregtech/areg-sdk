@@ -853,20 +853,20 @@ removeEmptyDirs("${CMAKE_BINARY_DIR}/temp")
 ```cmake
 printAregConfigStatus(TRUE 
                      "AREG"
-                     "--- AREG Configuration Begin ---"
-                     "--- AREG Configuration End ---")
+                     "--- Areg Configuration Begin ---"
+                     "--- Areg Configuration End ---")
 ```
 
 **Example output:**
 ```
---- AREG Configuration Begin ---
-AREG: >>> CMAKE_SOURCE_DIR    = '/home/user/project', build type 'Debug'
-AREG: >>> Build Environment ..: System 'Linux', 64-bit 'x86_64' platform
-AREG: >>> Used CXX-Compiler ..: '/usr/bin/clang++'
-AREG: >>> AREG SDK Root ......: '/opt/areg-sdk'
-AREG: >>> Binary Output Dir ..: '/home/user/project/build/bin'
-AREG: >>> Build Modules ......: areg = 'shared', areglogger = 'shared'
---- AREG Configuration End ---
+--- Areg Configuration Begin ---
+Areg: >>> CMAKE_SOURCE_DIR    = '/home/user/project', build type 'Debug'
+Areg: >>> Build Environment ..: System 'Linux', 64-bit 'x86_64' platform
+Areg: >>> Used CXX-Compiler ..: '/usr/bin/clang++'
+Areg: >>> Areg SDK Root ......: '/opt/areg-sdk'
+Areg: >>> Binary Output Dir ..: '/home/user/project/build/bin'
+Areg: >>> Build Modules ......: areg = 'shared', areglogger = 'shared'
+--- Areg Configuration End ---
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>

@@ -273,7 +273,7 @@ Type '-q' or '--quit' to quit the application ...:
 Type `-x` or `--stop`:
 
 ```
-AREG Log Observer console application ...
+Areg Log Observer console application ...
 ---------------------------------------------------------------------------------------------
 
 Log observer stops, type '-r' to resume.
@@ -312,12 +312,12 @@ Commands available while Log Observer is running:
 **1. Display help:** type `-h` or `--help``
 
 ```
-AREG Log Observer console application ...
+Areg Log Observer console application ...
 ---------------------------------------------------------------------------------------------
 
 Type '-q' or '--quit' to quit the application ...:
 
-Usage of AREG Log Observer console application :
+Usage of Areg Log Observer console application :
 ---------------------------------------------------------------------------------------------
 -e, --query     : Query the list of logging scopes. Usage: --query *, '*' can be a cookie ID.
 -f, --config    : Save current configuration.       Usage: --config
@@ -335,7 +335,7 @@ Usage of AREG Log Observer console application :
 **2. Show connected applications:** type `-n` or `--instances`
 
 ```
-AREG Log Observer console application ...
+Areg Log Observer console application ...
 ---------------------------------------------------------------------------------------------
 
 List of connected instances ...

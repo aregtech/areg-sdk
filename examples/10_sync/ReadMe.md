@@ -3,7 +3,7 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **10_sync** project demonstrates how to implement and manage **synchronization objects** in **multithreaded applications** using the AREG Framework. It focuses on controlling thread execution and resource access to ensure safe, coordinated operation in concurrent environments.
+The **10_sync** project demonstrates how to implement and manage **synchronization objects** in **multithreaded applications** using the Areg Framework. It focuses on controlling thread execution and resource access to ensure safe, coordinated operation in concurrent environments.
 
 ## Concepts Shown
 - **Thread Synchronization**: Use **Mutexes** and **Synchronization Events** to control access to shared resources.

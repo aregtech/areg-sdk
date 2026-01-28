@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="HelloUnblock" Version="1.1.0" Category="Public">
-        <Description>Simple Service Interface to demonstrate working features of AREG SDK.
+        <Description>Simple Service Interface to demonstrate working features of Areg SDK.
 In this example the client sends a request each 200 ms and the service replies each 500,
 so that when the client sends next request, there is always a pending request on the service.
 To process the request and make correct reply, the service manually unblocks the request

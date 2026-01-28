@@ -1,15 +1,15 @@
 /************************************************************************
- * This file is part of the AREG SDK core engine.
- * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
- * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        aregextend/db/private/LogSqliteDatabase.cpp
  * \author      Artak Avetyan
- * \ingroup     AREG platform, extended library, SQLite Database log file.
+ * \ingroup     Areg platform, extended library, SQLite Database log file.
  ************************************************************************/
 
 /************************************************************************
@@ -498,8 +498,8 @@ inline void LogSqliteDatabase::_initialize(void)
     String::formatString( sql, SQL_LEN, _fmtVersion.data()
                         , Process::getInstance().getName().getString()
                         , NELogging::LOG_VERSION.data()
-                        , "AREG SDK database logging module. Visit https://areg.tech for more information."
-                        , "Created by AREG log observer API module."
+                        , "Areg SDK database logging module. Visit https://areg.tech for more information."
+                        , "Created by Areg log observer API module."
                         , mDatabase.getPath().getString()
                         , static_cast<uint64_t>(now.getTime())
                         );

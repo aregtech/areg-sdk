@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="HelloWorld" Version="1.1.1" Category="Private">
-        <Description>Simple Service Interface to demonstrate working features of AREG SDK.</Description>
+        <Description>Simple Service Interface to demonstrate working features of Areg SDK.</Description>
     </Overview>
     <MethodList>
         <Method ID="7" Name="HelloWorld" MethodType="Request" Response="HelloWorld">
