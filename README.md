@@ -83,7 +83,7 @@ Areg SDK eliminates infrastructure complexity with five core capabilities:
 **1. Automated Threading Management**  
 Thread creation, lifecycle, and message dispatch are fully managed by the framework. You define components and their dependencies - the framework handles threading, synchronization, and safe message passing between threads.
 
-**2. Write Once, Run Anywhere**  
+**2. Location-Transparent Services**  
 Services work identically whether local (same thread), IPC (same machine), or remote (network). Change deployment without changing code.
 
 **3. Self-Managing Service Mesh**  
@@ -95,7 +95,7 @@ Components can join or leave dynamically. Watchdogs automatically restart failed
 **5. Native Observability**  
 Integrated distributed logging with visual analysis. Per-method execution timing enables performance profiling without external tools.
 
-💡 **Best for:** Linux and Windows C++ applications scaling from prototype to production multi-process systems.  
+💡 **Best for:** Embedded to enterprise C++ applications on Linux and Windows, scaling from resource-constrained devices to high-performance server systems.
 ⚠️ **Not for:** RTOS (planned), web services, or non-C++ ecosystems.
 
 ---
