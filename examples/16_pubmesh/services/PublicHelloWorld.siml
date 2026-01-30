@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="PublicHelloWorld" Version="2.1.0" Category="Public">
-        <Description>Simple Service Interface to demonstrate working features of AREG SDK.
+        <Description>Simple Service Interface to demonstrate working features of Areg SDK.
 This interface demonstrates how to use multiple remote services in the system.
 Each service is unique in the network.
 This service is used by each remote servicing component to register clients.

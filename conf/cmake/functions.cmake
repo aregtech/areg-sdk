@@ -1,5 +1,5 @@
 # ###########################################################################
-# AREG CMake functions
+# Areg CMake functions
 # Copyright 2022-2026 Aregtech
 # ###########################################################################
 
@@ -29,13 +29,13 @@ macro(macro_check_fix_areg_cxx_standard)
 
             # If the current C++ standard is less than the required 'AREG_CXX_STANDARD', issue a warning.
         elseif(${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
-            message(WARNING "AREG: >>> AREG requires C++${AREG_CXX_STANDARD} or higher, \
+            message(WARNING "Areg: >>> Areg requires C++${AREG_CXX_STANDARD} or higher, \
                             current version is C++${CMAKE_CXX_STANDARD}. \
                             To avoid compilation errors, set 'CMAKE_CXX_STANDARD' to ${AREG_CXX_STANDARD}. \
                             Example: 'set(CMAKE_CXX_STANDARD ${AREG_CXX_STANDARD})'")
         endif()
     else()
-        message(WARNING "AREG: >>> Cannot check and set C++ standard, variable 'AREG_CXX_STANDARD' is not defined.")
+        message(WARNING "Areg: >>> Cannot check and set C++ standard, variable 'AREG_CXX_STANDARD' is not defined.")
     endif()
 
 endmacro(macro_check_fix_areg_cxx_standard)
@@ -131,7 +131,7 @@ endmacro(macro_get_processor)
 #   macro_check_module_architect("/usr/lib/i386-linux-gnu/sqlite3.so" "i386-linux-gnu" i386 _is_compatible)
 # ---------------------------------------------------------------------------
 macro(macro_check_module_architect path_module target_name target_proc var_compatible)
-    message(STATUS "AREG: >>> Validating binary '${path_module}' for compatibility with processor '${target_proc}'")
+    message(STATUS "Areg: >>> Validating binary '${path_module}' for compatibility with processor '${target_proc}'")
     
     # Determine the appropriate objdump command
     if (NOT "${CMAKE_OBJDUMP}" STREQUAL "")
@@ -173,7 +173,7 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
         if (_pos GREATER -1)
             set(${var_compatible} TRUE)
         else()
-            message(WARNING "AREG: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'")
+            message(WARNING "Areg: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'")
             set(${var_compatible} FALSE)
         endif()
     elseif (${AREG_OS} STREQUAL Windows)
@@ -311,7 +311,7 @@ macro(macro_add_source result_list src_base_dir)
         if (EXISTS "${_src}")
             list(APPEND ${result_list} "${_src}")
         else()
-            message(FATAL_ERROR "AREG: >>> The item '${_item}' does not exist in '${src_base_dir}'")
+            message(FATAL_ERROR "Areg: >>> The item '${_item}' does not exist in '${src_base_dir}'")
         endif()
     endforeach()
     unset(_list)
@@ -355,7 +355,7 @@ macro(macro_parse_arguments res_sources res_libs res_resources)
                 list(APPEND ${res_resources} "${_full_path}")
             endif()
         else()
-            message(FATAL_ERROR "AREG: >>> File \'${_item}\' does not exist, stopping.")
+            message(FATAL_ERROR "Areg: >>> File \'${_item}\' does not exist, stopping.")
         endif()
     endforeach()
 endmacro(macro_parse_arguments)
@@ -651,7 +651,7 @@ endmacro(macro_setup_compilers_data_by_family)
 # ---------------------------------------------------------------------------
 # Function ...: setAppOptions
 # Purpose ....: Configures the compiler and linker options for executable applications.
-#               Automatically links the AREG library, along with any additional libraries specified.
+#               Automatically links the Areg library, along with any additional libraries specified.
 # Parameters .: ${target_name}  -- Name of the executable to apply options to.
 #               ${library_list} -- List of additional libraries to link.
 # Usage ......: setAppOptions(<target-name> <library-list>)
@@ -664,11 +664,11 @@ function(setAppOptions target_name library_list)
     # Apply common compiler options, such as disabling certain warnings
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Link the AREG library, additional specified libraries, and any extended or extra libraries
+    # Link the Areg library, additional specified libraries, and any extended or extra libraries
     target_link_libraries(${target_name}
-        ${AREG_PACKAGE_NAME}::aregextend   # AREG extended library
+        ${AREG_PACKAGE_NAME}::aregextend   # Areg extended library
         ${library_list}                    # Custom libraries to link
-        ${AREG_PACKAGE_NAME}::areg         # Core AREG library
+        ${AREG_PACKAGE_NAME}::areg         # Core Areg library
         ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
         ${AREG_LDFLAGS}                    # Additional linker flags
     )
@@ -678,7 +678,7 @@ endfunction(setAppOptions)
 # ---------------------------------------------------------------------------
 # Purpose ....: Creates an executable, sets its source files, applies necessary options, 
 #               and links it with the provided list of libraries. 
-#               The AREG library is automatically linked, no need to specify it.
+#               The Areg library is automatically linked, no need to specify it.
 # Function ...: addExecutableEx
 # Parameters .: ${target_name}      -- The name of the executable target.
 #               ${target_namespace} -- Namespace for aliasing. Can be empty.
@@ -690,7 +690,7 @@ function(addExecutableEx target_name target_namespace source_list library_list)
 
     # Ensure the source list is not empty
     if (NOT source_list)
-        message(FATAL_ERROR "AREG: >>> Source list for executable \'${target_name}\' is empty")
+        message(FATAL_ERROR "Areg: >>> Source list for executable \'${target_name}\' is empty")
     endif()
 
     # Gather any additional libraries passed as arguments (ARGN)
@@ -707,7 +707,7 @@ function(addExecutableEx target_name target_namespace source_list library_list)
         add_executable(${target_namespace}::${target_name} ALIAS ${target_name})
     endif()
 
-    # Apply compiler and linker options, including linking with AREG and additional libraries
+    # Apply compiler and linker options, including linking with Areg and additional libraries
     setAppOptions(${target_name} "${library_list}")
 
     # Set the include directories for the executable
@@ -718,7 +718,7 @@ endfunction(addExecutableEx)
 # ---------------------------------------------------------------------------
 # Function ...: addExecutable
 # Purpose ....: Wrapper for addExecutableEx, assuming there is not list of libraries to link with.
-#               The AREG library is automatically linked, no need to specify it.
+#               The Areg library is automatically linked, no need to specify it.
 # Parameters .: ${target_name}  -- Name of the executable to build.
 #               ${source_list}  -- List of source files used to build the executable.
 # Usage ......: addExecutable(<target-name> <source-list>)
@@ -731,7 +731,7 @@ endfunction(addExecutable)
 # ---------------------------------------------------------------------------
 # Function ...: setStaticLibOptions
 # Purpose ....: Configures compiler and linker settings for a static library,
-#               automatically linking the AREG Framework library along with any 
+#               automatically linking the Areg Framework library along with any 
 #               additional specified libraries
 # Parameters .: ${target_name}  -- Name of the static library to apply options to.
 #               ${library_list} -- List of libraries to link with the static library.
@@ -750,7 +750,7 @@ function(setStaticLibOptions target_name library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
     endif()
 
-    # Link the static library with the provided libraries and AREG framework
+    # Link the static library with the provided libraries and Areg framework
     target_link_libraries(${target_name} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
 
 endfunction(setStaticLibOptions)
@@ -758,7 +758,7 @@ endfunction(setStaticLibOptions)
 # ---------------------------------------------------------------------------
 # Function ...: addStaticLibEx
 # Purpose ....: Creates a static library with specified source files and options,
-#               importing and auto-linking the AREG Framework library along with
+#               importing and auto-linking the Areg Framework library along with
 #               any additional libraries.
 # Parameters .: ${target_name}      -- Name of the static library to build.
 #               ${target_namespace} -- Namespace for aliasing. Can be empty string if no aliasing.
@@ -782,7 +782,7 @@ function(addStaticLibEx target_name target_namespace source_list library_list)
         add_library(${target_namespace}::${target_name} ALIAS ${target_name})
     endif()
 
-    # Apply compiler and linker options, including linking with AREG and additional libraries
+    # Apply compiler and linker options, including linking with Areg and additional libraries
     setStaticLibOptions(${target_name} "${library_list}")
 
     # Set the include directories for the static library
@@ -794,7 +794,7 @@ endfunction(addStaticLibEx)
 # Function ...: addStaticLib
 # Purpose ....: Wrapper of addStaticLibEx, assuming there is no list of libraries to link.
 #               Creates a static library, setting sources and options, importing, 
-#               and auto-linking the AREG Framework library.
+#               and auto-linking the Areg Framework library.
 # Parameters .: ${target_name}  -- Name of the static library to build.
 #               ${source_list}  -- List of source files to build the static library.
 # Usage ......: addStaticLib(<target-name> <source-list>)
@@ -806,7 +806,7 @@ endfunction(addStaticLib)
 # ---------------------------------------------------------------------------
 # Function ...: addStaticLibEx_C
 # Purpose ....: Creates a static library compiled with C, setting sources, 
-#               importing, and auto-linking the AREG Framework library along 
+#               importing, and auto-linking the Areg Framework library along 
 #               with any additional libraries.
 # Parameters .: ${target_name}      -- Name of the static library to build.
 #               ${target_namespace} -- Namespace for aliasing. Pass empty string if no aliasing.
@@ -841,7 +841,7 @@ endfunction(addStaticLibEx_C)
 # Function ...: addStaticLib_C
 # Purpose ....: Wrapper for addStaticLibEx_C, assuming there is no aliasing and 
 #               list of libraries for linking. Creates a static library compiled with C,
-#               setting sources, importing, and auto-linking the AREG Framework library.
+#               setting sources, importing, and auto-linking the Areg Framework library.
 # Parameters .: ${target_name}  -- Name of the static library to build.
 #               ${source_list}  -- List of C-source files to build the static library.
 # Usage ......: addStaticLib_C(<target-name> <C-source-list>)
@@ -853,7 +853,7 @@ endfunction(addStaticLib_C)
 # ---------------------------------------------------------------------------
 # Function ...: setSharedLibOptions
 # Purpose ....: Configures settings for a shared library, automatically linking
-#               the AREG Framework library and any additional specified libraries.
+#               the Areg Framework library and any additional specified libraries.
 # Parameters .: ${target_name}  -- Name of the shared library to apply options to.
 #               ${library_list} -- List of libraries for linking.
 # Usage ......: setSharedLibOptions(<target-name> <library-list>)
@@ -864,7 +864,7 @@ function(setSharedLibOptions target_name library_list)
     target_compile_definitions(${target_name} PRIVATE ${COMMON_COMPILE_DEF} _USRDLL)
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
-    # Link the shared library with provided libraries and AREG framework
+    # Link the shared library with provided libraries and Areg framework
     target_link_libraries(${target_name} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     # Additional compile options for non-Windows platforms
@@ -878,7 +878,7 @@ endfunction(setSharedLibOptions)
 # ---------------------------------------------------------------------------
 # Function ...: addSharedLibEx
 # Purpose ....: Creates a shared library with specified source files and options,
-#               importing and auto-linking the AREG Framework library along with
+#               importing and auto-linking the Areg Framework library along with
 #               any additional libraries.
 # Parameters .: ${target_name}      -- Name of the shared library to build.
 #               ${target_namespace} -- Namespace for aliasing. Can be empty string if no aliasing.
@@ -902,7 +902,7 @@ function(addSharedLibEx target_name target_namespace source_list library_list)
         add_library(${target_namespace}::${target_name} ALIAS ${target_name})
     endif()
 
-    # Apply compiler and linker options, including linking with AREG and additional libraries
+    # Apply compiler and linker options, including linking with Areg and additional libraries
     setSharedLibOptions(${target_name} "${library_list}")
 
     # Set the include directories for the shared library
@@ -914,7 +914,7 @@ endfunction(addSharedLibEx)
 # Function ...: addSharedLib
 # Purpose ....: Wrapper for addSharedLibEx, assuming there is no aliasing and no list for linking.
 #               Creates a shared library with specified sources, options, imports,
-#               and auto-linking the AREG Framework library.
+#               and auto-linking the Areg Framework library.
 # Parameters .: ${target_name}  -- Name of the shared library to build.
 #               ${source_list}  -- List of source files to build the shared library.
 # Usage ......: addSharedLib(<target-name> <source-list>)
@@ -942,19 +942,19 @@ endfunction(addSharedLib)
 macro(macro_add_service_interface lib_name interface_doc codegen_root output_path codegen_tool)
 
     if (NOT ${Java_FOUND})
-        message(FATAL_ERROR "AREG Setup: Java not found! Install Java 17 or higher to run the code generator.")
+        message(FATAL_ERROR "Areg Setup: Java not found! Install Java 17 or higher to run the code generator.")
         return()
     endif()
 
     if (NOT EXISTS "${interface_doc}")
-        message(FATAL_ERROR "AREG Setup: The Service Interface file \'${interface_doc}\' does not exist. Cannot generate files.")
+        message(FATAL_ERROR "Areg Setup: The Service Interface file \'${interface_doc}\' does not exist. Cannot generate files.")
         return()
     endif()
 
     set(_si_doc "${interface_doc}")
     cmake_path(GET _si_doc STEM _interface_name)
     if ("${_interface_name}" STREQUAL "")
-        message(FATAL_ERROR "AREG Setup: The path \'${interface_doc}\' has no file name. Cannot generate Service Interface files.")
+        message(FATAL_ERROR "Areg Setup: The path \'${interface_doc}\' has no file name. Cannot generate Service Interface files.")
         return()
     endif()
 
@@ -982,7 +982,7 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
     if (TARGET ${lib_name})
         target_sources(${lib_name} PRIVATE "${_sources}")
     else()
-        message(STATUS "AREG Setup: Adding new service interface library ${lib_name}")
+        message(STATUS "Areg Setup: Adding new service interface library ${lib_name}")
         addStaticLib(${lib_name} "${_sources}")
         target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
     endif()
@@ -1085,7 +1085,7 @@ macro(macro_declare_static_library lib_name)
 
     # Ensure the source list is not empty
     if (NOT _sources)
-        message(FATAL_ERROR "AREG: >>> Source list to build static library \'${exe_name}\' is empty")
+        message(FATAL_ERROR "Areg: >>> Source list to build static library \'${exe_name}\' is empty")
     endif()
 
     # Declare the static library using gathered sources and libraries
@@ -1119,7 +1119,7 @@ macro(macro_declare_shared_library lib_name)
 
     # Ensure the source list is not empty
     if (NOT _sources)
-        message(FATAL_ERROR "AREG: >>> Source list to build shared library \'${exe_name}\' is empty")
+        message(FATAL_ERROR "Areg: >>> Source list to build shared library \'${exe_name}\' is empty")
     endif()
 
     # Declare the shared library using gathered sources and libraries
@@ -1154,7 +1154,7 @@ macro(macro_declare_executable exe_name)
 
     # Ensure the source list is not empty
     if (NOT _sources)
-        message(FATAL_ERROR "AREG: >>> Source list to build executable \'${exe_name}\' is empty")
+        message(FATAL_ERROR "Areg: >>> Source list to build executable \'${exe_name}\' is empty")
     endif()
 
     # Declare the executable using gathered sources and libraries
@@ -1183,8 +1183,8 @@ endmacro(macro_declare_executable)
 # Example ....: printAregConfigStatus(
 #                                   TRUE
 #                                   "AREG"
-#                                   "----------------------> AREG project CMake Status Report Begin <-----------------------"
-#                                   "-----------------------> AREG project CMake Status Report End <------------------------"
+#                                   "----------------------> Areg project CMake Status Report Begin <-----------------------"
+#                                   "-----------------------> Areg project CMake Status Report End <------------------------"
 #                                   )
 # ---------------------------------------------------------------------------
 function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
@@ -1204,7 +1204,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Used CXX-Compiler ..: '${CMAKE_CXX_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Used C-Compiler ....: '${CMAKE_C_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}', target '${CMAKE_CXX_COMPILER_TARGET}'")
-    message(STATUS "${var_prefix}: >>> AREG SDK Root ......: '${AREG_SDK_ROOT}'")
+    message(STATUS "${var_prefix}: >>> Areg SDK Root ......: '${AREG_SDK_ROOT}'")
     message(STATUS "${var_prefix}: >>> CMake Build Dir ....: '${CMAKE_BINARY_DIR}'")
     message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}'")
     message(STATUS "${var_prefix}: >>> Generated Files Dir : '${AREG_GENERATE_DIR}'")
@@ -1212,7 +1212,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_BINARY}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SQLITE_PACKAGE}', GTest package use = '${AREG_GTEST_PACKAGE}'")
-    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}', AREG Extended = '${AREG_EXTENDED}', Logs = '${AREG_LOGS}'")
+    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}', Areg Extended = '${AREG_EXTENDED}', Logs = '${AREG_LOGS}'")
     message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
 
     # Print the footer section with separators

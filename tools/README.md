@@ -1,5 +1,5 @@
 ﻿
-# AREG SDK Tools
+# Areg SDK Tools
 
 This directory contains **developer tools** shipped with the **Areg SDK**, designed to help you:
 

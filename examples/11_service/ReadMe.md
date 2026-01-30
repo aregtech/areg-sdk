@@ -3,7 +3,7 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **11_service** project demonstrates how to create and manage simple **local service provider objects** within a **multithreaded application** using the AREG Framework. This example focuses on an *empty* **Local Service**, which has no data or methods and is accessible only within the local process.
+The **11_service** project demonstrates how to create and manage simple **local service provider objects** within a **multithreaded application** using the Areg Framework. This example focuses on an *empty* **Local Service**, which has no data or methods and is accessible only within the local process.
 
 ## Concepts Shown
 - **Local Service Provider**: Implement a service provider that operates only within the local process, without external visibility.

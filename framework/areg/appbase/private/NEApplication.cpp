@@ -1,16 +1,16 @@
 /************************************************************************
- * This file is part of the AREG SDK core engine.
- * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
  * License) and Commercial (with various pricing models) licenses, depending
  * on the nature of the project (commercial, research, academic or free).
- * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/appbase/NEApplication.hpp
- * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Application global namespace and configurations
+ * \brief       Areg Platform, Application global namespace and configurations
  ************************************************************************/
 /************************************************************************
  * Include files.
@@ -58,10 +58,10 @@ AREG_API_IMPL const std::vector<Identifier>   NEApplication::LogScopePriorityInd
     , { static_cast<unsigned int>(NELogging::eLogPriority::PrioDebug)                     , NELogging::PRIO_DEBUG_STR                           }
 };
 
- //! AREG TCP/IP Multitarget Router Service name
+ //! Areg TCP/IP Multitarget Router Service name
 AREG_API_IMPL char NEApplication::ROUTER_SERVICE_NAME_ASCII[]           { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
-//! AREG TCP/IP Multitarget Router Service name
+//! Areg TCP/IP Multitarget Router Service name
 AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_NAME_WIDE[]         { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
 //! Router Service executable
@@ -70,10 +70,10 @@ AREG_API_IMPL char NEApplication::ROUTER_SERVICE_EXECUTABLE_ASCII[]     { 'm', '
 //! Router Service executable
 AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE[]   { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
 
-//! AREG TCP/IP Log Collector Service name
+//! Areg TCP/IP Log Collector Service name
 AREG_API_IMPL char NEApplication::LOGGER_SERVICE_NAME_ASCII[]           { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
-//! AREG TCP/IP Log Collector Service name
+//! Areg TCP/IP Log Collector Service name
 AREG_API_IMPL wchar_t NEApplication::LOGGER_SERVICE_NAME_WIDE[]         { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
 //! Log Collector Service executable

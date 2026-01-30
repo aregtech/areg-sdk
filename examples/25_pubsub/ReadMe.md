@@ -20,7 +20,7 @@ The **25_pubsub** project demonstrates a distributed system using the *Publish/S
 
 The **Publisher** broadcasts updates to all connected subscribers. Depending on the selected mode, notifications are sent only on data changes or every update. New subscribers immediately receive the latest data to remain in sync with the system state.
 
-**Subscribers** register with the publisher and receive notifications as data updates. The system leverages `mtrouter` for cross-machine message routing, while the AREG Framework automates service discovery using `serviceConnected()` and ensures fault-tolerant, seamless inter-process communication.
+**Subscribers** register with the publisher and receive notifications as data updates. The system leverages `mtrouter` for cross-machine message routing, while the Areg Framework automates service discovery using `serviceConnected()` and ensures fault-tolerant, seamless inter-process communication.
 
 ## Sub-Projects
 
@@ -41,4 +41,4 @@ The **Publisher** broadcasts updates to all connected subscribers. Depending on 
 
 ## Takeaway
 
-Demonstrates a scalable Pub/Sub implementation using AREG SDK, enabling reliable, real-time data distribution between multiple processes with fault-tolerant IPC.
+Demonstrates a scalable Pub/Sub implementation using Areg SDK, enabling reliable, real-time data distribution between multiple processes with fault-tolerant IPC.

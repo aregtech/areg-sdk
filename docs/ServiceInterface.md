@@ -1,7 +1,7 @@
 ﻿# Service Interface
 
 ```
-This file is part of AREG SDK
+This file is part of Areg SDK
 Copyright (c) 2021-2026, Aregtech
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
@@ -32,7 +32,7 @@ Website: https://www.areg.tech
 
 ## General Information
 
-The **Service Interface** in the AREG SDK enables the seamless definition and automation of service communication between providers and consumers in distributed systems. The AREG SDK provides an XML-based **Service Interface Prototype** that specifies the structure of service APIs, including data types, attributes, methods (requests, responses, broadcasts), and constants.
+The **Service Interface** in the Areg SDK enables the seamless definition and automation of service communication between providers and consumers in distributed systems. The Areg SDK provides an XML-based **Service Interface Prototype** that specifies the structure of service APIs, including data types, attributes, methods (requests, responses, broadcasts), and constants.
 
 To streamline development, the SDK includes a **Code Generator** that uses this XML prototype to create the necessary code artifacts for service providers and consumers. These artifacts ensure efficiency, consistency, and alignment with AREG's real-time communication framework.
 
@@ -224,7 +224,7 @@ The `<IncludeList>` section specifies additional files required by the service.
 
 ## Code Generator
 
-The AREG SDK includes a code generator tool in the [_tools_](../tools/) directory to automate code creation based on the Service Interface XML document. Generated files should not be modified directly; instead, extend the classes and override only necessary functions.
+The Areg SDK includes a code generator tool in the [_tools_](../tools/) directory to automate code creation based on the Service Interface XML document. Generated files should not be modified directly; instead, extend the classes and override only necessary functions.
 
 To generate source code, execute `codegen.jar` with the following parameters:
 - `--root`: Project root path.
@@ -236,7 +236,7 @@ To generate source code, execute `codegen.jar` with the following parameters:
 java -jar <areg-sdk-root>/tools/codegen.jar --root=<project-root> --target=product/generated --doc=services/MyService.siml
 ```
 
-For more details see [AREG SDK Code Generator (`codegen.jar`)](./wiki/03a-code-generator.md) document.
+For more details see [Areg SDK Code Generator (`codegen.jar`)](./wiki/03a-code-generator.md) document.
 
 ### Generated Codes
 

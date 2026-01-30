@@ -1,164 +1,386 @@
-# Installing and Using AREG SDK with vcpkg Package Manager
+﻿# Installing Areg SDK with vcpkg Package Manager
 
-This document provides a comprehensive guide for installing the `vcpkg` package manager, setting up the `areg` package, and creating projects with CMake or Visual Studio to effectively use the AREG SDK.
+This guide covers installing vcpkg, setting up the Areg SDK package, and creating projects with CMake or Visual Studio.
+
+---
 
 ## Table of Contents
-1. [AREG SDK General Requirements](#1-areg-sdk-general-requirements)
-2. [Install vcpkg](#2-install-vcpkg)
-3. [Install and Integrate the areg Package](#3-install-and-integrate-the-areg-package)
-4. [Setting Up a CMake Project to Use areg](#4-setting-up-a-cmake-project-to-use-areg)
-5. [Creating a Microsoft Visual Studio Project to Use areg](#5-creating-a-microsoft-visual-studio-project-to-use-areg)
+
+1. [Prerequisites](#prerequisites)
+2. [Why Use vcpkg](#why-use-vcpkg)
+3. [Install vcpkg](#install-vcpkg)
+4. [Install Areg SDK Package](#install-areg-sdk-package)
+5. [Create a CMake Project](#create-a-cmake-project)
+6. [Create a Visual Studio Project](#create-a-visual-studio-project)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 1. AREG SDK General Requirements
+## Prerequisites
 
-Ensure the following dependencies are installed to integrate the AREG SDK:
+Before installing Areg SDK via vcpkg, ensure you have:
 
-- **CMake** version 3.20 or higher
-- **Git** for repository management
-- **Supported Compilers**: GCC, LLVM, or MSVC (Windows only) with **C++17** or newer
-- **Java** version 17+ for code generation tools
+- **CMake 3.20+** - Build system generator
+- **Git** - Version control (required by vcpkg)
+- **C++17 Compiler** - GCC, Clang/LLVM, or MSVC
+- **Java 17+** - Required for Areg code generation tools
+
+**Supported Platforms:** Windows, Linux, macOS  
+**Supported Architectures:** x86, x86_64, ARM, AArch64
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 2. Install vcpkg
+## Why Use vcpkg
 
-The [`vcpkg` package manager](https://github.com/microsoft/vcpkg) helps manage C++ libraries across multiple platforms. Follow these steps to install `vcpkg`:
+[vcpkg](https://github.com/microsoft/vcpkg) is Microsoft's cross-platform C++ package manager that simplifies dependency management:
 
-1. **Clone the `vcpkg` repository**:
-   Open a terminal (Command Prompt, PowerShell, or Terminal on macOS/Linux) and run:
+✅ **Cross-platform** - Works on Windows, Linux, and macOS  
+✅ **CMake integration** - Automatic library detection  
+✅ **Visual Studio integration** - Zero-configuration package usage  
+✅ **Reproducible builds** - Consistent library versions across teams
 
-   ```bash
-   git clone https://github.com/microsoft/vcpkg.git
-   cd vcpkg
-   ```
+**Alternative installation methods:** See [CMake FetchContent Integration](./02b-cmake-integrate.md) for direct source integration.
 
-2. **Bootstrap vcpkg**:
-   Build the `vcpkg` executable by running the bootstrap script.
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
-   - **On Windows**:
-     ```powershell
-     .\bootstrap-vcpkg.bat
-     ```
-   - **On Linux/macOS**:
-     ```bash
-     ./bootstrap-vcpkg.sh
-     ```
+---
 
-3. **Add vcpkg to PATH (Optional)**:
-   Adding `vcpkg` to your PATH allows you to run it from any terminal session (replace `<path-to-vcpkg-root>` with real path).
+## Install vcpkg
 
-   - **On Windows**:
-     ```powershell
-     set PATH=%PATH%;<path-to-vcpkg-root>
-     ```
-   - **On Linux/macOS**:
-     ```bash
-     export PATH=$PATH:<path-to-vcpkg-root>
-     ```
+### Step 1: Clone vcpkg Repository
 
-4. **Integrate `vcpkg` with your system**:
-   To enable seamless use with Visual Studio, run:
+Open your terminal (Command Prompt, PowerShell, or Bash) and run:
 
+```bash
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+```
+
+### Step 2: Bootstrap vcpkg
+
+Build the vcpkg executable:
+
+**Windows:**
+```powershell
+.\bootstrap-vcpkg.bat
+```
+
+**Linux/macOS:**
+```bash
+./bootstrap-vcpkg.sh
+```
+
+### Step 3: Add vcpkg to PATH (Optional)
+
+For convenient access from any directory, add vcpkg to your system PATH.
+
+**Windows (PowerShell):**
+```powershell
+$env:PATH += ";<path-to-vcpkg-root>"
+```
+
+**Linux/macOS:**
+```bash
+export PATH=$PATH:<path-to-vcpkg-root>
+```
+
+Replace `<path-to-vcpkg-root>` with the actual vcpkg installation path.
+
+> [!TIP]
+> Add the PATH export to your shell configuration file (~/.bashrc, ~/.zshrc, or PowerShell profile) for persistence.
+
+### Step 4: Integrate with Build Tools
+
+For seamless Visual Studio integration, run:
+
+```bash
+vcpkg integrate install
+```
+
+**This command:**
+- Configures Visual Studio to auto-detect vcpkg packages
+- Displays the CMake toolchain file path (save this for CMake projects)
+- Requires administrator/sudo privileges on some systems
+
+**Example output:**
+```
+Applied user-wide integration for this vcpkg root.
+
+All MSBuild C++ projects can now #include any installed libraries.
+Linking will be handled automatically.
+Installing new libraries will make them instantly available.
+
+CMake projects should use: "-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+```
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Install Areg SDK Package
+
+Once vcpkg is installed and integrated, install the Areg SDK:
+
+```bash
+vcpkg install areg
+```
+
+**What gets installed:**
+- Areg Framework libraries (`areg.lib` or `libareg.a`)
+- C++ header files
+- CMake configuration files
+- Code generation tools (`codegen.jar`)
+
+**Installation time:** 2-5 minutes depending on your system.
+
+### Verify Installation
+
+Check that Areg SDK is installed:
+
+```bash
+vcpkg list | grep areg
+```
+
+Expected output:
+```
+areg:x64-windows    1.5.0    Areg SDK - Object RPC framework
+```
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Create a CMake Project
+
+### Step 1: Create Project Directory
+
+```bash
+mkdir my-areg-project
+cd my-areg-project
+```
+
+### Step 2: Write Application Code
+
+Create `main.cpp`:
+
+```cpp
+#include "areg/base/String.hpp"
+#include <iostream>
+
+int main() {
+    String greeting("Hello from Areg SDK!");
+    std::cout << greeting.getData() << std::endl;
+    return 0;
+}
+```
+
+### Step 3: Create CMakeLists.txt
+
+Create `CMakeLists.txt` in your project root:
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(my-areg-project)
+
+# Find Areg SDK package
+find_package(areg CONFIG REQUIRED)
+
+# Create executable
+add_executable(my-areg-project main.cpp)
+
+# Link with Areg library
+target_link_libraries(my-areg-project PRIVATE areg::areg)
+```
+
+### Step 4: Configure and Build
+
+**Configure CMake:**
+```bash
+cmake -B ./build -DCMAKE_TOOLCHAIN_FILE="<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake"
+```
+
+**Build the project:**
+```bash
+cmake --build ./build
+```
+
+**Run the executable:**
+
+**Windows:**
+```powershell
+.\build\Debug\my-areg-project.exe
+```
+
+**Linux/macOS:**
+```bash
+./build/my-areg-project
+```
+
+**Expected output:**
+```
+Hello from Areg SDK!
+```
+
+> [!NOTE]
+> Replace `<path-to-vcpkg>` with your actual vcpkg installation path (shown during `vcpkg integrate install`).
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Create a Visual Studio Project
+
+Visual Studio automatically detects vcpkg packages after running `vcpkg integrate install`.
+
+### Step 1: Create New Project
+
+1. Open Visual Studio
+2. **File → New → Project**
+3. Select **Console App (C++)**
+4. Name your project and click **Create**
+
+### Step 2: Add Areg SDK Code
+
+Replace the contents of `main.cpp`:
+
+```cpp
+#include "areg/base/String.hpp"
+#include <iostream>
+
+int main() {
+    String greeting("Hello from Areg SDK!");
+    std::cout << greeting.getData() << std::endl;
+    return 0;
+}
+```
+
+### Step 3: Build and Run
+
+1. **Build → Build Solution** (or press `Ctrl+Shift+B`)
+2. **Debug → Start Without Debugging** (or press `Ctrl+F5`)
+
+Visual Studio automatically:
+- Finds Areg SDK headers
+- Links with Areg libraries
+- Copies required DLLs (Windows)
+
+**Expected output:**
+```
+Hello from Areg SDK!
+```
+
+> [!TIP]
+> If headers are not found, verify `vcpkg integrate install` was executed and restart Visual Studio.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Troubleshooting
+
+### vcpkg Command Not Found
+
+**Problem:** Terminal doesn't recognize `vcpkg` command.
+
+**Solution:** Either navigate to vcpkg directory or add it to PATH:
+
+```bash
+cd <path-to-vcpkg>
+./vcpkg install areg
+```
+
+Or add vcpkg to PATH as described in [Step 3](#step-3-add-vcpkg-to-path-optional).
+
+### CMake Cannot Find areg Package
+
+**Problem:** CMake reports `Could not find a package configuration file provided by "areg"`.
+
+**Solution:** Ensure CMAKE_TOOLCHAIN_FILE points to vcpkg:
+
+```bash
+cmake -B ./build -DCMAKE_TOOLCHAIN_FILE="<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake"
+```
+
+Get the exact path from `vcpkg integrate install` output.
+
+### Visual Studio Cannot Find Areg Headers
+
+**Problem:** IntelliSense shows errors for `#include "areg/base/String.hpp"`.
+
+**Solution:**
+1. Verify `vcpkg integrate install` was executed
+2. Restart Visual Studio
+3. Check vcpkg integration status:
    ```bash
    vcpkg integrate install
    ```
-   This command configures Visual Studio to automatically detect and use libraries installed with `vcpkg`. This also displays the full path to the CMake toolchain file to set `CMAKE_TOOLCHAIN_FILE` option.
+4. If issues persist, remove and re-add integration:
+   ```bash
+   vcpkg integrate remove
+   vcpkg integrate install
+   ```
+
+### Wrong Architecture or Platform
+
+**Problem:** Build fails with architecture mismatch errors.
+
+**Solution:** Specify triplet explicitly when installing:
+
+**For 64-bit Windows:**
+```bash
+vcpkg install areg:x64-windows
+```
+
+**For 64-bit Linux:**
+```bash
+vcpkg install areg:x64-linux
+```
+
+**For macOS:**
+```bash
+vcpkg install areg:x64-osx
+```
+
+### Java Not Found During Installation
+
+**Problem:** vcpkg reports Java is required but not found.
+
+**Solution:** Install Java 17+ and ensure it's in PATH:
+
+```bash
+java -version
+```
+
+Should output Java version 17 or higher. If not, install from [Adoptium](https://adoptium.net/) or your system package manager.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 3. Install and Integrate the areg Package
+## Next Steps
 
-After installing `vcpkg`, you can install the `areg` package, which provides the AREG SDK libraries, header files, CMake configurations and tools.
+After successfully installing Areg SDK with vcpkg:
 
-1. **Install the `areg` Package**:
-   Run the following command to download, build, and install the AREG SDK development components.
+1. **Explore Examples:** [Areg SDK Examples](https://github.com/aregtech/areg-sdk/tree/master/examples)
+2. **Learn Service Design:** [Service Interface Guide](./06d-setup-lusan.md)
+3. **Build Distributed Apps:** [IPC and Networking](./05a-mtrouter.md)
+4. **Integration Options:** [CMake FetchContent](./02b-cmake-integrate.md) for source-based integration
 
-   ```bash
-   vcpkg install areg
-   ```
-
-2. **Verify Integration**:
-   If using Visual Studio, ensure `vcpkg integrate install` was run as described in the previous section. This integration makes `areg` available to all Visual Studio projects on the system. For CMake projects, the CMake toolchain file provided by `vcpkg` must be set (option `CMAKE_TOOLCHAIN_FILE`) when configuring the project.
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 4. Setting Up a CMake Project to Use areg
+## See Also
 
-Once `vcpkg` and the `areg` package are installed, you can create a CMake project that links with the AREG SDK libraries.
+- [vcpkg Official Documentation](https://vcpkg.io/en/getting-started.html)
+- [Areg SDK GitHub Repository](https://github.com/aregtech/areg-sdk)
+- [CMake Configuration Guide](./02a-cmake-config.md)
+- [Building Areg SDK from Source](./02b-cmake-build.md)
 
-Steps to Create a CMake Project:
-
-1. **Create a Project Directory**:
-   ```bash
-   mkdir example
-   cd example
-   ```
-
-2. **Add Source Code**:
-   Create a `main.cpp` file that uses components from the areg framework:
-
-   ```cpp
-   #include "areg/base/String.hpp"
-
-   int main() {
-       String str("Hello from AREG SDK!");
-       std::cout << str.getData() << std::endl;
-       return 0;
-   }
-   ```
-
-3. **Create a `CMakeLists.txt` File**:
-   In the project directory, create a `CMakeLists.txt` file:
-
-   ```cmake
-   cmake_minimum_required(VERSION 3.20)
-   project(example)
-
-   # Enable vcpkg
-   find_package(areg CONFIG REQUIRED)
-   
-   add_executable(example main.cpp)
-   target_link_libraries(example PRIVATE areg::areg)
-   ```
-
-4. **Build the Project**:
-   Run the following commands to configure and build your project. Replace `<path-to-vcpkg-root>` with the path to your `vcpkg` installation.
-
-   ```bash
-   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE="<path-to-vcpkg-root>/scripts/buildsystems/vcpkg.cmake"
-   cmake --build ./build
-   ```
-
-This will compile the `example` project and link it with the `areg` library.
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## 5. Creating a Microsoft Visual Studio Project to Use areg
-
-`vcpkg` also integrates seamlessly with Visual Studio, making it easy to add packages like `areg` to C++ projects.
-
-Steps to Set Up a Visual Studio Project:
-
-1. **Open Visual Studio**:
-   Start a new project and select **C++ Console Application**.
-
-2. **Add Source Code**:
-   Create a simple `main.cpp` file in your project with the following content:
-
-   ```cpp
-   #include "areg/base/String.hpp"
-
-   int main() {
-       String str("Hello from AREG SDK!");
-       std::cout << str.getData() << std::endl;
-       return 0;
-   }
-   ```
-
-3. **Configure and Build**:
-   - If you ran `vcpkg integrate install`, Visual Studio should automatically detect and use packages installed through `vcpkg`, including `areg`.
-   - Build and run your project. Visual Studio will handle linking with `areg` and other configurations through `vcpkg`.
-
-   If `vcpkg` is not detected, verify the integration by checking that `vcpkg integrate install` was executed and restart Visual Studio if needed.
+Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech

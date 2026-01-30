@@ -3,7 +3,7 @@
 🧵🚀 **Type:** Multithreading + IPC
 
 ## Overview
-The **19_pubfsm** project demonstrates how to implement a **Finite-State Machine (FSM)** using the AREG Framework, combining **Timers** and **Events** to control the states and data of services. It highlights how FSMs can manage dynamic models and coordinate multiple service consumers in a **multiprocess** environment.
+The **19_pubfsm** project demonstrates how to implement a **Finite-State Machine (FSM)** using the Areg Framework, combining **Timers** and **Events** to control the states and data of services. It highlights how FSMs can manage dynamic models and coordinate multiple service consumers in a **multiprocess** environment.
 
 > [!NOTE]
 > Ensure a **Multi-Target Router** (`mtrouter`) is running on a network-accessible machine. Verify that the `areg.init` configuration file includes the correct IP address and port for the router.
@@ -29,4 +29,4 @@ Generated code from [PowerManager.siml](./services/PowerManager.siml) and [Traff
 - **Event-Driven Systems**: Useful for systems requiring asynchronous event handling, real-time communication, and dynamic state transitions.
 
 ## Takeaway
-The **19_pubfsm** example shows how the AREG SDK enables **robust FSM implementations** in a **multithreaded, distributed environment**, combining timers, events, Object RPC, and service discovery to create scalable, fault-tolerant, event-driven applications.
+The **19_pubfsm** example shows how the Areg SDK enables **robust FSM implementations** in a **multithreaded, distributed environment**, combining timers, events, Object RPC, and service discovery to create scalable, fault-tolerant, event-driven applications.

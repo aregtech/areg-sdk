@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="SystemShutdown" Version="1.2.0" Category="Public">
-        <Description>Simple Service Interface to demonstrate working features of AREG SDK.
+        <Description>Simple Service Interface to demonstrate working features of Areg SDK.
 This service demonstrates the usage of attribute.</Description>
     </Overview>
     <DataTypeList>

@@ -24,12 +24,12 @@ if (AREG_BUILD_TESTS)
 
     if (AREG_GTEST_FOUND)
         # Google Test package found, make no actions on it, the libraries can be used.
-        message(STATUS "AREG: >>> Will use existing in the system googletest package")
+        message(STATUS "Areg: >>> Will use existing in the system googletest package")
         if (NOT "${AREG_GTEST_INCLUDES}" STREQUAL "")
             include_directories("${AREG_GTEST_INCLUDES}")
         endif()
     else()
-        message(STATUS "AREG: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
+        message(STATUS "Areg: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
         # Google Test package did not find, fetch sources from repository.
         set(AREG_GTEST_PACKAGE OFF)
         include(FetchContent)
@@ -61,7 +61,7 @@ if (AREG_BUILD_TESTS)
 
     endif(AREG_GTEST_FOUND)
 
-    # Include AREG SDK unit test directory.
+    # Include Areg SDK unit test directory.
     set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
     set(AREG_UNIT_TEST_PROJECT "areg-unit-tests")
     include_directories(${AREG_TESTS})

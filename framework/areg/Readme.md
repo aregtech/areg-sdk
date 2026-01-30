@@ -1,6 +1,6 @@
-# Directory Overview: AREG Framework
+# Directory Overview: Areg Framework
 
-This directory contains the source code for the AREG Framework, also known as the AREG communication engine. It is built as the `areg` library, available in both shared and static configurations. Below is an overview of the directory's contents:
+This directory contains the source code for the Areg Framework, also known as the Areg communication engine. It is built as the `areg` library, available in both shared and static configurations. Below is an overview of the directory's contents:
 
 ### Directory Contents
 
@@ -17,13 +17,13 @@ This directory contains the source code for the AREG Framework, also known as th
   Includes components for inter-process communication (IPC).
 
 - **[logging](./logging)**
-  Manages the logging functionality of the AREG engine.
+  Manages the logging functionality of the Areg engine.
 
 - **[persist](./persist)**
   Provides utilities for persisting data as key-value pairs in files.
 
 - **[resources](./resources)**
-  Contains resources utilized by the AREG engine.
+  Contains resources utilized by the Areg engine.
 
 - **[system](./system)**
   Houses platform-dependent preprocessor definitions.

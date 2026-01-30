@@ -3,7 +3,7 @@
 🧵🚀 **Type:** Multithreading + IPC
 
 ## Overview
-The **03_helloservice** example demonstrates building applications using **Inter-Process Communication (IPC)** and **multithreading** in the AREG Framework.  
+The **03_helloservice** example demonstrates building applications using **Inter-Process Communication (IPC)** and **multithreading** in the Areg Framework.  
 It shows how to implement service (*micro-server*) and client objects and deploy them in single-threaded, multithreaded, or multiprocess setups by changing the *Application Model*.  
 
 > [!NOTE]

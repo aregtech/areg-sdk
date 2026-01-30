@@ -21,7 +21,7 @@ The **26_pubsubmix** project demonstrates a hybrid *Publish/Subscribe* (Pub/Sub)
 
 The **26_pubsubmix** system consists of multiple processes that can act as both publishers and subscribers. Publishers broadcast updates to all connected subscribers, while subscribers automatically receive the latest data upon subscription. Local subscribers in the same process are updated instantly, and remote subscribers rely on `mtrouter` for reliable, fault-tolerant message delivery.
 
-Processes like **26_pubsubctrl** and **26_pubsubdyn** manage both publishing and subscribing dynamically, allowing seamless switching of roles while maintaining synchronized state across the system. The AREG Framework handles service discovery via `serviceConnected()` and ensures fault-tolerant IPC.
+Processes like **26_pubsubctrl** and **26_pubsubdyn** manage both publishing and subscribing dynamically, allowing seamless switching of roles while maintaining synchronized state across the system. The Areg Framework handles service discovery via `serviceConnected()` and ensures fault-tolerant IPC.
 
 ## Sub-Projects
 

@@ -52,8 +52,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Define the model to load and instantiate threads and objects
 //////////////////////////////////////////////////////////////////////////
-// Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
-BEGIN_MODEL("ServiceModel")
+// Describe model, register the service provider in the thread "Thread1", declare implemented interface
+BEGIN_MODEL("ProviderModel")
     // Thread 1, provides a service
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
@@ -61,7 +61,7 @@ BEGIN_MODEL("ServiceModel")
         END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 // end of model description
-END_MODEL("ServiceModel")
+END_MODEL("ProviderModel")
 
 //////////////////////////////////////////////////////////////////////////
 // main method
@@ -71,7 +71,7 @@ int main(void)
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     Application::initApplication();
     // load model to initialize components
-    Application::loadModel("ServiceModel");
+    Application::loadModel("ProviderModel");
     // wait until Application quit signal is set.
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
     // release and cleanup resources of application.

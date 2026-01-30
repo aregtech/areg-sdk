@@ -7,7 +7,7 @@ set EXAMPLE_ROOT=%~dp0
 set AREG_SDK_ROOT=%EXAMPLE_ROOT%..
 set AREG_PRODUCT=%AREG_SDK_ROOT%\product\generate
 
-@echo "Generating service interface files of the AREG SDK examples"
+@echo "Generating service interface files of the Areg SDK examples"
 
 :: Generate codes for example 01_minimalrpc
 @echo "Generating service interface files of 01_minimalrpc example"

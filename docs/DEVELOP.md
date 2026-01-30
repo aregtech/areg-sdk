@@ -1,6 +1,6 @@
 # Developer guide
 ```
-This file is part of AREG SDK
+This file is part of Areg SDK
 Copyright (c) 2021-2026, Aregtech
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
@@ -12,7 +12,7 @@ This document is a developer guide and describes how to develop a service enable
 
 ## File structure
 
-Brief description of AREG SDK file structure:
+Brief description of Areg SDK file structure:
 1. The [`framework/areg`](./../framework/areg/) directory contains _AREG communication engine_ (`areg` library), which is the core library used by all applications.
 2. The [framework/aregextend](./../framework/aregextend/) directory contains extended objects of _AREG framework_ and may require extra library dependency (configurable).
 3. The [framework/areglogger](./../framework/areglogger/) directory contains implementation of a Log Observer library to use in applications to receive logs.
@@ -56,17 +56,17 @@ cmake --build ./build -j20
 msbuild .
 ```
 
-All compiled AREG Framework and example binaries are located in `<areg-sdk>/product/build/..../bin` directory. See the [description of examples](./../examples/README.md). If the example is marked as **IPC** (Inter-process communication), the application contains a **Public Service** Provider and Consumer, and it requires start of `mtrouter` to run in the multiprocessing environment. Otherwise, the application contains **Local Service** Provider and Consumer, and it can run without `mtrouter` in a multithreading environment. Some applications may create logs in the `logs` subdirectory to analyze.
+All compiled Areg Framework and example binaries are located in `<areg-sdk>/product/build/..../bin` directory. See the [description of examples](./../examples/README.md). If the example is marked as **IPC** (Inter-process communication), the application contains a **Public Service** Provider and Consumer, and it requires start of `mtrouter` to run in the multiprocessing environment. Otherwise, the application contains **Local Service** Provider and Consumer, and it can run without `mtrouter` in a multithreading environment. Some applications may create logs in the `logs` subdirectory to analyze.
 
 ---
 
 ## Creating Your Own Project
 
-You can setup your own project and easily integrate AREG SDK builds in your project. To integrate using CMake, refer to the [Integrating AREG Framework with CMake](./../docs/wiki/02c-cmake-integrate.md) document. To integrate using MSBuild (Microsoft Visual Studio), refer to the [Integrating AREG Framework with Microsoft Visual Studio](./../docs/wiki/02d-msvc-integrate.md) document. As a working example of integrated project, see [AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo) repository.
+You can setup your own project and easily integrate Areg SDK builds in your project. To integrate using CMake, refer to the [Integrating Areg Framework with CMake](./../docs/wiki/02b-cmake-integrate.md) document. To integrate using MSBuild (Microsoft Visual Studio), refer to the [Integrating Areg Framework with Microsoft Visual Studio](./../docs/wiki/02c-msvc-integrate.md) document. As a working example of integrated project, see [Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo) repository.
 
 ---
 
 ## Contact us!
 
 Contact us at info[at]areg.tech if you need help, training or more information.
-If you linked the project and the idea behind, please ![star the AREG SDK project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20the%20AREG%20SDK%20project) at GitHub to thank the contributors and help us to enlarge the community.
+If you linked the project and the idea behind, please ![star the Areg SDK project](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20the%20AREG%20SDK%20project) at GitHub to thank the contributors and help us to enlarge the community.

@@ -1,7 +1,7 @@
 # Release Notes
 
 ```
-This document contains the release notes of AREG SDK project.
+This document contains the release notes of Areg SDK project.
 Copyright © Aregtech UG, 2021-2026
 Contact: info[at]areg.tech
 ```
@@ -15,7 +15,7 @@ Release date: 15.06.2023
 - Compilation with CYGWIN
 - Compilation with VSCode
 - Service Watchdog
-- AREG extended objects (Console)
+- Areg extended objects (Console)
 - GTest integration for unit tests
 - More examples
 
@@ -30,8 +30,8 @@ Release date: 15.06.2023
    * Software build
    * Preprocessor define symbols
    * Compile with WSL
-   * AREG Logging System
-   * AREG Multitarget Router
+   * Areg Logging System
+   * Areg Multitarget Router
    * Persistence Syntax
 
 ### Deprecated
@@ -44,7 +44,7 @@ Release date: 15.06.2023
 Release date: 11.11.2021
 
 ### New Features
-- AREG interface-centric framework
+- Areg interface-centric framework
 - Build with MSVC
 - Build with Makefile
 - Build with Eclipse

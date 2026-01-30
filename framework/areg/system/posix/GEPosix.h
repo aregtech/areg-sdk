@@ -5,7 +5,7 @@
 * \file        areg/system/posix/GEPosix.h
 * \ingroup     Framework globals
 * \author      Artak Avetyan
-* \brief       AREG Framework, platform dependent includes. POSIX specific directives
+* \brief       Areg Framework, platform dependent includes. POSIX specific directives
 *
 ************************************************************************/
 /************************************************************************

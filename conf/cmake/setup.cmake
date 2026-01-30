@@ -1,8 +1,8 @@
 # ###########################################################################
-# AREG Framework based project setups.
-# - It sets AREG Framework specific variables defining the software structure.
+# Areg Framework based project setups.
+# - It sets Areg Framework specific variables defining the software structure.
 # - Sets up user specific setting like compiler type and build type.
-# - Sets up AREG Framework specific functions that can be used in any project.
+# - Sets up Areg Framework specific functions that can be used in any project.
 #
 # The variable 'AREG_SDK_ROOT' should be already set.
 # 
@@ -11,7 +11,7 @@
 
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
     # Make sure that AREG_SDK_ROOT is set before the 'setup.cmake' is included
-    message(FATAL_ERROR "AREG: >>> Set \'AREG_SDK_ROOT\' before including \'setup.cmake\'. Stopping building the project.")
+    message(FATAL_ERROR "Areg: >>> Set \'AREG_SDK_ROOT\' before including \'setup.cmake\'. Stopping building the project.")
     return()
 endif()
 
@@ -20,37 +20,37 @@ if (NOT DEFINED AREG_CMAKE_CONFIG_DIR OR "${AREG_CMAKE_CONFIG_DIR}" STREQUAL "")
     if (EXISTS "${AREG_SDK_ROOT}/conf/cmake/")
         set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
     else()
-        message(FATAL_ERROR "AREG: >>> Cannot find \'conf\cmake\' sub-directory in the AREG SDK Root \'${AREG_SDK_ROOT}\'. Set \'AREG_CMAKE_CONFIG_DIR\' manually.")
+        message(FATAL_ERROR "Areg: >>> Cannot find \'conf\cmake\' sub-directory in the Areg SDK Root \'${AREG_SDK_ROOT}\'. Set \'AREG_CMAKE_CONFIG_DIR\' manually.")
     endif()
 endif()
 
-# The location of AREG Framework header files.
+# The location of Areg Framework header files.
 if (NOT DEFINED AREG_FRAMEWORK OR "${AREG_FRAMEWORK}" STREQUAL "")
     if (EXISTS "${AREG_SDK_ROOT}/framework/areg/")
         set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/framework")
     elseif (EXISTS "${AREG_SDK_ROOT}/include/areg/")
         set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/include")
     else()
-        message(FATAL_ERROR "AREG: >>> Cannot find AREG Framework headers in the AREG SDK Root \'${AREG_SDK_ROOT}\'. Set \'AREG_FRAMEWORK\' manually.")
+        message(FATAL_ERROR "Areg: >>> Cannot find Areg Framework headers in the Areg SDK Root \'${AREG_SDK_ROOT}\'. Set \'AREG_FRAMEWORK\' manually.")
     endif()
 endif()
 
-# The location of AREG Framework examples
+# The location of Areg Framework examples
 if (NOT DEFINED AREG_EXAMPLES OR "${AREG_EXAMPLES}" STREQUAL "")
     set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")
 endif()
 
-# The location of AREG Framework unit tests
+# The location of Areg Framework unit tests
 if (NOT DEFINED AREG_TESTS OR "${AREG_TESTS}" STREQUAL "")
     set(AREG_TESTS              "${AREG_SDK_ROOT}/tests")
 endif()
 
-# The location of AREG Framework specific third-party projects / source codes.
+# The location of Areg Framework specific third-party projects / source codes.
 if (NOT DEFINED AREG_THIRDPARTY OR "${AREG_THIRDPARTY}" STREQUAL "")
     set(AREG_THIRDPARTY         "${AREG_SDK_ROOT}/thirdparty")
 endif()
 
-# The location of AREG SDK tools
+# The location of Areg SDK tools
 if (NOT DEFINED AREG_SDK_TOOLS OR "${AREG_SDK_TOOLS}" STREQUAL "")
     set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 endif()
@@ -114,7 +114,7 @@ if (MSVC AND NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja")
 
 endif()
 
-# check and fix CXX standard for AREG Framework sources.
+# check and fix CXX standard for Areg Framework sources.
 macro_check_fix_areg_cxx_standard()
 
 # The relative path for generated files
@@ -123,7 +123,7 @@ if ("${AREG_GENERATE}" STREQUAL "")
 endif()
 
 if (NOT "${AREG_PACKAGES}" STREQUAL "")
-    set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages")
+    set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of Areg thirdparty packages")
 else()
     set(AREG_PACKAGES "${FETCHCONTENT_BASE_DIR}")
 endif()

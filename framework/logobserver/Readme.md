@@ -1,6 +1,6 @@
-# Directory Overview: AREG Log Observer Application
+# Directory Overview: Areg Log Observer Application
 
-This directory contains the source code for the AREG Log Observer (`logobserver`), a console application designed to manage and analyze logs in real time. It allows for dynamic handling of log scopes and priorities during runtime. The received logs are stored in an SQLite database, enabling detailed post-analysis of application behavior and performance.
+This directory contains the source code for the Areg Log Observer (`logobserver`), a console application designed to manage and analyze logs in real time. It allows for dynamic handling of log scopes and priorities during runtime. The received logs are stored in an SQLite database, enabling detailed post-analysis of application behavior and performance.
 
 ### Directory Contents
 
@@ -14,7 +14,7 @@ This directory contains the source code for the AREG Log Observer (`logobserver`
 
 - **Linux**:
   The `logobserver` runs as a console or OS-managed service application, and can be built with or without the `ncurses` library:
-  - To enable `ncurses` features, compile the AREG extended static library by defining setting option `-DAREG_EXTENDED:BOOL=ON`.
+  - To enable `ncurses` features, compile the Areg extended static library by defining setting option `-DAREG_EXTENDED:BOOL=ON`.
   - To disable `ncurses`, omit `AREG_EXTENDED` option or set it to `OFF`, using only the ANSI C API.
 
 - **Windows**:
@@ -27,7 +27,7 @@ This directory contains the source code for the AREG Log Observer (`logobserver`
 
 ---
 
-## Usage of AREG Log Observer (`logobserver`)
+## Usage of Areg Log Observer (`logobserver`)
 
 The `logobserver` application supports various commands for configuring and managing logging operations, offering flexibility for diverse use cases.
 

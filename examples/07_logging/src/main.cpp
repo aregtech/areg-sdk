@@ -77,7 +77,11 @@ int main()
         LOG_DBG("%s to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.getName().getString());
-        aThread.shutdownThread(NECommon::WAIT_INFINITE);
+        Thread::eCompletionStatus status = aThread.shutdownThread(NECommon::WAIT_INFINITE);
+
+        LOG_WARN_IF(Thread::eCompletionStatus::ThreadCompleted != status, "The thread exit abnormal, status = [ %d ]", static_cast<int>(status));
+        LOG_INFO_IF(Thread::eCompletionStatus::ThreadCompleted == status, "The thread exit normal");
+
     } while (false);
 
     // Stop logging

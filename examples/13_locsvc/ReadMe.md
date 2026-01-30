@@ -3,7 +3,7 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **13_locsvc** example demonstrates how to create and manage a **Local Service** within a single, **multithreaded process** using the AREG Framework.  
+The **13_locsvc** example demonstrates how to create and manage a **Local Service** within a single, **multithreaded process** using the Areg Framework.  
 It shows a service provider and consumer communicating asynchronously, without exposing the service externally.  
 The consumer uses `serviceConnected()` to detect when the provider is ready, ensuring requests and subscriptions occur only when safe.
 

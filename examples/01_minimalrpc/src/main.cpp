@@ -64,7 +64,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Define the model to load and instantiate threads and objects
 //////////////////////////////////////////////////////////////////////////
-// Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
+// Describe model, register the service provider and service consumer in 
+// 2 different threads "Thread1" and "Thread2"
 BEGIN_MODEL("ServiceModel")
     // Thread 1 without watchdog, contains a service provider
     BEGIN_REGISTER_THREAD( "Thread1" )
@@ -75,9 +76,9 @@ BEGIN_MODEL("ServiceModel")
 
     // Thread 2 without watchdog, contains a service consumer
     BEGIN_REGISTER_THREAD( "Thread2" )
-        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceConsumer )
+        BEGIN_REGISTER_COMPONENT( "ServiceConsumer", ServiceConsumer )
             REGISTER_DEPENDENCY( "ServiceProvider" ) /* dependency reference to the remote service*/
-        END_REGISTER_COMPONENT( "ServiceClient" )
+        END_REGISTER_COMPONENT( "ServiceConsumer" )
     END_REGISTER_THREAD( "Thread2" )
 
 // end of model description

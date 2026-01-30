@@ -2,9 +2,9 @@
 
 /************************************************************************
  * \file        hwmgr/src/HardwareWorkerConsumer.hpp
- * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
- * \brief       Collection of AREG SDK examples.
+ * \brief       Collection of Areg SDK examples.
  *              This is a hardware manager worker thread to communication with hardware.
  ************************************************************************/
 /************************************************************************

@@ -6,7 +6,7 @@
 
 int main()
 {
-	String hello("Hello from AREG SDK ...");
+	String hello("Hello from Areg SDK ...");
 	std::cout << hello.getData() << std::endl;
 
 	hello = "\'areg.init\' location -> ";

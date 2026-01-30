@@ -1,113 +1,706 @@
-# AREG SDK Log Observer Application
+﻿# Areg SDK Log Observer Application
 
-The **AREG SDK Log Observer** is a console tool designed for real-time log monitoring, data management, and dynamic control over log entries received from multiple applications distributed in the network. Acting as a client to the [Log Collector](./04d-logcollector.md), the Log Observer allows users to save logs to text files and/or SQLite databases while dynamically adjusting scope activation and filtering log priorities during runtime.
-
-## Table of Contents
-1. [General Information](#1-general-information)
-2. [Log Observer Setup](#2-log-observer-setup)
-3. [Log Observer Configuration](#3-log-observer-configuration)
-4. [Command Line Options](#4-command-line-options)
-5. [Connection Initialization](#5-connection-initialization)
-
----
-
-## 1. General Information
-
-The AREG SDK Log Observer functions as a client application for the [Log Collector](./04d-logcollector.md) service, seamlessly integrating within AREG SDK's logging ecosystem. It enables centralized log storage in plain text and/or SQLite databases, providing extensive analysis capabilities for logs gathered from multiple applications distributed in the network. Through bi-directional communication with logging sources, the Log Observer lets users adjust scope activation and message priorities during runtime to optimize network traffic, ensuring only relevant log data is captured for analysis.
-
----
-
-## 2. Log Observer Setup
-
-The Log Observer is part of the [logobserver](./../../framework/logobserver/) module in AREG SDK, using the API of the `areglogger` utility library. It compiles as a standalone executable, operable on any networked machine with a General Purpose Operating System (GPOS) like Windows or Linux.
-
-To start receiving log data, launch the console application on a networked GPOS machine and in opened console type `-r` to start receiving logs.
-
----
-
-## 3. Log Observer Configuration
-
-As any other application based on AREG Framework, the Log Observer configuration, managed through the configuration file like AREG SDK standard `areg.init` file, uses key-value pairs formatted as `section::(module|*)::property[::(position|*)]`. Example configurations enable applications to connect to the Log Collector:
-
-```plaintext
-logger::*::service          = logcollector  # Log Collector process name
-logger::*::connect          = tcpip         # Protocol for communication
-logger::*::enable::tcpip    = true          # Enable TCP/IP
-logger::*::address::tcpip   = 172.23.96.1   # Network IP address
-logger::*::port::tcpip      = 8282          # Port number for connection
-```
-Setting descriptions:
-|  Property Key Setting:        |   Description:                                        |
-|-------------------------------|-------------------------------------------------------|
-| `logger::*::service`          | Specifies the log collector process name.             |
-| `logger::*::connect`          | Lists supported protocols (TCP/IP in this example).   |
-| `logger::*::enable::tcpip`    | Activates or deactivates the protocol.                |
-| `logger::*::address::tcpip`   | Specifies the Log Collector's network-accessible IP.  |
-| `logger::*::port::tcpip`      | Assigns the port number.                              |
-
-**Additional Log Observer-Specific Settings:**
-
-The following configuration settings enable file and database logging:
-
-```plaintext
-# ---------------------------------------------------------------------------
-# Message layout for log observer
-# ---------------------------------------------------------------------------
-log::logobserver::layout::enter     = %d: [ %a.%x.%t.%z: Enter -->]%n
-log::logobserver::layout::message   = %d: [ %a.%x.%t.%p >>> ] %m%n
-log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n
-
-# ---------------------------------------------------------------------------
-# Log observer specific database logging settings
-# ---------------------------------------------------------------------------
-log::logobserver::enable::file      = true
-log::logobserver::enable::db        = true
-log::logobserver::db::name          = sqlite3
-log::logobserver::db::location      = ./logs/log_%time%.sqlite3
-```
-
-In this setup, received log messages are saved in both a text file and a SQLite database, with logging layouts tailored for `logobserver`.
+The Areg SDK Log Observer is a console application for real-time log monitoring, management, and dynamic scope control of logs received from distributed applications.
 
 > [!TIP]
-> To disable file logging, set `log::logobserver::enable::file = false`.
+> Log Observer connects to Log Collector to receive, store, and control logs from multiple applications across your network.
 
 ---
 
-## 4. Command Line Options
+## Table of Contents
 
-Below are the key command-line options for managing the Log Observer. Options marked **Console** can be used during active `logobserver` operation, while others initiate program actions during startup.
-
-| Command:              | Platform: | Description:                  | Usage Example:                   |
-|-----------------------|-----------|-------------------------------|----------------------------------|
-| `-e, --query`         | Console   | Display list of log scopes    | `-e someapp`                     |
-| `-f, --config`        | Console   | Save current configuration    | `-f`                             |
-| `-h, --help`          | All       | Display help message          | `logobserver --help`             |
-| `-l, --load`          | All       | Load configuration file       | `logobserver -l="config.init"`   |
-| `-n, --instances`     | Console   | Show connected instances      | `-n`                             |
-| `-o, --scope`         | Console   | Set scope priority            | `-o someapp::scope_*=DEBUG`      |
-| `-p, --pause`         | Console   | Pause log observer            | `-p`                             |
-| `-q, --quit`          | Console   | Quit console application      | `-q`                             |
-| `-r, --restart`       | Console   | Restart connections           | `-r`                             |
-| `-x, --stop`          | Console   | Stop log observer             | `-x`                             |
-
-Commands may vary with version updates.
-
-> [!NOTE]
-> On start, the Log Observer does not start immediately receiving log data. Type command `-r` or `-restart` in the console of Log Observer to start receiving log data. And type `-x` or `--stop` to stop receiving.
+1. [Quick Start](#quick-start)
+2. [Overview](#overview)
+3. [Installation](#installation)
+4. [Running Log Observer](#running-log-observer)
+5. [Interactive Commands](#interactive-commands)
+6. [Configuration](#configuration)
+7. [Common Scenarios](#common-scenarios)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 5. Connection Initialization
+## Quick Start
 
-By default, `logobserver` loads settings from `areg.init`. To specify an alternative configuration file, use:
+### Start Receiving Logs in 1 Minute
+
+**Step 1: Start Log Collector**
 
 ```bash
-logobserver --load="./my/config/file.init"
+# Terminal 1 - Start log collector service
+./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logcollector --console
 ```
 
+**Step 2: Start Log Observer**
+
+```bash
+# Terminal 2 - Start log observer
+./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logobserver
+```
+
+**Expected output:**
+```
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+The log observer is initialized, type '-r' to connect.
+Type '-q' or '--quit' to quit the application ...:
+```
+
+**Step 3: Start receiving logs** 
+Type `-r` or `--restart` in Log Observer console:
+
+```
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+Log observer triggered connection.
+Type '-q' or '--quit' to quit the application ...:
+```
+
+**Step 4: Run your application with remote logging**
+
+```bash
+# Terminal 3 - Run your application
+./myapp
+```
+
+**Logs saved to:**
+- Text file: `./logs/myapp_2026_01_25_23_39_41_801.log.log`
+- Database: `./logs/log_2026_01_26_17_58_32_215.sqlog`
+
+**Setup time:** ~1 minute
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Overview
+
+### What is Log Observer?
+
+The Log Observer is a console application that acts as a client to [Log Collector](./04d-logcollector.md), providing:
+
+**Data Management:**
+- ✅ Receive logs from multiple distributed applications
+- ✅ Save logs to text files
+- ✅ Store logs in SQLite database for analysis
+- ✅ Real-time log controlling in console
+
+**Dynamic Control:**
+- ✅ Adjust scope activation at runtime
+- ✅ Change log priorities without restarting applications
+- ✅ Filter log messages dynamically
+- ✅ Query connected application instances
+
+---
+
+### Architecture
+
+```
+┌─────────────┐         ┌──────────────┐         ┌──────────────┐
+│ Application │────────►│     Log      │◄────────│     Log      │
+│     A       │         │  Collector   │         │   Observer   │
+└─────────────┘         │   (Server)   │         │   (Client)   │
+                        │              │         │              │
+┌─────────────┐         │   Port 8282  │         │ - Stores     │
+│ Application │────────►│              │         │ - Controls   │
+│     B       │         │              │         │ - Queries    │
+└─────────────┘         └──────────────┘         └──────────────┘
+```
+
+**Components:**
+1. **Applications** - Send logs to Log Collector
+2. **Log Collector** - Central log aggregation service
+3. **Log Observer** - Receives, stores, and controls logs
+
 > [!NOTE]
-> In `areg.init`, default settings may disable `logcollector` and `logobserver` logging with:
-> ```plaintext
-> log::logcollector::scope::* = NOTSET
-> log::logobserver::scope::*  = NOTSET
-> ```
+> Multiple Log Observer instances can connect to the same Log Collector simultaneously. The Log Collector broadcasts all log messages to every connected observer, enabling each to independently store logs in files and databases. Log Observer uses SQLite3 as its database engine for structured log storage and analysis.
+
+---
+
+### Key Features
+
+| Feature                    | Description                    | Benefit                   |
+|----------------------------|--------------------------------|---------------------------|
+| **Real-time Monitoring**   | View logs as they arrive       | Immediate feedback        |
+| **Dual Storage**           | Text files + SQLite database   | Flexible analysis         |
+| **Dynamic Scope Control**  | Change scopes without restart  | Optimize network traffic  |
+| **Multi-application**      | Logs from all connected apps   | Centralized monitoring    |
+| **Query Scopes**           | List available scopes          | Discover logging points   |
+| **Save Configuration**     | Export current scope settings  | Reproduce setups          |
+| **Multi-Observer Support** | Multiple observers can connect | Team collaboration        |
+
+---
+
+### When to Use Log Observer
+
+**Use Log Observer when:**
+- ✅ Monitoring distributed applications without [`Lusan`](https://github.com/aregtech/areg-sdk-tools) application
+- ✅ Need database storage for analysis
+- ✅ Runtime scope control required
+- ✅ Centralized log collection needed
+
+**Alternative tools:**
+- **Lusan** - GUI log viewer ([Lusan Live Log Viewer](./06f-lusan-live-logging.md))
+- **Text files** - Direct file logging ([Logging Configuration](./04a-logging-config.md))
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Installation
+
+### From Build Directory
+
+After building Areg SDK, Log Observer is available in the build output directory.
+
+**Default build paths:**
+
+**Linux:**
+```bash
+./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logobserver
+```
+
+**Windows:**
+```powershell
+.\product\build\msvc-v143\windows_nt-x64-release\bin\logobserver.exe
+```
+
+---
+
+### From Installed Location
+
+If Areg SDK is installed via CMake:
+
+```bash
+# Install Areg SDK
+sudo cmake --install ./build
+
+# Log Observer location
+/usr/local/tools/areg/logobserver  # Linux
+C:\Program Files\areg\tools\areg\logobserver.exe  # Windows
+```
+
+---
+
+### Prerequisites
+
+**Required:**
+- Log Collector must be running
+- Network connectivity to Log Collector
+- Applications configured for remote logging
+
+**Optional:**
+- SQLite3 (bundled with Areg SDK)
+- Write permissions for log directory
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Running Log Observer
+
+### Start in Console Mode
+
+**Basic usage:**
+
+```bash
+./logobserver
+```
+
+**Expected output:**
+```
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+
+The log observer is initialized, type '-r' to connect.
+Type '-q' or '--quit' to quit the application ...:
+```
+
+---
+
+### Start with Custom Configuration
+
+**Specify configuration file:**
+
+```bash
+./logobserver --load="./config/custom.init"
+```
+---
+
+### Connect and Start Receiving
+
+**Once started, activate log reception:**
+
+Type `-r` or `--restart`:
+
+```
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+
+Log observer triggered connection.
+Type '-q' or '--quit' to quit the application ...:
+```
+
+**Check connected applications:**
+
+Type `-n` or `--instances`:
+
+```
+
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+List of connected instances ...
+Type '-q' or '--quit' to quit the application ...:
+
+---------------------------------------------------------------------------------------------
+   Nr. |  Inst. ID  |  Bits |  Scopes  |  Name
+---------------------------------------------------------------------------------------------
+    1. |        257 |  x64  |      87  |  19_pubclient.exe
+---------------------------------------------------------------------------------------------
+```
+
+---
+
+### Stop Receiving
+
+**Pause log reception:**
+
+Type `-x` or `--stop`:
+
+```
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+Log observer stops, type '-r' to resume.
+Type '-q' or '--quit' to quit the application ...:
+```
+
+Type `-r` again to resume.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Interactive Commands
+
+### Command Reference
+
+Commands available while Log Observer is running:
+
+| Command       | Alias | Description                   | Example                   |
+|---------------|-------|-------------------------------|---------------------------|
+| `--help`      | `-h`  | Display command list          | `-h`                      |
+| `--instances` | `-n`  | Show connected applications   | `-n`                      |
+| `--query`     | `-e`  | Display application scopes    | `-e myapp`                |
+| `--scope`     | `-o`  | Set scope priority            | `-o myapp::scope_*=DEBUG` |
+| `--config`    | `-f`  | Save current configuration    | `-f`                      |
+| `--restart`   | `-r`  | Start/restart receiving logs  | `-r`                      |
+| `--stop`      | `-x`  | Stop receiving logs           | `-x`                      |
+| `--pause`     | `-p`  | Pause log observer            | `-p`                      |
+| `--quit`      | `-q`  | Quit application              | `-q`                      |
+| `--load`      | `-l`  | Load configuration file       | `-l=config.init`          |
+
+---
+
+### Command Examples
+
+**1. Display help:** type `-h` or `--help``
+
+```
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+Type '-q' or '--quit' to quit the application ...:
+
+Usage of Areg Log Observer console application :
+---------------------------------------------------------------------------------------------
+-e, --query     : Query the list of logging scopes. Usage: --query *, '*' can be a cookie ID.
+-f, --config    : Save current configuration.       Usage: --config
+-h, --help      : Display this message on console.  Usage: --help
+-l, --load      : Command line option to configure. Usage: './logobserver --load=<path-to-init-file>'
+-n, --instances : Display list of log instances.    Usage: --instances
+-o, --scope     : Update log scope priorities.      Usage: --scope *::areg_base_NESocket=NOTSET, '*' can be a cookie.
+-p, --pause     : Pause the log observer.           Usage: --pause
+-q, --quit      : Stop and quit the log observer.   Usage: --quit
+-r, --restart   : Start / continue log observer.    Usage: --restart
+-x, --stop      : Stop log observer.                Usage: --stop
+---------------------------------------------------------------------------------------------
+```
+
+**2. Show connected applications:** type `-n` or `--instances`
+
+```
+Areg Log Observer console application ...
+---------------------------------------------------------------------------------------------
+
+List of connected instances ...
+Type '-q' or '--quit' to quit the application ...:
+
+---------------------------------------------------------------------------------------------
+   Nr. |  Inst. ID  |  Bits |  Scopes  |  Name
+---------------------------------------------------------------------------------------------
+    1. |        257 |  x64  |      87  |  19_pubclient.exe
+    2. |        258 |  x64  |     132  |  19_pubservice.exe
+---------------------------------------------------------------------------------------------
+```
+
+**3. Change scope priority:** type `-o provider::provider_Network_connect=DEBUG`  
+     **Enable all scopes with wildcard:** type `-o myapp::*=DEBUG|SCOPE`
+
+**4. Save current configuration:** type `-f`
+    **Generated config file:**
+    ```ini
+    log::provider::scope::provider_main_initialize = DEBUG | SCOPE
+    log::provider::scope::provider_ServiceImpl_processData = DEBUG | SCOPE
+    log::provider::scope::provider_Network_connect = DEBUG
+    ```
+
+**5. Pause and resume:** type `-p` to pause, `-r` to resume`
+
+**6. Quit application:** type `-q` or `--quit`
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Configuration
+
+### Configuration File
+
+**Default:** `areg.init` in Log Observer directory  
+**Custom location:**
+```bash
+logobserver --load="./config/custom.init"
+```
+
+### Log Collector Connection
+
+**Configure connection to Log Collector:**
+
+```ini
+# Log Collector connection settings
+logger::*::service          = logcollector  # Service name
+logger::*::connect          = tcpip         # Protocol
+logger::*::enable::tcpip    = true          # Enable TCP/IP
+logger::*::address::tcpip   = 127.0.0.1     # Log Collector IP
+logger::*::port::tcpip      = 8282          # Log Collector port
+```
+
+**Configuration breakdown:**
+
+| Property                      | Default           | Description                   |
+|-------------------------------|-------------------|-------------------------------|
+| `logger::*::service`          | `logcollector`    | Log Collector process name    |
+| `logger::*::connect`          | `tcpip`           | Communication protocol        |
+| `logger::*::enable::tcpip`    | `true`            | Enable/disable TCP/IP         |
+| `logger::*::address::tcpip`   | `127.0.0.1`       | Log Collector IP address      |
+| `logger::*::port::tcpip`      | `8282`            | Log Collector port            |
+
+### Log Storage Configuration
+
+**Configure where logs are saved:**
+
+```ini
+# Enable file and database logging
+log::logobserver::enable::file = true
+log::logobserver::enable::db   = true
+
+# Database settings
+log::logobserver::db::name     = sqlite3
+log::logobserver::db::location = ./logs/log_%time%.sqlite3
+
+# File location (default)
+log::logobserver::file::location = ./logs/logobserver.log
+```
+
+### Message Layout
+
+**Customize log message format:**
+
+```ini
+# Scope entry layout
+log::logobserver::layout::enter = %d: [ %a.%x.%t.%z: Enter -->]%n
+
+# Log message layout
+log::logobserver::layout::message = %d: [ %a.%x.%t.%p >>> ] %m%n
+
+# Scope exit layout
+log::logobserver::layout::exit = %d: [ %a.%x.%t.%z: Exit <-- ]%n
+```
+
+**Format specifiers:**
+- `%d` - Date and time
+- `%a` - Application instance ID
+- `%x` - Application name
+- `%t` - Thread ID
+- `%p` - Priority level
+- `%m` - Message text
+- `%z` - Scope name
+- `%n` - Newline
+
+**See:** [Logging Configuration Guide](./04a-logging-config.md) for complete format reference
+
+### Disable Log Observer's Own Logging
+
+**Prevent Log Observer from logging about itself:**
+
+```ini
+# Disable Log Observer self-logging
+log::logobserver::scope::*  = NOTSET
+log::logcollector::scope::* = NOTSET
+```
+
+### Network Deployment
+
+**Scenario: Log Observer on different machine from Log Collector**  
+**Machine 1 (192.168.1.100) - Log Collector:**
+```bash
+./logcollector --console
+```
+
+**Machine 2 (192.168.1.101) - Log Observer:**
+```ini
+# logobserver config
+logger::*::address::tcpip = 192.168.1.100
+logger::*::port::tcpip    = 8282
+```
+
+```bash
+./logobserver --console --load="./config/remote.init"
+```
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Common Scenarios
+
+### Scenario 1: Monitor All Applications
+
+**Goal:** Receive logs from all connected applications.  
+**Steps:**
+
+1. *Start Log Collector:*
+    ```bash
+    ./logcollector --console
+    ```
+2. *Start Log Observer:*
+    ```bash
+    ./logobserver
+    ```
+3. *Start receiving:* type `-r`
+4. *Check connected apps:* `-n`
+
+### Scenario 2: Debug Specific Module
+
+**Goal:** Enable detailed logging for specific module at runtime.
+**Steps:** Set log priority for network module to DEBUG
+```
+-o myapp::myapp_network_*=DEBUG|SCOPE
+```
+
+### Scenario 3: Reduce Network Traffic
+
+**Goal:** Decrease network traffic by filtering low-priority logs.  
+**Steps:** Set all scopes to WARN
+```
+-o myapp::*=WARN
+```
+**Result:** Only warnings and errors transmitted.
+
+### Scenario 4: Save Configuration for Later
+
+**Goal:** Save current scope settings to reproduce later.  
+**Steps:**
+1. *Configure scopes as needed:*
+    ```
+    -o app1::module_*=DEBUG
+    -o app2::network_*=INFO
+    -o app2::database_*=ERROR
+    ```
+2. *Save configuration:* type `-f`
+3. *Later, load saved configuration:*
+    ```bash
+    ./logobserver --load="./config/logobserver_config.init"
+    ```
+
+**Result:** Same scope settings restored.
+
+### Scenario 5: Database Analysis
+
+**Goal:** Analyze logs using SQL queries.
+**Steps:**
+1. *Ensure database logging enabled:*
+    ```ini
+    log::logobserver::enable::db = true
+    log::logobserver::db::location = ./logs/log_%time%.sqlite3
+    ```
+2. *Collect logs:* type `-r`
+3. *Open database with SQLite:*
+    ```bash
+    sqlite3 ./logs/log_20260127_103045.sqlite3
+    ```
+4. *Query logs:*
+    ```sql
+    -- Count errors per application
+    SELECT app_name, COUNT(*) 
+    FROM logs 
+    WHERE priority = 'ERROR' 
+    GROUP BY app_name;
+    ```
+
+**Result:** Powerful SQL-based log analysis.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Troubleshooting
+
+### Cannot Connect to Log Collector
+
+**Problem:** Log Observer cannot connect to Log Collector.  
+**Solution:**
+1. *Verify Log Collector is running:*
+    ```bash
+    # Check process
+    ps aux | grep logcollector  # Linux
+    tasklist | findstr logcollector  # Windows
+    ```
+2. *Check network connectivity:*
+    ```bash
+    telnet 127.0.0.1 8282
+    # or
+    nc -zv 127.0.0.1 8282
+    ```
+3. *Verify configuration:*
+    ```ini
+    logger::*::address::tcpip = 127.0.0.1  # Correct address?
+    logger::*::port::tcpip    = 8282       # Correct port?
+    ```
+4. *Check firewall:*
+    ```bash
+    # Linux
+    sudo ufw allow 8282/tcp
+
+    # Windows
+    New-NetFirewallRule -DisplayName "Log Collector" -Direction Inbound -Protocol TCP -LocalPort 8282 -Action Allow
+    ```
+
+### No Logs Received
+
+**Problem:** Log Observer connected but no logs appear.  
+**Solution:**
+1. *Start receiving:* type `-r`
+2. *Check connected applications:* type `-n`
+3. *Verify applications are configured for remote logging:*
+    ```ini
+    # In application's areg.init
+    log::*::target = remote
+    logger::*::address::tcpip = 127.0.0.1
+    logger::*::port::tcpip = 8282
+    ```
+4. *Check application scopes are enabled:*
+    ```
+    > -e myapp
+    Check if scopes are not set to NOTSET
+    ```
+
+---
+
+### Database File Not Created
+
+**Problem:** SQLite database file doesn't exist.  
+**Solution:**
+1. *Check database logging is enabled:*
+    ```ini
+    log::logobserver::enable::db = true
+    ```
+2. *Check directory exists:*
+    ```bash
+    mkdir -p ./logs
+    ```
+3. *Check write permissions:*
+    ```bash
+    chmod 755 ./logs
+    ```
+4. *Verify database location:*
+    ```ini
+    log::logobserver::db::location = ./logs/log_%time%.sqlite3
+    ```
+5. *Restart Log Observer:*
+
+---
+
+### Scope Changes Not Working
+
+**Problem:** Changed scope priority but no effect.  
+**Solution:**
+1. *Verify correct application name:* type `-n`
+2. *Use correct syntax:*
+    ```
+    # Correct
+    > -o myapp::module_network=DEBUG
+    > -o myapp::module_*=DEBUG|SCOPE
+
+    # Wrong
+    > -o myapp module_network DEBUG
+    ```
+3. *Verify application supports dynamic scope changes:*
+
+Applications must be connected to Log Collector to receive scope updates.
+
+---
+
+### Log File Too Large
+
+**Problem:** Log files growing too large.
+**Solution:**
+1. *Reduce log level:*
+    ```
+    > -o *::*=WARN
+    All applications set to WARN
+    ```
+2. *Disable file logging:*
+    ```ini
+    log::logobserver::enable::file = false
+    # Keep only database
+    log::logobserver::enable::db = true
+    ```
+3. *Use separate files per run:*
+    ```ini
+    log::logobserver::file::location = ./logs/log_%time%.log
+    ```
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Additional Resources
+
+**Related Guides:**
+- [Log Collector Guide](./04d-logcollector.md) - Central log collection service
+- [Logging Configuration Guide](./04a-logging-config.md) - Configure application logging
+- [Logging Development Guide](./04b-logging-development.md) - Add logging to code
+- [Lusan Live Log Viewer](./06f-lusan-live-logging.md) - GUI log viewer alternative
+
+**Configuration Files:**
+- [areg.init](../../framework/areg/resources/areg.init) - Default configuration
+
+**Source Code:**
+- [logobserver Module](../../framework/logobserver/) - Implementation
+- [areglogger Library](../../framework/areglogger/) - Log observer API
+
+**Help:**
+For questions, open a [discussion](https://github.com/aregtech/areg-sdk/discussions) or [issue](https://github.com/aregtech/areg-sdk/issues) on GitHub.
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+Copyright © 2026, Aregtech, www.areg.tech, email: info[at]areg.tech

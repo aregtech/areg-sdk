@@ -57,16 +57,16 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Define the model to load and instantiate threads and objects
 //////////////////////////////////////////////////////////////////////////
-// Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
-BEGIN_MODEL("ServiceModel")
+// Describe model, register the service consumer in the thread "Thread1", declare dependency
+BEGIN_MODEL( "ConsumerModel" )
     // Thread 1 without watchdog, contains a service consumer
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceClient", ServiceConsumer )
+        BEGIN_REGISTER_COMPONENT( "ServiceConsumer", ServiceConsumer )
             REGISTER_DEPENDENCY( "ServiceProvider" ) /* dependency reference to the remote service*/
-        END_REGISTER_COMPONENT( "ServiceClient" )
+        END_REGISTER_COMPONENT( "ServiceConsumer" )
     END_REGISTER_THREAD( "Thread1" )
 // end of model description
-END_MODEL("ServiceModel")
+END_MODEL("ConsumerModel")
 
 //////////////////////////////////////////////////////////////////////////
 // main method
@@ -76,7 +76,7 @@ int main(void)
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     Application::initApplication();
     // load model to initialize components
-    Application::loadModel("ServiceModel");
+    Application::loadModel("ConsumerModel");
     // wait until Application quit signal is set.
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
     // release and cleanup resources of application.

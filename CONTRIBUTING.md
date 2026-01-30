@@ -1,4 +1,4 @@
-# CONTRIBUTING TO AREG SDK
+# CONTRIBUTING TO Areg SDK
 
 Thank you for your interest in contributing to Areg SDK.  
 We welcome developers, companies, researchers, and hobbyists who want to help improve the framework.

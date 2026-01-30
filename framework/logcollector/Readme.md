@@ -1,6 +1,6 @@
-# Directory Overview: AREG Log Collector Application
+# Directory Overview: Areg Log Collector Application
 
-This directory contains the source code for the AREG Log Collector (`logcollector`) application, a robust tool for collecting logs from multiple processes across a network. The `logcollector` can operate as either a console application or an OS-managed service. As a key logging and debugging component of the AREG SDK, it is built alongside other SDK sources and can also be used independently for centralized log collection and application behavior analysis.
+This directory contains the source code for the Areg Log Collector (`logcollector`) application, a robust tool for collecting logs from multiple processes across a network. The `logcollector` can operate as either a console application or an OS-managed service. As a key logging and debugging component of the Areg SDK, it is built alongside other SDK sources and can also be used independently for centralized log collection and application behavior analysis.
 
 ### Directory Contents
 
@@ -31,7 +31,7 @@ To configure and run the `logcollector` application as a Linux-managed service, 
    - Copy the built `logcollector.elf` executable to the desired location, such as `/usr/local/bin`.
 
 3. **Ensure Library Access (if applicable)**:
-   - If the AREG Framework was built as a shared library, ensure that `logcollector` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
+   - If the Areg Framework was built as a shared library, ensure that `logcollector` has access to the `libareg.so` library (e.g., located in `/usr/lib`).
 
 4. **Edit the Service Configuration**:
    - Open the `logcollector.service` file and verify that the `ExecStart` path points to the correct location of the `logcollector.elf` executable. For example:
@@ -75,7 +75,7 @@ To configure and run the `logcollector` application as a Windows-managed service
 
 3. **Start the Service**:
    - Open the **Services** application (or run `services.msc` in the Command Prompt).
-   - Locate the service named **AREG Log Collector Service**.
+   - Locate the service named **Areg Log Collector Service**.
    - Start the service by right-clicking it and selecting **Start**.
 
 4. **Stop and Uninstall the Service**:
@@ -87,7 +87,7 @@ To configure and run the `logcollector` application as a Windows-managed service
 
 ---
 
-## Usage of AREG Log Collector (`logcollector`)
+## Usage of Areg Log Collector (`logcollector`)
 
 The `logcollector` supports a range of commands for managing log collection and application settings, offering flexibility for different environments.
 
