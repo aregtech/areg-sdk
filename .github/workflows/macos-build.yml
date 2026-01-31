@@ -23,13 +23,19 @@ jobs:
           java-package: jre
           distribution: temurin
 
+      - name: Ensure Xcode CLI Tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Set SDKROOT
+        run: echo "SDKROOT=$(xcrun --show-sdk-path)" >> $GITHUB_ENV
+
       - name: create build directory
         working-directory: ${{github.workspace}}
         run: mkdir build
 
       - name: config cmake
         working-directory: ${{github.workspace}}
-        run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_COMPILER_FAMILY=llvm -DAREG_PROCESSOR=arm64 -DCMAKE_OSX_SYSROOT=$(xcrun --show-sdk-path)
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
