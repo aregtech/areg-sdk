@@ -95,7 +95,7 @@ Components can join or leave dynamically. Watchdogs automatically restart failed
 **5. Native Observability**  
 Integrated distributed logging with visual analysis. Per-method execution timing enables performance profiling without external tools.
 
-💡 **Best for:** Embedded to enterprise C++ applications on Linux and Windows, scaling from resource-constrained devices to high-performance server systems.
+💡 **Best for:** Embedded to enterprise C++ applications on Linux and Windows, scaling from resource-constrained devices to high-performance server systems.  
 ⚠️ **Not for:** RTOS (planned), web services, or non-C++ ecosystems.
 
 ---
