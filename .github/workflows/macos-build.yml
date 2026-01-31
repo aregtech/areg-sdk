@@ -1,0 +1,39 @@
+name: macOS Build
+on:
+  push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
+    branches:
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+
+      - name: Checkout Areg SDK source codes
+        uses: actions/checkout@v6
+
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v5.1.0
+        with: 
+          java-version: 17
+          java-package: jre
+          distribution: temurin
+
+      - name: Set cmake cache destination for macos
+        run: |
+            echo "CACHE_DEST=./product/cache/macos-cxx" >> "$GITHUB_ENV"
+            echo "BUILD_DEST=./product/build/macos-cxx/macos-64-x86_64-release-shared" >> "$GITHUB_ENV"
+            echo "INSTALL_DEST=./product/install/macos-cxx" >> "$GITHUB_ENV"
+
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        run: cmake --build ${{env.CACHE_DEST}} --config Release -j$(sysctl -n hw.ncpu)
+
+      - name: Install with CMake
+        working-directory: ${{github.workspace}}
+        # Install the binaries and headers
+        run: cmake --install ${{env.CACHE_DEST}}
