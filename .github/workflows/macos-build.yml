@@ -23,17 +23,14 @@ jobs:
           java-package: jre
           distribution: temurin
 
-      - name: Set cmake cache destination for macos
-        run: |
-            echo "CACHE_DEST=./product/cache/macos-cxx" >> "$GITHUB_ENV"
-            echo "BUILD_DEST=./product/build/macos-cxx/macos-64-x86_64-release-shared" >> "$GITHUB_ENV"
-            echo "INSTALL_DEST=./product/install/macos-cxx" >> "$GITHUB_ENV"
+      - name: create build directory
+        working-directory: ${{github.workspace}}
+        run: mkdir build
+
+      - name: config cmake
+        working-directory: ${{github.workspace}}
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build ${{env.CACHE_DEST}} --config Release -j$(sysctl -n hw.ncpu)
-
-      - name: Install with CMake
-        working-directory: ${{github.workspace}}
-        # Install the binaries and headers
-        run: cmake --install ${{env.CACHE_DEST}}
+        run: cmake --build build --config ${{env.BUILD_TYPE}}      
