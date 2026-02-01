@@ -20,9 +20,10 @@
 #include <unistd.h>
 
 #ifdef __APPLE__
+    #include <sys/types.h>
     #include <sys/sysctl.h>
     #include <libproc.h>
-#endif
+#endif  // __APPLE__
 
 namespace
 {
