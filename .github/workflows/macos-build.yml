@@ -1,7 +1,7 @@
 name: macOS Build
 on:
   push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
-    branches:
+    branches: [feature/652-build-sources-on-macos]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
