@@ -5,10 +5,11 @@
 
 message(STATUS "Areg: >>> Preparing settings for CLang compiler under \'${AREG_OS}\' platform, WIN32 = \'${WIN32}\'")
 
-if (AREG_OS STREQUAL "Windows")
+if (AREG_PLATFORM_WINDOWS)
 
-    if(NOT CMAKE_BUILD_TYPE MATCHES Release)
-    # if Debug
+    if(CMAKE_BUILD_TYPE MATCHES Release)
+        list(APPEND AREG_COMPILER_OPTIONS -O2)
+    else()
         list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
     endif()
 
@@ -27,12 +28,10 @@ if (AREG_OS STREQUAL "Windows")
 
 else()
 
-    if(CMAKE_BUILD_TYPE MATCHES Release)
-    # if Release
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else()
-    # if Debug
+    if(NOT CMAKE_BUILD_TYPE MATCHES Release)
         list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
+    else()
+        list(APPEND AREG_COMPILER_OPTIONS -O2)
     endif()
 
     # POSIX API
@@ -50,9 +49,15 @@ else()
     # Clang compile options
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0)
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++   m   pthread   rt)
-    set(AREG_LDFLAGS_STR  "-lstdc++ -lm -lpthread -lrt")
-    set(AREG_COMPILER_VERSION -stdlib=libstdc++)
+    if (AREG_PLATFORM_MACOS)
+        list(APPEND AREG_LDFLAGS stdc++   m   pthread)
+        set(AREG_LDFLAGS_STR  "-lstdc++ -lm -lpthread")
+        set(AREG_COMPILER_VERSION -stdlib=libc++)
+    else()
+        list(APPEND AREG_LDFLAGS stdc++   m   pthread   rt)
+        set(AREG_LDFLAGS_STR  "-lstdc++ -lm -lpthread -lrt")
+        set(AREG_COMPILER_VERSION -stdlib=libstdc++)
+    endif()
 
 endif()
 

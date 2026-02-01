@@ -43,6 +43,12 @@ set(AREG_DEVELOP_ENV    @AREG_DEVELOP_ENV@)
 set(AREG_BITNESS        @AREG_BITNESS@)
 set(AREG_PROCESSOR      @AREG_PROCESSOR@)
 
+# target platforms
+set(AREG_PLATFORM_LINUX     @AREG_PLATFORM_LINUX@)
+set(AREG_PLATFORM_MACOS     @AREG_PLATFORM_MACOS@)
+set(AREG_PLATFORM_WINDOWS   @AREG_PLATFORM_WINDOWS@)
+set(AREG_PLATFORM_POSIX     @AREG_PLATFORM_POSIX@)
+
 # Specify whether 'aregextend' is compiled with enabled extended objects flag
 option(AREG_EXTENDED        "Areg Extended object flag"         @AREG_EXTENDED@)
 # Specify whether the libraries where compiled with enabled logging.

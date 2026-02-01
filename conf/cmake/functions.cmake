@@ -140,46 +140,62 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
         set(_objdump "${target_name}-objdump")
     endif()
 
+    set(${var_compatible} FALSE)
     # Check existence of the binary and objdump tool
-    if (EXISTS "${path_module}" AND EXISTS "${_objdump}")
-        macro_get_processor(${target_proc} _proc _bitness _found)
+    if (EXISTS "${path_module}")
 
-        execute_process(
-            COMMAND bash -c "${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
-            OUTPUT_VARIABLE _data
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-        )
+        set(_tool_exists FALSE)
+        if (APPLE)
+            set(_tool_exists TRUE)  # lipo is always available
+            execute_process(
+                COMMAND bash -c "lipo -info ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+                OUTPUT_VARIABLE _data
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET
+            )
 
-        # Match the processor type with extracted architecture
-        if (${_proc} STREQUAL ${_proc_x86})
-            string(FIND "${_data}" "x86-64" _pos)
-            if (_pos EQUAL -1)
-                string(FIND "${_data}" "i386" _pos)
-			else()
-				set(_pos -1)
+        elseif (EXISTS "${_objdump}")
+            set(_tool_exists TRUE)
+            execute_process(
+                COMMAND bash -c "${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+                OUTPUT_VARIABLE _data
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET
+            )
+        endif()
+
+        if (_tool_exists)
+            macro_get_processor(${target_proc} _proc _bitness _found)
+            # Match the processor type with extracted architecture
+            if (${_proc} STREQUAL ${_proc_x86})
+                string(FIND "${_data}" "x86-64" _pos)
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "i386" _pos)
+			    else()
+				    set(_pos -1)
+                endif()
+            elseif (${_proc} STREQUAL ${_proc_x64})
+                string(FIND "${_data}" "x86-64" _pos)
+            elseif (${_proc} STREQUAL ${_proc_arm32})
+                string(FIND "${_data}" "ARM" _pos)
+            elseif (${_proc} STREQUAL ${_proc_arm64})
+                string(FIND "${_data}" "AARCH64" _pos)
+            else()
+                string(FIND "${_data}" "${_proc}" _pos)
             endif()
-        elseif (${_proc} STREQUAL ${_proc_x64})
-            string(FIND "${_data}" "x86-64" _pos)
-        elseif (${_proc} STREQUAL ${_proc_arm32})
-            string(FIND "${_data}" "ARM" _pos)
-        elseif (${_proc} STREQUAL ${_proc_arm64})
-            string(FIND "${_data}" "AARCH64" _pos)
-        else()
-            string(FIND "${_data}" "${_proc}" _pos)
+
+            # Set compatibility flag based on architecture match
+            if (_pos GREATER -1)
+                set(${var_compatible} TRUE)
+            else()
+                message(WARNING "Areg: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'")
+            endif()
+        elseif (AREG_PLATFORM_WINDOWS)
+            set(${var_compatible} TRUE)
         endif()
 
-        # Set compatibility flag based on architecture match
-        if (_pos GREATER -1)
-            set(${var_compatible} TRUE)
-        else()
-            message(WARNING "Areg: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'")
-            set(${var_compatible} FALSE)
-        endif()
-    elseif (${AREG_OS} STREQUAL Windows)
+    elseif (AREG_PLATFORM_WINDOWS)
         set(${var_compatible} TRUE)
-    else()
-        set(${var_compatible} FALSE)
     endif()
 endmacro(macro_check_module_architect)
 
@@ -428,7 +444,7 @@ macro(macro_default_target target_processor var_name_target)
     macro_get_processor("${target_processor}" _proc _bitness _found)
     if ("${_proc}" STREQUAL "")
         set(${var_name_target})
-    elseif (UNIX)
+    elseif (UNIX AND NOT APPLE)
         if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} x86_64-linux-gnu)
         elseif (${_proc} MATCHES "${_proc_x86}")
@@ -437,6 +453,12 @@ macro(macro_default_target target_processor var_name_target)
             set(${var_name_target} aarch64-linux-gnu)
         elseif (${_proc} MATCHES "${_proc_arm32}")
             set(${var_name_target} arm-linux-gnueabihf)
+        endif()
+    elseif (APPLE)
+        if (${_proc} MATCHES "${_proc_x64}")
+            set(${var_name_target} x86_64-apple-darwin)
+        elseif (${_proc} MATCHES "${_proc_arm64}")
+            set(${var_name_target} arm64-apple-darwin)
         endif()
     elseif (MSVC)
         if (${_proc} MATCHES "${_proc_x64}")
@@ -509,7 +531,7 @@ macro(macro_setup_compilers_data
     endif()
     
     # Iterate over known compilers to identify the compiler type
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "appleclang++;llvm;appleclang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_comp)
 
         # Check if the provided compiler matches the known C++ compiler
