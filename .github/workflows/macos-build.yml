@@ -33,9 +33,23 @@ jobs:
         working-directory: ${{github.workspace}}
         run: mkdir build
 
-      - name: config cmake
+      - name: Check SDK and architecture
+        run: |
+            clang -v
+            echo $SDKROOT
+            uname -m
+
+      - name: Configure CMake for macOS native
         working-directory: ${{github.workspace}}
-        run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_COMPILER_FAMILY=llvm -DAREG_PROCESSOR=arm64 -DCMAKE_OSX_SYSROOT=$(xcrun --show-sdk-path)
+        run: cmake -S . -B build \
+                    -DCMAKE_C_COMPILER=clang \
+                    -DCMAKE_CXX_COMPILER=clang++ \
+                    -DCMAKE_OSX_ARCHITECTURES=arm64 \
+                    -DCMAKE_OSX_SYSROOT=$(xcrun --show-sdk-path) \
+                    -DCMAKE_SYSTEM_NAME=Darwin  \
+                    -DCMAKE_BUILD_TYPE=Release  \
+                    -DAREG_COMPILER_FAMILY=llvm \
+                    -DAREG_PROCESSOR=arm64
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
