@@ -47,9 +47,7 @@ jobs:
                     -DCMAKE_OSX_ARCHITECTURES=arm64 \
                     -DCMAKE_OSX_SYSROOT=$(xcrun --show-sdk-path) \
                     -DCMAKE_SYSTEM_NAME=Darwin  \
-                    -DCMAKE_BUILD_TYPE=Release  \
-                    -DAREG_COMPILER_FAMILY=llvm \
-                    -DAREG_PROCESSOR=arm64      \
+                    -DCMAKE_BUILD_TYPE=Release
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
