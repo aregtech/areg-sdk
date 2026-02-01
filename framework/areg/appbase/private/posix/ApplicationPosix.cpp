@@ -17,11 +17,8 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <signal.h>
-#include <unistd.h>
 
 #ifdef __APPLE__
-    #include <sys/types.h>
-    #include <sys/sysctl.h>
     #include <libproc.h>
 #endif  // __APPLE__
 
