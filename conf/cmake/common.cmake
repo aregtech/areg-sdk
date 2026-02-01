@@ -14,6 +14,34 @@ if ("${AREG_PROCESSOR}" STREQUAL "")
     set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 
+# Detect target platform
+set(AREG_PLATFORM_LINUX     FALSE)
+set(AREG_PLATFORM_MACOS     FALSE)
+set(AREG_PLATFORM_WINDOWS   FALSE)
+set(AREG_PLATFORM_POSIX     FALSE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(AREG_PLATFORM_MACOS TRUE)
+    set(AREG_PLATFORM_POSIX TRUE)
+    message(STATUS "Areg: >>> Target platform = macOS")
+    
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(AREG_PLATFORM_LINUX TRUE)
+    set(AREG_PLATFORM_POSIX TRUE)
+    message(STATUS "Areg: >>> Target platform = Linux")
+    
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(AREG_PLATFORM_WINDOWS TRUE)
+    message(STATUS "Areg: >>> Target platform = Windows")
+    
+else()
+    message(WARNING "Areg: >>> Unknown target platform '${CMAKE_SYSTEM_NAME}'")
+endif()
+
+# Cross-compilation detection
+if (CMAKE_CROSSCOMPILING)
+    message(STATUS "Areg: >>> Cross-compiling ${CMAKE_HOST_SYSTEM_NAME}(${CMAKE_HOST_SYSTEM_PROCESSOR}) -> ${CMAKE_SYSTEM_NAME}(${CMAKE_SYSTEM_PROCESSOR})")
+endif()
+
 # Identify compiler short name
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
