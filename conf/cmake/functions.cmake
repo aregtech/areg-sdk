@@ -524,7 +524,7 @@ macro(macro_setup_compilers_data
         var_name_found)
 
     set(${var_name_found} FALSE)
-    if(NOT "${${var_name_arch}}" STREQUAL "")
+    if (NOT "${${var_name_arch}}" STREQUAL "")
         macro_get_processor("${${var_name_arch}}" ${var_name_arch} ${var_name_bitness} _ignore)
     else()
         macro_system_bitness(${var_name_bitness})
