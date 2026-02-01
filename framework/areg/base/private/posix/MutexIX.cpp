@@ -22,6 +22,10 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
+#ifdef __APPLE__
+    #include <unistd.h>
+#endif  // __APPLE__
+
 //////////////////////////////////////////////////////////////////////////
 // MutexIX class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -106,9 +110,32 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
         }
         else
         {
-            timespec now;
-            NESyncTypesIX::timeoutFromNow(now, msTimeout);
-            result = RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &now );
+            timespec deadline;
+            NESyncTypesIX::timeoutFromNow(deadline, msTimeout);
+#ifdef __APPLE__
+            // macOS doesn't have pthread_mutex_timedlock, use polling with trylock
+            while (!result)
+            {
+                if (RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
+                {
+                    result = true;
+                }
+                else
+                {
+                    timespec current;
+                    clock_gettime(CLOCK_REALTIME, &current);
+                    if ((current.tv_sec > deadline.tv_sec) ||
+                        ((current.tv_sec == deadline.tv_sec) && (current.tv_nsec >= deadline.tv_nsec)))
+                    {
+                        break; // timeout expired
+                    }
+
+                    usleep(1000); // 1ms sleep before retry
+                }
+            }
+#else   // !__APPLE__
+            result = RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
+#endif  // __APPLE__
         }
     }
 

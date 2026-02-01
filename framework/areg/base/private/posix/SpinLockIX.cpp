@@ -35,8 +35,14 @@ SpinLockIX::SpinLockIX( void )
     , mLockCount    ( 0 )
     , mIsValid      ( false )
 {
-    mIsValid =  (RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) && 
+#ifdef __APPLE__
+    mSpinLock   = OS_UNFAIR_LOCK_INIT;
+    mInternLock = OS_UNFAIR_LOCK_INIT;
+    mIsValid    = true;
+#else   // __APPLE__
+    mIsValid =  (RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) &&
                 (RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
+#endif  // __APPLE__
 }
 
 SpinLockIX::~SpinLockIX( void )
@@ -120,7 +126,11 @@ bool SpinLockIX::tryLock( void )
         {
             _unlockIntern( );
 
+#ifdef __APPLE__
+            if ( ::os_unfair_lock_trylock( &mSpinLock ) )
+#else   // !__APPLE__
             if ( RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
+#endif  // __APPLE__
             {
                 _lockIntern( );
 
@@ -148,11 +158,15 @@ void SpinLockIX::freeResources( void )
     {
         mIsValid    = false;
 
+#ifdef __APPLE__
+        mSpinLock   = OS_UNFAIR_LOCK_INIT;
+        mInternLock = OS_UNFAIR_LOCK_INIT;
+#else   // !__APPLE__
         ::pthread_spin_destroy( &mSpinLock );
         ::pthread_spin_destroy( &mInternLock );
-
         mSpinLock   = 0;
         mInternLock = 0;
+#endif  // __APPLE__
         mSpinOwner  = 0;
         mLockCount  = 0;
     }
@@ -161,22 +175,39 @@ void SpinLockIX::freeResources( void )
 
 inline bool SpinLockIX::_lockSpin( void )
 {
+#ifdef __APPLE__
+    ::os_unfair_lock_lock( &mSpinLock );
+    return true;
+#else   // !__APPLE__
     return (RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
+#endif  // __APPLE__
 }
 
 inline void SpinLockIX::_unlockSpin( void )
 {
+#ifdef __APPLE__
+    ::os_unfair_lock_unlock( &mSpinLock );
+#else   // !__APPLE__
     ::pthread_spin_unlock( &mSpinLock );
+#endif  // __APPLE__
 }
 
 inline void SpinLockIX::_lockIntern( void )
 {
+#ifdef __APPLE__
+    ::os_unfair_lock_lock( &mInternLock );
+#else   // !__APPLE__
     ::pthread_spin_lock( &mInternLock );
+#endif  // __APPLE__
 }
 
 inline void SpinLockIX::_unlockIntern( void )
 {
+#ifdef __APPLE__
+    ::os_unfair_lock_unlock( &mInternLock );
+#else   // !__APPLE__
     ::pthread_spin_unlock( &mInternLock );
+#endif  // __APPLE__
 }
 
 #endif // defined(_POSIX) || defined(POSIX)
