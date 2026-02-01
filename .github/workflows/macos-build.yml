@@ -49,7 +49,7 @@ jobs:
                     -DCMAKE_SYSTEM_NAME=Darwin  \
                     -DCMAKE_BUILD_TYPE=Release  \
                     -DAREG_COMPILER_FAMILY=llvm \
-                    -DAREG_PROCESSOR=arm64
+                    -DAREG_PROCESSOR=arm64      \
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}

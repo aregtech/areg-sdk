@@ -509,7 +509,7 @@ macro(macro_setup_compilers_data
     endif()
     
     # Iterate over known compilers to identify the compiler type
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "AppleClang ;llvm;AppleClang " "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_comp)
 
         # Check if the provided compiler matches the known C++ compiler
