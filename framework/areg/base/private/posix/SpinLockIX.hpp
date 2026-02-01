@@ -25,6 +25,13 @@
 #include <pthread.h>
 #include <atomic>
 
+#ifdef __APPLE__
+    #include <os/lock.h>
+    typedef os_unfair_lock      pthread_spinlock_ix;
+#else
+    typedef pthread_spinlock_t  pthread_spinlock_ix;
+#endif  // __APPLE__
+
 //////////////////////////////////////////////////////////////////////////
 // SpinLockIX class declaration.
 //////////////////////////////////////////////////////////////////////////
@@ -120,8 +127,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    pthread_spinlock_t      mSpinLock;  //!< The POSIX spin lock to synchronize multi-threading access of critical section.
-    pthread_spinlock_t      mInternLock;//!< The POSIX spin lock to synchronize internal structure resources.
+    pthread_spinlock_ix     mSpinLock;  //!< The POSIX spin lock to synchronize multi-threading access of critical section.
+    pthread_spinlock_ix     mInternLock;//!< The POSIX spin lock to synchronize internal structure resources.
     std::atomic<pthread_t>  mSpinOwner; //!< The spin-lock owner POSIX thread
     std::atomic<uint32_t>   mLockCount; //!< The lock counter to release spin lock when counter reaches zero.
     std::atomic<bool>       mIsValid;   //!< Flag, indicating whether the elements are initialized or not.
