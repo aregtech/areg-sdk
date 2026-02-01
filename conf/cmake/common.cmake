@@ -111,7 +111,7 @@ set(AREG_OPT_DISABLE_WARN_CODEGEN)
 set(AREG_OPT_DISABLE_WARN_THIRDPARTY)
 
 # Checking Compiler for adding corresponded tweaks and flags
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     include(${AREG_CMAKE_CONFIG_DIR}/clang.cmake)
 
