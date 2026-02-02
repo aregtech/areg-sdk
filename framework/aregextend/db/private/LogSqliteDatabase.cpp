@@ -301,11 +301,6 @@ namespace
         "SELECT name FROM %s WHERE type = \'table\' AND name = \'%s\';"
     };
 
-    constexpr std::string_view _sqlCheckMasterTable
-    {
-        "SELECT name FROM sqlite_master WHERE type = \'table\' AND name = \'scopes\';"
-    };
-
     constexpr std::string_view _sqlCreateTempScopes
     {
         "CREATE TEMP TABLE filter_rules ("

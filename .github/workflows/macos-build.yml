@@ -46,4 +46,4 @@ jobs:
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        run: cmake --build build --config ${{env.BUILD_TYPE}}      
+        run: cmake --build build --config ${{env.BUILD_TYPE}} -j20
