@@ -692,7 +692,6 @@ function(setAppOptions target_name library_list)
         ${library_list}                    # Custom libraries to link
         ${AREG_PACKAGE_NAME}::areg         # Core Areg library
         ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
-        ${AREG_LDFLAGS}                    # Additional linker flags
     )
 
 endfunction(setAppOptions)
@@ -773,7 +772,10 @@ function(setStaticLibOptions target_name library_list)
     endif()
 
     # Link the static library with the provided libraries and Areg framework
-    target_link_libraries(${target_name} PRIVATE ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} PRIVATE 
+                          ${library_list} 
+                          ${AREG_PACKAGE_NAME}::areg
+    )
 
 endfunction(setStaticLibOptions)
 
@@ -856,7 +858,10 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${target_name} PRIVATE ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} PRIVATE 
+                         ${library_list} 
+                         ${AREG_PACKAGE_NAME}::areg
+    )
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
@@ -887,7 +892,12 @@ function(setSharedLibOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Link the shared library with provided libraries and Areg framework
-    target_link_libraries(${target_name} PRIVATE ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} PRIVATE 
+                          ${AREG_PACKAGE_NAME}::aregextend 
+                          ${library_list} 
+                          ${AREG_PACKAGE_NAME}::areg 
+                          ${AREG_EXTENDED_LIBS} 
+    )
 
     # Additional compile options for non-Windows platforms
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
