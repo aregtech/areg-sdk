@@ -30,8 +30,8 @@
 void Process::_osInitilize( void )
 {
 #ifdef BIT64
-    constexpr const char _fmtCmdLine[] = "/proc/%lu/cmdline";
-    constexpr const char _fmtExePath[] = "/proc/%lu/exe";
+    constexpr const char _fmtCmdLine[] = "/proc/%llu/cmdline";
+    constexpr const char _fmtExePath[] = "/proc/%llu/exe";
 #else   // defined(BIT32)
     constexpr const char _fmtCmdLine[] = "/proc/%u/cmdline";
     constexpr const char _fmtExePath[] = "/proc/%u/exe";

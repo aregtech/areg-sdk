@@ -164,10 +164,15 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
         if (::fgets(buffer, size, stdin) == nullptr)
             return false;
     #endif  // defined(_WIN32)
-#else
+#else  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
+    #if POSIX
+        if (::fgets(buffer, size, stdin) == nullptr)
+            return false;
+    #else // !POSIX
         if (::gets_s(buffer, size) == nullptr)
             return false;
-#endif // _WIN32
+    #endif // POSIX
+#endif // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 
     NEString::trimAll<char>(buffer);
     return ( NEString::isEmpty(buffer) == false );
