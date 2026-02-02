@@ -165,7 +165,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
     if (gets_s(buffer, size) == nullptr)

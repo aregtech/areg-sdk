@@ -54,7 +54,7 @@ String Console::waitForInput(Console::CallBack callback) const
         {
             result.clear();
             char buffer[512]{ 0 };
-            if (_osWaitInputString(buffer, 512))
+            if (Console::_osWaitInputString(buffer, 512))
             {
                 result = buffer;
                 if ((static_cast<bool>(callback) == false) || callback(result))
@@ -112,4 +112,9 @@ void Console::printMsg(const char* format, ...) const
     va_end(argptr);
 
     _osOutputText(text);
+}
+
+bool Console::readConsoleData(char* buffer, unsigned int bufSize)
+{
+    return Console::_osWaitInputString(buffer, bufSize);
 }

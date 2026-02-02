@@ -153,7 +153,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)

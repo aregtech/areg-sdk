@@ -140,7 +140,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     }
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
     if ((mContext == 0) || (wgetnstr(reinterpret_cast<WINDOW*>(mContext), buffer, static_cast<int>(size)) != OK))
