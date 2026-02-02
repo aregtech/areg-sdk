@@ -27,24 +27,54 @@
 #include "areg/base/private/posix/NESyncTypesIX.hpp"
 #include "areg/base/NEMemory.hpp"
 
-#include <signal.h>
+#ifndef __APPLE__
+    #include <signal.h>
+#endif  // !__APPLE__
 
 //////////////////////////////////////////////////////////////////////////
 // TimerPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
+#ifdef __APPLE__
+namespace
+{
+    //!< Invalid dispatch source.
+    constexpr dispatch_source_t INVALID_DISPATCH_SOURCE { nullptr };
+    //!< Invalid dispatch queue.
+    constexpr dispatch_queue_t  INVALID_DISPATCH_QUEUE  { nullptr };
+}
+#else   // !__APPLE__
 namespace
 {
     //!< Timer invalid ID
     const timer_t	INVALID_POSIX_TIMER_ID  { reinterpret_cast<timer_t>(~0ul) };
 }
 
+/**
+ * \brief   POSIX timer callback function triggered when timer expires.
+ * \param   si  Signal value containing pointer to TimerPosix object.
+ */
+static void _posixTimerRoutine(union sigval si)
+{
+    TimerPosix* timer = reinterpret_cast<TimerPosix*>(si.sival_ptr);
+    if (timer != nullptr)
+    {
+        timer->timerExpired();
+    }
+}
+#endif  // __APPLE__
+
 //////////////////////////////////////////////////////////////////////////
 // TimerPosix methods
 //////////////////////////////////////////////////////////////////////////
 
 TimerPosix::TimerPosix( void )
+#ifdef __APPLE__
+    : mTimerSource  ( INVALID_DISPATCH_SOURCE )
+    , mTimerQueue   ( INVALID_DISPATCH_QUEUE  )
+#else   // !__APPLE__
     : mTimerId      ( INVALID_POSIX_TIMER_ID  )
+#endif  // __APPLE__
     , mContext      ( nullptr   )
     , mContextId    ( 0u        )
     , mDueTime      (           )
@@ -58,28 +88,44 @@ TimerPosix::~TimerPosix(void)
     _destroyTimer();
 }
 
-bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
+bool TimerPosix::createTimer( void )
 {
 	SpinAutolockIX lock(mLock);
-    return ((mTimerId == INVALID_POSIX_TIMER_ID) && (funcTimer != nullptr) ? _createTimer(funcTimer) : mTimerId != INVALID_POSIX_TIMER_ID);
-}
-
-bool TimerPosix::startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
-{
-	SpinAutolockIX lock(mLock);
-	if ((funcTimer != nullptr) && (mTimerId == INVALID_POSIX_TIMER_ID))
-	{
-	    _createTimer(funcTimer);
-	}
-
-	return (mTimerId != INVALID_POSIX_TIMER_ID ? _startTimer(&context, contextId) : false);
+#ifdef __APPLE__
+    return ((mTimerQueue != INVALID_DISPATCH_QUEUE) || _createTimer());
+#else   // !__APPLE__
+    return ((mTimerId != INVALID_POSIX_TIMER_ID) || _createTimer());
+#endif  // __APPLE__
 }
 
 bool TimerPosix::startTimer( TimerBase & context, id_type contextId )
 {
 	SpinAutolockIX lock(mLock);
 
-    return _startTimer(&context, contextId);
+    mContext    = &context;
+    mContextId  = contextId;
+
+#ifdef __APPLE__
+	if (mTimerQueue == INVALID_DISPATCH_QUEUE)
+	{
+	    _createTimer();
+	}
+
+	return ((mTimerQueue != INVALID_DISPATCH_QUEUE) && _startTimer());
+#else   // !__APPLE__
+	if (mTimerId == INVALID_POSIX_TIMER_ID)
+	{
+	    _createTimer();
+	}
+
+	return ((mTimerId != INVALID_POSIX_TIMER_ID) && _startTimer());
+#endif  // __APPLE__
+}
+
+bool TimerPosix::restartTimer( void )
+{
+	SpinAutolockIX lock(mLock);
+    return _startTimer();
 }
 
 bool TimerPosix::pauseTimer(void)
@@ -91,7 +137,11 @@ bool TimerPosix::pauseTimer(void)
         _stopTimer();
     }
 
+#ifdef __APPLE__
+    return (mTimerQueue != INVALID_DISPATCH_QUEUE);
+#else   // !__APPLE__
     return (mTimerId != INVALID_POSIX_TIMER_ID);
+#endif  // __APPLE__
 }
 
 bool TimerPosix::stopTimer(void)
@@ -103,7 +153,11 @@ bool TimerPosix::stopTimer(void)
         _stopTimer();
     }
 
+#ifdef __APPLE__
+    return (mTimerQueue != INVALID_DISPATCH_QUEUE);
+#else   // !__APPLE__
     return (mTimerId != INVALID_POSIX_TIMER_ID);
+#endif  // __APPLE__
 }
 
 void TimerPosix::destroyTimer(void)
@@ -132,24 +186,72 @@ void TimerPosix::timerExpired(void)
     }
 }
 
-bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
+bool TimerPosix::_createTimer( void )
 {
+#ifdef __APPLE__
+    mTimerQueue = dispatch_queue_create("areg.component.timer", DISPATCH_QUEUE_SERIAL);
+    return (mTimerQueue != INVALID_DISPATCH_QUEUE);
+#else   // !__APPLE__
     struct sigevent sigEvent;
     NEMemory::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
 
     sigEvent.sigev_notify           = SIGEV_THREAD;
     sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
-    sigEvent.sigev_notify_function  = funcTimer;
+    sigEvent.sigev_notify_function  = &_posixTimerRoutine;
     sigEvent.sigev_notify_attributes= nullptr;
 
     return (RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
+#endif  // __APPLE__
 }
 
-inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
+inline bool TimerPosix::_startTimer( void )
 {
     bool result = false;
-    mContext    = context;
 
+#ifdef __APPLE__
+    if ((mTimerQueue != INVALID_DISPATCH_QUEUE) && (mContext != nullptr))
+    {
+        if (_isStarted())
+        {
+            _stopTimer();
+        }
+
+        unsigned int msTimeout = mContext->getTimeout();
+        unsigned int eventCount= mContext->getEventCount();
+
+        if ((msTimeout != 0) && (eventCount != 0))
+        {
+            mTimerSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, mTimerQueue);
+            if (mTimerSource != INVALID_DISPATCH_SOURCE)
+            {
+                uint64_t interval_ns = static_cast<uint64_t>(msTimeout) * NSEC_PER_MSEC;
+                uint64_t leeway_ns   = NSEC_PER_MSEC; // 1ms leeway
+
+                dispatch_source_set_timer(mTimerSource,
+                                          dispatch_time(DISPATCH_TIME_NOW, interval_ns),
+                                          (eventCount > 1) ? interval_ns : DISPATCH_TIME_FOREVER,
+                                          leeway_ns);
+
+                dispatch_source_set_event_handler(mTimerSource, ^{
+                    this->timerExpired();
+                });
+
+                if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
+                {
+                    NESyncTypesIX::convTimeout(mDueTime, msTimeout);
+                    result = true;
+                    dispatch_resume(mTimerSource);
+                }
+                else
+                {
+                    dispatch_source_cancel(mTimerSource);
+                    dispatch_release(mTimerSource);
+                    mTimerSource = INVALID_DISPATCH_SOURCE;
+                }
+            }
+        }
+    }
+#else   // !__APPLE__
     if ((mTimerId != INVALID_POSIX_TIMER_ID) && (mContext != nullptr))
     {
         if (_isStarted())
@@ -163,8 +265,6 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
 
         if ((msTimeout != 0) && (eventCount != 0))
         {
-            mContextId  = contextId;
-
             struct itimerspec interval;
             NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
             NESyncTypesIX::convTimeout(interval.it_value, msTimeout);
@@ -189,12 +289,24 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
             }
         }
     }
+#endif  // __APPLE__
 
     return result;
 }
 
 void TimerPosix::_stopTimer(void)
 {
+#ifdef __APPLE__
+    if (mTimerSource != INVALID_DISPATCH_SOURCE)
+    {
+        dispatch_source_cancel(mTimerSource);
+        dispatch_release(mTimerSource);
+        mTimerSource = INVALID_DISPATCH_SOURCE;
+    }
+
+    mDueTime.tv_sec = 0;
+    mDueTime.tv_nsec= 0;
+#else   // !__APPLE__
     ASSERT(mTimerId != INVALID_POSIX_TIMER_ID);
 
     struct itimerspec interval;
@@ -203,6 +315,7 @@ void TimerPosix::_stopTimer(void)
     mDueTime.tv_sec = 0;
     mDueTime.tv_nsec= 0;
     ::timer_settime(mTimerId, 0, &interval, nullptr);
+#endif  // __APPLE__
 }
 
 void TimerPosix::_destroyTimer(void)
@@ -212,11 +325,19 @@ void TimerPosix::_destroyTimer(void)
         _stopTimer();
     }
 
+#ifdef __APPLE__
+    if (mTimerQueue != INVALID_DISPATCH_QUEUE)
+    {
+        dispatch_release(mTimerQueue);
+        mTimerQueue = INVALID_DISPATCH_QUEUE;
+    }
+#else   // !__APPLE__
     if (mTimerId != INVALID_POSIX_TIMER_ID)
     {
         ::timer_delete(mTimerId);
         mTimerId    = INVALID_POSIX_TIMER_ID;
     }
+#endif  // __APPLE__
 }
 
 #endif // defined(_POSIX) || defined(POSIX)

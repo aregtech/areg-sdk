@@ -23,7 +23,10 @@
 #include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include <signal.h>
+
+#ifndef __APPLE__
+    #include <signal.h>
+#endif  // !__APPLE__
 #include <time.h>
 #include <errno.h>
 
@@ -31,6 +34,7 @@
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
+#ifndef __APPLE__
 void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
 {
     TimerManager & timerManager = TimerManager::getInstance( );
@@ -46,6 +50,7 @@ void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
         timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }
 }
+#endif  // !__APPLE__
 
 void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {
@@ -66,7 +71,7 @@ bool TimerManager::_osSystemTimerStart( Timer & timer )
     ::clock_gettime( CLOCK_REALTIME, &startTime );
     timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    if (posixTimer->startTimer(timer, 0, &TimerManager::_posixTimerExpiredRoutine))
+    if (posixTimer->startTimer(timer, 0))
     {
         result = true;
     }

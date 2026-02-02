@@ -23,12 +23,15 @@
 #include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include <signal.h>
+
+#ifndef __APPLE__
+    #include <signal.h>
+#endif  // !__APPLE__
 #include <time.h>
 #include <errno.h>
 
 //////////////////////////////////////////////////////////////////////////
-// Linux specific methods
+// POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
 void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
@@ -47,7 +50,7 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
     if (posixTimer != nullptr)
     {
         Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
-        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_posixWatchdogExpiredRoutine))
+        if (posixTimer->startTimer(watchdog, watchdogId))
         {
             result = true;
         }
@@ -56,6 +59,7 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
     return result;
 }
 
+#ifndef __APPLE__
 void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
 {
     WatchdogManager& watchdogManager = WatchdogManager::getInstance();
@@ -73,5 +77,6 @@ void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
         watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
     }
 }
+#endif  // !__APPLE__
 
 #endif  // defined(_POSIX) || defined(POSIX)

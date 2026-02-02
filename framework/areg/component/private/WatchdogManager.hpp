@@ -184,7 +184,7 @@ private:
 
 #endif // _WIN32
 
-#ifdef _POSIX
+#if defined(_POSIX) && !defined(__APPLE__)
 
     /**
      * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
@@ -193,7 +193,7 @@ private:
      **/
     static void _posixWatchdogExpiredRoutine( union sigval argSig );
 
-#endif // _POSIX
+#endif // defined(_POSIX) && !defined(__APPLE__)
 
     /**
      * \brief   Starts system Watchdog and returns true if Watchdog started with success.

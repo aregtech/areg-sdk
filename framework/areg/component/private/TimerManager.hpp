@@ -241,7 +241,7 @@ private:
 #endif // !_WIN32
 
 
-#ifdef _POSIX
+#if defined(_POSIX) && !defined(__APPLE__)
 
     /**
      * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
@@ -250,7 +250,7 @@ private:
      **/
     static void _posixTimerExpiredRoutine( union sigval argSig );
 
-#endif  // !_POSIX
+#endif  // defined(_POSIX) && !defined(__APPLE__)
 
     /**
      * \brief   Starts system timer and returns true if timer started with success.
