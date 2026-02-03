@@ -577,7 +577,9 @@ macro(macro_setup_compilers_data
     endif()
     
     # Iterate over known compilers to identify the compiler type
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "appleclang++;llvm;appleclang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
+    # Note: "c++" and "cc" use "wrapper" family - they need runtime detection since they
+    # can be symlinks/wrappers for either GCC or Clang depending on the system
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "appleclang++;llvm;appleclang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;wrapper;cc" "cc;wrapper;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_comp)
 
         # Check if the provided compiler matches the known C++ compiler
@@ -586,6 +588,27 @@ macro(macro_setup_compilers_data
         if (_found_pos GREATER -1)
             list(GET _entry 1 _family)
             list(GET _entry 2 _cc_comp)
+
+            # Handle cc/c++ wrapper compilers - detect actual compiler by running --version
+            if (${_family} STREQUAL wrapper)
+                execute_process(
+                    COMMAND "${compiler_path}" --version
+                    OUTPUT_VARIABLE _version_output
+                    ERROR_QUIET
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    RESULT_VARIABLE _version_result
+                )
+                string(TOLOWER "${_version_output}" _version_lower)
+
+                if ("${_version_lower}" MATCHES "clang")
+                    # cc/c++ is actually Clang (common on macOS and some Linux distros)
+                    set(_family "llvm")
+                else()
+                    # Assume GNU/GCC
+                    set(_family "gnu")
+                endif()
+            endif()
+
             # Handle special case for CYGWIN and GNU family compilers
             if (${_family} STREQUAL gnu)
                 if (CYGWIN)
@@ -639,6 +662,9 @@ macro(macro_setup_compilers_data
     unset(_family)
     unset(_cc_comp)
     unset(_found_pos)
+    unset(_version_output)
+    unset(_version_lower)
+    unset(_version_result)
 
 endmacro(macro_setup_compilers_data)
 
