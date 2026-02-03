@@ -24,7 +24,7 @@ jobs:
       matrix:
         config: # Create matrix with combinations
 
-            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logs
+            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and logs
           - { name  : linux-gnu-shared-ext-log,
               os    : ubuntu-latest,
               lib   : shared,
@@ -36,7 +36,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and no logs
+            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions and no logs
           - { name  : linux-gnu-shared-ext-nolog,
               os    : ubuntu-latest,
               lib   : shared,
@@ -48,7 +48,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-gnu-static-all-test,
               os    : ubuntu-latest,
               lib   : static,
@@ -60,7 +60,7 @@ jobs:
               test: ON
             }
 
-            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-gnu-shared-all-test,
               os    : ubuntu-latest,
               lib   : shared,
@@ -72,7 +72,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions and no logs
+            # compile Areg engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable Areg extensions and no logs
           - { name  : linux-gnu-shared-noext-nolog,
               os    : ubuntu-latest,
               lib   : shared,
@@ -84,7 +84,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and logs
+            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and logs
           - { name  : linux-clang-shared-ext-log,
               os    : ubuntu-latest,
               lib   : shared,
@@ -96,7 +96,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and no logs
+            # compile Areg engine as a shared library with clang on Ubuntu Linux, enable Areg extensions and no logs
           - { name  : linux-clang-shared-ext-nolog,
               os    : ubuntu-latest,
               lib   : shared,
@@ -108,7 +108,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-clang-static-all-test,
               os    : ubuntu-latest,
               lib   : static,
@@ -120,7 +120,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static library with clang on Ubuntu Linux, enable Areg extensions, logs, examples and tests
           - { name  : linux-clang-shared-all-test,
               os    : ubuntu-latest,
               lib   : shared,
@@ -132,7 +132,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions and no logs
+            # compile Areg engine as a shared library with clang on Ubuntu Linux, disable Areg extensions and no logs
           - { name  : linux-clang-shared-noext-nolog,
               os    : ubuntu-latest,
               lib   : shared,
@@ -144,7 +144,79 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
+            # compile Areg engine as a shared library with clang on macOS, enable logs and tests, disable Areg extensions
+          - { name  : macos-clang-shared-noext,
+              os    : macos-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : ON,
+              test  : ON
+            }
+
+            # compile Areg engine as a shared library with clang on macOS, enable tests, disable Areg extensions and no logs
+          - { name  : macos-clang-shared-noext-nolog,
+              os    : macos-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : OFF,
+              test  : ON
+            }
+
+            # compile Areg engine as a shared library with clang on macOS, enable tests, disable Areg extensions and no logs
+          - { name  : macos-clang-shared-noext-nolog-notest,
+              os    : macos-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
+
+            # compile Areg engine as a static library with clang on macOS, enable logs and tests, disable Areg extensions
+          - { name  : macos-clang-static-noext,
+              os    : macos-latest,
+              lib   : static,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : ON,
+              test  : ON
+            }
+
+            # compile Areg engine as a static library with clang on macOS, enable tests, disable Areg extensions and no logs
+          - { name  : macos-clang-static-noext-nolog,
+              os    : macos-latest,
+              lib   : static,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : OFF,
+              test  : ON
+            }
+
+            # compile Areg engine as a static library with clang on macOS, enable tests, disable Areg extensions and no logs
+          - { name  : macos-clang-static-noext-nolog-notest,
+              os    : macos-latest,
+              lib   : static,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
+
+            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and logs
           - { name  : win-cygwin-shared-ext-log,
               os    : windows-latest,
               lib   : shared,
@@ -155,7 +227,7 @@ jobs:
               logs  : ON,
               test  : OFF}
 
-            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and no logs
+            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, enable Areg extensions and no logs
           - { name  : win-cygwin-shared-ext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -167,7 +239,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-cygwin-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -179,7 +251,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static with CYGWIN g++ / gcc on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-cygwin-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -191,7 +263,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions and no logs
+            # compile Areg engine as a shared with CYGWIN g++ / gcc on Windows, disable Areg extensions and no logs
           - { name  : win-cygwin-shared-noext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -203,7 +275,7 @@ jobs:
               test  : OFF
             }
 
-          # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and logs
+          # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and logs
           - { name  : win-clang-shared-ext-log,
               os    : windows-latest,
               lib   : shared,
@@ -215,7 +287,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and no logs
+            # compile Areg engine as a shared library with clang on Windows, enable Areg extensions and no logs
           - { name  : win-clang-shared-ext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -227,7 +299,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a static library with clang on Windows, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-clang-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -239,7 +311,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a static library with clang on Windows, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static library with clang on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-clang-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -251,7 +323,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a shared library with clang on Windows, disable AREG extensions and no logs
+            # compile Areg engine as a shared library with clang on Windows, disable Areg extensions and no logs
           - { name  : win-clang-shared-noext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -263,7 +335,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
+            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
           - { name  : win-msvc-shared-ext-log,
               os    : windows-latest,
               lib   : shared,
@@ -275,7 +347,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
+            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
           - { name  : win-msvc-shared-ext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -287,7 +359,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a static with MSVC on Windows, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-msvc-static-all-test,
               os    : windows-latest,
               lib   : static,
@@ -299,7 +371,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a static with MSVC on Windows, enable AREG extensions, logs, examples and tests
+            # compile Areg engine as a static with MSVC on Windows, enable Areg extensions, logs, examples and tests
           - { name  : win-msvc-shared-all-test,
               os    : windows-latest,
               lib   : shared,
@@ -311,7 +383,7 @@ jobs:
               test  : ON
             }
 
-            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
+            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and logs
           - { name  : win-msvc-shared-noext-log,
               os    : windows-latest,
               lib   : shared,
@@ -323,7 +395,7 @@ jobs:
               test  : OFF
             }
 
-            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
+            # compile Areg engine as a shared with MSVC on Windows, enable Areg extensions and no logs
           - { name  : win-msvc-shared-noext-nolog,
               os    : windows-latest,
               lib   : shared,
@@ -354,12 +426,24 @@ jobs:
             echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
             echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
 
+      - name: Set cmake cache destination for macOS
+        if: matrix.config.os == 'macos-latest'
+        run: |
+            ARCH=$(uname -m)
+            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
+            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/darwin-64-${ARCH}-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
+            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
+
       - name: Set cmake cache destination for Windows
         if: matrix.config.os == 'windows-latest'
         run: |
             echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
             echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> $env:GITHUB_ENV
             echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
+
+      - name: Ensure Xcode CLI Tools
+        if: matrix.config.os == 'macos-latest'
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 
       - name: Set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
@@ -373,6 +457,12 @@ jobs:
           install-dir: 'C:\cygwin'
           add-to-path: false
           work-vol: 'C:'
+
+      - name: create build and product directories
+        working-directory: ${{github.workspace}}
+        run: |
+            mkdir build
+            mkdir product
 
       - name: Configure CMake by selecting compiler family
         if: matrix.config.extend == 'ON'

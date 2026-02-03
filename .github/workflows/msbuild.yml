@@ -27,25 +27,25 @@ jobs:
       fail-fast: false
       matrix:
         config: # Create matrix with combinations
-          # Compile for 32-bit platform, enabled AREG extensions and logs
+          # Compile for 32-bit platform, enabled Areg extensions and logs
           - {name: MSBuild-Win32-ext-log,     platform: Win32,  extend: 1,  logs: 1}
-          # Compile for 32-bit platform, enabled AREG extensions and no logs
+          # Compile for 32-bit platform, enabled Areg extensions and no logs
           - {name: MSBuild-Win32-ext-nolog,   platform: Win32,  extend: 1,  logs: 0}
-          # Compile for 32-bit platform, disable AREG extensions and logs
+          # Compile for 32-bit platform, disable Areg extensions and logs
           - {name: MSBuild-Win32-noext-log,   platform: Win32,  extend: 0,  logs: 1}
-          # Compile for 32-bit platform, disable AREG extensions and no logs
+          # Compile for 32-bit platform, disable Areg extensions and no logs
           - {name: MSBuild-Win32-noext-nolog, platform: Win32,  extend: 0,  logs: 0}
-          # Compile for 32-bit platform, enabled AREG extensions and logs
+          # Compile for 32-bit platform, enabled Areg extensions and logs
           - {name: MSBuild-x64-ext-log,       platform: x64,    extend: 1,  logs: 1}
-          # Compile for 32-bit platform, enabled AREG extensions and no logs
+          # Compile for 32-bit platform, enabled Areg extensions and no logs
           - {name: MSBuild-x64-ext-nolog,     platform: x64,    extend: 1,  logs: 0}
-          # Compile for 32-bit platform, disable AREG extensions and logs
+          # Compile for 32-bit platform, disable Areg extensions and logs
           - {name: MSBuild-x64-noext-log,     platform: x64,    extend: 0,  logs: 1}
-          # Compile for 32-bit platform, disable AREG extensions and no logs
+          # Compile for 32-bit platform, disable Areg extensions and no logs
           - {name: MSBuild-x64-noext-nolog,   platform: x64,    extend: 0,  logs: 0}
 
     steps:
-    - name: Checkout AREG engine (AREG SDK) source codes
+    - name: Checkout Areg engine (Areg SDK) source codes
       uses: actions/checkout@v6
 
     - name: Setup Java JDK to run code generator
