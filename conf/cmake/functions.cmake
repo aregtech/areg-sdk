@@ -148,7 +148,8 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
         set(_data "")
         if (APPLE)
             # Check if it's a .tbd file (text-based stub) - these are multi-arch by design
-            cmake_path(GET path_module EXTENSION _file_ext)
+            set(_module_path "${path_module}")
+            cmake_path(GET _module_path EXTENSION _file_ext)
             if ("${_file_ext}" STREQUAL ".tbd")
                 # .tbd files are text-based stubs that contain architecture info
                 # Parse the targets line: "targets: [ x86_64-macos, arm64-macos, arm64e-macos ]"
