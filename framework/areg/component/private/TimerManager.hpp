@@ -29,6 +29,7 @@
  * Dependencies
  ************************************************************************/
 class Timer;
+class TimerPosix;
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class declaration
@@ -241,16 +242,24 @@ private:
 #endif // !_WIN32
 
 
-#if defined(_POSIX) && !defined(__APPLE__)
+#if defined(_POSIX) || defined(POSIX)
 
+#ifdef __APPLE__
+    /**
+     * \brief   macOS timer callback function. Triggered when one of timers is expired.
+     * \param   timerPtr        The pointer to the TimerPosix object that expired.
+     **/
+    static void _posixTimerExpiredRoutine( TimerPosix* timerPtr );
+#else   // !__APPLE__
     /**
      * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
      * \param   argSig          The value passed to thread signal when the timer was created.
      *                          This value is passed to routine callback.
      **/
     static void _posixTimerExpiredRoutine( union sigval argSig );
+#endif  // __APPLE__
 
-#endif  // defined(_POSIX) && !defined(__APPLE__)
+#endif  // defined(_POSIX) || defined(POSIX)
 
     /**
      * \brief   Starts system timer and returns true if timer started with success.

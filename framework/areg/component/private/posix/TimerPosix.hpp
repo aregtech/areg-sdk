@@ -34,13 +34,21 @@
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
 class TimerBase;
+class TimerPosix;
 
-#ifndef __APPLE__
+#ifdef __APPLE__
+/**
+ * \brief   The macOS timer callback function type triggered when timer expires.
+ *          The callback receives the pointer to TimerPosix object.
+ * \param   timerPtr    Pointer to the TimerPosix object that expired.
+ */
+typedef void (*FuncPosixTimerRoutine)(TimerPosix* timerPtr);
+#else   // !__APPLE__
 /**
  * \brief   The POSIX timer routing method triggered in a separate thread.
  */
 typedef void (*FuncPosixTimerRoutine)( union sigval );
-#endif  // !__APPLE__
+#endif  // __APPLE__
 
 //////////////////////////////////////////////////////////////////////////
 // TimerPosix class declaration.
@@ -115,9 +123,10 @@ public:
     /**
      * \brief   Creates, but do not start timer.
      *          This call will create a time to handle in a separate thread.
+     * \param   funcTimer   The callback function to trigger when timer expires.
      * \return  Returns true if succeeded to created timer.
      **/
-    bool createTimer( void );
+    bool createTimer( FuncPosixTimerRoutine funcTimer );
 
     /**
      * \brief   Creates and starts timer with timeout and period count values specified in
@@ -126,9 +135,10 @@ public:
      *          This function creates a timer to handle in a separate thread.
      * \param   context     The timer object that contains timeout and period information.
      * \param   contextId   The timer context ID to set.
+     * \param   funcTimer   The callback function to trigger when timer expires.
      * \return  Returns true if timer is created and started with success.
      **/
-    bool startTimer( TimerBase & context, id_type contextId );
+    bool startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
 
     /**
      * \brief   Restarts the timer if the timeout and the period values are not zero.
@@ -170,9 +180,10 @@ private:
 
     /**
      * \brief   Creates and initializes the timer that is handled in a separate thread.
+     * \param   funcTimer   The callback function to trigger when timer expires.
      * \return  Returns true if succeeded to create timer.
      **/
-    inline bool _createTimer( void );
+    inline bool _createTimer( FuncPosixTimerRoutine funcTimer );
 
     /**
      * \brief	Initializes and starts the timer.
@@ -209,6 +220,10 @@ private:
      * \brief   GCD dispatch queue for timer.
      */
     dispatch_queue_t        mTimerQueue;
+    /**
+     * \brief   The callback function to call when timer expires.
+     */
+    FuncPosixTimerRoutine   mTimerCallback;
 #else   // !__APPLE__
     /**
      * \brief   The timer ID, set when creates timer.

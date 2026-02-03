@@ -39,28 +39,17 @@
 namespace
 {
     //!< Invalid dispatch source.
-    constexpr dispatch_source_t INVALID_DISPATCH_SOURCE { nullptr };
+    constexpr dispatch_source_t     INVALID_DISPATCH_SOURCE     { nullptr };
     //!< Invalid dispatch queue.
-    constexpr dispatch_queue_t  INVALID_DISPATCH_QUEUE  { nullptr };
+    constexpr dispatch_queue_t      INVALID_DISPATCH_QUEUE      { nullptr };
+    //!< Invalid timer callback.
+    constexpr FuncPosixTimerRoutine INVALID_TIMER_CALLBACK      { nullptr };
 }
 #else   // !__APPLE__
 namespace
 {
     //!< Timer invalid ID
     const timer_t	INVALID_POSIX_TIMER_ID  { reinterpret_cast<timer_t>(~0ul) };
-}
-
-/**
- * \brief   POSIX timer callback function triggered when timer expires.
- * \param   si  Signal value containing pointer to TimerPosix object.
- */
-static void _posixTimerRoutine(union sigval si)
-{
-    TimerPosix* timer = reinterpret_cast<TimerPosix*>(si.sival_ptr);
-    if (timer != nullptr)
-    {
-        timer->timerExpired();
-    }
 }
 #endif  // __APPLE__
 
@@ -72,6 +61,7 @@ TimerPosix::TimerPosix( void )
 #ifdef __APPLE__
     : mTimerSource  ( INVALID_DISPATCH_SOURCE )
     , mTimerQueue   ( INVALID_DISPATCH_QUEUE  )
+    , mTimerCallback( INVALID_TIMER_CALLBACK  )
 #else   // !__APPLE__
     : mTimerId      ( INVALID_POSIX_TIMER_ID  )
 #endif  // __APPLE__
@@ -88,17 +78,18 @@ TimerPosix::~TimerPosix(void)
     _destroyTimer();
 }
 
-bool TimerPosix::createTimer( void )
+bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
 {
 	SpinAutolockIX lock(mLock);
 #ifdef __APPLE__
-    return ((mTimerQueue != INVALID_DISPATCH_QUEUE) || _createTimer());
+    return ((mTimerQueue != INVALID_DISPATCH_QUEUE) && (mTimerCallback != INVALID_TIMER_CALLBACK)) ||
+           ((funcTimer != INVALID_TIMER_CALLBACK) && _createTimer(funcTimer));
 #else   // !__APPLE__
-    return ((mTimerId != INVALID_POSIX_TIMER_ID) || _createTimer());
+    return ((mTimerId != INVALID_POSIX_TIMER_ID) || ((funcTimer != nullptr) && _createTimer(funcTimer)));
 #endif  // __APPLE__
 }
 
-bool TimerPosix::startTimer( TimerBase & context, id_type contextId )
+bool TimerPosix::startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
 {
 	SpinAutolockIX lock(mLock);
 
@@ -106,16 +97,16 @@ bool TimerPosix::startTimer( TimerBase & context, id_type contextId )
     mContextId  = contextId;
 
 #ifdef __APPLE__
-	if (mTimerQueue == INVALID_DISPATCH_QUEUE)
+	if ((mTimerQueue == INVALID_DISPATCH_QUEUE) && (funcTimer != INVALID_TIMER_CALLBACK))
 	{
-	    _createTimer();
+	    _createTimer(funcTimer);
 	}
 
-	return ((mTimerQueue != INVALID_DISPATCH_QUEUE) && _startTimer());
+	return ((mTimerQueue != INVALID_DISPATCH_QUEUE) && (mTimerCallback != INVALID_TIMER_CALLBACK) && _startTimer());
 #else   // !__APPLE__
-	if (mTimerId == INVALID_POSIX_TIMER_ID)
+	if ((mTimerId == INVALID_POSIX_TIMER_ID) && (funcTimer != nullptr))
 	{
-	    _createTimer();
+	    _createTimer(funcTimer);
 	}
 
 	return ((mTimerId != INVALID_POSIX_TIMER_ID) && _startTimer());
@@ -186,9 +177,10 @@ void TimerPosix::timerExpired(void)
     }
 }
 
-bool TimerPosix::_createTimer( void )
+bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
 {
 #ifdef __APPLE__
+    mTimerCallback = funcTimer;
     mTimerQueue = dispatch_queue_create("areg.component.timer", DISPATCH_QUEUE_SERIAL);
     return (mTimerQueue != INVALID_DISPATCH_QUEUE);
 #else   // !__APPLE__
@@ -197,7 +189,7 @@ bool TimerPosix::_createTimer( void )
 
     sigEvent.sigev_notify           = SIGEV_THREAD;
     sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
-    sigEvent.sigev_notify_function  = &_posixTimerRoutine;
+    sigEvent.sigev_notify_function  = funcTimer;
     sigEvent.sigev_notify_attributes= nullptr;
 
     return (RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
@@ -209,7 +201,7 @@ inline bool TimerPosix::_startTimer( void )
     bool result = false;
 
 #ifdef __APPLE__
-    if ((mTimerQueue != INVALID_DISPATCH_QUEUE) && (mContext != nullptr))
+    if ((mTimerQueue != INVALID_DISPATCH_QUEUE) && (mContext != nullptr) && (mTimerCallback != INVALID_TIMER_CALLBACK))
     {
         if (_isStarted())
         {
@@ -232,8 +224,15 @@ inline bool TimerPosix::_startTimer( void )
                                           (eventCount > 1) ? interval_ns : DISPATCH_TIME_FOREVER,
                                           leeway_ns);
 
+                // Capture the callback and 'this' pointer to call when timer fires.
+                // This allows TimerManager and WatchdogManager to process the expired timer.
+                FuncPosixTimerRoutine callback = mTimerCallback;
+                TimerPosix* timerPtr = this;
                 dispatch_source_set_event_handler(mTimerSource, ^{
-                    this->timerExpired();
+                    if (callback != nullptr)
+                    {
+                        callback(timerPtr);
+                    }
                 });
 
                 if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
@@ -331,6 +330,8 @@ void TimerPosix::_destroyTimer(void)
         dispatch_release(mTimerQueue);
         mTimerQueue = INVALID_DISPATCH_QUEUE;
     }
+
+    mTimerCallback = INVALID_TIMER_CALLBACK;
 #else   // !__APPLE__
     if (mTimerId != INVALID_POSIX_TIMER_ID)
     {
