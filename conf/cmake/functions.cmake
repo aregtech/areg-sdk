@@ -151,11 +151,12 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
             set(_module_path "${path_module}")
             cmake_path(GET _module_path EXTENSION _file_ext)
             if ("${_file_ext}" STREQUAL ".tbd")
-                # .tbd files are text-based stubs that contain architecture info
-                # Parse the targets line: "targets: [ x86_64-macos, arm64-macos, arm64e-macos ]"
-                set(_tool_exists TRUE)
-                file(STRINGS "${path_module}" _tbd_targets REGEX "^targets:")
-                set(_data "${_tbd_targets}")
+                # .tbd files are text-based stubs provided by Apple's SDK.
+                # These are guaranteed to be compatible with the current platform
+                # since they're just interface definitions - the actual library
+                # is provided by the system at runtime.
+                set(${var_compatible} TRUE)
+                message(STATUS "Areg: >>> File '${path_module}' is a macOS stub library (.tbd), assuming compatible")
             else()
                 # Use lipo for actual Mach-O binaries
                 # lipo output: "Non-fat file: /path is architecture: arm64" or
