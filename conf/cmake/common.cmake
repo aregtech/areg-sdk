@@ -264,12 +264,15 @@ include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_ROOT}" "${AREG_GENE
 # Adding library search paths
 link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
-# Only for Linux
-if (AREG_PLATFORM_MACOS)
-    set(CMAKE_EXECUTABLE_SUFFIX ".mac")
-elseif ((UNIX) AND (NOT CYGWIN) AND (NOT MINGW))
-    set(CMAKE_EXECUTABLE_SUFFIX ".elf")
-endif()
+if (NOT DEFINED CMAKE_EXECUTABLE_SUFFIX OR "${CMAKE_EXECUTABLE_SUFFIX}" STREQUAL "")
+    if (AREG_PLATFORM_MACOS)
+        # Only for macOS
+        set(CMAKE_EXECUTABLE_SUFFIX ".mac")
+    elseif ((UNIX) AND (NOT CYGWIN) AND (NOT MINGW))
+        # Only for Linux
+        set(CMAKE_EXECUTABLE_SUFFIX ".elf")
+    endif()
+endif() 
 
 set(COMMON_COMPILE_DEF)
 if(AREG_BINARY MATCHES "static")

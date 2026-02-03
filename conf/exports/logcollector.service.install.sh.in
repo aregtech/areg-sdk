@@ -1,0 +1,56 @@
+#!/bin/sh
+# Areg Log Collector Service - macOS Installation Script
+# This script installs and enables the logcollector service using launchd.
+# Run with: sudo ./logcollector.service.install.sh
+# See https://areg.tech for more information.
+
+set -e
+
+PLIST_SRC="@AREG_INSTALL_DST@/share/@AREG_PACKAGE_NAME@/service/tech.areg.logcollector.plist"
+PLIST_DST="/Library/LaunchDaemons/tech.areg.logcollector.plist"
+LOG_DIR="/var/log/areg"
+
+# Check if running as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run with sudo or as root."
+    exit 1
+fi
+
+# Create log directory if it doesn't exist
+if [ ! -d "$LOG_DIR" ]; then
+    echo "Creating log directory: $LOG_DIR"
+    mkdir -p "$LOG_DIR"
+    chmod 755 "$LOG_DIR"
+fi
+
+# Check if source plist exists
+if [ ! -f "$PLIST_SRC" ]; then
+    echo "Error: Source plist not found: $PLIST_SRC"
+    echo "Please ensure Areg SDK is properly installed."
+    exit 1
+fi
+
+# Unload existing service if running
+if launchctl list | grep -q "tech.areg.logcollector"; then
+    echo "Stopping existing logcollector service..."
+    launchctl unload -w "$PLIST_DST" 2>/dev/null || true
+fi
+
+# Copy plist to LaunchDaemons
+echo "Installing service plist to $PLIST_DST"
+cp "$PLIST_SRC" "$PLIST_DST"
+chmod 644 "$PLIST_DST"
+chown root:wheel "$PLIST_DST"
+
+# Load and start the service
+echo "Loading and starting logcollector service..."
+launchctl load -w "$PLIST_DST"
+
+echo ""
+echo "Areg Log Collector service installed and started successfully."
+echo ""
+echo "Useful commands:"
+echo "  Check status:  sudo launchctl list | grep tech.areg"
+echo "  View logs:     tail -f $LOG_DIR/logcollector.log"
+echo "  Stop service:  sudo launchctl unload -w $PLIST_DST"
+echo "  Start service: sudo launchctl load -w $PLIST_DST"

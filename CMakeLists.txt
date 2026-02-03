@@ -82,7 +82,7 @@ endif()
 # Print the configuration status
 printAregConfigStatus(
     TRUE
-    "AREG"
+    "Areg"
     "----------------------> Areg project CMake Status Report Begin <-----------------------"
     "-----------------------> Areg project CMake Status Report End <------------------------"
 )

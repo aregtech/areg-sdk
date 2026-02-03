@@ -9,7 +9,7 @@ It creates a simple thread that prints "Hello World!" to the console, showing ho
 This example addresses common beginner challenges in multithreaded applications: setting up threads correctly, controlling execution flow, and managing resources without errors.
 
 ## Concepts Shown
-- **Thread Creation**: How to instantiate and start threads using AREG’s `Thread` class.  
+- **Thread Creation**: How to instantiate and start threads using Areg’s `Thread` class.  
 - **Multithreading Basics**: Understanding independent thread execution and coordination.  
 - **Thread Management with `IEThreadConsumer`**: Track thread states, control execution, and manage resources efficiently.
 
@@ -25,4 +25,4 @@ The project contains **source code** that demonstrates creating a single thread.
 - Use as a foundation for building **more complex multithreaded applications**.
 
 ## Takeaway
-A beginner-friendly example that demonstrates **safe thread creation and management** in AREG, providing a clear starting point for multithreaded development.
+A beginner-friendly example that demonstrates **safe thread creation and management** in Areg, providing a clear starting point for multithreaded development.

@@ -73,6 +73,7 @@
     <None Include="mtrouter\resources\small.ico" />
     <None Include="mtrouter\resources\mtrouter.service.install.bat" />
     <None Include="mtrouter\resources\mtrouter.service.uninstall.bat" />
+    <None Include="mtrouter\resources\tech.areg.mtrouter.plist" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="mtrouter\app\private\CMakeLists.txt" />

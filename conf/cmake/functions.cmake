@@ -1278,7 +1278,7 @@ endmacro(macro_declare_executable)
 
 # ---------------------------------------------------------------------------
 # Function ...: printAregConfigStatus
-# Purpose ....: Prints a detailed status of AREG's CMake configuration, including details of the build environment.
+# Purpose ....: Prints a detailed status of Areg's CMake configuration, including details of the build environment.
 # Parameters .: - ${var_make_print} -- Boolean flag indicating whether to print the status message (if FALSE, the function exits without printing).
 #               - ${var_prefix}     -- A prefix added to each line of the status message (e.g., project name or custom label).
 #               - ${var_header}     -- A custom header message displayed at the beginning of the status report.
@@ -1286,7 +1286,7 @@ endmacro(macro_declare_executable)
 # Usage ......: printAregConfigStatus(<flag-to-print> <prefix> <header-output> <footer-output>)
 # Example ....: printAregConfigStatus(
 #                                   TRUE
-#                                   "AREG"
+#                                   "Areg"
 #                                   "----------------------> Areg project CMake Status Report Begin <-----------------------"
 #                                   "-----------------------> Areg project CMake Status Report End <------------------------"
 #                                   )

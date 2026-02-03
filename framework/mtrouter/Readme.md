@@ -16,12 +16,18 @@ This directory contains the source code for the Multitarget Router (`mtrouter`),
 ### Platform Support and Build Configurations
 
 - **Linux**:
-  The `mtrouter` runs as a console or OS-managed service application, and can be built with or without the `ncurses` library:
+  The `mtrouter` runs as a console or OS-managed service application (systemd), and can be built with or without the `ncurses` library:
   - To enable `ncurses` features, compile the Areg extended static library by defining setting option `-DAREG_EXTENDED:BOOL=ON`.
   - To disable `ncurses`, omit `AREG_EXTENDED` option or set it to `OFF`, using only the ANSI C API.
 
+- **macOS**:
+  The `mtrouter` runs as a console or OS-managed service application (launchd). On macOS:
+  - Executables have `.mac` extension (e.g., `mtrouter.mac`)
+  - Service management uses `launchctl` with `.plist` configuration files
+  - Service files are installed to `/Library/LaunchDaemons/`
+
 - **Windows**:
-  The `mtrouter` operates as a console application or OS-managed service, and can be built with or without the `Win32 API` for extended feature:
+  The `mtrouter` operates as a console application or OS-managed service (Windows Services), and can be built with or without the `Win32 API` for extended feature:
   - To enable `Win32 API` extended features, define `AREG_EXTENDED=1`.
   - To use only the ANSI C API, omit `AREG_EXTENDED` or set it to `0`.
 
@@ -32,9 +38,9 @@ While the implementation varies between `Win32` and `POSIX` systems, all compone
 
 ---
 
-## Running Log Collector as a Service
+## Running mtrouter as a Service
 
-### **Linux**:
+### **Linux** (systemd):
 To configure and run the `mtrouter` application as a Linux-managed service, follow these steps:
 
 1. **Copy Service Configuration File**:
@@ -73,7 +79,50 @@ To configure and run the `mtrouter` application as a Linux-managed service, foll
      sudo systemctl disable mtrouter.service
      ```
 
-### **Windows**:
+### **macOS** (launchd):
+To configure and run the `mtrouter` application as a macOS-managed service, follow these steps:
+
+1. **Copy the Executable**:
+   - Copy the built `mtrouter.mac` executable to the desired location, such as `/usr/local/bin`.
+
+2. **Ensure Library Access (if applicable)**:
+   - If the Areg Framework was built as a shared library, ensure that `mtrouter` has access to the `libareg.dylib` library (e.g., located in `/usr/local/lib`).
+
+3. **Create Log Directory**:
+   ```bash
+   sudo mkdir -p /var/log/areg
+   sudo chmod 755 /var/log/areg
+   ```
+
+4. **Copy Service Configuration File**:
+   - Copy the `tech.areg.mtrouter.plist` file to `/Library/LaunchDaemons/`:
+     ```bash
+     sudo cp tech.areg.mtrouter.plist /Library/LaunchDaemons/
+     sudo chown root:wheel /Library/LaunchDaemons/tech.areg.mtrouter.plist
+     sudo chmod 644 /Library/LaunchDaemons/tech.areg.mtrouter.plist
+     ```
+
+5. **Load and Start the Service**:
+   ```bash
+   sudo launchctl load -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+   ```
+
+6. **Check Service Status**:
+   ```bash
+   sudo launchctl list | grep tech.areg
+   ```
+
+7. **Stop and Unload the Service**:
+   ```bash
+   sudo launchctl unload -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+   ```
+
+8. **View Logs**:
+   ```bash
+   tail -f /var/log/areg/mtrouter.log
+   ```
+
+### **Windows** (Windows Services):
 To configure and run the `mtrouter` application as a Windows-managed service, follow these steps:
 
 1. **Copy the Binaries**:

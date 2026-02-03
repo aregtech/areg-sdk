@@ -1,68 +1,54 @@
-# Information
+# Documentation Overview
 
 ```
-This file is part of the Areg SDK
+This file is part of Areg SDK
 Copyright (c) Aregtech, 2021-2026
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
 ```
 
-This document provides an overview of the file system structure of the **Areg SDK** and the location of various documents.
+This document provides an overview of the Areg SDK file structure and documentation locations.
 
-## Areg SDK File System Structure
-
-```
-areg-sdk .............. --> The root folder of the Areg SDK.
-    |
-    +- conf ........... --> Configuration files for Makefile, CMake, and MS Visual Studio.
-    |
-    +- docs ........... --> Location of documentation files for the Areg SDK.
-    |   |
-    |   +- img ........ --> Images and screen-shots used in documents.
-    |   |
-    |   +- templates .. --> MSVC project templates to use when create a project.
-    |   |
-    |   +- wiki ....... --> The Wiki pages of Areg SDK.
-    |
-    +- examples ....... --> Examples demonstrating the usage of the Areg framework and services.
-    |
-    +- framework ...... --> Source code of the Areg framework and Multitarget Router.
-    |   |
-    |   +- areg ....... --> Source code of the Areg framework.
-    |   |
-    |   +- aregextend . --> A static library with object of extended features
-    |   |
-    |   +- areglogger . --> A library, designed to facilitate log observation and management.
-    |   |
-    |   +- logcollector --> An application as a tool for collecting logs from multiple processes across a network.
-    |   |
-    |   +- logobserver  --> A console application designed to manage and analyze logs in real time.
-    |   |
-    |   +- mtrouter ... --> Source code of the Multitarget Router (MCR).
-    |
-    +- tests .......... --> Unit tests for the Areg Framework.
-    |
-    +- thirdparty ..... --> External dependencies.
-    |
-    +- LICENSE.txt .... --> License file. Please read before using or distributing.
-    |
-    +- README.md ...... --> ReadMe file providing project description.
+## File Structure
 
 ```
+areg-sdk/                Root directory of Areg SDK
+├── conf/                Build configuration files (CMake, MSBuild, MSVC)
+├── docs/                Documentation files
+│   ├── img/             Images and screenshots
+│   ├── templates/       MSVC project templates
+│   └── wiki/            Detailed wiki pages
+├── examples/            Working examples demonstrating framework features
+├── framework/           Source code
+│   ├── areg/            Core communication engine library
+│   ├── aregextend/      Extended features library (optional dependencies)
+│   ├── areglogger/      Log observer library for receiving logs
+│   ├── logcollector/    Log collection service (console or system service)
+│   ├── logobserver/     Real-time log monitoring console application
+│   └── mtrouter/        Multitarget Router for IPC (console or system service)
+├── tests/               Unit tests
+├── thirdparty/          External dependencies
+├── tools/               Code generator and project scaffolding
+├── LICENSE.txt          License file
+└── README.md            Project overview
+```
 
-Classes defined within each subdirectory of the `framework/areg` folder can be used to develop applications. However, classes declared in the `private` subdirectory of each of them are intended for internal use and should not be used by developers.
+Classes in the `framework/areg` subdirectories are available for application development. However, classes in `private` subdirectories are internal and should not be used directly.
 
-After compiling using CMake, Make, or MS Visual Studio, the root folder `areg-sdk` will contain a recoverable `product` subdirectory that contains the built binaries.
+After building with CMake or MSBuild, compiled binaries are placed in the `product` subdirectory.
 
 > [!TIP]
-> Visit [Areg SDK Wiki](./wiki/README.md) page for details of available documentation, which is periodically updating. Any help to improve the Wiki pages are appreciated very much.
+> Visit the [Areg SDK Wiki](./wiki/README.md) for detailed documentation. Contributions to improve the wiki are welcome.
 
-## Shortcuts
+## Documentation
 
-- The [**Developer Guide**](./DEVELOP.md) provides technical details and guidance for developing distributed and service-enabled applications.
-- The [**HOWTO**](./HOWTO.md) document explains how to export projects and perform builds.
-- The [**POSIX**](./POSIX.md) document contains POSIX-related configuration, compilation instructions, and a list of used APIs.
-- The [**WIN32**](./WIN32.md) document contains Windows-related configuration, compilation instructions, and a list of used APIs.
-- The [**ServiceInterface**](./ServiceInterface.md) document provides an explanation of the Service Interface structure and usage.
-- The [**USECASES**](./USECASES.md) document presents various use cases of the Areg SDK in real-world scenarios.
-- The [**Areg SDK Wiki**](./wiki/README.md) pages contains detailed documentation of the project.
+| Document | Description |
+|----------|-------------|
+| [Developer Guide](./DEVELOP.md) | Technical guidance for developing distributed, service-enabled applications |
+| [How-To Guide](./HOWTO.md) | Instructions for building, configuring, and integrating projects |
+| [Use Cases](./USECASES.md) | Real-world scenarios demonstrating Areg SDK capabilities |
+| [Service Interface](./ServiceInterface.md) | Service interface structure and XML format |
+| [Hello Service Tutorial](./HelloService.md) | Step-by-step tutorial for creating your first service |
+| [POSIX Reference](./POSIX.md) | POSIX API configuration and function list |
+| [Win32 Reference](./WIN32.md) | Windows API configuration and function list |
+| [Wiki](./wiki/README.md) | Comprehensive documentation and guides |

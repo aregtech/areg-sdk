@@ -74,6 +74,7 @@
     <None Include="mtrouter\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="mtrouter\resources\tech.areg.mtrouter.plist" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mtrouter\app\private\MultitargetRouter.cpp">

@@ -12,7 +12,7 @@ This addresses the common pain points of multithreaded communication: knowing wh
 
 ## Concepts Shown
 
-* **Model Declaration**: Defining a minimal model with multiple threads and components in AREG.
+* **Model Declaration**: Defining a minimal model with multiple threads and components in Areg.
 * **Service Provider/Consumer Interaction**: Asynchronous communication across threads.
 * **One-Way RPC Call**: Consumer executes `requestHelloService()` on the provider without requiring a response.
 * **Auto-Discovery**: `serviceConnected()` notifies the consumer when the provider is ready to accept requests.
@@ -35,4 +35,4 @@ At runtime, the framework creates the threads and components. The **consumer rec
 
 ## Takeaway
 
-A **minimal, beginner-friendly example** of one-way **thread-to-thread RPC with auto-discovery** in AREG, showing safe asynchronous communication and managed component lifecycles.
+A **minimal, beginner-friendly example** of one-way **thread-to-thread RPC with auto-discovery** in Areg, showing safe asynchronous communication and managed component lifecycles.

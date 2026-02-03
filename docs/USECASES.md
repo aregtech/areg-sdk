@@ -1,129 +1,165 @@
-# Areg Engine Use Cases and Benefits
+# Use Cases and Benefits
 
-**AREG** (*Automated Real-time Event Grid*) communication engine can be used in a very large scope of multithreading and multiprocessing application development. This document showcases several examples of how the communication engine can be utilized to develop intelligent devices.
+The Areg communication engine supports a wide range of multithreaded and multiprocess applications. This document presents practical examples of how to use the framework for building intelligent connected devices.
 
-## Table of contents
-- [Distributed solution](#distributed-solution)
-- [Driverless devices](#driverless-devices)
-- [Real-time solutions](#real-time-solutions)
-- [Digital twins](#digital-twins)
-- [Simulation and tests](#simulation-and-tests)
+## Table of Contents
+
+- [Distributed Solutions](#distributed-solutions)
+- [Driverless Devices](#driverless-devices)
+- [Real-Time Solutions](#real-time-solutions)
+- [Digital Twins](#digital-twins)
+- [Simulation and Testing](#simulation-and-testing)
 
 ---
 
-## Distributed solution
+## Distributed Solutions
 
-<details open><summary> Click to show / hide <code>distributed solution</code>.</summary><br/>
+<details open><summary>Click to show / hide</summary><br/>
 
-The Areg communication engine is a distributed services solution that enables components to interact seamlessly across nodes on the network, appearing as if they are located within a single process. To define relationships and distribute services across processes, developers create runtime loadable models.
+Areg is a distributed services solution where components interact across network nodes as if they were in a single process. Developers define runtime-loadable models to establish service relationships and distribution.
 
-The following is a demonstration of 2 _models_ defined in 2 different processes, where one _model_ defines **service provider** and the second is at the same time is a **service consumer** (client) and a **service provider**. For simplicity, let's name them `service.cpp` and `mixed.cpp`.
+### Example: Two Processes with Connected Services
 
-A: _model of service provider component in **service.cpp**_:
+Consider two processes: one provides a service, the other both consumes and provides services.
+
+**Process A: Service Provider (`service.cpp`)**
+
 ```cpp
-// service.cpp, define service provider
+// service.cpp - defines a service provider
 BEGIN_MODEL("MyModel")
 
-  BEGIN_REGISTER_THREAD( "Thread1" )
-    BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
-      REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
-    END_REGISTER_COMPONENT( "SystemShutdown" )
-  END_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD("Thread1")
+        BEGIN_REGISTER_COMPONENT("SystemShutdown", SystemShutdownService)
+            REGISTER_IMPLEMENT_SERVICE(NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion)
+        END_REGISTER_COMPONENT("SystemShutdown")
+    END_REGISTER_THREAD("Thread1")
 
 END_MODEL("MyModel")
 ```
 
-B: _model of service consumer and service provider (mixed) component in **mixed.cpp**_:
+**Process B: Service Consumer and Provider (`mixed.cpp`)**
+
 ```cpp
-// mixed.cpp, define service provider and service consumer.
+// mixed.cpp - defines a service that also consumes another service
 BEGIN_MODEL("MyModel")
 
-  BEGIN_REGISTER_THREAD( "Thread1" )
-    BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
-      REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
-      REGISTER_DEPENDENCY("SystemShutdown")
-    END_REGISTER_COMPONENT( "RemoteRegistry" )
-  END_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_THREAD("Thread1")
+        BEGIN_REGISTER_COMPONENT("RemoteRegistry", RemoteRegistryService)
+            REGISTER_IMPLEMENT_SERVICE(NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion)
+            REGISTER_DEPENDENCY("SystemShutdown")
+        END_REGISTER_COMPONENT("RemoteRegistry")
+    END_REGISTER_THREAD("Thread1")
 
 END_MODEL("MyModel")
 ```
-After declaration of services, each project can load them in the `main()` method and load them as it is shown in the next example.
 
-C: _common code_ for **service.cpp** and **mixed.cpp** files:
+**Common Main Function**
+
+Both processes use the same entry point structure:
+
 ```cpp
 int main()
 {
-    Application::initApplication( );    // initialize defaults
-    Application::loadModel("MyModel");  // load model, start services
-    Application::waitAppQuit( );        // wait for quit signal
-    Application::unloadModel("MyModel");// unload model, stop services
-    Application::releaseApplication();  // release resources
-
+    Application::initApplication();     // Initialize defaults
+    Application::loadModel("MyModel");  // Load model, start services
+    Application::waitAppQuit();         // Wait for quit signal
+    Application::unloadModel("MyModel");// Unload model, stop services
+    Application::releaseApplication();  // Release resources
     return 0;
 }
 ```
 
-In these codes:
-1. **service.cpp** contains model to register service `"SystemShutdown"` that implements interface `NESystemShutdown::ServiceName`.
-2.  **mixed.cpp** contains model to register service `"RemoteRegistry"` that implements interface `NERemoteRegistry::ServiceName` and consumes (requires) service `"SystemShutdown"`.
-3. `int main()` is identical in both files. It initializes resources, loads model and waits for the completion.
+### How It Works
 
-The developers should create `SystemShutdownService` and `RemoteRegistryService` objects that implement the business logic of _request_ methods of provided and _response_ methods of used service interfaces. When these processes start, the services are automatically discovered via `mtrouter`. With this technique, the projects easily develop multiprocessing applications where provided services can be distributed and accessed remotely within the network formed by `mtrouter`.
+1. **service.cpp** registers `SystemShutdown`, which implements the `NESystemShutdown` interface
+2. **mixed.cpp** registers `RemoteRegistry`, which implements `NERemoteRegistry` and depends on `SystemShutdown`
+3. When both processes start, services discover each other automatically through `mtrouter`
+4. Developers implement business logic in `SystemShutdownService` and `RemoteRegistryService` classes
 
-An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) guide. As well there are multiple [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) of multiprocessing and multithreading applications.
-</details>
+This approach makes it easy to build multiprocess applications where services can be distributed and accessed remotely within the network.
 
----
-
-## Driverless devices
-
-<details open><summary> Click to show / hide <code>driverless devices</code>.</summary><br/>
-
-Normally, the devices are supplied with the drivers to install in the system. 
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driver-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driver-solution.png" alt="kernel-mode driver solution" style="width:70%;height:70%"/></a></div>
-
-Proposed are driverless service-enabled devices that do not require installation of drivers in the system.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png" alt="Areg SDK driverless solution" style="width:70%;height:70%"/></a></div>
-
-The services, described in the interface prototype documents, are faster and easier to develop than drivers, as they do not require special techniques and can be developed like user mode applications. Service development reduces risks and the code generator simplifies client object generation from a service interface document.
-</details>
-
----
-
-## Real-time solutions
-
-<details open><summary> Click to show / hide <code>real-time solutions</code>.</summary><br/>
-
-Areg engine automatically generates and delivers messages to the target and invokes the exact methods of the target objects in real-time with ultra-low networking latency. This makes it ideal for developing time-sensitive applications for industries such as automotive, drone fleets, medtech, real-time manufacturing, and monitoring.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="Areg SDK and Multitarget features" style="width:70%;height:70%"/></a></div>
-</details>
-
----
-
-## Digital twins
-
-<details open><summary> Click to show / hide <code>digital twin</code>.</summary><br/>
-
-Areg framework's event-driven and service-oriented architecture, coupled with real-time communication, offers a robust solution for digital twin applications. This framework allows for visualization, monitoring, and control of external devices, while also enabling immediate reaction to changes in the environment or device state. AREG's approach eliminates the need for additional communication layers, making it an ideal solution for emergency, security, and safety applications.
+See the [Hello Service Tutorial](./HelloService.md) for a complete example, and browse the [examples](../examples/) directory for more multithreading and multiprocessing samples.
 
 </details>
 
 ---
 
-## Simulation and tests
+## Driverless Devices
 
-<details open><summary> Click to show / hide <code>simulation and tests</code>.</summary></br>
+<details open><summary>Click to show / hide</summary><br/>
 
-Simulating a software environment is a practical solution for testing and checking rapidly changing software, especially when hardware provisioning is not feasible. Simulations are portable, accessible, and help to optimize solutions while avoiding unnecessary risks. Projects using simulations are better prepared for remote work and easier to outsource.
+Traditional devices require kernel-mode drivers installed on the host system:
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="./img/driver-solution.png"><img src="./img/driver-solution.png" alt="Traditional driver-based solution" style="width:70%;height:70%"/></a></div>
 
-The distributed and service-oriented solution of Areg engine eases application testing in a simulated environment. For example, the Simulation application may provide identical Data layer services for seamless testing of the rest of the application.
+Areg enables a driverless approach where devices expose services instead of requiring driver installation:
 
-The same technique of simulating data can be used to create API-driven test automations.
+<div align="center"><a href="./img/driverless-solution.png"><img src="./img/driverless-solution.png" alt="Areg driverless solution" style="width:70%;height:70%"/></a></div>
+
+### Benefits
+
+- **Faster development**: Services are easier to develop than kernel-mode drivers
+- **Lower risk**: User-mode code is safer and simpler to debug
+- **Automated client generation**: The code generator creates client objects from service interface definitions
+- **No special techniques required**: Develop services like standard user-mode applications
+
+</details>
+
+---
+
+## Real-Time Solutions
+
+<details open><summary>Click to show / hide</summary><br/>
+
+Areg automatically generates and delivers messages to targets, invoking specific object methods in real time with minimal network latency. This makes it suitable for time-sensitive applications in:
+
+- Automotive systems
+- Drone fleet coordination
+- Medical technology
+- Manufacturing monitoring
+- Real-time process control
+
+<div align="center"><a href="./img/areg-sdk-features.png"><img src="./img/areg-sdk-features.png" alt="Areg SDK features" style="width:70%;height:70%"/></a></div>
+
+</details>
+
+---
+
+## Digital Twins
+
+<details open><summary>Click to show / hide</summary><br/>
+
+Areg's event-driven, service-oriented architecture combined with real-time communication provides a foundation for digital twin applications:
+
+- **Visualization**: Monitor external device states in real time
+- **Control**: Send commands to physical devices through their digital representations
+- **Immediate reaction**: Respond instantly to environment or device state changes
+- **Direct communication**: No additional middleware layers required
+
+This approach is well-suited for emergency response, security systems, and safety-critical applications where immediate state synchronization is essential.
+
+</details>
+
+---
+
+## Simulation and Testing
+
+<details open><summary>Click to show / hide</summary><br/>
+
+Software simulation is valuable when hardware is unavailable or impractical for testing. Simulated environments are:
+
+- Portable and accessible
+- Useful for optimizing solutions without hardware risks
+- Suitable for remote development and outsourcing
+
+<div align="center"><a href="./img/software-layers.png"><img src="./img/software-layers.png" alt="Software application layers" style="width:70%;height:70%"/></a></div>
+
+### Testing with Simulated Services
+
+Areg's distributed architecture simplifies testing in simulated environments. A simulation application can provide identical Data layer services, allowing seamless testing of application logic without physical hardware.
+
+This technique also enables API-driven test automation, where simulated services respond to client requests predictably for automated verification.
+
 </details>
 
 ---

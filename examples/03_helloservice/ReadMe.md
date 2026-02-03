@@ -10,7 +10,7 @@ It shows how to implement service (*micro-server*) and client objects and deploy
 > To run multiprocess examples, a **Multi-Target Router** must be started to enable IPC communication between processes.
 
 ## Concepts Shown
-- **Service and Client Objects**: Implement service providers and consumers using AREG.  
+- **Service and Client Objects**: Implement service providers and consumers using Areg.  
 - **Service Interface & Code Generation**: Automate **Object RPC** message creation and dispatching for reliable communication.  
 - **Multithreading**: Run services and clients in the same or separate threads.  
 - **Inter-Process Communication (IPC)**: Communicate between processes using Object RPC via a Multi-Target Router.  
@@ -39,4 +39,4 @@ It shows how to implement service (*micro-server*) and client objects and deploy
 - Start building **cross-platform IPC applications** with reusable components.
 
 ## Takeaway
-A foundational example illustrating **multithreaded and multiprocess service deployment** in AREG, highlighting **Object RPC**, reusable components, and IPC via a **Multi-Target Router**.
+A foundational example illustrating **multithreaded and multiprocess service deployment** in Areg, highlighting **Object RPC**, reusable components, and IPC via a **Multi-Target Router**.

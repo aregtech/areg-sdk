@@ -148,11 +148,12 @@ install(FILES
 # configure and copy servicing script files.
 if ((WIN32) OR (CYGWIN) OR (MINGW))
 
+    # Windows: Use batch scripts for service management
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.install.bat.in"    exports/logcollector.service.install.bat    @ONLY)
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.uninstall.bat.in"  exports/logcollector.service.uninstall.bat  @ONLY)
     configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.install.bat.in"        exports/mtrouter.service.install.bat        @ONLY)
     configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.uninstall.bat.in"      exports/mtrouter.service.uninstall.bat      @ONLY)
-    install(FILES 
+    install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.install.bat"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.uninstall.bat"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/mtrouter.service.install.bat"
@@ -162,11 +163,38 @@ if ((WIN32) OR (CYGWIN) OR (MINGW))
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
     )
 
+elseif(APPLE)
+
+    # macOS: Use launchd plist files and shell scripts for service management
+    configure_file("${AREG_EXPORTS_DIR}/tech.areg.logcollector.plist.in"        exports/tech.areg.logcollector.plist        @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/tech.areg.mtrouter.plist.in"            exports/tech.areg.mtrouter.plist            @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.install.sh.in"     exports/logcollector.service.install.sh     @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logcollector.service.uninstall.sh.in"   exports/logcollector.service.uninstall.sh   @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.install.sh.in"         exports/mtrouter.service.install.sh         @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.uninstall.sh.in"       exports/mtrouter.service.uninstall.sh       @ONLY)
+    install(FILES
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/tech.areg.logcollector.plist"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/tech.areg.mtrouter.plist"
+            DESTINATION share/${AREG_PACKAGE_NAME}/service
+            COMPONENT Development   COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+    )
+    install(FILES
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.install.sh"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service.uninstall.sh"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mtrouter.service.install.sh"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mtrouter.service.uninstall.sh"
+            DESTINATION share/${AREG_PACKAGE_NAME}/service
+            COMPONENT Development   COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+    )
+
 else()
 
+    # Linux: Use systemd service files
     configure_file("${AREG_EXPORTS_DIR}/logcollector.service.in"    "exports/logcollector.service"  @ONLY)
     configure_file("${AREG_EXPORTS_DIR}/mtrouter.service.in"        "exports/mtrouter.service"      @ONLY)
-    install(FILES 
+    install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logcollector.service"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/mtrouter.service"
             DESTINATION share/${AREG_PACKAGE_NAME}/service

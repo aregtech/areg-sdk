@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>tech.areg.logcollector</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/logcollector.mac</string>
+        <string>--service</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/var/log/areg/logcollector.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/var/log/areg/logcollector.error.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/usr/local/bin</string>
+</dict>
+</plist>
+<!--
+================================================================================
+Areg TCP/IP Log Collector Service - macOS launchd configuration
+
+This plist file configures logcollector to run as a system daemon on macOS.
+Place this file in /Library/LaunchDaemons/ for system-wide service.
+
+INSTALLATION:
+    1. Create log directory:
+       sudo mkdir -p /var/log/areg
+       sudo chmod 755 /var/log/areg
+
+    2. Copy plist to LaunchDaemons:
+       sudo cp tech.areg.logcollector.plist /Library/LaunchDaemons/
+       sudo chown root:wheel /Library/LaunchDaemons/tech.areg.logcollector.plist
+       sudo chmod 644 /Library/LaunchDaemons/tech.areg.logcollector.plist
+
+    3. Load and start service:
+       sudo launchctl load -w /Library/LaunchDaemons/tech.areg.logcollector.plist
+
+MANAGEMENT COMMANDS:
+    Start service:   sudo launchctl load -w /Library/LaunchDaemons/tech.areg.logcollector.plist
+    Stop service:    sudo launchctl unload -w /Library/LaunchDaemons/tech.areg.logcollector.plist
+    Check status:    sudo launchctl list | grep tech.areg
+    View logs:       tail -f /var/log/areg/logcollector.log
+
+UNINSTALLATION:
+    sudo launchctl unload -w /Library/LaunchDaemons/tech.areg.logcollector.plist
+    sudo rm /Library/LaunchDaemons/tech.areg.logcollector.plist
+
+================================================================================
+-->

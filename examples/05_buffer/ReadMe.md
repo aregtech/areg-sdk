@@ -3,7 +3,7 @@
 🧵 **Type:** Multithreading / Single Process
 
 ## Overview
-The **05_buffer** example demonstrates how to manage a **Shared Buffer** in a **multithreaded environment** with AREG.  
+The **05_buffer** example demonstrates how to manage a **Shared Buffer** in a **multithreaded environment** with Areg.  
 It shows how to safely transfer copies of data between threads without relying on shared memory synchronization.  
 
 This addresses common issues in multithreaded applications: avoiding race conditions, ensuring thread-safe data transfer, and achieving efficient inter-thread communication.
@@ -27,4 +27,4 @@ This addresses common issues in multithreaded applications: avoiding race condit
 - Support **real-time processing** scenarios where multiple threads consume data efficiently.
 
 ## Takeaway
-A practical example showing **safe, efficient inter-thread data transfer** using AREG’s `SharedBuffer`, avoiding synchronization while maintaining predictable data flow.
+A practical example showing **safe, efficient inter-thread data transfer** using Areg’s `SharedBuffer`, avoiding synchronization while maintaining predictable data flow.

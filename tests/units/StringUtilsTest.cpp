@@ -11,7 +11,7 @@
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Areg framework unit test file.
- *              Created as a fist file to integrate GTest in AREG
+ *              Created as a fist file to integrate GTest in Areg
  ************************************************************************/
 /************************************************************************
  * Include files.
