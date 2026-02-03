@@ -6,7 +6,7 @@ addServiceInterface(16_generated examples/16_pubmesh/services/SystemShutdown.sim
 # add projects
 
 # add static library
-macro_declare_static_library(16_common  16_generated
+macro_declare_static_library(16_common
     common/src/LocalHelloWorldClient.cpp
     common/src/LocalHelloWorldService.cpp
     common/src/PublicHelloWorldClient.cpp
