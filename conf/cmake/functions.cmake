@@ -132,7 +132,7 @@ endmacro(macro_get_processor)
 # ---------------------------------------------------------------------------
 macro(macro_check_module_architect path_module target_name target_proc var_compatible)
     message(STATUS "Areg: >>> Validating binary '${path_module}' for compatibility with processor '${target_proc}'")
-    
+
     # Determine the appropriate objdump command
     if (NOT "${CMAKE_OBJDUMP}" STREQUAL "")
         set(_objdump "${CMAKE_OBJDUMP}")
@@ -145,14 +145,31 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
     if (EXISTS "${path_module}")
 
         set(_tool_exists FALSE)
+        set(_data "")
         if (APPLE)
-            set(_tool_exists TRUE)  # lipo is always available
-            execute_process(
-                COMMAND bash -c "lipo -info ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
-                OUTPUT_VARIABLE _data
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                ERROR_QUIET
-            )
+            # Check if it's a .tbd file (text-based stub) - these are multi-arch by design
+            cmake_path(GET path_module EXTENSION _file_ext)
+            if ("${_file_ext}" STREQUAL ".tbd")
+                # .tbd files are text-based stubs that contain architecture info
+                # Parse the targets line: "targets: [ x86_64-macos, arm64-macos, arm64e-macos ]"
+                set(_tool_exists TRUE)
+                file(STRINGS "${path_module}" _tbd_targets REGEX "^targets:")
+                set(_data "${_tbd_targets}")
+            else()
+                # Use lipo for actual Mach-O binaries
+                # lipo output: "Non-fat file: /path is architecture: arm64" or
+                #              "Architectures in the fat file: /path are: x86_64 arm64"
+                execute_process(
+                    COMMAND lipo -info "${path_module}"
+                    OUTPUT_VARIABLE _data
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET
+                    RESULT_VARIABLE _lipo_result
+                )
+                if (_lipo_result EQUAL 0)
+                    set(_tool_exists TRUE)
+                endif()
+            endif()
 
         elseif (EXISTS "${_objdump}")
             set(_tool_exists TRUE)
@@ -166,20 +183,47 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
 
         if (_tool_exists)
             macro_get_processor(${target_proc} _proc _bitness _found)
+            set(_pos -1)
             # Match the processor type with extracted architecture
             if (${_proc} STREQUAL ${_proc_x86})
-                string(FIND "${_data}" "x86-64" _pos)
+                string(FIND "${_data}" "x86_64" _pos)
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "x86-64" _pos)
+                endif()
                 if (_pos EQUAL -1)
                     string(FIND "${_data}" "i386" _pos)
-			    else()
-				    set(_pos -1)
+                endif()
+                # For x86 (32-bit), exclude if x86_64 is found
+                if (_pos GREATER -1)
+                    string(FIND "${_data}" "x86_64" _pos64)
+                    string(FIND "${_data}" "x86-64" _pos64_alt)
+                    if ((_pos64 GREATER -1) OR (_pos64_alt GREATER -1))
+                        set(_pos -1)
+                    endif()
                 endif()
             elseif (${_proc} STREQUAL ${_proc_x64})
-                string(FIND "${_data}" "x86-64" _pos)
+                string(FIND "${_data}" "x86_64" _pos)
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "x86-64" _pos)
+                endif()
             elseif (${_proc} STREQUAL ${_proc_arm32})
-                string(FIND "${_data}" "ARM" _pos)
+                string(FIND "${_data}" "arm" _pos)
+                # Exclude arm64
+                if (_pos GREATER -1)
+                    string(FIND "${_data}" "arm64" _pos64)
+                    if (_pos64 GREATER -1)
+                        set(_pos -1)
+                    endif()
+                endif()
             elseif (${_proc} STREQUAL ${_proc_arm64})
-                string(FIND "${_data}" "AARCH64" _pos)
+                # macOS uses "arm64", Linux uses "AARCH64" or "aarch64"
+                string(FIND "${_data}" "arm64" _pos)
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "AARCH64" _pos)
+                endif()
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "aarch64" _pos)
+                endif()
             else()
                 string(FIND "${_data}" "${_proc}" _pos)
             endif()
@@ -188,7 +232,7 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
             if (_pos GREATER -1)
                 set(${var_compatible} TRUE)
             else()
-                message(WARNING "Areg: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'")
+                message(WARNING "Areg: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'. Detected: '${_data}'")
             endif()
         elseif (AREG_PLATFORM_WINDOWS)
             set(${var_compatible} TRUE)
