@@ -965,11 +965,12 @@ function(setSharedLibOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Link the shared library with provided libraries and Areg framework
-    target_link_libraries(${target_name} PRIVATE 
-                          ${AREG_PACKAGE_NAME}::aregextend 
-                          ${library_list} 
-                          ${AREG_PACKAGE_NAME}::areg 
-                          ${AREG_EXTENDED_LIBS} 
+    target_link_libraries(${target_name} PRIVATE
+                          ${AREG_PACKAGE_NAME}::aregextend
+                          ${library_list}
+                          ${AREG_PACKAGE_NAME}::areg
+                          ${AREG_EXTENDED_LIBS}
+                          ${AREG_LDFLAGS}
     )
 
     # Additional compile options for non-Windows platforms
