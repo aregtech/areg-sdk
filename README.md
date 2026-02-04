@@ -34,8 +34,8 @@ Most C++ projects don't fail on algorithms. They fail on **threads, IPC, and bri
   </tr>
   <tr>
     <td><img src="https://img.shields.io/badge/Solution-C++17-blue.svg?style=flat&logo=c%2B%2B&logoColor=b0c0c0&labelColor=363D44" alt="C++ solution"/></td>
-    <td><img src="https://img.shields.io/badge/OS-linux%20%7C%20windows-blue?style=flat&logo=Linux&logoColor=b0c0c0&labelColor=363D44" alt="Operating systems"/></td>
-    <td><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm%20%7C%20aarch64-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architectures"/></td>
+    <td><img src="https://img.shields.io/badge/OS-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=flat&logo=Linux&logoColor=b0c0c0&labelColor=363D44" alt="Operating systems"/></td>
+    <td><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm32%20%7C%20arm64-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architectures"/></td>
   </tr>
 </table>
 
@@ -95,7 +95,7 @@ Components can join or leave dynamically. Watchdogs automatically restart failed
 **5. Native Observability**  
 Integrated distributed logging with visual analysis. Per-method execution timing enables performance profiling without external tools.
 
-💡 **Best for:** Embedded to enterprise C++ applications on Linux and Windows, scaling from resource-constrained devices to high-performance server systems.  
+💡 **Best for:** Embedded to enterprise C++ applications on Linux, macOS and Windows, scaling from resource-constrained devices to high-performance server systems.  
 ⚠️ **Not for:** RTOS (planned), web services, or non-C++ ecosystems.
 
 ---
@@ -184,8 +184,8 @@ With Areg SDK, you:
 - **C++17 compiler**: GCC, Clang, MSVC, or MinGW
 - **CMake 3.20+**
 - **Java 17+** (for code generation)
-- **OS:** Linux or Windows  
-- **Hardware:** x86, x86_64, ARM, AArch64
+- **OS:** Linux, macOS or Windows  
+- **Hardware:** x86, x86_64, ARM, AArch64 / arm64
 
 See [CMake Configuration Guide](./docs/wiki/02d-cmake-config.md) for detailed setup and troubleshooting.
 
@@ -201,7 +201,7 @@ cmake --build build -j20
 ```
 
 > [!TIP]
-> These commands work in Linux Terminal, Windows CMD, or PowerShell.
+> These commands work in Linux or macOS Terminal, Windows CMD, or PowerShell.
 
 ---
 
@@ -213,6 +213,9 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 ```bash
 # Linux:
 ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/01_minimalrpc
+
+# macOS:
+./product/build/llvm-clang++/macos-64-arm64-release-shared/bin/01_minimalrpc
 
 # Windows (adjust for compiler):
 .\product\build\msvc-cl\windows-64-amd64-release-shared\bin\01_minimalrpc.exe
@@ -315,7 +318,7 @@ Follow this progression to master Areg SDK:
 
 Use the project setup script to bootstrap a new Areg-based application:
 
-**On Linux:**
+**On Linux or macOS:**
 ```bash
 ./areg-sdk/tools/setup-project.sh
 ```

@@ -29,10 +29,11 @@ TEST(TEHashMapTest, TestConstructors)
     constexpr uint32_t count{ 10 };
 
     // Step 1: test default constructor and the constructor with the size of hash-table.
-    //  Result: the hash-map is initialized and hash-table has its minimum size.
+    //  Result: the hash-map is initialized and is empty.
+    //  Note: bucket_count() behavior varies by STL implementation:
+    //        - libstdc++ (GCC) pre-allocates buckets
+    //        - libc++ (Apple Clang) uses lazy allocation (0 buckets until insertion)
     HashMap hashMap1, hashMap2(10u);
-    EXPECT_NE(hashMap1.getData().bucket_count(), 0u);
-    EXPECT_NE(hashMap2.getData().bucket_count(), 0u);
     EXPECT_TRUE(hashMap1.isEmpty());
     EXPECT_TRUE(hashMap2.isEmpty());
 
@@ -55,7 +56,8 @@ TEST(TEHashMapTest, TestConstructors)
     //  Result: the elements are moved from the source and the source is empty.
     HashMap hashMap4(std::move(hashMap1));
     EXPECT_FALSE(hashMap4.isEmpty());
-    EXPECT_NE(hashMap1.getData().bucket_count(), 0u);
+    // Note: After move, hashMap1 is in a valid but unspecified state.
+    // The bucket_count() may be 0 on some implementations (e.g., libc++ on macOS).
     EXPECT_TRUE(hashMap1.isEmpty());
     EXPECT_EQ(hashMap3, hashMap4);
     EXPECT_EQ(hashMap1, hashMap2);
@@ -116,7 +118,8 @@ TEST(TEHashMapTest, TestOperators)
     HashMap hashMap3;
     hashMap3 = std::move(hashMap1);
     EXPECT_FALSE(hashMap3.isEmpty());
-    EXPECT_NE(hashMap1.getData().bucket_count(), 0u);
+    // Note: After move, hashMap1 is in a valid but unspecified state.
+    // The bucket_count() may be 0 on some implementations (e.g., libc++ on macOS).
     EXPECT_TRUE(hashMap1.isEmpty());
     EXPECT_TRUE(hashMap3 == hashMap2);
 

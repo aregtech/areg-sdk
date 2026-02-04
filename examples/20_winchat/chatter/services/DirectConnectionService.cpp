@@ -41,7 +41,7 @@ NERegistry::Model DirectConnectionService::GetModel( const String & nickName, ui
                                                     , FUNC_CREATE_COMP(DirectConnectionService)
                                                     , FUNC_DELETE_COMP
                                                     , serviceList, NERegistry::DependencyList(), NERegistry::WorkerThreadList());
-    componentEntry.setComponentData(data);
+    componentEntry.setData(data);
     NERegistry::ComponentList         componentList(componentEntry);
     NERegistry::ComponentThreadEntry  threadEntry(threadName, componentList);
     NERegistry::ComponentThreadList   threadList( threadEntry );
@@ -54,8 +54,8 @@ DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEnt
     : Component             ( entry, ownerThread )
     , DirectConnectionStub  ( static_cast<Component &>(self()) )
 
-    , mNickName             ( std::any_cast<PageConnections *>(entry.getComponentData())->GetRegisteredName() )
-    , mCookie               ( std::any_cast<PageConnections *>(entry.getComponentData())->GetRegisteredCookie() )
+    , mNickName             ( std::any_cast<PageConnections *>(entry.getData())->GetRegisteredName() )
+    , mCookie               ( std::any_cast<PageConnections *>(entry.getData())->GetRegisteredCookie() )
 {
     DirectConnectionService::mService = this;
 }

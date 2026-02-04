@@ -105,7 +105,7 @@ int main()
     
     // Set component data, i.e. specify the traffic direction.
     std::any data = std::make_any< NECommon::eTrafficDirection>(trafficDirection);
-    component.setComponentData( data );
+    component.setData( data );
     
     // Add created model to the model list.
     ComponentLoader::addModelUnique(model);

@@ -21,7 +21,7 @@ NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sPar
                                                     , FUNC_CREATE_COMP(ChatParticipantService)
                                                     , FUNC_DELETE_COMP
                                                     , NERegistry::ServiceList( ), listDependencies, NERegistry::WorkerThreadList( ) );
-    componentEntry.setComponentData( data );
+    componentEntry.setData( data );
     NERegistry::ComponentList         componentList( componentEntry );
     NERegistry::ComponentThreadEntry  threadEntry( threadName, componentList );
     NERegistry::ComponentThreadList   threadList( threadEntry );
@@ -33,7 +33,7 @@ NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sPar
 ChatParticipantService::ChatParticipantService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component         ( entry, ownerThread )
 
-    , mChatParticipant  ( static_cast<Component &>(self()), entry.mDependencyServices[0].mRoleName, std::any_cast<ChatPrticipantHandler*>(entry.getComponentData()) )
+    , mChatParticipant  ( static_cast<Component &>(self()), entry.mDependencyServices[0].mRoleName, std::any_cast<ChatPrticipantHandler*>(entry.getData()) )
 {
 }
 

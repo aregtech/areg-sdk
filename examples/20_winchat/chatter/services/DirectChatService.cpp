@@ -45,7 +45,7 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
                                                     , FUNC_CREATE_COMP(DirectChatService)
                                                     , FUNC_DELETE_COMP
                                                     , listServices, listDependencies, NERegistry::WorkerThreadList( ) );
-    componentEntry.setComponentData(data);
+    componentEntry.setData(data);
     NERegistry::ComponentList         componentList( componentEntry );
     NERegistry::ComponentThreadEntry  threadEntry( threadName, componentList );
     NERegistry::ComponentThreadList   threadList( threadEntry );
@@ -58,7 +58,7 @@ DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, 
     : Component           ( entry, ownerThread )
     , DirectMessagerStub  ( static_cast<Component &>(self()) )
 
-    , mPaticipantsHandler   (std::any_cast<ChatPrticipantHandler*>(entry.getComponentData()))
+    , mPaticipantsHandler   (std::any_cast<ChatPrticipantHandler*>(entry.getData()))
     , mListClients          ( )
     , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, mPaticipantsHandler)
 {

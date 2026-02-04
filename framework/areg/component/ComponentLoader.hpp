@@ -133,7 +133,7 @@
                                                         , (component_name)                                  \
                                                         , funcCreate                                        \
                                                         , funcDelete );                                     \
-                comEntry.setComponentData( data );
+                comEntry.setData( data );
 
 /**
  * \brief   Register Component within every Component Thread scope.
@@ -149,10 +149,12 @@
  *                          This is same as Role Name of component.
  **/
 #define BEGIN_REGISTER_COMPONENT(component_name, component_class)                                           \
-            BEGIN_REGISTER_COMPONENT_EX(  component_name                                                    \
-                                        , NEMemory::InvalidElement                                          \
-                                        , FUNC_CREATE_COMP(component_class)                                 \
-                                        , FUNC_DELETE_COMP);
+            {                                                                                               \
+                /*  Register component entry                                        */                      \
+                NERegistry::ComponentEntry comEntry(   thrEntry.mThreadName                                 \
+                                                        , (component_name)                                  \
+                                                        , FUNC_CREATE_COMP(component_class)                 \
+                                                        , FUNC_DELETE_COMP );
 
 #define END_REGISTER_COMPONENT(comp_name)                                                                   \
                 /*  Add and register component entry in component thread            */                      \
@@ -508,6 +510,13 @@ public:
      * \note    You should manually free memory if the data was manually allocated in the memory
      **/
     static bool setComponentData( const String & roleName, std::any compData );
+
+    /**
+     * \brief   Searches in the list the component by given name. If found, resets component data.
+     *          Returns true if found component and the data was successfully reset.
+     * \param   roleName    The name of component to search in the list.
+     **/
+    static bool resetComponentData(const String& roleName);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructors / Destructor
