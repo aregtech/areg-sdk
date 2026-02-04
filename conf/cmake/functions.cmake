@@ -764,6 +764,7 @@ function(setAppOptions target_name library_list)
         ${library_list}                    # Custom libraries to link
         ${AREG_PACKAGE_NAME}::areg         # Core Areg library
         ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
+        ${AREG_LDFLAGS}                    # Linker flags (stdc++, pthread, etc.)
     )
 
 endfunction(setAppOptions)

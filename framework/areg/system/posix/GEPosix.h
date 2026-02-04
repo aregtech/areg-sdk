@@ -32,10 +32,6 @@
     #define _DEFAULT_SOURCE
 #endif	// _DEFAULT_SOURCE
 
-#ifdef __APPLE__
-    #define _DARWIN_C_SOURCE
-#endif  // __APPLE__
-
 #if defined(BIT32) || defined(_BIT32)
 
     #ifndef BIT32
@@ -81,7 +77,9 @@
     #endif  // _POSIX_TIMERS
 
     #ifdef __APPLE__
-        #define _DARWIN_C_SOURCE
+        #ifndef _DARWIN_C_SOURCE
+            #define _DARWIN_C_SOURCE
+        #endif  // _DARWIN_C_SOURCE
         #include <sys/types.h>
         #include <sys/sysctl.h>
     #else   // !__APPLE__

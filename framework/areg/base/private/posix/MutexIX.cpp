@@ -113,7 +113,11 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
             timespec deadline;
             NESyncTypesIX::timeoutFromNow(deadline, msTimeout);
 #ifdef __APPLE__
-            // macOS doesn't have pthread_mutex_timedlock, use polling with trylock
+            // macOS doesn't have pthread_mutex_timedlock
+            // Use exponential backoff to reduce CPU usage while maintaining responsiveness
+            useconds_t sleepTime = 100;  // Start with 100 microseconds
+            constexpr useconds_t maxSleep = 10000;  // Cap at 10 milliseconds
+
             while (!result)
             {
                 if (RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
@@ -130,7 +134,12 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
                         break; // timeout expired
                     }
 
-                    usleep(1000); // 1ms sleep before retry
+                    usleep(sleepTime);
+                    // Exponential backoff: double sleep time up to max
+                    if (sleepTime < maxSleep)
+                    {
+                        sleepTime *= 2;
+                    }
                 }
             }
 #else   // !__APPLE__

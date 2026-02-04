@@ -40,18 +40,18 @@ namespace
         if (sysctl(mib, 4, nullptr, &size, nullptr, 0) < 0)
             return -1;
 
-        uint8_t* buffer = size != 0 ? DEBUG_NEW  uint8_t[size] : nullptr;
-        struct kinfo_proc* procs = reinterpret_cast<struct kinfo_proc*>(buffer);
-        if (procs == nullptr)
+        uint8_t* buffer = size != 0 ? DEBUG_NEW uint8_t[size] : nullptr;
+        if (buffer == nullptr)
             return -1;
 
+        struct kinfo_proc* procs = reinterpret_cast<struct kinfo_proc*>(buffer);
         if (sysctl(mib, 4, procs, &size, nullptr, 0) < 0)
         {
-            delete [] buffer;
+            delete[] buffer;
             return -1;
         }
 
-        int count = size / sizeof(struct kinfo_proc);
+        int count = static_cast<int>(size / sizeof(struct kinfo_proc));
         int pid {-1};
 
         for (int i = 0; i < count && pid < 0; ++i)
