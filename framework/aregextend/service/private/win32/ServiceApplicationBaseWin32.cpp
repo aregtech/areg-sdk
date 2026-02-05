@@ -267,19 +267,6 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
     return result;
 }
 
-bool ServiceApplicationBase::_osWaitUserInput(char* buffer, unsigned int bufSize)
-{
-#if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
-    #if defined(_WIN32) && !defined(_MINGW)
-        return (::gets_s(buffer, bufSize) != nullptr);
-    #else   // defined(_WIN32)
-        return (::fgets(buffer, bufSize, stdin) != nullptr);
-    #endif  // defined(_WIN32)
-#else
-    return (::gets_s(buffer, bufSize) != nullptr);
-#endif // _WIN32
-}
-
 int ServiceApplicationBase::_osStartServiceDispatcher(void)
 {
     _serviceTable[0].lpServiceName = getServiceName();

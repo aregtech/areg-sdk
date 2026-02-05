@@ -76,7 +76,16 @@
         #define _POSIX_TIMERS
     #endif  // _POSIX_TIMERS
 
-    #include <sys/types.h>
+    #ifdef __APPLE__
+        #ifndef _DARWIN_C_SOURCE
+            #define _DARWIN_C_SOURCE
+        #endif  // _DARWIN_C_SOURCE
+        #include <sys/types.h>
+        #include <sys/sysctl.h>
+    #else   // !__APPLE__
+        #include <sys/types.h>
+        #include <unistd.h>
+    #endif  // __APPLE__
 
     #ifdef   __THREAD_LOCAL
         #undef  __THREAD_LOCAL
@@ -92,7 +101,9 @@
         #define __STDC_WANT_LIB_EXT1__      1
     #endif  // __STDC_WANT_LIB_EXT1__
 #else   // __STDC_LIB_EXT1__
+    #ifndef __STDC_WANT_LIB_EXT1__
         #define __STDC_WANT_LIB_EXT1__      0
+    #endif  // __STDC_WANT_LIB_EXT1__
 #endif  // __STDC_LIB_EXT1__
 
 #endif // AREG_SYSTEM_POSIX_GEPOSIX_H

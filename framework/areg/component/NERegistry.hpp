@@ -1122,12 +1122,22 @@ namespace NERegistry
          * \param   compData    The data to set in component which is passed to create method.
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        void setComponentData( std::any compData );
+        void setData( std::any compData );
+
+        /**
+         * \brief   Resets component data.
+         **/
+        void resetData( void );
 
         /**
          * \brief   Returns component data object. Check if data holds a value before use.
          **/
-        std::any getComponentData( void ) const;
+        std::any getData( void ) const;
+
+        /**
+         * \brief   Returns true if component data is set. Otherwise, returns false.
+         **/
+        bool hasData(void) const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentEntry class, Member variables
@@ -1279,6 +1289,13 @@ namespace NERegistry
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
         bool setComponentData( const String & roleName, std::any compData );
+
+        /**
+         * \brief   Searches in the list the component by given name. If found, resets component data.
+         *          Returns true if found component and the data was successfully reset.
+         * \param   roleName    The name of component to search in the list.
+         **/
+        bool resetComponentData( const String& roleName );
 
         /**
          * \brief   Searches Component Entry by given Role Name and returns
@@ -1506,6 +1523,13 @@ namespace NERegistry
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
         bool setComponentData( const String & roleName, std::any compData );
+
+        /**
+         * \brief   Searches in the list the component by given name. If found, resets component data.
+         *          Returns true if found component and the data was successfully reset.
+         * \param   roleName    The name of component to search in the list.
+         **/
+        bool resetComponentData( const String & roleName );
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadEntry class, Member variables
@@ -1859,6 +1883,13 @@ namespace NERegistry
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
         bool setComponentData( const String & roleName, std::any compData );
+
+        /**
+         * \brief   Searches in the list the component by given name. If found, resets component data.
+         *          Returns true if found component and the data was successfully reset.
+         * \param   roleName    The name of component to search in the list.
+         **/
+        bool resetComponentData(const String& roleName);
 
         /**
          * \brief   Returns duration in nanoseconds when the model was loaded and alive.

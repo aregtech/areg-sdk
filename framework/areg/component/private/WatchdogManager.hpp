@@ -24,6 +24,11 @@
 
 #include "areg/component/private/Watchdog.hpp"
 
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+class TimerPosix;
+
 class WatchdogManager   : protected TimerManagerBase
 {
 //////////////////////////////////////////////////////////////////////////
@@ -184,16 +189,24 @@ private:
 
 #endif // _WIN32
 
-#ifdef _POSIX
+#if defined(_POSIX) || defined(POSIX)
 
+#ifdef __APPLE__
+    /**
+     * \brief   macOS timer callback function. Triggered when one of watchdog timers is expired.
+     * \param   timerPtr        The pointer to the TimerPosix object that expired.
+     **/
+    static void _posixWatchdogExpiredRoutine( TimerPosix* timerPtr );
+#else   // !__APPLE__
     /**
      * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
      * \param   argSig          The value passed to thread signal when the timer was created.
      *                          This value is passed to routine callback.
      **/
     static void _posixWatchdogExpiredRoutine( union sigval argSig );
+#endif  // __APPLE__
 
-#endif // _POSIX
+#endif // defined(_POSIX) || defined(POSIX)
 
     /**
      * \brief   Starts system Watchdog and returns true if Watchdog started with success.

@@ -173,6 +173,7 @@ int main()
 
         Application::stopTimerManager();
     } while (false);
+    
     Application::stopLogging();
 
     std::cout << "Exit application, check logs for details!" << std::endl;

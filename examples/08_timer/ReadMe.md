@@ -32,4 +32,4 @@ Timers are associated with tasks in their owning thread context, and the Timer S
 
 ## Takeaway
 
-The **08\_timer** project provides a practical introduction to **thread-safe timer management** in AREG, showing how to schedule and execute one-time, periodic, and continuous tasks within multithreaded applications.
+The **08\_timer** project provides a practical introduction to **thread-safe timer management** in Areg, showing how to schedule and execute one-time, periodic, and continuous tasks within multithreaded applications.

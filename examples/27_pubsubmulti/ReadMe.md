@@ -19,7 +19,7 @@ The **27_pubsubmulti** project demonstrates a multi-process Pub/Sub (Publish/Sub
 
 ## How It Works
 
-A publisher process continuously generates data and broadcasts it to subscribers using AREG’s Pub/Sub system. Multiple subscribers in a single thread can dynamically connect and receive updates from the publisher. Notifications are delivered based on the subscriber’s selected mode: either only when data changes or every time data is set.
+A publisher process continuously generates data and broadcasts it to subscribers using Areg’s Pub/Sub system. Multiple subscribers in a single thread can dynamically connect and receive updates from the publisher. Notifications are delivered based on the subscriber’s selected mode: either only when data changes or every time data is set.
 
 Communication is managed by **mtrouter**, providing reliable inter-process message delivery. The Areg Framework handles automatic service discovery via `serviceConnected()`, allowing subscribers to connect to the publisher regardless of process startup order.
 

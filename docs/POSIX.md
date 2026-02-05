@@ -1,163 +1,154 @@
+# POSIX API Reference
+
 ```
-This file is part of Areg SDK.
+This file is part of Areg SDK
 Copyright (c) Aregtech, 2021-2026
 Contact: info[at]areg.tech
 Website: https://www.areg.tech
 ```
 
-# POSIX API
+This document describes POSIX API usage in Areg SDK for Linux and macOS platforms.
 
-To build the Areg framework using the *POSIX API*, it is necessary to define the preprocessor symbol **POSIX**. Detailed information about the `POSIX` preprocessor symbol can be found in the [`POSIX` define](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols#posix-define) page of the Areg SDK Wiki. To utilize the POSIX API in your software development process, please refer to the [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page of the Areg SDK Wiki.
+---
 
-The Areg SDK relies on the _POSIX1.c_ API for multithreading and synchronization. Along with the standard runtime library, the Areg framework incorporates the use of `pthread`. If the `AREG_EXTENDED` option is enabled during compilation, it also utilizes `ncurses`. To demonstrate, consider the following example commands:
+## Building with POSIX
+
+To build with the POSIX API, define the preprocessor symbol **POSIX**. See the [Preprocessor Definitions](./wiki/02f-preprocessor-definitions.md) guide for details.
+
+### Dependencies
+
+Areg SDK uses POSIX.1c for multithreading and synchronization:
+
+| Library | Purpose |
+|---------|---------|
+| `pthread` | Threading and synchronization |
+| `ncurses` | Extended console features (optional) |
+
+### Build Example
 
 ```bash
+# Standard build
+cmake -B ./build
+cmake --build ./build
+
+# Build with extended features (ncurses)
 cmake -B ./build -DAREG_EXTENDED:BOOL=ON
 cmake --build ./build
 ```
 
-Executing the above commands will build the Areg framework, taking into account the extended functionality provided by `ncurses` when the `AREG_EXTENDED` option is enabled.
+When `AREG_EXTENDED` is enabled, the build links against `ncurses` for enhanced console functionality.
 
-**The list of POSIX API functions and macro used in Areg SDK (including Multitarget message router):**
+---
+
+## Platform-Specific Notes
+
+### Linux
+
+- Uses `pthread_setname_np` for thread naming (Linux-specific)
+- Supports `timer_create`/`timer_settime` for high-resolution timers
+- System services managed by systemd
+
+### macOS
+
+- Uses `dispatch_source` for timers instead of `timer_create`
+- Thread naming via `pthread_setname_np` (macOS variant)
+- System services managed by launchd
+- Links against `libc++` (not `libstdc++`)
+
+---
+
+## POSIX API Functions Used
+
+The following POSIX functions and macros are used in Areg SDK (including the Multitarget Router):
+
+### File and Directory Operations
 
 ```
-accept
-access
-bind
-cbreak
-ceil
-chdir
-clear
-clock_gettime
-close
-connect
-execl
-delwin
-endwin
-fclose
-FD_ISSET
-FD_SET
-FD_ZERO
-fflush
-fgets
-floor
-fopen
-fprintf
-free
-freeaddrinfo
-fsync
-ftruncate
-getaddrinfo
-getcwd
-getenv
-getpeername
-getpid
-getpwuid
-getsockopt
-gets_s
-getyx
-gmtime
-gmtime_r
-htons
-inet_addr
-inet_ntoa
-inet_ntop
-ioctl
-isalnum
-listen
-localtime
-localtime_r
-lseek
-mkdir
-mkdtemp
-mktime
-mvwaddstr
-nanosleep
-ntohs
-open
-opendir
-poll
-printf
-pthread_attr_destroy
-pthread_attr_init
-pthread_attr_setdetachstate
-pthread_cancel
-pthread_cond_destroy
-pthread_cond_init
-pthread_cond_signal
-pthread_cond_timedwait
-pthread_cond_wait
-pthread_condattr_destroy
-pthread_condattr_init
-pthread_condattr_setpshared
-pthread_create
-pthread_mutex_destroy
-pthread_mutex_init
-pthread_mutex_lock
-pthread_mutex_timedlock
-pthread_mutex_trylock
-pthread_mutex_unlock
-pthread_mutexattr_destroy
-pthread_mutexattr_init
-pthread_mutexattr_settype
-pthread_self
-pthread_setcancelstate
-pthread_setcanceltype
-pthread_setname_np (Linux)
-pthread_setschedparam
-pthread_spin_destroy
-pthread_spin_init
-pthread_spin_lock
-pthread_spin_trylock
-pthread_spin_unlock
-read
-readdir
-realpath
-recv
-refresh
-rename
-rmdir
-S_ISDIR
-sched_get_priority_max
-sched_get_priority_min
-select
-send
-setsockopt
-shutdown
-signal
-snprintf
+access      chdir       close       fclose      fopen       fprintf
+fsync       ftruncate   getcwd      lseek       mkdir       mkdtemp
+open        opendir     read        readdir     realpath    rename
+rmdir       stat        S_ISDIR     unlink      write
+```
+
+### Socket Operations
+
+```
+accept      bind        connect     freeaddrinfo    getaddrinfo
+getpeername getsockopt  htons       inet_addr       inet_ntoa
+inet_ntop   ioctl       listen      ntohs           poll
+recv        select      send        setsockopt      shutdown
 socket
-sprintf
-stat
-strcpy
-strftime
-strlen
-strtod
-strtof
-strtol
-strtoll
-strtoul
-strtoull
-swprintf
-timer_create
-timer_delete
-timer_settime
-unlink
-va_end
-va_start
-vsnprintf
-vw_scanw
-waddstr
-wclrtoeol
-wcstof
-wcstol
-wcstoll
-wcstoul
-wcstoull
-write
-wmove
-wrefresh
-wgetnstr
 ```
 
-Make sure that the target platform supports all of these functions and macro.
+### Threading (pthread)
+
+```
+pthread_attr_destroy        pthread_attr_init
+pthread_attr_setdetachstate pthread_cancel
+pthread_cond_destroy        pthread_cond_init
+pthread_cond_signal         pthread_cond_timedwait
+pthread_cond_wait           pthread_condattr_destroy
+pthread_condattr_init       pthread_condattr_setpshared
+pthread_create              pthread_mutex_destroy
+pthread_mutex_init          pthread_mutex_lock
+pthread_mutex_timedlock     pthread_mutex_trylock
+pthread_mutex_unlock        pthread_mutexattr_destroy
+pthread_mutexattr_init      pthread_mutexattr_settype
+pthread_self                pthread_setcancelstate
+pthread_setcanceltype       pthread_setname_np
+pthread_setschedparam       pthread_spin_destroy
+pthread_spin_init           pthread_spin_lock
+pthread_spin_trylock        pthread_spin_unlock
+```
+
+### Time and Scheduling
+
+```
+ceil                clock_gettime       floor
+gmtime              gmtime_r            localtime
+localtime_r         mktime              nanosleep
+sched_get_priority_max                  sched_get_priority_min
+strftime            timer_create        timer_delete
+timer_settime
+```
+
+### String and Memory
+
+```
+fflush      fgets       free        getenv      gets_s
+isalnum     printf      snprintf    sprintf     strcpy
+strlen      strtod      strtof      strtol      strtoll
+strtoul     strtoull    swprintf    va_end      va_start
+vsnprintf   wcstof      wcstol      wcstoll     wcstoul
+wcstoull
+```
+
+### Process and User
+
+```
+execl       getpid      getpwuid    signal
+```
+
+### ncurses (Extended Features)
+
+```
+cbreak      clear       delwin      endwin      getyx
+mvwaddstr   refresh     vw_scanw    waddstr     wclrtoeol
+wgetnstr    wmove       wrefresh
+```
+
+### File Descriptors
+
+```
+FD_ISSET    FD_SET      FD_ZERO
+```
+
+---
+
+## Platform Requirements
+
+Ensure your target platform supports all listed functions. Most modern Linux distributions and macOS versions include full support. For embedded or minimal systems, verify availability of:
+
+- pthread library
+- Socket support
+- Timer functions (or use macOS dispatch alternatives)

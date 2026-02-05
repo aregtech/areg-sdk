@@ -56,9 +56,9 @@ echo     ^)
 echo     FetchContent_MakeAvailable^(areg^)
 echo.
 echo     # Set the root directory of the fetched Areg SDK
-echo     set^(AREG_SDK_ROOT        "${areg_SOURCE_DIR}"^)
+echo     set^(AREG_SDK_ROOT         "${areg_SOURCE_DIR}"^)
 echo     set^(AREG_CMAKE_CONFIG_DIR "${AREG_SDK_ROOT}/conf/cmake"^)
-echo     set^(AREG_CMAKE          "${AREG_SDK_ROOT}/areg.cmake"^)
+echo     set^(AREG_CMAKE            "${AREG_SDK_ROOT}/areg.cmake"^)
 echo     message^(STATUS ">>> Fetched Areg SDK from GitHub to ${FETCHCONTENT_BASE_DIR}"^)
 echo     message^(STATUS ">>> Location of 'areg.cmake' ${AREG_CMAKE}"^)
 echo else^(^)

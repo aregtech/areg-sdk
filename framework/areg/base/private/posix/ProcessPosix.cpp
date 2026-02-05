@@ -23,34 +23,54 @@
 #include <stdlib.h>     /* getenv */
 #include <iostream>
 
+#ifdef __APPLE__
+    #include <mach-o/dyld.h>
+#endif // __APPLE__
+
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
 void Process::_osInitilize( void )
 {
-#ifdef BIT64
-    constexpr const char _fmtCmdLine[] = "/proc/%lu/cmdline";
-    constexpr const char _fmtExePath[] = "/proc/%lu/exe";
-#else   // defined(BIT32)
-    constexpr const char _fmtCmdLine[] = "/proc/%u/cmdline";
-    constexpr const char _fmtExePath[] = "/proc/%u/exe";
-#endif  // BIT64
-
     mProcessId = ::getpid( );
     mProcessHandle = static_cast<void *>(&mProcessId);
 
     char buffer[File::MAXIMUM_PATH];
-    char path[256];
-
     ::memset( buffer, 0, File::MAXIMUM_PATH );
+
+#ifdef __APPLE__
+    // macOS: use _NSGetExecutablePath to get the executable path
+    uint32_t bufSize = static_cast<uint32_t>(File::MAXIMUM_PATH);
+    if (_NSGetExecutablePath(buffer, &bufSize) != 0)
+    {
+        // Buffer too small, try with the required size
+        if (bufSize <= File::MAXIMUM_PATH)
+        {
+            _NSGetExecutablePath(buffer, &bufSize);
+        }
+    }
+
+    // Resolve any symlinks to get the real path
+    char realPath[File::MAXIMUM_PATH];
+    if (::realpath(buffer, realPath) != nullptr)
+    {
+        ::strncpy(buffer, realPath, File::MAXIMUM_PATH - 1);
+        buffer[File::MAXIMUM_PATH - 1] = '\0';
+    }
+
+#else   // !__APPLE__ (Linux and other POSIX systems)
+    constexpr const char _fmtCmdLine[] = "/proc/%lu/cmdline";
+    constexpr const char _fmtExePath[] = "/proc/%lu/exe";
+
+    char path[256];
     ::memset( path, 0, 256 );
 
-    sprintf( path, _fmtCmdLine, mProcessId );
+    sprintf( path, _fmtCmdLine, static_cast<unsigned long>(mProcessId) );
     FILE * file = ::fopen( path, "r" );
     if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
     {
-        sprintf( path, _fmtExePath, mProcessId );
+        sprintf( path, _fmtExePath, static_cast<unsigned long>(mProcessId) );
         ssize_t len = readlink( path, buffer, File::MAXIMUM_PATH );
         if ((len > 0) && (len < File::MAXIMUM_PATH))
         {
@@ -62,6 +82,7 @@ void Process::_osInitilize( void )
     {
         ::fclose(file);
     }
+#endif  // __APPLE__
 
     _initPaths( buffer );
 }

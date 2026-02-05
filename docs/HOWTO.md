@@ -1,5 +1,5 @@
-﻿
-# How To
+# How-To Guide
+
 ```
 This file is part of Areg SDK
 Copyright (c) 2021-2026, Aregtech
@@ -7,69 +7,143 @@ Contact: info[at]areg.tech
 Website: https://www.areg.tech
 ```
 
-This document replies to several **howto** questions, which are listed in the _Table of content_.
+This guide answers common questions about building, configuring, and using Areg SDK.
 
 ---
 
-## Table of contents
+## Table of Contents
 
-- [1. How to use preprocessor defines](#1-how-to-use-preprocessor-defines)
-- [2. How to build](#2-how-to-build)
-- [3. How to create a project or integrate in project](#3-how-to-create-a-project-or-integrate-in-project)
-- [4. How to use logging](#4-how-to-use-logging)
-- [5. How to use Multitarget router](#5-how-to-use-Multitarget-router)
+- [1. Preprocessor Defines](#1-preprocessor-defines)
+- [2. Building the SDK](#2-building-the-sdk)
+- [3. Creating or Integrating Projects](#3-creating-or-integrating-projects)
+- [4. Using Logging](#4-using-logging)
+- [5. Using the Multitarget Router](#5-using-the-multitarget-router)
 
 ---
 
-## 1. How to use preprocessor defines
+## 1. Preprocessor Defines
 
-The Areg SDK provides a range of preprocessor defines that developers can utilize during the code compilation process. These defines enable developers to customize the SDK's behavior according to their specific requirements. The [Areg SDK Preprocessor Definitions Guide](./wiki/02f-preprocessor-definitions.md) page in the Areg SDK Wiki document is a comprehensive guide, offering detailed explanations and examples on how to modify these defines during compilation.
+Areg SDK provides preprocessor defines that customize behavior during compilation. You can enable or disable features, configure behaviors, and tailor the SDK to your application's requirements.
 
-By modifying the preprocessor defines, developers can enable or disable features, configure behaviors, and customize the SDK to suit their application's needs. The Wiki page acts as a valuable reference, ensuring a clear understanding of each define's purpose.
+For a complete list of defines and usage examples, see the [Preprocessor Definitions Guide](./wiki/02f-preprocessor-definitions.md).
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
-## 2. How to build
+## 2. Building the SDK
 
-The Areg SDK source codes have a minimum requirement of **C++17**, CMake 3.20 or Microsoft Visual Studio, and Java 17 or higher for the code generator. They can be compiled using tools such as `cmake` or `msbuild`. The codes are compatible with **Windows** and **Linux** platforms, including compilation within **WSL** (_Windows Subsystem for Linux_), and can be build for x86, x86_64, arm32 and aarch64 (arm64) processors.
+### Requirements
 
-- The [Building Areg SDK with CMake](./wiki/01b-cmake-build.md) page provides a detailed explanation and examples on how to compile sources and build applications using CMake.
-- The [Building the Areg SDK with Microsoft Visual Studio and MSBuild](./wiki/01c-msvc-build.md) page provides a detailed explanation and examples on how to compile sources and build applications using Microsoft Visual Studio.
-- The [Building Areg SDK on Windows Subsystem for Linux (WSL)](./wiki/01d-wsl-build.md) page provides a detailed explanation and examples on how to compile sources and build applications using CMake in Windows Subsystem for Linux (WSL).
+- **C++ Standard**: C++17 or later
+- **Build Tools**: CMake 3.20+ or Microsoft Visual Studio
+- **Code Generator**: Java 17+ (for generating service interface code)
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+### Supported Platforms
 
----
+| Platform | Compilers | Architectures |
+|----------|-----------|---------------|
+| Linux | GCC 9+, Clang 10+ | x86, x86_64, ARM32, ARM64 |
+| Windows | MSVC 2019+, MinGW, Clang | x86, x86_64 |
+| macOS | Apple Clang | x86_64, ARM64 |
+| WSL | GCC, Clang | x86, x86_64 |
 
-## 3. How to create a project or integrate in project
+### Build Guides
 
-You can setup your own project and easily integrate Areg SDK builds in your project. To integrate using CMake, refer to the [Integrating Areg Framework with CMake](./../docs/wiki/02b-cmake-integrate.md) document. To integrate using MSBuild (Microsoft Visual Studio), refer to the [Integrating Areg Framework with Microsoft Visual Studio](./../docs/wiki/02c-msvc-integrate.md) document. As a working example of integrated project, see [Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo) repository.
-
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
-
----
-
-## 4. How to use logging
-
-The projects based on Areg SDK can be compiled with or without logs. If a projects are compiled with logs, the logs, log scopes and group of scopes can be activated or deactivated during runtime.
-
-- The [Areg SDK Logging Configuration](./wiki/04a-logging-config.md) page of Areg SDK Wiki provides a detailed explanation and examples on how to configure the logs.
-- The [Developing with Areg Logging System](./wiki/04b-logging-develop.md) page of Areg SDK Wiki provides a detailed explanation and examples on how to develop with logs.
-- Other logging related documents are:
-  - [Areg SDK Log Observer Application](./wiki/04c-logobserver.md)
-  - [Areg SDK Log Collector Service](./wiki/04d-logcollector.md)
+- [Building with CMake](./wiki/01b-cmake-build.md) - Cross-platform builds using CMake
+- [Building with Visual Studio](./wiki/01c-msvc-build.md) - Windows builds using MSBuild
+- [Building on WSL](./wiki/01d-wsl-build.md) - Linux builds in Windows Subsystem for Linux
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
-## 5. How to use Multitarget router
+## 3. Creating or Integrating Projects
 
-Multitarget Router (MCR) is a part of Areg SDK and it is used for inter-process communication (IPC). The Multitarget router can run as a stand-alone application or as a service managed by operating system. The Multitarget should be configured and all applications should contain [areg.init](./../framework/areg/resources/areg.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
+You can create a new project or integrate Areg SDK into an existing one.
 
-The [Areg SDK Multitarget Router](./wiki/05a-mtrouter.md) page of the Areg SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
+### Integration Options
+
+| Method | Guide |
+|--------|-------|
+| CMake | [Integrating with CMake](./wiki/02b-cmake-integrate.md) |
+| Visual Studio | [Integrating with Visual Studio](./wiki/02c-msvc-integrate.md) |
+
+### Quick Start
+
+Use the project setup tool to scaffold a new project:
+
+```bash
+# Linux/macOS
+./tools/setup-project.sh
+
+# Windows
+tools\setup-project.bat
+```
+
+### Working Example
+
+See the [Areg SDK Demo](https://github.com/aregtech/areg-sdk-demo) repository for a complete integrated project example.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
+## 4. Using Logging
+
+Projects built with Areg SDK can include or exclude logging at compile time. When logging is enabled, individual log scopes and scope groups can be activated or deactivated at runtime.
+
+### Logging Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Logging Configuration](./wiki/04a-logging-config.md) | Configure log output, levels, and scopes |
+| [Developing with Logging](./wiki/04b-logging-develop.md) | Add logging to your application code |
+| [Log Observer Application](./wiki/04c-logobserver.md) | Monitor logs in real time |
+| [Log Collector Service](./wiki/04d-logcollector.md) | Aggregate logs from multiple processes |
+
+### Quick Example
+
+```cpp
+#include "areg/trace/GETrace.h"
+
+DEF_TRACE_SCOPE(myapp_main);
+
+int main()
+{
+    Application::initApplication();
+    TRACE_SCOPE(myapp_main);
+    TRACE_INFO("Application started");
+    // ... application code ...
+    return 0;
+}
+```
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
+## 5. Using the Multitarget Router
+
+The Multitarget Router (`mtrouter`) enables inter-process communication (IPC) between Areg-based applications. It can run as a standalone console application or as an operating system service.
+
+### When You Need mtrouter
+
+- Applications with **Public** services that communicate across processes
+- Distributed systems with services on multiple devices
+- Any multiprocess scenario using Areg IPC
+
+### Configuration
+
+All applications connecting to `mtrouter` need the [areg.init](../framework/areg/resources/areg.init) configuration file to specify connection settings.
+
+### Documentation
+
+See the [Multitarget Router Guide](./wiki/03a-mtrouter.md) for:
+- Configuration options
+- Running as a console application
+- Installing as a system service (Linux, macOS, Windows)
+- Network topology setup
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 

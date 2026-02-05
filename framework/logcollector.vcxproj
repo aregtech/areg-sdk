@@ -64,6 +64,7 @@
     <None Include="logcollector\resources\small.ico" />
     <None Include="logcollector\resources\logcollector.service.install.bat" />
     <None Include="logcollector\resources\logcollector.service.uninstall.bat" />
+    <None Include="logcollector\resources\tech.areg.logcollector.plist" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="logcollector\app\private\CMakeLists.txt" />

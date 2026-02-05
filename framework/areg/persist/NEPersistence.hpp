@@ -188,7 +188,7 @@ namespace NEPersistence
     };
 
     /**
-     * \brief   The list of property key structures supported by AREG
+     * \brief   The list of property key structures supported by Areg
      **/
     constexpr sPropertyKey   DefaultPropertyKeys[]
         {

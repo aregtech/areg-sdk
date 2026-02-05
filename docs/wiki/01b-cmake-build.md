@@ -1,6 +1,6 @@
 ﻿# Building Areg SDK with CMake
 
-This guide covers building Areg SDK on Linux, Windows, and Cygwin using CMake, including cross-compilation for different architectures and IDE setup for Visual Studio and VS Code.
+This guide covers building Areg SDK on Linux, macOS, Windows, and Cygwin using CMake, including cross-compilation for different architectures and IDE setup for Visual Studio and VS Code.
 
 ---
 
@@ -27,8 +27,13 @@ This guide covers building Areg SDK on Linux, Windows, and Cygwin using CMake, i
 ### Platform-Specific Requirements
 
 **Linux:**
-- `ncurses` library (required by `aregextend`)
+- `ncurses` library (optionally required by `aregextend`)
 - GCC or Clang toolchain
+
+**macOS:**
+- Xcode Command Line Tools (`xcode-select --install`)
+- Apple Clang compiler (included with Xcode)
+- CMake (via Homebrew: `brew install cmake`)
 
 **Windows:**
 - Visual Studio with C++ workload
@@ -89,6 +94,30 @@ sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-1
 
 > [!NOTE]
 > For cross-compilation, additional toolchains may be required. See [Cross-Compilation](#cross-compilation).
+
+#### macOS
+
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+
+# Install CMake and Java via Homebrew
+brew install cmake openjdk@17
+
+# Verify installations
+cmake --version
+java -version
+```
+
+**What gets installed:**
+- Xcode Command Line Tools - Apple Clang compiler and tools
+- `cmake` - Build system
+- `openjdk@17` - Java runtime for code generator
+
+> [!NOTE]
+> macOS executables have `.mac` extension (e.g., `mtrouter.mac`). 
+> Change `CMAKE_EXECUTABLE_SUFFIX` after including Areg specific CMake scripts in your own
+> if you don't want to have `.mac` suffix for macOS, or `.elf` for Linux.
 
 #### Windows
 
@@ -238,7 +267,7 @@ Test project /path/to/areg-sdk/build
 
 Install Areg SDK libraries and headers system-wide for use in other projects.
 
-**Linux:**
+**Linux/macOS:**
 ```bash
 sudo cmake --install ./build
 ```
@@ -250,6 +279,7 @@ cmake --install ./build
 
 **Default installation locations:**
 - **Linux:** `/usr/local/lib/`, `/usr/local/include/`
+- **macOS:** `/usr/local/lib/`, `/usr/local/include/`
 - **Windows:** `C:\Program Files (x86)\areg\`
 
 **Custom installation prefix:**
@@ -270,12 +300,13 @@ Cross-compilation enables building Areg SDK for architectures different from you
 
 ### Supported Platforms and Architectures
 
-| Compiler | Platform | API | CPU Architecture |
-|----------|----------|-----|------------------|
-| **GCC** | Linux, macOS | POSIX | x86, x86_64, arm, aarch64 |
-| **Clang** | Linux, Windows | POSIX, Win32 | x86, x86_64, arm, aarch64 |
-| **MSVC** | Windows | Win32 | x86, x86_64 |
-| **Cygwin GCC** | Windows | POSIX | x86, x86_64 |
+| Compiler          | Platform          | API           | CPU Architecture              |
+|-------------------|-------------------|---------------|-------------------------------|
+| **GCC**           | Linux             | POSIX         | x86, x86_64, arm, aarch64     |
+| **Apple Clang**   | macOS             | POSIX         | x86_64, arm64 (Apple Silicon) |
+| **Clang**         | Linux, Windows    | POSIX, Win32  | x86, x86_64, arm, aarch64     |
+| **MSVC**          | Windows           | Win32         | x86, x86_64                   |
+| **Cygwin GCC**    | Windows           | POSIX         | x86, x86_64                   |
 
 > [!NOTE]
 > Clang cross-compilation for ARM processors has been tested only on Linux.
@@ -284,11 +315,13 @@ Cross-compilation enables building Areg SDK for architectures different from you
 
 **Dependencies:**
 
-The core Areg Framework has no external dependencies, but the extended library (`aregextend`) requires:
+The core Areg Framework has no external dependencies, but the extended library (`aregextend`) optionally requires:
 - `ncurses` (Linux/Cygwin)
-- `sqlite3` (optional, or use bundled version)
+- `sqlite3` (or use bundled version)
 
-When cross-compiling, ensure target platform has these libraries or disable `aregextend`:
+When cross-compiling, if `ncurses` is not available, advanced console features are disabled. 
+If `sqlite3` is not available, it is built from the sources located in the `./thirdparty` subdirectory.  
+You can also explicitly disable all `ncurses` extended features:
 
 ```bash
 cmake -B ./build -DAREG_EXTENDED=OFF -DAREG_PROCESSOR=arm

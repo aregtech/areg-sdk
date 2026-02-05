@@ -1,0 +1,35 @@
+#!/bin/sh
+# Areg Multitarget Router Service - macOS Uninstallation Script
+# This script stops and removes the mtrouter service from launchd.
+# Run with: sudo ./mtrouter.service.uninstall.sh
+# See https://areg.tech for more information.
+
+set -e
+
+PLIST_DST="/Library/LaunchDaemons/tech.areg.mtrouter.plist"
+
+# Check if running as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run with sudo or as root."
+    exit 1
+fi
+
+# Check if service is installed
+if [ ! -f "$PLIST_DST" ]; then
+    echo "Service not installed: $PLIST_DST not found."
+    exit 0
+fi
+
+# Unload the service if running
+if launchctl list | grep -q "tech.areg.mtrouter"; then
+    echo "Stopping mtrouter service..."
+    launchctl unload -w "$PLIST_DST"
+fi
+
+# Remove the plist file
+echo "Removing service plist: $PLIST_DST"
+rm -f "$PLIST_DST"
+
+echo ""
+echo "Areg Multitarget Router service uninstalled successfully."
+echo "Note: Log files in /var/log/areg/ were preserved."

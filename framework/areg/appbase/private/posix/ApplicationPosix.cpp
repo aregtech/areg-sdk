@@ -17,25 +17,75 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <signal.h>
-#include <unistd.h>
+
+#ifdef __APPLE__
+    #include <libproc.h>
+#endif  // __APPLE__
 
 namespace
 {
-    int _getProcIdByName(const char * procName)
+
+
+#ifdef __APPLE__    //macOS
+
+    int _getProcIdByName(const char* procName)
     {
-        constexpr char const fmt[]        { "/proc/%s/cmdline" };
-        constexpr char const dirProc[]    { "/proc" };
-        int pid = -1;
+        if (NEString::isEmpty<char>(procName))
+            return -1;
+
+        // macOS implementation using sysctl
+        int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
+        size_t size  {0};
+
+        if (sysctl(mib, 4, nullptr, &size, nullptr, 0) < 0)
+            return -1;
+
+        uint8_t* buffer = size != 0 ? DEBUG_NEW uint8_t[size] : nullptr;
+        if (buffer == nullptr)
+            return -1;
+
+        struct kinfo_proc* procs = reinterpret_cast<struct kinfo_proc*>(buffer);
+        if (sysctl(mib, 4, procs, &size, nullptr, 0) < 0)
+        {
+            delete[] buffer;
+            return -1;
+        }
+
+        int count = static_cast<int>(size / sizeof(struct kinfo_proc));
+        int pid {-1};
+
+        for (int i = 0; i < count && pid < 0; ++i)
+        {
+            if (NEString::compareIgnoreCase<char, char>(procName, procs[i].kp_proc.p_comm) == NEMath::eCompare::Equal)
+            {
+                pid = procs[i].kp_proc.p_pid;
+            }
+        }
+
+        delete[] buffer;
+        return pid;
+    }
+
+#else   // Linux
+
+    int _getProcIdByName(const char* procName)
+    {
+        if (NEString::isEmpty<char>(procName))
+            return -1;
+
+        // Linux implementation using /proc
+        constexpr char const fmt[]{ "/proc/%s/cmdline" };
+        constexpr char const dirProc[]{ "/proc" };
+        int pid {-1};
 
         DIR* dir = opendir(dirProc);
         char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
-        if ((buffer == nullptr) || NEString::isEmpty<char>(procName))
+        if (buffer == nullptr)
             return pid;
 
         for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
         {
-            // skip non-numeric directories.
-            if ((dirEntry->d_type == DT_REG) && (NEString::isNumeric<char>(dirEntry->d_name[0])))
+            if (NEString::isNumeric<char>(dirEntry->d_name[0]))
             {
                 String name;
                 name.format(fmt, dirEntry->d_name);
@@ -44,11 +94,11 @@ namespace
                 {
                     if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        NEString::CharPos pos = NEString::findLast<char>( File::PATH_SEPARATOR, buffer);
+                        NEString::CharPos pos = NEString::findLast<char>(File::PATH_SEPARATOR, buffer);
                         if (NEString::isPositionValid(pos))
                         {
-                            char* name = buffer + pos + 1;
-                            if (NEString::compareIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
+                            char* procPath = buffer + pos + 1;
+                            if (NEString::compareIgnoreCase<char, char>(procName, procPath) == NEMath::eCompare::Equal)
                             {
                                 pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
                             }
@@ -60,8 +110,11 @@ namespace
             }
         }
 
+        delete[] buffer;
+        closedir(dir);
         return pid;
     }
+#endif  // Linux
 
     DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
     void _handleSignalBrokenPipe(int s)

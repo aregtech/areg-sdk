@@ -22,6 +22,10 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
+#ifdef __APPLE__
+    #include <unistd.h>
+#endif  // __APPLE__
+
 //////////////////////////////////////////////////////////////////////////
 // MutexIX class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -106,9 +110,41 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
         }
         else
         {
-            timespec now;
-            NESyncTypesIX::timeoutFromNow(now, msTimeout);
-            result = RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &now );
+            timespec deadline;
+            NESyncTypesIX::timeoutFromNow(deadline, msTimeout);
+#ifdef __APPLE__
+            // macOS doesn't have pthread_mutex_timedlock
+            // Use exponential backoff to reduce CPU usage while maintaining responsiveness
+            useconds_t sleepTime = 100;  // Start with 100 microseconds
+            constexpr useconds_t maxSleep = 10000;  // Cap at 10 milliseconds
+
+            while (!result)
+            {
+                if (RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
+                {
+                    result = true;
+                }
+                else
+                {
+                    timespec current;
+                    clock_gettime(CLOCK_REALTIME, &current);
+                    if ((current.tv_sec > deadline.tv_sec) ||
+                        ((current.tv_sec == deadline.tv_sec) && (current.tv_nsec >= deadline.tv_nsec)))
+                    {
+                        break; // timeout expired
+                    }
+
+                    usleep(sleepTime);
+                    // Exponential backoff: double sleep time up to max
+                    if (sleepTime < maxSleep)
+                    {
+                        sleepTime *= 2;
+                    }
+                }
+            }
+#else   // !__APPLE__
+            result = RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
+#endif  // __APPLE__
         }
     }
 

@@ -7,7 +7,7 @@ mtrouter --service
 
 ## Install under Linux
 
-Before installing `mtrouter` under the Linux, make sure that the location of the `mtrouter` executable is properly set in the `mtrouter.service` file. Check the script `ExecStart=/usr/local/bin/mtrouter.elf --service`. Change the path if you have another location. Make sure that `config/areg.init` is in the same directory with `mtrouter`.
+Before installing `mtrouter` under Linux, make sure that the location of the `mtrouter` executable is properly set in the `mtrouter.service` file. Check the script `ExecStart=/usr/local/bin/mtrouter.elf --service`. Change the path if you have another location. Make sure that `config/areg.init` is in the same directory with `mtrouter`.
 
 To install the `mtrouter` under Linux, use `mtrouter.service` file and perform following steps:
 1. Copy `mtrouter.service` to the `/etc/systemd/system/` directory. For example, run this script:
@@ -31,6 +31,47 @@ sudo systemctl daemon-reload
 sudo systemctl stop mtrouter.service
 ```
 
+## Install under macOS
+
+macOS uses `launchd` instead of `systemd` for managing system services. The service configuration is stored in a `.plist` file.
+
+Before installing `mtrouter` under macOS, make sure that the location of the `mtrouter` executable is properly set in the `tech.areg.mtrouter.plist` file. The default path is `/usr/local/bin/mtrouter.mac`.
+
+To install `mtrouter` under macOS, use `tech.areg.mtrouter.plist` file and perform the following steps:
+
+1. Create the log directory:
+```bash
+sudo mkdir -p /var/log/areg
+sudo chmod 755 /var/log/areg
+```
+
+2. Copy the plist file to `/Library/LaunchDaemons/` directory:
+```bash
+sudo cp ./framework/mtrouter/resources/tech.areg.mtrouter.plist /Library/LaunchDaemons/
+sudo chown root:wheel /Library/LaunchDaemons/tech.areg.mtrouter.plist
+sudo chmod 644 /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+3. Load and start the service:
+```bash
+sudo launchctl load -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+4. To check if the service is running:
+```bash
+sudo launchctl list | grep tech.areg
+```
+
+5. To stop and unload the service:
+```bash
+sudo launchctl unload -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+6. View service logs:
+```bash
+tail -f /var/log/areg/mtrouter.log
+```
+
 ## Install under Windows
 
 Before installing `mtrouter` under Windows, make sure that you have correct location of the `mtrouter` executable and `config/areg.init` file. To install the `mtrouter` under Windows, use `mtrouter_install.bat` file:
@@ -39,7 +80,6 @@ Before installing `mtrouter` under Windows, make sure that you have correct loca
 ```bash
 mtrouter --install
 ```
-3. To uninstall the `mtrouter` as a system service, run the script `mtrouter_uinistall.bat`
-3. file as the Administrator.
+3. To uninstall the `mtrouter` as a system service, run the script `mtrouter_uninstall.bat` as the Administrator.
 
 Once you have installed `mtrouter` as a system service, it should be listed in the `Services` application available in your Windows system.

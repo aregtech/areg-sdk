@@ -351,7 +351,7 @@ if(SQLITE3_LIB)
     
     if(_is_compatible)
         message(STATUS "Library is compatible: ${SQLITE3_LIB}")
-        target_link_libraries(my_target ${SQLITE3_LIB})
+        target_link_libraries(my_target PRIVATE ${SQLITE3_LIB})
     else()
         message(FATAL_ERROR "Incompatible library detected for target architecture: ${SQLITE3_LIB}")
     endif()

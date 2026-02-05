@@ -184,7 +184,7 @@ namespace NEMemory
      *          Pointers to class function and variables should be
      *          treated with special care. Do not serialize them.
      **/
-    typedef union U_Align
+    union uAlign
     {
         TEAlign<bool>                          alignBool;      //!< boolean value
         TEAlign<char>                          alignChar;      //!< char value
@@ -207,12 +207,12 @@ namespace NEMemory
         TEAlign<void (_EmptyClass::*)( void )> alignClsFunc;   //!< pointer to class function value
         TEAlign<int _EmptyClass::*>            alignClsVar;    //!< pointer to class variable value
 
-    } uAlign;
+    };
 
     /**
      * \brief   Message communication results
      **/
-    typedef enum class E_MessageResult  : int32_t
+    enum class eMessageResult : int32_t
     {
           ResultUnknownError        = -1    //!< Error, unknown type
         , ResultSucceed             =  0    //!< No error
@@ -220,7 +220,7 @@ namespace NEMemory
         , ServiceUnavailable                //!< Error, service is unavailable
         , ServiceRejected                   //!< Error, service is rejected
         , ResultTargetUnavailable           //!< Error, the target object is unavailable
-    } eMessageResult;
+    };
     /**
      * \brief   Converts the values of type NEMemory::eMessageResult to string, used in logs and output messages.
      **/
@@ -230,12 +230,12 @@ namespace NEMemory
      * \brief   Types of data buffer
      *          NEMemory::eBufferType
      **/
-    typedef enum class E_BufferType : int8_t
+    enum class eBufferType : int8_t
     {
           BufferUnknown     = -1    //!< Unknown buffer type, not used
         , BufferInternal    =  0    //!< Buffer type for internal communication
         , BufferRemote      =  2    //!< Buffer type for remote communication
-    } eBufferType;
+    };
     /**
      * \brief   Returns string value of NEMemory::eBufferType
      **/

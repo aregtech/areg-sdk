@@ -28,7 +28,7 @@
     </Link>
     <PostBuildEvent>
       <Command>$(AregFrameworkResources)areg_post_build.bat "$(AregFrameworkResources)" "$(OutDir)"</Command>
-      <Message>Call post-build script to copy AREG configuration file template.</Message>
+      <Message>Call post-build script to copy Areg configuration file template.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">

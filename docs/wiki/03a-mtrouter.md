@@ -25,10 +25,16 @@ The Multitarget Router enables inter-process and networked communication between
 
 ### Run mtrouter in 10 Seconds
 
-**Linux/macOS:**
+**Linux:**
 ```bash
 cd areg-sdk
 ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf --console
+```
+
+**macOS:**
+```bash
+cd areg-sdk
+./product/build/llvm-clang++/darwin-64-arm64-release-shared/bin/mtrouter.mac --console
 ```
 
 **Windows:**
@@ -123,7 +129,7 @@ The **Multitarget Message Router** (mtrouter) is a message routing service that:
 **System Service:**
 - Automatic startup at boot
 - Runs in background
-- Managed by OS (systemd/Windows Services)
+- Managed by OS (Linux: systemd, macOS: launchd, Windows: Services)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -140,6 +146,11 @@ After building Areg SDK, `mtrouter` is available in the build output directory.
 **Linux:**
 ```bash
 ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf
+```
+
+**macOS:**
+```bash
+./product/build/llvm-clang++/darwin-64-arm64-release-shared/bin/mtrouter.mac
 ```
 
 **Windows:**
@@ -168,8 +179,15 @@ sudo cmake --install ./build
 **Default installation locations:**
 
 **Linux:**
-- Executables: `/usr/local/tools/areg/mtrouter`
+- Executables: `/usr/local/tools/areg/mtrouter.elf`
 - Libraries: `/usr/local/lib/libareg.so`
+- Headers: `/usr/local/include/areg/`
+- Config: `/usr/local/share/areg/areg.init`
+- Service files: `/usr/local/share/areg/service/`
+
+**macOS:**
+- Executables: `/usr/local/tools/areg/mtrouter.mac`
+- Libraries: `/usr/local/lib/libareg.dylib`
 - Headers: `/usr/local/include/areg/`
 - Config: `/usr/local/share/areg/areg.init`
 - Service files: `/usr/local/share/areg/service/`
@@ -472,6 +490,124 @@ Jan 27 10:30:01 hostname mtrouter[12345]: Listening on 127.0.0.1:8181
 
 ---
 
+### macOS Service (launchd)
+
+#### Step 1: Prepare Files
+
+**Option A: Install via CMake (recommended)**
+
+```bash
+# Install Areg SDK system-wide
+sudo cmake --install ./build
+
+# Service file location
+ls -l /usr/local/share/areg/service/tech.areg.mtrouter.plist
+```
+
+**Option B: Manual installation**
+
+```bash
+# Copy executable
+sudo cp ./product/build/llvm-clang++/darwin-64-arm64-release-shared/bin/mtrouter.mac /usr/local/bin/
+
+# Copy library (if shared build)
+sudo cp ./product/build/llvm-clang++/darwin-64-arm64-release-shared/lib/libareg.dylib /usr/local/lib/
+
+# Make executable
+sudo chmod +x /usr/local/bin/mtrouter.mac
+```
+
+**Verify:**
+```bash
+/usr/local/bin/mtrouter.mac --help
+```
+
+#### Step 2: Install Service File
+
+**If installed via CMake:**
+
+```bash
+# Use provided installation script
+sudo /usr/local/share/areg/service/mtrouter.service.install.sh
+```
+
+**If manual installation:**
+
+```bash
+# Create log directory
+sudo mkdir -p /var/log/areg
+sudo chmod 755 /var/log/areg
+
+# Copy plist to LaunchDaemons
+sudo cp ./framework/mtrouter/resources/tech.areg.mtrouter.plist /Library/LaunchDaemons/
+sudo chown root:wheel /Library/LaunchDaemons/tech.areg.mtrouter.plist
+sudo chmod 644 /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+> [!IMPORTANT]
+> The plist file must have correct ownership (`root:wheel`) and permissions (`644`).
+
+#### Step 3: Load and Start Service
+
+**Load and start:**
+```bash
+sudo launchctl load -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+**Verify status:**
+```bash
+sudo launchctl list | grep tech.areg
+```
+
+**Expected output:**
+```
+-       0       tech.areg.mtrouter
+```
+
+The first column shows PID (or `-` if not running), second shows exit code (0 = success).
+
+#### Step 4: Manage Service
+
+**Stop service:**
+```bash
+sudo launchctl unload -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+**Start service:**
+```bash
+sudo launchctl load -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+**Check status:**
+```bash
+sudo launchctl list | grep tech.areg
+```
+
+**View logs:**
+```bash
+tail -f /var/log/areg/mtrouter.log
+```
+
+#### Step 5: Uninstall Service
+
+**Using uninstall script:**
+```bash
+sudo /usr/local/share/areg/service/mtrouter.service.uninstall.sh
+```
+
+**Or manually:**
+```bash
+# Stop and unload
+sudo launchctl unload -w /Library/LaunchDaemons/tech.areg.mtrouter.plist
+
+# Remove plist
+sudo rm /Library/LaunchDaemons/tech.areg.mtrouter.plist
+```
+
+<div align="right"><kbd><a href="#running-as-system-service">↑ Back to service setup ↑</a></kbd></div>
+
+---
+
 ### Windows Service
 
 #### Step 1: Prepare Binaries
@@ -768,7 +904,7 @@ Options used when starting mtrouter:
 | `--help` | `-h` | All | Display help message |
 | `--install` | `-i` | Windows | Install as Windows service |
 | `--load` | `-l` | All | Load custom configuration file |
-| `--service` | `-s` | Linux | Run as Linux service |
+| `--service` | `-s` | Linux/macOS | Run as service (background daemon) |
 | `--silent` | `-t` | All | Run without showing data rates |
 | `--uninstall` | `-u` | Windows | Uninstall Windows service |
 | `--verbose` | `-v` | All | Show data transfer rates |

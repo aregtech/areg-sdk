@@ -47,7 +47,7 @@ ConnectionManager::ConnectionManager( const NERegistry::ComponentEntry & entry, 
     , ConnectionManagerStub ( static_cast<Component &>(self()) )
     , CentralMessagerStub   ( static_cast<Component &>(self()) )
 
-    , mWnd                  ( std::any_cast<HWND>(entry.getComponentData()) )
+    , mWnd                  ( std::any_cast<HWND>(entry.getData()) )
     , mCookies              ( NEConnectionManager::InvalidCookie )
 {
     ConnectionManager::sService   = this;

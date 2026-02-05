@@ -247,6 +247,25 @@ bool ComponentLoader::setComponentData( const String & roleName, std::any compDa
     return result;
 }
 
+bool ComponentLoader::resetComponentData(const String& roleName)
+{
+    bool result = false;
+    ComponentLoader& loader = ComponentLoader::getInstance();
+    Lock lock(loader.mLock);
+
+    for (uint32_t i = 0; i < loader.mModelList.getSize(); ++i)
+    {
+        NERegistry::Model& model = loader.mModelList.getAt(i);
+        if (model.resetComponentData(roleName))
+        {
+            result = true;
+            break;
+        }
+    }
+
+    return result;
+}
+
 bool ComponentLoader::addModelUnique(const NERegistry::Model & newModel)
 {
     ComponentLoader & loader = ComponentLoader::getInstance();

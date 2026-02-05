@@ -19,6 +19,7 @@
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/console/Console.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/logging/GELog.h"
@@ -265,5 +266,5 @@ void ServiceApplicationBase::onSetupConfiguration( const NEPersistence::ListProp
 
 bool ServiceApplicationBase::inputConsoleData(char* buffer, unsigned int bufSize)
 {
-    return _osWaitUserInput(buffer, bufSize);
+    return Console::readConsoleData(buffer, bufSize);
 }

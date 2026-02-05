@@ -23,7 +23,10 @@
 #include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include <signal.h>
+
+#ifndef __APPLE__
+    #include <signal.h>
+#endif  // !__APPLE__
 #include <time.h>
 #include <errno.h>
 
@@ -31,6 +34,22 @@
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
+#ifdef __APPLE__
+void TimerManager::_posixTimerExpiredRoutine( TimerPosix* posixTimer )
+{
+    TimerManager & timerManager = TimerManager::getInstance( );
+    ASSERT( posixTimer != nullptr );
+    Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+
+    if ( (timer != nullptr) && (posixTimer->isValid( )) )
+    {
+        unsigned int highValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
+        unsigned int lowValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        posixTimer->timerExpired( );
+        timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
+    }
+}
+#else   // !__APPLE__
 void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
 {
     TimerManager & timerManager = TimerManager::getInstance( );
@@ -46,6 +65,7 @@ void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
         timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }
 }
+#endif  // __APPLE__
 
 void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {

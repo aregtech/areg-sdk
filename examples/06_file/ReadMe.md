@@ -25,4 +25,4 @@ This example addresses common challenges in application development: managing fi
 - Generate **automated, runtime-dependent file names**, reducing manual overhead and improving consistency.
 
 ## Takeaway
-A practical guide showing how to perform **robust file operations with dynamic naming** in AREG, enabling efficient and flexible file management in both text and binary formats.
+A practical guide showing how to perform **robust file operations with dynamic naming** in Areg, enabling efficient and flexible file management in both text and binary formats.

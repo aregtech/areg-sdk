@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public">
-        <Description>The hello world application</Description>
+        <Description>Hello world service example</Description>
     </Overview>
     <MethodList>
         <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
-            <Description>The request to output greeting.</Description>
+            <Description>Request to output a greeting.</Description>
             <ParamList>
-                <Parameter ID="51" Name="client" DataType="String">
-                    <Description>The name of the client to output greeting.</Description>
+                <Parameter ID="3" Name="client" DataType="String">
+                    <Description>Name of the client requesting the greeting.</Description>
                 </Parameter>
             </ParamList>
         </Method>
         <Method ID="4" Name="HelloService" MethodType="Response">
-            <Description>The response indicating success status to output greeting</Description>
+            <Description>Response indicating whether the greeting was successful.</Description>
             <ParamList>
-                <Parameter ID="52" Name="success" DataType="bool">
-                    <Description>Flag, indicates the success of output.</Description>
+                <Parameter ID="5" Name="success" DataType="bool">
+                    <Description>True if the greeting was output successfully.</Description>
                 </Parameter>
             </ParamList>
         </Method>

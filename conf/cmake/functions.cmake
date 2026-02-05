@@ -132,7 +132,7 @@ endmacro(macro_get_processor)
 # ---------------------------------------------------------------------------
 macro(macro_check_module_architect path_module target_name target_proc var_compatible)
     message(STATUS "Areg: >>> Validating binary '${path_module}' for compatibility with processor '${target_proc}'")
-    
+
     # Determine the appropriate objdump command
     if (NOT "${CMAKE_OBJDUMP}" STREQUAL "")
         set(_objdump "${CMAKE_OBJDUMP}")
@@ -140,46 +140,108 @@ macro(macro_check_module_architect path_module target_name target_proc var_compa
         set(_objdump "${target_name}-objdump")
     endif()
 
+    set(${var_compatible} FALSE)
     # Check existence of the binary and objdump tool
-    if (EXISTS "${path_module}" AND EXISTS "${_objdump}")
-        macro_get_processor(${target_proc} _proc _bitness _found)
+    if (EXISTS "${path_module}")
 
-        execute_process(
-            COMMAND bash -c "${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
-            OUTPUT_VARIABLE _data
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-        )
-
-        # Match the processor type with extracted architecture
-        if (${_proc} STREQUAL ${_proc_x86})
-            string(FIND "${_data}" "x86-64" _pos)
-            if (_pos EQUAL -1)
-                string(FIND "${_data}" "i386" _pos)
-			else()
-				set(_pos -1)
+        set(_tool_exists FALSE)
+        set(_data "")
+        if (APPLE)
+            # Check if it's a .tbd file (text-based stub) - these are multi-arch by design
+            set(_module_path "${path_module}")
+            cmake_path(GET _module_path EXTENSION _file_ext)
+            if ("${_file_ext}" STREQUAL ".tbd")
+                # .tbd files are text-based stubs provided by Apple's SDK.
+                # These are guaranteed to be compatible with the current platform
+                # since they're just interface definitions - the actual library
+                # is provided by the system at runtime.
+                set(${var_compatible} TRUE)
+                message(STATUS "Areg: >>> File '${path_module}' is a macOS stub library (.tbd), assuming compatible")
+            else()
+                # Use lipo for actual Mach-O binaries
+                # lipo output: "Non-fat file: /path is architecture: arm64" or
+                #              "Architectures in the fat file: /path are: x86_64 arm64"
+                execute_process(
+                    COMMAND lipo -info "${path_module}"
+                    OUTPUT_VARIABLE _data
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET
+                    RESULT_VARIABLE _lipo_result
+                )
+                if (_lipo_result EQUAL 0)
+                    set(_tool_exists TRUE)
+                endif()
             endif()
-        elseif (${_proc} STREQUAL ${_proc_x64})
-            string(FIND "${_data}" "x86-64" _pos)
-        elseif (${_proc} STREQUAL ${_proc_arm32})
-            string(FIND "${_data}" "ARM" _pos)
-        elseif (${_proc} STREQUAL ${_proc_arm64})
-            string(FIND "${_data}" "AARCH64" _pos)
-        else()
-            string(FIND "${_data}" "${_proc}" _pos)
+
+        elseif (EXISTS "${_objdump}")
+            set(_tool_exists TRUE)
+            execute_process(
+                COMMAND bash -c "${_objdump} -f ${path_module} | grep ^architecture | cut -d' ' -f2 | sort -u"
+                OUTPUT_VARIABLE _data
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET
+            )
         endif()
 
-        # Set compatibility flag based on architecture match
-        if (_pos GREATER -1)
+        if (_tool_exists)
+            macro_get_processor(${target_proc} _proc _bitness _found)
+            set(_pos -1)
+            # Match the processor type with extracted architecture
+            if (${_proc} STREQUAL ${_proc_x86})
+                string(FIND "${_data}" "x86_64" _pos)
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "x86-64" _pos)
+                endif()
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "i386" _pos)
+                endif()
+                # For x86 (32-bit), exclude if x86_64 is found
+                if (_pos GREATER -1)
+                    string(FIND "${_data}" "x86_64" _pos64)
+                    string(FIND "${_data}" "x86-64" _pos64_alt)
+                    if ((_pos64 GREATER -1) OR (_pos64_alt GREATER -1))
+                        set(_pos -1)
+                    endif()
+                endif()
+            elseif (${_proc} STREQUAL ${_proc_x64})
+                string(FIND "${_data}" "x86_64" _pos)
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "x86-64" _pos)
+                endif()
+            elseif (${_proc} STREQUAL ${_proc_arm32})
+                string(FIND "${_data}" "arm" _pos)
+                # Exclude arm64
+                if (_pos GREATER -1)
+                    string(FIND "${_data}" "arm64" _pos64)
+                    if (_pos64 GREATER -1)
+                        set(_pos -1)
+                    endif()
+                endif()
+            elseif (${_proc} STREQUAL ${_proc_arm64})
+                # macOS uses "arm64", Linux uses "AARCH64" or "aarch64"
+                string(FIND "${_data}" "arm64" _pos)
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "AARCH64" _pos)
+                endif()
+                if (_pos EQUAL -1)
+                    string(FIND "${_data}" "aarch64" _pos)
+                endif()
+            else()
+                string(FIND "${_data}" "${_proc}" _pos)
+            endif()
+
+            # Set compatibility flag based on architecture match
+            if (_pos GREATER -1)
+                set(${var_compatible} TRUE)
+            else()
+                message(WARNING "Areg: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'. Detected: '${_data}'")
+            endif()
+        elseif (AREG_PLATFORM_WINDOWS)
             set(${var_compatible} TRUE)
-        else()
-            message(WARNING "Areg: >>> Binary '${path_module}' is NOT compatible with target processor '${target_proc}'")
-            set(${var_compatible} FALSE)
         endif()
-    elseif (${AREG_OS} STREQUAL Windows)
+
+    elseif (AREG_PLATFORM_WINDOWS)
         set(${var_compatible} TRUE)
-    else()
-        set(${var_compatible} FALSE)
     endif()
 endmacro(macro_check_module_architect)
 
@@ -428,7 +490,7 @@ macro(macro_default_target target_processor var_name_target)
     macro_get_processor("${target_processor}" _proc _bitness _found)
     if ("${_proc}" STREQUAL "")
         set(${var_name_target})
-    elseif (UNIX)
+    elseif (UNIX AND NOT APPLE)
         if (${_proc} MATCHES "${_proc_x64}")
             set(${var_name_target} x86_64-linux-gnu)
         elseif (${_proc} MATCHES "${_proc_x86}")
@@ -437,6 +499,12 @@ macro(macro_default_target target_processor var_name_target)
             set(${var_name_target} aarch64-linux-gnu)
         elseif (${_proc} MATCHES "${_proc_arm32}")
             set(${var_name_target} arm-linux-gnueabihf)
+        endif()
+    elseif (APPLE)
+        if (${_proc} MATCHES "${_proc_x64}")
+            set(${var_name_target} x86_64-apple-darwin)
+        elseif (${_proc} MATCHES "${_proc_arm64}")
+            set(${var_name_target} arm64-apple-darwin)
         endif()
     elseif (MSVC)
         if (${_proc} MATCHES "${_proc_x64}")
@@ -502,14 +570,16 @@ macro(macro_setup_compilers_data
         var_name_found)
 
     set(${var_name_found} FALSE)
-    if(NOT "${${var_name_arch}}" STREQUAL "")
+    if (NOT "${${var_name_arch}}" STREQUAL "")
         macro_get_processor("${${var_name_arch}}" ${var_name_arch} ${var_name_bitness} _ignore)
-    elseif()
+    else()
         macro_system_bitness(${var_name_bitness})
     endif()
     
     # Iterate over known compilers to identify the compiler type
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
+    # Note: "c++" and "cc" use "wrapper" family - they need runtime detection since they
+    # can be symlinks/wrappers for either GCC or Clang depending on the system
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "appleclang++;llvm;appleclang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;wrapper;cc" "cc;wrapper;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_comp)
 
         # Check if the provided compiler matches the known C++ compiler
@@ -518,6 +588,27 @@ macro(macro_setup_compilers_data
         if (_found_pos GREATER -1)
             list(GET _entry 1 _family)
             list(GET _entry 2 _cc_comp)
+
+            # Handle cc/c++ wrapper compilers - detect actual compiler by running --version
+            if (${_family} STREQUAL wrapper)
+                execute_process(
+                    COMMAND "${compiler_path}" --version
+                    OUTPUT_VARIABLE _version_output
+                    ERROR_QUIET
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    RESULT_VARIABLE _version_result
+                )
+                string(TOLOWER "${_version_output}" _version_lower)
+
+                if ("${_version_lower}" MATCHES "clang")
+                    # cc/c++ is actually Clang (common on macOS and some Linux distros)
+                    set(_family "llvm")
+                else()
+                    # Assume GNU/GCC
+                    set(_family "gnu")
+                endif()
+            endif()
+
             # Handle special case for CYGWIN and GNU family compilers
             if (${_family} STREQUAL gnu)
                 if (CYGWIN)
@@ -571,6 +662,9 @@ macro(macro_setup_compilers_data
     unset(_family)
     unset(_cc_comp)
     unset(_found_pos)
+    unset(_version_output)
+    unset(_version_lower)
+    unset(_version_result)
 
 endmacro(macro_setup_compilers_data)
 
@@ -665,12 +759,12 @@ function(setAppOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Link the Areg library, additional specified libraries, and any extended or extra libraries
-    target_link_libraries(${target_name}
+    target_link_libraries(${target_name} PRIVATE
         ${AREG_PACKAGE_NAME}::aregextend   # Areg extended library
         ${library_list}                    # Custom libraries to link
         ${AREG_PACKAGE_NAME}::areg         # Core Areg library
         ${AREG_EXTENDED_LIBS}              # Extended libraries, if any
-        ${AREG_LDFLAGS}                    # Additional linker flags
+        ${AREG_LDFLAGS}                    # Linker flags (stdc++, pthread, etc.)
     )
 
 endfunction(setAppOptions)
@@ -751,7 +845,10 @@ function(setStaticLibOptions target_name library_list)
     endif()
 
     # Link the static library with the provided libraries and Areg framework
-    target_link_libraries(${target_name} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} PRIVATE 
+                          ${library_list} 
+                          ${AREG_PACKAGE_NAME}::areg
+    )
 
 endfunction(setStaticLibOptions)
 
@@ -834,7 +931,10 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${target_name} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} PRIVATE 
+                         ${library_list} 
+                         ${AREG_PACKAGE_NAME}::areg
+    )
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
@@ -865,7 +965,13 @@ function(setSharedLibOptions target_name library_list)
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Link the shared library with provided libraries and Areg framework
-    target_link_libraries(${target_name} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} PRIVATE
+                          ${AREG_PACKAGE_NAME}::aregextend
+                          ${library_list}
+                          ${AREG_PACKAGE_NAME}::areg
+                          ${AREG_EXTENDED_LIBS}
+                          ${AREG_LDFLAGS}
+    )
 
     # Additional compile options for non-Windows platforms
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32" OR MINGW)
@@ -1174,7 +1280,7 @@ endmacro(macro_declare_executable)
 
 # ---------------------------------------------------------------------------
 # Function ...: printAregConfigStatus
-# Purpose ....: Prints a detailed status of AREG's CMake configuration, including details of the build environment.
+# Purpose ....: Prints a detailed status of Areg's CMake configuration, including details of the build environment.
 # Parameters .: - ${var_make_print} -- Boolean flag indicating whether to print the status message (if FALSE, the function exits without printing).
 #               - ${var_prefix}     -- A prefix added to each line of the status message (e.g., project name or custom label).
 #               - ${var_header}     -- A custom header message displayed at the beginning of the status report.
@@ -1182,7 +1288,7 @@ endmacro(macro_declare_executable)
 # Usage ......: printAregConfigStatus(<flag-to-print> <prefix> <header-output> <footer-output>)
 # Example ....: printAregConfigStatus(
 #                                   TRUE
-#                                   "AREG"
+#                                   "Areg"
 #                                   "----------------------> Areg project CMake Status Report Begin <-----------------------"
 #                                   "-----------------------> Areg project CMake Status Report End <------------------------"
 #                                   )

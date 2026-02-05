@@ -140,10 +140,13 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     }
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
-    if ((mContext == 0) || (wgetnstr(reinterpret_cast<WINDOW*>(mContext), buffer, static_cast<int>(size)) != OK))
+    // Use getnstr which operates on stdscr (the standard screen).
+    // This is a static method, so we cannot use mContext (non-static member).
+    // ncurses provides stdscr as a global after initscr() is called.
+    if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int>(size)) != OK))
         return false;
 
     NEString::trimAll<char>(buffer);

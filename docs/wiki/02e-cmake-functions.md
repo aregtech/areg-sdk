@@ -852,7 +852,7 @@ removeEmptyDirs("${CMAKE_BINARY_DIR}/temp")
 **Usage:**
 ```cmake
 printAregConfigStatus(TRUE 
-                     "AREG"
+                     "Areg"
                      "--- Areg Configuration Begin ---"
                      "--- Areg Configuration End ---")
 ```

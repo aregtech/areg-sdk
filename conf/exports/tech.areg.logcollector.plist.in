@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>tech.areg.logcollector</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>@AREG_INSTALL_DST@/tools/@AREG_PACKAGE_NAME@/logcollector.mac</string>
+        <string>--service</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/var/log/areg/logcollector.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/var/log/areg/logcollector.error.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>@AREG_INSTALL_DST@/tools/@AREG_PACKAGE_NAME@</string>
+</dict>
+</plist>
+<!--
+Areg TCP/IP Log Collector Service - macOS launchd configuration.
+See https://areg.tech for more information.
+
+MANAGEMENT COMMANDS:
+    Start service:   sudo launchctl load -w /Library/LaunchDaemons/tech.areg.logcollector.plist
+    Stop service:    sudo launchctl unload -w /Library/LaunchDaemons/tech.areg.logcollector.plist
+    Check status:    sudo launchctl list | grep tech.areg
+    View logs:       tail -f /var/log/areg/logcollector.log
+-->

@@ -26,6 +26,10 @@
 #include "areg/base/private/posix/IEWaitableBaseIX.hpp"
 #include <time.h>
 
+#ifdef __APPLE__
+    #include <dispatch/dispatch.h>
+#endif  // !__APPLE__
+
 //////////////////////////////////////////////////////////////////////////
 // WaitableTimer class declaration.
 //////////////////////////////////////////////////////////////////////////
@@ -40,11 +44,13 @@ class WaitableTimerIX : public IEWaitableBaseIX
 // Statics and constants
 //////////////////////////////////////////////////////////////////////////
 private:
+#ifndef __APPLE__
     /**
      * \brief   The POSIX timer routing function.
      * \param   si  The signal processing structure data passed to routine.
      **/
     static void _posixTimerRoutine(union sigval si);
+#endif  // !__APPLE__
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -141,10 +147,21 @@ protected:
      * \brief   Waitable timer reset information. Either manual- or auto-reset.
      **/
     const NESyncTypesIX::eEventResetInfo mResetInfo;
+#ifdef __APPLE__
+    /**
+     * \brief   GCD dispatch timer source for macOS.
+     **/
+    dispatch_source_t   mTimerSource;
+    /**
+     * \brief   GCD dispatch queue for timer.
+     **/
+    dispatch_queue_t    mTimerQueue;
+#else   // !__APPLE__
     /**
      * \brief   POSIX timer ID.
      **/
     timer_t         mTimerId;
+#endif  // __APPLE__
     /**
      * \brief   Timeout is milliseconds to run.
      **/

@@ -3,7 +3,7 @@
 🚀 **Type:** IPC / Multi-Process
 
 ## Overview
-The **02_minimalipc** example demonstrates how to use **RPC between separate processes** in AREG.  
+The **02_minimalipc** example demonstrates how to use **RPC between separate processes** in Areg.  
 It sets up a **Service Provider** and a **Service Consumer** in different executables, showing automatic service discovery and safe cross-process communication via `serviceConnected()`.
 
 This addresses common pain points in multi-process development: ensuring the consumer only calls a service when it is ready, handling provider disconnections, and avoiding low-level IPC code.

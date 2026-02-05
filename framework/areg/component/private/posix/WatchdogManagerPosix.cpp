@@ -23,12 +23,15 @@
 #include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include <signal.h>
+
+#ifndef __APPLE__
+    #include <signal.h>
+#endif  // !__APPLE__
 #include <time.h>
 #include <errno.h>
 
 //////////////////////////////////////////////////////////////////////////
-// Linux specific methods
+// POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
 void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
@@ -56,6 +59,24 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
     return result;
 }
 
+#ifdef __APPLE__
+void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
+{
+    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    ASSERT(posixTimer != nullptr);
+    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
+    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
+    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+
+    if (watchdog != nullptr)
+    {
+        unsigned int highValue 	= static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
+        unsigned int lowValue  	= static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        posixTimer->stopTimer();
+        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
+    }
+}
+#else   // !__APPLE__
 void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
 {
     WatchdogManager& watchdogManager = WatchdogManager::getInstance();
@@ -73,5 +94,6 @@ void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
         watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
     }
 }
+#endif  // __APPLE__
 
 #endif  // defined(_POSIX) || defined(POSIX)

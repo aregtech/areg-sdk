@@ -153,7 +153,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
@@ -164,10 +164,15 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
         if (::fgets(buffer, size, stdin) == nullptr)
             return false;
     #endif  // defined(_WIN32)
-#else
+#else  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
+    #if defined(_POSIX) || defined(POSIX)
+        if (::fgets(buffer, size, stdin) == nullptr)
+            return false;
+    #else // defined(_POSIX) || defined(POSIX)
         if (::gets_s(buffer, size) == nullptr)
             return false;
-#endif // _WIN32
+    #endif // defined(_POSIX) || defined(POSIX)
+#endif // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 
     NEString::trimAll<char>(buffer);
     return ( NEString::isEmpty(buffer) == false );

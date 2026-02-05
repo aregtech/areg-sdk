@@ -13,8 +13,10 @@ if (${AREG_BITNESS} EQUAL 64)
     add_definitions(-DWIN64 -D_WIN64)
 endif()
 
-if(NOT CMAKE_BUILD_TYPE MATCHES Release)
-    list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
+if (CMAKE_BUILD_TYPE MATCHES Release)
+    list(APPEND AREG_COMPILER_OPTIONS /O2 /GL /c)  # Optimize for speed + LTO
+else()
+    list(APPEND AREG_COMPILER_OPTIONS /Od /RTC1 /c)
 endif()
 
 # Linker flags (-l is not necessary)

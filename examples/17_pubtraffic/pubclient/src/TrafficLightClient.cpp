@@ -16,7 +16,7 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
     : Component                     ( entry, owner )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
 
-    , mTrafficDirection             ( std::any_cast<NECommon::eTrafficDirection>(entry.getComponentData()) )
+    , mTrafficDirection             ( std::any_cast<NECommon::eTrafficDirection>(entry.getData()) )
 {
 }
 

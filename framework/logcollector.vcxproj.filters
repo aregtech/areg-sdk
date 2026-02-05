@@ -59,6 +59,7 @@
     <None Include="logcollector\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="logcollector\resources\tech.areg.logcollector.plist" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logcollector\app\private\LogCollector.cpp">

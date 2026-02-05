@@ -316,14 +316,6 @@ private:
     bool _osSetState( NESystemService::eSystemServiceState newState );
 
     /**
-     * \brief   OS specific implementation of waiting for user input on console.
-     * \param   buffer  The allocated buffer to stream input from console.
-     * \param   bufSize The size of allocated bugger.
-     * \return  Returns true if succeeded to get user input.
-     **/
-    bool _osWaitUserInput(char* buffer, unsigned int bufSize);
-
-    /**
      * \brief   OS specific implementation to setup the service and start the dispatcher.
      * \return  Returns value indicating the successful state of the operation.
      *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).

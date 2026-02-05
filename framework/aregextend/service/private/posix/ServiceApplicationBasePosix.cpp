@@ -98,15 +98,6 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
     return result;
 }
 
-bool ServiceApplicationBase::_osWaitUserInput(char* buffer, unsigned int bufSize)
-{
-#if __STDC_WANT_LIB_EXT1__
-    return(gets_s(buffer, bufSize) != nullptr);
-#else   // __STDC_WANT_LIB_EXT1__
-    return (fgets(buffer, bufSize, stdin) != nullptr);
-#endif  // __STDC_WANT_LIB_EXT1__
-}
-
 int ServiceApplicationBase::_osStartServiceDispatcher(void)
 {
     return RESULT_IGNORED;

@@ -14,6 +14,34 @@ if ("${AREG_PROCESSOR}" STREQUAL "")
     set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 
+# Detect target platform
+set(AREG_PLATFORM_LINUX     FALSE)
+set(AREG_PLATFORM_MACOS     FALSE)
+set(AREG_PLATFORM_WINDOWS   FALSE)
+set(AREG_PLATFORM_POSIX     FALSE)
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(AREG_PLATFORM_MACOS TRUE)
+    set(AREG_PLATFORM_POSIX TRUE)
+    message(STATUS "Areg: >>> Target platform = macOS")
+    
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(AREG_PLATFORM_LINUX TRUE)
+    set(AREG_PLATFORM_POSIX TRUE)
+    message(STATUS "Areg: >>> Target platform = Linux")
+    
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(AREG_PLATFORM_WINDOWS TRUE)
+    message(STATUS "Areg: >>> Target platform = Windows")
+    
+else()
+    message(WARNING "Areg: >>> Unknown target platform '${CMAKE_SYSTEM_NAME}'")
+endif()
+
+# Cross-compilation detection
+if (CMAKE_CROSSCOMPILING)
+    message(STATUS "Areg: >>> Cross-compiling ${CMAKE_HOST_SYSTEM_NAME}(${CMAKE_HOST_SYSTEM_PROCESSOR}) -> ${CMAKE_SYSTEM_NAME}(${CMAKE_SYSTEM_PROCESSOR})")
+endif()
+
 # Identify compiler short name
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
 
@@ -111,7 +139,7 @@ set(AREG_OPT_DISABLE_WARN_CODEGEN)
 set(AREG_OPT_DISABLE_WARN_THIRDPARTY)
 
 # Checking Compiler for adding corresponded tweaks and flags
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     include(${AREG_CMAKE_CONFIG_DIR}/clang.cmake)
 
@@ -236,10 +264,15 @@ include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_ROOT}" "${AREG_GENE
 # Adding library search paths
 link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
-# Only for Linux
-if((UNIX) AND (NOT CYGWIN) AND (NOT MINGW))
-    set(CMAKE_EXECUTABLE_SUFFIX ".elf")
-endif()
+if (NOT DEFINED CMAKE_EXECUTABLE_SUFFIX OR "${CMAKE_EXECUTABLE_SUFFIX}" STREQUAL "")
+    if (AREG_PLATFORM_MACOS)
+        # Only for macOS
+        set(CMAKE_EXECUTABLE_SUFFIX ".mac")
+    elseif ((UNIX) AND (NOT CYGWIN) AND (NOT MINGW))
+        # Only for Linux
+        set(CMAKE_EXECUTABLE_SUFFIX ".elf")
+    endif()
+endif() 
 
 set(COMMON_COMPILE_DEF)
 if(AREG_BINARY MATCHES "static")

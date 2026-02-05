@@ -267,6 +267,14 @@ public:
      **/
     inline void unlockConsole( void );
 
+    /**
+     * \brief   Reads data from the console into the provided buffer.
+     * \param   buffer  The buffer to store the read data.
+     * \param   bufSize The size of the buffer.
+     * \return  Returns true if the data was successfully read and the buffer contains not empty data, otherwise false.
+     **/
+    static bool readConsoleData(char* buffer, unsigned int bufSize);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden, OS specific methods.
 //////////////////////////////////////////////////////////////////////////
@@ -305,14 +313,6 @@ private:
      * \param   pos     The X- and Y-coordinate of console to move the cursor.
      **/
     void _osSetCursorCurPosition(Console::Coord pos) const;
-
-    /**
-     * \brief   A blocking call to wait for user input of string on the console.
-     *          OS specific implementation.
-     * \param   buffer  The buffer to fill in input, should be big enough.
-     * \param   size    The size of buffer.
-     **/
-    bool _osWaitInputString(char * buffer, uint32_t size) const;
 
     /**
      * \brief   Refreshes the screen to display output messages.
@@ -359,6 +359,14 @@ private:
      * \brief   OS specific implementation to move cursor one line down from current position.
      **/
     void _osMoveCursorOneLineDown(void) const;
+
+    /**
+     * \brief   A blocking call to wait for user input of string on the console.
+     *          OS specific implementation.
+     * \param   buffer  The buffer to fill in input, should be big enough.
+     * \param   size    The size of buffer.
+     **/
+    static bool _osWaitInputString(char * buffer, uint32_t size);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

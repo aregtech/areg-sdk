@@ -682,14 +682,24 @@ bool NERegistry::ComponentEntry::isValid( void ) const
     return ( (mRoleName.isEmpty() == false) && (mFuncCreate != nullptr) && (mFuncDelete != nullptr) );
 }
 
-void NERegistry::ComponentEntry::setComponentData( std::any compData )
+void NERegistry::ComponentEntry::setData( std::any compData )
 {
     mComponentData  = std::move(compData);
 }
 
-std::any NERegistry::ComponentEntry::getComponentData( void ) const
+void NERegistry::ComponentEntry::resetData()
+{
+    mComponentData.reset();
+}
+
+std::any NERegistry::ComponentEntry::getData( void ) const
 {
     return mComponentData;
+}
+
+bool NERegistry::ComponentEntry::hasData(void) const
+{
+    return mComponentData.has_value();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -744,7 +754,23 @@ bool NERegistry::ComponentList::setComponentData( const String & roleName, std::
         NERegistry::ComponentEntry & entry = mListComponents[i];
         if ( entry.mRoleName == roleName )
         {
-            entry.setComponentData(compData);
+            entry.setData(compData);
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
+bool NERegistry::ComponentList::resetComponentData(const String& roleName)
+{
+    bool result = false;
+    for (uint32_t i = 0; i < mListComponents.getSize(); ++i)
+    {
+        NERegistry::ComponentEntry& entry = mListComponents[i];
+        if (entry.mRoleName == roleName)
+        {
+            entry.resetData();
             result = true;
             break;
         }
@@ -865,6 +891,11 @@ bool NERegistry::ComponentThreadEntry::isValid( void ) const
 bool NERegistry::ComponentThreadEntry::setComponentData( const String & roleName, std::any compData )
 {
     return mComponents.setComponentData(roleName, compData);
+}
+
+bool NERegistry::ComponentThreadEntry::resetComponentData(const String& roleName)
+{
+    return mComponents.resetComponentData(roleName);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1072,6 +1103,22 @@ bool NERegistry::Model::setComponentData( const String & roleName, std::any comp
     {
         NERegistry::ComponentThreadEntry & entry = mModelThreads.mListThreads.getAt(i);
         if ( entry.setComponentData(roleName, compData) )
+        {
+            result = true;
+            break;
+        }
+    }
+
+    return result;
+}
+
+bool NERegistry::Model::resetComponentData(const String& roleName)
+{
+    bool result = false;
+    for (uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++i)
+    {
+        NERegistry::ComponentThreadEntry& entry = mModelThreads.mListThreads.getAt(i);
+        if (entry.resetComponentData(roleName))
         {
             result = true;
             break;

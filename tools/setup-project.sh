@@ -58,9 +58,9 @@ if (NOT areg_FOUND)
     FetchContent_MakeAvailable(areg)
 
     # Set the root directory of the fetched Areg SDK
-    set(AREG_SDK_ROOT        "\${areg_SOURCE_DIR}")
+    set(AREG_SDK_ROOT         "\${areg_SOURCE_DIR}")
     set(AREG_CMAKE_CONFIG_DIR "\${AREG_SDK_ROOT}/conf/cmake")
-    set(AREG_CMAKE          "\${AREG_SDK_ROOT}/areg.cmake")
+    set(AREG_CMAKE            "\${AREG_SDK_ROOT}/areg.cmake")
     message(STATUS ">>> Fetched Areg SDK from GitHub to \${FETCHCONTENT_BASE_DIR}")
     message(STATUS ">>> Location of 'areg.cmake' \${AREG_CMAKE}")
 else()

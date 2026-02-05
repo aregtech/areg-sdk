@@ -165,14 +165,17 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size)
 {
-    ASSERT(buffer != nullptr);
-    if (gets_s(buffer, size) == nullptr)
-        return false;
-
-    NEString::trimAll<char>(buffer);
-    return (NEString::isEmpty<char>(buffer) == false);
+#if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
+    #if defined(_WIN32) && !defined(_MINGW)
+        return (::gets_s(buffer, size) != nullptr);
+    #else   // defined(_WIN32)
+        return (::fgets(buffer, size, stdin) != nullptr);
+    #endif  // defined(_WIN32)
+#else   // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
+    return (::gets_s(buffer, size) != nullptr);
+#endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 }
 
 void Console::_osRefreshScreen(void) const

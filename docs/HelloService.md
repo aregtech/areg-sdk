@@ -1,127 +1,128 @@
-# Hello Service!
+# Hello Service Tutorial
 
 ```
-
-This file is part of the Areg SDK
-Copyright (c) 2021–2026, Aregtech
-Contact: info\[at]areg.tech
-Website: [https://www.areg.tech](https://www.areg.tech)
-
+This file is part of Areg SDK
+Copyright (c) 2021-2026, Aregtech
+Contact: info[at]areg.tech
+Website: https://www.areg.tech
 ```
 
-This tutorial demonstrates how to build multithreaded and multiprocess applications with the Areg SDK by reusing the same service and client components.
+This tutorial demonstrates how to build multithreaded and multiprocess applications with Areg SDK using the same service and client components.
 
 > [!NOTE]
-> Full source code is available in [03_helloservice](../examples/03_helloservice/).
+> Complete source code is available in [examples/03_helloservice](../examples/03_helloservice/).
 
 ---
 
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Demonstrated Features](#demonstrated-features)
-- [Key Notes for Service Implementation](#key-notes-for-service-implementation)
-- [Showcase](#showcase)
-- [Directory Structure](#directory-structure)
-- [Service Interface](#service-interface)
+- [What You Will Learn](#what-you-will-learn)
+- [Key Concepts](#key-concepts)
+- [Project Structure](#project-structure)
+- [Service Interface Definition](#service-interface-definition)
 - [Code Generation](#code-generation)
-- [Model](#model)
-  - [Declaring Static Models](#declaring-static-models)
-- [Project Examples](#project-examples)
-  - [`onethread`](#onethread)
-  - [`twothreads`](#twothreads)
-  - [`multiprocess`](#multiprocess)
-- [Testing `multiprocess`](#testing-multiprocess)
+- [Understanding Models](#understanding-models)
+- [Example Projects](#example-projects)
+  - [onethread](#onethread)
+  - [twothreads](#twothreads)
+  - [multiprocess](#multiprocess)
+- [Running the Multiprocess Example](#running-the-multiprocess-example)
 
 ---
 
 ## Introduction
 
-This example contains three projects under `examples/03_helloservice`.  
-All reuse the same **ServiceComponent** and **ClientComponent** (in `common/src`), but illustrate different execution models:
+This example contains three projects under `examples/03_helloservice`. All three reuse the same **ServiceComponent** and **ClientComponent** implementations but demonstrate different execution models:
 
-- **[onethread](../examples/03_helloservice/onethread/):** Both components run in one thread.  
-- **[twothreads](../examples/03_helloservice/twothreads/):** Components run in separate threads within one process.  
-- **[multiprocess](../examples/03_helloservice/multiprocess/):** Components run in separate processes.
-
-By following this tutorial, you’ll learn how to implement multithreaded and multiprocess applications and see how Areg SDK enables distributed services in edge (mist) networks.
-
----
-
-## Demonstrated Features
-
-1. A model defines two components: one service provider, one service consumer.  
-2. Models can be dynamically loaded/unloaded, controlling the service lifecycle.  
-3. Components discover each other automatically.  
-4. Once discovered, the client sends a request.  
-5. The service processes the request and returns a response.  
-6. Response handling:  
-   - In **onethread** and **twothreads**, the app exits after response.  
-   - In **multiprocess**, the client exits but the service remains active.  
-7. **multiprocess** supports multiple clients, independent of startup order.
+| Project | Description |
+|---------|-------------|
+| [onethread](../examples/03_helloservice/onethread/) | Service and client run in one thread |
+| [twothreads](../examples/03_helloservice/twothreads/) | Service and client run in separate threads |
+| [multiprocess](../examples/03_helloservice/multiprocess/) | Service and client run in separate processes |
 
 ---
 
-## Key Notes for Service Implementation
+## What You Will Learn
 
-- A **Component** can provide and/or consume multiple services.  
-- Multiple providers of the same service can coexist, but each must have a unique **Role Name**.  
-- Role Names must be unique:  
-  - Within a process for _Local_ services.  
-  - Across the network for _Public_ services.  
-- Service connection status is reported via callbacks:  
-  - **Client Component:**  
-    ```cpp
-    void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)
-    ```  
-  - **Service Component:**  
-    ```cpp
-    bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)
-    ```
+1. Define a model with service provider and consumer components
+2. Load and unload models dynamically to control service lifecycle
+3. Use automatic service discovery between components
+4. Send requests from clients and receive responses from services
+5. Build applications that scale from single-threaded to distributed
 
 ---
 
-## Showcase
+## Key Concepts
 
-The examples illustrate how the same components can run in different execution models.  
-The business logic is identical — only the **model definitions** in `main.cpp` change.
+### Components and Services
+
+- A **Component** can provide and/or consume multiple services
+- Multiple providers of the same service can coexist, but each must have a unique **Role Name**
+
+### Role Name Rules
+
+| Service Type | Role Name Scope |
+|--------------|-----------------|
+| Local | Unique within the process |
+| Public | Unique across the network |
+
+### Connection Callbacks
+
+Components receive notifications when connections change:
+
+**Client Component:**
+```cpp
+void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)
+```
+
+**Service Component:**
+```cpp
+bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)
+```
 
 ---
 
-## Directory Structure
+## Project Structure
 
-- **`generated/src`** → Generated code from the service interface.  
-- **`common/src`** → Shared implementations (service + client).  
-- **`service`** → Service interface definition (`.siml` file).  
-
-Before starting, create `common/src` and `service` directories under `helloservice`.
+```
+03_helloservice/
+├── services/           Service interface definition (.siml file)
+├── generated/src/      Generated code from service interface
+├── common/src/         Shared service and client implementations
+├── onethread/          Single-thread example
+├── twothreads/         Multi-thread example
+└── multiprocess/       Multi-process example
+    ├── serviceproc/    Service process
+    └── clientproc/     Client process
+```
 
 ---
 
-## Service Interface
+## Service Interface Definition
 
-Create `helloservice/service/HelloService.siml`:
+Create a service interface file that defines the communication contract. The file `services/HelloService.siml` defines a simple greeting service:
 
 ```xml
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="HelloService" Version="1.0.0" isRemote="true">
-        <Description>Hello world application</Description>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="HelloService" Version="1.0.0" Category="Public">
+        <Description>Hello world service example</Description>
     </Overview>
     <MethodList>
-        <Method ID="2" MethodType="request" Name="HelloService" Response="HelloService">
+        <Method ID="2" Name="HelloService" MethodType="Request" Response="HelloService">
             <Description>Request to output a greeting.</Description>
             <ParamList>
-                <Parameter DataType="String" ID="3" Name="client">
+                <Parameter ID="3" Name="client" DataType="String">
                     <Description>Name of the client requesting the greeting.</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="4" MethodType="response" Name="HelloService">
-            <Description>Response indicating success status.</Description>
+        <Method ID="4" Name="HelloService" MethodType="Response">
+            <Description>Response indicating whether the greeting was successful.</Description>
             <ParamList>
-                <Parameter DataType="bool" ID="5" Name="success">
-                    <Description>Was the greeting successfully output?</Description>
+                <Parameter ID="5" Name="success" DataType="bool">
+                    <Description>True if the greeting was output successfully.</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -129,7 +130,10 @@ Create `helloservice/service/HelloService.siml`:
 </ServiceInterface>
 ```
 
-This defines **HelloService** as a *Public* interface (`isRemote="true"`) with a request/response pair.
+**Key attributes:**
+- `Category="Public"` makes the service accessible across processes (use `Category="Local"` for thread-only services)
+- `MethodType="Request"` with `Response="HelloService"` links the request to its response
+- `MethodType="Response"` defines what the service returns
 
 ---
 
@@ -138,75 +142,65 @@ This defines **HelloService** as a *Public* interface (`isRemote="true"`) with a
 > [!NOTE]
 > Requires [Java 17+](https://java.com/).
 
-### With CMake
+### Using CMake
 
-In [`CMakeLists.txt`](../examples/03_helloservice/CMakeLists.txt), call:
+In your `CMakeLists.txt`, use the `addServiceInterface` macro:
 
 ```cmake
-# Add service interface files
 addServiceInterface(03_generated examples/03_helloservice/services/HelloService.siml)
 ```
 
-* `03_generated`: name of the static library containing generated files.
-* Path: relative to the `.siml` file.
+This creates a static library named `03_generated` containing the generated code.
 
-### With MSVC
-
-Either run manually in the `helloservice` directory or include in a `.bat` pre-build script:
+### Using Command Line
 
 ```bash
-java -jar <areg-sdk-root>/tools/codegen.jar \
-  --root=<areg-sdk-root>/product/generate \
-  --doc=<helloservice-project-root>/service/HelloService.siml \
-  --target=helloservice/services
+java -jar <areg-sdk>/tools/codegen.jar \
+    --root=<project-root> \
+    --doc=services/HelloService.siml \
+    --target=generated/src
 ```
 
-Generated classes include `HelloServiceStub` (service) and `HelloServiceClientBase` (client).
+### Generated Classes
+
+| Class | Purpose |
+|-------|---------|
+| `HelloServiceStub` | Base class for service provider implementation |
+| `HelloServiceClientBase` | Base class for service consumer implementation |
+| `NEHelloService` | Namespace with service constants and types |
 
 ---
 
-## Model
+## Understanding Models
 
-A **model** defines threads, components, and their relationships. Models may be:
+A **model** defines how threads, components, and services are organized. Models can be:
 
-* **Static** — declared at compile time.
-* **Dynamic** — created at runtime.
+- **Static**: Declared at compile time using macros
+- **Dynamic**: Created programmatically at runtime
 
-### Concepts
+### Model Lifecycle
 
-* **Threads & Components:** each thread hosts one or more components. Each component must provide or consume a service.
-* **Lifecycle:** unloading a model stops its threads and services.
-* **Role Names:** uniquely identify components (per-process for local, global for public).
+1. `Application::loadModel()` starts threads and initializes components
+2. Services become available and clients connect automatically
+3. `Application::unloadModel()` stops threads and releases resources
 
-### Declaring Static Models
+### Static Model Macros
 
-1. Define a unique model name.
-2. Use macros:
-
-   * `BEGIN_MODEL` / `END_MODEL`
-   * `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD`
-   * `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT`
-3. Register services:
-
-   * `REGISTER_IMPLEMENT_SERVICE` (provided by component).
-   * `REGISTER_DEPENDENCY` (consumed by component).
-
-> [!NOTE]
-> Service providers are identified by **Interface Name**.
-> Clients refer by **Role Name**.
-
-All examples reuse [`ServiceComponent`](../examples/03_helloservice/common/src/ServiceComponent.hpp) and [`ClientComponent`](../examples/03_helloservice/common/src/ClientComponent.hpp).
-
-> [!IMPORTANT]
-> Link all projects with the **areg library** (shared or static). If you build using `CMake` the call of `macro_declare_executable()` automatically links with the `areg` library.
+| Macro | Purpose |
+|-------|---------|
+| `BEGIN_MODEL` / `END_MODEL` | Define a model |
+| `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD` | Define a thread |
+| `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT` | Define a component |
+| `REGISTER_IMPLEMENT_SERVICE` | Declare a service the component provides |
+| `REGISTER_DEPENDENCY` | Declare a service the component consumes |
 
 ---
 
-## Project Examples
+## Example Projects
 
-### [`onethread`](../examples/03_helloservice/onethread/)
+### onethread
 
-Both components run in one thread.
+Both service and client run in the same thread. This is the simplest configuration.
 
 ```cpp
 #include "areg/appbase/Application.hpp"
@@ -240,9 +234,9 @@ int main()
 
 ---
 
-### [`twothreads`](../examples/03_helloservice/twothreads/)
+### twothreads
 
-Components run in separate threads.
+Service and client run in separate threads within the same process.
 
 ```cpp
 #include "areg/appbase/Application.hpp"
@@ -279,22 +273,69 @@ int main()
 
 ---
 
-### [`multiprocess`](../examples/03_helloservice/multiprocess/)
+### multiprocess
 
-Components run in different processes:
+Service and client run in separate processes, communicating through `mtrouter`.
 
-* **`serviceproc`** → Registers the service. ([source](../examples/03_helloservice/multiprocess/serviceproc/src/main.cpp))
-* **`clientproc`** → Registers the client. ([source](../examples/03_helloservice/multiprocess/clientproc/src/main.cpp))
+**Service Process (`serviceproc`):**
+
+```cpp
+BEGIN_MODEL(_model)
+    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+        BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent)
+            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+        END_REGISTER_COMPONENT("ServiceComponent")
+    END_REGISTER_THREAD("Thread1")
+END_MODEL(_model)
+```
+
+**Client Process (`clientproc`):**
+
+```cpp
+BEGIN_MODEL(_model)
+    BEGIN_REGISTER_THREAD("Thread1", NECommon::WATCHDOG_IGNORE)
+        BEGIN_REGISTER_COMPONENT("ServiceClient", ClientComponent)
+            REGISTER_DEPENDENCY("ServiceComponent")
+        END_REGISTER_COMPONENT("ServiceClient")
+    END_REGISTER_THREAD("Thread1")
+END_MODEL(_model)
+```
+
+The same `ServiceComponent` and `ClientComponent` classes work without modification.
 
 ---
 
-## Testing `multiprocess`
+## Running the Multiprocess Example
 
-1. Start **mtrouter** (or set IP in [areg.init](../framework/areg/resources/areg.init)).
-2. Run `serviceproc` (only one instance).
-3. Run one or more `clientproc` (unique names auto-assigned).
-4. Clients and services discover each other and communicate transparently across processes or devices.
+1. **Start mtrouter**
+
+   The message router must be running for inter-process communication:
+   ```bash
+   ./mtrouter
+   ```
+
+2. **Start the service process**
+
+   Only one service instance should run:
+   ```bash
+   ./serviceproc
+   ```
+
+3. **Start client processes**
+
+   Multiple clients can connect simultaneously:
+   ```bash
+   ./clientproc
+   ./clientproc  # Additional clients get unique names automatically
+   ```
+
+4. **Observe the communication**
+
+   Clients discover the service, send greeting requests, and receive responses. The service processes requests from all connected clients.
+
+> [!TIP]
+> Configure the router address in [areg.init](../framework/areg/resources/areg.init) if running on different machines.
 
 ---
 
-With this setup, you can create scalable, cross-platform, distributed applications using the Areg SDK.
+With this foundation, you can build scalable distributed applications where the same component code works across threads, processes, and network devices.
