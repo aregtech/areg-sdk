@@ -120,12 +120,12 @@ void ServiceClient::responseHelloUnblock( unsigned int clientId, unsigned int se
         << std::endl;
 }
 
-void ServiceClient::requestHelloUblockFailed( NEService::eResultType FailureReason )
+void ServiceClient::requestHelloUblockFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
     LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", NEService::getString( FailureReason ) );
     // Make sure it does not fail with reason 'request is busy'
-    ASSERT( FailureReason != NEService::eResultType::RequestBusy );
+    ASSERT( FailureReason != NEService::ResultType::RequestBusy );
 }
 
 void ServiceClient::onHelloServiceStateUpdate( NEHelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state )

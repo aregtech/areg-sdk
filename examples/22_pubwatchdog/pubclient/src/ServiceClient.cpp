@@ -98,19 +98,19 @@ void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
 
 #if AREG_LOGS
 
-void ServiceClient::requestStartSleepFailed( NEService::eResultType FailureReason )
+void ServiceClient::requestStartSleepFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient_requestStartSleepFailed );
     LOG_WARN("Request to sleep service failed with reason [ %s ]", NEService::getString(FailureReason));
 }
 
-void ServiceClient::requestStopServiceFailed( NEService::eResultType FailureReason )
+void ServiceClient::requestStopServiceFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient_requestStopServiceFailed );
     LOG_WARN( "Request to stop the service failed with reason [ %s ]", NEService::getString( FailureReason ) );
 }
 
-void ServiceClient::requestShutdownServiceFailed( NEService::eResultType FailureReason )
+void ServiceClient::requestShutdownServiceFailed( NEService::ResultType FailureReason )
 {
     LOG_SCOPE( examples_22_pubclient_ServiceClient_requestShutdownServiceFailed );
     LOG_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::getString( FailureReason ) );

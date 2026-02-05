@@ -68,41 +68,42 @@ namespace NEService
      *          Used when sending response service event
      *          and needs to define validation of execution.
      **/
-    typedef enum class E_ResultType : uint16_t
+    typedef enum class ResultType : uint16_t
     {
         /* not used */
-          Undefined         =     0 /*0x0000*/  //!< undefined result. not used             Bits: 0000 0000 0000 0000
+          Undefined          =     0 /*0x0000*/  //!< undefined result. not used             Bits: 0000 0000 0000 0000
         /* additional bits */
-        , Error             =     1 /*0x0001*/  //!< indicate error. contains error bit     Bits: 0000 0000 0000 0001
-        , Undelivered       =    32 /*0x0020*/  //!< message was not delivered              Bits: 0000 0000 0010 0000
-        , NotProcessed      =    64 /*0x0040*/  //!< call did not reach target              Bits: 0000 0000 0100 0000
-        , Processed         =   128 /*0x0080*/  //!< call reached target                    Bits: 0000 0000 1000 0000
+        , Error              =     1 /*0x0001*/  //!< indicate error. contains error bit     Bits: 0000 0000 0000 0001
+        , Undelivered        =    32 /*0x0020*/  //!< message was not delivered              Bits: 0000 0000 0010 0000
+        , NotProcessed       =    64 /*0x0040*/  //!< call did not reach target              Bits: 0000 0000 0100 0000
+        , Processed          =   128 /*0x0080*/  //!< call reached target                    Bits: 0000 0000 1000 0000
 
-         /* Message did not reach target, used in remote messaging */
-        , MessageUndelivered=  4129 /*0x1021*/  //!< request failed to reach target.        Bits: 0001 0000 0010 0001
+        /* Message did not reach target, used in remote messaging */
+        , MessageUndelivered =  4129 /*0x1021*/  //!< request failed to reach target.        Bits: 0001 0000 0010 0001
 
         /* request calls result */
-        , RequestOK         =  8320 /*0x2080*/  //!< indicates success of request call.     Bits: 0010 0000 1000 0000
-        , RequestInvalid    =  8257 /*0x2041*/  //!< indicates failure of request call.     Bits: 0010 0000 0100 0001
-        , RequestError      =  8321 /*0x2081*/  //!< indicates request execution failure.   Bits: 0010 0000 1000 0001
-        , RequestBusy       =  8323 /*0x2083*/  //!< request cannot execute, it is busy.    Bits: 0010 0000 1000 0011
-        , RequestCanceled   =  8325 /*0x2085*/  //!< request is canceled and not executed.  Bits: 0010 0000 1000 0101
+        , RequestOk          =  8320 /*0x2080*/  //!< indicates success of request call.     Bits: 0010 0000 1000 0000
+        , RequestInvalid     =  8257 /*0x2041*/  //!< indicates failure of request call.     Bits: 0010 0000 0100 0001
+        , RequestError       =  8321 /*0x2081*/  //!< indicates request execution failure.   Bits: 0010 0000 1000 0001
+        , RequestBusy        =  8323 /*0x2083*/  //!< request cannot execute, it is busy.    Bits: 0010 0000 1000 0011
+        , RequestCanceled    =  8325 /*0x2085*/  //!< request is canceled and not executed.  Bits: 0010 0000 1000 0101
 
         /* data update result */
-        , DataOK            = 16512 /*0x4080*/  //!< indicates data validation.             Bits: 0100 0000 1000 0000
-        , DataInvalid       = 16449 /*0x4041*/  //!< indicates data invalid.                Bits: 0100 0000 0100 0001
+        , DataOk             = 16512 /*0x4080*/  //!< indicates data validation.             Bits: 0100 0000 1000 0000
+        , DataInvalid        = 16449 /*0x4041*/  //!< indicates data invalid.                Bits: 0100 0000 0100 0001
 
         /* service call result */
-        , ServiceOK         = 32896 /*0x8080*/  //!< service call processed.                Bits: 1000 0000 1000 0000
-        , ServiceUnavailable= 32833 /*0x8041*/  //!< service is unavailable.                Bits: 1000 0000 0100 0001
-        , ServiceInvalid    = 32897 /*0x8081*/  //!< service invalid (check cookie).        Bits: 1000 0000 1000 0001
-        , ServiceRejected   = 32899 /*0x8083*/  //!< service rejected (unsupported).        Bits: 1000 0000 1000 0011
+        , ServiceOk          = 32896 /*0x8080*/  //!< service call processed.                Bits: 1000 0000 1000 0000
+        , ServiceUnavailable = 32833 /*0x8041*/  //!< service is unavailable.                Bits: 1000 0000 0100 0001
+        , ServiceInvalid     = 32897 /*0x8081*/  //!< service invalid (check cookie).        Bits: 1000 0000 1000 0001
+        , ServiceRejected    = 32899 /*0x8083*/  //!< service rejected (unsupported).        Bits: 1000 0000 1000 0011
 
-    } eResultType;
+    } ResultType;
+
     /**
-     * \brief   Returns string value of NEService::eResultType type
+     * \brief   Returns string value of NEService::ResultType type
      **/
-    inline const char* getString(NEService::eResultType resultType);
+    inline const char* getString(NEService::ResultType resultType);
 
     /**
      * \brief   Data types
@@ -1084,7 +1085,7 @@ namespace NEService
 //////////////////////////////////////////////////////////////////////////
 // Global namespace NEService inline function implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE(NEService::eResultType)
+IMPLEMENT_STREAMABLE(NEService::ResultType)
 IMPLEMENT_STREAMABLE(NEService::eDataStateType)
 IMPLEMENT_STREAMABLE(NEService::eRequestType)
 IMPLEMENT_STREAMABLE(NEService::eMessageDataType)
@@ -1351,53 +1352,53 @@ inline const IEInStream& operator >> (const IEInStream& stream, NEService::sServ
 // class NEService enumerations string conversion
 //////////////////////////////////////////////////////////////////////////
 
-inline const char* NEService::getString(NEService::eResultType resultType)
+inline const char* NEService::getString(NEService::ResultType resultType)
 {
     switch (resultType)
     {
-    case    NEService::eResultType::Undefined:
-        return "NEService::eResultType::Undefined";
+    case    NEService::ResultType::Undefined:
+        return "NEService::ResultType::Undefined";
 
-    case    NEService::eResultType::Error:
-        return "NEService::eResultType::Error";
-    case NEService::eResultType::Undelivered:
-        return "NEService::eResultType::Undelivered";
-    case    NEService::eResultType::NotProcessed:
-        return "NEService::eResultType::NotProcessed";
-    case NEService::eResultType::Processed:
-        return "NEService::eResultType::Processed";
+    case    NEService::ResultType::Error:
+        return "NEService::ResultType::Error";
+    case NEService::ResultType::Undelivered:
+        return "NEService::ResultType::Undelivered";
+    case    NEService::ResultType::NotProcessed:
+        return "NEService::ResultType::NotProcessed";
+    case NEService::ResultType::Processed:
+        return "NEService::ResultType::Processed";
 
-    case NEService::eResultType::MessageUndelivered:
-        return "NEService::eResultType::MessageUndelivered";
+    case NEService::ResultType::MessageUndelivered:
+        return "NEService::ResultType::MessageUndelivered";
 
-    case    NEService::eResultType::RequestOK:
-        return "NEService::eResultType::RequestOK";
-    case    NEService::eResultType::RequestInvalid:
-        return "NEService::eResultType::RequestInvalid";
-    case    NEService::eResultType::RequestError:
-        return "NEService::eResultType::RequestError";
-    case    NEService::eResultType::RequestBusy:
-        return "NEService::eResultType::RequestBusy";
-    case    NEService::eResultType::RequestCanceled:
-        return "NEService::eResultType::RequestCanceled";
+    case    NEService::ResultType::RequestOk:
+        return "NEService::ResultType::RequestOk";
+    case    NEService::ResultType::RequestInvalid:
+        return "NEService::ResultType::RequestInvalid";
+    case    NEService::ResultType::RequestError:
+        return "NEService::ResultType::RequestError";
+    case    NEService::ResultType::RequestBusy:
+        return "NEService::ResultType::RequestBusy";
+    case    NEService::ResultType::RequestCanceled:
+        return "NEService::ResultType::RequestCanceled";
 
-    case    NEService::eResultType::DataOK:
-        return "NEService::eResultType::DataOK";
-    case    NEService::eResultType::DataInvalid:
-        return "NEService::eResultType::DataInvalid";
+    case    NEService::ResultType::DataOk:
+        return "NEService::ResultType::DataOk";
+    case    NEService::ResultType::DataInvalid:
+        return "NEService::ResultType::DataInvalid";
 
-    case    NEService::eResultType::ServiceOK:
-        return "NEService::eResultType::ServiceOK";
-    case    NEService::eResultType::ServiceUnavailable:
-        return "NEService::eResultType::ServiceUnavailable";
-    case    NEService::eResultType::ServiceInvalid:
-        return "NEService::eResultType::ServiceInvalid";
-    case    NEService::eResultType::ServiceRejected:
-        return "NEService::eResultType::ServiceRejected";
+    case    NEService::ResultType::ServiceOk:
+        return "NEService::ResultType::ServiceOk";
+    case    NEService::ResultType::ServiceUnavailable:
+        return "NEService::ResultType::ServiceUnavailable";
+    case    NEService::ResultType::ServiceInvalid:
+        return "NEService::ResultType::ServiceInvalid";
+    case    NEService::ResultType::ServiceRejected:
+        return "NEService::ResultType::ServiceRejected";
 
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::eResultType value!";
+        return "ERR: Undefined NEService::ResultType value!";
     }
 }
 

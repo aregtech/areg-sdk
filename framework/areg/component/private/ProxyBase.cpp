@@ -245,7 +245,7 @@ int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<std
     return result;
 }
 
-RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::eResultType errCode, const SequenceNumber & seqNr)
+RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::ResultType errCode, const SequenceNumber & seqNr)
 {
     LOG_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
@@ -430,7 +430,7 @@ void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer
             if (NEService::isAttributeId(msgId))
             {
                 sendNotificationEvent( msgId
-                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::eResultType::DataOK : NEService::eResultType::DataInvalid
+                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOk : NEService::ResultType::DataInvalid
                                      , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
 
@@ -446,12 +446,12 @@ void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer
             if ( NEService::isAttributeId(msgId) )
             {
                 sendNotificationEvent( msgId
-                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::eResultType::DataOK : NEService::eResultType::DataInvalid
+                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOk : NEService::ResultType::DataInvalid
                                      , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
             else if ( NEService::isResponseId(msgId) && (mProxyData.getParamState(msgId) == NEService::eDataStateType::DataIsOK) )
             {
-                sendNotificationEvent(  msgId, NEService::eResultType::RequestOK, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
+                sendNotificationEvent(  msgId, NEService::ResultType::RequestOk, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
             else
             {
@@ -529,7 +529,7 @@ uint32_t ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listener
     return out_listenerList.getSize();
 }
 
-void ProxyBase::notifyListeners( unsigned int respId, NEService::eResultType result, const SequenceNumber & seqNrToSearch )
+void ProxyBase::notifyListeners( unsigned int respId, NEService::ResultType result, const SequenceNumber & seqNrToSearch )
 {
     ProxyBase::ProxyListenerList listenerList;
     prepareListeners(listenerList, respId, seqNrToSearch);
@@ -540,7 +540,7 @@ void ProxyBase::notifyListeners( unsigned int respId, NEService::eResultType res
     }
 }
 
-void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::eResultType resType, const SequenceNumber & seqNr, IENotificationEventConsumer* caller )
+void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::ResultType resType, const SequenceNumber & seqNr, IENotificationEventConsumer* caller )
 {
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent* eventElem = createNotificationEvent(data);
@@ -654,7 +654,7 @@ RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const IEInStream & /*
 
 RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAddress &  /* addrProxy */
                                                                 , unsigned int          /* msgId */
-                                                                , NEService::eResultType/* reason */
+                                                                , NEService::ResultType/* reason */
                                                                 , const SequenceNumber &/* seqNr */ ) const
 {
     return nullptr;

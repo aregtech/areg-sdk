@@ -305,7 +305,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
             const ProxyAddress & addrProxy = eventRequest.getEventSource();
             result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventRequest.getRequestId()
-                                                                                         , NEService::eResultType::MessageUndelivered
+                                                                                         , NEService::ResultType::MessageUndelivered
                                                                                          , eventRequest.getSequenceNumber()) );
         }
         break;
@@ -317,7 +317,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
             const ProxyAddress & addrProxy = eventNotify.getEventSource();
             result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventNotify.getRequestId()
-                                                                                         , NEService::eResultType::MessageUndelivered
+                                                                                         , NEService::ResultType::MessageUndelivered
                                                                                          , eventNotify.getSequenceNumber()) );
         }
         break;

@@ -359,7 +359,7 @@ protected:
      * \param   data    The buffer of data to send to client. Can be Invalid buffer
      * \return  Returns valid pointer to Response event object
      **/
-    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const;
+    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::ResultType result, const EventDataStream & data ) const;
 
     /**
      * \brief   Overwrite method to create remote service request event from streaming object for 
@@ -609,7 +609,7 @@ protected:
      * \param   data    The buffer of serialized data to send to proxy. Can be Invalid buffer
      * \param   result  The result to send to proxy objects.
      **/
-    void sendUpdateEvent(unsigned int msgId, const EventDataStream & data, NEService::eResultType result) const;
+    void sendUpdateEvent(unsigned int msgId, const EventDataStream & data, NEService::ResultType result) const;
 
     /**
      * \brief   Send once the data update notification event to the specified target.
@@ -618,7 +618,7 @@ protected:
      * \param   data    The data to send to the target. Can be Invalid buffer
      * \param   result  The result of data update to send to the target object.
      **/
-    void sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const;
+    void sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::ResultType result ) const;
 
     /**
      * \brief   Sends response event to proxy. The list of proxy listeners is selected by message ID.

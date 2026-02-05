@@ -69,19 +69,19 @@ protected:
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestStartSleepFailed( NEService::eResultType FailureReason ) override;
+    virtual void requestStartSleepFailed( NEService::ResultType FailureReason ) override;
 
     /**
      * \brief   Overwrite to handle error of StopService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestStopServiceFailed( NEService::eResultType FailureReason ) override;
+    virtual void requestStopServiceFailed( NEService::ResultType FailureReason ) override;
 
     /**
      * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
+    virtual void requestShutdownServiceFailed( NEService::ResultType FailureReason ) override;
 #endif  // AREG_LOGS
 
 /************************************************************************/

@@ -335,7 +335,7 @@ void StubBase::invalidateAttribute( unsigned int attrId )
         errorRequest(attrId, false);
 }
 
-void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const
+void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data, NEService::ResultType result ) const
 {
     LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
     StubBase::StubListenerList listeners;
@@ -353,7 +353,7 @@ void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data
     }
 }
 
-void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const
+void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::ResultType result ) const
 {
     ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
     if ( eventElem != nullptr )
@@ -367,7 +367,7 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
     StubBase::StubListenerList listeners;
     if (findListeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, NEService::eResultType::RequestOK, data);
+        ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, NEService::ResultType::RequestOk, data);
         if (eventElem != nullptr)
         {
             sendResponseNotification(listeners, *eventElem);
@@ -379,7 +379,7 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
 void StubBase::sendBusyRespone( const Listener & whichListener )
 {
     LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-    ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::eResultType::RequestBusy, EventDataStream::EmptyData);
+    ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::ResultType::RequestBusy, EventDataStream::EmptyData);
     if (eventElem != nullptr)
     {
         LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
@@ -559,7 +559,7 @@ const unsigned int * StubBase::getAttributeIds( void ) const
 
 ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */
                                              , unsigned int             /* msgId */
-                                             , NEService::eResultType   /* result */
+                                             , NEService::ResultType   /* result */
                                              , const EventDataStream &  /* data */ ) const
 {
     return nullptr;
