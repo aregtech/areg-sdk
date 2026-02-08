@@ -15,34 +15,43 @@ Areg SDK follows modern C++ conventions optimized for cross-platform development
 - **Clear type distinctions** (PascalCase types)
 - **Pragmatic flexibility** without sacrificing consistency
 
+**CRITICAL RULES - Always Follow:**
+1. Types = `PascalCase`, Functions = `snake_case`, Members = `mPascalCase`
+2. String parameters = `std::string_view` (NOT `const char*`)
+3. Integer types = `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t` (NOT `unsigned int`)
+4. Accessors = `count()` (NOT `get_count()` or `getCount()`)
+5. Header guards = traditional (NOT `#pragma once`)
+6. NO `IN`/`OUT`/`INOUT` empty macros
+7. Avoid using global variables. Exceptions are global variables with internal linkage -- declared in anonymous namespace and log scopes declared as `static`.
+
 ---
 
 ## 1. Naming Conventions
 
 ### 1.1 Quick Reference
 
-| Element                   | Convention                | Example                                   |
-|---------------------------|---------------------------|-------------------------------------------|
-| Classes                   | PascalCase                | `ServiceManager`                          |
-| Structs                   | PascalCase                | `ConnectionData`                          |
-| Functions/Methods         | snake_case                | `start_service()`                         |
-| Local Variables           | snake_case OR camelCase   | `connection_count` OR `connectionCount`   |
-| Class Member Variables    | `m` + PascalCase          | `mSocketFd`                               |
-| Struct Member Variables   | camelCase                 | `maxRetries`, `timeoutMs`                 |
-| Static Members            | `s_` + snake_case         | `s_instance_count`                        |
-| Global Variables          | `g_` + snake_case         | `g_max_connections` (avoid if possible)   |
-| Constants                 | constexpr UPPER_SNAKE     | `MAX_BUFFER_SIZE`                         |
-| Enum Classes              | PascalCase                | `ConnectionState`                         |
-| Enum Values               | snake_case                | `ConnectionState::connected`              |
-| Macros                    | `AREG_` + UPPER_SNAKE     | `AREG_ASSERT`                             |
-| Template Parameters       | PascalCase                | `template<typename MessageType>`          |
-| Namespaces                | snake_case                | `areg::ipc`                               |
+| Element                   | Convention                    | Example                                   |
+|---------------------------|-------------------------------|-------------------------------------------|
+| Classes                   | PascalCase                    | `ServiceManager`                          |
+| Structs                   | PascalCase                    | `ConnectionData`                          |
+| Functions/Methods         | snake_case                    | `start_service()`                         |
+| Local Variables           | snake_case OR camelCase       | `connection_count` OR `connectionCount`   |
+| Class Member Variables    | `m` + PascalCase              | `mSocketFd`                               |
+| Struct Member Variables   | camelCase                     | `maxRetries`, `timeoutMs`                 |
+| Static Members            | `s_` + snake_case             | `s_instance_count`                        |
+| Global Variables          | internal linkage, snake_case  | `_max_connections` (avoid if possible)    |
+| Constants                 | constexpr UPPER_SNAKE         | `MAX_BUFFER_SIZE`                         |
+| Enum Classes              | PascalCase                    | `ConnectionState`                         |
+| Enum Values               | snake_case                    | `ConnectionState::connected`              |
+| Macros                    | `AREG_` + UPPER_SNAKE         | `AREG_ASSERT`                             |
+| Template Parameters       | PascalCase                    | `template<typename MessageType>`          |
+| Namespaces                | snake_case                    | `areg::ipc`                               |
 
 ---
 
 ### 1.2 Classes and Structs
 
-**Classes and Structs:** PascalCase for type names
+**RULE:** Classes and Structs use PascalCase for type names.
 
 ```cpp
 // ✅ CORRECT
@@ -56,7 +65,7 @@ class service_manager { };  // No snake_case for types
 class serviceManager { };   // No camelCase for types
 ```
 
-**Struct Members:** camelCase (no `m` prefix)
+**RULE:** Struct members use camelCase (no `m` prefix).
 
 ```cpp
 // ✅ CORRECT - struct members are camelCase
@@ -89,6 +98,8 @@ struct ConnectionConfig
 
 ### 1.3 Functions and Methods
 
+**RULE:** Functions use snake_case. Drop `get_` prefix for simple accessors.
+
 ```cpp
 // ✅ CORRECT
 class ServiceManager
@@ -96,24 +107,49 @@ class ServiceManager
 public:
     void start_service();
     void stop_service();
-    [[nodiscard]] int get_connection_count() const;
+    
+    // Simple accessors - NO "get_" prefix
+    [[nodiscard]] int connection_count() const;      // NOT get_connection_count()
+    [[nodiscard]] int active_services() const;       // NOT get_active_services()
+    [[nodiscard]] State state() const;               // NOT get_state()
+    
+    // Booleans - KEEP "is_" or "has_" prefix
     [[nodiscard]] bool is_connected() const;
+    [[nodiscard]] bool has_pending_requests() const;
+    
+    // Mutators - ALWAYS use "set_"
+    void set_timeout(int ms);
+    void set_max_connections(int count);
 };
 
-// Virtual methods - child classes always use both 'virtual' and 'override' for derived virtual methods
+// ❌ WRONG
+void startService();           // No camelCase
+void StartService();           // No PascalCase
+int getConnectionCount();      // Drop "get_" prefix
+int get_connection_count();    // Drop "get_" prefix
+```
+
+**Naming patterns:**
+
+| Pattern           | Use               | Example                           |
+|-------------------|-------------------|-----------------------------------|
+| `property()`      | Simple accessor   | `size()`, `count()`, `state()`    |
+| `is_property()`   | Boolean query     | `is_valid()`, `is_connected()`    |
+| `has_property()`  | Boolean query     | `has_data()`, `has_parent()`      |
+| `set_property()`  | Mutator           | `set_size()`, `set_name()`        |
+| `action_noun()`   | Command           | `start_service()`, `stop_timer()` |
+
+**Virtual methods:**
+
+```cpp
+// RULE: Child classes use both 'virtual' and 'override' for clarity
 class DerivedService : public ServiceBase
 {
 public:
     virtual void start_service() override;
     virtual void stop_service() override;
 };
-
-// ❌ WRONG
-void startService();    // No camelCase
-void StartService();    // No PascalCase
 ```
-
-**Note:** You may use `virtual` keyword with `override` for better readability.
 
 ---
 
@@ -121,17 +157,19 @@ void StartService();    // No PascalCase
 
 #### Local Variables: snake_case OR camelCase (flexible)
 
+**RULE:** Choose one style per file and be consistent within that file.
+
 ```cpp
 // ✅ BOTH ACCEPTABLE
 int connection_count = 0;           // snake_case
 int connectionCount = 0;            // camelCase
 std::string serverAddress;          // camelCase
 auto service = std::make_unique<ServiceManager>();
-
-// Choose one style per file and be consistent within that file
 ```
 
 #### Member Variables: `m` + PascalCase
+
+**RULE:** All class member variables must use `m` prefix + PascalCase.
 
 ```cpp
 class Connection
@@ -145,7 +183,7 @@ public:
     }
 
 private:
-    // 👉 Optionally, Align member variables for better readability
+    // RULE: Optionally align member variables for better readability
     int             mSocketFd;
     std::string     mIpAddress;
     ConnectionState mState;
@@ -154,15 +192,13 @@ private:
 
 #### Static Members
 
-- Use **`s_` + snake_case** for class member variables.
-- Use **`_` + snake_case** for static variables in methods.
-- Use **`constexpr` + UPER_SNAKE** for constants declared as static.
+**RULE:** Use `s_` + snake_case for static class members, `_` + snake_case for static local variables.
 
 ```cpp
 class ServiceManager
 {
-    // constants can be declared on the top
-    static constexpr int MAX_SERVICES   { 100 };
+    // Constants can be declared at the top
+    static constexpr int MAX_SERVICES { 100 };
     
 public:
     static ServiceManager& get_instance()
@@ -172,16 +208,21 @@ public:
     }
     
 private:
-    static int  s_instance_count;
+    static int s_instance_count;
 };
 ```
 
-#### Global Variables: `g_` + snake_case (avoid if possible)
+#### Global Variables: snake_case (avoid if possible)
+
+Only global variables with internal linkage are allowed.
+These are variables declared in anonymous namespace or variables declared as `static` within a source code.
+These variables can be declared with `_` prefix. Typical case are log scopes declared via macro `DEF_LOG_SCOPE()`.
+Avoid if possible such variable.
 
 ```cpp
-namespace areg::config
+namespace
 {
-    int g_max_connections = 100;
+    int _max_connections = 100;
 }
 ```
 
@@ -189,9 +230,11 @@ namespace areg::config
 
 ### 1.5 Constants
 
+**RULE:** Use constexpr with UPPER_SNAKE_CASE.
+
 ```cpp
 // ✅ CORRECT - constexpr with UPPER_SNAKE_CASE
-// If possible, align constants and use initializers
+// Optionally align constants and use initializers
 constexpr int       MAX_BUFFER_SIZE     { 4096 };
 constexpr size_t    DEFAULT_TIMEOUT_MS  { 5000 };
 
@@ -199,7 +242,8 @@ constexpr size_t    DEFAULT_TIMEOUT_MS  { 5000 };
 #define MAX_BUFFER_SIZE 4096  // Use constexpr instead
 ```
 
-Constants in the classes can be declared at the top together with class specific types, even if they are `private`
+**RULE:** Constants in classes can be declared at the top, even if private.
+
 ```cpp
 class Connection
 {
@@ -207,7 +251,7 @@ class Connection
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 
-    // built-in types declared first
+    // Built-in types declared first
     enum class ConnectionState
     {
           disconnected
@@ -216,8 +260,8 @@ class Connection
         , error
     };
 
-    // constants can be declared on the top
-    static constexpr int MAX_RETRIES    { 100 };
+    // Constants declared at the top
+    static constexpr int MAX_RETRIES { 100 };
 };
 ```
 
@@ -225,7 +269,7 @@ class Connection
 
 ### 1.6 Enumerations
 
-**Leading comma style for better alignment:**
+**RULE:** Use leading comma style for better alignment.
 
 ```cpp
 // ✅ CORRECT
@@ -245,6 +289,8 @@ ConnectionState state = ConnectionState::connected;
 
 ### 1.7 Template Parameters
 
+**RULE:** Template parameters use PascalCase.
+
 ```cpp
 // ✅ CORRECT
 template<typename MessageType, typename HandlerType>
@@ -257,6 +303,8 @@ class Container { };
 ---
 
 ### 1.8 Namespaces
+
+**RULE:** Namespaces use snake_case.
 
 ```cpp
 // ✅ CORRECT
@@ -277,9 +325,36 @@ namespace ipc
 
 ---
 
+### 1.9 Name Length - Clear But Concise
+
+**RULE:** Prefer shorter names when context makes meaning clear.
+
+```cpp
+// ✅ GOOD - Function provides context
+void load_config(std::string_view file);        // NOT config_file
+void connect(std::string_view address);         // NOT server_address  
+void set_timeout(int ms);                       // NOT timeout_milliseconds
+
+// ✅ GOOD - Ambiguous context needs full name
+void copy(std::string_view source, std::string_view destination);
+void convert(std::string_view input, Format from, Format to);
+
+// ❌ TOO SHORT - Unclear
+void load(std::string_view f);     // What is 'f'?
+void proc(int x, int y);           // What does it process?
+
+// ❌ TOO LONG - Redundant
+void load_configuration_file(std::string_view configuration_file_path);
+void set_maximum_connection_timeout_value(int timeout_value);
+```
+
+---
+
 ## 2. Macros
 
 ### 2.1 Naming
+
+**RULE:** Macros use `AREG_` prefix + UPPER_SNAKE_CASE.
 
 ```cpp
 // ✅ CORRECT - AREG_ prefix
@@ -298,16 +373,18 @@ namespace ipc
 
 ### 2.2 Prefer Modern Alternatives
 
+**RULE:** Avoid macros when modern C++ alternatives exist.
+
 1. `constexpr` for constants
 2. `inline` functions for utilities
 3. Templates for type-generic code
-4. Macros only for 
-   * conditional compilation
+4. Macros only for:
+   * Conditional compilation
      ```cpp
      #ifdef POSIX
      #endif // POSIX
      ```
-   * visibility
+   * Visibility control
      ```cpp
      #ifdef AREG_ENABLE_LOGS
         #define LOG_DBG(x)  logger.logDebug(x)
@@ -315,7 +392,7 @@ namespace ipc
         #define LOG_DBG(x)
      #endif
      ```
-   * code generation: always avoid using, except some special case.
+   * Code generation (avoid except special cases)
      ```cpp
         #define  START_PROCESSING( name )   \
             bool is_processed { false };    \
@@ -349,16 +426,39 @@ inline void log_debug(const char* msg) { /* ... */ }
 #endif
 ```
 
+### 2.3 Prohibited Macros
+
+**RULE:** Never use empty IN/OUT/INOUT macros for parameters.
+
+```cpp
+// ❌ WRONG - Don't use these macros
+void process(IN const char* input, OUT int& result, INOUT State& state);
+
+// ✅ CORRECT - Use comments if needed
+void process(const char* input, int& result, State& state);
+//           ^input           ^output      ^input+output
+
+// ✅ BETTER - Use return value or out-parameters clearly
+struct ProcessResult { int code; State new_state; };
+ProcessResult process(const char* input, const State& current_state);
+```
+
+**Why:** Empty macros add no value and hurt readability.
+
 ---
 
 ## 3. Code Layout
 
 ### 3.1 Indentation
 
+**RULE:** Use 4 spaces per level. NO tabs.
+
 - **4 spaces** per level
 - **NO tabs**
 
 ### 3.2 Braces - Allman Style
+
+**RULE:** Opening braces on new line.
 
 ```cpp
 // ✅ CORRECT
@@ -373,469 +473,259 @@ void process_message()
 class ServiceManager
 {
 public:
-    void start()
+    ServiceManager()
     {
-        initialize();
     }
 };
+
+// ❌ WRONG - No K&R style
+void process_message() {
+    if (is_valid()) {
+        send_response();
+    }
+}
 ```
 
 ### 3.3 Line Length
 
-- **Soft limit:** 100 characters
-- **Hard limit:** 120 characters
+- **Soft limit:** 120 characters
+- **Hard limit:** 180 characters
 
 ```cpp
-// ✅ Leading comma for better alignment
-auto connection = service_manager.create_connection(
-      server_address
-    , port_number
-    , connection_timeout
+// ✅ CORRECT - Break long lines
+void configure_service_manager( std::string_view service_name
+                              , uint16_t port
+                              , int max_connections);
+
+// ❌ WRONG - Too long
+void configure_service_manager(std::string_view service_name, uint16_t port, int max_connections, bool enable_ssl);
+```
+
+### 3.4 Leading Comma Style
+
+**RULE:** Use leading comma for enums, parameter lists, initializer lists.
+
+```cpp
+// ✅ CORRECT - Leading comma
+enum class State
+{
+      stopped
+    , starting
+    , running
+};
+
+Connection(int fd, std::string addr)
+    : mSocketFd(fd)
+    , mAddress(std::move(addr))
+    , mState(State::stopped)
+{
+}
+```
+
+### 3.5 Parameter Alignment - Use When Function Name is Long
+
+**RULE:** Align parameters on new lines ONLY when:
+- Function name + all params exceed 100 characters
+- Parameters are numerous and need grouping for clarity
+
+```cpp
+// ✅ Short function - NO alignment needed
+void connect(std::string_view addr, uint16_t port, bool ssl);
+
+// ✅ Long function name - align parameters vertically
+void configure_service_manager_with_options(  
+              std::string_view service_name
+            , uint16_t         port
+            , int              max_connections
+            , bool             enable_ssl);
+
+// ✅ Logging with long message/params - align for readability
+LOG_DBG("Connection failed: addr=%s port=%d ssl=%d retry=%d/%d"
+    , address.data()
+    , port
+    , use_ssl
+    , current_retry
+    , max_retries);
+
+// ✅ Traditional style is also acceptable
+void configure_service_manager_with_options(
+    std::string_view service_name,
+    uint16_t port,
+    int max_connections,
+    bool enable_ssl
 );
 ```
 
-### 3.4 Spacing
+### 3.6 Member Variable Alignment (Optional but Recommended)
+
+**RULE:** Align types and names in one column for better readability.
 
 ```cpp
-// ✅ Spaces after keywords, around operators
-if (condition)
-{
-    int result = a + b;
-}
-
-for (int i = 0; i < count; ++i)
-{
-    process(i);
-}
-
-// ✅ Parentheses for clarity
-if ((value == 1) || ((value == 2) && ((flags & 0x0F) != 0)))
-{
-    process();
-}
-```
-
-Align variables in the class if possible or looks nicer:
-```cpp
-class Connection
-{
-public:
-    Connection(int fd, std::string addr)
-        : mSocketFd(fd)
-        , mIpAddress(std::move(addr))
-        , mState(ConnectionState::disconnected)
-    {
-    }
-
+// ✅ GOOD - Aligned
 private:
-    // 👉 Optionally, Align member variables for better readability
     int             mSocketFd;
-    std::string     mIpAddress;
+    std::string     mAddress;
     ConnectionState mState;
-};
+    uint64_t        mTimestamp;
+
+// ✅ Also acceptable - No alignment
+private:
+    int mSocketFd;
+    std::string mAddress;
+    ConnectionState mState;
+    uint64_t mTimestamp;
 ```
 
-### 3.5 Inline Methods
+### 3.7 Constant Alignment (Optional but Recommended)
+
+**RULE:** Align constant values for better readability.
 
 ```cpp
-// ✅ PREFERRED - clean interface
-class Size
-{
-public:
-    //!< Returns width
-    inline uint32_t width() const;
-    //< Returns height
-    inline uint32_t height() const;
-    
-private:
-    uint32_t mWidth;
-    uint32_t mHeight;
-};
-
-inline uint32_t Size::width() const
-{
-    return mWidth;
-}
-
-inline uint32_t Size::height() const
-{
-    return mHeight;
-}
+// ✅ GOOD - Aligned
+constexpr int    MAX_CONNECTIONS    { 100 };
+constexpr size_t DEFAULT_TIMEOUT_MS { 5000 };
+constexpr bool   ENABLE_DEBUG       { true };
 ```
 
 ---
 
 ## 4. Comments and Documentation
 
-### 4.1 Comment Style
+### 4.1 Header Comments
 
+Align comments for better readability.
 ```cpp
-// Single-line comments
-
 /**
- * Multi-line Doxygen comments.
- * Aligned asterisks.
+ * \brief   Manages IPC service lifecycle and connections.
+ *          ServiceManager handles initialization, configuration, and shutdown
+ *          of IPC services. Supports multiple concurrent connections.
  **/
-
-/// Alternative single-line Doxygen
+class ServiceManager
+{
+    // ...
+};
 ```
 
-### 4.2 Function Documentation
+### 4.2 Function Comments
 
 ```cpp
 /**
- * \brief   Establishes connection to remote service.
- * 
- * Attempts to connect with retry logic.
- * 
- * \param   address     Service address (hostname or IP)
- * \param   port        Service port (1-65535)
- * \param   timeout_ms  Connection timeout in milliseconds
- * 
- * \return  0 on success, negative errno on failure:
- *          -EINVAL         Invalid parameters
- *          -ECONNREFUSED   Connection refused
- *          -ETIMEDOUT      Connection timeout
+ * \brief   Starts the service with the specified configuration.
+ * \param   config_file     Path to configuration file (empty for defaults)
+ * \return  0 on success, negative error code on failure
  */
-int connect_service(const std::string& address, uint16_t port, uint32_t timeout_ms);
+int start_service(std::string_view config_file = "");
+```
+
+### 4.3 Inline Comments
+
+```cpp
+// Good comment - explains WHY
+mRetryCount = 0;  // Reset counter after successful connection
+
+// Bad comment - states WHAT (obvious from code)
+mRetryCount = 0;  // Set retry count to zero
 ```
 
 ---
 
-## 5. Modern C++ Features
+## 5. Declarations and Definitions
 
-### 5.1 Smart Pointers
+### 5.1 One Declaration Per Line
 
 ```cpp
 // ✅ CORRECT
-auto service = std::make_unique<MessageService>();
-auto shared_conn = std::make_shared<Connection>();
+int count = 0;
+int index { 0 };
+int total = 0;
 
-// ❌ AVOID manual memory management
-MessageService* service = new MessageService();
+// ❌ WRONG
+int count = 0, index {0}, total = 0;
 ```
 
-### 5.2 References vs Pointers
+### 5.2 Pointer and Reference Alignment
+
+**RULE:** Attach `*` and `&` to the type, with space after.
+Acceptable if there is a space between type and `*` or `&`.
 
 ```cpp
-// ✅ References for non-optional parameters
-bool start_connection(Connection& conn);
+// ✅ CORRECT
+const String& name;
+char* buffer;
+int* ptr;
 
-// ✅ Pointers for optional parameters
-void log_with_prefix(const std::string& msg, const char* prefix = nullptr);
+// ✅ Also acceptable - space between type
+const String & name;
+char * buffer;
+int * ptr;
 
-// ✅ std::optional for modern code
-void connect(const std::string& addr, std::optional<uint16_t> port = std::nullopt);
+// ❌ WRONG
+const String &name;
+char *buffer;
+int *ptr;
 ```
 
-### 5.3 auto Keyword
+### 5.3 Initialize Variables
+
+**RULE:** Always initialize variables at declaration.
 
 ```cpp
-// ✅ GOOD uses
-auto conn = std::make_unique<Connection>();
-auto iter = container.begin();
+// ✅ CORRECT
+int count = 0;
+std::string name;  // Default-initialized
+auto ptr = std::make_unique<Connection>();
 
-for (const auto& item : items)
-{
-    process(item);
-}
-
-// ✅ Prefer explicit when clarity matters
-ConnectionState state = get_state();
-
-// ❌ NEVER for return types, return type must be clear
-auto create_connection();  // What does this return?
-```
-
-### 5.4 constexpr and const
-
-```cpp
-// ✅ Use constexpr for compile-time constants
-constexpr int   BUFFER_SIZE = 4096;
-constexpr auto  TIMEOUT = std::chrono::seconds(30);
-
-// ✅ Mark non-modifying methods const
-class ServiceManager
-{
-public:
-    int get_count() const { return mCount; }
-    bool is_running() const { return mRunning; }
-    
-private:
-    int  mCount;
-    bool mRunning;
-};
-```
-
-### 5.5 Member Initialization
-
-**Structs:** Use in-class initializers
-
-```cpp
-// ✅ GOOD for structs
-struct ConnectionConfig
-{
-    int maxRetries      {3};
-    int timeoutMs       {5000};
-    bool autoReconnect  {true};
-};
-```
-
-**Classes:** Prefer constructor initialization. In-class init acceptable for simple cases.
-
-**✅ PREFERRED - Simple class with single visibility section**
-```cpp
-class SimpleConfig
-{
-private:
-    int mMaxConnections{100};
-    int mTimeoutMs{5000};
-    bool mAutoRetry{true};
-};
-// All members in one section - in-class init is clear
-```
-
-**✅ PREFERRED - Complex class with mixed visibility**
-```cpp
-class Connection
-{
-public:
-    Connection()
-        : mPublicCounter(0)
-        , mProtectedCounter(0)
-        , mPrivateCounter(0)
-    {}
-    
-public:
-    int mPublicCounter;
-    
-protected:
-    int mProtectedCounter;
-    
-private:
-    int mPrivateCounter;
-};
-// Defaults scattered across sections - constructor keeps it in one place
-```
-
-**⚠️ AVOID - Mixed visibility with in-class init**
-```cpp
-class Connection
-{
-public:
-    // functions here
-    
-    int mPublicCounter{0};      // Default here
-    
-protected:
-    // functions here
-    
-    int mProtectedCounter{0};   // Default here
-    
-private:
-    // functions here
-    
-    int mPrivateCounter{0};     // Default here
-};
-// Messy - defaults scattered across sections
-```
-
-**Why initialize classes in constructor:**
-
-**Reason 1: One location for all initialization**
-```cpp
-// With in-class init - defaults scattered across class sections
-class ServiceManager
-{
-public:
-    int mPublicCounter{0};     // ← Default here
-    
-protected:
-    int mProtectedCounter{0};  // ← Default here
-    
-private:
-    int mPrivateCounter{0};    // ← Default here
-};
-// Where are the defaults? Scattered across public/protected/private sections
-
-// With constructor init - all defaults in ONE place
-class ServiceManager
-{
-public:
-    ServiceManager()
-        : mPublicCounter(0)
-        , mProtectedCounter(0)
-        , mPrivateCounter(0)
-    {
-    }
-    // All initialization in one location - easy to review
-    
-public:
-    int mPublicCounter;
-    
-protected:
-    int mProtectedCounter;
-    
-private:
-    int mPrivateCounter;
-};
-```
-
-**Reason 2: Clarity - no confusion about overrides**
-```cpp
-// With in-class init - which value does member actually have?
-class Connection
-{
-public:
-    Connection(int timeout)
-    // Question: Is mTimeout = timeout or 5000?
-    // Answer: Need to check if constructor in source code overrides default
-    
-private:
-    int mTimeout{5000};  // Default value here, but might be overridden
-};
-
-// With constructor init - value is obvious
-class Connection
-{
-public:
-    Connection(int timeout) : mTimeout(timeout) {}
-    // Clear: mTimeout = timeout
-    
-    Connection() : mTimeout(5000) {}
-    // Clear: mTimeout = 5000
-    
-private:
-    int mTimeout;  // Value set in constructor, look there
-};
-```
-
-**Reason 3: Forces discipline and completeness**
-```cpp
-// Constructor initialization forces listing ALL members
-class Connection
-{
-public:
-    Connection()
-        : mSocketFd(-1)
-        , mBytesReceived(0)
-        , mBytesSent(0)
-        , mTimeout(5000)
-        // Compiler warns if mIsConnected is missing
-    {
-    }
-    
-private:
-    int         mSocketFd;
-    uint32_t    mBytesReceived;
-    uint32_t    mBytesSent;
-    int         mTimeout;
-    bool        mIsConnected;  // Forgot to initialize - compiler WARNING
-};
-```
-
-**Reason 4: Not all members can be initialized in-class**
-```cpp
-class Connection
-{
-public:
-    Connection(Socket& socket)
-        : mSocket(socket)      // Reference - MUST be in constructor
-        , mSocketFd(-1)        // Initialize with reference member
-        , mBytesReceived(0)
-        , mBytesSent(0)
-    {
-    }
-    
-private:
-    Socket&     mSocket;           // Cannot use in-class init
-    int         mSocketFd;
-    uint32_t    mBytesReceived;
-    uint32_t    mBytesSent;
-};
-// If some members MUST be in constructor (references, pointers),
-// put ALL members there for consistency
-```
-
-**Summary:**
-- **Structs:** Simple data holders, in-class init is fine
-- **Classes:** Complex objects, all initialization in constructor (source code) keeps it clear and complete
-
-### 5.6 Range-based For Loops
-
-```cpp
-// ✅ Prefer range-for
-for (auto& connection : connections)
-{
-    connection.update();
-}
-
-for (const auto& message : message_queue)
-{
-    log(message);
-}
-```
-
-### 5.7 Structured Bindings (C++17)
-
-```cpp
-// ✅ Clean unpacking
-auto [success, result] = execute_operation();
-
-for (const auto& [key, value] : config_map)
-{
-    apply_setting(key, value);
-}
+// ❌ WRONG
+int count;         // Uninitialized
+Connection* ptr;   // Uninitialized pointer
 ```
 
 ---
 
-## 6. Error Handling
+## 6. Modern C++ Features
 
-### 6.1 Return Codes
+### 6.1 auto Usage
+
+**RULE:** Use `auto` for complex types, NOT for return types.
 
 ```cpp
-// ✅ Return 0 for success, negative errno on failure
-int connect_to_service(const std::string& address, uint16_t port)
-{
-    if (address.empty())
-    {
-        return -EINVAL;
-    }
-    
-    if (socket_connect_failed)
-    {
-        return -ECONNREFUSED;
-    }
-    
-    return 0;
-}
+// ✅ CORRECT - Use auto for complex iterators/lambdas
+auto iter = connections.begin();
+auto lambda = [](int x) { return x * 2; };
+auto ptr = std::make_unique<Connection>();
+
+// ✅ CORRECT - Explicit return types
+int count() const { return mCount; }
+bool is_valid() const { return mState != State::error; }
+
+// ❌ WRONG - Don't use auto for return types
+auto count() const { return mCount; }        // Hard to read API
+auto is_valid() const { return mState != State::error; }
 ```
 
-### 6.2 Exceptions
+### 6.2 nullptr
+
+**RULE:** Always use `nullptr`, never `NULL` or `0`.
 
 ```cpp
-// ❌ DO NOT use exceptions (embedded incompatible)
-void process_data()
+// ✅ CORRECT
+Connection* conn = nullptr;
+if (ptr != nullptr)
 {
-    throw std::runtime_error("Failed");  // Don't do this
+    ptr->process();
 }
 
-// ✅ Return error codes
-int process_data()
-{
-    if (invalid_state)
-    {
-        return -EINVAL;
-    }
-    return 0;
-}
+// ❌ WRONG
+Connection* conn = NULL;
+Connection* conn = 0;
 ```
 
 ### 6.3 std::optional
 
+**RULE:** Use `std::optional` for "may not have value" scenarios.
+
 ```cpp
-// ✅ Use for "may not have value"
+// ✅ CORRECT - Use for optional return values
 std::optional<Connection> find_connection(int id)
 {
     auto iter = mConnections.find(id);
@@ -847,11 +737,79 @@ std::optional<Connection> find_connection(int id)
 }
 ```
 
+### 6.4 String Parameters - Use std::string_view
+
+**RULE:** Always use `std::string_view` for read-only string parameters.
+
+```cpp
+// ✅ CORRECT - Modern C++17
+void load_config(std::string_view file_path);
+bool connect(std::string_view address, uint16_t port);
+void set_name(std::string_view name);
+
+// ❌ WRONG - Don't use const char*
+void load_config(const char* file_path);      // OLD STYLE
+void connect(const char* address, int port);  // OLD STYLE
+
+// ❌ WRONG - Don't use const std::string&
+void load_config(const std::string& file_path);  // Unnecessary copy overhead
+```
+
+**Why:**
+- Works with both C-strings and `std::string`
+- No `strlen()` overhead
+- Modern C++17 standard
+- Type-safe
+
+**Default values:**
+```cpp
+// ✅ Use empty string for optional parameters
+bool load_config(std::string_view file = "");
+
+// ✅ Or use std::optional for "truly optional"
+bool connect(std::optional<std::string_view> proxy = std::nullopt);
+
+// ✅ Or use overloading
+bool load_config();                              // Use defaults
+bool load_config(std::string_view file);         // Use specified file
+```
+
+### 6.5 Fixed-Width Integer Types
+
+**RULE:** Always use fixed-width types from `<cstdint>` for portability.
+
+```cpp
+// ✅ CORRECT
+#include <cstdint>
+
+uint8_t  flags;
+uint16_t port;
+uint32_t size;
+uint64_t timestamp;
+int32_t  error_code;
+
+// ❌ WRONG - Platform-dependent sizes
+unsigned char flags;    // Use uint8_t
+unsigned short port;    // Use uint16_t
+unsigned int size;      // Use uint32_t
+long timestamp;         // Use int64_t
+
+// Exceptions:
+// - Use size_t for sizes/indices (STL compatibility)
+// - Use int for loop counters (short scope, common idiom)
+for (int i = 0; i < 10; ++i)
+{
+    // ...
+}
+```
+
 ---
 
 ## 7. File Organization
 
 ### 7.1 File Names
+
+**RULE:** Match file name to primary class/struct name.
 
 ```cpp
 // ✅ CORRECT
@@ -863,7 +821,7 @@ string_utils.hpp        // For utilities
 
 ### 7.2 Header Guards
 
-**Always use traditional include guards (NOT #pragma once)**.
+**RULE:** Always use traditional include guards (NOT #pragma once).
 
 ```cpp
 // ✅ CORRECT
@@ -925,25 +883,27 @@ build/cache/include/areg/base/String.hpp   (copied)
 
 ### 7.3 Include Order
 
+**RULE:** Follow this exact order, with blank lines between groups.
+
 ```cpp
-// 1. Corresponding header
+// 1. Corresponding header (for .cpp files)
 #include "areg/ipc/ServiceManager.hpp"
 
-// 2. C system headers
-#include <sys/socket.h>
-#include <unistd.h>
+// 2. Areg SDK headers
+#include "areg/base/String.hpp"
+#include "areg/ipc/Connection.hpp"
 
 // 3. C++ standard library
 #include <memory>
 #include <string>
 #include <vector>
 
-// 4. Third-party libraries
-#include <boost/algorithm/string.hpp>
+// 4. C system headers
+#include <sys/socket.h>
+#include <unistd.h>
 
-// 5. Areg SDK headers
-#include "areg/base/String.hpp"
-#include "areg/ipc/Connection.hpp"
+// 5. Third-party libraries
+#include <boost/algorithm/string.hpp>
 ```
 
 ---
@@ -951,6 +911,8 @@ build/cache/include/areg/base/String.hpp   (copied)
 ## 8. Class Design
 
 ### 8.1 Member Declaration Order
+
+**RULE:** Follow this exact order within classes.
 
 ```cpp
 class ServiceManager
@@ -979,8 +941,8 @@ public:
     void start();
     void stop();
     
-    State get_state() const;
-    int get_connection_count() const;
+    State state() const;
+    int connection_count() const;
 
 // 5. Protected methods
 protected:
@@ -1000,7 +962,7 @@ private:
     int mConnectionCount;
     std::vector<std::unique_ptr<Connection>> mConnections;
 
-// 8. deleted constructors and operators
+// 8. Deleted constructors and operators
 private:
     ServiceManager(const ServiceManager&) = delete;
     ServiceManager& operator=(const ServiceManager&) = delete;
@@ -1008,6 +970,8 @@ private:
 ```
 
 ### 8.2 Constructor Initialization
+
+**RULE:** Use initializer list with leading comma style.
 
 ```cpp
 // ✅ CORRECT - use initializer list
@@ -1026,7 +990,17 @@ private:
     std::string     mAddress;
     ConnectionState mState;
 };
+
+// ❌ WRONG - Don't use in-class initializers for classes
+class Connection
+{
+private:
+    int mSocketFd = 0;              // NO - use initializer list instead
+    std::string mAddress = "";      // NO - use initializer list instead
+};
 ```
+
+**Note:** In-class initializers are OK for structs only.
 
 ---
 
@@ -1065,14 +1039,14 @@ public:
     ~ServiceManager();
     
 public:
-    int start_service(const std::string& config_path);
+    int start_service(std::string_view config_path);
     void stop_all_services();
     
-    std::optional<Connection> create_connection(const std::string& address);
+    std::optional<Connection> create_connection(std::string_view address);
     void remove_connection(int connection_id);
     
-    ServiceState get_state() const { return mState; }
-    size_t get_connection_count() const { return mConnections.size(); }
+    ServiceState state() const { return mState; }
+    size_t connection_count() const { return mConnections.size(); }
     bool is_running() const { return mState == ServiceState::running; }
     
 private:
@@ -1124,9 +1098,9 @@ ServiceManager::~ServiceManager()
     }
 }
 
-int ServiceManager::start_service(const std::string& configPath)
+int ServiceManager::start_service(std::string_view config_path)
 {
-    if (configPath.empty())
+    if (config_path.empty())
     {
         return -EINVAL;
     }
@@ -1146,7 +1120,7 @@ void ServiceManager::stop_all_services()
     mState = ServiceState::stopped;
 }
 
-std::optional<Connection> ServiceManager::create_connection(const std::string& address)
+std::optional<Connection> ServiceManager::create_connection(std::string_view address)
 {
     if (!is_running())
     {
@@ -1177,24 +1151,34 @@ void ServiceManager::initialize_subsystems()
 ## 10. Quick Reference
 
 ### ✅ DO:
-- Use PascalCase for types
-- Use snake_case for functions
-- Use `mVariable` for members
-- Use `s_variable` for static members
-- Use constexpr UPPER_CASE for constants
-- Use traditional header guards
-- Use leading comma for enums/params
-- Initialize class members in constructor
+- Use PascalCase for types (classes, structs, enums)
+- Use snake_case for functions and methods
+- Use `mVariable` (mPascalCase) for class members
+- Use `camelCase` for struct members (no prefix)
+- Use `s_variable` for static class members
+- Use `constexpr UPPER_CASE` for constants
+- Use `std::string_view` for read-only string parameters
+- Use `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t` for integers
+- Use traditional header guards (NOT `#pragma once`)
+- Use leading comma for enums/parameters/initializers
+- Initialize all variables at declaration
+- Use initializer lists for constructors
 - Use in-class init for structs only
 - Document public APIs
+- Drop `get_` prefix for simple accessors: `count()` not `get_count()`
 
 ### ❌ DON'T:
-- Use #pragma once
+- Use `#pragma once`
+- Use `const char*` for parameters (use `std::string_view`)
+- Use `unsigned int`, `unsigned short` (use `uint32_t`, `uint16_t`)
+- Use `get_` prefix for accessors (use `count()` not `get_count()`)
+- Use `IN`/`OUT`/`INOUT` empty macros
 - Use in-class initializers for classes
 - Use exceptions
-- Use macros when alternatives exist
+- Use macros when alternatives exist (prefer `constexpr`, `inline`)
 - Mix tabs and spaces
-- Use auto for return types
+- Use `auto` for return types
+- Use `NULL` or `0` for pointers (use `nullptr`)
 
 ---
 
