@@ -102,18 +102,18 @@ Integrated distributed logging with visual analysis. Per-method execution timing
 
 ### Areg SDK vs. Alternatives
 
-| Feature               | Areg SDK                            | gRPC / DDS / ZeroMQ                                  |
-|-----------------------|----------------------------------|------------------------------------------------------|
-| **Setup Complexity**  | ✅ Automated, zero boilerplate   | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc) |
-| **Threading**         | ✅ Automated threading           | ⚠️ Manual threading and synchronization              |
-| **Code Generation**   | ✅ Full ORPC automation          | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch |
+| Feature               | Areg SDK                        | gRPC / DDS / ZeroMQ                                                                                                                                                                                                                                      |
+| --------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Setup Complexity**  | ✅ Automated, zero boilerplate   | ⚠️ Manual configuration, [verbose setup](https://www.innoq.com/en/blog/2024/06/grpc/#whataresomechallengesofworkingwithgrpc)                                                                                                                              |
+| **Threading**         | ✅ Automated threading           | ⚠️ Manual threading and synchronization                                                                                                                                                                                                                   |
+| **Code Generation**   | ✅ Full ORPC automation          | ⚠️ [Stubs only](https://grpc.io/docs/what-is-grpc/introduction/#overview), manual dispatch                                                                                                                                                                |
 | **Service Discovery** | ✅ Built-in mesh management      | ✅ DDS: [native](https://opendds.readthedocs.io/en/latest-release/devguide/introduction_to_dds.html#discovery-matching-and-association), ⚠️ gRPC/ZeroMQ: [external](https://stackoverflow.com/questions/59398556/grpc-equivalent-of-wcf-service-discovery) |
-| **Fault Recovery**    | ✅ Watchdog auto-restart         | ✅ DDS: [QoS policies](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [manual](https://grpc.io/docs/guides/retry/) |
-| **Request-Reply**     | ✅ Native Object RPC             | ✅ gRPC: [RPC calls](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/) |
-| **Pub/Sub**           | ✅ Native Attributes             | ✅ DDS: [topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: add-ons |
-| **API Consistency**   | ✅ Identical for threads and IPC | ⚠️ Different APIs for local vs. remote               |
-| **Logging System**    | ✅ Distributed logs + viewer     | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools |
-| **Developer Speed**   | ✅ Faster via automation         | ⚠️ Slower, more boilerplate                          |
+| **Fault Recovery**    | ✅ Watchdog auto-restart         | ✅ DDS: [QoS policies](https://opendds.readthedocs.io/en/latest-release/devguide/quality_of_service.html), ⚠️ gRPC/ZeroMQ: [manual](https://grpc.io/docs/guides/retry/)                                                                                    |
+| **Request-Reply**     | ✅ Native Object RPC             | ✅ gRPC: [RPC calls](https://grpc.io/docs/what-is-grpc/core-concepts/#overview), ⚠️ DDS/ZeroMQ: [topic/pattern](https://zguide.zeromq.org/docs/chapter3/)                                                                                                  |
+| **Pub/Sub**           | ✅ Native Attributes             | ✅ DDS: [topics](https://opendds.readthedocs.io/en/latest-release/devguide/built_in_topics.html), ⚠️ gRPC/ZeroMQ: add-ons                                                                                                                                  |
+| **API Consistency**   | ✅ Identical for threads and IPC | ⚠️ Different APIs for local vs. remote                                                                                                                                                                                                                    |
+| **Logging System**    | ✅ Distributed logs + viewer     | ⚠️ [Vendor-specific](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/addon_products/observability/telemetry_data/logs.html) or external tools                                                                              |
+| **Developer Speed**   | ✅ Faster via automation         | ⚠️ Slower, more boilerplate                                                                                                                                                                                                                               |
 
 🔹 **Key Differentiators:**
 - **Complete automation** - Not just transport, but threading, dispatch, and lifecycle
@@ -362,14 +362,14 @@ For multiprocess projects, ensure `mtrouter` is running to enable Service Consum
 
 ### Modules Overview
 
-| Module | Purpose | When Required |
-|--------|---------|---------------|
-| **[Areg Library](./docs/HelloService.md)**<br/>(`areg`) | Core framework automating Object RPC, threading,<br/>IPC routing, and fault recovery | ✅ Always |
-| **[Code Generator](./docs/wiki/03a-code-generator.md)**<br/>(`codegen.jar`) | Generates service stubs from interface definitions,<br/>eliminating boilerplate | ✅ Build-time |
-| **[Multitarget Router](./docs/wiki/05a-mtrouter.md)**<br/>(`mtrouter`) | Central message router for inter-process and<br/>network communication | ⚠️ IPC/Network only |
-| **[Log Collector](./docs/wiki/04d-logcollector.md)**<br/>(`logcollector`) | Aggregates distributed logs for monitoring<br/>and debugging | ❌ Optional |
-| **[Lusan GUI](https://github.com/aregtech/areg-sdk-tools)**<br/>(`lusan`) | Visual service designer and log analysis tool | ❌ Optional |
-| **[Examples](./examples/README.md)** | Sample projects demonstrating SDK features | ❌ Optional |
+| Module                                                                      | Purpose                                                                              | When Required      |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------ |
+| **[Areg Library](./docs/HelloService.md)**<br/>(`areg`)                     | Core framework automating Object RPC, threading,<br/>IPC routing, and fault recovery | ✅ Always           |
+| **[Code Generator](./docs/wiki/03a-code-generator.md)**<br/>(`codegen.jar`) | Generates service stubs from interface definitions,<br/>eliminating boilerplate      | ✅ Build-time       |
+| **[Multitarget Router](./docs/wiki/05a-mtrouter.md)**<br/>(`mtrouter`)      | Central message router for inter-process and<br/>network communication               | ⚠️ IPC/Network only |
+| **[Log Collector](./docs/wiki/04d-logcollector.md)**<br/>(`logcollector`)   | Aggregates distributed logs for monitoring<br/>and debugging                         | ❌ Optional         |
+| **[Lusan GUI](https://github.com/aregtech/areg-sdk-tools)**<br/>(`lusan`)   | Visual service designer and log analysis tool                                        | ❌ Optional         |
+| **[Examples](./examples/README.md)**                                        | Sample projects demonstrating SDK features                                           | ❌ Optional         |
 
 ---
 

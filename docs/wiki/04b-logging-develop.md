@@ -135,12 +135,12 @@ The Areg Framework features a robust, adaptable logging system designed for moni
 
 ### When to Use Logging
 
-| Scenario                  | Use Logging   | Benefit                                                       |
-|---------------------------|---------------|---------------------------------------------------------------|
-| **Development**           | ✅ Always      | Debug issues, understand flow                                 |
-| **Testing**               | ✅ Always      | Verify behavior, catch edge cases                             |
-| **Production**            | ✅ Selective   | Monitor errors, track issues, reduce SCOPE, DEBUG and INFO    |
-| **Performance Critical**  | ⚙️ Minimal     | Error/Fatal only, disable DEBUG and SCOPE                     |
+| Scenario                 | Use Logging | Benefit                                                    |
+| ------------------------ | ----------- | ---------------------------------------------------------- |
+| **Development**          | ✅ Always    | Debug issues, understand flow                              |
+| **Testing**              | ✅ Always    | Verify behavior, catch edge cases                          |
+| **Production**           | ✅ Selective | Monitor errors, track issues, reduce SCOPE, DEBUG and INFO |
+| **Performance Critical** | ⚙️ Minimal   | Error/Fatal only, disable DEBUG and SCOPE                  |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -494,13 +494,13 @@ log::myapp::scope::myapp_MyClass_save = WARN | SCOPE
 
 ### Priority Levels
 
-| Macro         | Priority  | Use Case              | Example                                       |
-|---------------|-----------|-----------------------|-----------------------------------------------|
-| `LOG_DBG()`   | DEBUG     | Detailed debugging    | `LOG_DBG("Counter value: %d", count)`         |
-| `LOG_INFO()`  | INFO      | General information   | `LOG_INFO("Connection established")`          |
-| `LOG_WARN()`  | WARN      | Warnings              | `LOG_WARN("Retry attempt %d", retry)`         |
-| `LOG_ERR()`   | ERROR     | Errors                | `LOG_ERR("Failed to open file: %s", path)`    |
-| `LOG_FATAL()` | FATAL     | Fatal errors          | `LOG_FATAL("Out of memory")`                  |
+| Macro         | Priority | Use Case            | Example                                    |
+| ------------- | -------- | ------------------- | ------------------------------------------ |
+| `LOG_DBG()`   | DEBUG    | Detailed debugging  | `LOG_DBG("Counter value: %d", count)`      |
+| `LOG_INFO()`  | INFO     | General information | `LOG_INFO("Connection established")`       |
+| `LOG_WARN()`  | WARN     | Warnings            | `LOG_WARN("Retry attempt %d", retry)`      |
+| `LOG_ERR()`   | ERROR    | Errors              | `LOG_ERR("Failed to open file: %s", path)` |
+| `LOG_FATAL()` | FATAL    | Fatal errors        | `LOG_FATAL("Out of memory")`               |
 
 ---
 

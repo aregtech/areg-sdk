@@ -206,15 +206,15 @@ Choose between multithreading and multiprocessing based on your architecture.
 
 ### Mode Comparison
 
-| Aspect | Multithreading (Mode 2) | Multiprocessing (Mode 1) |
-|--------|-------------------------|--------------------------|
-| **Executables** | 1 (single process) | 2 (provider + consumer) |
-| **Communication** | In-process (fast) | Inter-process via `mtrouter` |
-| **Threads** | Multiple threads | Each process can be multi-threaded |
-| **Deployment** | Single binary | Distributed binaries |
-| **Use Cases** | Desktop apps, embedded | Microservices, distributed systems |
-| **Complexity** | Lower | Higher |
-| **Requires mtrouter** | No | Yes (for IPC) |
+| Aspect                | Multithreading (Mode 2) | Multiprocessing (Mode 1)           |
+| --------------------- | ----------------------- | ---------------------------------- |
+| **Executables**       | 1 (single process)      | 2 (provider + consumer)            |
+| **Communication**     | In-process (fast)       | Inter-process via `mtrouter`       |
+| **Threads**           | Multiple threads        | Each process can be multi-threaded |
+| **Deployment**        | Single binary           | Distributed binaries               |
+| **Use Cases**         | Desktop apps, embedded  | Microservices, distributed systems |
+| **Complexity**        | Lower                   | Higher                             |
+| **Requires mtrouter** | No                      | Yes (for IPC)                      |
 
 ---
 
@@ -446,7 +446,7 @@ During build, `codegen.jar` processes this file to generate:
 ```cpp
 class ServiceProvider : public Component, protected HelloServiceStub
 {
-    virtual void requestHelloService(void) override
+    virtual void requestHelloService() override
     {
         std::cout << "'Hello Service!'" << std::endl;
         responseHelloService();  // Send response
@@ -465,7 +465,7 @@ class ServiceConsumer : public Component, protected HelloServiceClientBase
         return true;
     }
     
-    virtual void responseHelloService(void) override
+    virtual void responseHelloService() override
     {
         std::cout << "Received response, end application" << std::endl;
         Application::signalAppQuit();  // Exit gracefully
@@ -492,7 +492,7 @@ END_MODEL("ServiceModel")
 
 **4. Application entry point:**
 ```cpp
-int main(void)
+int main()
 {
     Application::initApplication();
     Application::loadModel("ServiceModel");
@@ -519,7 +519,7 @@ int main(void)
 - Calls `Application::signalAppQuit()` after response
 
 ```cpp
-virtual void requestHelloService(void) override
+virtual void requestHelloService() override
 {
     std::cout << "'Hello Service!'" << std::endl;
     responseHelloService();
@@ -715,13 +715,13 @@ Without `mtrouter`, multiprocessing applications will run as isolated multithrea
 **Implement in provider:**
 
 ```cpp
-virtual void requestHelloService(void) override
+virtual void requestHelloService() override
 {
     std::cout << "\'Hello Service!\'" << std::endl;
     responseHelloService();
 }
 
-virtual void requestGoodbye(void) override
+virtual void requestGoodbye() override
 {
     std::cout << "\'Goodbye!\'" << std::endl;
     responseGoodbye();
@@ -738,12 +738,12 @@ virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& p
     return true;
 }
 
-virtual void responseHelloService(void) override
+virtual void responseHelloService() override
 {
         requestGoodbye();  // New method
 }
 
-virtual void responseGoodbye(void) override
+virtual void responseGoodbye() override
 {
     std::cout << "Received goodbye response" << std::endl;
     Application::signalAppQuit();
