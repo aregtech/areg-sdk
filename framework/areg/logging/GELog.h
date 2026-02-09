@@ -53,7 +53,7 @@
  *              used in more than one method.
  *                  ...
  *              DEF_LOG_SCOPE(my_message_scope_in_MyFunction);
- *              void MyFunction( void )
+ *              void MyFunction()
  *              {
  *                  LOG_SCOPE(my_message_scope_in_MyFunction);
  * 
@@ -199,7 +199,7 @@
      *          Call global tracing to use global scope. The global scope is used to make
      *          output generic messages withing single source.
      **/
-    #define GLOBAL_LOG_SCOPE(scope)                   static ScopeMessage & _getGlobalScope( void )   \
+    #define GLOBAL_LOG_SCOPE(scope)                   static ScopeMessage & _getGlobalScope()   \
                                                         {                                               \
                                                             static LogScope     _##scope(#scope);     \
                                                             static ScopeMessage  _messager(_##scope);   \

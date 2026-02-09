@@ -70,7 +70,7 @@ public:
      * \brief   Retrieves the number of milliseconds that have elapsed
      *          since the system was started, up to 49.7 days.
      **/
-    static unsigned int getTickCount( void );
+    static unsigned int getTickCount();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -97,7 +97,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~TimerBase( void );
+    virtual ~TimerBase();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -106,7 +106,7 @@ public:
     /**
      * \brief   Returns the timeout of timer in milliseconds.
      **/
-    inline unsigned int getTimeout( void ) const;
+    inline unsigned int getTimeout() const;
 
     /**
      * \brief   Set the timeout of timer in milliseconds.
@@ -119,7 +119,7 @@ public:
      *          This function returns zero, if timer is stopped (automatically or manually),
      *          and returns Timer::CONTINUOUSLY for continues events.
      **/
-    inline unsigned int getEventCount(void) const;
+    inline unsigned int getEventCount() const;
 
     /**
      * \brief   Set the number of timeout events to fire.
@@ -135,28 +135,28 @@ public:
     /**
      * \brief   Returns the name of timer.
      **/
-    inline const String& getName(void) const;
+    inline const String& getName() const;
 
     /**
      * \brief   Returns the handle of the system waitable timer.
      **/
-    inline TIMERHANDLE getHandle( void ) const;
+    inline TIMERHANDLE getHandle() const;
 
     /**
      * \brief   Returns true if timer is active.
      **/
-    inline bool isActive( void ) const;
+    inline bool isActive() const;
 
     /**
      * \brief   Returns true if timer is valid. The valid timer has timeout
      *          not equal to NECommon::INVALID_TIMEOUT;
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns the type of the timer.
      **/
-    inline TimerBase::eTimerType getTimerType( void ) const;
+    inline TimerBase::eTimerType getTimerType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -169,13 +169,13 @@ protected:
      *          It has OS specific implementation
      * \return  Returns true if succeeded to create system timer or the timer was already created.
      **/
-    bool createWaitableTimer( void );
+    bool createWaitableTimer();
 
     /**
      * \brief   Call to destroy system waitable.
      *          After calling this method, the timer cannot be used anymore.
      **/
-    void destroyWaitableTimer( void );
+    void destroyWaitableTimer();
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden members
@@ -186,7 +186,7 @@ private:
      * \brief   OS specific implementation of creating waitable timer and
      *          returns the handle of created timer.
      **/
-    TIMERHANDLE _osCreateWaitableTimer( void );
+    TIMERHANDLE _osCreateWaitableTimer();
 
     /**
      * \brief   OS specific implementation to destroy waitable timer.
@@ -227,7 +227,7 @@ protected:
     ResourceLock        mLock;
 
 private:
-    TimerBase( void ) = delete;
+    TimerBase() = delete;
     DECLARE_NOCOPY_NOMOVE(TimerBase);
 };
 
@@ -235,7 +235,7 @@ private:
 // Timer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool TimerBase::isValid( void ) const
+inline bool TimerBase::isValid() const
 {
     return ((mTimeoutInMs != NECommon::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
@@ -245,12 +245,12 @@ inline void TimerBase::setEventCount(unsigned int eventCount)
     mEventsCount = eventCount;
 }
 
-inline const String & TimerBase::getName( void ) const
+inline const String & TimerBase::getName() const
 {
     return mName;
 }
 
-inline unsigned int TimerBase::getTimeout( void ) const
+inline unsigned int TimerBase::getTimeout() const
 {
     return mTimeoutInMs;
 }
@@ -260,22 +260,22 @@ inline void TimerBase::setTimeout(unsigned int timeoutMs)
     mTimeoutInMs = timeoutMs;
 }
 
-inline unsigned int TimerBase::getEventCount(void) const
+inline unsigned int TimerBase::getEventCount() const
 {
     return mEventsCount;
 }
 
-inline TIMERHANDLE TimerBase::getHandle(void) const
+inline TIMERHANDLE TimerBase::getHandle() const
 {
     return mHandle;
 }
 
-inline bool TimerBase::isActive(void) const
+inline bool TimerBase::isActive() const
 {
     return mActive;
 }
 
-inline TimerBase::eTimerType TimerBase::getTimerType(void) const
+inline TimerBase::eTimerType TimerBase::getTimerType() const
 {
     return mTimerType;
 }

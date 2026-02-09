@@ -159,7 +159,7 @@ public:
      * \brief   The function returns true, if Service Manager is running and ready to
      *          process Service Manager Events. Otherwise, it returns false.
      **/
-    static bool isServiceManagerStarted( void );
+    static bool isServiceManagerStarted();
 
     /**
      * \brief   Call to query the amount of send and receive data size in bytes.
@@ -185,18 +185,18 @@ private:
      * \brief   Default Constructor.
      *          Protected and cannot be accessed globally.
      **/
-    ServiceManager( void );
+    ServiceManager();
 
     /**
      * \brief   Destructor
      **/
-    virtual ~ServiceManager( void ) = default;
+    virtual ~ServiceManager() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Private static methods
 //////////////////////////////////////////////////////////////////////////
 
-    static inline ServiceManager & getInstance( void );
+    static inline ServiceManager & getInstance();
 
 /************************************************************************/
 // Service Manager start / stop functions
@@ -212,7 +212,7 @@ private:
      * \return  Returns true, if Service Manager started or already running and
      *          is ready to receive Events.
      **/
-    static bool _startServiceManager( void );
+    static bool _startServiceManager();
 
     /**
      * \brief   This function called, when Service Manager should stop activities.
@@ -233,7 +233,7 @@ private:
      *          it was requested to stop the Service Manager Thread without
      *          waiting for completion.
      **/
-    static void _waitServiceManager(void);
+    static void _waitServiceManager();
 
 /************************************************************************/
 // Message router client start / stop functions
@@ -246,7 +246,7 @@ private:
      *          Otherwise, it returns false.
      * \see     _routingServiceStart
      **/
-    static bool _routingServiceConfigure( void );
+    static bool _routingServiceConfigure();
 
     /**
      * \brief   Call to start the client connection of remote Routing Service.
@@ -269,22 +269,22 @@ private:
      * \brief   Call to stop router client.
      * \see     _routingServiceStart
      **/
-    static void _routingServiceStop( void );
+    static void _routingServiceStop();
 
     /**
      * \brief   Returns true if Routing Service client is started and ready to operate.
      **/
-    static bool _isRoutingServiceStarted( void );
+    static bool _isRoutingServiceStarted();
 
     /**
      * \brief   Returns true if Routing Service client is started, but not ready to operate yet.
      **/
-    static bool _isRoutingServicePending( void );
+    static bool _isRoutingServicePending();
 
     /**
      * \brief   Returns true if Routing Service client is configured and ready to start.
      **/
-    static bool _isRoutingServiceConfigured( void );
+    static bool _isRoutingServiceConfigured();
 
     /**
      * \brief   The function generates an event to create and start component thread.
@@ -405,19 +405,19 @@ private:
     /**
      * \brief   Returns the instance of remote servicing handler.
      **/
-    inline IEServiceConnectionProvider& getServiceConnectionProvider( void );
+    inline IEServiceConnectionProvider& getServiceConnectionProvider();
 
     /**
      * \brief   Returns the instance of remote servicing handler.
      **/
-    inline IEServiceRegisterProvider& getServiceRegisterProvider(void);
+    inline IEServiceRegisterProvider& getServiceRegisterProvider();
 
     /**
      * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
      *          will automatically start as well.
      * \return  Returns true if Service Manager Thread started and ready to receive Events.
      **/
-    bool _startServiceManagerThread( void );
+    bool _startServiceManagerThread();
 
     /**
      * \brief   Stops Service Manager Thread. This call will stop Timer Server, all
@@ -435,12 +435,12 @@ private:
      *          it was requested to stop the Service Manager Thread without
      *          waiting for completion.
      **/
-    void _waitServiceManagerThread(void);
+    void _waitServiceManagerThread();
 
     /**
      * \brief   Returns reference to ServiceManager object
      **/
-    inline ServiceManager & self( void );
+    inline ServiceManager & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -467,17 +467,17 @@ private:
 // ServiceManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline IEServiceConnectionProvider& ServiceManager::getServiceConnectionProvider( void )
+inline IEServiceConnectionProvider& ServiceManager::getServiceConnectionProvider()
 {
     return static_cast<IEServiceConnectionProvider&>(mServiceClient);
 }
 
-inline IEServiceRegisterProvider& ServiceManager::getServiceRegisterProvider(void)
+inline IEServiceRegisterProvider& ServiceManager::getServiceRegisterProvider()
 {
     return static_cast<IEServiceRegisterProvider&>(mServiceClient);
 }
 
-inline ServiceManager & ServiceManager::self( void )
+inline ServiceManager & ServiceManager::self()
 {
     return (*this);
 }

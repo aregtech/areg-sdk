@@ -46,7 +46,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    Object( void ) = default;
+    Object() = default;
 
     /**
      * \brief   Store pointer as object data.
@@ -69,7 +69,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~Object( void ) = default;
+    virtual ~Object() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes / Operations
@@ -82,12 +82,12 @@ public:
      * \brief   Call to clone object
      * \return  Pointer to cloned object
      **/
-    virtual IEGenericObject* clone( void ) const override;
+    virtual IEGenericObject* clone() const override;
 
     /**
      * \brief   Destroys created (cloned) object
      **/
-    virtual void destroy( void ) override;
+    virtual void destroy() override;
 
     /**
      * \brief   Checks if object data is similar.
@@ -137,7 +137,7 @@ public:
      * \brief   Operator to get integer value of object, mainly used in map
      * \return  Integer value of object.
      **/
-    explicit operator unsigned int ( void ) const;
+    explicit operator unsigned int () const;
 
 /************************************************************************
  * new operator
@@ -239,7 +239,7 @@ private:
     /**
      * \brief   Returns the reference to the object.
      **/
-   inline const Object& self( void ) const;
+   inline const Object& self() const;
 };
 
 //////////////////////////////////////////////////////////////////////////

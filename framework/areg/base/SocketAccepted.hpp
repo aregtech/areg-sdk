@@ -39,7 +39,7 @@ public:
     /**
      * \brief   Default constructor. Creates instance of accepted socket
      **/
-    SocketAccepted( void ) = default;
+    SocketAccepted() = default;
 
     /**
      * \brief   Initialization constructor. Initializes socket descriptor and address
@@ -63,7 +63,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~SocketAccepted( void ) = default;
+    virtual ~SocketAccepted() = default;
 
 public:
 
@@ -100,7 +100,7 @@ private:
      * \brief   Plays no role for accepted sockets. Always returns true;
      * \return  Returns true.
      **/
-    virtual bool createSocket( void ) override;
+    virtual bool createSocket() override;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will 

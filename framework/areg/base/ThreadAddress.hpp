@@ -75,7 +75,7 @@ public:
     /**
      * \brief   Returns the invalid thread address object.
      **/
-    static const ThreadAddress & getInvalidThreadAddress(void);
+    static const ThreadAddress & getInvalidThreadAddress();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Default constructor. Sets current process ID and invalid thread name.
      **/
-    ThreadAddress( void );
+    ThreadAddress();
     /**
      * \brief   Initialization constructor. Sets current process ID and the thread name.
      * \param   threadName  Thread name to set.
@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ThreadAddress( void ) = default;
+    ~ThreadAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress operators
@@ -118,7 +118,7 @@ public:
     /**
      * \brief   This operator converts thread address data to unsigned int value
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
     /**
      * \brief   Assigning operator to copy data from given source. 
      **/
@@ -176,13 +176,13 @@ public:
     /**
      * \brief   Return thread name.
      **/
-    inline const String & getThreadName( void ) const;
+    inline const String & getThreadName() const;
 
     /**
      * \brief   Returns validity of thread address. 
      *          Returns true if Thread Address is not invalid.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief	Converts Thread Address object to the thread path string value.
@@ -191,7 +191,7 @@ public:
      *          <string name> is the name of string.
      * \return  Returns converted path of thread as string.
      **/
-    inline String convToString( void ) const;
+    inline String convToString() const;
 
     /**
      * \brief	Parse string and retrieves thread address data from path.
@@ -265,7 +265,7 @@ inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexce
     return (*this);
 }
 
-inline const String & ThreadAddress::getThreadName( void ) const
+inline const String & ThreadAddress::getThreadName() const
 {
     return mThreadName;
 }
@@ -290,12 +290,12 @@ inline bool ThreadAddress::operator < (const ThreadAddress& other) const
     return (mMagicNum < other.mMagicNum);
 }
 
-inline ThreadAddress::operator unsigned int( void ) const
+inline ThreadAddress::operator unsigned int() const
 {
     return mMagicNum;
 }
 
-inline String ThreadAddress::convToString(void) const
+inline String ThreadAddress::convToString() const
 {
     return mThreadName;
 }

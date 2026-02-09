@@ -170,77 +170,77 @@ namespace NEUtilities
         /**
          * \brief   Returns true if the option has command to print the info.
          */
-        inline bool hasPrintInfo(void) const;
+        inline bool hasPrintInfo() const;
 
         /**
          * \brief   Returns true if the option has command to print help of the application.
          */
-        inline bool hasPrintHelp(void) const;
+        inline bool hasPrintHelp() const;
 
         /**
          * \brief   Returns true if the option has command to start application.
          */
-        inline bool hasStart(void) const;
+        inline bool hasStart() const;
 
         /**
          * \brief   Returns true if the option has command to stop application.
          */
-        inline bool hasStop(void) const;
+        inline bool hasStop() const;
 
         /**
          * \brief   Returns true if the option has command to quit application.
          */
-        inline bool hasQuit(void) const;
+        inline bool hasQuit() const;
 
         /**
          * \brief   Returns true if the option had error, like unsupported command.
          */
-        inline bool hasError(void) const;
+        inline bool hasError() const;
 
         /**
          * \brief   Based on option values, returns the number of blocks to generate data in 1 second.
          */
-        inline uint32_t blocksCount(void) const;
+        inline uint32_t blocksCount() const;
 
         /**
          * \brief   Based on option values, returns number of pixels per image.
          */
-        inline uint32_t pixelsPerImage(void) const;
+        inline uint32_t pixelsPerImage() const;
 
         /**
          * \brief   Based on option values, returns number of pixels per image block.
          */
-        inline uint32_t pixelsPerBlock(void) const;
+        inline uint32_t pixelsPerBlock() const;
 
         /**
          * \brief   Based on option values, return bytes per line.
          */
-        inline uint32_t bytesPerLine(void) const;
+        inline uint32_t bytesPerLine() const;
 
         /**
          * \brief   Based on option values, return bytes per block.
          */
-        inline uint32_t bytesPerBlock(void) const;
+        inline uint32_t bytesPerBlock() const;
 
         /**
          * \brief   Based on option values, return bytes per image.
          */
-        inline uint32_t bytesPerImage(void) const;
+        inline uint32_t bytesPerImage() const;
 
         /**
          * \brief   Based on option values, return duration in nanoseconds to generate a line of image.
          */
-        inline uint64_t nsPerLine(void) const;
+        inline uint64_t nsPerLine() const;
 
         /**
          * \brief   Based on option values, return duration in nanoseconds to generate a block of image.
          */
-        inline uint64_t nsPerBlock(void) const;
+        inline uint64_t nsPerBlock() const;
 
         /**
          * \brief   Based on option values, return duration in nanoseconds to generate an image.
          */
-        inline uint64_t nsPerImage(void) const;
+        inline uint64_t nsPerImage() const;
 
         /**
          * \brief   Based on option values, return duration in nanoseconds to generate a block of image.
@@ -252,7 +252,7 @@ namespace NEUtilities
         /**
          * \brief   The string state of the application.
          */
-        inline String getState(void) const;
+        inline String getState() const;
 
         /**
          * \brief   Normalizes the options.
@@ -267,37 +267,37 @@ namespace NEUtilities
 //////////////////////////////////////////////////////////////////////////
 // NEUtilities namespace inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline bool NEUtilities::sOptionData::hasPrintInfo(void) const
+inline bool NEUtilities::sOptionData::hasPrintInfo() const
 {
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdInformation)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasPrintHelp(void) const
+inline bool NEUtilities::sOptionData::hasPrintHelp() const
 {
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdHelp)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasStart(void) const
+inline bool NEUtilities::sOptionData::hasStart() const
 {
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdStart)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasStop(void) const
+inline bool NEUtilities::sOptionData::hasStop() const
 {
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdStop)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasQuit(void) const
+inline bool NEUtilities::sOptionData::hasQuit() const
 {
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdQuit)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasError(void) const
+inline bool NEUtilities::sOptionData::hasError() const
 {
     return ((mFlags & static_cast<uint32_t>(eOptionFlags::Error)) != 0);
 }
 
-inline uint32_t NEUtilities::sOptionData::blocksCount(void) const
+inline uint32_t NEUtilities::sOptionData::blocksCount() const
 {
     if ((mLines != 0) && (mHeight != 0))
     {
@@ -310,42 +310,42 @@ inline uint32_t NEUtilities::sOptionData::blocksCount(void) const
     }
 }
 
-inline uint32_t NEUtilities::sOptionData::pixelsPerImage(void) const
+inline uint32_t NEUtilities::sOptionData::pixelsPerImage() const
 {
     return (mWidth * mHeight);
 }
 
-inline uint32_t NEUtilities::sOptionData::pixelsPerBlock(void) const
+inline uint32_t NEUtilities::sOptionData::pixelsPerBlock() const
 {
     return (mWidth * mLines);
 }
 
-inline uint32_t NEUtilities::sOptionData::bytesPerLine(void) const
+inline uint32_t NEUtilities::sOptionData::bytesPerLine() const
 {
     return ((((mWidth * BITS_PER_PIXEL) + 31) / 32) * 4);
 }
 
-inline uint32_t NEUtilities::sOptionData::bytesPerBlock(void) const
+inline uint32_t NEUtilities::sOptionData::bytesPerBlock() const
 {
     return (bytesPerLine() * mLines);
 }
 
-inline uint32_t NEUtilities::sOptionData::bytesPerImage(void) const
+inline uint32_t NEUtilities::sOptionData::bytesPerImage() const
 {
     return (bytesPerLine() * mHeight);
 }
 
-inline uint64_t NEUtilities::sOptionData::nsPerLine(void) const
+inline uint64_t NEUtilities::sOptionData::nsPerLine() const
 {
     return static_cast<uint64_t>(mPixelTime) * mWidth;
 }
 
-inline uint64_t NEUtilities::sOptionData::nsPerBlock(void) const
+inline uint64_t NEUtilities::sOptionData::nsPerBlock() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerBlock();
 }
 
-inline uint64_t NEUtilities::sOptionData::nsPerImage(void) const
+inline uint64_t NEUtilities::sOptionData::nsPerImage() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerImage();
 }
@@ -358,7 +358,7 @@ inline uint64_t NEUtilities::sOptionData::nsPerBlock(uint32_t startRowIndex, uin
     return nsPerLine() * rowCount;
 }
 
-inline String NEUtilities::sOptionData::getState(void) const
+inline String NEUtilities::sOptionData::getState() const
 {
     if (hasStart())
         return String("STARTED");

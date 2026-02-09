@@ -125,7 +125,7 @@ unsigned int BufferStreamBase::read( WideString & wide ) const
 /**
  * \brief   Returns size in bytes of available data that can be read, i.e. remaining readable size.
  **/
-unsigned int BufferStreamBase::getSizeReadable( void ) const
+unsigned int BufferStreamBase::getSizeReadable() const
 {
     unsigned int lenUsed = getSizeUsed();
     unsigned int lenRead = mReadPosition.getPosition();
@@ -183,7 +183,7 @@ unsigned int BufferStreamBase::write( const WideString & wide )
 /**
  * \brief   Returns size in bytes of available space that can be written, i.e. remaining writable size.
  **/
-unsigned int BufferStreamBase::getSizeWritable( void ) const
+unsigned int BufferStreamBase::getSizeWritable() const
 {
     unsigned int result{ 0u };
     if (isValid())
@@ -200,11 +200,11 @@ unsigned int BufferStreamBase::getSizeWritable( void ) const
 /**
  * \brief   Flushes cached data to output stream object.
  **/
-void BufferStreamBase::flush( void )
+void BufferStreamBase::flush()
 {
 }
 
-void BufferStreamBase::resetCursor(void) const
+void BufferStreamBase::resetCursor() const
 {
     mReadPosition.setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
 }
@@ -307,7 +307,7 @@ unsigned int BufferStreamBase::readData(unsigned char* buffer, unsigned int size
     return result;
 }
 
-const unsigned char * BufferStreamBase::getBufferToRead(void) const
+const unsigned char * BufferStreamBase::getBufferToRead() const
 {
     const unsigned char * result = getBuffer();
     if ( result != nullptr )
@@ -318,7 +318,7 @@ const unsigned char * BufferStreamBase::getBufferToRead(void) const
     return result;
 }
 
-unsigned char * BufferStreamBase::getBufferToWrite(void)
+unsigned char * BufferStreamBase::getBufferToWrite()
 {
     unsigned char * result = getBuffer();
     if ( result != nullptr )

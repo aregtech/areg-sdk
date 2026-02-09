@@ -32,7 +32,7 @@ bool TimerManagerBase::postEvent(Event& eventElem)
     return (RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }
 
-bool TimerManagerBase::runDispatcher(void)
+bool TimerManagerBase::runDispatcher()
 {
     readyForEvents( true );
 
@@ -89,7 +89,7 @@ void TimerManagerBase::readyForEvents(bool isReady)
     DispatcherThread::readyForEvents( true );
 }
 
-bool TimerManagerBase::startTimerManagerThread(void)
+bool TimerManagerBase::startTimerManagerThread()
 {
     ASSERT(isReady() || (isRunning() == false));
     return (isReady() || (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE)));
@@ -107,7 +107,7 @@ void TimerManagerBase::stopTimerManagerThread(bool waitComplete)
     }
 }
 
-void TimerManagerBase::waitCompletion(void)
+void TimerManagerBase::waitCompletion()
 {
     shutdownThread(NECommon::WAIT_INFINITE);
 }

@@ -41,7 +41,7 @@ public:
     /**
      * \brief   Default constructor, creates invalid Stub service object
      **/
-    ServiceStub( void );
+    ServiceStub();
 
     /**
      * \brief   Initializes Stub address of remote service
@@ -88,7 +88,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ServiceStub( void ) = default;
+    ~ServiceStub() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -147,7 +147,7 @@ public:
     /**
      * \brief   Coverts data of Stub service object into 32-bit integer value.
      **/
-    explicit operator unsigned int ( void ) const;
+    explicit operator unsigned int () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -156,27 +156,27 @@ public:
     /**
      * \brief   Returns true if connection status of Stub service is connected
      **/
-    inline bool isConnected( void ) const;
+    inline bool isConnected() const;
 
     /**
      * \brief   Returns true if connection status of Stub service is pending
      **/
-    inline bool isWaiting( void ) const;
+    inline bool isWaiting() const;
 
     /**
      * \brief   Returns the current connection status of Stub service
      **/
-    inline NEService::eServiceConnection getServiceStatus( void ) const;
+    inline NEService::eServiceConnection getServiceStatus() const;
 
     /**
      * \brief   Returns Stub remote address of service
      **/
-    inline const StubAddress & getServiceAddress( void ) const;
+    inline const StubAddress & getServiceAddress() const;
 
     /**
      * \brief   Returns true if Stub service object is valid.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief   Sets new connection status of Stub service
@@ -234,22 +234,22 @@ namespace std
 // ServiceStub class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ServiceStub::isConnected( void ) const
+inline bool ServiceStub::isConnected() const
 {
     return ( mConnectStatus == NEService::eServiceConnection::ServiceConnected );
 }
 
-inline bool ServiceStub::isWaiting( void ) const
+inline bool ServiceStub::isWaiting() const
 {
     return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
 }
 
-inline NEService::eServiceConnection ServiceStub::getServiceStatus( void ) const
+inline NEService::eServiceConnection ServiceStub::getServiceStatus() const
 {
     return mConnectStatus;
 }
 
-inline const StubAddress & ServiceStub::getServiceAddress( void ) const
+inline const StubAddress & ServiceStub::getServiceAddress() const
 {
     return mStubAddress;
 }

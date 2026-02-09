@@ -78,7 +78,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    ~ThreadLocalStorage( void );
+    ~ThreadLocalStorage();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes / Operations
@@ -88,7 +88,7 @@ public:
      * \brief   Returns the name of thread local storage.
      *          The name of local storage is same as thread name.
      **/
-    const String & getName( void ) const;
+    const String & getName() const;
 
     /**
      * \brief   Returns true, if there is an local storage item 
@@ -101,13 +101,13 @@ public:
     /**
      * \brief   Returns the owning thread object.
      **/
-    inline Thread & getOwnerThread( void ) const;
+    inline Thread & getOwnerThread() const;
 
     /**
      * \brief   Returns the size of a thread local storage, 
      *          i.e. the number of items saved in storage.
      **/
-    inline uint32_t getSize( void ) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief   Returns the element value, saved in the 
@@ -194,7 +194,7 @@ public:
     /**
      * \brief   Removes all items in thread local storage
      **/
-    inline void clear( void );
+    inline void clear();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -222,7 +222,7 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ThreadLocalStorage( void ) = delete;
+    ThreadLocalStorage() = delete;
     DECLARE_NOCOPY_NOMOVE( ThreadLocalStorage );
 };
 
@@ -230,17 +230,17 @@ private:
 // ThreadLocalStorage class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Thread & ThreadLocalStorage::getOwnerThread( void ) const
+inline Thread & ThreadLocalStorage::getOwnerThread() const
 {
     return mOwningThread;
 }
 
-inline uint32_t ThreadLocalStorage::getSize( void ) const
+inline uint32_t ThreadLocalStorage::getSize() const
 {
     return mStorageList.getSize();
 }
 
-inline void ThreadLocalStorage::clear(void )
+inline void ThreadLocalStorage::clear()
 {
     mStorageList.clear();
 }

@@ -179,12 +179,12 @@ protected:
     /**
      * \brief   Default protected constructor.
      **/
-    FileBase( void );
+    FileBase();
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~FileBase( void ) = default;
+    virtual ~FileBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -254,24 +254,24 @@ public:
     /**
      * \brief   Returns instance of streaming object to read data.
      **/
-    inline const IEInStream & getReadStream( void ) const;
+    inline const IEInStream & getReadStream() const;
 
     /**
      * \brief   Returns instance of streaming object to write data.
      **/
-    inline IEOutStream & getWriteStream( void );
+    inline IEOutStream & getWriteStream();
 
     /**
      * \brief   Returns the name of file object set by user. This can be either short name
      *          or normalized full path. Can be empty string for buffered file.
      * \return  Returns the given name of file.
      **/
-    inline const String & getName( void ) const;
+    inline const String & getName() const;
 
     /**
      * \brief   Returns the file open mode (bits)
      **/
-    inline unsigned int getMode( void ) const;
+    inline unsigned int getMode() const;
 
 /************************************************************************/
 // State functions
@@ -279,73 +279,73 @@ public:
     /**
      * \brief   Returns true, if file is valid. The file is valid if it is opened for read and/or write.
      */
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief	Returns true if file is opened in mode to force to delete.
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isForceDelete( void ) const;
+    inline bool isForceDelete() const;
 
     /**
      * \brief   Returns true if file is opened in temporary mode
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isTemporary( void ) const;
+    inline bool isTemporary() const;
 
     /**
      * \brief	Returns true if buffer of memory file is attached
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isAttachMode( void ) const;
+    inline bool isAttachMode() const;
 
     /**
      * \brief   Returns true if buffer of memory file should be detached (on close)
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isDetachMode( void ) const;
+    inline bool isDetachMode() const;
 
     /**
      * \brief   Returns true if file pointer position is at the end of file
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isEndOfFile( void ) const;
+    inline bool isEndOfFile() const;
 
     /**
      * \brief   Returns true if file is opened in text mode
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isTextMode( void ) const;
+    inline bool isTextMode() const;
 
     /**
      * \brief	Returns true if file is opened in binary mode
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isBinaryMode( void ) const;
+    inline bool isBinaryMode() const;
 
     /**
      * \brief   Returns true if read sharing of opened file is permitted
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isShareForRead( void ) const;
+    inline bool isShareForRead() const;
 
     /**
      * \brief   Returns true if write sharing of opened file is permitted
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool isSharedForWrite( void ) const;
+    inline bool isSharedForWrite() const;
 
     /**
      * \brief   Returns true if write operation is permitted
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool canWrite( void ) const;
+    inline bool canWrite() const;
 
     /**
      * \brief   Returns true if read operation is permitted
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool canRead( void ) const;
+    inline bool canRead() const;
 
 /************************************************************************/
 // Cursor position operation functions
@@ -354,23 +354,23 @@ public:
      * \brief   Move file pointer to the beginning of file
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool moveToBegin( void ) const;
+    inline bool moveToBegin() const;
 
     /**
      * \brief   Move file pointer to the end of file
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool moveToEnd( void ) const;
+    inline bool moveToEnd() const;
 
     /**
      * \brief   Returns the start position value.
      **/
-    inline static unsigned int getStartPosition( void );
+    inline static unsigned int getStartPosition();
 
     /**
      * \brief   Return the invalid position value.
      **/
-    inline static unsigned int getInvalidPosition( void );
+    inline static unsigned int getInvalidPosition();
 
 /************************************************************************/
 // Read / Write operation functions
@@ -660,7 +660,7 @@ public:
      * \return  Returns true if file object was opened with success.
      * \see     close()
      **/
-    virtual bool open( void ) = 0;
+    virtual bool open() = 0;
 
     /**
      * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
@@ -696,18 +696,18 @@ public:
      *
      * \see     open()
      **/
-    virtual void close( void ) = 0;
+    virtual void close() = 0;
 
     /**
      * \brief	Removes opened file. This will force to remove file object even if it is attached memory buffered file.
      * \return	Returns true if succeeded.
      **/
-    virtual bool remove( void ) = 0;
+    virtual bool remove() = 0;
 
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    virtual unsigned int getLength( void ) const = 0;
+    virtual unsigned int getLength() const = 0;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
@@ -730,7 +730,7 @@ public:
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
      **/
-    virtual bool truncate( void ) = 0;
+    virtual bool truncate() = 0;
 
 /************************************************************************/
 // IEIOStream pure virtual
@@ -818,7 +818,7 @@ public:
      * \brief   Clears the buffers for the file and causes all buffered data 
      *          to be written to the file.
      **/
-    virtual void flush( void ) override;
+    virtual void flush() override;
 
 protected:
 
@@ -836,7 +836,7 @@ protected:
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor( void ) const override;
+    virtual void resetCursor() const override;
 
     /**
      * \brief   Normalizes the name, replace special masks such as time-stamp or process name in the give name.
@@ -879,8 +879,8 @@ private:
 // Private function class.
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline FileBase & self( void );
-    inline const FileBase & self( void ) const;
+    inline FileBase & self();
+    inline const FileBase & self() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -892,118 +892,118 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // FileBase class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline FileBase & FileBase::self( void )
+inline FileBase & FileBase::self()
 {
     return (*this);
 }
 
-inline const FileBase & FileBase::self( void ) const
+inline const FileBase & FileBase::self() const
 {
     return (*this);
 }
 
-inline const String & FileBase::getName( void ) const
+inline const String & FileBase::getName() const
 {
     return mFileName;
 }
 
-inline unsigned int FileBase::getMode( void ) const
+inline unsigned int FileBase::getMode() const
 {
     return mFileMode;
 }
 
-inline bool FileBase::isValid( void ) const
+inline bool FileBase::isValid() const
 {
     return isOpened();
 }
 
-inline bool FileBase::isForceDelete( void ) const
+inline bool FileBase::isForceDelete() const
 {
     return (getMode() & static_cast<int>(FOB_FOR_DELETE)) != 0;
 }
 
-inline bool FileBase::isTemporary( void ) const
+inline bool FileBase::isTemporary() const
 {
     return (getMode() & static_cast<int>(FO_MODE_CREATE_TEMP)) != 0;
 }
 
-inline bool FileBase::isAttachMode( void ) const
+inline bool FileBase::isAttachMode() const
 {
     return (getMode() & static_cast<int>(FOB_ATTACH)) != 0;
 }
 
-inline bool FileBase::isDetachMode( void ) const
+inline bool FileBase::isDetachMode() const
 {
     return (getMode() & static_cast<int>(FOB_DETACH)) != 0;
 }
 
-inline bool FileBase::isTextMode( void ) const
+inline bool FileBase::isTextMode() const
 {
     return ( (getMode() & static_cast<int>(FOB_TEXT)) != 0 );
 }
 
-inline bool FileBase::isBinaryMode( void ) const
+inline bool FileBase::isBinaryMode() const
 {
     return ( (getMode() & static_cast<int>(FOB_BINARY)) != 0 );
 }
 
-inline bool FileBase::isShareForRead( void ) const
+inline bool FileBase::isShareForRead() const
 {
     return ( (getMode() & static_cast<int>(FOB_SHARE_READ)) != 0 );
 }
 
-inline bool FileBase::isSharedForWrite( void ) const
+inline bool FileBase::isSharedForWrite() const
 {
     return ( (getMode() & static_cast<int>(FOB_SHARE_WRITE)) != 0 );
 }
 
-inline bool FileBase::isEndOfFile( void ) const
+inline bool FileBase::isEndOfFile() const
 {
     ASSERT(isOpened());
     return ( getPosition() < getLength() );
 }
 
-inline bool FileBase::canWrite( void ) const
+inline bool FileBase::canWrite() const
 {
     ASSERT(isOpened());
     return ( (getMode() & static_cast<int>(FOB_WRITE)) != 0 );
 }
 
-inline bool FileBase::canRead( void ) const
+inline bool FileBase::canRead() const
 {
     ASSERT(isOpened());
     return ( (getMode() & static_cast<int>(FOB_READ)) != 0 );
 }
 
-inline bool FileBase::moveToBegin( void ) const
+inline bool FileBase::moveToBegin() const
 {
     ASSERT(isOpened());
     return IECursorPosition::moveToBegin();
 }
 
-inline bool FileBase::moveToEnd( void ) const
+inline bool FileBase::moveToEnd() const
 {
     ASSERT(isOpened());
     return IECursorPosition::moveToEnd();
 }
 
-inline unsigned int FileBase::getStartPosition( void )
+inline unsigned int FileBase::getStartPosition()
 {
     return IECursorPosition::START_CURSOR_POSITION;
 }
 
-inline unsigned int FileBase::getInvalidPosition( void )
+inline unsigned int FileBase::getInvalidPosition()
 {
     return IECursorPosition::INVALID_CURSOR_POSITION;
 }
 
-inline const IEInStream& FileBase::getReadStream( void ) const
+inline const IEInStream& FileBase::getReadStream() const
 {
     ASSERT(isOpened());
     return static_cast<const IEInStream &>(*this);
 }
 
-inline IEOutStream& FileBase::getWriteStream( void )
+inline IEOutStream& FileBase::getWriteStream()
 {
     ASSERT(isOpened());
     return static_cast<IEOutStream &>(*this);

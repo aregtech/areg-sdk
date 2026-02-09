@@ -57,11 +57,11 @@ public:
     /**
      * \brief   Creates empty Server List.
      **/
-    ServerList( void ) = default;
+    ServerList() = default;
     /**
      * \brief   Destructor
      **/
-    ~ServerList( void ) = default;
+    ~ServerList() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations

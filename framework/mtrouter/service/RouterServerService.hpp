@@ -44,11 +44,11 @@ public:
     /**
      * \brief   Default constructor to initialize default values.
      **/
-    RouterServerService( void );
+    RouterServerService();
     /**
      * \brief   Destructor
      **/
-    virtual ~RouterServerService( void ) = default;
+    virtual ~RouterServerService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -175,17 +175,17 @@ protected:
     /**
      * \brief   Called when receive event the client connection is started.
      **/
-    virtual void onServiceConnectionStarted( void ) override;
+    virtual void onServiceConnectionStarted() override;
 
     /**
      * \brief   Called when receive event the client connection is stopped.
      **/
-    virtual void onServiceConnectionStopped( void ) override;
+    virtual void onServiceConnectionStopped() override;
 
     /**
      * \brief   Called when receive event the client connection is lost.
      **/
-    virtual void onServiceConnectionLost( void ) override;
+    virtual void onServiceConnectionLost() override;
 
     /**
      * \brief   Called when received a communication message to dispatch and process.
@@ -206,7 +206,7 @@ protected:
     /**
      * \brief   Called when need to disconnect and unregister all service providers and service consumers.
      **/
-    virtual void disconnectServices( void ) override;
+    virtual void disconnectServices() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -215,7 +215,7 @@ private:
     /**
      * \brief   Returns instance of object. For internal use only.
      **/
-    inline RouterServerService & self( void );
+    inline RouterServerService & self();
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -234,7 +234,7 @@ private:
 // RouterServerService class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline RouterServerService & RouterServerService::self( void )
+inline RouterServerService & RouterServerService::self()
 {
     return (*this);
 }

@@ -63,7 +63,7 @@ public:
      *          By default, the class ID value is BAD_CLASS_ID.
      *          Change the value after creating class ID object.
      **/
-    static inline RuntimeClassID createEmptyClassID( void );
+    static inline RuntimeClassID createEmptyClassID();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -92,7 +92,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~RuntimeClassID( void ) = default;
+    ~RuntimeClassID() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -193,7 +193,7 @@ public:
      * \brief   Operator to convert the value or Runtime Class ID to unsigned integer value.
      *          Used to calculate hash value in hash map
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -201,12 +201,12 @@ public:
     /**
      * \brief   Returns true if the value of Runtime Class ID is not equal to RuntimeClassID::BAD_CLASS_ID.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns the name of Runtime Class ID.
      **/
-    inline const String& getName( void ) const;
+    inline const String& getName() const;
 
     /**
      * \brief   Sets the name of Runtime Class ID.
@@ -217,7 +217,7 @@ public:
     /**
      * \brief   Returns calculated number of runtime class.
      **/
-    inline unsigned getMagic( void ) const;
+    inline unsigned getMagic() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -227,7 +227,7 @@ private:
      * \brief   Default constructor. Private. Will create BAD_CLASS_ID
      *          object.
      **/
-    RuntimeClassID( void );
+    RuntimeClassID();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -266,7 +266,7 @@ namespace std
 // RuntimeClassID class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline RuntimeClassID RuntimeClassID::createEmptyClassID( void )
+inline RuntimeClassID RuntimeClassID::createEmptyClassID()
 {
     return RuntimeClassID();
 }
@@ -329,22 +329,22 @@ inline bool RuntimeClassID::operator != (const String & other) const
     return mClassName != other;
 }
 
-inline RuntimeClassID::operator unsigned int ( void ) const
+inline RuntimeClassID::operator unsigned int () const
 {
     return mMagicNum;
 }
 
-inline bool RuntimeClassID::isValid( void ) const
+inline bool RuntimeClassID::isValid() const
 {
     return (mMagicNum != NEMath::CHECKSUM_IGNORE);
 }
 
-inline const String & RuntimeClassID::getName( void ) const
+inline const String & RuntimeClassID::getName() const
 {
     return mClassName;
 }
 
-inline unsigned RuntimeClassID::getMagic(void) const
+inline unsigned RuntimeClassID::getMagic() const
 {
     return mMagicNum;
 }

@@ -28,30 +28,30 @@
 // LogConfiguration class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool LogConfiguration::isLoggingEnabled(void) const
+bool LogConfiguration::isLoggingEnabled() const
 {
     return Application::getConfigManager().getLoggingStatus();
 }
 
-bool LogConfiguration::isRemoteLoggingEnabled(void) const
+bool LogConfiguration::isRemoteLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
     return config.getLogEnabled(NELogging::eLogingTypes::LogTypeRemote);
 }
 
-bool LogConfiguration::isFileLoggingEnabled(void) const
+bool LogConfiguration::isFileLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
     return config.getLogEnabled(NELogging::eLogingTypes::LogTypeFile);
 }
 
-bool LogConfiguration::isDatabaseLoggingEnabled(void) const
+bool LogConfiguration::isDatabaseLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
     return config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase);
 }
 
-bool LogConfiguration::isDebugOutputLoggingEnabled(void) const
+bool LogConfiguration::isDebugOutputLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
     return config.getLogEnabled(NELogging::eLogingTypes::LogTypeDebug);
@@ -71,12 +71,12 @@ void LogConfiguration::setLogEnabled(NELogging::eLogingTypes logType, bool isEna
     }
 }
 
-Version LogConfiguration::getVersion(void) const
+Version LogConfiguration::getVersion() const
 {
     return Application::getConfigManager().getLogVersion();
 }
 
-String LogConfiguration::getLayoutEnter(void) const
+String LogConfiguration::getLayoutEnter() const
 {
     return Application::getConfigManager().getLogLayoutEnter();
 }
@@ -86,7 +86,7 @@ void LogConfiguration::setLayoutEnter(const String & prop)
     Application::getConfigManager().setLogLayoutEnter(prop);
 }
 
-String LogConfiguration::getLayoutMessage(void) const
+String LogConfiguration::getLayoutMessage() const
 {
     return Application::getConfigManager().getLogLayoutMessage();
 }
@@ -96,7 +96,7 @@ void LogConfiguration::setLayoutMessage(const String & prop)
     Application::getConfigManager().setLogLayoutMessage(prop);
 }
 
-String LogConfiguration::getLayoutExit(void) const
+String LogConfiguration::getLayoutExit() const
 {
     return Application::getConfigManager().getLogLayoutExit();
 }
@@ -106,7 +106,7 @@ void LogConfiguration::setLayoutExit(const String& prop)
     Application::getConfigManager().setLogLayoutExit(prop);
 }
 
-uint32_t LogConfiguration::getStackSize(void) const
+uint32_t LogConfiguration::getStackSize() const
 {
     return Application::getConfigManager().getLogRemoteQueueSize();
 }
@@ -116,7 +116,7 @@ void LogConfiguration::setStackSize(uint32_t prop)
     Application::getConfigManager().setLogRemoteQueueSize(prop);
 }
 
-bool LogConfiguration::getStatus(void) const
+bool LogConfiguration::getStatus() const
 {
     return Application::getConfigManager().getLoggingStatus();
 }
@@ -126,7 +126,7 @@ void LogConfiguration::setStatus(bool prop)
     Application::getConfigManager().setLoggingStatus(prop);
 }
 
-bool LogConfiguration::getAppendData(void) const
+bool LogConfiguration::getAppendData() const
 {
     return Application::getConfigManager().getLogFileAppend();
 }
@@ -136,7 +136,7 @@ void LogConfiguration::setAppendData(bool prop)
     Application::getConfigManager().setLogFileAppend(prop);
 }
 
-String LogConfiguration::getLogFile(void) const
+String LogConfiguration::getLogFile() const
 {
     return Application::getConfigManager().getLogFileLocation();
 }
@@ -146,7 +146,7 @@ void LogConfiguration::setLogFile(const String& prop)
     Application::getConfigManager().setLogFileLocation(prop);
 }
 
-bool LogConfiguration::getRemoteTcpEnable(void) const
+bool LogConfiguration::getRemoteTcpEnable() const
 {
     return (Application::getConfigManager().getLogEnabled(NELogging::eLogingTypes::LogTypeRemote) &&
             Application::getConfigManager().getRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip));
@@ -157,7 +157,7 @@ void LogConfiguration::setRemoteTcpEnable(bool prop, bool isTemporary /*= false*
     Application::getConfigManager().setRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
 }
 
-String LogConfiguration::getRemoteTcpAddress(void) const
+String LogConfiguration::getRemoteTcpAddress() const
 {
     return Application::getConfigManager().getRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
 }
@@ -167,7 +167,7 @@ void LogConfiguration::setRemoteTcpAddress(const String & prop, bool isTemporary
     Application::getConfigManager().setRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
 }
 
-uint16_t LogConfiguration::getRemoteTcpPort(void) const
+uint16_t LogConfiguration::getRemoteTcpPort() const
 {
     return Application::getConfigManager().getRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
 }
@@ -177,7 +177,7 @@ void LogConfiguration::setRemoteTcpPort(uint16_t prop, bool isTemporary /*= fals
     Application::getConfigManager().setRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
 }
 
-bool LogConfiguration::getDatabaseEnable(void) const
+bool LogConfiguration::getDatabaseEnable() const
 {
     return Application::getConfigManager().getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase);
 }
@@ -199,7 +199,7 @@ void LogConfiguration::setModuleScopes(const std::vector<Property>& scopeList)
     Application::getConfigManager().addModuletLogScopes(scopeList, true);
 }
 
-String LogConfiguration::getDatabaseEngine(void) const
+String LogConfiguration::getDatabaseEngine() const
 {
     return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseEngine().position);
 }
@@ -209,7 +209,7 @@ void LogConfiguration::setDatabaseEngine(const String& dbEngine, bool isTemporar
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseEngine().position, dbEngine, isTemporary);
 }
 
-String LogConfiguration::getDatabaseFullPath(void) const
+String LogConfiguration::getDatabaseFullPath() const
 {
     String dbLocation = Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
     String dbName = Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
@@ -225,7 +225,7 @@ void LogConfiguration::setDatabaseFullPath(const String& dbFullPath, bool isTemp
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseName().position, dbName, isTemporary);
 }
 
-String LogConfiguration::getDatabaseName(void) const
+String LogConfiguration::getDatabaseName() const
 {
     return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
 }
@@ -235,7 +235,7 @@ void LogConfiguration::setDatabaseName(const String & dbName, bool isTemporary /
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseName().position, dbName, isTemporary);
 }
 
-String LogConfiguration::getDatabaseLocation(void) const
+String LogConfiguration::getDatabaseLocation() const
 {
     return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
 }
@@ -245,7 +245,7 @@ void LogConfiguration::setDatabaseLocation(const String & dbLocation, bool isTem
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position, dbLocation, isTemporary);
 }
 
-String LogConfiguration::getDatabaseDriver(void) const
+String LogConfiguration::getDatabaseDriver() const
 {
     return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseDriver().position);
 }
@@ -255,7 +255,7 @@ void LogConfiguration::setDatabaseDriver(const String& dbDriver, bool isTemporar
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseDriver().position, dbDriver, isTemporary);
 }
 
-NESocket::SocketAddress LogConfiguration::getDatabaseAddress(void) const
+NESocket::SocketAddress LogConfiguration::getDatabaseAddress() const
 {
     String address{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseAddress().position) };
     uint32_t port{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabasePort().position).toUInt32() };
@@ -274,7 +274,7 @@ void LogConfiguration::setDatabaseAddress(const String& dbAddress, uint16_t dbPo
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabasePort().position, String::makeString(static_cast<uint32_t>(dbPort)), isTemporary);
 }
 
-NESocket::UserData LogConfiguration::getDatabaseUser(void) const
+NESocket::UserData LogConfiguration::getDatabaseUser() const
 {
     String user{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position) };
     String password{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabasePassword().position) };
@@ -292,7 +292,7 @@ void LogConfiguration::setDatabaseUser(const String& dbUserName, const String& d
     Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabasePassword().position, dbUserPassword, isTemporary);
 }
 
-void LogConfiguration::saveConfiguration(void)
+void LogConfiguration::saveConfiguration()
 {
     Application::getConfigManager().saveConfig();
 }

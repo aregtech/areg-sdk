@@ -86,7 +86,7 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void )
+    inline ServiceClient & self()
     {
         return (*this);
     }
@@ -101,6 +101,6 @@ private:
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
+    ServiceClient() = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceClient );
 };

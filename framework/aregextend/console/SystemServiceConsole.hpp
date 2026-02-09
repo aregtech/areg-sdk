@@ -58,7 +58,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~SystemServiceConsole( void ) = default;
+    virtual ~SystemServiceConsole() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -159,11 +159,11 @@ private:
     /**
      * \brief   Returns the instance of SystemServiceConsole
      **/
-    inline SystemServiceConsole & self( void );
+    inline SystemServiceConsole & self();
     /**
      * \brief   Called to output sent and received data rate messages.
      **/
-    inline void _outputDataRate(void);
+    inline void _outputDataRate();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -175,14 +175,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    SystemServiceConsole( void ) = delete;
+    SystemServiceConsole() = delete;
     DECLARE_NOCOPY_NOMOVE( SystemServiceConsole );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole inline methods
 //////////////////////////////////////////////////////////////////////////
-inline SystemServiceConsole & SystemServiceConsole::self( void )
+inline SystemServiceConsole & SystemServiceConsole::self()
 {
     return (*this);
 }

@@ -21,7 +21,7 @@
 
 #include <atomic>
 
-Watchdog::GUARD_ID Watchdog::_generateId(void)
+Watchdog::GUARD_ID Watchdog::_generateId()
 {
     static std::atomic<Watchdog::GUARD_ID> _id{ 0 };
     return (++_id);
@@ -43,12 +43,12 @@ Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::WATCHD
 {
 }
 
-Watchdog::~Watchdog(void)
+Watchdog::~Watchdog()
 {
     WatchdogManager::stopTimer(*this);
 }
 
-void Watchdog::startGuard(void)
+void Watchdog::startGuard()
 {
     if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
     {
@@ -59,7 +59,7 @@ void Watchdog::startGuard(void)
     }
 }
 
-void Watchdog::stopGuard( void )
+void Watchdog::stopGuard()
 {
     if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
     {

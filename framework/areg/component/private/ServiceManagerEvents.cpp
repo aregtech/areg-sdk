@@ -24,12 +24,12 @@
 // ServiceManagerEventData class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServiceManagerEventData ServiceManagerEventData::stopMessageRouterClient(void)
+ServiceManagerEventData ServiceManagerEventData::stopMessageRouterClient()
 {
     return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient );
 }
 
-ServiceManagerEventData ServiceManagerEventData::shutdownServiceManager(void)
+ServiceManagerEventData ServiceManagerEventData::shutdownServiceManager()
 {
     return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService );
 }
@@ -99,7 +99,7 @@ ServiceManagerEventData ServiceManagerEventData::startNetConnection( const Strin
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::stopConnection(void)
+ServiceManagerEventData ServiceManagerEventData::stopConnection()
 {
     return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection );
 }

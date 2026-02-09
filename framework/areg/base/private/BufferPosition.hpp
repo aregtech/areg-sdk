@@ -50,7 +50,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~BufferPosition( void ) = default;
+    virtual ~BufferPosition() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -59,7 +59,7 @@ public:
     /**
      * \brief   Invalidates current position, i.e. sets current position to IECursorPosition::INVALID_CURSOR_POSITION
      **/
-    inline void invalidate( void );
+    inline void invalidate();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -75,7 +75,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    unsigned int getPosition( void ) const;
+    unsigned int getPosition() const;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -111,7 +111,7 @@ private:
 // Hidden / Disabled methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    BufferPosition( void ) = delete;
+    BufferPosition() = delete;
     DECLARE_NOCOPY_NOMOVE( BufferPosition );
 };
 
@@ -119,7 +119,7 @@ private:
 // BufferPosition class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void BufferPosition::invalidate( void )
+inline void BufferPosition::invalidate()
 {
     mPosition   = IECursorPosition::INVALID_CURSOR_POSITION;
 }

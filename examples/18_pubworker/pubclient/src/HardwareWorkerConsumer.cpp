@@ -17,7 +17,7 @@ HardwareWorkerConsumer::HardwareWorkerConsumer(const char * consumerName)
 {
 }
 
-inline HardwareWorkerConsumer & HardwareWorkerConsumer::self(void)
+inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
 {
     return (*this);
 }

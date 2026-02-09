@@ -268,7 +268,7 @@
 #endif // !DECLARE_NOCOPY_NOMOVE
 
 #ifndef DECLARE_UNUSED
-    #define DECLARE_UNUSED(x)           ((void)(x))
+    #define DECLARE_UNUSED(x)           (()(x))
 #endif  // DECLARE_UNUSED
 
  /**

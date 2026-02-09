@@ -60,7 +60,7 @@ protected:
     /**
      * \brief   Protected default constructor.
      **/
-    IEByteBuffer( void );
+    IEByteBuffer();
 
     /**
      * \brief   Initializes byte-buffer from given source
@@ -76,7 +76,7 @@ public:
     /**
      * \brief   Destructor 
      **/
-    virtual ~IEByteBuffer( void ) = default;
+    virtual ~IEByteBuffer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -88,20 +88,20 @@ public:
     /**
      * \brief   Returns true if buffer is shared between several byte buffer instances.
      **/
-    virtual bool isShared( void ) const = 0;
+    virtual bool isShared() const = 0;
 
     /**
      * \brief   Returns true if buffer can be shared.
      *          The Raw Buffer object should return false.
      *          The Shared Buffer object should return true.
      **/
-    virtual bool canShare( void ) const = 0;
+    virtual bool canShare() const = 0;
 
     /**
      * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
      *          invalidates writing and reading positions.
      **/
-    virtual void invalidate( void );
+    virtual void invalidate();
 
     /**
      * \brief	Reserves space for byte buffer structure, if needed, 
@@ -129,17 +129,17 @@ public:
     /**
      * \brief   Returns pointer to the byte buffer.
      **/
-    inline const NEMemory::sByteBuffer * getByteBuffer( void)  const;
+    inline const NEMemory::sByteBuffer * getByteBuffer()  const;
 
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns the use
      **/
-    inline unsigned int getSizeUsed( void ) const;
+    inline unsigned int getSizeUsed() const;
     
     /**
      * \brief	Sets the used size value in byte buffer object.
@@ -151,30 +151,30 @@ public:
     /**
      * \brief   Returns the constant pointer to the data buffer of byte buffer
      **/
-    inline const unsigned char * getBuffer( void ) const;
+    inline const unsigned char * getBuffer() const;
 
     /**
      * \brief   Returns pointer to the data buffer of byte buffer
      **/
-    inline unsigned char * getBuffer( void );
+    inline unsigned char * getBuffer();
 
     /**
      * \brief   Checks whether the buffer is valid or not.
      *          No read / write should be performed on invalid buffer.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
     
     /**
      * \brief   Returns the size in byte of byte buffer
      *          If empty, returns zero
      **/
-    inline unsigned int getSizeAvailable( void ) const;
+    inline unsigned int getSizeAvailable() const;
 
     /**
      * \brief   Returns type of byte buffer. 
      *          If valid, it should be either internal or external (for RPC)
      **/
-    inline NEMemory::eBufferType getType( void ) const;
+    inline NEMemory::eBufferType getType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected internal members
@@ -184,19 +184,19 @@ protected:
     /**
      * \brief   Returns pointer to the byte buffer.
      **/
-    inline NEMemory::sByteBuffer * getByteBuffer( void );
+    inline NEMemory::sByteBuffer * getByteBuffer();
 
     /**
      * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 
      *          there is no data to read. Can be only used to manipulate with cursor.
      **/
-    inline const unsigned char * getEndOfBuffer( void ) const;
+    inline const unsigned char * getEndOfBuffer() const;
 
     /**
      * \brief   Returns end-of-buffer, i.e. end of used space. So that, if length of buffer is
      *          bigger than used space, there can be still data written. 
      **/
-    inline unsigned char * getEndOfBuffer( void );
+    inline unsigned char * getEndOfBuffer();
 
 /************************************************************************/
 // IEByteBuffer protected overrides
@@ -221,19 +221,19 @@ protected:
     /**
      * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
      **/
-    virtual unsigned int getAlignedSize( void ) const;
+    virtual unsigned int getAlignedSize() const;
 
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset( void ) const = 0;
+    virtual unsigned int getDataOffset() const = 0;
 
     /**
      * \brief   Returns the size of data byte structure (header and one byte).
      *          This is a minimum size of byte buffer to reserve when initializing buffer.
      *          The size can differ for shared and remote message.
      **/
-    virtual unsigned int getHeaderSize( void ) const = 0;
+    virtual unsigned int getHeaderSize() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -263,47 +263,47 @@ private:
 // IEByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEMemory::sByteBuffer * IEByteBuffer::getByteBuffer(void) const
+inline const NEMemory::sByteBuffer * IEByteBuffer::getByteBuffer() const
 {
     return mByteBuffer.get();
 }
 
-inline NEMemory::sByteBuffer * IEByteBuffer::getByteBuffer( void )
+inline NEMemory::sByteBuffer * IEByteBuffer::getByteBuffer()
 {
     return mByteBuffer.get( );
 }
 
-inline bool IEByteBuffer::isEmpty( void ) const
+inline bool IEByteBuffer::isEmpty() const
 {
     return (isValid() == false) || (mByteBuffer->bufHeader.biUsed == 0);
 }
 
-inline unsigned int IEByteBuffer::getSizeUsed( void ) const
+inline unsigned int IEByteBuffer::getSizeUsed() const
 {
     return (isValid() ? mByteBuffer->bufHeader.biUsed : 0);
 }
 
-inline const unsigned char* IEByteBuffer::getBuffer( void ) const
+inline const unsigned char* IEByteBuffer::getBuffer() const
 {
     return NEMemory::getBufferDataRead(mByteBuffer.get());
 }
 
-inline unsigned char* IEByteBuffer::getBuffer( void )
+inline unsigned char* IEByteBuffer::getBuffer()
 {
     return NEMemory::getBufferDataWrite(mByteBuffer.get());
 }
 
-inline bool IEByteBuffer::isValid( void ) const
+inline bool IEByteBuffer::isValid() const
 {
     return (mByteBuffer.get() != nullptr);
 }
 
-inline unsigned int IEByteBuffer::getSizeAvailable( void ) const
+inline unsigned int IEByteBuffer::getSizeAvailable() const
 {
     return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
-inline NEMemory::eBufferType IEByteBuffer::getType( void ) const
+inline NEMemory::eBufferType IEByteBuffer::getType() const
 {
     return (isValid() ? mByteBuffer->bufHeader.biBufType : NEMemory::eBufferType::BufferUnknown);
 }
@@ -316,12 +316,12 @@ inline void IEByteBuffer::setSizeUsed(unsigned int newSize)
     }
 }
 
-inline const unsigned char * IEByteBuffer::getEndOfBuffer(void) const
+inline const unsigned char * IEByteBuffer::getEndOfBuffer() const
 {
     return (isValid() ? NEMemory::getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
 }
 
-inline unsigned char * IEByteBuffer::getEndOfBuffer(void)
+inline unsigned char * IEByteBuffer::getEndOfBuffer()
 {
     return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }

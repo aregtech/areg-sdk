@@ -132,7 +132,7 @@ namespace
 
 } // namespace
 
-void Application::_osSetupHandlers( void )
+void Application::_osSetupHandlers()
 {
     Application & theApp = Application::getInstance();
     Lock lock(theApp.mLock);
@@ -147,7 +147,7 @@ void Application::_osSetupHandlers( void )
     }
 }
 
-void Application::_osReleaseHandlers(void)
+void Application::_osReleaseHandlers()
 {
     Application& theApp = Application::getInstance();
     Lock lock(theApp.mLock);

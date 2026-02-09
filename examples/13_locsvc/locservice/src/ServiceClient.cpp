@@ -45,7 +45,7 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     return result;
 }
 
-void ServiceClient::responseHelloWorld( void )
+void ServiceClient::responseHelloWorld()
 {
     LOG_SCOPE(examples_13_locservice_ServiceClient_responseHelloWorld);
     LOG_DBG("Received response on request to print greetings from the client");

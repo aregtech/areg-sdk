@@ -17,7 +17,7 @@
 
 #include "areg/base/DateTime.hpp"
 
-unsigned int TimerBase::getTickCount(void)
+unsigned int TimerBase::getTickCount()
 {
     return static_cast<unsigned int>(DateTime::getSystemTickCount());
 }
@@ -37,12 +37,12 @@ TimerBase::TimerBase( const eTimerType timerType
     createWaitableTimer();
 }
 
-TimerBase::~TimerBase(void)
+TimerBase::~TimerBase()
 {
     destroyWaitableTimer();
 }
 
-bool TimerBase::createWaitableTimer( void )
+bool TimerBase::createWaitableTimer()
 {
     Lock lock( mLock );
 
@@ -55,7 +55,7 @@ bool TimerBase::createWaitableTimer( void )
 }
 
 
-void TimerBase::destroyWaitableTimer( void )
+void TimerBase::destroyWaitableTimer()
 {
     Lock lock( mLock );
 

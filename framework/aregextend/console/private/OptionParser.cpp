@@ -169,14 +169,14 @@ namespace
     }
 } // namespace
 
-const OptionParser::sOptionSetup OptionParser::getDefaultOptionSetup( void )
+const OptionParser::sOptionSetup OptionParser::getDefaultOptionSetup()
 {
     static sOptionSetup _defaultSetup{ "", "", 0, STRING_NO_RANGE, { }, { }, { } };
     return _defaultSetup;
 }
 
 
-OptionParser::OptionParser( void )
+OptionParser::OptionParser()
     : mCmdLine      ( )
     , mSetupOptions ( )
     , mInputOptions ( )
@@ -404,7 +404,7 @@ uint32_t OptionParser::findOption(int optId) const
     return result;
 }
 
-void OptionParser::sort(void)
+void OptionParser::sort()
 {
     mInputOptions.sort([](const OptionParser::sOption& opt1, const OptionParser::sOption& opt2)
                         {

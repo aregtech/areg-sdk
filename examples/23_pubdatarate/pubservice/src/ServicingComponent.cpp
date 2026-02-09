@@ -140,7 +140,7 @@ bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::
     return result;
 }
 
-void ServicingComponent::onTimerExpired( void )
+void ServicingComponent::onTimerExpired()
 {
     mLock.lock(NECommon::WAIT_INFINITE);
 
@@ -260,7 +260,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     }
 }
 
-void ServicingComponent::onThreadRuns(void)
+void ServicingComponent::onThreadRuns()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 
@@ -277,7 +277,7 @@ void ServicingComponent::onThreadRuns(void)
     }
 }
 
-void ServicingComponent::_runInputThread(void)
+void ServicingComponent::_runInputThread()
 {
     Console& console = Console::getInstance();
 
@@ -300,7 +300,7 @@ void ServicingComponent::_runInputThread(void)
     }
 }
 
-void ServicingComponent::_runImageThread(void)
+void ServicingComponent::_runImageThread()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent__runImageThread);
 
@@ -363,12 +363,12 @@ void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, Wait:
 }
 
 
-uint64_t ServicingComponent::_getBlockImageTime(void) const
+uint64_t ServicingComponent::_getBlockImageTime() const
 {
     return static_cast<uint64_t>(mOptions.mWidth) * mOptions.mLines * mOptions.mPixelTime;
 }
 
-void ServicingComponent::_printInfo(void) const
+void ServicingComponent::_printInfo() const
 {
     Console& console = Console::getInstance();
     console.saveCursorPosition();
@@ -401,7 +401,7 @@ void ServicingComponent::_printInfo(void) const
     console.refreshScreen();
 }
 
-void ServicingComponent::_printHelp(void) const
+void ServicingComponent::_printHelp() const
 {
     Console& console = Console::getInstance();
     console.saveCursorPosition();
@@ -425,7 +425,7 @@ void ServicingComponent::_printHelp(void) const
     console.refreshScreen();
 }
 
-void ServicingComponent::_initBlockList(void)
+void ServicingComponent::_initBlockList()
 {
     mBitmap.createBitmap(mOptions.mWidth, mOptions.mHeight);
     mBlockList.clear();

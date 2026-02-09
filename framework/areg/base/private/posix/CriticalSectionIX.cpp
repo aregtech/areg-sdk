@@ -37,27 +37,27 @@ CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
     }
 }
 
-bool CriticalSectionIX::lock(void) const
+bool CriticalSectionIX::lock() const
 {
     return mSpinLock.lock();
 }
 
-void CriticalSectionIX::unlock(void) const
+void CriticalSectionIX::unlock() const
 {
     mSpinLock.unlock();
 }
 
-bool CriticalSectionIX::tryLock(void) const
+bool CriticalSectionIX::tryLock() const
 {
     return mSpinLock.tryLock();
 }
 
-bool CriticalSectionIX::isValid(void) const
+bool CriticalSectionIX::isValid() const
 {
     return mSpinLock.isValid();
 }
 
-void CriticalSectionIX::freeResources(void)
+void CriticalSectionIX::freeResources()
 {
     mSpinLock.freeResources();
 }

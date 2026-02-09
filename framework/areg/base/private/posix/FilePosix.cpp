@@ -64,7 +64,7 @@ namespace
     // local statics
     //////////////////////////////////////////////////////////////////////////
 
-    inline const char * _getUserHomeDir( void )
+    inline const char * _getUserHomeDir()
     {
         const char *homedir = getenv(ENV_USER_HOME);
         if (homedir == nullptr)
@@ -76,7 +76,7 @@ namespace
         return homedir;
     }
 
-    inline const char * _getTempDir( void )
+    inline const char * _getTempDir()
     {
         const char * tempDir = getenv("TMPDIR");
         if (tempDir == nullptr )
@@ -96,12 +96,12 @@ namespace
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_osGetInvalidHandle( void )
+FILEHANDLE File::_osGetInvalidHandle()
 {
     return static_cast<FILEHANDLE>(nullptr);
 }
 
-void File::_osCloseFile( void )
+void File::_osCloseFile()
 {
     if ( isOpened( ) )
     {
@@ -118,7 +118,7 @@ void File::_osCloseFile( void )
     mFileHandle = File::_osGetInvalidHandle();
 }
 
-bool File::_osOpenFile( void )
+bool File::_osOpenFile()
 {
     sPosixFile * file = nullptr;
 
@@ -301,19 +301,19 @@ unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosit
     return result;
 }
 
-unsigned int File::_osGetPositionFile( void ) const
+unsigned int File::_osGetPositionFile() const
 {
     ASSERT(mFileHandle != nullptr);
     return static_cast<unsigned int>( lseek(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
 }
 
-bool File::_osTruncateFile( void )
+bool File::_osTruncateFile()
 {
     ASSERT(mFileHandle != nullptr);
     return (RETURNED_OK == ftruncate(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0));
 }
 
-void File::_osFlushFile( void )
+void File::_osFlushFile()
 {
     ASSERT(mFileHandle != nullptr);
     fsync(reinterpret_cast<sPosixFile*>(mFileHandle)->fd);

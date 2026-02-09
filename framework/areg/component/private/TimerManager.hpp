@@ -79,7 +79,7 @@ private:
     /**
      * \brief   Returns reference to Timer Manager object.
      **/
-    static TimerManager & getInstance( void );
+    static TimerManager & getInstance();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -93,7 +93,7 @@ public:
      * \brief   If needed, creates Time Manager object and Timer Thread.
      *          Returns reference to the object.
      **/
-    static bool startTimerManager( void );
+    static bool startTimerManager();
 
     /**
      * \brief   Stops Timer Manager and Timer Thread. Cancels and stops all timers.
@@ -110,12 +110,12 @@ public:
      *          complete the job and exit. This should be called if previously
      *          it was requested to stop the Timer Manager without waiting for completion.
      **/
-    static void waitTimerManager(void);
+    static void waitTimerManager();
 
     /**
      * \brief   Returns true if Timer Manager has been started and ready to process timers.
      **/
-    static bool isTimerManagerStarted( void );
+    static bool isTimerManagerStarted();
 
     /**
      * \brief   Starts the timer. If succeeds, returns true.
@@ -150,11 +150,11 @@ private:
     /**
      * \brief   Constructor
      **/
-    TimerManager( void );
+    TimerManager();
     /**
      * \brief   Destructor
      **/
-    virtual ~TimerManager( void );
+    virtual ~TimerManager();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -193,7 +193,7 @@ private:
     /**
      * \brief   Stops and removes all timers, i.e. unregisters all timers.
      **/
-    void _removeAllTimers( void );
+    void _removeAllTimers();
 
     /**
      * \brief   Registers timer in the timer resource map.

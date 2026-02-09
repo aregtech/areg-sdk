@@ -69,7 +69,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     ASSERT((target > NEService::TARGET_LOCAL) && (target < NEService::COOKIE_REMOTE_SERVICE));
 }
 
-ServiceClientConnectionBase::~ServiceClientConnectionBase(void)
+ServiceClientConnectionBase::~ServiceClientConnectionBase()
 {
 }
 
@@ -157,7 +157,7 @@ void ServiceClientConnectionBase::applyServiceConnectionData( const String & hos
     mClientConnection.setAddress( hostName, portNr );
 }
 
-bool ServiceClientConnectionBase::connectServiceHost(void)
+bool ServiceClientConnectionBase::connectServiceHost()
 {
     Lock lock( mLock );
     bool result{ false };
@@ -177,7 +177,7 @@ bool ServiceClientConnectionBase::connectServiceHost(void)
     return result;
 }
 
-bool ServiceClientConnectionBase::reconnectServiceHost(void)
+bool ServiceClientConnectionBase::reconnectServiceHost()
 {
     disconnectServiceHost( );
     sendCommand(ServiceEventData::eServiceEventCommands::CMD_StartService );
@@ -185,24 +185,24 @@ bool ServiceClientConnectionBase::reconnectServiceHost(void)
     return true;
 }
 
-void ServiceClientConnectionBase::disconnectServiceHost(void)
+void ServiceClientConnectionBase::disconnectServiceHost()
 {
     sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::eEventPriority::EventPriorityNormal);
 }
 
-bool ServiceClientConnectionBase::isServiceHostConnected(void) const
+bool ServiceClientConnectionBase::isServiceHostConnected() const
 {
     Lock lock( mLock );
     return isConnectionStarted();
 }
 
-bool ServiceClientConnectionBase::isServiceHostPending(void) const
+bool ServiceClientConnectionBase::isServiceHostPending() const
 {
     Lock lock(mLock);
     return ((mClientConnection.isValid() == false) && (getConnectionState() == ServiceClientConnectionBase::eConnectionState::ConnectionStarting));
 }
 
-bool ServiceClientConnectionBase::isServiceHostSetup( void ) const
+bool ServiceClientConnectionBase::isServiceHostSetup() const
 {
     Lock lock(mLock);
     return mClientConnection.getAddress().isValid();
@@ -218,13 +218,13 @@ RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const 
     return NERemoteService::createDisconnectRequest(source, target);
 }
 
-void ServiceClientConnectionBase::onServiceReconnectTimerExpired( void )
+void ServiceClientConnectionBase::onServiceReconnectTimerExpired()
 {
     LOG_SCOPE( areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired );
     onServiceStart( );
 }
 
-void ServiceClientConnectionBase::onServiceStart(void)
+void ServiceClientConnectionBase::onServiceStart()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
     LOG_DBG("Starting remove servicing");
@@ -238,7 +238,7 @@ void ServiceClientConnectionBase::onServiceStart(void)
     }
 }
 
-void ServiceClientConnectionBase::onServiceStop(void)
+void ServiceClientConnectionBase::onServiceStop()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
     LOG_DBG("Stopping remote servicing");
@@ -267,13 +267,13 @@ void ServiceClientConnectionBase::onServiceStop(void)
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
 }
 
-void ServiceClientConnectionBase::onServiceRestart( void )
+void ServiceClientConnectionBase::onServiceRestart()
 {
     onServiceStop( );
     onServiceStart( );
 }
 
-void ServiceClientConnectionBase::onServiceConnectionStarted(void)
+void ServiceClientConnectionBase::onServiceConnectionStarted()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
     ASSERT(isConnectionStarted());
@@ -289,7 +289,7 @@ void ServiceClientConnectionBase::onServiceConnectionStarted(void)
     }
 }
 
-void ServiceClientConnectionBase::onServiceConnectionStopped(void)
+void ServiceClientConnectionBase::onServiceConnectionStopped()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
     LOG_DBG("Client service is stopped. Resetting cookie");
@@ -312,7 +312,7 @@ void ServiceClientConnectionBase::onServiceConnectionStopped(void)
     }
 }
 
-void ServiceClientConnectionBase::onServiceConnectionLost(void)
+void ServiceClientConnectionBase::onServiceConnectionLost()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
     LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
@@ -342,7 +342,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost(void)
     }
 }
 
-void ServiceClientConnectionBase::onServiceExit( void )
+void ServiceClientConnectionBase::onServiceExit()
 {
     onServiceStop( );
 }
@@ -375,7 +375,7 @@ void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
     }
 }
 
-bool ServiceClientConnectionBase::startConnection(void)
+bool ServiceClientConnectionBase::startConnection()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
 
@@ -410,7 +410,7 @@ bool ServiceClientConnectionBase::startConnection(void)
     return result;
 }
 
-void ServiceClientConnectionBase::cancelConnection(void)
+void ServiceClientConnectionBase::cancelConnection()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
     LOG_WARN("Canceling client service connection");

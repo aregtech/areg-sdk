@@ -127,7 +127,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    File( void );
+    File();
 
     /**
      * \brief	Constructor to set file name / path and file open mode
@@ -140,7 +140,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~File( void );
+    virtual ~File();
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -159,7 +159,7 @@ public:
      *
      * \return  Returns true if file object was opened with success.
      **/
-    virtual bool open( void ) override;
+    virtual bool open() override;
 
     /**
      * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
@@ -192,13 +192,13 @@ public:
      *          If FO_MODE_CREATE_TEMP is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      **/
-    virtual void close( void ) override;
+    virtual void close() override;
 
     /**
      * \brief	Delete opened file. This will force to delete file object even if it is attached memory buffered file
      * \return	Returns true if succeeded.
      **/
-    virtual bool remove( void ) override;
+    virtual bool remove() override;
 
     /**
      * \brief	Sets the file pointer position and returns current position. 
@@ -221,12 +221,12 @@ public:
      *          Before calling function, the file object should be opened.
      * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int getPosition( void ) const override;
+    virtual unsigned int getPosition() const override;
 
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    virtual unsigned int getLength( void ) const override;
+    virtual unsigned int getLength() const override;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
@@ -249,7 +249,7 @@ public:
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
      **/
-    virtual bool truncate( void ) override;
+    virtual bool truncate() override;
 
 /************************************************************************/
 // IEInStream interface overrides
@@ -333,7 +333,7 @@ public:
      * \brief   Clears the buffers for the file and causes all buffered data 
      *          to be written to the file.
      **/
-    virtual void flush( void ) override;
+    virtual void flush() override;
 
 protected:
 /************************************************************************/
@@ -346,7 +346,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const override;
+    virtual unsigned int getSizeReadable() const override;
 
 /************************************************************************/
 // IEOutStream interface overrides
@@ -358,7 +358,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const override;
+    virtual unsigned int getSizeWritable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static operations
@@ -441,12 +441,12 @@ public:
     /**
      * \brief   Generate unique temp file name in temporary folder with prefix TEMP_FILE_PREFIX ("_cz")
      **/
-    static String genTempFileName( void );
+    static String genTempFileName();
 
     /**
      * \brief	Returns absolute path of current directory
      **/
-    static String getCurrentDir( void );
+    static String getCurrentDir();
 
     /**
      * \brief	Sets current directory. Returns true if succeeds.
@@ -469,7 +469,7 @@ public:
     /**
      * \brief	Returns full path of system defined temporary folder
      **/
-    static String getTempDir( void );
+    static String getTempDir();
 
     /**
      * \brief	Checks whether the given path is an existing directory or not.
@@ -517,7 +517,7 @@ public:
     /**
      * \brief   Returns folder location of current executable.
      **/
-    static const String & getExecutableDir( void );
+    static const String & getExecutableDir();
 
     /**
      * \brief   Returns special folder path. The type of required folder is defined in
@@ -628,13 +628,13 @@ private:
     /**
      * \brief   OS specific method to close file and free resources.
      */
-    void _osCloseFile( void );
+    void _osCloseFile();
     
     /**
      * \brief   OS specific method to open file for reading and/or writing.
      * \return  Returns true if succeeded to open the file.
      */
-    bool _osOpenFile( void );
+    bool _osOpenFile();
 
     /**
      * \brief   OS specific method to read data from opened file.
@@ -672,19 +672,19 @@ private:
      * \brief   If file is opened, return the current cursor position in the file.
      *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
      */
-    unsigned int _osGetPositionFile(void) const;
+    unsigned int _osGetPositionFile() const;
 
     /**
      * \brief   OS specific method to truncate the opened file until the current position of the cursor.
      *          The file should be opened for the writing.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      */
-    bool _osTruncateFile(void);
+    bool _osTruncateFile();
 
     /**
      * \brief   OS specific method to flash file buffer into the file system.
      */
-    void _osFlushFile(void);
+    void _osFlushFile();
 
     /**
      * \brief   OS specific method to generate temporary file name.
@@ -714,7 +714,7 @@ private:
     /**
      * \brief   Returns OS specific invalid file handle.
      **/
-    static FILEHANDLE _osGetInvalidHandle( void );
+    static FILEHANDLE _osGetInvalidHandle();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

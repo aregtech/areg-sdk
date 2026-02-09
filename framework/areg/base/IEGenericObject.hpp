@@ -55,7 +55,7 @@ protected:
     /**
      * \brief   Default constructor. Protected.
      **/
-    IEGenericObject( void );
+    IEGenericObject();
 
     /**
      * \brief   Initialization Constructor. Protected.
@@ -66,7 +66,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEGenericObject( void ) = default;
+    virtual ~IEGenericObject() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -82,14 +82,14 @@ public:
      *          Implement function in child classes.
      * \return	Pointer to cloned instance.
      **/
-    virtual IEGenericObject* clone( void ) const = 0;
+    virtual IEGenericObject* clone() const = 0;
 
     /**
      * \brief	Call to destroy instance of class.
      *          If an instance was created by calling Clone()
      *          this function should be called for cleaning up.
      **/
-    virtual void destroy( void ) = 0;
+    virtual void destroy() = 0;
 
     /**
      * \brief	Compares existing generic object instance with
@@ -143,11 +143,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    TEObjectFactory( void );
+    TEObjectFactory();
     /**
      * \brief   Destructor.
      **/
-    ~TEObjectFactory( void );
+    ~TEObjectFactory();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -179,12 +179,12 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 template <typename ClassName>
-TEObjectFactory<ClassName>::TEObjectFactory( void )
+TEObjectFactory<ClassName>::TEObjectFactory()
 {
 }
 
 template <typename ClassName>
-TEObjectFactory<ClassName>::~TEObjectFactory( void )
+TEObjectFactory<ClassName>::~TEObjectFactory()
 {
 }
 

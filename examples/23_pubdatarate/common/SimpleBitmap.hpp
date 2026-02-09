@@ -103,7 +103,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< Default constructor, generates an image with default width and height.
-    inline SimpleBitmap(void);
+    inline SimpleBitmap();
 
     /**
      * \brief   Constructor to generate image with specified width and height.
@@ -113,7 +113,7 @@ public:
      */
     inline SimpleBitmap(uint32_t width, uint32_t height);
     //!< Destructor.
-    inline ~SimpleBitmap(void);
+    inline ~SimpleBitmap();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -123,7 +123,7 @@ public:
     /**
      * \brief   Returns true if the bitmap image is valid.
      */
-    inline bool isValid(void) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Creates and generate gray bitmap image with specified width and height in pixels.
@@ -147,23 +147,23 @@ public:
     /**
      * \brief   Releases the bitmap image.
      */
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief   Returns the width in pixels of the image.
      */
-    inline uint32_t getWidth(void) const;
+    inline uint32_t getWidth() const;
 
     /**
      * \brief   Returns the height in pixels of the image.
      */
-    inline uint32_t getHeight(void) const;
+    inline uint32_t getHeight() const;
 
     /**
      * \brief   Returns number of bytes for 1 row of the image.
      *          The data is aligned to 32-bit.
      */
-    inline uint32_t getRowBytes(void) const;
+    inline uint32_t getRowBytes() const;
 
     /**
      * \brief   Returns the pixels starting at the specified line index. 
@@ -258,7 +258,7 @@ private:
     /**
      * \brief   Returns the begin of bitmap RBG pixel data.
      */
-    inline uint8_t* _getData(void) const;
+    inline uint8_t* _getData() const;
 
     /**
      * \brief   Returns the size in bytes of space to allocate to create a bitmap image
@@ -279,13 +279,13 @@ private:
     /**
      * \brief   Release bitmap to free a space.
      */
-    inline void _release(void);
+    inline void _release();
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleBitmap class inline methods implementation.
 //////////////////////////////////////////////////////////////////////////
-inline SimpleBitmap::SimpleBitmap(void)
+inline SimpleBitmap::SimpleBitmap()
     : mBitmap   (nullptr)
     , mFileName ( )
     , mFrameId  ( 0xFFFFFFFFu )
@@ -303,12 +303,12 @@ inline SimpleBitmap::SimpleBitmap(uint32_t width, uint32_t height)
     _createGrayBitmap(width, height);
 }
 
-inline SimpleBitmap::~SimpleBitmap(void)
+inline SimpleBitmap::~SimpleBitmap()
 {
     _release();
 }
 
-inline bool SimpleBitmap::isValid(void) const
+inline bool SimpleBitmap::isValid() const
 {
     return (mBitmap != nullptr);
 }
@@ -333,22 +333,22 @@ inline bool SimpleBitmap::allocateBitmap(uint32_t width, uint32_t height)
     return result;
 }
 
-inline void SimpleBitmap::release(void)
+inline void SimpleBitmap::release()
 {
     _release();
 }
 
-inline uint32_t SimpleBitmap::getWidth(void) const
+inline uint32_t SimpleBitmap::getWidth() const
 {
     return static_cast<uint32_t>(mBitmap != nullptr ? mBitmap->bmpInfo.bmiWidth : 0);
 }
 
-inline uint32_t SimpleBitmap::getHeight(void) const
+inline uint32_t SimpleBitmap::getHeight() const
 {
     return static_cast<uint32_t>(mBitmap != nullptr ? mBitmap->bmpInfo.bmiHeight : 0);
 }
 
-inline uint32_t SimpleBitmap::getRowBytes(void) const
+inline uint32_t SimpleBitmap::getRowBytes() const
 {
     return mBitmap != nullptr ? _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth)) : 0u;
 }
@@ -508,7 +508,7 @@ inline void SimpleBitmap::_createGrayBitmap(uint32_t width, uint32_t height)
     }
 }
 
-inline uint8_t* SimpleBitmap::_getData(void) const
+inline uint8_t* SimpleBitmap::_getData() const
 {
     return (mBitmap != nullptr ? reinterpret_cast<uint8_t *>(&mBitmap->bmpBits[0]) : nullptr);
 }
@@ -524,7 +524,7 @@ inline uint32_t SimpleBitmap::_dataSize(uint32_t width, uint32_t height) const
     return (_rowSize(width) * height);
 }
 
-inline void SimpleBitmap::_release(void)
+inline void SimpleBitmap::_release()
 {
     uint8_t* data = reinterpret_cast<uint8_t*>(mBitmap);
     delete[] data;

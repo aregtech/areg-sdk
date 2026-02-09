@@ -90,7 +90,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServiceCommunicatonBase( void ) = default;
+    virtual ~ServiceCommunicatonBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -137,7 +137,7 @@ public:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & getInstances( void ) const;
+    inline const NEService::MapInstances & getInstances() const;
 
     /**
      * \brief   Call to wait the service communication thread to complete the job.
@@ -155,19 +155,19 @@ public:
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
-    inline DataRateHelper& getDataRateHelper(void) const;
+    inline DataRateHelper& getDataRateHelper() const;
 
     /**
      * \brief   Each time querying the bytes sent via network connection returns
      *          the value after last query.
      **/
-    inline uint32_t queryBytesSent(void);
+    inline uint32_t queryBytesSent();
 
     /**
      * \brief   Each time querying the bytes received via network connection returns
      *          the value after last query.
      **/
-    inline uint32_t queryBytesReceived(void);
+    inline uint32_t queryBytesReceived();
 
     /**
      * \brief   Enable or disable the data rate calculation.
@@ -179,7 +179,7 @@ public:
     /**
      * \brief   Returns enable or disable the data rate calculation flag.
      **/
-    inline bool isCalculateDataRateEnabled(void) const;
+    inline bool isCalculateDataRateEnabled() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -204,7 +204,7 @@ public:
     /**
      * \brief   Removes all connected instances from the map.
      **/
-    virtual void removeAllInstances(void);
+    virtual void removeAllInstances();
 
 /************************************************************************/
 // IERemoteMessageHandler interface overrides
@@ -282,7 +282,7 @@ public:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost( void ) override;
+    virtual bool connectServiceHost() override;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -290,27 +290,27 @@ public:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    virtual bool reconnectServiceHost( void ) override;
+    virtual bool reconnectServiceHost() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost( void ) override;
+    virtual void disconnectServiceHost() override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isServiceHostConnected( void ) const override;
+    virtual bool isServiceHostConnected() const override;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
      **/
-    virtual bool isServiceHostPending(void) const override;
+    virtual bool isServiceHostPending() const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isServiceHostSetup( void ) const override;
+    virtual bool isServiceHostSetup() const override;
 
     /**
      * \brief   Creates the service connect request message, sets the message target and the source.
@@ -336,27 +336,27 @@ public:
     /**
      * \brief   Triggered when Timer is expired.
      **/
-    virtual void onServiceReconnectTimerExpired( void ) override;
+    virtual void onServiceReconnectTimerExpired() override;
 
     /**
      * \brief   Called when need to start the network server connection service. 
      **/
-    virtual void onServiceStart( void ) override;
+    virtual void onServiceStart() override;
 
     /**
      * \brief   Called when need to stop the network server connection service. 
      **/
-    virtual void onServiceStop( void ) override;
+    virtual void onServiceStop() override;
 
     /**
      * \brief   Called when need to restart the network server connection service. 
      **/
-    virtual void onServiceRestart( void ) override;
+    virtual void onServiceRestart() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit(void) override;
+    virtual void onServiceExit() override;
 
     /**
      * \brief   Called when need to inform the channel connection.
@@ -389,12 +389,12 @@ public:
     /**
      * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
      **/
-    virtual void connectionFailure( void ) override;
+    virtual void connectionFailure() override;
 
     /**
      * \brief   Called when need to disconnect and unregister all service providers and service consumers.
      **/
-    virtual void disconnectServices( void ) override;
+    virtual void disconnectServices() override;
 
 /************************************************************************/
 // ServiceCommunicatonBase
@@ -404,27 +404,27 @@ public:
      * \brief   Called to start connection procedure to accept client connections.
      * \return  Returns true if could start connection.
      **/
-    bool startConnection( void );
+    bool startConnection();
 
     /**
      * \brief   Call to restart the connection. Returns true if succeeded to reconnect.
      **/
-    bool restartConnection( void );
+    bool restartConnection();
 
     /**
      * \brief   Called to stop connection. All clients are automatically disconnected.
      **/
-    void stopConnection( void );
+    void stopConnection();
 
     /**
      * \brief   Starts the message sending thread and returns true if succeeded.
      **/
-    bool startSendThread( void );
+    bool startSendThread();
 
     /**
      * \brief   Starts the message receiving thread and returns true if succeeded.
      **/
-    bool startReceiveThread( void );
+    bool startReceiveThread();
 
     /**
      * \brief   Call to send the event to process.
@@ -482,7 +482,7 @@ private:
     /**
      * \brief   Returns instance of object. For internal use only.
      **/
-    inline ServiceCommunicatonBase & self( void );
+    inline ServiceCommunicatonBase & self();
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -508,7 +508,7 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////////
 private:
-    ServiceCommunicatonBase(void) = delete;
+    ServiceCommunicatonBase() = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceCommunicatonBase );
 };
 
@@ -516,7 +516,7 @@ private:
 // ServiceCommunicatonBase class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline ServiceCommunicatonBase & ServiceCommunicatonBase::self( void )
+inline ServiceCommunicatonBase & ServiceCommunicatonBase::self()
 {
     return (*this);
 }
@@ -553,7 +553,7 @@ inline void ServiceCommunicatonBase::removeBlackList(const NESocket::SocketAddre
     mBlackList.removeElem( addrClient.getHostAddress(), 0);
 }
 
-inline const NEService::MapInstances & ServiceCommunicatonBase::getInstances( void ) const
+inline const NEService::MapInstances & ServiceCommunicatonBase::getInstances() const
 {
     return mInstanceMap;
 }
@@ -590,17 +590,17 @@ inline bool ServiceCommunicatonBase::sendMessage( const RemoteMessage & data, Ev
                                         , eventPrio );
 }
 
-inline DataRateHelper& ServiceCommunicatonBase::getDataRateHelper(void) const
+inline DataRateHelper& ServiceCommunicatonBase::getDataRateHelper() const
 {
     return const_cast<DataRateHelper &>(mDataRateHelper);
 }
 
-inline uint32_t ServiceCommunicatonBase::queryBytesSent(void)
+inline uint32_t ServiceCommunicatonBase::queryBytesSent()
 {
     return mDataRateHelper.queryBytesSent();
 }
 
-inline uint32_t ServiceCommunicatonBase::queryBytesReceived(void)
+inline uint32_t ServiceCommunicatonBase::queryBytesReceived()
 {
     return mDataRateHelper.queryBytesReceived();
 }
@@ -610,7 +610,7 @@ inline void ServiceCommunicatonBase::enableCalculateDataRate(bool enable)
     mDataRateHelper.setVerbose(enable);
 }
 
-inline bool ServiceCommunicatonBase::isCalculateDataRateEnabled(void) const
+inline bool ServiceCommunicatonBase::isCalculateDataRateEnabled() const
 {
     return mDataRateHelper.isVerbose();
 }

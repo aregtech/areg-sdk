@@ -54,13 +54,13 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The wrapper of this pointer.
-    inline ClientComponent & self( void )
+    inline ClientComponent & self()
     {   return (*this); }
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientComponent( void ) = delete;
+    ClientComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ClientComponent );
 };

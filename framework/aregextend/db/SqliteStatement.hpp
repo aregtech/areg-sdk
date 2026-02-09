@@ -83,7 +83,7 @@ public:
     /**
      * \brief   Destructor. Finalizes the statement and releases resources.
      */
-    ~SqliteStatement(void);
+    ~SqliteStatement();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -100,7 +100,7 @@ public:
      * \brief   Executes the prepared statement (for non-SELECT statements).
      * \return  True if execution was successful, false otherwise.
      */
-    bool execute(void);
+    bool execute();
 
     /**
      * \brief   Advances to the next row in the result set.
@@ -109,29 +109,29 @@ public:
      *              - The returned value `eQueryResult::HasMore` means there is data in the row to extract.
      *              - The returned value `eQueryResult::HasNoMore` means all data are extracted, reached the end and there is no more data to extract.
      **/
-    SqliteStatement::eQueryResult next(void);
+    SqliteStatement::eQueryResult next();
 
     /**
      * \brief   Resets the statement to its initial state, ready for re-execution.
      */
-    void reset(void);
+    void reset();
 
     /**
      * \brief   Finalizes the statement and releases associated resources.
      */
-    void finalize(void);
+    void finalize();
 
     /**
      * \brief   Checks if the statement is prepared and ready for execution.
      * \return  True if the statement is prepared, false otherwise.
      */
-    inline bool isValid(void) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns the current row position in the result set.
      *          The first row starts with 1. Return 0 if SQL statement is not prepared yet.
      **/
-    inline uint32_t getRowPos(void) const;
+    inline uint32_t getRowPos() const;
 
     /**
      * \brief   Binds an integer value to the specified parameter index.
@@ -178,7 +178,7 @@ public:
     /**
      * \brief   Clears all parameter bindings for the prepared statement.
      */
-    void clearBindings(void);
+    void clearBindings();
 
     /**
      * \brief   Retrieves the integer value of the specified column in the current row.
@@ -257,7 +257,7 @@ public:
      * \brief   Returns the number of columns in the result set.
      * \return  The number of columns.
      */
-    int getColumnCount(void) const;
+    int getColumnCount() const;
 
     /**
      * \brief   Returns the name of the specified column.
@@ -290,13 +290,13 @@ public:
      * \brief   Advances to the next row and returns a SqliteRow object for it.
      * \return  The next SqliteRow.
      */
-    SqliteRow nextRow(void) const;
+    SqliteRow nextRow() const;
 
     /**
      * \brief   Advances to the next row in the result set (const overload).
      * \return  True if a new row is available, false otherwise.
      */
-    bool next(void) const;
+    bool next() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -309,17 +309,17 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    SqliteStatement(void) = delete; //!< Default constructor is not allowed.
+    SqliteStatement() = delete; //!< Default constructor is not allowed.
     DECLARE_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
 };
 
-inline bool SqliteStatement::isValid(void) const
+inline bool SqliteStatement::isValid() const
 {
     return (mStatement != nullptr);
 }
 
 
-inline uint32_t SqliteStatement::getRowPos(void) const
+inline uint32_t SqliteStatement::getRowPos() const
 {
     return mRowPos;
 }

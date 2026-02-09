@@ -55,7 +55,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ConnectionConfiguration( void ) = default;
+    virtual ~ConnectionConfiguration() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -65,22 +65,22 @@ public:
     /**
      * \brief   Returns the optional name of the remote service.
      **/
-    inline const String& getRemoteServiceName(void) const;
+    inline const String& getRemoteServiceName() const;
 
     /**
      * \brief   Returns the name of the connection type of the remote service.
      **/
-    inline const String& getConnectionType(void) const;
+    inline const String& getConnectionType() const;
 
     /**
      * \brief   Returns true if the application already configured by reading configuration file or by default configuration.
      **/
-    bool isConfigured(void) const;
+    bool isConfigured() const;
 
     /**
      * \brief   Returns connection enabled / disabled flag of the remote service and type.
      **/
-    bool getConnectionEnableFlag( void ) const;
+    bool getConnectionEnableFlag() const;
 
     /**
      * \brief   Set service connection enable flag of the remote service and type.
@@ -90,7 +90,7 @@ public:
     /**
      * \brief   Returns the connection port number of the remote service and type.
      **/
-    unsigned short getConnectionPort( void ) const;
+    unsigned short getConnectionPort() const;
 
     /**
      * \brief   Sets the connection port number of the remote service and type.
@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Returns the connection address of the remote service and type.
      **/
-    String getConnectionAddress( void ) const;
+    String getConnectionAddress() const;
 
     /**
      * \brief   Sets the connection address of the remote service and type.
@@ -136,7 +136,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionConfiguration(void) = delete;
+    ConnectionConfiguration() = delete;
     DECLARE_NOCOPY_NOMOVE( ConnectionConfiguration );
 };
 
@@ -144,12 +144,12 @@ private:
 // ConnectionConfiguration inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& ConnectionConfiguration::getRemoteServiceName(void) const
+inline const String& ConnectionConfiguration::getRemoteServiceName() const
 {
     return mServiceName;
 }
 
-inline const String& ConnectionConfiguration::getConnectionType(void) const
+inline const String& ConnectionConfiguration::getConnectionType() const
 {
     return mConnectType;
 }

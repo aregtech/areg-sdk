@@ -125,7 +125,7 @@ void Thread::_osSleep(unsigned int timeout)
     nanosleep(&ts, nullptr);
 }
 
-id_type Thread::_osGetCurrentThreadId( void )
+id_type Thread::_osGetCurrentThreadId()
 {
     return NEUtilities::convToNum<id_type, pthread_t>(pthread_self());
 }
@@ -170,7 +170,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     return result;
 }
 
-bool Thread::_osCreateSystemThread( void )
+bool Thread::_osCreateSystemThread()
 {
     bool result { false };
 

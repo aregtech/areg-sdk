@@ -34,7 +34,7 @@ EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
 {
 }
 
-EventDispatcher::~EventDispatcher( void )
+EventDispatcher::~EventDispatcher()
 {
     mDispatcherThread   = nullptr;
 }
@@ -51,19 +51,19 @@ bool EventDispatcher::onThreadRegistered( Thread * threadObj )
     return EventDispatcherBase::mEventExit.resetEvent();
 }
 
-void EventDispatcher::onThreadUnregistering( void )
+void EventDispatcher::onThreadUnregistering()
 {
     stopDispatcher();
     mDispatcherThread   = nullptr;
 }
 
-void EventDispatcher::onThreadRuns( void )
+void EventDispatcher::onThreadRuns()
 {
     ASSERT(mDispatcherThread != nullptr);
     startDispatcher();
 }
 
-int EventDispatcher::onThreadExit( void )
+int EventDispatcher::onThreadExit()
 {
     exitDispatcher( );
     mDispatcherThread   = nullptr;

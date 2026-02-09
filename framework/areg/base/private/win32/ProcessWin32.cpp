@@ -32,7 +32,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize( void )
+void Process::_osInitilize()
 {
     mProcessId      = ::GetCurrentProcessId();
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());

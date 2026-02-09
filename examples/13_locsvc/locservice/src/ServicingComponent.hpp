@@ -47,7 +47,7 @@ protected:
      *          Sent by client to request to shutdown service and the application. This request has no response.
      * \note    Has no response
      **/
-    virtual void requestShutdownService( void ) override;
+    virtual void requestShutdownService() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -59,7 +59,7 @@ private:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServicingComponent & self( void )
+    inline ServicingComponent & self()
     {
         return (*this);
     }
@@ -67,6 +67,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
+    ServicingComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ServicingComponent );
 };

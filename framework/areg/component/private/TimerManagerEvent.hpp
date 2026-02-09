@@ -72,7 +72,7 @@ public:
      * \brief   Default constructor.
      *          Creates empty data with ignore action.
      **/
-    inline TimerManagerEventData(void);
+    inline TimerManagerEventData();
 
     /**
      * \brief   Initializes data object to start timer.
@@ -89,7 +89,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TimerManagerEventData(void) = default;
+    ~TimerManagerEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Returns the Timer object.
      **/
-    inline TimerBase* getTimer(void) const;
+    inline TimerBase* getTimer() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -137,7 +137,7 @@ DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, IETimerManagerEventConsu
 //////////////////////////////////////////////////////////////////////////
 // TimerManagerEventData class inline functions declaration
 //////////////////////////////////////////////////////////////////////////
-inline TimerManagerEventData::TimerManagerEventData(void)
+inline TimerManagerEventData::TimerManagerEventData()
     : mTimer    ( nullptr   )
 {
 }
@@ -158,7 +158,7 @@ inline TimerManagerEventData& TimerManagerEventData::operator = (const TimerMana
     return (*this);
 }
 
-inline TimerBase* TimerManagerEventData::getTimer(void) const
+inline TimerBase* TimerManagerEventData::getTimer() const
 {
     return mTimer;
 }

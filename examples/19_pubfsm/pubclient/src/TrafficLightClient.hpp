@@ -101,6 +101,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficLightClient( void ) = delete;
+    TrafficLightClient() = delete;
     DECLARE_NOCOPY_NOMOVE( TrafficLightClient );
 };

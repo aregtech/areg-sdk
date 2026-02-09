@@ -56,7 +56,7 @@ void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
     }
 }
 
-void ServicingComponent::requestStopService( void )
+void ServicingComponent::requestStopService()
 {
     LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
     LOG_DBG("Received request to stop service");
@@ -64,7 +64,7 @@ void ServicingComponent::requestStopService( void )
     setServiceState( NEHelloWatchdog::eState::Stopped );
 }
 
-void ServicingComponent::requestShutdownService( void )
+void ServicingComponent::requestShutdownService()
 {
     LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
     LOG_DBG("Shutdown the service");

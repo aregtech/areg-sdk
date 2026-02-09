@@ -96,7 +96,7 @@ int ListServiceProxies::stubServiceAvailable( const StubAddress & addrStub )
     return result;
 }
 
-int ListServiceProxies::stubServiceUnavailable( void )
+int ListServiceProxies::stubServiceUnavailable()
 {
     int result = 0;
     for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )

@@ -56,7 +56,7 @@ MutexIX::MutexIX( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const c
     _initPosixMutex( isRecursive );
 }
 
-MutexIX::~MutexIX( void )
+MutexIX::~MutexIX()
 {
     if (mMutexValid)
     {
@@ -151,22 +151,22 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
     return result;
 }
 
-bool MutexIX::tryLock( void ) const
+bool MutexIX::tryLock() const
 {
     return (RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
 }
 
-void MutexIX::unlock( void ) const
+void MutexIX::unlock() const
 {
     pthread_mutex_unlock( &mPosixMutex );
 }
 
-bool MutexIX::isValid( void ) const
+bool MutexIX::isValid() const
 {
     return (mMutexValid && mMutexAttrValid);
 }
 
-void MutexIX::freeResources(void)
+void MutexIX::freeResources()
 {
     pthread_mutex_unlock( &mPosixMutex );
 }

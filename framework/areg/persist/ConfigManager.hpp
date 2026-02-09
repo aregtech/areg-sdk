@@ -54,9 +54,9 @@ class AREG_API ConfigManager
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ConfigManager( void );
+    ConfigManager();
 
-    ~ConfigManager(void) = default;
+    ~ConfigManager() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -69,22 +69,22 @@ public:
     /**
      * \brief   Return true if the application is configured.
      **/
-    inline bool isConfigured(void) const;
+    inline bool isConfigured() const;
 
     /**
      * \brief   Returns configuration file path name.
      **/
-    inline const String& getConfigFile(void) const;
+    inline const String& getConfigFile() const;
 
     /**
      * \brief   Returns the list of read-only configuration properties.
      **/
-    inline const NEPersistence::ListProperties & getReadonlyProperties( void ) const;
+    inline const NEPersistence::ListProperties & getReadonlyProperties() const;
 
     /**
      * \brief   Returns the list of writable configuration properties.
      **/
-    inline const NEPersistence::ListProperties & getModuleProperties( void ) const;
+    inline const NEPersistence::ListProperties & getModuleProperties() const;
 
     /**
      * \brief	Locks the access resources of configuration manager. The current thread
@@ -92,7 +92,7 @@ public:
      *          owns the resource access of the configuration, the current thread is suspended.
      * \return	Returns true if current thread successfully got configuration resource ownership.
      **/
-    inline bool lock(void) const;
+    inline bool lock() const;
 
     /**
      * \brief	Unlocks / releases the configuration resource access ownership, so that other thread
@@ -100,7 +100,7 @@ public:
      *          Otherwise, no lock state is changed.
      * \return	Returns true if succeeded.
      **/
-    inline bool unlock(void) const;
+    inline bool unlock() const;
 
     /**
      * \brief   Attempts to get configuration resource access ownership without blocking current thread.
@@ -109,12 +109,12 @@ public:
      * \return  Return true if the configuration resource access ownership succeeded. Otherwise,
      *          returns false.
      **/
-    inline bool tryLock(void) const;
+    inline bool tryLock() const;
 
     /**
      * \brief   Return true if configuration resources access is already locked by a thread.
      **/
-    inline bool isLocked(void) const;
+    inline bool isLocked() const;
 
     /**
      * \brief   Returns true if the specified property exists.
@@ -390,13 +390,13 @@ public:
      * \brief   Releases all module specific entries.
      *          This will clean only the writable entries
      **/
-    inline void releaseModuleProperties(void);
+    inline void releaseModuleProperties();
 
     /**
      * \brief   Releases all module specific entries.
      *          This will clean only the writable entries
      **/
-    inline void releaseProperties(void);
+    inline void releaseProperties();
 
 /************************************************************************
  * Configuration properties.
@@ -405,7 +405,7 @@ public:
     /**
      * \brief   Returns the configuration version.
      **/
-    Version getConfigVersion(void) const;
+    Version getConfigVersion() const;
 
 /************************************************************************
  * Log properties.
@@ -414,18 +414,18 @@ public:
     /**
      * \brief   Returns logging version.
      **/
-    Version getLogVersion(void) const;
+    Version getLogVersion() const;
 
     /**
      * \brief   Returns list of logging targets specified in the NELogging::eLogingTypes.
      **/
-    std::vector<Identifier> getLogTargets(void) const;
+    std::vector<Identifier> getLogTargets() const;
 
     /**
      * \brief   Returns logging status.
      * \return  If returns true, the logging is enabled. Otherwise, the logging is disabled.
      **/
-    bool getLoggingStatus(void) const;
+    bool getLoggingStatus() const;
 
     /**
      * \brief   Sets the logging state for the current module (process).
@@ -487,7 +487,7 @@ public:
     /**
      * \brief   Returns the path of the log file that contains messages.
      **/
-    String getLogFileLocation(void) const;
+    String getLogFileLocation() const;
 
     /**
      * \brief   Sets the path of the log file that contains messages.
@@ -500,7 +500,7 @@ public:
     /**
      * \brief   Returns flag indicating whether the log messages should be added in the existing file or not.
      **/
-    bool getLogFileAppend(void) const;
+    bool getLogFileAppend() const;
 
     /**
      * \brief   Sets the value of the flag that indicates whether the log messages are
@@ -515,7 +515,7 @@ public:
     /**
      * \brief   Returns the maximum queue size of log messages while there is no connection with remote logger.
      **/
-    uint32_t getLogRemoteQueueSize(void) const;
+    uint32_t getLogRemoteQueueSize() const;
 
     /**
      * \brief   Set the maximum queue size for message logging on remote logger while there is no connection established.
@@ -530,7 +530,7 @@ public:
     /**
      * \brief   Returns the layout format of the log enter scope message.
      **/
-    String getLogLayoutEnter(void) const;
+    String getLogLayoutEnter() const;
 
     /**
      * \brief   Sets the layout format string of the log enter scope message.
@@ -543,7 +543,7 @@ public:
     /**
      * \brief   Returns the layout format of the log message.
      **/
-    String getLogLayoutMessage(void) const;
+    String getLogLayoutMessage() const;
 
     /**
      * \brief   Sets the layout format string of the log message.
@@ -556,7 +556,7 @@ public:
     /**
      * \brief   Returns the layout format of the log e exit cope message.
      **/
-    String getLogLayoutExit(void) const;
+    String getLogLayoutExit() const;
 
     /**
      * \brief   Sets the layout format string of the log exit scope message.
@@ -569,7 +569,7 @@ public:
     /**
      * \brief   Returns the list of log scope properties of the module.
      **/
-    inline std::vector<Property> getModuleLogScopes(void) const;
+    inline std::vector<Property> getModuleLogScopes() const;
 
     /**
      * \brief   Gets the list of log scope properties of the module.
@@ -611,7 +611,7 @@ public:
     /**
      * \brief   Removes all scopes of the module and return number of removed entries.
      **/
-    int removeModuleScopes(void);
+    int removeModuleScopes();
 
 /************************************************************************
  * Remote service properties.
@@ -620,7 +620,7 @@ public:
     /**
      * \brief   Returns list of remote services.
      **/
-    std::vector<Identifier> getServiceList(void) const;
+    std::vector<Identifier> getServiceList() const;
 
     /**
      * \brief   Returns list of connection identifiers of the remote service.
@@ -825,46 +825,46 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Configuration inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool ConfigManager::isConfigured(void) const
+inline bool ConfigManager::isConfigured() const
 {
     Lock lock(mLock);
     return mIsConfigured;
 }
 
-inline const String& ConfigManager::getConfigFile(void) const
+inline const String& ConfigManager::getConfigFile() const
 {
     Lock lock(mLock);
     return mFilePath;
 }
 
-inline const NEPersistence::ListProperties& ConfigManager::getReadonlyProperties(void) const
+inline const NEPersistence::ListProperties& ConfigManager::getReadonlyProperties() const
 {
     Lock lock(mLock);
     return mReadonlyProperties;
 }
 
-inline const NEPersistence::ListProperties& ConfigManager::getModuleProperties(void) const
+inline const NEPersistence::ListProperties& ConfigManager::getModuleProperties() const
 {
     Lock lock(mLock);
     return mWritableProperties;
 }
 
-inline bool ConfigManager::lock(void) const
+inline bool ConfigManager::lock() const
 {
     return mLock.lock();
 }
 
-inline bool ConfigManager::unlock(void) const
+inline bool ConfigManager::unlock() const
 {
     return mLock.unlock();
 }
 
-inline bool ConfigManager::tryLock(void) const
+inline bool ConfigManager::tryLock() const
 {
     return mLock.tryLock();
 }
 
-inline bool ConfigManager::isLocked(void) const
+inline bool ConfigManager::isLocked() const
 {
     return mLock.isLocked();
 }
@@ -965,13 +965,13 @@ inline void ConfigManager::removeModuleProperty(const PropertyKey& key)
     removeModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline void ConfigManager::releaseModuleProperties(void)
+inline void ConfigManager::releaseModuleProperties()
 {
     Lock lock(mLock);
     mWritableProperties.clear();
 }
 
-inline void ConfigManager::releaseProperties(void)
+inline void ConfigManager::releaseProperties()
 {
     Lock lock(mLock);
     mIsConfigured = false;
@@ -1017,7 +1017,7 @@ inline void ConfigManager::setLogFileLocation(const String& newValue, bool isTem
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-inline std::vector<Property> ConfigManager::getModuleLogScopes(void) const
+inline std::vector<Property> ConfigManager::getModuleLogScopes() const
 {
     std::vector<Property> result;
     getModuleLogScopes(result);

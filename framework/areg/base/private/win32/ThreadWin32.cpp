@@ -94,7 +94,7 @@ void Thread::_osSleep(unsigned int timeout)
     ::Sleep(timeout);
 }
 
-id_type Thread::_osGetCurrentThreadId( void )
+id_type Thread::_osGetCurrentThreadId()
 {
     return static_cast<id_type>(::GetCurrentThreadId());
 }
@@ -160,7 +160,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     return result;
 }
 
-bool Thread::_osCreateSystemThread( void )
+bool Thread::_osCreateSystemThread()
 {
     bool result = false;
     if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))

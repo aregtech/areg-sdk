@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~FileBuffer( void ) = default;
+    virtual ~FileBuffer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -118,23 +118,23 @@ public:
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns true if file is valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief	If file object was opened and the size is not zero (i.e. data was written / read) 
      *          it returns the pointer of buffer. Otherwise it will return nullptr.
      **/
-    inline const unsigned char * getDataBuffer( void ) const;
+    inline const unsigned char * getDataBuffer() const;
 
     /**
      * \brief   Returns reference to shared buffer object (for read only purpose)
      **/
-    inline const SharedBuffer & getSharedBuffer( void ) const;
+    inline const SharedBuffer & getSharedBuffer() const;
 
     /**
      * \brief	Inserts data to file buffer and returns the size of written data.
@@ -161,7 +161,7 @@ public:
      *
      * \return  Returns true if file object was opened with success.
      **/
-    virtual bool open( void ) override;
+    virtual bool open() override;
 
     /**
      * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
@@ -194,23 +194,23 @@ public:
      *          If FO_MODE_CREATE_TEMP is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      **/
-    virtual void close( void ) override;
+    virtual void close() override;
 
     /**
      * \brief	Delete opened file. This will force to delete file object even if it is attached memory buffered file
      * \return	Returns true if succeeded.
      **/
-    virtual bool remove( void ) override;
+    virtual bool remove() override;
 
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    virtual unsigned int getLength( void ) const override;
+    virtual unsigned int getLength() const override;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
      **/
-    virtual bool isOpened( void ) const override;
+    virtual bool isOpened() const override;
 
     /**
      * \brief	Call to set new size of file object and returns the current position of pointer.
@@ -228,7 +228,7 @@ public:
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, returns true.
      **/
-    virtual bool truncate( void ) override;
+    virtual bool truncate() override;
 
 /************************************************************************/
 // IEInStream interface overrides
@@ -332,7 +332,7 @@ public:
      *          Before calling function, the file object should be opened.
      * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int getPosition( void ) const override;
+    virtual unsigned int getPosition() const override;
 
 protected:
 /************************************************************************/
@@ -347,7 +347,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const override;
+    virtual unsigned int getSizeReadable() const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -356,7 +356,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const override;
+    virtual unsigned int getSizeWritable() const override;
 
 /************************************************************************/
 // Other overrides
@@ -401,22 +401,22 @@ private:
 // FileBuffer class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const unsigned char * FileBuffer::getDataBuffer( void ) const
+inline const unsigned char * FileBuffer::getDataBuffer() const
 {
     return (isOpened() ? mSharedBuffer.getBuffer() : nullptr);
 }
 
-inline const SharedBuffer & FileBuffer::getSharedBuffer( void ) const
+inline const SharedBuffer & FileBuffer::getSharedBuffer() const
 {
     return mSharedBuffer;
 }
 
-inline bool FileBuffer::isValid( void ) const
+inline bool FileBuffer::isValid() const
 {
     return mSharedBuffer.isValid();
 }
 
-inline bool FileBuffer::isEmpty( void ) const
+inline bool FileBuffer::isEmpty() const
 {
     return ((isOpened() == false) || mSharedBuffer.isEmpty());
 }

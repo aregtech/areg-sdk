@@ -74,7 +74,7 @@ public:
     /**
      * \brief   Invalid proxy address used to verify Proxy Address validation.
      **/
-    static const ProxyAddress & getInvalidProxyAddress( void );
+    static const ProxyAddress & getInvalidProxyAddress();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Default constructor. By default created Invalid Proxy Address
      **/
-    ProxyAddress( void );
+    ProxyAddress();
 
     /**
      * \brief	Creates Proxy address according required connected component role name,
@@ -149,7 +149,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ProxyAddress( void ) = default;
+    virtual ~ProxyAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -192,7 +192,7 @@ public:
     /**
      * \brief   Converts ProxyAddress object to 32-bit unsigned int value.
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -219,37 +219,37 @@ public:
     /**
      * \brief   Returns true if existing Proxy address is local
      **/
-    inline bool isLocalAddress( void ) const;
+    inline bool isLocalAddress() const;
 
     /**
      * \brief   Returns true if existing Proxy address is local
      **/
-    inline bool isRemoteAddress( void ) const;
+    inline bool isRemoteAddress() const;
 
     /**
      * \brief   Returns true if the source of communication channel is local, i.e. it is the same process.
      **/
-    inline bool isSourceLocal( void ) const;
+    inline bool isSourceLocal() const;
 
     /**
      * \brief   Returns true if the source of communication channel is public, i.e. it is external process.
      **/
-    inline bool isSourcePublic( void ) const;
+    inline bool isSourcePublic() const;
 
     /**
      * \brief   Returns true if the target of communication channel is local, i.e. it is the same process.
      **/
-    inline bool isTargetLocal( void ) const;
+    inline bool isTargetLocal() const;
 
     /**
      * \brief   Returns true if the target of communication channel is public, i.e. it is external process.
      **/
-    inline bool isTargetPublic( void ) const;
+    inline bool isTargetPublic() const;
 
     /**
      * \brief   Returns thread name of processed Proxy
      **/
-    inline const String & getThread( void ) const;
+    inline const String & getThread() const;
     /**
      * \brief   Sets the thread name of processed Proxy
      **/
@@ -257,7 +257,7 @@ public:
     /**
      * \brief   Returns Proxy communication channel object
      **/
-    inline const Channel & getChannel( void ) const;
+    inline const Channel & getChannel() const;
     /**
      * \brief   Sets proxy communication channel
      **/
@@ -265,7 +265,7 @@ public:
     /**
      * \brief   Returns Proxy cookie value
      **/
-    inline const ITEM_ID & getCookie( void ) const;
+    inline const ITEM_ID & getCookie() const;
     /**
      * \brief   Sets Proxy cookie value
      **/
@@ -273,7 +273,7 @@ public:
     /**
      * \brief   Returns Proxy source ID
      **/
-    inline const ITEM_ID & getSource( void ) const;
+    inline const ITEM_ID & getSource() const;
     /**
      * \brief   Sets Proxy source ID
      **/
@@ -281,7 +281,7 @@ public:
     /**
      * \brief   Returns Proxy target ID
      **/
-    inline const ITEM_ID & getTarget( void ) const;
+    inline const ITEM_ID & getTarget() const;
     /**
      * \brief   Sets Proxy target ID
      **/
@@ -291,12 +291,12 @@ public:
      * \brief   Returns true if proxy address is valid.
      *          The validation verified according of data in Invalid Proxy address.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief   Invalidates communication channel
      **/
-    void invalidateChannel( void );
+    void invalidateChannel();
 
     /**
      * \brief   Returns true if specified Stub address is compatible with Proxy
@@ -332,7 +332,7 @@ public:
      *          and special extension identifying proxy.
      * \return  Returns converted path of Proxy as string, containing Proxy address information
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief	Parses proxy path string and retrieves proxy address data from path.
@@ -347,7 +347,7 @@ protected:
     /**
      * \brief   Returns true if proxy address data is valid.
      **/
-    bool isValidated( void ) const;
+    bool isValidated() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -356,7 +356,7 @@ private:
     /**
      * \brief   Returns own object.
      **/
-    inline ProxyAddress& self(void);
+    inline ProxyAddress& self();
     /**
      * \brief   Delivers specified service event to target.
      * \param   serviceEvent    The service event to deliver
@@ -456,47 +456,47 @@ inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const
     return (mMagicNum != other.mMagicNum) || (mChannel.getCookie() != other.mChannel.getCookie());
 }
 
-inline ProxyAddress::operator unsigned int(void) const
+inline ProxyAddress::operator unsigned int() const
 {
     return mMagicNum;
 }
 
-inline bool ProxyAddress::isLocalAddress(void) const
+inline bool ProxyAddress::isLocalAddress() const
 {
     return (mChannel.getCookie() == NEService::COOKIE_LOCAL);
 }
 
-inline bool ProxyAddress::isRemoteAddress(void) const
+inline bool ProxyAddress::isRemoteAddress() const
 {
     return (mChannel.getCookie() >= NEService::COOKIE_ANY);
 }
 
-inline bool ProxyAddress::isSourceLocal( void ) const
+inline bool ProxyAddress::isSourceLocal() const
 {
     return (mChannel.getCookie() == NEService::COOKIE_LOCAL) && (mChannel.getSource() != 0);
 }
 
-inline bool ProxyAddress::isSourcePublic( void ) const
+inline bool ProxyAddress::isSourcePublic() const
 {
     return (mChannel.getCookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
 }
 
-inline bool ProxyAddress::isTargetLocal( void ) const
+inline bool ProxyAddress::isTargetLocal() const
 {
     return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
-inline bool ProxyAddress::isTargetPublic( void ) const
+inline bool ProxyAddress::isTargetPublic() const
 {
     return (mChannel.getCookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
-inline const String & ProxyAddress::getThread(void) const
+inline const String & ProxyAddress::getThread() const
 {
     return mThreadName;
 }
 
-inline const Channel & ProxyAddress::getChannel( void ) const
+inline const Channel & ProxyAddress::getChannel() const
 {
     return mChannel;
 }
@@ -506,7 +506,7 @@ inline void ProxyAddress::setChannel( const Channel & channel )
     mChannel = channel;
 }
 
-inline const ITEM_ID & ProxyAddress::getCookie( void ) const
+inline const ITEM_ID & ProxyAddress::getCookie() const
 {
     return mChannel.getCookie();
 }
@@ -516,7 +516,7 @@ inline void ProxyAddress::setCookie(const ITEM_ID & cookie )
     mChannel.setCookie(cookie);
 }
 
-inline const ITEM_ID & ProxyAddress::getSource( void ) const
+inline const ITEM_ID & ProxyAddress::getSource() const
 {
     return mChannel.getSource();
 }
@@ -526,7 +526,7 @@ inline void ProxyAddress::setSource(const ITEM_ID & source )
     return mChannel.setSource(source);
 }
 
-inline const ITEM_ID & ProxyAddress::getTarget( void ) const
+inline const ITEM_ID & ProxyAddress::getTarget() const
 {
     return mChannel.getTarget();
 }
@@ -536,7 +536,7 @@ inline void ProxyAddress::setTarget(const ITEM_ID & target )
     return mChannel.setTarget(target);
 }
 
-inline ProxyAddress& ProxyAddress::self(void)
+inline ProxyAddress& ProxyAddress::self()
 {
     return (*this);
 }

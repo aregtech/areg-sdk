@@ -236,7 +236,7 @@ LRESULT CentralDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM /*lParam*/)
     return 0;
 }
 
-void CentralDialog::OnRedirectOK( void )
+void CentralDialog::OnRedirectOK()
 {
     CPropertyPage * active = GetActivePage();
     if ( active == &mPageSetupNetwork )

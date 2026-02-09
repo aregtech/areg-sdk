@@ -18,7 +18,7 @@
 
 #include <utility>
 
-Property::Property(void)
+Property::Property()
     : mIsTemporary  (true)
     , mComment      (String::EmptyString)
     , mProperty     ( )
@@ -137,7 +137,7 @@ bool Property::operator != (const Property & other) const
     return (this != &other ? mProperty != other.mProperty : false);
 }
 
-Property::operator unsigned int ( void ) const
+Property::operator unsigned int () const
 {
     return static_cast<unsigned int>(mProperty.mValue.first);
 }
@@ -157,17 +157,17 @@ void Property::setKey( PropertyKey && Key )
     mProperty.mValue.first = std::move(Key);
 }
 
-const PropertyKey & Property::getKey(void) const
+const PropertyKey & Property::getKey() const
 {
     return mProperty.mValue.first;
 }
 
-NEPersistence::eConfigKeys Property::getPropertyType(void) const
+NEPersistence::eConfigKeys Property::getPropertyType() const
 {
     return mProperty.mValue.first.getKeyType();
 }
 
-String Property::getKeyString(void) const
+String Property::getKeyString() const
 {
     return mProperty.mValue.first.convToString();
 }
@@ -187,17 +187,17 @@ void Property::setValue( PropertyValue && Value )
     mProperty.mValue.second = std::move(Value);
 }
 
-const PropertyValue & Property::getValue(void) const
+const PropertyValue & Property::getValue() const
 {
     return mProperty.mValue.second;
 }
 
-PropertyValue& Property::getValue(void)
+PropertyValue& Property::getValue()
 {
     return mProperty.mValue.second;
 }
 
-String Property::getValueString(void) const
+String Property::getValueString() const
 {
     return mProperty.mValue.second.getString();
 }
@@ -221,7 +221,7 @@ void Property::addComment(const String & comment)
     }
 }
 
-const String & Property::getComment(void) const
+const String & Property::getComment() const
 {
     return mComment;
 }
@@ -236,12 +236,12 @@ void Property::setPropertyPair( Property::Entry && newPair )
     mProperty = static_cast<Property::Entry &&>(newPair);
 }
 
-const Property::Entry & Property::getPropertyPair(void) const
+const Property::Entry & Property::getPropertyPair() const
 {
     return mProperty;
 }
 
-bool Property::isValid(void) const
+bool Property::isValid() const
 {
     return mProperty.mValue.first.isValid();
 }
@@ -291,7 +291,7 @@ bool Property::parseProperty(const String & strProperties)
     return result;
 }
 
-String Property::convToString(void) const
+String Property::convToString() const
 {
     String result;
     String key  (mProperty.mValue.first.convToString());
@@ -324,7 +324,7 @@ String Property::convToString(void) const
     return result;
 }
 
-void Property::resetData(void)
+void Property::resetData()
 {
     mProperty.mValue.first.resetKey();
     mProperty.mValue.second.resetValue();
@@ -343,7 +343,7 @@ void Property::setTemporary(bool isTemporary)
     mIsTemporary = isTemporary;
 }
 
-bool Property::isTemporary(void) const
+bool Property::isTemporary() const
 {
     return mIsTemporary;
 }

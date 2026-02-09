@@ -111,7 +111,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~LogMessage(void) = default;
+    ~LogMessage() = default;
 
 #if AREG_LOGS
 
@@ -123,43 +123,43 @@ public:
     /**
      * \brief   Returns instance of Log message structure
      **/
-    inline const NELogging::sLogMessage & getLogData( void ) const;
+    inline const NELogging::sLogMessage & getLogData() const;
 
     /**
      * \brief   Returns log type value
      **/
-    inline NELogging::eLogMessageType getMessageType( void ) const;
+    inline NELogging::eLogMessageType getMessageType() const;
 
     /**
      * \brief   Return the ID of thread where the message was initialized.
      **/
-    inline id_type getThreadId( void ) const;
+    inline id_type getThreadId() const;
 
     /**
      * \brief   Returns the ID of log scope.
      **/
-    inline unsigned int getScopeId( void ) const;
+    inline unsigned int getScopeId() const;
 
     /**
      * \brief   Returns the time-stamp of created message log.
      **/
-    inline const DateTime getTimestamp( void ) const;
+    inline const DateTime getTimestamp() const;
 
     /**
      * \brief   Returns the time-stamp when the message log was received.
      **/
-    inline const DateTime getTimeReceived(void) const;
+    inline const DateTime getTimeReceived() const;
 
     /**
      * \brief   Returns the duration in microseconds since scope message object was instantiated.
      */
-    inline const uint32_t getDuration(void) const;
+    inline const uint32_t getDuration() const;
 
     /**
      * \brief   Returns message log module ID. By default, it is process ID.
      *          The module ID is an unique identifier set by system.
      **/
-    inline const ITEM_ID & getModuleId( void ) const;
+    inline const ITEM_ID & getModuleId() const;
 
     /**
      * \brief   Set the module ID. The module ID can be any value
@@ -178,7 +178,7 @@ public:
      *          If equal NEService::COOKIE_ANY, the log message should be queued to wait to complete remote logging service setup.
      *          If equal or more than NEService::COOKIE_REMOTE_SERVICE, the log message can be forwarded to remote host.
      **/
-    inline const ITEM_ID & getCookie(void) const;
+    inline const ITEM_ID & getCookie() const;
 
     /**
      * \brief   Sets the cookie value set by Log Collector service.
@@ -188,7 +188,7 @@ public:
     /**
      * \brief   Returns the priority ob message log
      **/
-    inline NELogging::eLogPriority getMessagePrio( void ) const;
+    inline NELogging::eLogPriority getMessagePrio() const;
 
     /**
      * \brief   Sets the priority of message log
@@ -198,7 +198,7 @@ public:
     /**
      * \brief   Returns message text, if there is any.
      **/
-    inline const char * getMessage( void ) const;
+    inline const char * getMessage() const;
 
     /**
      * \brief   Sets message text in log
@@ -209,7 +209,7 @@ public:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogMessage( void ) = delete;
+    LogMessage() = delete;
     DECLARE_NOMOVE( LogMessage );
 };
 
@@ -239,42 +239,42 @@ inline LogMessage::LogMessage( const IEInStream & stream )
     stream >> static_cast<NELogging::sLogMessage &>(*this);
 }
 
-inline const NELogging::sLogMessage & LogMessage::getLogData(void) const
+inline const NELogging::sLogMessage & LogMessage::getLogData() const
 {
     return static_cast<const NELogging::sLogMessage &>(*this);
 }
 
-inline NELogging::eLogMessageType LogMessage::getMessageType(void) const
+inline NELogging::eLogMessageType LogMessage::getMessageType() const
 {
     return this->logMsgType;
 }
 
-inline id_type LogMessage::getThreadId(void) const
+inline id_type LogMessage::getThreadId() const
 {
     return static_cast<id_type>(this->logThreadId);
 }
 
-inline unsigned int LogMessage::getScopeId(void) const
+inline unsigned int LogMessage::getScopeId() const
 {
     return this->logScopeId;
 }
 
-inline const DateTime LogMessage::getTimestamp(void) const
+inline const DateTime LogMessage::getTimestamp() const
 {
     return static_cast<DateTime>(this->logTimestamp);
 }
 
-inline const DateTime LogMessage::getTimeReceived(void) const
+inline const DateTime LogMessage::getTimeReceived() const
 {
     return static_cast<DateTime>(this->logReceived);
 }
 
-inline const uint32_t LogMessage::getDuration(void) const
+inline const uint32_t LogMessage::getDuration() const
 {
     return static_cast<uint32_t>(this->logDuration);
 }
 
-inline const ITEM_ID & LogMessage::getModuleId(void) const
+inline const ITEM_ID & LogMessage::getModuleId() const
 {
     return this->logModuleId;
 }
@@ -284,7 +284,7 @@ inline void LogMessage::setModuleId(const ITEM_ID & moduleId)
     this->logModuleId = moduleId;
 }
 
-inline NELogging::eLogPriority LogMessage::getMessagePrio(void) const
+inline NELogging::eLogPriority LogMessage::getMessagePrio() const
 {
     return this->logMessagePrio;
 }
@@ -294,12 +294,12 @@ inline void LogMessage::setMessagePrio(const NELogging::eLogPriority msgPrio)
     this->logMessagePrio = msgPrio;
 }
 
-inline const char * LogMessage::getMessage(void) const
+inline const char * LogMessage::getMessage() const
 {
     return this->logMessage;
 }
 
-inline const ITEM_ID & LogMessage::getCookie(void) const
+inline const ITEM_ID & LogMessage::getCookie() const
 {
     return this->logCookie;
 }

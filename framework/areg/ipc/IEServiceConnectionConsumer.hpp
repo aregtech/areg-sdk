@@ -41,9 +41,9 @@ protected:
     /**
      * \brief   Default destructor
      **/
-    IEServiceConnectionConsumer(void) = default;
+    IEServiceConnectionConsumer() = default;
 
-    virtual ~IEServiceConnectionConsumer(void) = default;
+    virtual ~IEServiceConnectionConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

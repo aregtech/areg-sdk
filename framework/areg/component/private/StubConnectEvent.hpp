@@ -61,7 +61,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~StubConnectEvent( void ) = default;
+    virtual ~StubConnectEvent() = default;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Returns current connection status of client Proxy.
      **/
-    inline NEService::eServiceConnection getConnectionStatus( void ) const;
+    inline NEService::eServiceConnection getConnectionStatus() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -105,7 +105,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StubConnectEvent( void ) = delete;
+    StubConnectEvent() = delete;
     DECLARE_NOCOPY_NOMOVE( StubConnectEvent );
 };
 
@@ -113,7 +113,7 @@ private:
 // StubConnectEvent class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::eServiceConnection StubConnectEvent::getConnectionStatus( void ) const
+inline NEService::eServiceConnection StubConnectEvent::getConnectionStatus() const
 {
     return mConnectionStatus;
 }

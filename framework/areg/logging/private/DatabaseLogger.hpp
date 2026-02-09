@@ -52,7 +52,7 @@ public:
       **/
     explicit DatabaseLogger(LogConfiguration & logConfig);
 
-    virtual ~DatabaseLogger(void);
+    virtual ~DatabaseLogger();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -63,8 +63,8 @@ public:
      * \brief   Returns the pointer to the database engine handler object,
      *          which is responsible to handle the database.
      **/
-    inline const IELogDatabaseEngine * getDatabaseEngine(void) const;
-    inline IELogDatabaseEngine * getDatabaseEngine(void);
+    inline const IELogDatabaseEngine * getDatabaseEngine() const;
+    inline IELogDatabaseEngine * getDatabaseEngine();
 
     /**
      * \brief   Call to set the logging database engine object.
@@ -79,7 +79,7 @@ public:
     /**
      * \brief   Returns true if the logging database engine is nut null.
      **/
-    inline bool isValid(void) const;
+    inline bool isValid() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -98,12 +98,12 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger(void) override;
+    virtual bool openLogger() override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger( void ) override;
+    virtual void closeLogger() override;
 
     /**
      * \brief   Called when message should be logged.
@@ -114,13 +114,13 @@ public:
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened( void ) const override;
+    virtual bool isLoggerOpened() const override;
 
 public:
     /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
      **/
-    void flushLogs(void);
+    void flushLogs();
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
@@ -130,12 +130,12 @@ protected:
      * \brief   Creates message layout objects. Returns true if succeeded.
      *          Overwrite method to change layouts.
      **/
-    virtual bool createLayouts( void ) override;
+    virtual bool createLayouts() override;
 
     /**
      * \brief   Release previously crated layouts
      **/
-    virtual void releaseLayouts( void ) override;
+    virtual void releaseLayouts() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -151,7 +151,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DatabaseLogger(void) = delete;
+    DatabaseLogger() = delete;
     DECLARE_NOCOPY_NOMOVE(DatabaseLogger);
 };
 
@@ -159,13 +159,13 @@ private:
 // DatabaseLogger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine(void) const
+inline const IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine(void)
+inline IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
 {
     Lock lock(mLock);
     return mDatabase;
@@ -177,7 +177,7 @@ inline void DatabaseLogger::setDatabaseEngine(IELogDatabaseEngine * dbEngine)
     mDatabase = dbEngine;
 }
 
-inline bool DatabaseLogger::isValid(void) const
+inline bool DatabaseLogger::isValid() const
 {
     Lock lock(mLock);
     return (mDatabase != nullptr);

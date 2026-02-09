@@ -102,7 +102,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~Watchdog( void );
+    virtual ~Watchdog();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -111,41 +111,41 @@ public:
     /**
      * \brief   Call to start the watchdog.
      **/
-    void startGuard(void);
+    void startGuard();
 
     /**
      * \brief   Call to stop the watchdog.
      **/
-    void stopGuard(void);
+    void stopGuard();
 
     /**
      * \brief   Returns true if watchdog object is valid and can start timer.
      *          The Watchdog is valid if the timeout is not zero.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns the watchdog ID.
      */
-    inline Watchdog::GUARD_ID getId(void) const;
+    inline Watchdog::GUARD_ID getId() const;
 
     /**
      * \brief   Returns the watchdog activation sequence number.
      **/
-    inline Watchdog::SEQUENCE_ID getSequence(void) const;
+    inline Watchdog::SEQUENCE_ID getSequence() const;
 
     /**
      * \brief   Returns the instance of component thread that contains this watchdog.
      *          If watchdog belongs to worker thread, it returns the thread of owning component.
      *          The component thread of the watchdog is always valid.
      **/
-    inline const ComponentThread& getComponentThread(void) const;
+    inline const ComponentThread& getComponentThread() const;
 
     /**
      * \brief   Out of Guard ID and Sequence number generates watchdog ID.
      *          The ID changed each time when timer is started.
      **/
-    inline WATCHDOG_ID watchdogId(void);
+    inline WATCHDOG_ID watchdogId();
 
     /**
      * \brief   Out of passed Guard ID and Sequence number generates watchdog ID.
@@ -179,7 +179,7 @@ private:
      * \brief   This static method generates unique Guard ID for each watchdog object.
      * \return  Generated unique identifier of the Watchdog object.
      **/
-    static GUARD_ID _generateId(void);
+    static GUARD_ID _generateId();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -203,7 +203,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Watchdog(void) = delete;
+    Watchdog() = delete;
     DECLARE_NOCOPY_NOMOVE(Watchdog);
 };
 
@@ -211,27 +211,27 @@ private:
 // Watchdog inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Watchdog::isValid(void) const
+inline bool Watchdog::isValid() const
 {
     return (mHandle != nullptr);
 }
 
-inline Watchdog::GUARD_ID Watchdog::getId(void) const
+inline Watchdog::GUARD_ID Watchdog::getId() const
 {
     return mGuardId;
 }
 
-inline Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
+inline Watchdog::SEQUENCE_ID Watchdog::getSequence() const
 {
     return mSequence;
 }
 
-inline const ComponentThread& Watchdog::getComponentThread(void) const
+inline const ComponentThread& Watchdog::getComponentThread() const
 {
     return mComponentThread;
 }
 
-inline Watchdog::WATCHDOG_ID Watchdog::watchdogId(void)
+inline Watchdog::WATCHDOG_ID Watchdog::watchdogId()
 {
     return Watchdog::makeWatchdogId(mGuardId, mSequence);
 }

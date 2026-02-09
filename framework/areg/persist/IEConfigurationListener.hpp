@@ -45,8 +45,8 @@ class AREG_API IEConfigurationListener
 // Protected constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    IEConfigurationListener(void) = default;
-    virtual ~IEConfigurationListener(void) = default;
+    IEConfigurationListener() = default;
+    virtual ~IEConfigurationListener() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

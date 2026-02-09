@@ -25,7 +25,7 @@
 // EventConsumerList class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-EventConsumerList::~EventConsumerList( void )
+EventConsumerList::~EventConsumerList()
 {
     removeAllConsumers();
 }
@@ -57,7 +57,7 @@ bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
     return result;
 }
 
-void EventConsumerList::removeAllConsumers( void )
+void EventConsumerList::removeAllConsumers()
 {
     EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
     for (; isValidPosition(pos); pos = nextPosition(pos))

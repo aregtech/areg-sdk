@@ -49,13 +49,13 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~LogCollectorConsoleService( void ) = default;
+    virtual ~LogCollectorConsoleService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogCollectorConsoleService( void ) = delete;
+    LogCollectorConsoleService() = delete;
     DECLARE_NOCOPY_NOMOVE( LogCollectorConsoleService );
 };
 

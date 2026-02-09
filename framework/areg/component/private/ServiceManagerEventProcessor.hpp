@@ -51,7 +51,7 @@ public:
      * \brief   Initializes the object, receives the instance of Service Manager.
      **/
     ServiceManagerEventProcessor( ServiceManager & serviceManager );
-    ~ServiceManagerEventProcessor( void ) = default;
+    ~ServiceManagerEventProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -73,7 +73,7 @@ public:
     /**
      * \brief   Returns the list of registered service providers that contain the list of service consumers.
      **/
-    inline const ServerList& getRegisteredServiceList(void) const;
+    inline const ServerList& getRegisteredServiceList() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -169,7 +169,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceManagerEventProcessor( void ) = delete;
+    ServiceManagerEventProcessor() = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceManagerEventProcessor );
 };
 
@@ -177,7 +177,7 @@ private:
 // ServiceManagerEventProcessor inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const ServerList & ServiceManagerEventProcessor::getRegisteredServiceList( void ) const
+inline const ServerList & ServiceManagerEventProcessor::getRegisteredServiceList() const
 {
     return mServerList;
 }

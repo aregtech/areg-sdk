@@ -49,7 +49,7 @@ namespace
 
 namespace NESocket
 {
-    bool _osInitSocket(void)
+    bool _osInitSocket()
     {
         bool result = true;
         if (_instanceCount.fetch_add(1) == 0)
@@ -66,7 +66,7 @@ namespace NESocket
         return result;
     }
 
-    void _osReleaseSocket(void)
+    void _osReleaseSocket()
     {
         if (_instanceCount.fetch_sub(1) == 1)
         {

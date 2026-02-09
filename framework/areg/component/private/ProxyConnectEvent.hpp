@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ProxyConnectEvent( void ) = default;
+    virtual ~ProxyConnectEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -86,12 +86,12 @@ public:
     /**
      * \brief   Returns the target address Stub object.
      **/
-    inline const StubAddress & getStubAddress( void ) const;
+    inline const StubAddress & getStubAddress() const;
 
     /**
      * \brief   Returns the current connection status set in proxy connect event.
      **/
-    inline NEService::eServiceConnection getConnectionStatus( void ) const;
+    inline NEService::eServiceConnection getConnectionStatus() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -132,7 +132,7 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ProxyConnectEvent( void ) = delete;
+    ProxyConnectEvent() = delete;
     DECLARE_NOCOPY_NOMOVE( ProxyConnectEvent );
 };
 
@@ -140,12 +140,12 @@ private:
 // ProxyConnectEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & ProxyConnectEvent::getStubAddress( void ) const
+inline const StubAddress & ProxyConnectEvent::getStubAddress() const
 {
     return mStubAddress;
 }
 
-inline NEService::eServiceConnection ProxyConnectEvent::getConnectionStatus( void ) const
+inline NEService::eServiceConnection ProxyConnectEvent::getConnectionStatus() const
 {
     return mConnectionStatus;
 }

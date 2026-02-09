@@ -39,12 +39,12 @@
 namespace NESocket
 {
 
-    bool _osInitSocket(void)
+    bool _osInitSocket()
     {
         return true;
     }
 
-    void _osReleaseSocket(void)
+    void _osReleaseSocket()
     {
     }
 

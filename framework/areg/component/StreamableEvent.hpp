@@ -63,7 +63,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~StreamableEvent( void ) = default;
+    virtual ~StreamableEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -90,7 +90,7 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StreamableEvent( void ) = delete;
+    StreamableEvent() = delete;
     DECLARE_NOCOPY_NOMOVE( StreamableEvent );
 };
 

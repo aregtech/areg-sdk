@@ -63,7 +63,7 @@ public:
      *          To check whether component address or not, call
      *          isValid() method.
      **/
-    static const ComponentAddress & getInvalidComponentAddress( void );
+    static const ComponentAddress & getInvalidComponentAddress();
 
 /************************************************************************/
 // Static methods
@@ -151,7 +151,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~ComponentAddress( void ) = default;
+    ~ComponentAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -164,7 +164,7 @@ public:
     /**
      * \brief   Converting operator.
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
 
     /**
      * \brief   Copies address data from given source.
@@ -207,24 +207,24 @@ public:
     /**
      * \brief   Returns component master thread address.
      **/
-    inline const ThreadAddress & getThreadAddress( void ) const;
+    inline const ThreadAddress & getThreadAddress() const;
 
     /**
      * \brief   Returns the name of component (role name)
      **/
-    inline const String & getRoleName( void ) const;
+    inline const String & getRoleName() const;
 
     /**
      * \brief   Return true if component address if valid.
      **/
-    bool isValid( void) const;
+    bool isValid() const;
 
     /**
      * \brief	Creates component address to string.
      *          Every part of component address has a special path separator.
      * \return  Returns converted path of Component as a string.
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief	Parses component path string and retrieves component address data from path.
@@ -245,7 +245,7 @@ private:
     /**
      * \brief   Default constructor. Cannot be accessed. For internal use only.
      **/
-    ComponentAddress( void );
+    ComponentAddress();
     /**
      * \brief   Returns the calculated numeric value of specified component address object.
      **/
@@ -324,17 +324,17 @@ inline bool ComponentAddress::operator != ( const ComponentAddress& other ) cons
     return (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName);
 }
 
-ComponentAddress::operator unsigned int ( void ) const
+ComponentAddress::operator unsigned int () const
 {
     return mMagicNum;
 }
 
-inline const ThreadAddress& ComponentAddress::getThreadAddress( void ) const
+inline const ThreadAddress& ComponentAddress::getThreadAddress() const
 {
     return mThreadAddress;
 }
 
-inline const String& ComponentAddress::getRoleName( void ) const
+inline const String& ComponentAddress::getRoleName() const
 {
     return mRoleName;
 }

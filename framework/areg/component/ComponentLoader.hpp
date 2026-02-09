@@ -392,7 +392,7 @@ public:
      * \brief   Returns Component Loader object, which is a singleton object
      *          and instantiated one per process.
      **/
-    static ComponentLoader & getInstance( void );
+    static ComponentLoader & getInstance();
 
     /**
      * \brief   Call to start instantiating registered objects in the specified model.
@@ -525,12 +525,12 @@ private:
     /**
      * \brief   Hidden constructor to avoid duplicate instance, instantiates object in static method.
      **/
-    ComponentLoader( void );
+    ComponentLoader();
 
     /**
      * \brief   Destructor.
      **/
-    ~ComponentLoader( void );
+    ~ComponentLoader();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -541,7 +541,7 @@ protected:
      * \brief   Loads all models, which are not loaded yet.
      * \return  Returns number of models that was loaded.
      **/
-    int loadAllModels( void );
+    int loadAllModels();
 
     /**
      * \brief   Loads threads and components of specified model.

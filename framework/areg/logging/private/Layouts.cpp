@@ -37,7 +37,7 @@ IELayout::IELayout(const NELogOptions::eLayouts layout)
 // TickCountLayout class implementation
 //////////////////////////////////////////////////////////////////////////
 
-TickCountLayout::TickCountLayout( void )
+TickCountLayout::TickCountLayout()
     : IELayout     ( NELogOptions::eLayouts::LayoutTickCount )
 {
 }
@@ -70,7 +70,7 @@ void TickCountLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, IEO
 //////////////////////////////////////////////////////////////////////////
 
 
-DayTimeLaytout::DayTimeLaytout( void )
+DayTimeLaytout::DayTimeLaytout()
     : IELayout ( NELogOptions::eLayouts::LayoutDayTime )
 {
 }
@@ -99,7 +99,7 @@ void DayTimeLaytout::logMessage( const NELogging::sLogMessage & msgLog, IEOutStr
 // ModuleIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ModuleIdLayout::ModuleIdLayout(void)
+ModuleIdLayout::ModuleIdLayout()
     : IELayout      ( NELogOptions::eLayouts::LayoutExecutableId )
 {
 }
@@ -147,7 +147,7 @@ void ModuleIdLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutStr
 // MessageLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-MessageLayout::MessageLayout(void)
+MessageLayout::MessageLayout()
     : IELayout ( NELogOptions::eLayouts::LayoutMessage )
 {
 }
@@ -172,7 +172,7 @@ void MessageLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutStre
 // EndOfLineLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-EndOfLineLayout::EndOfLineLayout(void)
+EndOfLineLayout::EndOfLineLayout()
     : IELayout ( NELogOptions::eLayouts::LayoutEndOfLine )
 {
 }
@@ -196,7 +196,7 @@ void EndOfLineLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, IEO
 // PriorityLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-PriorityLayout::PriorityLayout(void)
+PriorityLayout::PriorityLayout()
     : IELayout ( NELogOptions::eLayouts::LayoutPriority )
 {
 }
@@ -221,7 +221,7 @@ void PriorityLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutStr
 // ScopeIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ScopeIdLayout::ScopeIdLayout(void)
+ScopeIdLayout::ScopeIdLayout()
     : IELayout ( NELogOptions::eLayouts::LaytoutScopeId )
 {
 }
@@ -250,7 +250,7 @@ void ScopeIdLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutStre
 // ThreadIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ThreadIdLayout::ThreadIdLayout(void)
+ThreadIdLayout::ThreadIdLayout()
     : IELayout ( NELogOptions::eLayouts::LayoutThreadId )
 {
 }
@@ -285,7 +285,7 @@ void ThreadIdLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutStr
 // ModuleNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ModuleNameLayout::ModuleNameLayout(void)
+ModuleNameLayout::ModuleNameLayout()
     : IELayout ( NELogOptions::eLayouts::LayoutExecutableName )
 {
 }
@@ -330,7 +330,7 @@ void ModuleNameLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutS
 // ThreadNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ThreadNameLayout::ThreadNameLayout(void)
+ThreadNameLayout::ThreadNameLayout()
     : IELayout ( NELogOptions::eLayouts::LayoutThreadName )
 {
 }
@@ -377,7 +377,7 @@ void ThreadNameLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutS
 // ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-ScopeNameLayout::ScopeNameLayout(void)
+ScopeNameLayout::ScopeNameLayout()
     : IELayout ( NELogOptions::eLayouts::LaytoutScopeName )
 {
 }
@@ -401,7 +401,7 @@ void ScopeNameLayout::logMessage( const NELogging::sLogMessage & msgLog, IEOutSt
 // ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-AnyTextLayout::AnyTextLayout(void)
+AnyTextLayout::AnyTextLayout()
     : IELayout      ( NELogOptions::eLayouts::LayoutAnyText )
     , mTextMessage  ( )
 {
@@ -440,7 +440,7 @@ void AnyTextLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, IEOut
 // CookieIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
-CookieIdLayout::CookieIdLayout(void)
+CookieIdLayout::CookieIdLayout()
     : IELayout(NELogOptions::eLayouts::LayoutCookieId)
 {
 }

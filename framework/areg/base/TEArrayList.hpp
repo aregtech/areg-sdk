@@ -93,7 +93,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TEArrayList( void );
+    ~TEArrayList();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -156,7 +156,7 @@ public:
     /**
      * \brief   Returns pointer to the array values. The values cannot be modified
      **/
-    inline operator const VALUE * ( void ) const;
+    inline operator const VALUE * () const;
 
 /************************************************************************/
 // Friend global operators to make Array streamable
@@ -192,12 +192,12 @@ public:
     /**
      * \brief   Returns true if the array list is empty and has no elements.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief	Returns the current size of the array.
      **/
-    inline uint32_t getSize( void ) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief   Returns true if the specified index is valid.
@@ -216,7 +216,7 @@ public:
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::vector<VALUE>& getData(void) const;
+    inline const std::vector<VALUE>& getData() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -225,17 +225,17 @@ public:
     /**
      * \brief   Remove all entries of the array.
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Delete extra unused entries of the array.
      **/
-    inline void freeExtra( void );
+    inline void freeExtra();
 
     /**
      * \brief   Sets the size of the array to zero and deletes all capacity space.
      **/
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief   Returns element value by valid zero-based index, which can be used by right operation (r-value). 
@@ -265,7 +265,7 @@ public:
     /**
      * \brief   Returns array of values, which cannot be modified.
      **/
-    inline const VALUE * getValues( void ) const;
+    inline const VALUE * getValues() const;
 
     /**
      * \brief   Adds new element at the end of the array.
@@ -390,7 +390,7 @@ public:
     /**
      * \brief   Returns the capacity of the array
      **/
-    inline uint32_t getCapacity(void) const;
+    inline uint32_t getCapacity() const;
 
     /**
      * \brief	Shifts array elements starting at given valid index position. Reserves .
@@ -405,15 +405,15 @@ public:
      * \brief   Return the fist entry in the array. The array must not be empty.
      *          Otherwise, it fails with the assertion.
      **/
-    inline const VALUE & firstEntry( void ) const;
-    inline VALUE & firstEntry( void );
+    inline const VALUE & firstEntry() const;
+    inline VALUE & firstEntry();
 
     /**
      * \brief   Return the last entry in the array. The array must not be empty.
      *          Otherwise, it fails with the assertion.
      **/
-    inline const VALUE & lastEntry( void ) const;
-    inline VALUE & lastEntry( void );
+    inline const VALUE & lastEntry() const;
+    inline VALUE & lastEntry();
 
     /**
      * \brief   Sorts the array, compares the elements by given Compare functionality.
@@ -556,7 +556,7 @@ TEArrayList<VALUE>::TEArrayList( std::vector<VALUE> && src ) noexcept
 }
 
 template<typename VALUE>
-TEArrayList<VALUE>::~TEArrayList( void )
+TEArrayList<VALUE>::~TEArrayList()
 {
 }
 
@@ -625,19 +625,19 @@ inline bool TEArrayList< VALUE >::operator != ( const std::vector< VALUE >& othe
 }
 
 template<typename VALUE >
-inline TEArrayList< VALUE >::operator const VALUE * ( void ) const
+inline TEArrayList< VALUE >::operator const VALUE * () const
 {   
     return static_cast<const VALUE *>(mValueList.data());
 }
 
 template<typename VALUE >
-inline bool TEArrayList< VALUE >::isEmpty( void ) const
+inline bool TEArrayList< VALUE >::isEmpty() const
 {
     return mValueList.empty();
 }
 
 template<typename VALUE >
-inline uint32_t TEArrayList< VALUE >::getSize( void ) const
+inline uint32_t TEArrayList< VALUE >::getSize() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
@@ -655,25 +655,25 @@ inline bool TEArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t s
 }
 
 template<typename VALUE>
-inline const std::vector<VALUE>& TEArrayList<VALUE>::getData(void) const
+inline const std::vector<VALUE>& TEArrayList<VALUE>::getData() const
 {
     return mValueList;
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::clear(void)
+inline void TEArrayList< VALUE >::clear()
 {
     mValueList.clear();
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::freeExtra( void )
+inline void TEArrayList< VALUE >::freeExtra()
 {
     mValueList.shrink_to_fit();
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::release(void)
+inline void TEArrayList< VALUE >::release()
 {
 	mValueList.clear();
     mValueList.shrink_to_fit();
@@ -748,7 +748,7 @@ inline VALUE& TEArrayList< VALUE >::valueAtPosition( uint32_t atPosition )
 }
 
 template<typename VALUE >
-inline const VALUE* TEArrayList< VALUE >::getValues( void ) const
+inline const VALUE* TEArrayList< VALUE >::getValues() const
 {
     return static_cast<const VALUE *>(mValueList.data());
 }
@@ -1017,7 +1017,7 @@ inline void TEArrayList< VALUE >::reserve( uint32_t newCapacity)
 }
 
 template<typename VALUE >
-inline uint32_t TEArrayList< VALUE >::getCapacity(void) const
+inline uint32_t TEArrayList< VALUE >::getCapacity() const
 {
     return static_cast<uint32_t>(mValueList.capacity());
 }
@@ -1057,28 +1057,28 @@ void TEArrayList< VALUE >::shift(uint32_t startAt, int  count)
 }
 
 template<typename VALUE>
-inline const VALUE & TEArrayList<VALUE>::firstEntry( void ) const
+inline const VALUE & TEArrayList<VALUE>::firstEntry() const
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline VALUE & TEArrayList<VALUE>::firstEntry( void )
+inline VALUE & TEArrayList<VALUE>::firstEntry()
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline const VALUE & TEArrayList<VALUE>::lastEntry( void ) const
+inline const VALUE & TEArrayList<VALUE>::lastEntry() const
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ mValueList.size( ) - 1 ];
 }
 
 template<typename VALUE>
-inline VALUE & TEArrayList<VALUE>::lastEntry( void )
+inline VALUE & TEArrayList<VALUE>::lastEntry()
 {
     ASSERT( mValueList.size( ) != 0 );
     return mValueList[ mValueList.size( ) - 1 ];

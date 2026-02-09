@@ -183,7 +183,7 @@ BOOL PageBrokerSetup::OnInitDialog( )
     // EXPTION: OCX Property Pages should return FALSE
 }
 
-void PageBrokerSetup::OnDefaultClicked( void )
+void PageBrokerSetup::OnDefaultClicked()
 {
     CButton * btnConnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_CONNECT ));
     CButton * btnDisconnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_DISCONNECT ));

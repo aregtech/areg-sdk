@@ -29,7 +29,7 @@ const Identifier    Identifier::BAD_IDENTIFIER{ Identifier::BAD_IDENTIFIER_VALUE
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Identifier::Identifier( void )
+Identifier::Identifier()
     : mValue    (Identifier::BAD_IDENTIFIER_VALUE)
     , mName     (Identifier::BAD_IDENTIFIER_NAME)
 {

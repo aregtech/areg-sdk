@@ -55,11 +55,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    LayoutManager( void ) = default;
+    LayoutManager() = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~LayoutManager( void ) ;
+    virtual ~LayoutManager() ;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -76,7 +76,7 @@ public:
     /**
      * \brief   Release and delete list of layout objects.
      **/
-    void deleteLayouts( void );
+    void deleteLayouts();
 
     /**
      * \brief   Logs the message in the streaming object by using layout objects.
@@ -90,7 +90,7 @@ public:
      * \brief   Returns true if layout manager is valid.
      *          The layout manager is valid if it has at least one layout object.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
 private:
 
@@ -119,7 +119,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LayoutManager class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool LayoutManager::isValid( void ) const
+inline bool LayoutManager::isValid() const
 {
     return (mLayoutList.isEmpty() == false);
 }

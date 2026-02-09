@@ -50,7 +50,7 @@ public:
      **/
     LogCollectorMessageProcessor(LogCollectorServerService & loggerService);
 
-    ~LogCollectorMessageProcessor(void) = default;
+    ~LogCollectorMessageProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Actions
@@ -146,7 +146,7 @@ public:
     /**
      * \brief   Called to process the next log source application in the queue to save configuration.
      **/
-    void processNextSaveConfig(void);
+    void processNextSaveConfig();
 
     /**
      * \brief   Called when an instance of a log source is disconnected.
@@ -207,7 +207,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogCollectorMessageProcessor(void) = delete;
+    LogCollectorMessageProcessor() = delete;
     DECLARE_NOCOPY_NOMOVE(LogCollectorMessageProcessor);
 };
 

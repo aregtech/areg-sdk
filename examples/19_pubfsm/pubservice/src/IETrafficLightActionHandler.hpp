@@ -45,12 +45,12 @@ protected:
    /**
     * \brief   IETrafficLightActionHandler constructor is hidden from direct call
     **/
-   IETrafficLightActionHandler( void ) = default;
+   IETrafficLightActionHandler() = default;
 
    /**
     * \brief   IETrafficLightActionHandler destructor
     **/
-   virtual ~IETrafficLightActionHandler( void ) = default;
+   virtual ~IETrafficLightActionHandler() = default;
    
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,27 +64,27 @@ public:
    /**
     * \brief   Action to perform when traffic light is off.
     **/
-   virtual void actionPowerOff( void ) = 0;
+   virtual void actionPowerOff() = 0;
 
    /**
     * \brief   Acton to perform when power on the traffic light.
     **/
-   virtual void actionPowerOn( void ) = 0;
+   virtual void actionPowerOn() = 0;
 
    /**
     * \brief   Action to perform when vehicle light is yellow.
     **/
-   virtual void actionVehicleYellow( void ) = 0;
+   virtual void actionVehicleYellow() = 0;
 
    /**
     * \brief   Action to perform when vehicle light is red.
     **/
-   virtual void actionVehicleRed( void ) = 0;
+   virtual void actionVehicleRed() = 0;
 
    /**
     * \brief   Action to perform when pedestrian light is red.
     **/
-   virtual void actionPedestrianRed( void ) = 0;
+   virtual void actionPedestrianRed() = 0;
 
    /**
     * \brief   Action to perform when vehicle light is green.

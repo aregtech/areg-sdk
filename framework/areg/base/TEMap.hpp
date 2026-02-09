@@ -87,7 +87,7 @@ public:
     /**
      * \brief	Creates empty map.
      **/
-    TEMap( void ) = default;
+    TEMap() = default;
 
     /**
      * \brief	Creates empty map and using comparison function object 'comp'.
@@ -120,7 +120,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TEMap( void ) = default;
+    ~TEMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -210,18 +210,18 @@ public:
     /**
      * \brief   Returns true if the sorted map is empty and has no elements.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief	Returns the current size of the map.
      **/
-    inline uint32_t getSize( void ) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief	Returns the position of the first key and value entry in the sorted map, which is
      *          not invalid if the map is not empty. Otherwise, returns invalid position.
      **/
-    inline MAPPOS firstPosition(void) const;
+    inline MAPPOS firstPosition() const;
 
     /**
      * \brief   Returns true if specified position points the first entry in the sorted map.
@@ -232,7 +232,7 @@ public:
     /**
      * \brief   Returns the invalid position of the sorted map.
      **/
-    inline MAPPOS invalidPosition(void) const;
+    inline MAPPOS invalidPosition() const;
 
     /**
      * \brief   Returns true if specified position is invalid, i.e. points the end of the sorted map.
@@ -261,7 +261,7 @@ public:
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::map<KEY, VALUE>& getData(void) const;
+    inline const std::map<KEY, VALUE>& getData() const;
 
 /************************************************************************/
 // Operations
@@ -270,12 +270,12 @@ public:
     /**
      * \brief   Remove all entries of the map.
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Sets the size of the map to zero and deletes all capacity space.
      */
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief	Searches an element entry by the given key.
@@ -409,7 +409,7 @@ public:
     /**
      * \brief   Removes the first entry in the sorted map.
      **/
-    inline void removeFirst(void);
+    inline void removeFirst();
 
     /**
      * \brief   Removes the first entry in the sorted map.
@@ -422,7 +422,7 @@ public:
     /**
      * \brief   Removes the last entry in the sorted map.
      **/
-    inline void removeLast(void);
+    inline void removeLast();
 
     /**
      * \brief   Removes the last entry in the sorted map.
@@ -573,19 +573,19 @@ inline const VALUE & TEMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEMap<KEY, VALUE>::isEmpty(void) const
+inline bool TEMap<KEY, VALUE>::isEmpty() const
 {
     return mValueList.empty();
 }
 
 template < typename KEY, typename VALUE >
-inline uint32_t TEMap<KEY, VALUE>::getSize( void ) const
+inline uint32_t TEMap<KEY, VALUE>::getSize() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::firstPosition( void ) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::firstPosition() const
 {
     auto pos = mValueList.begin();
     return Constless<std::map<KEY, VALUE>>::iter(mValueList, pos);
@@ -598,7 +598,7 @@ inline bool TEMap<KEY, VALUE>::isFirstPosition(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::invalidPosition(void) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::invalidPosition() const
 {
 	auto end = mValueList.end();
     return Constless<std::map<KEY, VALUE>>::iter(mValueList, end);
@@ -629,13 +629,13 @@ inline bool TEMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::clear(void)
+inline void TEMap<KEY, VALUE>::clear()
 {
     mValueList.clear();
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::release(void)
+inline void TEMap<KEY, VALUE>::release()
 {
     mValueList.clear();
 }
@@ -671,7 +671,7 @@ inline bool TEMap<KEY, VALUE>::contains(const KEY& Key) const
 }
 
 template<typename KEY, typename VALUE>
-inline const std::map<KEY, VALUE>& TEMap<KEY, VALUE>::getData(void) const
+inline const std::map<KEY, VALUE>& TEMap<KEY, VALUE>::getData() const
 {
     return mValueList;
 }
@@ -829,7 +829,7 @@ inline bool TEMap<KEY, VALUE>::removeFirst(KEY& OUT out_Key, VALUE& OUT out_Valu
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::removeFirst( void )
+inline void TEMap<KEY, VALUE>::removeFirst()
 {
     if (mValueList.empty() == false)
     {
@@ -858,7 +858,7 @@ inline bool TEMap<KEY, VALUE>::removeLast(KEY& OUT out_Key, VALUE& OUT out_Value
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::removeLast(void)
+inline void TEMap<KEY, VALUE>::removeLast()
 {
     if (mValueList.empty() == false)
     {

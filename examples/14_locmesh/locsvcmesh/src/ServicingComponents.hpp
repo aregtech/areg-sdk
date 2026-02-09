@@ -29,7 +29,7 @@ public:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ControllerComponent & self( void )
+    inline ControllerComponent & self()
     {
         return (*this);
     }
@@ -43,7 +43,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ControllerComponent( void ) = delete;
+    ControllerComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ControllerComponent );
 };
 
@@ -60,7 +60,7 @@ private:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 
-    inline SecondaryComponent & self( void )
+    inline SecondaryComponent & self()
     {
         return (*this);
     }
@@ -76,6 +76,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SecondaryComponent( void ) = delete;
+    SecondaryComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( SecondaryComponent );
 };

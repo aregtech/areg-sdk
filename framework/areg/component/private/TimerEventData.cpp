@@ -54,7 +54,7 @@ TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
     timer._queueTimer();
 }
 
-TimerEvent::~TimerEvent( void )
+TimerEvent::~TimerEvent()
 {
     if (mData.mTimer != nullptr)
     {

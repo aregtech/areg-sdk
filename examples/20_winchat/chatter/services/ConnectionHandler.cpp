@@ -6,7 +6,7 @@
 #include "chatter/services/ConnectionHandler.hpp"
 #include "examples/20_winchat/services/NEConnectionManager.hpp"
 
-ConnectionHandler::ConnectionHandler(void)
+ConnectionHandler::ConnectionHandler()
     : mListConnections  ( )
     , mNickName         ( )
     , mCookie           ( NEConnectionManager::InvalidCookie )
@@ -19,11 +19,11 @@ ConnectionHandler::ConnectionHandler(void)
 {
 }
 
-ConnectionHandler::~ConnectionHandler(void)
+ConnectionHandler::~ConnectionHandler()
 {
 }
 
-bool ConnectionHandler::IsValid(void) const
+bool ConnectionHandler::IsValid() const
 {
     Lock lock(mLock);
     return (GetCookie() != NEConnectionManager::InvalidCookie) && (mNickName.isEmpty() == false);
@@ -97,7 +97,7 @@ int ConnectionHandler::findConnection(const NECommon::sConnection & connection) 
     return result;
 }
 
-void ConnectionHandler::ResetConnectionList( void )
+void ConnectionHandler::ResetConnectionList()
 {
     Lock lock( mLock );
 
@@ -118,7 +118,7 @@ void ConnectionHandler::SetConnectCookie( uint32_t cookie )
     mConnectCookie  = cookie;
 }
 
-uint32_t ConnectionHandler::GetConnectCookie( void ) const
+uint32_t ConnectionHandler::GetConnectCookie() const
 {
     Lock lock( mLock );
     return mConnectCookie;
@@ -131,13 +131,13 @@ void ConnectionHandler::SetCookie( uint32_t cookie )
     mConnectCookie  = cookie;
 }
 
-uint32_t ConnectionHandler::GetCookie( void ) const
+uint32_t ConnectionHandler::GetCookie() const
 {
     Lock lock( mLock );
     return (mCookie != NECommon::InvalidCookie ? mCookie : mConnectCookie);
 }
 
-uint32_t ConnectionHandler::GetCookieDirect( void ) const
+uint32_t ConnectionHandler::GetCookieDirect() const
 {
     Lock lock( mLock );
     return mCookie;

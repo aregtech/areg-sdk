@@ -48,8 +48,8 @@ protected:
     /**
      * \brief   Protected constructor and destructor.
      **/
-    IEEventConsumer( void ) = default;
-    virtual ~IEEventConsumer( void ) = default;
+    IEEventConsumer() = default;
+    virtual ~IEEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations

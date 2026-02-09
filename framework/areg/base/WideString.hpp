@@ -61,7 +61,7 @@ public:
      * \brief   WideString::getEmptyString()
      *          The empty wide string.
      **/
-    static const WideString & getEmptyString( void );
+    static const WideString & getEmptyString();
 
     /**
      * \brief   WideString::EmptyString
@@ -77,12 +77,12 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    WideString( void ) = default;
+    WideString() = default;
 
     /**
      * \brief   Destructor.
      **/
-    ~WideString(void) = default;
+    ~WideString() = default;
 
     /**
      * \brief   Copy constructor.
@@ -143,7 +143,7 @@ public:
     /**
      * \brief   Converting operator, converts object to unsigned int primitive
      **/
-    explicit inline operator unsigned int(void) const;
+    explicit inline operator unsigned int() const;
 
     /**
      * \brief   Assigning operator, copies data from given null-terminated wide-wchar_t string source
@@ -586,17 +586,17 @@ public:
      * \brief   Converts string of digits to 32-bit digit with floating point
      * \return  Returns the 32-bit digit with floating point
      **/
-    inline float toFloat( void ) const;
+    inline float toFloat() const;
     /**
      * \brief   Converts string of digits to 64-bit digit with floating point
      * \return  Returns the 64-bit digit with floating point
      **/
-    inline double toDouble( void ) const;
+    inline double toDouble() const;
     /**
      * \brief   Converts string to boolean value. If value is "true", it returns true. Otherwise returns false.
      * \return  Returns boolean value.
      **/
-    inline bool toBool( void ) const;
+    inline bool toBool() const;
 
     /**
      * \brief   Converts and sets 32-bit signed digit in the string based on radix bases.
@@ -760,7 +760,7 @@ inline WideString::WideString(uint32_t count)
 {
 }
 
-inline WideString::operator unsigned int(void) const
+inline WideString::operator unsigned int() const
 {
     return static_cast<unsigned int>(std::hash<std::wstring>{}(mData));
 }
@@ -1032,17 +1032,17 @@ inline uint64_t WideString::toUInt64( NEString::eRadix radix /*= NEString::Radix
     return WideString::makeUInt64(getString(), radix, nullptr );
 }
 
-inline float WideString::toFloat( void ) const
+inline float WideString::toFloat() const
 {
     return WideString::makeFloat(getString(), nullptr );
 }
 
-inline double WideString::toDouble( void ) const
+inline double WideString::toDouble() const
 {
     return WideString::makeDouble(getString(), nullptr );
 }
 
-inline bool WideString::toBool( void ) const
+inline bool WideString::toBool() const
 {
     return (isEmpty() || NEString::compareIgnoreCase<wchar_t, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::eCompare::Equal ? false : true);
 }

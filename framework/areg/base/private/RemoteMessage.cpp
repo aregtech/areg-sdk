@@ -99,12 +99,12 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
     return result;
 }
 
-bool RemoteMessage::isChecksumValid(void) const
+bool RemoteMessage::isChecksumValid() const
 {
     return isValid() ? getChecksum() == RemoteMessage::_checksumCalculate( _getRemoteMessage() ) : false;
 }
 
-void RemoteMessage::bufferCompletionFix(void) const
+void RemoteMessage::bufferCompletionFix() const
 {
     if ( isValid() )
     {
@@ -194,12 +194,12 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
     return result;
 }
 
-unsigned int RemoteMessage::getDataOffset(void) const
+unsigned int RemoteMessage::getDataOffset() const
 {
     return offsetof(NEMemory::sRemoteMessage, rbData);
 }
 
-unsigned int RemoteMessage::getHeaderSize(void) const
+unsigned int RemoteMessage::getHeaderSize() const
 {
     return sizeof(NEMemory::sRemoteMessage);
 }

@@ -48,7 +48,7 @@ LogScope::LogScope(const IEInStream & stream)
 {
 }
 
-LogScope::~LogScope( void )
+LogScope::~LogScope()
 {
     if (mIsRegistered)
     {
@@ -84,7 +84,7 @@ LogScope::LogScope(const IEInStream& /*stream*/ )
 {
 }
 
-LogScope::~LogScope(void)
+LogScope::~LogScope()
 {
 }
 

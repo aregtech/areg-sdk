@@ -164,7 +164,7 @@ namespace
 
 
 // the static empty string
-const WideString & WideString::getEmptyString(void)
+const WideString & WideString::getEmptyString()
 {
     static const WideString _emptyString{ L"" };
     return _emptyString;

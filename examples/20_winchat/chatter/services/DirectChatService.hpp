@@ -34,7 +34,7 @@ public:
 
 public:
     DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
-    virtual ~DirectChatService( void );
+    virtual ~DirectChatService();
 
 //////////////////////////////////////////////////////////////////////////
 // DirectMessager Interface Requests
@@ -116,7 +116,7 @@ protected:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline void _clearList(void);
+    inline void _clearList();
     
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -133,15 +133,15 @@ private:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline DirectChatService & self( void );
+    inline DirectChatService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    DirectChatService( void );
+    DirectChatService();
     DirectChatService( const DirectChatService & /*src*/ );
     const DirectChatService & operator = ( const DirectChatService & /*src*/ );
 };
 
-inline DirectChatService & DirectChatService::self( void )
+inline DirectChatService & DirectChatService::self()
 {   return (*this); }

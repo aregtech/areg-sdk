@@ -42,7 +42,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    ServiceProxy( void );
+    ServiceProxy();
 
     /**
      * \brief   The remote proxy address to set in object
@@ -83,7 +83,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ServiceProxy( void ) = default;
+    ~ServiceProxy() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -148,27 +148,27 @@ public:
     /**
      * \brief   Returns true if a remote proxy object is valid, i.e. the proxy address is valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns true if a remote proxy object status is connected
      **/
-    inline bool isConnected( void ) const;
+    inline bool isConnected() const;
 
     /**
      * \brief   Returns true if a remote proxy object status is waiting
      **/
-    inline bool isWaiting( void ) const;
+    inline bool isWaiting() const;
 
     /**
      * \brief   Returns true the service connection status value
      **/
-    inline NEService::eServiceConnection getServiceStatus( void ) const;
+    inline NEService::eServiceConnection getServiceStatus() const;
 
     /**
      * \brief   Returns the address of remote proxy
      **/
-    inline const ProxyAddress & getServiceAddress( void ) const;
+    inline const ProxyAddress & getServiceAddress() const;
 
     /**
      * \brief   Called when the remote service stub of proxy is available.
@@ -185,7 +185,7 @@ public:
      * \return  Returns true if proxy entry status is waiting for connection,
      *          i.e. there was at least one client proxy connected or waiting for a connection.
      **/
-    bool stubUnavailable( void );
+    bool stubUnavailable();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -221,27 +221,27 @@ private:
 // ServiceProxy class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceProxy::getServiceAddress(void) const
+inline const ProxyAddress & ServiceProxy::getServiceAddress() const
 {
     return mProxyAddress;
 }
 
-inline NEService::eServiceConnection ServiceProxy::getServiceStatus(void) const
+inline NEService::eServiceConnection ServiceProxy::getServiceStatus() const
 {
     return mConnectStatus;
 }
 
-inline bool ServiceProxy::isValid(void) const
+inline bool ServiceProxy::isValid() const
 {
     return mProxyAddress.isValid();
 }
 
-inline bool ServiceProxy::isConnected( void ) const
+inline bool ServiceProxy::isConnected() const
 {
     return ( mConnectStatus == NEService::eServiceConnection::ServiceConnected );
 }
 
-inline bool ServiceProxy::isWaiting( void ) const
+inline bool ServiceProxy::isWaiting() const
 {
     return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
 }

@@ -172,7 +172,7 @@ public:
      **/
     explicit Component( const String & roleName );
 
-    virtual ~Component( void );
+    virtual ~Component();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations, overrides.
@@ -265,7 +265,7 @@ public:
      *          After calling this method the component deletes all worker threads,
      *          cleans up resources and components become not operable anymore.
      **/
-    void terminateSelf( void );
+    void terminateSelf();
 
     /**
      * \brief	Registers Stub / Server object of component
@@ -292,22 +292,22 @@ public:
     /**
      * \brief   Returns master thread of component
      **/
-    inline ComponentThread & getMasterThread( void );
+    inline ComponentThread & getMasterThread();
 
     /**
      * \brief   Returns the role name of component
      **/
-    inline const String & getRoleName( void ) const;
+    inline const String & getRoleName() const;
 
     /**
      * \brief   Returns address of component
      **/
-    inline const ComponentAddress & getAddress( void ) const;
+    inline const ComponentAddress & getAddress() const;
 
     /**
      * \brief   Returns the list of registered (provided) Server Service list.
      **/
-    inline const ListServers & extractRemoteServiceAddresses( void ) const;
+    inline const ListServers & extractRemoteServiceAddresses() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -336,16 +336,16 @@ private:
     /**
      * \brief   Returns reference of component object.
      **/
-    inline Component & self( void );
+    inline Component & self();
 
     /**
      * \brief   Shutdowns all registered services of the component.
      **/
-    inline void _shutdownServices( void );
+    inline void _shutdownServices();
     /**
      * \brief   Static method. Returns the component thread of current component.
      **/
-    static ComponentThread & _getCurrentComponentThread( void );
+    static ComponentThread & _getCurrentComponentThread();
 
     /**
      * \brief   Calculates the number of specified component object.
@@ -384,7 +384,7 @@ private:
 // Component class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentThread & Component::getMasterThread( void )
+inline ComponentThread & Component::getMasterThread()
 {
     return mComponentInfo.getMasterThread();
 }
@@ -394,22 +394,22 @@ inline DispatcherThread * Component::findEventConsumer( const RuntimeClassID& wh
     return mComponentInfo.findEventConsumer(whichClass);
 }
 
-inline const String & Component::getRoleName( void ) const
+inline const String & Component::getRoleName() const
 {
     return mComponentInfo.getRoleName();
 }
 
-inline const ComponentAddress& Component::getAddress( void ) const
+inline const ComponentAddress& Component::getAddress() const
 {
     return mComponentInfo.getAddress();
 }
 
-inline const Component::ListServers & Component::extractRemoteServiceAddresses( void ) const
+inline const Component::ListServers & Component::extractRemoteServiceAddresses() const
 {
     return mServerList;
 }
 
-inline Component& Component::self( void )
+inline Component& Component::self()
 {
     return (*this);
 }

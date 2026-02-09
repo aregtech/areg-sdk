@@ -82,7 +82,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TESortedLinkedList(void) = default;
+    ~TESortedLinkedList() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -174,34 +174,34 @@ public:
     /**
      * \brief   Returns true, if Linked List container is empty.
      **/
-    inline bool isEmpty(void) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns the size of Linked List container
      **/
-    inline uint32_t getSize(void) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief   Returns true if the list is sorting ascending
      **/
-    inline bool isAscending(void) const;
+    inline bool isAscending() const;
 
     /**
      * \brief   Returns true if the list is sorting descending
      **/
-    inline bool isDescending(void) const;
+    inline bool isDescending() const;
 
     /**
      * \brief	Returns the first position of the hash map, which is not invalid if
      *          the hash map is not empty. Otherwise, it is equal to the last position
      *          and not valid.
      **/
-    inline LISTPOS firstPosition(void) const;
+    inline LISTPOS firstPosition() const;
 
     /**
      * \brief	Returns the last position of the hash map, which is always invalid.
      **/
-    inline LISTPOS lastPosition(void) const;
+    inline LISTPOS lastPosition() const;
 
     /**
      * \brief   Returns true if specified position pointing start of the linked list.
@@ -220,7 +220,7 @@ public:
     /**
      * \brief   Returns invalid position object.
      **/
-    inline LISTPOS invalidPosition(void) const;
+    inline LISTPOS invalidPosition() const;
 
     /**
      * \brief   Returns true if specified position reached the end of the hash map.
@@ -266,7 +266,7 @@ public:
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::list<VALUE>& getData(void) const;
+    inline const std::list<VALUE>& getData() const;
 
 /************************************************************************/
 // Operations
@@ -275,29 +275,29 @@ public:
     /**
      * \brief   Remove all entries of the linked list.
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Delete extra entries in the linked list.
      **/
-    inline void freeExtra(void);
+    inline void freeExtra();
 
     /**
      * \brief   Sets the size of the linked list to zero and deletes all capacity space.
      */
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief   Returns value of head element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE& firstEntry(void) const;
+    inline const VALUE& firstEntry() const;
 
     /**
      * \brief   Returns value of tail element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE& lastEntry(void) const;
+    inline const VALUE& lastEntry() const;
 
     /**
      * \brief	Returns given position value and on exit position of next element in Linked List container.
@@ -391,7 +391,7 @@ public:
     /**
      * \brief   Removes head element from Sorted Linked List.
      **/
-    inline void removeFirst(void);
+    inline void removeFirst();
 
     /**
      * \brief   Removes the head element from the linked list. On output, the 'value' contains
@@ -407,7 +407,7 @@ public:
     /**
      * \brief   Removes tail element from Sorted Linked List.
      **/
-    inline void removeLast(void);
+    inline void removeLast();
 
     /**
      * \brief   Removes the tails element from the linked list. On output, the 'value' contains
@@ -449,14 +449,14 @@ public:
      *          The linked list must not be empty.
      * \return  The popped out element from the header of the linked list.
      */
-    inline VALUE popFirst(void);
+    inline VALUE popFirst();
 
     /**
      * \brief   Pops the element at the tails of linked list and returns the stored value.
      *          The linked list must not be empty.
      * \return  The popped out element from the tail of the linked list.
      */
-    inline VALUE popLast(void);
+    inline VALUE popLast();
 
     /**
      * \brief	Sets new value at give position and returns old value of same element.
@@ -661,37 +661,37 @@ inline const VALUE& TESortedLinkedList<VALUE>::operator [] (const TESortedLinked
 }
 
 template <typename VALUE >
-inline bool TESortedLinkedList<VALUE>::isEmpty(void) const
+inline bool TESortedLinkedList<VALUE>::isEmpty() const
 {
     return mValueList.empty();
 }
 
 template <typename VALUE >
-inline uint32_t TESortedLinkedList<VALUE>::getSize(void) const
+inline uint32_t TESortedLinkedList<VALUE>::getSize() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template<typename VALUE>
-inline bool TESortedLinkedList<VALUE>::isAscending( void ) const
+inline bool TESortedLinkedList<VALUE>::isAscending() const
 {
     return (mSorting == NECommon::eSort::SortAscending);
 }
 
 template<typename VALUE>
-inline bool TESortedLinkedList<VALUE>::isDescending(void) const
+inline bool TESortedLinkedList<VALUE>::isDescending() const
 {
     return (mSorting == NECommon::eSort::SortDescending);
 }
 
 template <typename VALUE >
-inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::firstPosition(void) const
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::firstPosition() const
 {
     return _citer2pos(mValueList.begin());
 }
 
 template <typename VALUE >
-inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::lastPosition(void) const
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::lastPosition() const
 {
 	return _citer2pos(mValueList.empty() == false ? --mValueList.end() : mValueList.end());
 }
@@ -709,7 +709,7 @@ inline bool TESortedLinkedList<VALUE>::isLastPosition(const TESortedLinkedList<V
 }
 
 template <typename VALUE >
-inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::invalidPosition(void) const
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::invalidPosition() const
 {
     return _citer2pos(mValueList.end());
 }
@@ -737,32 +737,32 @@ inline bool TESortedLinkedList<VALUE>::checkPosition(const TESortedLinkedList<VA
 }
 
 template <typename VALUE >
-inline void TESortedLinkedList<VALUE>::clear(void)
+inline void TESortedLinkedList<VALUE>::clear()
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-inline void TESortedLinkedList<VALUE>::freeExtra(void)
+inline void TESortedLinkedList<VALUE>::freeExtra()
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-inline void TESortedLinkedList<VALUE>::release(void)
+inline void TESortedLinkedList<VALUE>::release()
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::firstEntry(void) const
+inline const VALUE& TESortedLinkedList<VALUE>::firstEntry() const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::lastEntry(void) const
+inline const VALUE& TESortedLinkedList<VALUE>::lastEntry() const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
@@ -854,7 +854,7 @@ bool TESortedLinkedList<VALUE>::prevEntry(TESortedLinkedList<VALUE>::LISTPOS& in
 }
 
 template <typename VALUE >
-inline void TESortedLinkedList<VALUE>::removeFirst(void)
+inline void TESortedLinkedList<VALUE>::removeFirst()
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_front();
@@ -875,7 +875,7 @@ bool TESortedLinkedList<VALUE>::removeFirst(VALUE& value)
 }
 
 template <typename VALUE >
-inline void TESortedLinkedList<VALUE>::removeLast(void)
+inline void TESortedLinkedList<VALUE>::removeLast()
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_back();
@@ -1010,7 +1010,7 @@ std::pair<typename TESortedLinkedList<VALUE>::LISTPOS, bool> TESortedLinkedList<
 }
 
 template <typename VALUE >
-inline VALUE TESortedLinkedList<VALUE>::popFirst(void)
+inline VALUE TESortedLinkedList<VALUE>::popFirst()
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.front();
@@ -1019,7 +1019,7 @@ inline VALUE TESortedLinkedList<VALUE>::popFirst(void)
 }
 
 template <typename VALUE >
-inline VALUE TESortedLinkedList<VALUE>::popLast(void)
+inline VALUE TESortedLinkedList<VALUE>::popLast()
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.back();
@@ -1113,7 +1113,7 @@ inline bool TESortedLinkedList<VALUE>::contains(const VALUE& elemSearch, LISTPOS
 }
 
 template<typename VALUE>
-inline const std::list<VALUE>& TESortedLinkedList<VALUE>::getData(void) const
+inline const std::list<VALUE>& TESortedLinkedList<VALUE>::getData() const
 {
     return mValueList;
 }

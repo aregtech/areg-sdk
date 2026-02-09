@@ -43,11 +43,11 @@ protected:
     /**
      * \brief   Default constructor. Protected
      **/
-    IERemoteEventConsumer( void ) = default;
+    IERemoteEventConsumer() = default;
     /**
      * \brief   Destructor.
      **/
-    virtual ~IERemoteEventConsumer( void ) = default;
+    virtual ~IERemoteEventConsumer() = default;
 
 public:
 /************************************************************************/

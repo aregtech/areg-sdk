@@ -114,7 +114,7 @@ private:
         /**
          * \brief   Default constructor.
          **/
-        Listener( void );
+        Listener();
 
         /**
          * \brief   Creates Listener and sets message ID.
@@ -152,7 +152,7 @@ private:
         /**
          * \brief   Destructor.
          **/
-        ~Listener( void ) = default;
+        ~Listener() = default;
 
     // ProxyBase::Listener class, Basic operators
     //////////////////////////////////////////////////////////////////////////
@@ -347,7 +347,7 @@ protected:
         /**
          * \brief   Destructor
          **/
-        virtual ~ServiceAvailableEvent( void ) = default;
+        virtual ~ServiceAvailableEvent() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -356,7 +356,7 @@ protected:
         /**
          * \brief   Returns instance of consumer to send notification
          **/
-        inline IENotificationEventConsumer & getConsumer( void ) const
+        inline IENotificationEventConsumer & getConsumer() const
         {
             return mNotifyConsumer;
         }
@@ -377,7 +377,7 @@ protected:
         /**
          * \brief   Returns service available event delay timeout value.
          **/
-        inline unsigned int getEventDalay(void) const
+        inline unsigned int getEventDalay() const
         {
             return mDelayConnectEvent;
         }
@@ -385,7 +385,7 @@ protected:
         /**
          * \brief   Returns true if the service available should be delayed.
          **/
-        inline bool shouldDelayEvent(void) const
+        inline bool shouldDelayEvent() const
         {
             return (mDelayConnectEvent != 0u);
         }
@@ -408,7 +408,7 @@ protected:
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        ServiceAvailableEvent( void ) = delete;
+        ServiceAvailableEvent() = delete;
         DECLARE_NOCOPY_NOMOVE( ServiceAvailableEvent );
     };
 
@@ -495,7 +495,7 @@ public:
     /**
      * \brief   Locks the resources of proxy object. Use if need to search and access cached resource.
      **/
-    static inline void lockProxyResource( void )
+    static inline void lockProxyResource()
     {
         ProxyBase::_mapRegisteredProxies.lock();
     }
@@ -503,7 +503,7 @@ public:
     /**
      * \brief   Unlocks the resources of proxy object. Use if need to unlock the access of cached resource.
      **/
-    static inline void unlockProxyResource( void )
+    static inline void unlockProxyResource()
     {
         ProxyBase::_mapRegisteredProxies.unlock();
     }
@@ -527,7 +527,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ProxyBase( void ) = default;
+    virtual ~ProxyBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -537,22 +537,22 @@ public:
     /**
      * \brief   Returns the address of Proxy.
      **/
-    inline const ProxyAddress & getProxyAddress(void) const;
+    inline const ProxyAddress & getProxyAddress() const;
 
     /**
      * \brief   Returns the address of target Stub object.
      **/
-    inline const StubAddress & getStubAddress(void) const;
+    inline const StubAddress & getStubAddress() const;
 
     /**
      * \brief   Returns true if Proxy have got server connected notification.
      **/
-    inline bool isConnected(void) const;
+    inline bool isConnected() const;
 
     /**
      * \brief   Returns the connection status of the proxy.
      **/
-    inline NEService::eServiceConnection getConnectionStatus(void) const;
+    inline NEService::eServiceConnection getConnectionStatus() const;
 
     /**
      * \brief   Checks whether there are more listener objects
@@ -578,14 +578,14 @@ public:
     /**
      * \brief   Returns the Proxy dispatcher thread.
      **/
-    inline DispatcherThread & getProxyDispatcherThread(void) const;
+    inline DispatcherThread & getProxyDispatcherThread() const;
 
 #ifdef DEBUG
 
     /**
      * \brief   Returns the number of assigned listener in the list.
      **/
-    inline unsigned int getListenerCount(void) const;
+    inline unsigned int getListenerCount() const;
 
 #endif // DEBUG
 
@@ -612,13 +612,13 @@ public:
      *          This call notifies all related to proxy clients that it has disconnected
      *          from service, as well as removes all listeners and frees the resources.
      **/
-    void stopProxy( void );
+    void stopProxy();
 
     /**
      * \brief   Called to force to delete proxy.
      *          After calling this method the proxy is not operable anymore.
      **/
-    void terminateSelf( void );
+    void terminateSelf();
 
 protected:
 /************************************************************************/
@@ -798,13 +798,13 @@ protected:
      * \brief   Called to register all servicing listeners. It is called when proxy is instantiated.
      *          Overwrite method to add service event listeners.
      **/
-    virtual void registerServiceListeners( void );
+    virtual void registerServiceListeners();
 
     /**
      * \brief   Called to unregister all servicing listeners. It is called when proxy is freed.
      *          Overwrite method to remove service event listeners.
      **/
-    virtual void unregisterServiceListeners( void );
+    virtual void unregisterServiceListeners();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -830,7 +830,7 @@ protected:
      * \brief   Sends remove all notification event message to Stub and
      *          stops all notifications. 
      **/
-    inline void stopAllServiceNotifications( void );
+    inline void stopAllServiceNotifications();
 
     /**
      * \brief   Stops list of specified notifications
@@ -842,12 +842,12 @@ protected:
     /**
      * \brief   Returns reference of read-only Proxy Data object
      **/
-    inline const NEService::ProxyData & getProxyData( void ) const;
+    inline const NEService::ProxyData & getProxyData() const;
 
     /**
      * \brief   Returns reference of Proxy Data object
      **/
-    inline NEService::ProxyData & getProxyData( void );
+    inline NEService::ProxyData & getProxyData();
 
     /**
      * \brief   Register Proxy object for certain event type.
@@ -1074,13 +1074,13 @@ private:
     /**
      * \brief   Return reference to Proxy object
      **/
-    inline ProxyBase & self( void );
+    inline ProxyBase & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ProxyBase( void ) = delete;
+    ProxyBase() = delete;
     DECLARE_NOCOPY_NOMOVE( ProxyBase );
 };
 
@@ -1088,22 +1088,22 @@ private:
 // ProxyBase class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ProxyBase & ProxyBase::self( void )
+inline ProxyBase & ProxyBase::self()
 {
     return (*this);
 }
 
-inline const ProxyAddress& ProxyBase::getProxyAddress( void ) const
+inline const ProxyAddress& ProxyBase::getProxyAddress() const
 {
     return mProxyAddress;
 }
 
-inline const StubAddress& ProxyBase::getStubAddress( void ) const
+inline const StubAddress& ProxyBase::getStubAddress() const
 {
     return mStubAddress;
 }
 
-inline bool ProxyBase::isConnected( void ) const
+inline bool ProxyBase::isConnected() const
 {
     return mIsConnected;
 }
@@ -1114,7 +1114,7 @@ inline void ProxyBase::setConnectionStatus(NEService::eServiceConnection status)
     mIsConnected = NEService::isServiceConnected(status);
 }
 
-inline NEService::eServiceConnection ProxyBase::getConnectionStatus(void) const
+inline NEService::eServiceConnection ProxyBase::getConnectionStatus() const
 {
     return mConnectionStatus;
 }
@@ -1145,7 +1145,7 @@ inline void ProxyBase::stopNotification( unsigned int msgId )
     }
 }
 
-inline void ProxyBase::stopAllServiceNotifications( void )
+inline void ProxyBase::stopAllServiceNotifications()
 {
     if (isConnected()) 
     {
@@ -1161,12 +1161,12 @@ inline void ProxyBase::stopNotifications( const unsigned int notifyIds[], int co
     }
 }
 
-inline const NEService::ProxyData & ProxyBase::getProxyData( void ) const
+inline const NEService::ProxyData & ProxyBase::getProxyData() const
 {
     return mProxyData;
 }
 
-inline NEService::ProxyData & ProxyBase::getProxyData( void )
+inline NEService::ProxyData & ProxyBase::getProxyData()
 {
     return mProxyData;
 }
@@ -1206,14 +1206,14 @@ inline void ProxyBase::setState( unsigned int msgId, NEService::eDataStateType n
     mProxyData.setDataState( msgId, newState );
 }
 
-inline DispatcherThread & ProxyBase::getProxyDispatcherThread( void ) const
+inline DispatcherThread & ProxyBase::getProxyDispatcherThread() const
 {
     return mDispatcherThread;
 }
 
 #ifdef DEBUG
 
-inline unsigned int ProxyBase::getListenerCount(void) const
+inline unsigned int ProxyBase::getListenerCount() const
 {
     return mListenerList.getSize();
 }

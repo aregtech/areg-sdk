@@ -68,7 +68,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~LogScope( void );
+    ~LogScope();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of the scope.
      **/
-    inline operator unsigned int ( void ) const;
+    inline operator unsigned int () const;
 
     /**
      * \brief   Writes the scope data into the stream.
@@ -143,22 +143,22 @@ public:
     /**
      * \brief   Returns the value of log message priority.
      **/
-    inline unsigned int getPriority( void ) const;
+    inline unsigned int getPriority() const;
 
     /**
      * \brief   Returns the ID of log scope.
      **/
-    inline unsigned int getScopeId( void ) const;
+    inline unsigned int getScopeId() const;
 
     /**
      * \brief   Returns the name of the log scope.
      **/
-    inline const String & getScopeName( void ) const;
+    inline const String & getScopeName() const;
 
     /**
      * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
      **/
-    inline uint32_t getSessionId(void) const;
+    inline uint32_t getSessionId() const;
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -198,17 +198,17 @@ private:
     /**
      * \brief   Increases the session ID and returns the value to use in log messages.
      **/
-    inline uint32_t nextSession(void) const;
+    inline uint32_t nextSession() const;
     /**
      * \brief   Returns LogScope object
      **/
-    inline LogScope & self( void );
+    inline LogScope & self();
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
 private:
-    LogScope( void ) = delete;
+    LogScope() = delete;
     DECLARE_NOCOPY_NOMOVE( LogScope );
 };
 
@@ -248,17 +248,17 @@ inline IEOutStream & operator << ( IEOutStream & stream, const LogScope & output
 // LogScope class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline uint32_t LogScope::nextSession(void) const
+inline uint32_t LogScope::nextSession() const
 {
     return mSessionId.fetch_add(1);
 }
 
-inline LogScope & LogScope::self( void )
+inline LogScope & LogScope::self()
 {
     return (*this);
 }
 
-inline LogScope::operator unsigned int ( void ) const
+inline LogScope::operator unsigned int () const
 {
     return mScopeId;
 }
@@ -298,22 +298,22 @@ void LogScope::removePriority( const String & remPrio )
     removePriority( NELogging::stringToLogPrio(remPrio) );
 }
 
-inline unsigned int LogScope::getPriority( void ) const
+inline unsigned int LogScope::getPriority() const
 {
     return mScopePrio;
 }
 
-inline unsigned int LogScope::getScopeId( void ) const
+inline unsigned int LogScope::getScopeId() const
 {
     return mScopeId;
 }
 
-inline const String & LogScope::getScopeName( void ) const
+inline const String & LogScope::getScopeName() const
 {
     return mScopeName;
 }
 
-inline uint32_t LogScope::getSessionId(void) const
+inline uint32_t LogScope::getSessionId() const
 {
     return mSessionId;
 }

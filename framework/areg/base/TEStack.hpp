@@ -100,7 +100,7 @@ protected:
     /**
      * \brief   Destructor. Public
      **/
-    ~TEStack( void );
+    ~TEStack();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -180,12 +180,12 @@ public:
     /**
      * \brief   Returns number of elements saved in stack.
      **/
-    inline uint32_t getSize( void ) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief   Returns true if Ring Stack is empty
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns true if specified position pointing start of the stack.
@@ -204,7 +204,7 @@ public:
     /**
      * \brief   Returns the invalid position of the stack.
      **/
-    STACKPOS invalidPosition( void ) const;
+    STACKPOS invalidPosition() const;
 
     /**
      * \brief   Returns true if the given position is valid, i.e. is not pointing the end of the stack.
@@ -246,7 +246,7 @@ public:
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::deque<VALUE>& getData(void) const;
+    inline const std::deque<VALUE>& getData() const;
 
 /************************************************************************/
 // Operations
@@ -255,17 +255,17 @@ public:
     /**
      * \brief   Removes all elements from stack and makes it empty.
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Delete extra entries in array.
      **/
-    inline void freeExtra( void );
+    inline void freeExtra();
 
     /**
      * \brief   Sets the size of array to zero and deletes all unused capacity of the string.
      */
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
@@ -273,14 +273,14 @@ public:
      *          the function will return immediately and thread will continue to run.
      * \return  Returns true if stack successfully locked
      **/
-    inline bool lock( void ) const;
+    inline bool lock() const;
 
     /**
      * \brief   If stack previously was locked by thread, it will unlock stack
      *          In case if NolockSyncObject is used, nothing will happen.
      * \return  Returns true if stack successfully unlocked
      **/
-    inline bool unlock( void ) const;
+    inline bool unlock() const;
 
     /**
      * \brief	Sets new size of stack. If needed, either increases or truncates
@@ -296,7 +296,7 @@ public:
      *          otherwise it may cause system crash.
      *          Check the size of stack before calling function.
      **/
-    inline const VALUE & firstEntry( void ) const;
+    inline const VALUE & firstEntry() const;
 
     /**
      * \brief   Returns first inserted element in the stack without changing stack.
@@ -304,7 +304,7 @@ public:
      *          otherwise it may cause system crash.
      *          Check the size of stack before calling function.
      **/
-    inline const VALUE & lastEntry( void ) const;
+    inline const VALUE & lastEntry() const;
 
     /**
      * \brief	Push new element at the end of stack.
@@ -329,7 +329,7 @@ public:
      *          Otherwise assertion is raised.
      * \return	Returns Element from stack.
      **/
-    inline VALUE popFirst( void );
+    inline VALUE popFirst();
 
     /**
      * \brief   Copies all elements from given source and returns the number of copied elements.
@@ -370,7 +370,7 @@ public:
     /**
      * \brief   Returns the first (head) position of the stack. Returns nullptr if empty.
      **/
-    inline STACKPOS firstPosition( void ) const;
+    inline STACKPOS firstPosition() const;
 
     /**
      * \brief   Return value at given position. The position should be valid.
@@ -432,7 +432,7 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TEStack( void ) = delete;
+    TEStack() = delete;
     TEStack( const TEStack<VALUE> & /* source */ ) = delete;
     TEStack( TEStack<VALUE> && /* source */ ) = delete;
 };
@@ -455,7 +455,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    TELockStack( void );
+    TELockStack();
 
     /**
      * \brief   Copies data from given source.
@@ -491,7 +491,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TELockStack( void ) = default;
+    ~TELockStack() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -558,7 +558,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    TENolockStack( void );
+    TENolockStack();
 
     /**
      * \brief   Copies data from given source.
@@ -594,7 +594,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TENolockStack( void ) = default;
+    ~TENolockStack() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -692,7 +692,7 @@ TEStack<VALUE>::TEStack(IEResourceLock& syncObject, const VALUE* list, uint32_t 
 }
 
 template <typename VALUE>
-TEStack<VALUE>::~TEStack( void )
+TEStack<VALUE>::~TEStack()
 {
     mSyncObject.lock();
     mValueList.clear();
@@ -744,14 +744,14 @@ inline bool TEStack<VALUE>::operator != (const TEStack<VALUE>& other) const
 }
 
 template <typename VALUE>
-inline uint32_t TEStack<VALUE>::getSize( void ) const
+inline uint32_t TEStack<VALUE>::getSize() const
 {
     Lock lock( mSyncObject );
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template <typename VALUE>
-inline bool TEStack<VALUE>::isEmpty( void ) const
+inline bool TEStack<VALUE>::isEmpty() const
 {
     Lock lock( mSyncObject );
     return mValueList.empty();
@@ -772,7 +772,7 @@ inline bool TEStack<VALUE>::isLastPosition(STACKPOS pos) const
 }
 
 template <typename VALUE>
-inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition(void) const
+inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition() const
 {
     Lock lock(mSyncObject);
     auto end = mValueList.end();
@@ -817,27 +817,27 @@ inline bool TEStack<VALUE>::contains(const VALUE& elemSearch, STACKPOS startAt) 
 }
 
 template<typename VALUE>
-inline const std::deque<VALUE>& TEStack<VALUE>::getData(void) const
+inline const std::deque<VALUE>& TEStack<VALUE>::getData() const
 {
     return mValueList;
 }
 
 template <typename VALUE>
-inline void TEStack<VALUE>::clear(void)
+inline void TEStack<VALUE>::clear()
 {
     Lock lock(mSyncObject);
     mValueList.clear();
 }
 
 template <typename VALUE>
-inline void TEStack<VALUE>::freeExtra(void)
+inline void TEStack<VALUE>::freeExtra()
 {
     Lock lock(mSyncObject);
     mValueList.shrink_to_fit();
 }
 
 template <typename VALUE>
-inline void TEStack<VALUE>::release(void)
+inline void TEStack<VALUE>::release()
 {
     Lock lock(mSyncObject);
     mValueList.clear();
@@ -845,13 +845,13 @@ inline void TEStack<VALUE>::release(void)
 }
 
 template <typename VALUE>
-inline bool TEStack<VALUE>::lock( void ) const
+inline bool TEStack<VALUE>::lock() const
 {
     return mSyncObject.lock(NECommon::WAIT_INFINITE);
 }
 
 template <typename VALUE>
-inline bool TEStack<VALUE>::unlock( void ) const
+inline bool TEStack<VALUE>::unlock() const
 {
     return mSyncObject.unlock();
 }
@@ -864,14 +864,14 @@ inline void TEStack< VALUE >::resize(uint32_t newSize)
 }
 
 template <typename VALUE>
-inline const VALUE & TEStack<VALUE>::firstEntry( void ) const
+inline const VALUE & TEStack<VALUE>::firstEntry() const
 {
     Lock lock(mSyncObject);
     return mValueList.front();
 }
 
 template <typename VALUE>
-inline const VALUE & TEStack<VALUE>::lastEntry( void ) const
+inline const VALUE & TEStack<VALUE>::lastEntry() const
 {
     Lock lock(mSyncObject);
     return mValueList.back();
@@ -930,7 +930,7 @@ inline uint32_t TEStack<VALUE>::pushFirst(VALUE && newElement)
 }
 
 template <typename VALUE>
-VALUE TEStack<VALUE>::popFirst( void )
+VALUE TEStack<VALUE>::popFirst()
 {
     Lock lock(mSyncObject);
 
@@ -956,7 +956,7 @@ inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::find(const VALUE & Valu
 }
 
 template <typename VALUE>
-inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::firstPosition( void ) const
+inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::firstPosition() const
 {
     Lock lock(mSyncObject);
     auto it = mValueList.begin();
@@ -1038,7 +1038,7 @@ inline TEStack<VALUE>& TEStack<VALUE>::sort(Compare comp)
 //////////////////////////////////////////////////////////////////////////
 
 template <typename VALUE>
-TELockStack<VALUE>::TELockStack( void )
+TELockStack<VALUE>::TELockStack()
     : TEStack<VALUE>(mLock)
     , mLock ( )
 {
@@ -1112,7 +1112,7 @@ inline TELockStack<VALUE>& TELockStack<VALUE>::operator = (TEStack<VALUE> && sou
 //////////////////////////////////////////////////////////////////////////
 
 template <typename VALUE>
-TENolockStack<VALUE>::TENolockStack( void )
+TENolockStack<VALUE>::TENolockStack()
     : TEStack<VALUE>(mNoLock)
     , mNoLock   ( )
 {

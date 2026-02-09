@@ -42,7 +42,7 @@ END_MODEL(_modelName)
 // main method
 //////////////////////////////////////////////////////////////////////////
 
-int main( void )
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.

@@ -110,7 +110,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~EventDataStream( void );
+    virtual ~EventDataStream();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -153,22 +153,22 @@ public:
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns true if buffer is saving for external data streaming.
      **/
-    inline bool isExternalDataStream( void ) const;
+    inline bool isExternalDataStream() const;
 
     /**
      * \brief   Returns reference to the streaming object to read data
      **/
-    inline const IEInStream & getStreamForRead( void ) const;
+    inline const IEInStream & getStreamForRead() const;
 
     /**
      * \brief   Returns reference to the streaming object to write data
      **/
-    inline IEOutStream & getStreamForWrite( void );
+    inline IEOutStream & getStreamForWrite();
 
 /************************************************************************/
 // IEInStream interface overrides
@@ -178,7 +178,7 @@ public:
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor( void ) const override;
+    virtual void resetCursor() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -266,7 +266,7 @@ protected:
      * \brief	Flushes cached data to output stream object.
      *          Implement the function is device has caching mechanism
      **/
-    virtual void flush( void ) override;
+    virtual void flush() override;
 
 protected:
     /**
@@ -276,7 +276,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const override;
+    virtual unsigned int getSizeReadable() const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -285,7 +285,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const override;
+    virtual unsigned int getSizeWritable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -328,22 +328,22 @@ IMPLEMENT_STREAMABLE(EventDataStream::eEventData)
 // EventDataStream inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool EventDataStream::isEmpty( void ) const
+inline bool EventDataStream::isEmpty() const
 {
     return (mDataBuffer.isEmpty() && mSharedList.isEmpty());
 }
 
-inline bool EventDataStream::isExternalDataStream( void ) const
+inline bool EventDataStream::isExternalDataStream() const
 {
     return (mEventDataType != EventDataStream::eEventData::EventDataInternal);
 }
 
-inline const IEInStream & EventDataStream::getStreamForRead( void ) const
+inline const IEInStream & EventDataStream::getStreamForRead() const
 {
     return static_cast<const IEInStream &>(*this);
 }
 
-inline IEOutStream & EventDataStream::getStreamForWrite( void )
+inline IEOutStream & EventDataStream::getStreamForWrite()
 {
     return static_cast<IEOutStream &>(*this);
 }

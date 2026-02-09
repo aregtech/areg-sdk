@@ -56,7 +56,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~ReadConverter( void ) = default;
+    ~ReadConverter() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -204,7 +204,7 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ReadConverter( void ) = delete;
+    ReadConverter() = delete;
     DECLARE_NOCOPY_NOMOVE( ReadConverter );
 };
 

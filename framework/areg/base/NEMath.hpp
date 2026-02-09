@@ -161,7 +161,7 @@ namespace NEMath
         /**
          * \brief   Default constructor
          **/
-        inline sLargeInteger( void );
+        inline sLargeInteger();
         /**
          * \brief   Constructor. Sets hight and low 32-bit values of Large Number structure
          * \param   hi      The high 32-bit integer value of Large Number
@@ -200,7 +200,7 @@ namespace NEMath
          *          integer value by copying hiBits value to high 32-bit
          *          and loBits value to low 32-bits value of 64-bit integer.
          **/
-        inline operator uint64_t ( void ) const;
+        inline operator uint64_t () const;
 
     /************************************************************************/
     // NEMath::sLargeInteger simple math operations
@@ -397,7 +397,7 @@ namespace NEMath
     /**
      * \brief	Return initial 32-bit value of Cyclic Redundancy Check (CRC)
      **/
-    AREG_API unsigned int crc32Init( void );
+    AREG_API unsigned int crc32Init();
 
     /**
      * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation.
@@ -576,7 +576,7 @@ inline unsigned int NEMath::getLowBits( const sLargeInteger &num )
 // NEMath::sLargeInteger inline functions implementation
 /************************************************************************/
 
-inline NEMath::sLargeInteger::sLargeInteger( void )
+inline NEMath::sLargeInteger::sLargeInteger()
     : hiBits ( 0 ), loBits ( 0 ) 
 {
 }
@@ -605,7 +605,7 @@ inline NEMath::sLargeInteger::sLargeInteger( NEMath::sLargeInteger && src ) noex
 {
 }
 
-inline NEMath::sLargeInteger::operator uint64_t ( void ) const
+inline NEMath::sLargeInteger::operator uint64_t () const
 {
     uLargeInteger li{ {hiBits, loBits} };
     return li.quadPart;

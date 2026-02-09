@@ -47,8 +47,8 @@ protected:
     /**
      * \brief   Protected default constructor.
      **/
-    IEQueueListener( void ) = default;
-    virtual ~IEQueueListener( void ) = default;
+    IEQueueListener() = default;
+    virtual ~IEQueueListener() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations.

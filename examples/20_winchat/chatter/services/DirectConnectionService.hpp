@@ -19,7 +19,7 @@ class DirectConnectionService   : public Component
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    static DirectConnectionService * GetService( void );
+    static DirectConnectionService * GetService();
 
     static NERegistry::Model GetModel( const String & nickName, uint32_t cookie, std::any data );
 
@@ -29,7 +29,7 @@ public:
 
 public:
     DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
-    virtual ~DirectConnectionService( void );
+    virtual ~DirectConnectionService();
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnection Interface Requests
@@ -72,7 +72,7 @@ protected:
     virtual void requestCloseConnection( const NEDirectConnection::sInitiator & initiator ) override;
 
 private:
-    inline DirectConnectionService & self( void );
+    inline DirectConnectionService & self();
 
     inline bool isInitiatorValid( const NEDirectConnection::sInitiator & initiator ) const;
 
@@ -87,7 +87,7 @@ private:
     uint32_t    mCookie;
 };
 
-inline DirectConnectionService & DirectConnectionService::self( void )
+inline DirectConnectionService & DirectConnectionService::self()
 {   return (*this);                             }
 
 inline void DirectConnectionService::SetOwnerData( const String & nickName, uint32_t cookie )

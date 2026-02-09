@@ -279,7 +279,7 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-FileBase::FileBase( void )
+FileBase::FileBase()
     : IEIOStream        ( )
     , IECursorPosition  ( )
 
@@ -526,7 +526,7 @@ unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillVal
     return result;
 }
 
-void FileBase::resetCursor(void) const
+void FileBase::resetCursor() const
 {
     setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
 }
@@ -686,7 +686,7 @@ unsigned int FileBase::searchText( unsigned int startPos, const WideString & tex
     return _searchText<wchar_t>( *this, startPos, text.getString( ), static_cast<uint32_t>(text.getLength( )), caseSensitive );
 }
 
-void FileBase::flush(void)
+void FileBase::flush()
 {
 }
 

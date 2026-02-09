@@ -86,7 +86,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~EventDispatcherBase( void );
+    virtual ~EventDispatcherBase();
 
 //////////////////////////////////////////////////////////////////////////
 // Public overrides
@@ -101,7 +101,7 @@ public:
      *          Otherwise return false.
      *          Override method if logic should be changed.
      **/
-    inline bool isReady( void ) const;
+    inline bool isReady() const;
 
     /**
      * \brief   Removes all internal events, removes all external events,
@@ -117,7 +117,7 @@ public:
     /**
      * \brief   Removes all events. Makes event queue empty
      **/
-    inline void removeAllEvents( void );
+    inline void removeAllEvents();
 
     /**
      * \brief   Removes specified event type from external event queue
@@ -144,18 +144,18 @@ public:
     /**
      * \brief   Call to start dispatcher. Returns true if successfully started.
      **/
-    virtual bool startDispatcher( void ) override;
+    virtual bool startDispatcher() override;
 
     /**
      * \brief   Call to stop running dispatcher.
      **/
-    virtual void stopDispatcher( void ) override;
+    virtual void stopDispatcher() override;
 
     /**
      * \brief   Called when dispatcher completed the job and exit.
      *          The cleanups should be done here.
      **/
-    virtual void exitDispatcher(void) override;
+    virtual void exitDispatcher() override;
 
     /**
      * \brief   Call to queue event object in the event queue of dispatcher.
@@ -269,20 +269,20 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void );
+    virtual bool runDispatcher();
 
     /**
      * \brief   Notifies exit event to shutdown dispatcher.
      *          No element will be removed.
      **/
-    virtual void shutdownDispatcher( void );
+    virtual void shutdownDispatcher();
 
     /**
      * \brief	Picks up single Event element from the event queue
      *          and forwards to be dispatched.
      * \return	Return pointer to event element to be dispatched.
      **/
-    virtual Event * pickEvent( void );
+    virtual Event * pickEvent();
 
     /**
      * \brief   Call if need to set exit event in the dispatcher
@@ -292,7 +292,7 @@ protected:
      *          is completed, the thread will complete job and exit.
      * \return  Returns true if could fire event.
      **/
-    virtual bool pulseExit( void );
+    virtual bool pulseExit();
 
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
@@ -360,7 +360,7 @@ private:
     /**
      * \brief   Returns reference to EventDispatcherBase object
      **/
-    inline EventDispatcherBase & self( void );
+    inline EventDispatcherBase & self();
     /**
      * \brief   Called when needs to make cleanup after Dispatcher completed job.
      *          This will remove Event Consumers.
@@ -371,7 +371,7 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    EventDispatcherBase( void ) = delete;
+    EventDispatcherBase() = delete;
     DECLARE_NOCOPY_NOMOVE( EventDispatcherBase );
 };
 
@@ -379,7 +379,7 @@ private:
 // EventDispatcherBase class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool EventDispatcherBase::isReady( void ) const
+inline bool EventDispatcherBase::isReady() const
 {
     return mHasStarted;
 }
@@ -392,7 +392,7 @@ inline void EventDispatcherBase::removeEvents(bool keepSpecials)
     mExternalEvents.unlockQueue();
 }
 
-inline void EventDispatcherBase::removeAllEvents(void)
+inline void EventDispatcherBase::removeAllEvents()
 {
     mExternalEvents.lockQueue();
     mInternalEvents.removeAllEvents( );
@@ -405,7 +405,7 @@ inline void EventDispatcherBase::removeExternalEventType( const RuntimeClassID &
     mExternalEvents.removeEvents(eventClassId);
 }
 
-inline EventDispatcherBase& EventDispatcherBase::self( void )
+inline EventDispatcherBase& EventDispatcherBase::self()
 {
     return (*this);
 }

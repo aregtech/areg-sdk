@@ -37,7 +37,7 @@ public:
 
     void OutputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, LPARAM data );
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
@@ -47,7 +47,7 @@ protected:
 
 public:
     afx_msg void OnClickedButtonBroadcast();
-    afx_msg void OnKickIdle( void );
+    afx_msg void OnKickIdle();
     afx_msg void OnBtnBroadcastUpdate( CCmdUI* pCmdUI );
     afx_msg void OnEditBroadcastUpdate( CCmdUI* pCmdUI );
     afx_msg LRESULT OnCmdRegistered( WPARAM wParam, LPARAM lParam );
@@ -56,7 +56,7 @@ public:
     afx_msg LRESULT OnCmdTypeMessage( WPARAM wParam, LPARAM lParam );
 
 private:
-    void setHeaders( void );
+    void setHeaders();
 
     // int findInTyping( LPCTSTR nickName );
 

@@ -31,7 +31,7 @@
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize( void )
+void Process::_osInitilize()
 {
     mProcessId = ::getpid( );
     mProcessHandle = static_cast<void *>(&mProcessId);

@@ -67,7 +67,7 @@ public:
      * \brief   Public destructor. The system synchronization objects are automatically closed
      *          and resources are freed when destructor is closed.
      **/
-    virtual ~IESyncObject( void );
+    virtual ~IESyncObject();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -76,7 +76,7 @@ public:
     /**
      * \brief   Converts Synchronization object instance to void pointer
      **/
-    inline operator SYNCHANDLE (void);
+    inline operator SYNCHANDLE ();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -86,17 +86,17 @@ public:
      * \brief   Returns the synchronization object
      *          Handle value.
      **/
-    inline SYNCHANDLE getHandle( void ) const;
+    inline SYNCHANDLE getHandle() const;
 
     /**
      * \brief   Returns type of synchronization object
      **/
-    inline IESyncObject::eSyncObject getObjectType( void ) const;
+    inline IESyncObject::eSyncObject getObjectType() const;
 
     /**
      * \brief   Returns true if a synchronization object is valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -120,7 +120,7 @@ public:
      * \brief   Unlocks / Release current thread ownership of synchronization object
      * \return  Returns true if thread ownership is successfully released.
      **/
-    virtual bool unlock( void );
+    virtual bool unlock();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations, private
@@ -129,7 +129,7 @@ private:
     /**
      * \brief   Destroys the synchronization object. Normally called in the destructor.
      **/
-    void _osDestroySyncObject( void );
+    void _osDestroySyncObject();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -149,7 +149,7 @@ protected:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IESyncObject( void ) = delete;
+    IESyncObject() = delete;
     DECLARE_NOCOPY_NOMOVE( IESyncObject );
 };
 
@@ -160,22 +160,22 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // IESyncObject class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline IESyncObject::operator SYNCHANDLE ( void )
+inline IESyncObject::operator SYNCHANDLE ()
 {
     return mSyncObject;
 }
 
-inline SYNCHANDLE IESyncObject::getHandle( void ) const
+inline SYNCHANDLE IESyncObject::getHandle() const
 {
     return mSyncObject;
 }
 
-inline IESyncObject::eSyncObject IESyncObject::getObjectType( void ) const
+inline IESyncObject::eSyncObject IESyncObject::getObjectType() const
 {
     return mSyncObjectType;
 }
 
-inline bool IESyncObject::isValid( void ) const
+inline bool IESyncObject::isValid() const
 {
     return (mSyncObjectType == IESyncObject::eSyncObject::SoNolock) || (mSyncObject != nullptr);
 }

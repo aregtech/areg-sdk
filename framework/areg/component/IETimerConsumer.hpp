@@ -59,11 +59,11 @@ protected:
     /**
      * \brief   Constructor
      **/
-    IETimerConsumer( void ) = default;
+    IETimerConsumer() = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IETimerConsumer( void ) = default;
+    virtual ~IETimerConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

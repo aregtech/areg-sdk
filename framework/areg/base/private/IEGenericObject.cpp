@@ -21,7 +21,7 @@
 // IEGenericObject interface, constructor / destructor
 ////////////////////////////////////////////////////////////////////////
 
-IEGenericObject::IEGenericObject( void )
+IEGenericObject::IEGenericObject()
     : mObjData  (nullptr)
 {
 }

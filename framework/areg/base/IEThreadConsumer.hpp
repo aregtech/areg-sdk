@@ -69,12 +69,12 @@ protected:
     /**
      * \brief   Protected default constructor
      **/
-    IEThreadConsumer( void ) = default;
+    IEThreadConsumer() = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEThreadConsumer( void ) = default;
+    virtual ~IEThreadConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Callbacks
@@ -91,7 +91,7 @@ public:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void ) = 0;
+    virtual void onThreadRuns() = 0;
 
     /**
      * \brief	Function triggered with thread object has been created.
@@ -107,14 +107,14 @@ public:
      *          This method might be called by system when it is going to shut down.
      *          Implement mechanism to exit thread here.
      **/
-    virtual void onThreadUnregistering( void );
+    virtual void onThreadUnregistering();
 
     /**
      * \brief   Function is called from Thread object when it is going to exit.
      *          This method is triggered after exiting from Run() function.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit( void );
+    virtual int onThreadExit();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

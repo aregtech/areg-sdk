@@ -66,7 +66,7 @@ protected:
      *          Request to assign an ID to the client used to call unblock request.
      * \see     responseIdentifier
      **/
-    virtual void requestIdentifier( void ) override;
+    virtual void requestIdentifier() override;
 
     /**
      * \brief   Request call.
@@ -88,7 +88,7 @@ protected:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceComponent & self (void)
+    inline ServiceComponent & self ()
     {
         return (*this);
     }
@@ -108,6 +108,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceComponent( void ) = delete;
+    ServiceComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceComponent );
 };

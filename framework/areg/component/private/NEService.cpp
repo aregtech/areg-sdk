@@ -36,7 +36,7 @@ NEService::StateArray::StateArray( unsigned char* thisBuffer, int elemCount )
     resetStates();
 }
 
-NEService::StateArray::~StateArray(void)
+NEService::StateArray::~StateArray()
 {
     if (mExternal)
     {
@@ -69,7 +69,7 @@ NEService::ParameterArray::ParameterArray( NEService::ParameterArray && src ) no
     src.mParamList = nullptr;
 }
 
-NEService::ParameterArray::~ParameterArray( void )
+NEService::ParameterArray::~ParameterArray()
 {
     if (mParamList != nullptr)
     {
@@ -188,7 +188,7 @@ NEService::ProxyData::ProxyData( const NEService::SInterfaceData& ifData )
     resetStates(); 
 }
 
-void NEService::ProxyData::resetStates( void )
+void NEService::ProxyData::resetStates()
 {
     mImplVersion    = NEService::eDataStateType::DataIsUnavailable;
     mAttrState.resetStates();
@@ -239,7 +239,7 @@ unsigned int NEService::ProxyData::getResponseId( unsigned int requestId ) const
 
 AREG_API_IMPL const Version NEService::EmptyServiceVersion (1, 0, 0);
 
-AREG_API_IMPL NEService::SInterfaceData & NEService::getEmptyInterface(void)
+AREG_API_IMPL NEService::SInterfaceData & NEService::getEmptyInterface()
 {
     /**
      * \brief   System Service Interface data

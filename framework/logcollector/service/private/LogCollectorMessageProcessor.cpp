@@ -197,7 +197,7 @@ void LogCollectorMessageProcessor::logSourceConfigurationSaved(const RemoteMessa
 }
 #endif  // DEBUG
 
-void LogCollectorMessageProcessor::processNextSaveConfig(void)
+void LogCollectorMessageProcessor::processNextSaveConfig()
 {
     mLoggerService.mSaveTimer.stopTimer();
     mPendingSave = NEService::COOKIE_UNKNOWN;

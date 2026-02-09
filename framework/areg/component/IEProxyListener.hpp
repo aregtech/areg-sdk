@@ -41,13 +41,13 @@ public:
     /**
      * \brief   Protected default constructor.
      **/
-    IEProxyListener( void ) = default;
+    IEProxyListener() = default;
 
 public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEProxyListener( void ) = default;
+    virtual ~IEProxyListener() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations

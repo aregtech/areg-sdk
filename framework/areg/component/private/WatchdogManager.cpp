@@ -32,13 +32,13 @@ DEF_LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 // Static functions
 //////////////////////////////////////////////////////////////////////////
 
-WatchdogManager& WatchdogManager::getInstance(void)
+WatchdogManager& WatchdogManager::getInstance()
 {
     static WatchdogManager	_theWatchdogManager;
     return _theWatchdogManager;
 }
 
-bool WatchdogManager::startWatchdogManager(void)
+bool WatchdogManager::startWatchdogManager()
 {
     return getInstance().startTimerManagerThread();
 }
@@ -48,12 +48,12 @@ void WatchdogManager::stopWatchdogManager(bool waitComplete)
     return getInstance().stopTimerManagerThread(waitComplete);
 }
 
-void WatchdogManager::waitWatchdogManager(void)
+void WatchdogManager::waitWatchdogManager()
 {
     return getInstance().waitCompletion();
 }
 
-bool WatchdogManager::isWatchdogManagerStarted(void)
+bool WatchdogManager::isWatchdogManagerStarted()
 {
     return getInstance().isReady();
 }
@@ -85,14 +85,14 @@ void WatchdogManager::stopTimer(Watchdog& watchdog)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-WatchdogManager::WatchdogManager(void)
+WatchdogManager::WatchdogManager()
     : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME)
 
     , mWatchdogResource()
 {
 }
 
-WatchdogManager::~WatchdogManager(void)
+WatchdogManager::~WatchdogManager()
 {
     _removeAllWatchdogs();
 }
@@ -112,7 +112,7 @@ inline void WatchdogManager::_unregisterWatchdog(Watchdog& watchdog)
     WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
 }
 
-void WatchdogManager::_removeAllWatchdogs(void)
+void WatchdogManager::_removeAllWatchdogs()
 {
     mWatchdogResource.lock();
 

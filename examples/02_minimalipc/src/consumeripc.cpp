@@ -47,7 +47,7 @@ protected:
     }
 
     //!< The response from Service Provider
-    virtual void responseHelloService(void) override
+    virtual void responseHelloService() override
     {
         std::cout << "\'Good bye Service!\'" << std::endl;
         Application::signalAppQuit();   // quit application is if received response
@@ -71,7 +71,7 @@ END_MODEL("ConsumerModel")
 //////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
-int main(void)
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     Application::initApplication();

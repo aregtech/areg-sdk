@@ -56,8 +56,8 @@ class LOGGER_API LogObserverBase
 // Protected constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    LogObserverBase(void);
-    virtual ~LogObserverBase(void);
+    LogObserverBase();
+    virtual ~LogObserverBase();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -79,7 +79,7 @@ public:
     /**
      * \brief   Releases the log observer and disconnects from log collector.
      **/
-    void release(void);
+    void release();
 
     /**
      * \brief   Connects to the log collector service.
@@ -101,26 +101,26 @@ public:
      *          The method is called to disconnect from the log collector service.
      *          The method does not close the database. To close the database, use `stop()` method.
      **/
-    void disconnect(void);
+    void disconnect();
 
     /**
      * \brief   Pauses the log observer. The log observer remains connected, but no logs are written.
      *          If log observer is resume, the logs are written in the same database file.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool pause(void);
+    bool pause();
 
     /**
      * \brief   Resumes paused log observer, continues receiving logs. The logs are written in the same database file.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool resume(void);
+    bool resume();
 
     /**
      * \brief   Stops the log observer, disconnects from log collector service and closes the database file.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool stop(void);
+    bool stop();
 
     /**
      * \brief   Restarts the log observer, establishes the connection with the log collector service using existing connection information
@@ -135,47 +135,47 @@ public:
     /**
      * \brief   Returns true if the log observer is initialized.
      **/
-    bool isInitialized(void) const;
+    bool isInitialized() const;
 
     /**
      * \brief   Returns true if the log observer is connected to the log collector service.
      **/
-    bool isConnected(void) const;
+    bool isConnected() const;
 
     /**
      * \brief   Returns true if the log observer is fully operable, and is able to collect and write logs.
      **/
-    bool isStated(void) const;
+    bool isStated() const;
 
     /**
      * \brief   Returns the address of the log collector service.
      **/
-    const NESocket::SocketAddress & getLoggerAddress(void) const;
+    const NESocket::SocketAddress & getLoggerAddress() const;
 
     /**
      * \brief   Returns the IP address of the log collector service.
      **/
-    const std::string& getLoggerIpAddress(void) const;
+    const std::string& getLoggerIpAddress() const;
 
     /**
      * \brief   Return the host name or IP address of the log collector service.
      **/
-    const std::string& getLoggerHostName(void) const;
+    const std::string& getLoggerHostName() const;
 
     /**
      * \brief   Returns the TCP port number to connect to the log collector service.
      **/
-    uint16_t getLoggerPort(void) const;
+    uint16_t getLoggerPort() const;
 
     /**
      * \brief   Return the logging state set in the configuration.
      **/
-    bool getConfigLoggerEnabled(void) const;
+    bool getConfigLoggerEnabled() const;
 
     /**
      * \brief   Return the IP address of log collector service set in the configuration.
      **/
-    std::string getConfigLoggerAddress(void) const;
+    std::string getConfigLoggerAddress() const;
 
     /**
      * \brief   Sets the IP address of the log collector service in the configuration.
@@ -186,7 +186,7 @@ public:
     /**
      * \brief   Return the TCP port number of log collector service set in the configuration.
      **/
-    uint16_t getConfigLoggerPort(void) const;
+    uint16_t getConfigLoggerPort() const;
 
     /**
      * \brief   Sets the TCP port number of the log collector service in the configuration.
@@ -204,7 +204,7 @@ public:
     /**
      * \brief   Returns the database path name set in the configuration.
      **/
-    std::string getConfigLoggerDatabase(void) const;
+    std::string getConfigLoggerDatabase() const;
 
     /**
      * \brief   Sets the database path name in the configuration.
@@ -217,7 +217,7 @@ public:
      * \brief   Returns the log database file location directory name.
      *          The path may contain mask like `log_%time%`.
      **/
-    std::string getConfigLoggerDatabaseLocation(void) const;
+    std::string getConfigLoggerDatabaseLocation() const;
 
     /**
      * \brief   Sets the log database file location directory name.
@@ -230,7 +230,7 @@ public:
      * \brief   Returns the name of the database file.
      *          The name may contain mask like `log_%time%.sqlog`.
      **/
-    std::string getConfigLoggerDatabaseName(void) const;
+    std::string getConfigLoggerDatabaseName() const;
 
     /**
      * \brief   Sets the name of the database file.
@@ -242,14 +242,14 @@ public:
     /**
      * \brief   Returns the path of the currently active logging database. The returned path cannot contain mask.
      **/
-    std::string getActiveDatabasePath(void) const;
+    std::string getActiveDatabasePath() const;
 
     /**
      * \brief   Returns the path of the database set during initialization.
      *          The path may contain mask like `log_%time%.sqlog`.
      * \return  Returns the path of the database set during initialization.
      **/
-    std::string getInitDatabasePath(void) const;
+    std::string getInitDatabasePath() const;
 
     /**
      * \brief   Call to query and get list of names of connected instances from log database.
@@ -343,7 +343,7 @@ public:
      * \brief   Requests the list of connected instances that make logs.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool requestInstances(void);
+    bool requestInstances();
 
     /**
      * \brief   Requests the list of registered scopes of the specified connected instance.
@@ -380,7 +380,7 @@ public:
     /**
      * \brief   Saves the configuration of the log observer in the configuration file.
      **/
-    void saveLoggerConfig(void);
+    void saveLoggerConfig();
 
 //////////////////////////////////////////////////////////////////////////
 // Protected Overrides / Callbacks
@@ -436,7 +436,7 @@ protected:
     /**
      * \brief   The callback of the event triggered when fails to send or receive message.
      **/
-    virtual void onLogMessagingFailed(void) = 0;
+    virtual void onLogMessagingFailed() = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
@@ -454,7 +454,7 @@ protected:
     /**
      * \brief   The callback of the event triggered when connection with the log collector service is lost.
      **/
-    virtual void onLogServiceDisconnected(void) = 0;
+    virtual void onLogServiceDisconnected() = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.

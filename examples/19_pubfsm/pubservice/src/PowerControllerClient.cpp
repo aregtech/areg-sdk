@@ -47,7 +47,7 @@ void PowerControllerClient::responseStopTrafficLight(bool Success)
     LOG_DBG("[ %s ] to stop the traffic light controller", Success ? "SUCCEEDED" : "FAILED");
 }
 
-void PowerControllerClient::onThreadRuns(void)
+void PowerControllerClient::onThreadRuns()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 

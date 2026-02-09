@@ -37,7 +37,7 @@ constexpr std::string_view   INVALID_THREAD_NAME     { "INVALID_THREAD_NAME" };
 // ThreadAddress
 /************************************************************************/
 
-const ThreadAddress & ThreadAddress::getInvalidThreadAddress(void)
+const ThreadAddress & ThreadAddress::getInvalidThreadAddress()
 {
     static const ThreadAddress _invalidAddress;
     return _invalidAddress;
@@ -46,7 +46,7 @@ const ThreadAddress & ThreadAddress::getInvalidThreadAddress(void)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ThreadAddress::ThreadAddress( void )
+ThreadAddress::ThreadAddress()
     : mThreadName   ( INVALID_THREAD_NAME )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
@@ -87,7 +87,7 @@ ThreadAddress::ThreadAddress( const IEInStream & stream )
     mMagicNum    = ThreadAddress::_magicNumber(*this);
 }
 
-bool ThreadAddress::isValid( void ) const
+bool ThreadAddress::isValid() const
 {
     return (mMagicNum != NEMath::CHECKSUM_IGNORE);
 }

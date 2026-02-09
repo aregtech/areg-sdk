@@ -29,7 +29,7 @@
 /**
  * \brief   Invalid client info object
  **/
-const ClientInfo & ClientInfo::getInvalidClientInfo( void )
+const ClientInfo & ClientInfo::getInvalidClientInfo()
 {
     static const ClientInfo _invalidClientInfo;
     return _invalidClientInfo;
@@ -39,7 +39,7 @@ const ClientInfo & ClientInfo::getInvalidClientInfo( void )
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-ClientInfo::ClientInfo( void )
+ClientInfo::ClientInfo()
     : mClientAddress( )
     , mClientState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
@@ -135,7 +135,7 @@ void ClientInfo::setConnectionStatus( NEService::eServiceConnection newConnectio
     }
 }
 
-ClientInfo::operator unsigned int (void) const
+ClientInfo::operator unsigned int () const
 {
     const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mClientAddress);
     return static_cast<unsigned int>( addrService );

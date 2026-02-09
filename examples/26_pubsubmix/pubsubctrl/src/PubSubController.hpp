@@ -90,7 +90,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    virtual void onThreadRuns() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -101,7 +101,7 @@ private:
     inline void printMessage(const String & message, eCommands cmd);
 
     //! Wrapper of the this pointer
-    inline PubSubController & self(void);
+    inline PubSubController & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -114,6 +114,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PubSubController(void) = delete;
+    PubSubController() = delete;
     DECLARE_NOCOPY_NOMOVE(PubSubController);
 };

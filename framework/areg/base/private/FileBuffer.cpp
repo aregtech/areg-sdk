@@ -65,7 +65,7 @@ inline void FileBuffer::_setName(const char* name)
     FileBase::normalizeName(mFileName);
 }
 
-bool FileBuffer::open( void )
+bool FileBuffer::open()
 {
     if ((isOpened() == false) && (mFileMode != FileBase::FO_MODE_INVALID))
     {
@@ -106,7 +106,7 @@ bool FileBuffer::open(const String& fileName, unsigned int mode)
     return result;
 }
 
-void FileBuffer::close( void )
+void FileBuffer::close()
 {
     // keep file name and mode that it can be again reopened.
     // remove 'attached' flag, since the buffer is not valid any mode
@@ -126,7 +126,7 @@ unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
     return result;
 }
 
-unsigned int FileBuffer::getSizeReadable( void ) const
+unsigned int FileBuffer::getSizeReadable() const
 {
     return (isOpened() ? mSharedBuffer.getSizeReadable() : 0);
 }
@@ -143,12 +143,12 @@ unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int FileBuffer::getSizeWritable( void ) const
+unsigned int FileBuffer::getSizeWritable() const
 {
     return (isOpened() ? mSharedBuffer.getSizeWritable() : 0);
 }
 
-bool FileBuffer::remove( void )
+bool FileBuffer::remove()
 {
     mSharedBuffer.invalidate();
 
@@ -159,7 +159,7 @@ bool FileBuffer::remove( void )
     return true;
 }
 
-unsigned int FileBuffer::getLength( void ) const
+unsigned int FileBuffer::getLength() const
 {
     return (isOpened() ? mSharedBuffer.getSizeUsed() : NEMemory::INVALID_SIZE);
 }
@@ -174,7 +174,7 @@ unsigned int FileBuffer::reserve(unsigned int newSize)
     return (isOpened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
 }
 
-bool FileBuffer::truncate( void )
+bool FileBuffer::truncate()
 {
     bool result = false;
     if (isOpened() && canWrite())
@@ -194,7 +194,7 @@ unsigned int FileBuffer::setPosition( int offset, IECursorPosition::eCursorPosit
     return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
-unsigned int FileBuffer::getPosition( void ) const
+unsigned int FileBuffer::getPosition() const
 {
     return (isOpened() ? mSharedBuffer.getPosition() : IECursorPosition::INVALID_CURSOR_POSITION);
 }

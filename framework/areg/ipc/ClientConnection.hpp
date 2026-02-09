@@ -44,7 +44,7 @@ public:
      * \brief   Creates instance with invalid socket object. Before sending
      *          or receiving data, the socket should be created and connected to remote host.
      **/
-    ClientConnection( void );
+    ClientConnection();
 
     /**
      * \brief   Creates instance of object with invalid socket object. Before sending
@@ -69,7 +69,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ClientConnection( void ) = default;
+    virtual ~ClientConnection() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -81,7 +81,7 @@ public:
      *          Cookie is checked when sending or receiving data as
      *          source or target in Remote Buffer.
      **/
-    const ITEM_ID & getCookie( void ) const;
+    const ITEM_ID & getCookie() const;
 
     /**
      * \brief   Sets cookie of client connection set by server
@@ -93,7 +93,7 @@ public:
     /**
      * \brief   Return Socket Address object.
      **/
-    const NESocket::SocketAddress & getAddress( void ) const;
+    const NESocket::SocketAddress & getAddress() const;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will 
@@ -119,12 +119,12 @@ public:
      * \brief   Returns true if existing socket descriptor is valid.
      *          The function is not checking socket descriptor validation.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief   Returns the socket object.
      **/
-    Socket & getSocket( void );
+    Socket & getSocket();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -147,13 +147,13 @@ public:
      *          and port number should be already set in socket address.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( void );
+    bool createSocket();
 
     /**
      * \brief   Closes existing socket.
      *          The call will disconnect from remote server.
      **/
-    void closeSocket( void );
+    void closeSocket();
 
 public:
     /**
@@ -197,13 +197,13 @@ public:
      * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
      * \return  Returns true if operation succeeds.
      **/
-    bool disableSend( void );
+    bool disableSend();
 
     /**
      * \brief   Sets socket in write-only more, i.e. no receive message is possible anymore.
      * \return  Returns true if operation succeeds.
      **/
-    bool disableReceive( void );
+    bool disableReceive();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -230,7 +230,7 @@ private:
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & ClientConnection::getCookie( void ) const
+inline const ITEM_ID & ClientConnection::getCookie() const
 {
     return mCookie;
 }
@@ -240,7 +240,7 @@ inline void ClientConnection::setCookie(const ITEM_ID & newCookie )
     mCookie = newCookie;
 }
 
-inline const NESocket::SocketAddress & ClientConnection::getAddress( void ) const
+inline const NESocket::SocketAddress & ClientConnection::getAddress() const
 {
     return mClientSocket.getAddress();
 }
@@ -255,22 +255,22 @@ inline void ClientConnection::setAddress( const NESocket::SocketAddress & newAdd
     mClientSocket.setAddress(newAddress);
 }
 
-inline bool ClientConnection::isValid( void ) const
+inline bool ClientConnection::isValid() const
 {
     return mClientSocket.isValid();
 }
 
-inline bool ClientConnection::disableSend( void )
+inline bool ClientConnection::disableSend()
 {
     return mClientSocket.disableSend( );
 }
 
-inline bool ClientConnection::disableReceive( void )
+inline bool ClientConnection::disableReceive()
 {
     return mClientSocket.disableReceive();
 }
 
-inline Socket & ClientConnection::getSocket( void )
+inline Socket & ClientConnection::getSocket()
 {
     return mClientSocket;
 }

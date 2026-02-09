@@ -29,14 +29,14 @@ public:
     {   }
 
     //!< The request method of the HelloService Interface
-    virtual void requestHelloService(void) override
+    virtual void requestHelloService() override
     {
         std::cout << "\'Hello Service!\'" << std::endl;
         Application::signalAppQuit();   // quit application is if received response
     }
 
 private:
-    inline ServiceProvider& self(void)
+    inline ServiceProvider& self()
     {   return (*this); }
 };
 
@@ -85,7 +85,7 @@ BEGIN_MODEL("ServiceModel")
 END_MODEL("ServiceModel")
 
 //!< main function
-int main(void)
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     Application::initApplication();

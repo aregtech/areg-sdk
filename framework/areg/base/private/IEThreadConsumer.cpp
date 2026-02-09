@@ -24,12 +24,12 @@ bool IEThreadConsumer::onThreadRegistered(Thread * /*threadObj*/)
     return true;
 }
 
-void IEThreadConsumer::onThreadUnregistering(void)
+void IEThreadConsumer::onThreadUnregistering()
 {
 
 }
 
-int IEThreadConsumer::onThreadExit(void)
+int IEThreadConsumer::onThreadExit()
 {
     return static_cast<int>(IEThreadConsumer::eExitCodes::ExitNormal);
 }

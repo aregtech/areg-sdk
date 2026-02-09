@@ -32,13 +32,13 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The wrapper of this pointer.
-    inline ServiceComponent & self( void )
+    inline ServiceComponent & self()
     {   return (*this); }
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceComponent( void ) = delete;
+    ServiceComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceComponent );
 };

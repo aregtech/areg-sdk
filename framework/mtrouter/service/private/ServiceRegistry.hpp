@@ -57,11 +57,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    ServiceRegistry( void ) = default;
+    ServiceRegistry() = default;
     /**
      * \brief   Destructor
      **/
-    ~ServiceRegistry( void ) = default;
+    ~ServiceRegistry() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

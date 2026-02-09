@@ -79,7 +79,7 @@ public:
     /**
      * \brief   Default constructor creates empty string.
      **/
-    inline TEString( void );
+    inline TEString();
 
     /**
      * \brief   Sets the char to string.
@@ -122,7 +122,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TEString( void ) = default;
+    ~TEString() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // operators
@@ -131,7 +131,7 @@ public:
     /**
      * \brief   Converting operator, converts object to string buffer
      **/
-    inline operator const CharType* (void) const;
+    inline operator const CharType* () const;
 
     /**
      * \brief   Returns character at the given valid position. The position should not be
@@ -305,14 +305,14 @@ public:
     /**
      * \brief   Returns true if string is contains only letters and numbers. No symbols or other controls are allowed.
      **/
-    inline bool isAlphanumeric(void) const;
+    inline bool isAlphanumeric() const;
 
     /**
      * \brief   Returns true if string is valid for name.
      *          The name is valid if it contains letters, numbers and following symbols {'_'}.
      *          All other symbols are rejected.
      **/
-    inline bool isValidName(void) const;
+    inline bool isValidName() const;
 
     /**
      * \brief   Returns true if the passed character is valid for the name.
@@ -322,22 +322,22 @@ public:
     /**
      * \brief   Returns true if string is empty
      **/
-    inline bool isEmpty(void) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns the length of the string.
      **/
-    inline NEString::CharCount getLength(void) const;
+    inline NEString::CharCount getLength() const;
 
     /**
      * \brief   Returns the number of characters that can store in the string.
      **/
-    inline NEString::CharCount getCapacity(void) const;
+    inline NEString::CharCount getCapacity() const;
 
     /**
      * \brief   Return the size of string in bytes including the end of the string character.
      **/
-    inline uint32_t getSpace( void ) const;
+    inline uint32_t getSpace() const;
 
     /**
      * \brief   Returns string buffer starting at specified valid position.
@@ -352,12 +352,12 @@ public:
     /**
      * \brief   Returns the buffer of string.
      **/
-    inline const CharType* getString(void) const;
+    inline const CharType* getString() const;
 
     /**
      * \brief   Returns the string object.
      **/
-    inline const std::basic_string<CharType>& getData(void) const;
+    inline const std::basic_string<CharType>& getData() const;
 
     /**
      * \brief   Returns true if specified character position is valid in the string.
@@ -392,17 +392,17 @@ public:
     /**
      * \brief   Clears the string, makes it empty and invalid.
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Delete unused space in the string.
      **/
-    inline void freeExtra(void);
+    inline void freeExtra();
 
     /**
      * \brief   Sets the size of string to zero and deletes the space.
      */
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief   Searches the whole word in the string at specified 'startAt' position.
@@ -939,7 +939,7 @@ public:
      * \brief   Removes whitespace characters from left side, i.e. from the begin of the string
      *          and returns the actual modified string.
      **/
-    inline TEString<CharType>& trimLeft( void );
+    inline TEString<CharType>& trimLeft();
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the begin of the string.
@@ -954,7 +954,7 @@ public:
      * \brief   Removes whitespace characters from right side, i.e. from end of the string
      *          and returns the actual modified string.
      **/
-    inline TEString<CharType>& trimRight( void );
+    inline TEString<CharType>& trimRight();
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the end of the string.
@@ -969,7 +969,7 @@ public:
      * \brief   Removes whitespace characters from left and right sides, i.e. from the begin and end of the string
      *          and returns the actual modified string.
      **/
-    TEString<CharType>& trimAll( void );
+    TEString<CharType>& trimAll();
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the begin and end of the string.
@@ -983,12 +983,12 @@ public:
     /**
      * \brief   Converts the string, makes all letters to lower case and returns the instance of converted string.
      **/
-    inline TEString<CharType> & makeLower( void );
+    inline TEString<CharType> & makeLower();
 
     /**
      * \brief   Converts the string, makes all letters to upper case and returns the instance of converted string.
      **/
-    inline TEString<CharType> & makeUpper( void );
+    inline TEString<CharType> & makeUpper();
 
     /**
      * \brief   Reads the string starting from specified position until end of line,
@@ -1007,7 +1007,7 @@ public:
      * \brief   In the existing string removes all characters, which are not alphanumeric.
      * \return  Returns new length of string after making alphanumeric
      **/
-    inline TEString<CharType>& makeAlphanumeric( void );
+    inline TEString<CharType>& makeAlphanumeric();
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
@@ -1246,7 +1246,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
-inline TEString<CharType>::TEString(void)
+inline TEString<CharType>::TEString()
     : mData  (&EmptyChar)
 {
 }
@@ -1307,7 +1307,7 @@ inline TEString<CharType>::TEString(uint32_t count)
 }
 
 template<typename CharType>
-inline TEString<CharType>::operator const CharType* (void) const
+inline TEString<CharType>::operator const CharType* () const
 {
     return mData.c_str();
 }
@@ -1622,7 +1622,7 @@ inline bool TEString<CharType>::isNumeric(bool signIgnore /*= true*/) const
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::isAlphanumeric(void) const
+inline bool TEString<CharType>::isAlphanumeric() const
 {
     const CharType* src = mData.c_str();
     while (std::isalnum(static_cast<int>(*src)) != 0)
@@ -1640,7 +1640,7 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar) const
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::isValidName(void) const
+inline bool TEString<CharType>::isValidName() const
 {
     if (mData.empty())
         return false;
@@ -1653,25 +1653,25 @@ inline bool TEString<CharType>::isValidName(void) const
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::isEmpty(void) const
+inline bool TEString<CharType>::isEmpty() const
 {
     return mData.empty();
 }
 
 template<typename CharType>
-inline NEString::CharCount TEString<CharType>::getLength(void) const
+inline NEString::CharCount TEString<CharType>::getLength() const
 {
     return static_cast<NEString::CharCount>(mData.length());
 }
 
 template<typename CharType>
-inline NEString::CharCount TEString<CharType>::getCapacity(void) const
+inline NEString::CharCount TEString<CharType>::getCapacity() const
 {
     return static_cast<NEString::CharCount>(mData.capacity());
 }
 
 template<typename CharType>
-inline uint32_t TEString<CharType>::getSpace(void) const
+inline uint32_t TEString<CharType>::getSpace() const
 {
     return static_cast<uint32_t>((mData.length() + 1) * sizeof(CharType));
 }
@@ -1693,13 +1693,13 @@ inline CharType* TEString<CharType>::getBuffer(NEString::CharPos startAt /*= NES
 }
 
 template<typename CharType>
-inline const CharType* TEString<CharType>::getString(void) const
+inline const CharType* TEString<CharType>::getString() const
 {
     return mData.c_str();
 }
 
 template<typename CharType>
-inline const std::basic_string<CharType>& TEString<CharType>::getData(void) const
+inline const std::basic_string<CharType>& TEString<CharType>::getData() const
 {
     return mData;
 }
@@ -1729,19 +1729,19 @@ inline bool TEString<CharType>::isFirstPosition(NEString::CharPos pos) const
 }
 
 template<typename CharType>
-inline void TEString<CharType>::clear(void)
+inline void TEString<CharType>::clear()
 {
     mData.clear();
 }
 
 template<typename CharType>
-inline void TEString<CharType>::freeExtra(void)
+inline void TEString<CharType>::freeExtra()
 {
     mData.shrink_to_fit();
 }
 
 template<typename CharType>
-inline void TEString<CharType>::release(void)
+inline void TEString<CharType>::release()
 {
     mData.clear();
     mData.shrink_to_fit();
@@ -2594,7 +2594,7 @@ inline TEString<CharType>& TEString<CharType>::setAt(CharType ch, NEString::Char
 }
 
 template<typename CharType>
-inline TEString<CharType>& TEString<CharType>::trimLeft(void)
+inline TEString<CharType>& TEString<CharType>::trimLeft()
 {
     if (mData.empty() == false)
     {
@@ -2645,7 +2645,7 @@ inline void TEString<CharType>::trimLeft(std::basic_string<CharType>& OUT strRes
 }
 
 template<typename CharType>
-inline TEString<CharType>& TEString<CharType>::trimRight(void)
+inline TEString<CharType>& TEString<CharType>::trimRight()
 {
     if (mData.empty() == false)
     {
@@ -2697,7 +2697,7 @@ inline void TEString<CharType>::trimRight(std::basic_string<CharType>& OUT strRe
 }
 
 template<typename CharType>
-inline TEString<CharType>& TEString<CharType>::trimAll(void)
+inline TEString<CharType>& TEString<CharType>::trimAll()
 {
     if (mData.empty() == false)
     {
@@ -2778,7 +2778,7 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
 }
 
 template<typename CharType>
-inline TEString<CharType> & TEString<CharType>::makeLower( void )
+inline TEString<CharType> & TEString<CharType>::makeLower()
 {
     for (CharType * src = mData.data(); *src != TEString<CharType>::EmptyChar; ++src)
     {
@@ -2789,7 +2789,7 @@ inline TEString<CharType> & TEString<CharType>::makeLower( void )
 }
 
 template<typename CharType>
-inline TEString<CharType> & TEString<CharType>::makeUpper( void )
+inline TEString<CharType> & TEString<CharType>::makeUpper()
 {
     for (CharType * src = mData.data(); *src != TEString<CharType>::EmptyChar; ++src)
     {
@@ -2845,7 +2845,7 @@ NEString::CharPos TEString<CharType>::readLine(std::basic_string<CharType>& OUT 
 }
 
 template<typename CharType>
-inline TEString<CharType>& TEString<CharType>::makeAlphanumeric(void)
+inline TEString<CharType>& TEString<CharType>::makeAlphanumeric()
 {
     if (mData.empty() == false)
     {

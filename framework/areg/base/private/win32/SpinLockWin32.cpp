@@ -30,19 +30,19 @@
 //////////////////////////////////////////////////////////////////////////
 
 
-SpinLockWin32::SpinLockWin32( void )
+SpinLockWin32::SpinLockWin32()
     : mSpinLock     ( )
     , mOwnerThread  ( 0 )
     , mLockCount    ( 0 )
 {
 }
 
-SpinLockWin32::~SpinLockWin32( void )
+SpinLockWin32::~SpinLockWin32()
 {
     unlock();
 }
 
-bool SpinLockWin32::lock( void )
+bool SpinLockWin32::lock()
 {
     id_type currThread = Thread::getCurrentThreadId( );
 
@@ -68,7 +68,7 @@ bool SpinLockWin32::lock( void )
     return true;
 }
 
-bool SpinLockWin32::unlock( void )
+bool SpinLockWin32::unlock()
 {
     bool result = false;
 
@@ -88,7 +88,7 @@ bool SpinLockWin32::unlock( void )
     return result;
 }
 
-bool SpinLockWin32::tryLock( void )
+bool SpinLockWin32::tryLock()
 {
     bool result = true;
     id_type currThread = Thread::getCurrentThreadId( );

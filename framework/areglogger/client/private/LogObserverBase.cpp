@@ -25,13 +25,13 @@
 
 LogObserverBase* LogObserverBase::_theLogObserver{ nullptr };
 
-LogObserverBase::LogObserverBase(void)
+LogObserverBase::LogObserverBase()
 {
     ASSERT(LogObserverBase::_theLogObserver == nullptr);
     LogObserverBase::_theLogObserver = this;
 }
 
-LogObserverBase::~LogObserverBase(void)
+LogObserverBase::~LogObserverBase()
 {
     ASSERT(LogObserverBase::_theLogObserver != nullptr);
     LogObserverBase::_theLogObserver = nullptr;
@@ -42,7 +42,7 @@ bool LogObserverBase::initialize(const std::string& configFile)
     return logObserverInitialize(nullptr, configFile.empty() ? nullptr : configFile.c_str());
 }
 
-void LogObserverBase::release(void)
+void LogObserverBase::release()
 {
     return logObserverRelease();
 }
@@ -54,22 +54,22 @@ bool LogObserverBase::connect(const std::string& address, uint16_t portNr, const
                                     , portNr);
 }
 
-void LogObserverBase::disconnect(void)
+void LogObserverBase::disconnect()
 {
     logObserverDisconnectLogger();
 }
 
-bool LogObserverBase::pause(void)
+bool LogObserverBase::pause()
 {
     return logObserverPauseLogging(true);
 }
 
-bool LogObserverBase::resume(void)
+bool LogObserverBase::resume()
 {
     return logObserverPauseLogging(false);
 }
 
-bool LogObserverBase::stop(void)
+bool LogObserverBase::stop()
 {
     return logObserverStopLogging(true, nullptr);
 }
@@ -79,47 +79,47 @@ bool LogObserverBase::restart(const std::string & dbLocation /*= String::EmptySt
     return logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
 }
 
-bool LogObserverBase::isInitialized(void) const
+bool LogObserverBase::isInitialized() const
 {
     return logObserverIsInitialized();
 }
 
-bool LogObserverBase::isConnected(void) const
+bool LogObserverBase::isConnected() const
 {
     return logObserverIsConnected();
 }
 
-bool LogObserverBase::isStated(void) const
+bool LogObserverBase::isStated() const
 {
     return logObserverIsStarted();
 }
 
-const NESocket::SocketAddress& LogObserverBase::getLoggerAddress(void) const
+const NESocket::SocketAddress& LogObserverBase::getLoggerAddress() const
 {
     return LoggerClient::getInstance().getAddress();
 }
 
-const std::string& LogObserverBase::getLoggerIpAddress(void) const
+const std::string& LogObserverBase::getLoggerIpAddress() const
 {
     return LoggerClient::getInstance().getAddress().getHostAddress().getData();
 }
 
-const std::string& LogObserverBase::getLoggerHostName(void) const
+const std::string& LogObserverBase::getLoggerHostName() const
 {
     return LoggerClient::getInstance().getAddress().getHostName().getData();
 }
 
-uint16_t LogObserverBase::getLoggerPort(void) const
+uint16_t LogObserverBase::getLoggerPort() const
 {
     return LoggerClient::getInstance().getAddress().getHostPort();
 }
 
-bool LogObserverBase::getConfigLoggerEnabled(void) const
+bool LogObserverBase::getConfigLoggerEnabled() const
 {
     return logObserverConfigLoggerEnabled();
 }
 
-std::string LogObserverBase::getConfigLoggerAddress(void) const
+std::string LogObserverBase::getConfigLoggerAddress() const
 {
     return LoggerClient::getInstance().getConfigLoggerAddress().getData();
 }
@@ -129,7 +129,7 @@ void LogObserverBase::setConfigLoggerAddress(const std::string& address)
     LoggerClient::getInstance().setConfigLoggerConnection(address, NESocket::InvalidPort);
 }
 
-uint16_t LogObserverBase::getConfigLoggerPort(void) const
+uint16_t LogObserverBase::getConfigLoggerPort() const
 {
     return LoggerClient::getInstance().getConfigLoggerPort();
 }
@@ -144,7 +144,7 @@ void LogObserverBase::setConfigLoggerConnection(const std::string& address, uint
     LoggerClient::getInstance().setConfigLoggerConnection(address, portNr);
 }
 
-std::string LogObserverBase::getConfigLoggerDatabase(void) const
+std::string LogObserverBase::getConfigLoggerDatabase() const
 {
     return LoggerClient::getInstance().getConfigDatabasePath().getData();
 }
@@ -154,7 +154,7 @@ void LogObserverBase::setConfigLoggerDatabase(const std::string& dbFilePath)
     LoggerClient::getInstance().setConfigDatabasePath(dbFilePath, true);
 }
 
-std::string LogObserverBase::getConfigLoggerDatabaseLocation(void) const
+std::string LogObserverBase::getConfigLoggerDatabaseLocation() const
 {
     return LoggerClient::getInstance().getConfigDatabaseLocation().getData();
 }
@@ -164,7 +164,7 @@ void LogObserverBase::setConfigLoggerDatabaseLocation(const std::string& dbLocat
     LoggerClient::getInstance().setConfigDatabaseLocation(dbLocation);
 }
 
-std::string LogObserverBase::getConfigLoggerDatabaseName(void) const
+std::string LogObserverBase::getConfigLoggerDatabaseName() const
 {
     return LoggerClient::getInstance().getConfigDatabaseName().getData();
 }
@@ -174,17 +174,17 @@ void LogObserverBase::setConfigLoggerDatabaseName(const std::string& dbName)
     LoggerClient::getInstance().setConfigDatabaseName(dbName);
 }
 
-std::string LogObserverBase::getActiveDatabasePath(void) const
+std::string LogObserverBase::getActiveDatabasePath() const
 {
     return LoggerClient::getInstance().getActiveDatabasePath().getData();
 }
 
-std::string LogObserverBase::getInitDatabasePath(void) const
+std::string LogObserverBase::getInitDatabasePath() const
 {
     return LoggerClient::getInstance().getInitialDatabasePath().getData();
 }
 
-bool LogObserverBase::requestInstances(void)
+bool LogObserverBase::requestInstances()
 {
     return logObserverRequestInstances();
 }
@@ -204,7 +204,7 @@ bool LogObserverBase::requestSaveConfig(ITEM_ID target /*= NEService::TARGET_ALL
     return logObserverRequestSaveConfig(target);
 }
 
-void LogObserverBase::saveLoggerConfig(void)
+void LogObserverBase::saveLoggerConfig()
 {
     LoggerClient::getInstance().saveConfiguration();
 }

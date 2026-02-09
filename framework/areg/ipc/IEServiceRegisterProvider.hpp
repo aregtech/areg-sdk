@@ -40,12 +40,12 @@ protected:
     /**
      * \brief   Protected constructor.
      **/
-    IEServiceRegisterProvider( void ) = default;
+    IEServiceRegisterProvider() = default;
 
     /**
      * \brief   Protected destructor.
      **/
-    virtual ~IEServiceRegisterProvider( void ) = default;
+    virtual ~IEServiceRegisterProvider() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

@@ -19,7 +19,7 @@ DEF_LOG_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
 
 DirectConnectionService * DirectConnectionService::mService = nullptr;
 
-DirectConnectionService * DirectConnectionService::GetService( void )
+DirectConnectionService * DirectConnectionService::GetService()
 {
     return DirectConnectionService::mService;
 }

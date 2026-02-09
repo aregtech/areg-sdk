@@ -29,7 +29,7 @@ DirectMessagingClient::DirectMessagingClient( Component & owner, const char * ro
     ASSERT(mParticipantsHandler != nullptr);
 }
 
-void DirectMessagingClient::shutdownChat(void)
+void DirectMessagingClient::shutdownChat()
 {
     clearAllNotifications();
     if (mJoinedChat)
@@ -104,7 +104,7 @@ void DirectMessagingClient::broadcastParticipantLeft( const NEDirectMessager::sP
     updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, participant, String( "Left chat" ), timeLeft, DateTime::getNow() );
 }
 
-void DirectMessagingClient::broadcastChatClosed( void )
+void DirectMessagingClient::broadcastChatClosed()
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
     updateChatOutput( NEDistributedApp::eWndCommands::CmdChatClosed, NEDirectMessager::sParticipant(), String( "Chat Closed" ), DateTime(), DateTime() );

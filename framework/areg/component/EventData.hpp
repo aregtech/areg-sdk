@@ -95,7 +95,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~EventData( void ) = default;
+    ~EventData() = default;
 
 public:
 /************************************************************************/
@@ -139,25 +139,25 @@ public:
      *          It is either request or response. The update messages
      *          are classified as response.
      **/
-    inline NEService::eMessageDataType getDataType( void ) const;
+    inline NEService::eMessageDataType getDataType() const;
     
     /**
      * \brief   Returns reference of data input streaming object
      *          to deserialize message parameters.
      **/
-    inline const IEInStream & getReadStream( void ) const;
+    inline const IEInStream & getReadStream() const;
     
     /**
      * \brief   Returns reference of data output streaming object
      *          to serialize message parameters
      **/
-    inline IEOutStream & getWriteStream( void );
+    inline IEOutStream & getWriteStream();
 
     /**
      * \brief   Returns reference of data container object,
      *          which is a streaming object.
      **/
-    inline const EventDataStream & getDataStream( void ) const;
+    inline const EventDataStream & getDataStream() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -177,22 +177,22 @@ private:
 // EventData class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::eMessageDataType EventData::getDataType( void ) const
+inline NEService::eMessageDataType EventData::getDataType() const
 {
     return mDataType;
 }
 
-inline const IEInStream& EventData::getReadStream( void ) const
+inline const IEInStream& EventData::getReadStream() const
 {
     return mData.getStreamForRead();
 }
 
-inline IEOutStream & EventData::getWriteStream( void )
+inline IEOutStream & EventData::getWriteStream()
 {
     return mData.getStreamForWrite();
 }
 
-inline const EventDataStream & EventData::getDataStream( void ) const
+inline const EventDataStream & EventData::getDataStream() const
 {
     return mData;
 }

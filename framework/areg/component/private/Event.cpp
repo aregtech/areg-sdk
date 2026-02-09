@@ -70,7 +70,7 @@ bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & ev
 // Event class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Event::Event( void )
+Event::Event()
     : RuntimeObject ( )
     , mEventType    ( Event::eEventType::EventUnknown )
     , mEventPrio    ( DefaultPriority )
@@ -88,13 +88,13 @@ Event::Event( Event::eEventType eventType )
 {
 }
 
-Event::~Event( void )
+Event::~Event()
 {
     mConsumer       = nullptr;
     mTargetThread   = nullptr;
 }
 
-inline Event & Event::self( void )
+inline Event & Event::self()
 {
     return (*this);
 }
@@ -103,17 +103,17 @@ inline Event & Event::self( void )
 // Event class, methods
 //////////////////////////////////////////////////////////////////////////
 
-void Event::destroy( void )
+void Event::destroy()
 {
     delete this;
 }
 
-EventDispatcher& Event::getDispatcher( void ) const
+EventDispatcher& Event::getDispatcher() const
 {
     return (mTargetThread != nullptr ? mTargetThread->getEventDispatcher() : DispatcherThread::getCurrentDispatcher());
 }
 
-void Event::deliverEvent( void )
+void Event::deliverEvent()
 {
     EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
     if ((dispatcher == nullptr) || (dispatcher->postEvent(*this) == false))
@@ -143,7 +143,7 @@ bool Event::registerForThread( DispatcherThread * dispatchThread )
     return (mTargetThread != nullptr);
 }
 
-bool Event::isEventRegistered( void ) const
+bool Event::isEventRegistered() const
 {
     return getDispatcher().hasRegisteredConsumer(getRuntimeClassId());
 }

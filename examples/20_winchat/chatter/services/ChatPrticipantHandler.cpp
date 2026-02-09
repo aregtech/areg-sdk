@@ -26,7 +26,7 @@ ChatPrticipantHandler::ChatPrticipantHandler( const String & serviceName
 {
 }
 
-ChatPrticipantHandler::~ChatPrticipantHandler( void )
+ChatPrticipantHandler::~ChatPrticipantHandler()
 {
 }
 
@@ -103,7 +103,7 @@ bool ChatPrticipantHandler::ParticipantExist( const NECommon::sParticipant & par
     return (findPosition(participant) != NECommon::INVALID_INDEX);
 }
 
-bool ChatPrticipantHandler::IsEmpty(void) const
+bool ChatPrticipantHandler::IsEmpty() const
 {
     Lock lock(mLock);
     uint32_t size = mListParticipants.getSize( );
@@ -118,7 +118,7 @@ bool ChatPrticipantHandler::IsEmpty(void) const
     }
 }
 
-void ChatPrticipantHandler::Invalidate( void )
+void ChatPrticipantHandler::Invalidate()
 {
     Lock lock( mLock );
     mListParticipants.clear();

@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ComponentInfo( void ) = default;
+    ~ComponentInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -93,17 +93,17 @@ public:
     /**
      * \brief   Returns Component Thread object
      **/
-    inline ComponentThread & getMasterThread( void ) const;
+    inline ComponentThread & getMasterThread() const;
 
     /**
      * \brief   Returns the address of Component
      **/
-    inline const ComponentAddress & getAddress( void ) const;
+    inline const ComponentAddress & getAddress() const;
 
     /**
      * \brief   Returns the Role Name of Component
      **/
-    inline const String & getRoleName( void ) const;
+    inline const String & getRoleName() const;
 
     /**
      * \brief   Returns true, if specified thread address is the address of registered Worker Thread.
@@ -115,7 +115,7 @@ public:
     /**
      * \brief   Returns true, if Component Info has at least one registered Worker Thread.
      **/
-    inline bool hasWorkerThreads( void ) const;
+    inline bool hasWorkerThreads() const;
 
     /**
      * \brief   Returns true if specified Worker Thread is registered in Component Info
@@ -263,7 +263,7 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ComponentInfo( void ) = delete;
+    ComponentInfo() = delete;
     DECLARE_NOCOPY_NOMOVE( ComponentInfo );
 };
 
@@ -271,17 +271,17 @@ private:
 // ComponentInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentThread& ComponentInfo::getMasterThread( void ) const
+inline ComponentThread& ComponentInfo::getMasterThread() const
 {
     return mMasterThread;
 }
 
-inline const ComponentAddress& ComponentInfo::getAddress( void ) const
+inline const ComponentAddress& ComponentInfo::getAddress() const
 {
     return mComponentAddress;
 }
 
-inline const String& ComponentInfo::getRoleName( void ) const
+inline const String& ComponentInfo::getRoleName() const
 {
     return mComponentAddress.getRoleName();
 }
@@ -330,7 +330,7 @@ inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& OUT o
     return elem.second;
 }
 
-inline bool ComponentInfo::hasWorkerThreads( void ) const
+inline bool ComponentInfo::hasWorkerThreads() const
 {
     return (mWorkerThreadMap.isEmpty() == false);
 }

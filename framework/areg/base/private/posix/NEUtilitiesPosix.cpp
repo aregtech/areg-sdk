@@ -28,14 +28,14 @@
 
 namespace NEUtilities
 {
-    uint64_t _osGetTickCount( void )
+    uint64_t _osGetTickCount()
     {
         struct timespec ts;
         ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
         return ((ts.tv_sec * NEUtilities::SEC_TO_MILLISECS) + (ts.tv_nsec / NEUtilities::MILLISEC_TO_NS));
     }
 
-    TIME64 _osSystemTimeNow(void)
+    TIME64 _osSystemTimeNow()
     {
         struct timespec ts { 0 };
         return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)

@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TEFixedArray( void );
+    ~TEFixedArray();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -157,7 +157,7 @@ public:
     /**
      * \brief   Returns pointer to the fixed array values. The values cannot be modified
      **/
-    inline operator const VALUE * ( void ) const;
+    inline operator const VALUE * () const;
 
 /************************************************************************/
 // Friend global operators to make Fixed Array streamable
@@ -193,12 +193,12 @@ public:
     /**
      * \brief   Returns true if the fixed array is empty and has no elements.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief	Returns the size of the fixed array.
      **/
-    inline uint32_t getSize( void ) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief   Returns true if the specified index is valid.
@@ -221,7 +221,7 @@ public:
     /**
      * \brief   Clears all elements of array
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Returns element value by valid index, which can be used by right operation (r-value).
@@ -251,7 +251,7 @@ public:
     /**
      * \brief   Returns array of values, which cannot be modified.
      **/
-    inline const VALUE* getValues(void) const;
+    inline const VALUE* getValues() const;
 
     /**
      * \brief	Copies all entries from given source. If array previously had values,
@@ -287,15 +287,15 @@ public:
      * \brief   Return the fist entry in the array. The array must not be empty.
      *          Otherwise, it fails with the assertion.
      **/
-    inline const VALUE & firstEntry( void ) const;
-    inline VALUE & firstEntry( void );
+    inline const VALUE & firstEntry() const;
+    inline VALUE & firstEntry();
 
     /**
      * \brief   Return the last entry in the array. The array must not be empty.
      *          Otherwise, it fails with the assertion.
      **/
-    inline const VALUE & lastEntry( void ) const;
-    inline VALUE & lastEntry( void );
+    inline const VALUE & lastEntry() const;
+    inline VALUE & lastEntry();
 
     /**
      * \brief   Sorts the array, compares the elements by given Compare functionality.
@@ -374,7 +374,7 @@ TEFixedArray<VALUE>::TEFixedArray(const VALUE* list, uint32_t count)
 }
 
 template< typename VALUE >
-TEFixedArray<VALUE>::~TEFixedArray( void )
+TEFixedArray<VALUE>::~TEFixedArray()
 {
     clear();
 }
@@ -420,19 +420,19 @@ inline bool TEFixedArray<VALUE>::operator != (const TEFixedArray<VALUE>& other) 
 }
 
 template< typename VALUE >
-inline TEFixedArray<VALUE>::operator const VALUE * ( void ) const
+inline TEFixedArray<VALUE>::operator const VALUE * () const
 {
     return mValueList;
 }
 
 template< typename VALUE >
-inline bool TEFixedArray<VALUE>::isEmpty( void ) const
+inline bool TEFixedArray<VALUE>::isEmpty() const
 {
     return (mElemCount == 0);
 }
 
 template< typename VALUE >
-inline uint32_t TEFixedArray<VALUE>::getSize( void ) const
+inline uint32_t TEFixedArray<VALUE>::getSize() const
 {
     return mElemCount;
 }
@@ -450,7 +450,7 @@ inline bool TEFixedArray<VALUE>::contains(const VALUE& elemSearch, uint32_t star
 }
 
 template< typename VALUE >
-inline void TEFixedArray<VALUE>::clear(void)
+inline void TEFixedArray<VALUE>::clear()
 {
     delete[] mValueList;
     mValueList = nullptr;
@@ -500,7 +500,7 @@ inline VALUE& TEFixedArray< VALUE >::valueAtPosition( uint32_t atPosition )
 }
 
 template< typename VALUE >
-inline const VALUE* TEFixedArray<VALUE>::getValues( void ) const
+inline const VALUE* TEFixedArray<VALUE>::getValues() const
 {
     return  mValueList;
 }
@@ -566,28 +566,28 @@ void TEFixedArray<VALUE>::resize(uint32_t newLength)
 }
 
 template<typename VALUE>
-inline const VALUE & TEFixedArray<VALUE>::firstEntry( void ) const
+inline const VALUE & TEFixedArray<VALUE>::firstEntry() const
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline VALUE & TEFixedArray<VALUE>::firstEntry( void )
+inline VALUE & TEFixedArray<VALUE>::firstEntry()
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline const VALUE & TEFixedArray<VALUE>::lastEntry( void ) const
+inline const VALUE & TEFixedArray<VALUE>::lastEntry() const
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ mElemCount - 1 ];
 }
 
 template<typename VALUE>
-inline VALUE & TEFixedArray<VALUE>::lastEntry( void )
+inline VALUE & TEFixedArray<VALUE>::lastEntry()
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ mElemCount - 1 ];

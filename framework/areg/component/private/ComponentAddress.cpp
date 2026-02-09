@@ -43,7 +43,7 @@ namespace
 /**
  * \brief   The address of invalid component
  **/
-const ComponentAddress & ComponentAddress::getInvalidComponentAddress( void )
+const ComponentAddress & ComponentAddress::getInvalidComponentAddress()
 {
     static const ComponentAddress _invalidComponentAddress(ThreadAddress::getInvalidThreadAddress(), String(INVALID_COMPONENT_NAME));
     return _invalidComponentAddress;
@@ -52,7 +52,7 @@ const ComponentAddress & ComponentAddress::getInvalidComponentAddress( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentAddress::ComponentAddress( void )
+ComponentAddress::ComponentAddress()
     : mRoleName     ( INVALID_COMPONENT_NAME )
     , mThreadAddress( ThreadAddress::getInvalidThreadAddress() )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
@@ -121,12 +121,12 @@ ComponentAddress::ComponentAddress( const IEInStream & stream )
     mMagicNum   = ComponentAddress::_magicNumber(*this);
 }
 
-bool ComponentAddress::isValid( void ) const
+bool ComponentAddress::isValid() const
 {
     return (mMagicNum != NEMath::CHECKSUM_IGNORE) && mThreadAddress.isValid();
 }
 
-String ComponentAddress::convToString(void) const
+String ComponentAddress::convToString() const
 {
     String result;
 

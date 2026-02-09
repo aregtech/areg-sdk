@@ -78,7 +78,7 @@ WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name
 #endif  // __APPLE__
 }
 
-WaitableTimerIX::~WaitableTimerIX(void)
+WaitableTimerIX::~WaitableTimerIX()
 {
     _resetTimer();
 }
@@ -146,7 +146,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
     return result;
 }
 
-bool WaitableTimerIX::stopTimer(void)
+bool WaitableTimerIX::stopTimer()
 {
     bool sendSignal = false;
     do 
@@ -169,7 +169,7 @@ bool WaitableTimerIX::stopTimer(void)
 
 
 
-bool WaitableTimerIX::cancelTimer(void)
+bool WaitableTimerIX::cancelTimer()
 {
     bool sendSignal = false;
     do 
@@ -196,7 +196,7 @@ bool WaitableTimerIX::checkSignaled(pthread_t /*contextThread*/) const
     return mIsSignaled;
 }
 
-bool WaitableTimerIX::isValid( void ) const
+bool WaitableTimerIX::isValid() const
 {
     ObjectLockIX lock(*this);
 #ifdef __APPLE__
@@ -211,7 +211,7 @@ bool WaitableTimerIX::notifyRequestOwnership(pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableTimerIX::checkCanSignalMultipleThreads(void) const
+bool WaitableTimerIX::checkCanSignalMultipleThreads() const
 {
     return true;
 }
@@ -226,7 +226,7 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
     }
 }
 
-inline void WaitableTimerIX::_resetTimer( void )
+inline void WaitableTimerIX::_resetTimer()
 {
     _stopTimer();
 #ifdef __APPLE__
@@ -245,7 +245,7 @@ inline void WaitableTimerIX::_resetTimer( void )
     mThreadId   = 0;
 }
 
-inline void WaitableTimerIX::_stopTimer( void )
+inline void WaitableTimerIX::_stopTimer()
 {
 #ifdef __APPLE__
     if (mTimerSource != nullptr)
@@ -272,7 +272,7 @@ inline void WaitableTimerIX::_stopTimer( void )
     mThreadId   = 0;
 }
 
-inline void WaitableTimerIX::_timerExpired(void)
+inline void WaitableTimerIX::_timerExpired()
 {
     bool sendSignal = false;
 

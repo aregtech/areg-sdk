@@ -18,7 +18,7 @@ public:
 public:
     void ServiceConnected( bool isConnected );
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support

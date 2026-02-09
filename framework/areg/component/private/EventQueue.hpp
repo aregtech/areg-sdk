@@ -59,7 +59,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~EventQueue( void ) = default;
+    virtual ~EventQueue() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // OPerations
@@ -72,18 +72,18 @@ public:
      *          wait, until it is not unlocked.
      * \return  Returns true, if Event Queue is locked with success.
      **/
-    inline bool lockQueue( void );
+    inline bool lockQueue();
 
     /**
      * \brief   Unlocks previously locked Event Queue, letting other
      *          threads having data access
      **/
-    inline void unlockQueue( void );
+    inline void unlockQueue();
 
     /**
      * \brief   Returns true, if Event Queue is empty.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Pushes new Event in the Queue and notifies Event Listener
@@ -102,7 +102,7 @@ public:
      *          If Queue was not empty, it will return valid pointer.
      *          If Queue was empty, it will return nullptr.
      **/
-    Event * popEvent( void );
+    Event * popEvent();
 
     /**
      * \brief   Removes all Event elements from the Queue and if keepSpecials is true,
@@ -131,7 +131,7 @@ public:
     /**
      * \brief   Removes all events. Makes event queue empty and resets the signal.
      **/
-    void removeAllEvents( void );
+    void removeAllEvents();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -151,7 +151,7 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    EventQueue( void ) = delete;
+    EventQueue() = delete;
     DECLARE_NOCOPY_NOMOVE( EventQueue );
 };
 
@@ -187,7 +187,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ExternalEventQueue( void );
+    virtual ~ExternalEventQueue();
 
 //////////////////////////////////////////////////////////////////////////
 // members
@@ -200,7 +200,7 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ExternalEventQueue( void ) = delete;
+    ExternalEventQueue() = delete;
     DECLARE_NOCOPY_NOMOVE( ExternalEventQueue );
 };
 
@@ -228,7 +228,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~InternalEventQueue( void );
+    virtual ~InternalEventQueue();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -250,7 +250,7 @@ private:
     //! The stack to store queued elements.
     SortedEventStack   mStack;
 
-    inline InternalEventQueue& self(void);
+    inline InternalEventQueue& self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -262,17 +262,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline bool EventQueue::lockQueue( void )
+inline bool EventQueue::lockQueue()
 {
     return mEventQueue.lockStack();
 }
 
-inline void EventQueue::unlockQueue( void )
+inline void EventQueue::unlockQueue()
 {
     mEventQueue.unlockStack();
 }
 
-inline bool EventQueue::isEmpty( void ) const
+inline bool EventQueue::isEmpty() const
 {
     return mEventQueue.isEmpty();
 }

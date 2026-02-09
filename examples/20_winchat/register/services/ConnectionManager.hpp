@@ -28,11 +28,11 @@ class ConnectionManager : public    Component
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    static ConnectionManager * getService( void );
+    static ConnectionManager * getService();
 
 public:
     ConnectionManager( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
-    virtual ~ConnectionManager( void );
+    virtual ~ConnectionManager();
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManager Interface Requests
@@ -139,16 +139,16 @@ private:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ConnectionManager & self( void );
+    inline ConnectionManager & self();
 
     inline bool connectionExist( uint32_t cookie ) const;
 
-    inline uint32_t getNextCookie( void );
+    inline uint32_t getNextCookie();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ConnectionManager( void );
+    ConnectionManager();
     ConnectionManager( const ConnectionManager & /*src*/ );
     const ConnectionManager & operator = ( const ConnectionManager & /*src*/ );
 };
@@ -157,7 +157,7 @@ private:
 // ConnectionManager inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline ConnectionManager & ConnectionManager::self( void )
+inline ConnectionManager & ConnectionManager::self()
 {   return (*this);     }
 
 inline void ConnectionManager::SetHwnd( HWND hWnd )

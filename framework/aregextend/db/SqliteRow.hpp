@@ -41,7 +41,7 @@ public:
     /**
      * \brief   Default constructor. Initializes an invalid row.
      */
-    SqliteRow(void);
+    SqliteRow();
 
     /**
      * \brief   Constructs a SqliteRow from a SqliteStatement.
@@ -70,7 +70,7 @@ public:
     /**
      * \brief   Destructor. Defaulted.
      */
-    ~SqliteRow(void) = default;
+    ~SqliteRow() = default;
 
     /**
      * \brief   Copy assignment operator.
@@ -94,7 +94,7 @@ public:
      * \brief   Checks if the row is valid (i.e., associated with a statement).
      * \return  True if valid, false otherwise.
      */
-    inline bool isValid(void) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Retrieves the integer value of the specified column.
@@ -170,7 +170,7 @@ public:
      * \brief   Returns the number of columns in the row.
      * \return  The number of columns.
      */
-    int getColumnCount(void) const;
+    int getColumnCount() const;
 
     /**
      * \brief   Returns the name of the specified column.
@@ -196,7 +196,7 @@ protected:
     void* mStatement;
 };
 
-inline bool SqliteRow::isValid(void) const
+inline bool SqliteRow::isValid() const
 {
     return (mStatement != nullptr);
 }

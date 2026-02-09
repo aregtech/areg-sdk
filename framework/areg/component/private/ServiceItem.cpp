@@ -31,7 +31,7 @@ ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char*
     return result;
 }
 
-ServiceItem::ServiceItem( void )
+ServiceItem::ServiceItem()
     : mServiceName      ( ServiceItem::INVALID_SERVICE )
     , mServiceVersion   ( Version::getInvalidVersion() )
     , mServiceType      ( NEService::eServiceType::ServiceLocal )
@@ -85,7 +85,7 @@ ServiceItem::ServiceItem( ServiceItem && source ) noexcept
 {
 }
 
-String ServiceItem::convToString(void) const
+String ServiceItem::convToString() const
 {
     String result(static_cast<uint32_t>(0xFF));
 

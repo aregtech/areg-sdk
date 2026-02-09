@@ -57,7 +57,7 @@ public:
     /**
      * \brief   Default constructor. Sets zero value.
      **/
-    DateTime( void );
+    DateTime();
 
     /**
      * \brief   Sets date and time value in microseconds passed since January 1 1970.
@@ -91,7 +91,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~DateTime(void) = default;
+    ~DateTime() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -101,22 +101,22 @@ public:
      * \brief   Converts and returns date and time value as 64-bit unsigned integer value.
      *          The returned value is microseconds passed since Unix epoch (January 1, 1970).
      **/
-    inline operator TIME64 ( void ) const;
+    inline operator TIME64 () const;
 
     /**
      * \brief   Converts and returns date and time value in microseconds passed since Unix epoch (Unix epoch, since January 1, 1970).
      **/
-    inline operator std::chrono::microseconds(void) const;
+    inline operator std::chrono::microseconds() const;
 
     /**
      * \brief   Converts and returns date and time value in milliseconds passed since Unix epoch (Unix epoch, since January 1, 1970).
      **/
-    inline operator std::chrono::milliseconds(void) const;
+    inline operator std::chrono::milliseconds() const;
 
     /**
      * \brief   Converts and returns date and time value in seconds passed since Unix epoch (Unix epoch, since January 1, 1970).
      **/
-    inline operator std::chrono::seconds(void) const;
+    inline operator std::chrono::seconds() const;
 
     /**
      * \brief   Sets date and time value from given source.
@@ -200,7 +200,7 @@ public:
      *          The value in DateTime object is in microseconds passed since Unix epoch (January 1, 1970).
      * \return  Returns current date and time value.
      **/
-    static DateTime getNow( void );
+    static DateTime getNow();
 
     /**
      * \brief   Retrieves and returns current time either in UTC or local time.
@@ -212,12 +212,12 @@ public:
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed since the system was started.
      **/
-    static uint64_t getSystemTickCount( void );
+    static uint64_t getSystemTickCount();
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed since current process has been started.
      **/
-    static uint64_t getProcessTickCount( void );
+    static uint64_t getProcessTickCount();
 
     /**
      * \brief   Formats time and outputs as a string. The caller should specify the
@@ -241,7 +241,7 @@ public:
     /**
      * \brief   Returns the time data.
      **/
-    inline const TIME64 & getTime( void ) const;
+    inline const TIME64 & getTime() const;
 
     /**
      * \brief   Set the date time value. The new value should be set in microseconds since Unix epoch.
@@ -252,76 +252,76 @@ public:
     /**
      * \brief   Returns true, if time value is not zero
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Breaks the date-time value and returns the calculated year.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getYear(void) const;
+    unsigned int getYear() const;
 
     /**
      * \brief   Breaks the date-time value and returns the calculated month within the year.
      *          The first month is January and the last month is the December.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMonth(void) const;
+    unsigned int getMonth() const;
 
     /**
      * \brief   Breaks the date-time value and returns the day within the month.
      *          The first day is 1 and the last day depends on month.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getDay(void) const;
+    unsigned int getDay() const;
 
     /**
      * \brief   Breaks the date-time value and returns the hour within the day.
      *          The returned value is between 0 and 23.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getHours(void) const;
+    unsigned int getHours() const;
 
     /**
      * \brief   Breaks the date-time value and returns the minutes within the hour.
      *          The returned value is between 0 and 59.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMinutex(void) const;
+    unsigned int getMinutex() const;
 
     /**
      * \brief   Breaks the date-time value and returns the seconds within the minute.
      *          The returned value is between 0 and 59.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getSecons(void) const;
+    unsigned int getSecons() const;
 
     /**
      * \brief   Breaks the date-time value and returns the milliseconds within the second.
      *          The returned value is between 0 and 999.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMilliscones(void) const;
+    unsigned int getMilliscones() const;
 
     /**
      * \brief   Breaks the date-time value and returns the microseconds within the millisecond.
      *          The returned value is between 0 and 999.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMicroseconds(void) const;
+    unsigned int getMicroseconds() const;
 
     /**
      * \brief   Breaks the date-time value and returns the day of the year.
      *          The returned value is between 1 and 365 / 366.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getDayOfTheYear(void) const;
+    unsigned int getDayOfTheYear() const;
 
     /**
      * \brief   Breaks the date-time value and returns the day of the week.
      *          The returned value is between 1 and 7.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getDayOfTheWeek(void) const;
+    unsigned int getDayOfTheWeek() const;
 
     /**
      * \brief   Converts existing date and time value in microseconds passed since Unix epoch to system time structure.
@@ -365,22 +365,22 @@ private:
 // DateTime class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline DateTime::operator TIME64 ( void ) const
+inline DateTime::operator TIME64 () const
 {
     return mDateTime;
 }
 
-inline DateTime::operator std::chrono::microseconds(void) const
+inline DateTime::operator std::chrono::microseconds() const
 {
     return std::chrono::microseconds(mDateTime);
 }
 
-inline DateTime::operator std::chrono::milliseconds(void) const
+inline DateTime::operator std::chrono::milliseconds() const
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(mDateTime));
 }
 
-inline DateTime::operator std::chrono::seconds(void) const
+inline DateTime::operator std::chrono::seconds() const
 {
     return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::microseconds(mDateTime));
 }
@@ -397,7 +397,7 @@ inline DateTime & DateTime::operator = ( DateTime && src ) noexcept
     return (*this);
 }
 
-inline const TIME64 & DateTime::getTime( void ) const
+inline const TIME64 & DateTime::getTime() const
 {
     return mDateTime;
 }
@@ -407,7 +407,7 @@ inline void DateTime::setTime(const TIME64& newTime)
     mDateTime = newTime;
 }
 
-inline bool DateTime::isValid( void ) const
+inline bool DateTime::isValid() const
 {
     return (mDateTime != INVALID_TIME);
 }

@@ -62,7 +62,7 @@ private:
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline PatientService & self( void );
+    inline PatientService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -77,6 +77,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientService( void ) = delete;
+    PatientService() = delete;
     DECLARE_NOCOPY_NOMOVE( PatientService );
 };

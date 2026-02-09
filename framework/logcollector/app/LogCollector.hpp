@@ -82,7 +82,7 @@ public:
     /**
      * \brief   Returns singleton instance of the LogCollector.
      **/
-    static LogCollector& getInstance( void );
+    static LogCollector& getInstance();
 
     /**
      * \brief   Outputs the specified message on the console.
@@ -100,9 +100,9 @@ private:
     /**
      * \brief   Default constructor and destructor.
      **/
-    LogCollector( void );
+    LogCollector();
 
-    virtual ~LogCollector( void ) = default;
+    virtual ~LogCollector() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -125,33 +125,33 @@ protected:
     /**
      * \brief   Triggered to start the console service.
      **/
-    virtual void startConsoleService( void ) override;
+    virtual void startConsoleService() override;
 
     /**
      * \brief   Stops the consoler service.
      **/
-    virtual void stopConsoleService( void ) override;
+    virtual void stopConsoleService() override;
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    virtual Console::CallBack getOptionCheckCallback( void ) const override;
+    virtual Console::CallBack getOptionCheckCallback() const override;
 
     /**
      * \brief   Triggered if need to run console with extended features.
      *          In extended feature, the console can output message at any position on the screen.
      **/
-    virtual void runConsoleInputExtended( void ) override;
+    virtual void runConsoleInputExtended() override;
 
     /**
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
-    virtual void runConsoleInputSimple( void ) override;
+    virtual void runConsoleInputSimple() override;
 
     /**
      * \brief   Run application as a background process without input or output on console. 
      **/
-    virtual void runService(void) override;
+    virtual void runService() override;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides
@@ -161,57 +161,57 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions(void) const override;
+    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions() const override;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
      **/
-    virtual wchar_t* getServiceNameW(void) const override;
+    virtual wchar_t* getServiceNameW() const override;
 
     /**
      * \brief   Returns the ASCII name of the service application.
      **/
-    virtual char* getServiceNameA(void) const override;
+    virtual char* getServiceNameA() const override;
 
     /**
      * \brief   Returns the UNICODE display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    virtual wchar_t* getServiceDisplayNameW(void) const override;
+    virtual wchar_t* getServiceDisplayNameW() const override;
 
     /**
      * \brief   Returns the ASCII display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    virtual char* getServiceDisplayNameA(void) const override;
+    virtual char* getServiceDisplayNameA() const override;
 
     /**
      * \brief   Returns the UNICODE description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    virtual wchar_t* getServiceDescriptionW(void) const override;
+    virtual wchar_t* getServiceDescriptionW() const override;
 
     /**
      * \brief   Returns the ASCII description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    virtual char* getServiceDescriptionA(void) const override;
+    virtual char* getServiceDescriptionA() const override;
 
     /**
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eRemoteServices getServiceType(void) const override;
+    virtual NERemoteService::eRemoteServices getServiceType() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eConnectionTypes getConnectionType(void) const override;
+    virtual NERemoteService::eConnectionTypes getConnectionType() const override;
 
 /************************************************************************/
 // IEConfigurationListener protected overrides
@@ -240,12 +240,12 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & getConnetedInstances( void ) const;
+    inline const NEService::MapInstances & getConnetedInstances() const;
 
     /**
      * \brief   Returns instance of the LogCollector service.
      **/
-    inline LogCollector& self(void);
+    inline LogCollector& self();
 
     /**
      * \brief   Enables or disables local log messages of the current process.
@@ -267,7 +267,7 @@ private:
     /**
      * \brief   Output on console the title.
      **/
-    static void _outputTitle( void );
+    static void _outputTitle();
 
     /**
      * \brief   Prints info on console.
@@ -290,7 +290,7 @@ private:
      * \brief   Call to clean all message outputs like help, prompt, etc.
      *          Normally, help is the largest message.
      **/
-    static void _cleanHelp(void);
+    static void _cleanHelp();
 
     /**
      * \brief   Triggered to process update scope priority command.
@@ -351,12 +351,12 @@ private:
 // LogCollector class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::MapInstances & LogCollector::getConnetedInstances( void ) const
+inline const NEService::MapInstances & LogCollector::getConnetedInstances() const
 {
     return mServiceServer.getInstances( );
 }
 
-inline LogCollector & LogCollector::self( void )
+inline LogCollector & LogCollector::self()
 {
     return (*this);
 }

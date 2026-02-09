@@ -306,7 +306,7 @@ protected:
     /**
      * \brief   Default constructor.
      **/
-    Event( void );
+    Event();
 
     /**
      * \brief   Initialization constructor.
@@ -318,7 +318,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~Event( void );
+    virtual ~Event();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -333,7 +333,7 @@ public:
      *          Overwrite if there is any special action should be performed
      *          before destroying event object.
      **/
-    virtual void destroy( void ) override;
+    virtual void destroy() override;
 
     /**
      * \brief	Dispatch event itself. Overwrite function if needed.
@@ -345,7 +345,7 @@ public:
      * \brief   Delivers the event to target thread. If target thread
      *          is nullptr, it delivers to current thread.
      **/
-    virtual void deliverEvent( void );
+    virtual void deliverEvent();
 
     /**
      * \brief	Adds the listener to target thread, i.e. registers
@@ -408,7 +408,7 @@ public:
      *          registered for event. It uses runtime information
      *          as an event identifier.
      **/
-    bool isEventRegistered( void ) const;
+    bool isEventRegistered() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -418,7 +418,7 @@ public:
      *          For more information see description of Event::eEventType
      * \see Event::eEventType
      **/
-    inline Event::eEventType getEventType( void ) const;
+    inline Event::eEventType getEventType() const;
     /**
      * \brief   Sets the type of Event.
      *          For more information see description of Event::eEventType
@@ -430,7 +430,7 @@ public:
     /**
      * \brief   Returns the priority of the event.
      **/
-    inline eEventPriority getEventPriority(void) const;
+    inline eEventPriority getEventPriority() const;
 
     /**
      * \brief   Sets new priority of the event.
@@ -441,7 +441,7 @@ public:
      * \brief   Returns pointer of Event Consumer object.
      *          If nullptr, no Event Consumer is set and the Event cannot be processed.
      **/
-    inline IEEventConsumer * getEventConsumer( void );
+    inline IEEventConsumer * getEventConsumer();
     /**
      * \brief   Sets the Event Consumer object.
      * \param   consumer    The Event Consumer object, which should process event
@@ -481,27 +481,27 @@ public:
     /**
      * \brief   Returns true, if event is internal, i.e. should be queued in internal event queue
      **/
-    inline bool isInternal( void ) const;
+    inline bool isInternal() const;
 
     /**
      * \brief   Returns true, if event is external, i.e. should be queued in external event queue
      **/
-    inline bool isExternal( void ) const;
+    inline bool isExternal() const;
 
     /**
      * \brief   Returns true, if event is local, i.e. cannot be processed in other process
      **/
-    inline bool isLocal( void ) const;
+    inline bool isLocal() const;
 
     /**
      * \brief   Returns true, if event is remote, i.e. can be processed local and in other process
      **/
-    inline bool isRemote( void ) const;
+    inline bool isRemote() const;
 
     /**
      * \brief   Returns true, if event is developer custom to communicate with worker thread or system predefined.
      **/
-    inline bool isCustom( void ) const;
+    inline bool isCustom() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -512,7 +512,7 @@ protected:
      *          If target thread is unknown, this will return dispatcher of
      *          current thread.
      **/
-    EventDispatcher & getDispatcher( void ) const;
+    EventDispatcher & getDispatcher() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -521,7 +521,7 @@ private:
     /**
      * \brief   Returns reference to event object
      **/
-    inline Event & self( void );
+    inline Event & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -557,7 +557,7 @@ IMPLEMENT_STREAMABLE(Event::eEventType)
 // Event class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Event::eEventType Event::getEventType( void ) const
+inline Event::eEventType Event::getEventType() const
 {
     return mEventType;
 }
@@ -567,7 +567,7 @@ inline void Event::setEventType( Event::eEventType eventType )
     mEventType = eventType;
 }
 
-inline IEEventConsumer * Event::getEventConsumer( void )
+inline IEEventConsumer * Event::getEventConsumer()
 {
     return mConsumer;
 }
@@ -602,32 +602,32 @@ inline bool Event::isCustom( Event::eEventType eventType )
     return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventCustom)) != 0;
 }
 
-inline bool Event::isInternal(void) const
+inline bool Event::isInternal() const
 {
     return Event::isInternal(mEventType);
 }
 
-inline bool Event::isExternal(void) const
+inline bool Event::isExternal() const
 {
     return Event::isExternal( mEventType );
 }
 
-inline bool Event::isLocal(void) const
+inline bool Event::isLocal() const
 {
     return Event::isLocal( mEventType );
 }
 
-inline bool Event::isRemote(void) const
+inline bool Event::isRemote() const
 {
     return Event::isRemote( mEventType );
 }
 
-inline bool Event::isCustom( void ) const
+inline bool Event::isCustom() const
 {
     return Event::isCustom( mEventType );
 }
 
-inline Event::eEventPriority Event::getEventPriority(void) const
+inline Event::eEventPriority Event::getEventPriority() const
 {
     return mEventPrio;
 }

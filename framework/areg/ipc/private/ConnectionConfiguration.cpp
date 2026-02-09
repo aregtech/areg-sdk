@@ -34,7 +34,7 @@ ConnectionConfiguration::ConnectionConfiguration(NERemoteService::eRemoteService
 {
 }
 
-String ConnectionConfiguration::getConnectionAddress( void ) const
+String ConnectionConfiguration::getConnectionAddress() const
 {
     return Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
 }
@@ -50,12 +50,12 @@ void ConnectionConfiguration::setConnectionData(const String& address, unsigned 
     Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::isConfigured(void) const
+bool ConnectionConfiguration::isConfigured() const
 {
     return Application::isConfigured();
 }
 
-bool ConnectionConfiguration::getConnectionEnableFlag( void ) const
+bool ConnectionConfiguration::getConnectionEnableFlag() const
 {
     return Application::getConfigManager().getRemoteServiceEnable(mServiceName, mConnectType);
 }
@@ -65,7 +65,7 @@ void ConnectionConfiguration::setConnectionEnableFlag(bool isEnabled)
     Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
 }
 
-unsigned short ConnectionConfiguration::getConnectionPort( void ) const
+unsigned short ConnectionConfiguration::getConnectionPort() const
 {
     return Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
 }

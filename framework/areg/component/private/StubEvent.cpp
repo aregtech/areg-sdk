@@ -63,7 +63,7 @@ IEOutStream & StubEvent::writeStream( IEOutStream & stream ) const
     return stream;
 }
 
-void StubEvent::deliverEvent( void )
+void StubEvent::deliverEvent()
 {
     if ( mTargetThread == nullptr )
     {

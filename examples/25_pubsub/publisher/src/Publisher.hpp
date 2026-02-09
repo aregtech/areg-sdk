@@ -116,7 +116,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    virtual void onThreadRuns() override;
 
 /************************************************************************/
 // StubBase overrides.
@@ -136,22 +136,22 @@ protected:
 private:
 
     //!< Starts updating values.
-    void start(void);
+    void start();
 
     //!< Pauses and stop updating values.
-    void stop(void);
+    void stop();
 
     //!< Invalidates the values, on the next start the value should be reset and validated.
-    void invalidate(void);
+    void invalidate();
 
     //!< Quits the service provider application.
-    void quit(void);
+    void quit();
 
     //! Outputs message on console
     inline void printMessage(const String & message, eCommands cmd);
 
     //! Wrapper of the this pointer
-    inline Publisher & self(void);
+    inline Publisher & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -171,6 +171,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Publisher(void) = delete;
+    Publisher() = delete;
     DECLARE_NOCOPY_NOMOVE(Publisher);
 };

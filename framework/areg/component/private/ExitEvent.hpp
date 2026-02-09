@@ -39,7 +39,7 @@ public:
     /**
      * \brief   Returns the instance of special exit event object
      **/
-    static ExitEvent & getExitEvent( void );
+    static ExitEvent & getExitEvent();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -48,12 +48,12 @@ private:
     /**
      * \brief   Default constructor. Hidden. Instantiated only in static method
      **/
-    ExitEvent( void );
+    ExitEvent();
 
     /**
      * \brief   Destructor. Hidden. Cannot be deleted outside of class.
      **/
-    virtual ~ExitEvent( void ) = default;
+    virtual ~ExitEvent() = default;
 
 private:
 /************************************************************************/
@@ -65,7 +65,7 @@ private:
      *          Overwrite if there is any special action should be performed
      *          before destroying event object.
      **/
-    virtual void destroy( void ) override;
+    virtual void destroy() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

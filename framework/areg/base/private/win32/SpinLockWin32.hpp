@@ -41,12 +41,12 @@ public:
      * \brief   Sets the instance of CriticalSectionIX object, which is the 
      *          real POSIX spin-lock wrapper class.
      **/
-    SpinLockWin32( void );
+    SpinLockWin32();
 
     /**
      * \brief   Destructor.
      **/
-    ~SpinLockWin32( void );
+    ~SpinLockWin32();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -63,14 +63,14 @@ public:
      *          In contrast, when a mutex object is used for mutual exclusion,
      *          the lock() function accept a specified time-out interval.
      **/
-    bool lock( void );
+    bool lock();
 
     /**
      * \brief   Releases ownership of the spin-lock object.
      * \return  Returns true if spin-lock owning thread called unlock.
      *          Otherwise, it returns false.
      **/
-    bool unlock( void );
+    bool unlock();
 
     /**
      * \brief   Attempts to take the spin-lock ownership without blocking thread.
@@ -81,7 +81,7 @@ public:
      *          If another thread already owns the critical section,
      *          the return value is false.
      **/
-    bool tryLock( void );
+    bool tryLock();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

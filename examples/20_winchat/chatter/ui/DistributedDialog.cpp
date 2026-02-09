@@ -94,7 +94,7 @@ DistributedDialog::DistributedDialog( )
     AddPage(&mPageConnections);
 }
 
-DistributedDialog::~DistributedDialog( void )
+DistributedDialog::~DistributedDialog()
 {
     RemoveAllChatPages( );
 }
@@ -545,12 +545,12 @@ PageChat * DistributedDialog::AddChatPage( const NEDirectConnection::sInitiator 
     return chatPage;
 }
 
-DistributedDialog * DistributedDialog::GetDialog( void )
+DistributedDialog * DistributedDialog::GetDialog()
 {
     return static_cast<DistributedDialog *>(theApp.GetMainWnd());
 }
 
-void DistributedDialog::DefaultCaption( void )
+void DistributedDialog::DefaultCaption()
 {
     DistributedDialog * dlg = DistributedDialog::GetDialog();
     if ( dlg != nullptr )
@@ -584,7 +584,7 @@ bool DistributedDialog::RemoveChatPage( const String & connectName )
     return result;
 }
 
-void DistributedDialog::RemoveAllChatPages( void )
+void DistributedDialog::RemoveAllChatPages()
 {
     const auto& map = mMapChatPages.getData();
     for (const auto & entry : map)
@@ -615,7 +615,7 @@ LRESULT DistributedDialog::OnCmdSetDirectConnection( WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-void DistributedDialog::OnRedirectOK( void )
+void DistributedDialog::OnRedirectOK()
 {
     CPropertyPage * active = GetActivePage( );
     if ( active == &mPageSetup )

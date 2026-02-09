@@ -70,8 +70,8 @@ public:
 // Hidden constructor / destructor.
 //////////////////////////////////////////////////////////////////////////
 private:
-    Console(void);
-    ~Console(void);
+    Console();
+    ~Console();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -81,7 +81,7 @@ public:
     /**
      * \brief   Returns the only instance of Console object to make outputs.
      **/
-    static Console& getInstance(void);
+    static Console& getInstance();
 
     /**
      * \brief   Before calling the method the console input must be enabled.
@@ -139,18 +139,18 @@ public:
      *
      * \return  Returns the string input on console.
      **/
-    String readString(void) const;
+    String readString() const;
 
     /**
      * \brief   Call if there is no need anymore to make any message output.
      *          Otherwise, it is called when the Console objects is destroyed.
      **/
-    inline void uninitialize(void);
+    inline void uninitialize();
 
     /**
      * \brief   Returns true if the Console is initialized and ready to run.
      **/
-    inline bool isReady( void ) const;
+    inline bool isReady() const;
 
     /**
      * \brief   Enables or disables the console input. It has no effect if the Console
@@ -190,7 +190,7 @@ public:
     /**
      * \brief   Returns the current coordinate of the cursor on the console.
      **/
-    inline Console::Coord getCursorCurPosition(void) const;
+    inline Console::Coord getCursorCurPosition() const;
 
     /**
      * \brief   Sets the cursor position at the specified position on console.
@@ -209,27 +209,27 @@ public:
     /**
      * \brief   Saves the cursor current position in memory.
      **/
-    inline void saveCursorPosition(void) const;
+    inline void saveCursorPosition() const;
 
     /**
      * \brief   Restores previously saved in memory cursor position.
      **/
-    inline void restoreCursorPosition(void) const;
+    inline void restoreCursorPosition() const;
 
     /**
      * \brief   Moves cursor one line up from current position.
      **/
-    inline void moveCursorOneLineUp(void) const;
+    inline void moveCursorOneLineUp() const;
 
     /**
      * \brief   Moves cursor one line down from current position.
      **/
-    inline void moveCursorOneLineDown(void) const;
+    inline void moveCursorOneLineDown() const;
 
     /**
      * \brief   Clears the line starting from the cursor current position until the end of the line. 
      **/
-    inline void clearCurrentLine( void ) const;
+    inline void clearCurrentLine() const;
 
     /**
      * \brief   Clear the specified line starting from specified posX position until
@@ -243,29 +243,29 @@ public:
     /**
      * \brief   Clears the screen.
      **/
-    inline void clearScreen( void ) const;
+    inline void clearScreen() const;
 
     /**
      * \brief   Return the user input command.
      **/
-    inline const String& getUserInput(void) const;
+    inline const String& getUserInput() const;
 
     /**
      * \brief   Call to refresh the console screen and show updates.
      *          Without this call the console behavior is unpredicted (depends on OS).
      **/
-    inline void refreshScreen(void) const;
+    inline void refreshScreen() const;
 
     /**
      * \brief   Locks the console to prevent other threads to output or change cursor position.
      * \return  Returns true if succeeded to lock. Otherwise, returns false.
      **/
-    inline bool lockConsole( void );
+    inline bool lockConsole();
 
     /**
      * \brief   Unlocks previously locked console.
      **/
-    inline void unlockConsole( void );
+    inline void unlockConsole();
 
     /**
      * \brief   Reads data from the console into the provided buffer.
@@ -283,12 +283,12 @@ private:
      * \brief   Setup the console to start to input / output the messages.
      *          OS specific implementation.
      **/
-    bool _osSetup(void);
+    bool _osSetup();
     /**
      * \brief   Release the console, so that there will be no more inputs / outputs.
      *          OS specific implementation.
      **/
-    void _osRelease(void);
+    void _osRelease();
 
     /**
      * \brief   Outputs the specified message text at specified coordinate.
@@ -305,7 +305,7 @@ private:
      * \brief   Returns the current position of the cursor on the console.
      *          OS specific implementation.
      **/
-    Console::Coord _osGetCursorPosition(void) const;
+    Console::Coord _osGetCursorPosition() const;
 
     /**
      * \brief   Moves the cursor at specified position on the console.
@@ -318,17 +318,17 @@ private:
      * \brief   Refreshes the screen to display output messages.
      *          OS specific implementation.
      **/
-    void _osRefreshScreen(void) const;
+    void _osRefreshScreen() const;
 
     /**
      * \brief   Clears the line starting from the cursor position until the end of line. 
      **/
-    void _osClearLine( void ) const;
+    void _osClearLine() const;
 
     /**
      * \brief   Clears console screen.
      **/
-    void _osClearScreen( void ) const;
+    void _osClearScreen() const;
 
     /**
      * \brief   Reads and converts formated inputs from console similar to 'vscanf' method
@@ -343,22 +343,22 @@ private:
     /**
      * \brief   OS specific implementation to save the cursor current position in memory.
      **/
-    void _osSaveCursorPosition(void) const;
+    void _osSaveCursorPosition() const;
 
     /**
      * \brief   OS specific implementation to restore previously saved in memory cursor position.
      **/
-    void _osRestoreCursorPosition(void) const;
+    void _osRestoreCursorPosition() const;
 
     /**
      * \brief   OS specific implementation to move cursor one line up from current position.
      **/
-    void _osMoveCursorOneLineUp(void) const;
+    void _osMoveCursorOneLineUp() const;
 
     /**
      * \brief   OS specific implementation to move cursor one line down from current position.
      **/
-    void _osMoveCursorOneLineDown(void) const;
+    void _osMoveCursorOneLineDown() const;
 
     /**
      * \brief   A blocking call to wait for user input of string on the console.
@@ -403,12 +403,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Console class inline method implementations.
 //////////////////////////////////////////////////////////////////////////
-inline void Console::uninitialize( void )
+inline void Console::uninitialize()
 {
     _osRelease( );
 }
 
-inline bool Console::isReady( void ) const
+inline bool Console::isReady() const
 {
     return mIsReady;
 }
@@ -438,7 +438,7 @@ inline void Console::printTxt(const std::string_view& text) const
     _osOutputText(text);
 }
 
-inline Console::Coord Console::getCursorCurPosition( void ) const
+inline Console::Coord Console::getCursorCurPosition() const
 {
     return _osGetCursorPosition( );
 }
@@ -453,47 +453,47 @@ inline void Console::moveToLine(int16_t line) const
     setCursorCurPosition(Coord{ 0, line });
 }
 
-inline void Console::saveCursorPosition(void) const
+inline void Console::saveCursorPosition() const
 {
     _osSaveCursorPosition();
 }
 
-inline void Console::restoreCursorPosition(void) const
+inline void Console::restoreCursorPosition() const
 {
     _osRestoreCursorPosition();
 }
 
-inline void Console::moveCursorOneLineUp(void) const
+inline void Console::moveCursorOneLineUp() const
 {
     _osMoveCursorOneLineUp();
 }
 
-inline void Console::moveCursorOneLineDown(void) const
+inline void Console::moveCursorOneLineDown() const
 {
     _osMoveCursorOneLineDown();
 }
 
-inline const String & Console::getUserInput( void ) const
+inline const String & Console::getUserInput() const
 {
     return mUsrInput;
 }
 
-inline void Console::refreshScreen( void ) const
+inline void Console::refreshScreen() const
 {
     _osRefreshScreen( );
 }
 
-inline bool Console::lockConsole( void )
+inline bool Console::lockConsole()
 {
     return mLock.lock(NECommon::WAIT_INFINITE);
 }
 
-inline void Console::unlockConsole( void )
+inline void Console::unlockConsole()
 {
     mLock.unlock( );
 }
 
-inline void Console::clearCurrentLine( void ) const
+inline void Console::clearCurrentLine() const
 {
     _osClearLine( );
 }
@@ -506,7 +506,7 @@ inline void Console::clearLine(Console::Coord pos) const
     restoreCursorPosition();
 }
 
-inline void Console::clearScreen( void ) const
+inline void Console::clearScreen() const
 {
     _osClearScreen();
 }

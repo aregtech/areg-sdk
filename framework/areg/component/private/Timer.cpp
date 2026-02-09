@@ -48,7 +48,7 @@ Timer::Timer( IETimerConsumer& timerConsumer
 {
 }
 
-Timer::~Timer(void)
+Timer::~Timer()
 {
     _stopTimer();
 }
@@ -105,7 +105,7 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     }
 }
 
-void Timer::stopTimer(void)
+void Timer::stopTimer()
 {
     _stopTimer();
 }
@@ -141,7 +141,7 @@ void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_typ
     mExpiredAt = 0;
 }
 
-void Timer::_queueTimer( void )
+void Timer::_queueTimer()
 {
     Lock lock(mLock);
 
@@ -158,7 +158,7 @@ void Timer::_queueTimer( void )
     }
 }
 
-void Timer::_unqueueTimer( void )
+void Timer::_unqueueTimer()
 {
     Lock lock(mLock);
 
@@ -174,7 +174,7 @@ void Timer::_unqueueTimer( void )
     }
 }
 
-inline void Timer::_stopTimer(void)
+inline void Timer::_stopTimer()
 {
     Lock lock(mLock);
 

@@ -33,7 +33,7 @@ void PubSubMixed::shutdownComponent(ComponentThread & comThread)
     Component::shutdownComponent(comThread);
 }
 
-inline PubSubMixed & PubSubMixed::self(void)
+inline PubSubMixed & PubSubMixed::self()
 {
     return (*this);
 }

@@ -225,7 +225,7 @@ TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, c
 {
 }
 
-TrafficLightFSM::~TrafficLightFSM( void )
+TrafficLightFSM::~TrafficLightFSM()
 {
     NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer) );
 }
@@ -259,7 +259,7 @@ inline bool TrafficLightFSM::startProcessing( const char* const triggerName )
 /**
  * End processing trigger
  **/
-inline void TrafficLightFSM::endProcessing( void )
+inline void TrafficLightFSM::endProcessing()
 {
     mProcessing = false;
 }
@@ -567,7 +567,7 @@ void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
 /**
  * Call to release State Machine. No trigger will be processed
  **/
-void TrafficLightFSM::releaseFSM( void )
+void TrafficLightFSM::releaseFSM()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_releaseFSM);
     LOG_DBG("Releasing < %s > State Machine. Initialize before calling triggers.", mFsmName.getString());
@@ -614,7 +614,7 @@ void TrafficLightFSM::releaseFSM( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_powerOff);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::powerOff( void )
+bool TrafficLightFSM::powerOff()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_powerOff);
     START_PROCESSING( "powerOff" );
@@ -639,7 +639,7 @@ bool TrafficLightFSM::powerOff( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_powerOn);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::powerOn( void )
+bool TrafficLightFSM::powerOn()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_powerOn);
     START_PROCESSING( "powerOn" );
@@ -664,7 +664,7 @@ bool TrafficLightFSM::powerOn( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_startTrafficControl);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::startTrafficControl( void )
+bool TrafficLightFSM::startTrafficControl()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_startTrafficControl);
     START_PROCESSING( "startTrafficControl" );
@@ -700,7 +700,7 @@ bool TrafficLightFSM::startTrafficControl( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_stopTrafficControl);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::stopTrafficControl( void )
+bool TrafficLightFSM::stopTrafficControl()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_stopTrafficControl);
     START_PROCESSING( "stopTrafficControl" );
@@ -726,7 +726,7 @@ bool TrafficLightFSM::stopTrafficControl( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_onEventStartTrafficLight);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::onEventStartTrafficLight( void )
+bool TrafficLightFSM::onEventStartTrafficLight()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_onEventStartTrafficLight);
     START_PROCESSING("Event_StartTrafficLight");
@@ -751,7 +751,7 @@ bool TrafficLightFSM::onEventStartTrafficLight( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerRed);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::onTimerRed( void )
+bool TrafficLightFSM::onTimerRed()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerRed);
     START_PROCESSING("Timer_Red");
@@ -787,7 +787,7 @@ bool TrafficLightFSM::onTimerRed( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerYellowRed);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::onTimerYellowRed( void )
+bool TrafficLightFSM::onTimerYellowRed()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerYellowRed);
     START_PROCESSING("Timer_YellowRed");
@@ -812,7 +812,7 @@ bool TrafficLightFSM::onTimerYellowRed( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerGreen);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::onTimerGreen( void )
+bool TrafficLightFSM::onTimerGreen()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerGreen);
     START_PROCESSING("Timer_Green");
@@ -846,7 +846,7 @@ bool TrafficLightFSM::onTimerGreen( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerYellowGreen);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::onTimerYellowGreen( void )
+bool TrafficLightFSM::onTimerYellowGreen()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerYellowGreen);
     START_PROCESSING("Timer_YellowGreen");
@@ -871,7 +871,7 @@ bool TrafficLightFSM::onTimerYellowGreen( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerPedestrianWalk);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::onTimerPedestrianWalk( void )
+bool TrafficLightFSM::onTimerPedestrianWalk()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerPedestrianWalk);
     START_PROCESSING("Timer_PedestrianWalk");
@@ -903,7 +903,7 @@ bool TrafficLightFSM::onTimerPedestrianWalk( void )
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerVehicleWait);
 /* --------------------------------------------------------------------- */
-bool TrafficLightFSM::onTimerVehicleWait( void )
+bool TrafficLightFSM::onTimerVehicleWait()
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_onTimerVehicleWait);
     START_PROCESSING("Timer_VehicleWait");

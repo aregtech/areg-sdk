@@ -60,7 +60,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableSemaphoreIX( void ) = default;
+    virtual ~WaitableSemaphoreIX() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -74,17 +74,17 @@ public:
      *          a semaphore.
      * \return  Return true if operation succeeded and the count increased.
      **/
-    bool releaseSemaphore( void );
+    bool releaseSemaphore();
 
     /**
      * \brief   Returns maximum count of semaphore.
      **/
-    inline int getMaximumCount( void ) const;
+    inline int getMaximumCount() const;
 
     /**
      * \brief   Returns current count of semaphore.
      **/
-    inline int getCurrentCount( void ) const;
+    inline int getCurrentCount() const;
 
 /************************************************************************/
 // IEWaitableBaseIX callback overrides.
@@ -108,7 +108,7 @@ public:
     /**
      * \brief   This method returns true if the count is more than one. Otherwise, it returns false.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const override;
+    virtual bool checkCanSignalMultipleThreads() const override;
 
     /**
      * \brief   This callback is called to notify waitable the amount of threads that where released.
@@ -134,7 +134,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WaitableSemaphoreIX( void ) = delete;
+    WaitableSemaphoreIX() = delete;
     DECLARE_NOCOPY_NOMOVE( WaitableSemaphoreIX );
 };
 
@@ -142,12 +142,12 @@ private:
 // WaitableSemaphoreIX class declaration.
 //////////////////////////////////////////////////////////////////////////
 
-inline int WaitableSemaphoreIX::getMaximumCount(void) const
+inline int WaitableSemaphoreIX::getMaximumCount() const
 {
     return mMaxCount;
 }
 
-inline int WaitableSemaphoreIX::getCurrentCount(void) const
+inline int WaitableSemaphoreIX::getCurrentCount() const
 {
     ObjectLockIX lock(*this); return mCurCount;
 }

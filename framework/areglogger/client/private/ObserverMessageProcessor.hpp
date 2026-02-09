@@ -42,7 +42,7 @@ class ObserverMessageProcessor
 //////////////////////////////////////////////////////////////////////////
 public:
     ObserverMessageProcessor(LoggerClient& loggerClient);
-    ~ObserverMessageProcessor(void) = default;
+    ~ObserverMessageProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -105,7 +105,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ObserverMessageProcessor(void) = delete;
+    ObserverMessageProcessor() = delete;
     DECLARE_NOCOPY_NOMOVE(ObserverMessageProcessor);
 };
 

@@ -78,7 +78,7 @@ public:
     /**
      * \brief   Creates the logging even data with undefined action
      **/
-    LoggingEventData( void );
+    LoggingEventData();
 
     /**
      * \brief   Creates the logging even data with specified action
@@ -115,7 +115,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~LoggingEventData( void ) = default;
+    ~LoggingEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -140,17 +140,17 @@ public:
     /**
      * \brief   Returns the value of action set in event data.
      **/
-    inline LoggingEventData::eLoggingAction getLoggingAction( void ) const;
+    inline LoggingEventData::eLoggingAction getLoggingAction() const;
 
     /**
      * \brief   Returns the streaming buffer for writing.
      **/
-    inline SharedBuffer & getWritableStream( void );
+    inline SharedBuffer & getWritableStream();
 
     /**
      * \brief   Returns the streaming buffer for reading.
      **/
-    inline const SharedBuffer & getReadableStream( void ) const;
+    inline const SharedBuffer & getReadableStream() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -174,17 +174,17 @@ DECLARE_EVENT(LoggingEventData, LoggingEvent, IELoggingEventConsumer)
 // LoggingEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline LoggingEventData::eLoggingAction LoggingEventData::getLoggingAction( void ) const
+inline LoggingEventData::eLoggingAction LoggingEventData::getLoggingAction() const
 {
     return mAction;
 }
 
-inline SharedBuffer & LoggingEventData::getWritableStream( void )
+inline SharedBuffer & LoggingEventData::getWritableStream()
 {
     return mDataBuffer;
 }
 
-inline const SharedBuffer & LoggingEventData::getReadableStream( void ) const
+inline const SharedBuffer & LoggingEventData::getReadableStream() const
 {
     return mDataBuffer;
 }

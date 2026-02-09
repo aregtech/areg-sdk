@@ -27,13 +27,13 @@
 // SyncLockAndWaitIX class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SyncLockAndWaitIX::MapWaitIDResource & SyncLockAndWaitIX::_mapWaitResourceIds( void )
+SyncLockAndWaitIX::MapWaitIDResource & SyncLockAndWaitIX::_mapWaitResourceIds()
 {
     static SyncLockAndWaitIX::MapWaitIDResource _mapWaitIdResource;
     return _mapWaitIdResource;
 }
 
-SyncLockAndWaitIX::SyncResourceMapIX & SyncLockAndWaitIX::_mapSyncResources( void )
+SyncLockAndWaitIX::SyncResourceMapIX & SyncLockAndWaitIX::_mapSyncResources()
 {
     static SyncLockAndWaitIX::SyncResourceMapIX _theSyncResourceMapIX;
     return _theSyncResourceMapIX;
@@ -360,22 +360,22 @@ SyncLockAndWaitIX::SyncLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
     }
 }
 
-SyncLockAndWaitIX::~SyncLockAndWaitIX( void )
+SyncLockAndWaitIX::~SyncLockAndWaitIX()
 {
 	SyncLockAndWaitIX::_mapSyncResources().removeResourceObject(this, true);
 }
 
-inline bool SyncLockAndWaitIX::_noEventFired( void ) const
+inline bool SyncLockAndWaitIX::_noEventFired() const
 {
     return (mFiredEntry == NESyncTypesIX::SyncObjectInvalid);
 }
 
-inline bool SyncLockAndWaitIX::_isEmpty( void ) const
+inline bool SyncLockAndWaitIX::_isEmpty() const
 {
     return mWaitingList.isEmpty();
 }
 
-inline bool SyncLockAndWaitIX::_notifyEvent( void )
+inline bool SyncLockAndWaitIX::_notifyEvent()
 {
     bool result = false;
 
@@ -388,7 +388,7 @@ inline bool SyncLockAndWaitIX::_notifyEvent( void )
     return result;
 }
 
-inline bool SyncLockAndWaitIX::_initPosixSyncObjects( void )
+inline bool SyncLockAndWaitIX::_initPosixSyncObjects()
 {
     // Init POSIX mutex
     if (RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ))
@@ -413,7 +413,7 @@ inline bool SyncLockAndWaitIX::_initPosixSyncObjects( void )
     return (mMutexValid && mCondVarValid);
 }
 
-inline void SyncLockAndWaitIX::_releasePosixSyncObjects( void )
+inline void SyncLockAndWaitIX::_releasePosixSyncObjects()
 {
     if (mMutexValid)
     {
@@ -440,17 +440,17 @@ inline void SyncLockAndWaitIX::_releasePosixSyncObjects( void )
     }
 }
 
-inline bool SyncLockAndWaitIX::_isValid( void ) const
+inline bool SyncLockAndWaitIX::_isValid() const
 {
     return ((mMutexValid && mCondVarValid) && (mWaitingList.isEmpty() == false));
 }
 
-inline bool SyncLockAndWaitIX::_lock( void )
+inline bool SyncLockAndWaitIX::_lock()
 {
     return (mMutexValid && (RETURNED_OK == pthread_mutex_lock(&mPosixMutex)));
 }
 
-inline void SyncLockAndWaitIX::_unlock( void )
+inline void SyncLockAndWaitIX::_unlock()
 {
     if (mMutexValid)
     {
@@ -458,7 +458,7 @@ inline void SyncLockAndWaitIX::_unlock( void )
     }
 }
 
-inline int SyncLockAndWaitIX::_waitCondition( void )
+inline int SyncLockAndWaitIX::_waitCondition()
 {
     if ( mWaitTimeout == NECommon::WAIT_INFINITE)
     {

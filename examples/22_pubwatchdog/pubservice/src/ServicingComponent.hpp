@@ -51,14 +51,14 @@ protected:
      *          Called to stop the service.
      * \note    Has no response
      **/
-    virtual void requestStopService( void ) override;
+    virtual void requestStopService() override;
 
     /**
      * \brief   Request call.
      *          Called to shutdown service and exit application.
      * \note    Has no response
      **/
-    virtual void requestShutdownService( void ) override;
+    virtual void requestShutdownService() override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -77,17 +77,17 @@ protected:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServicingComponent & self( void );
+    inline ServicingComponent & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
+    ServicingComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ServicingComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent inline methods
 //////////////////////////////////////////////////////////////////////////
-inline ServicingComponent & ServicingComponent::self( void )
+inline ServicingComponent & ServicingComponent::self()
 {   return (*this);     }

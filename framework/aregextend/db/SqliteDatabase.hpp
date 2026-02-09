@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Default constructor. Creates empty object, not connected to SQLite database.
      **/
-    SqliteDatabase(void);
+    SqliteDatabase();
 
     /**
      * \brief   Sets the SQLite database file path and connects to the database if 'open' flag is true.
@@ -49,7 +49,7 @@ public:
     /**
      * \brief   Closes SQLite database file if it is still opened.
      **/
-    virtual ~SqliteDatabase(void);
+    virtual ~SqliteDatabase();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -59,7 +59,7 @@ public:
     /**
      * \brief   Returns the path to the SQLite database file.
      **/
-    inline const String & getPath(void) const;
+    inline const String & getPath() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -73,7 +73,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    virtual bool isOperable(void) const override;
+    virtual bool isOperable() const override;
 
     /**
      * \brief   Connects to the specified database.
@@ -90,7 +90,7 @@ public:
     /**
      * \brief   Disconnects connected SqliteDatabase.
      **/
-    virtual void disconnect(void) override;
+    virtual void disconnect() override;
 
     /**
      * \brief   Execute the SQL script.
@@ -103,7 +103,7 @@ public:
      * \brief   Call if need to make multiple operation. This call starts the transaction,
      *          that is required either commit or rollback call to complete the transaction.
      **/
-    virtual bool begin(void) override;
+    virtual bool begin() override;
 
     /**
      * \brief   Commits or rolls back the SqliteDatabase changes and returns true if succeeded.
@@ -116,7 +116,7 @@ public:
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
      **/
-    virtual bool rollback(void) override;
+    virtual bool rollback() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -134,7 +134,7 @@ private:
     /**
      * \brief   Closes previously opened database and releases resources.
      **/
-    inline void _close(void);
+    inline void _close();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -157,7 +157,7 @@ private:
 // SqliteDatabase class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& SqliteDatabase::getPath(void) const
+inline const String& SqliteDatabase::getPath() const
 {
     return mDbPath;
 }

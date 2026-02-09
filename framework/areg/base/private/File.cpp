@@ -34,7 +34,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
-File::File( void )
+File::File()
     : FileBase    ( )
     , mFileHandle   (File::_osGetInvalidHandle())
 {
@@ -48,7 +48,7 @@ File::File(const String& fileName, unsigned int mode /* = (FileBase::FO_MODE_WRI
     mFileMode = mode;
 }
 
-File::~File( void )
+File::~File()
 {
     _osCloseFile();
 
@@ -74,17 +74,17 @@ bool File::open(const String& fileName, unsigned int mode)
     return result;
 }
 
-bool File::open(void)
+bool File::open()
 {
     return _osOpenFile();
 }
 
-void File::close(void)
+void File::close()
 {
     _osCloseFile();
 }
 
-unsigned int File::getSizeReadable( void ) const
+unsigned int File::getSizeReadable() const
 {
     unsigned int lenRead = 0;
     unsigned int lenUsed = 0;
@@ -101,7 +101,7 @@ unsigned int File::getSizeReadable( void ) const
     return (lenUsed - lenRead);
 }
 
-unsigned int File::getSizeWritable( void ) const
+unsigned int File::getSizeWritable() const
 {
     unsigned int lenWritten     = 0;
     unsigned int lenAvailable   = 0;
@@ -118,7 +118,7 @@ unsigned int File::getSizeWritable( void ) const
     return (lenAvailable - lenWritten);
 }
 
-bool File::remove( void )
+bool File::remove()
 {
     bool result = false;
 
@@ -227,7 +227,7 @@ String File::genTempFileName()
     return genTempFileName(nullptr, true, true);
 }
 
-const String & File::getExecutableDir(void)
+const String & File::getExecutableDir()
 {
     return Process::getInstance().getPath();
 }
@@ -472,12 +472,12 @@ unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition sta
     return (isOpened() ? _osSetPositionFile(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
-unsigned int File::getPosition(void) const
+unsigned int File::getPosition() const
 {
     return (isOpened() ? _osGetPositionFile() : IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
-unsigned int File::getLength(void) const
+unsigned int File::getLength() const
 {
     unsigned int result{ 0 };
     if (isOpened())
@@ -525,12 +525,12 @@ unsigned int File::reserve(unsigned int newSize)
     return result;
 }
 
-bool File::truncate(void)
+bool File::truncate()
 {
     return (isOpened() && canWrite() ? _osTruncateFile() : false);
 }
 
-void File::flush(void)
+void File::flush()
 {
     if (isOpened())
     {
@@ -579,7 +579,7 @@ bool File::moveFile(const char* oldPath, const char* newPath)
     return result;
 }
 
-String File::getCurrentDir(void)
+String File::getCurrentDir()
 {
     std::error_code err;
     return String(std::filesystem::current_path(err).string());
@@ -611,7 +611,7 @@ bool File::copyFile( const char* originPath, const char* newPath, bool copyForce
     return result;
 }
 
-String File::getTempDir(void)
+String File::getTempDir()
 {
     std::error_code err;
     return String(std::filesystem::temp_directory_path(err).string());

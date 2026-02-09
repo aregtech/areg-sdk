@@ -34,7 +34,7 @@ public:
      **/
     LocalHelloWorldService( Component & masterComp );
 
-    virtual ~LocalHelloWorldService(void) = default;
+    virtual ~LocalHelloWorldService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -59,7 +59,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    LocalHelloWorldService( void ) = delete;
+    LocalHelloWorldService() = delete;
     DECLARE_NOCOPY_NOMOVE( LocalHelloWorldService );
 };
 

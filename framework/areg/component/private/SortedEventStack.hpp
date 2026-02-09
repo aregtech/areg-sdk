@@ -60,7 +60,7 @@ class SortedEventStack  : protected TELockStack<Event *>
 public:
     SortedEventStack( uint32_t maxQueue );
 
-    ~SortedEventStack(void);
+    ~SortedEventStack();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -69,7 +69,7 @@ public:
     /**
      * \brief   Deletes all events from the stack, except "Exit" event if present.
      **/
-    void deleteAllEvents(void);
+    void deleteAllEvents();
 
     /**
      * \brief   Deletes all events with priorities lower than the specified, except "Exit" event.
@@ -120,28 +120,28 @@ public:
     /**
      * \brief   Returns the maximum size of the stack.
      **/
-    inline constexpr uint32_t getMaxSize(void) const;
+    inline constexpr uint32_t getMaxSize() const;
 
     /**
      * \brief   Returns true if the stack is empty.
      **/
-    inline bool isEmpty(void) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns the number of elements in the stack.
      **/
-    inline uint32_t getCount(void) const;
+    inline uint32_t getCount() const;
 
     /**
      * \brief   Locks the stack, so that the all other threads cannot access.
      * \return  Returns true, if succeeded to lock the stack.
      **/
-    inline bool lockStack(void);
+    inline bool lockStack();
 
     /**
      * \brief   Unlocks the stack, so that all other threads cann access.
      **/
-    inline void unlockStack(void);
+    inline void unlockStack();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -204,28 +204,28 @@ private:
 // SortedEventStack class inline implementation.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SortedEventStack::isEmpty(void) const
+inline bool SortedEventStack::isEmpty() const
 {
     Lock lock(mSyncObject);
     return mValueList.empty();
 }
 
-inline uint32_t SortedEventStack::getCount(void) const
+inline uint32_t SortedEventStack::getCount() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline bool SortedEventStack::lockStack(void)
+inline bool SortedEventStack::lockStack()
 {
     return lock();
 }
 
-inline void SortedEventStack::unlockStack(void)
+inline void SortedEventStack::unlockStack()
 {
     unlock();
 }
 
-inline constexpr uint32_t SortedEventStack::getMaxSize(void) const
+inline constexpr uint32_t SortedEventStack::getMaxSize() const
 {
     return mMaxQueueSize;
 }

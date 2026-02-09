@@ -32,7 +32,7 @@ IEResourceLock::IEResourceLock( IESyncObject::eSyncObject syncObjectType )
             syncObjectType == IESyncObject::eSyncObject::SoNolock     );
 }
 
-bool IEResourceLock::tryLock(void)
+bool IEResourceLock::tryLock()
 {
     return false;
 }
@@ -51,7 +51,7 @@ Mutex::Mutex( bool initLock /* = true */ )
     _osCreateMutex( initLock );
 }
 
-Mutex::~Mutex( void )
+Mutex::~Mutex()
 {
     _osUnlockMutex( );
 }
@@ -71,7 +71,7 @@ SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
     _osCreateEvent( initLock );
 }
 
-SyncEvent::~SyncEvent( void )
+SyncEvent::~SyncEvent()
 {
     ASSERT( mSyncObject != nullptr );
     _osUnlockEvent( mSyncObject );
@@ -93,7 +93,7 @@ Semaphore::Semaphore( int maxCount, int initCount /* = 0 */ )
     _osCreateSemaphore( );
 }
 
-Semaphore::~Semaphore( void )
+Semaphore::~Semaphore()
 {
     ASSERT( mSyncObject != nullptr );
     _osReleaseSemaphore( );
@@ -112,7 +112,7 @@ bool Semaphore::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
     return result;
 }
 
-bool Semaphore::unlock( void )
+bool Semaphore::unlock()
 {
     ASSERT( mSyncObject != nullptr );
     bool result = false;
@@ -125,7 +125,7 @@ bool Semaphore::unlock( void )
     return result;
 }
 
-bool Semaphore::tryLock( void )
+bool Semaphore::tryLock()
 {
     return false;
 }
@@ -137,13 +137,13 @@ bool Semaphore::tryLock( void )
 //////////////////////////////////////////////////////////////////////////
 // CriticalSection class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-CriticalSection::CriticalSection( void )
+CriticalSection::CriticalSection()
     : IEResourceLock( IESyncObject::eSyncObject::SoCritical )
 {
     _osCreateCriticalSection( );
 }
 
-CriticalSection::~CriticalSection( void )
+CriticalSection::~CriticalSection()
 {
     ASSERT( mSyncObject != nullptr );
     _osReleaseCriticalSection( );
@@ -153,7 +153,7 @@ CriticalSection::~CriticalSection( void )
 // SpinLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SpinLock::SpinLock( void )
+SpinLock::SpinLock()
     : IEResourceLock( IESyncObject::eSyncObject::SoSpinlock )
     , mLock         ( false )
 {
@@ -183,7 +183,7 @@ ResourceLock::ResourceLock( bool initLock /*= false*/ )
     _osCreateResourceLock( initLock );
 }
 
-ResourceLock::~ResourceLock( void )
+ResourceLock::~ResourceLock()
 {
     ASSERT( mSyncObject != nullptr );
     _osReleaseResourceLock( );
@@ -193,7 +193,7 @@ ResourceLock::~ResourceLock( void )
 // NolockSyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
-NolockSyncObject::NolockSyncObject( void )
+NolockSyncObject::NolockSyncObject()
     : IEResourceLock( IESyncObject::eSyncObject::SoNolock )
 {
 }
@@ -215,7 +215,7 @@ SyncTimer::SyncTimer( unsigned int msTimeout, bool isPeriodic /* = false */, boo
     _osCreateTimer( isSteady );
 }
 
-SyncTimer::~SyncTimer( void )
+SyncTimer::~SyncTimer()
 {
     ASSERT( mSyncObject != nullptr );
     _osReleaseTime( );
@@ -239,7 +239,7 @@ Lock::Lock(IESyncObject &syncObj, bool autoLock /* = true */)
     }
 }
 
-Lock::~Lock( void )
+Lock::~Lock()
 {
     if (mAutoLock && mSyncObject.isValid())
     {
@@ -266,7 +266,7 @@ MultiLock::MultiLock(IESyncObject* pObjects[], int count, bool autoLock /* = tru
     }
 }
 
-MultiLock::~MultiLock( void )
+MultiLock::~MultiLock()
 {
     if (mAutoLock)
     {
@@ -274,7 +274,7 @@ MultiLock::~MultiLock( void )
     }
 }
 
-bool MultiLock::unlock( void )
+bool MultiLock::unlock()
 {
     for (int i = 0; i < mSizeCount; ++ i)
     {
@@ -308,13 +308,13 @@ bool MultiLock::unlock( int index )
 //////////////////////////////////////////////////////////////////////////
 // Wait class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Wait::Wait(void)
+Wait::Wait()
     : mTimer(nullptr)
 {
     _osInitTimer();
 }
 
-Wait::~Wait(void)
+Wait::~Wait()
 {
     _osReleaseTimer();
 }

@@ -25,13 +25,13 @@
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/LogObserverBase.hpp"
 
-LoggerClient& LoggerClient::getInstance(void)
+LoggerClient& LoggerClient::getInstance()
 {
     static LoggerClient _instance;
     return _instance;
 }
 
-LoggerClient::LoggerClient(void)
+LoggerClient::LoggerClient()
     : ServiceClientConnectionBase( LoggerClient::TargetID
                                  , LoggerClient::ServiceType
                                  , static_cast<uint32_t>(ConnectType)
@@ -75,7 +75,7 @@ bool LoggerClient::startLoggerClient(const String & address /*= String::EmptyStr
     return connectServiceHost();
 }
 
-void LoggerClient::stopLoggerClient(void)
+void LoggerClient::stopLoggerClient()
 {
     do
     {
@@ -115,25 +115,25 @@ void LoggerClient::setPaused(bool doPause)
     }
 }
 
-const NESocket::SocketAddress& LoggerClient::getAddress(void) const
+const NESocket::SocketAddress& LoggerClient::getAddress() const
 {
     Lock lock(mLock);
     return mClientConnection.getAddress();
 }
 
-bool LoggerClient::isSqliteEngine(void) const
+bool LoggerClient::isSqliteEngine() const
 {
     LogConfiguration config;
     return (config.isDatabaseLoggingEnabled() && (config.getDatabaseEngine() == NELogging::LOGDB_ENGINE_NAME));
 }
 
-bool LoggerClient::isConfigLoggerConnectEnabled(void) const
+bool LoggerClient::isConfigLoggerConnectEnabled() const
 {
     ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
     return (config.isConfigured() && config.getConnectionEnableFlag());
 }
 
-String LoggerClient::getConfigLoggerAddress(void) const
+String LoggerClient::getConfigLoggerAddress() const
 {
     ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
     if (config.isConfigured())
@@ -146,7 +146,7 @@ String LoggerClient::getConfigLoggerAddress(void) const
     }
 }
 
-uint16_t LoggerClient::getConfigLoggerPort(void) const
+uint16_t LoggerClient::getConfigLoggerPort() const
 {
     ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
     if (config.isConfigured())
@@ -176,7 +176,7 @@ bool LoggerClient::setConfigLoggerConnection(const String& address, uint16_t por
     return result;
 }
 
-bool LoggerClient::requestConnectedInstances(void)
+bool LoggerClient::requestConnectedInstances()
 {
     bool result{ false };
     if (mChannel.getCookie() != NEService::COOKIE_UNKNOWN)
@@ -254,22 +254,22 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     return result;
 }
 
-void LoggerClient::closeLoggingDatabase(void)
+void LoggerClient::closeLoggingDatabase()
 {
     mLogDatabase.disconnect();
 }
 
-String LoggerClient::getActiveDatabasePath(void) const
+String LoggerClient::getActiveDatabasePath() const
 {
     return mLogDatabase.getDatabasePath();
 }
 
-String LoggerClient::getInitialDatabasePath(void) const
+String LoggerClient::getInitialDatabasePath() const
 {
     return mLogDatabase.getInitialDatabasePath();
 }
 
-String LoggerClient::getConfigDatabasePath(void) const
+String LoggerClient::getConfigDatabasePath() const
 {
     String result;
     if (isSqliteEngine())
@@ -298,7 +298,7 @@ bool LoggerClient::setConfigDatabasePath(const String& dbPath, bool enable)
     return result;
 }
 
-String LoggerClient::getConfigDatabaseLocation(void) const
+String LoggerClient::getConfigDatabaseLocation() const
 {
     String result;
     if (isSqliteEngine())
@@ -323,7 +323,7 @@ bool LoggerClient::setConfigDatabaseLocation(const String& dbLocation)
     return result;
 }
 
-String LoggerClient::getConfigDatabaseName(void) const
+String LoggerClient::getConfigDatabaseName() const
 {
     String result;
     if (isSqliteEngine())
@@ -361,7 +361,7 @@ bool LoggerClient::setConfigLoggerConnectEnabled(bool isEnabled)
     return result;
 }
 
-void LoggerClient::saveConfiguration(void)
+void LoggerClient::saveConfiguration()
 {
     LogConfiguration config;
     config.saveConfiguration();
@@ -448,7 +448,7 @@ void LoggerClient::readyForEvents(bool isReady)
     }
 }
 
-bool LoggerClient::connectServiceHost(void)
+bool LoggerClient::connectServiceHost()
 {
     bool result{ false };
     if (isRunning() == false)
@@ -470,7 +470,7 @@ bool LoggerClient::connectServiceHost(void)
     return result;
 }
 
-void LoggerClient::disconnectServiceHost(void)
+void LoggerClient::disconnectServiceHost()
 {
     if (isRunning())
     {
@@ -496,7 +496,7 @@ void LoggerClient::disconnectServiceHost(void)
     }
 }
 
-void LoggerClient::onServiceExit(void)
+void LoggerClient::onServiceExit()
 {
     ServiceClientConnectionBase::onServiceExit();
     triggerExit();

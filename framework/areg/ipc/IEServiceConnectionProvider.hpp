@@ -47,12 +47,12 @@ protected:
     /**
      * \brief   Default constructor. Protected.
      **/
-    IEServiceConnectionProvider( void ) = default;
+    IEServiceConnectionProvider() = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEServiceConnectionProvider( void ) = default;
+    virtual ~IEServiceConnectionProvider() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -87,7 +87,7 @@ public:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost( void ) = 0;
+    virtual bool connectServiceHost() = 0;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -95,27 +95,27 @@ public:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    virtual bool reconnectServiceHost(void) = 0;
+    virtual bool reconnectServiceHost() = 0;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost( void ) = 0;
+    virtual void disconnectServiceHost() = 0;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isServiceHostConnected( void ) const = 0;
+    virtual bool isServiceHostConnected() const = 0;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
      **/
-    virtual bool isServiceHostPending(void) const = 0;
+    virtual bool isServiceHostPending() const = 0;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isServiceHostSetup( void ) const = 0;
+    virtual bool isServiceHostSetup() const = 0;
 
     /**
      * \brief   Creates the service connect request message, sets the message target and the source.

@@ -100,7 +100,7 @@ protected:
      * \brief   Destructor. Protected.
      * \remark  Do not call directly, use Destroy() method to clean properly.
      **/
-    virtual ~ServiceResponseEvent( void ) = default;
+    virtual ~ServiceResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -110,17 +110,17 @@ public:
     /**
      * \brief   Get and set response message ID.
      **/
-    inline unsigned int getResponseId( void ) const;
+    inline unsigned int getResponseId() const;
 
     /**
      * \brief   Returns response call result
      **/
-    inline NEService::eResultType getResult( void ) const;
+    inline NEService::eResultType getResult() const;
 
     /**
      * \brief   Returns sequence number of call.
      **/
-    inline const SequenceNumber & getSequenceNumber( void ) const;
+    inline const SequenceNumber & getSequenceNumber() const;
 
     /**
      * \brief   Sets sequence number of call.
@@ -186,7 +186,7 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceResponseEvent( void ) = delete;
+    ServiceResponseEvent() = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceResponseEvent );
 };
 
@@ -194,17 +194,17 @@ private:
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline unsigned int ServiceResponseEvent::getResponseId( void ) const
+inline unsigned int ServiceResponseEvent::getResponseId() const
 {
     return mResponseId;
 }
 
-inline NEService::eResultType ServiceResponseEvent::getResult( void ) const
+inline NEService::eResultType ServiceResponseEvent::getResult() const
 {
     return mResult;
 }
 
-inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber( void ) const
+inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber() const
 {
     return mSequenceNr;
 }

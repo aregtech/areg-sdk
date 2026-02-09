@@ -44,7 +44,7 @@ public:
      *          or receiving data, the socket should be created
      *          and connected to remote host.
      **/
-    SocketClient( void ) = default;
+    SocketClient() = default;
 
     /**
      * \brief   Initialization constructor. Creates instance of object
@@ -74,7 +74,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~SocketClient( void ) = default;
+    virtual ~SocketClient() = default;
 
 public:
 /************************************************************************/
@@ -98,7 +98,7 @@ public:
      *          and port number should be already set in socket address.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( void ) override;
+    virtual bool createSocket() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

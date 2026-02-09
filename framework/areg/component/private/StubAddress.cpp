@@ -55,7 +55,7 @@ StubAddress StubAddress::convPathToAddress( const char* pathStub, const char** o
     return result;
 }
 
-const StubAddress & StubAddress::getInvalidStubAddress( void )
+const StubAddress & StubAddress::getInvalidStubAddress()
 {
     static const StubAddress _invalidStubAddress;
     return _invalidStubAddress;
@@ -64,7 +64,7 @@ const StubAddress & StubAddress::getInvalidStubAddress( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-StubAddress::StubAddress( void )
+StubAddress::StubAddress()
     : ServiceAddress( )
     , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
@@ -218,17 +218,17 @@ bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) cons
     return result;
 }
 
-void StubAddress::invalidateChannel( void )
+void StubAddress::invalidateChannel()
 {
     mChannel.invalidate();
 }
 
-bool StubAddress::isValid( void ) const
+bool StubAddress::isValid() const
 {
     return mChannel.isValid();
 }
 
-String StubAddress::convToString(void) const
+String StubAddress::convToString() const
 {
     String result(static_cast<uint32_t>(0xFF));
 
@@ -276,7 +276,7 @@ unsigned int StubAddress::_magicNumber(const StubAddress & addrStub)
     return result;
 }
 
-bool StubAddress::isValidated(void) const
+bool StubAddress::isValidated() const
 {
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
 }

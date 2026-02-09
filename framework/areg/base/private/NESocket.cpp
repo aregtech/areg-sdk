@@ -46,12 +46,12 @@ namespace NESocket
      * \brief   OS specific socket initialization. Required in Win32 to initialize resources.
      * \return  Returns true if initialization succeeded.
      **/
-    bool _osInitSocket(void);
+    bool _osInitSocket();
 
     /**
      * \brief   OS specific socket release. Required in Win32 to release resources.
      */
-    void _osReleaseSocket(void);
+    void _osReleaseSocket();
 
     /**
      * \brief   OS specific socket close.
@@ -102,7 +102,7 @@ AREG_API_IMPL const int NESocket::MAXIMUM_LISTEN_QUEUE_SIZE{ SOMAXCONN };
 //////////////////////////////////////////////////////////////////////////
 // NESocket::SocketAddress class implementation
 //////////////////////////////////////////////////////////////////////////
-NESocket::SocketAddress::SocketAddress( void )
+NESocket::SocketAddress::SocketAddress()
     : mIpAddr   ( )
     , mHostName ( )
     , mPortNr   ( NESocket::InvalidPort )
@@ -292,7 +292,7 @@ bool NESocket::SocketAddress::operator != ( const NESocket::SocketAddress & othe
 // NESocket::UserData class implementation
 //////////////////////////////////////////////////////////////////////////
 
-NESocket::UserData::UserData(void)
+NESocket::UserData::UserData()
     : mUser     ( )
     , mPassword ( )
 {
@@ -340,7 +340,7 @@ bool NESocket::UserData::operator!=(const NESocket::UserData& other)
     return (mUser != other.mUser) || (mPassword != other.mPassword);
 }
 
-const String& NESocket::UserData::getUser(void) const
+const String& NESocket::UserData::getUser() const
 {
     return mUser;
 }
@@ -350,7 +350,7 @@ void NESocket::UserData::setUser(const String& user)
     mUser = user;
 }
 
-const String& NESocket::UserData::getPassword(void) const
+const String& NESocket::UserData::getPassword() const
 {
     return mPassword;
 }
@@ -360,7 +360,7 @@ void NESocket::UserData::setPassword(const String& password)
     mPassword = password;
 }
 
-bool NESocket::UserData::isValid(void) const
+bool NESocket::UserData::isValid() const
 {
     return (mUser.isEmpty() == false);
 }
@@ -369,7 +369,7 @@ bool NESocket::UserData::isValid(void) const
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API_IMPL SOCKETHANDLE NESocket::socketCreate( void )
+AREG_API_IMPL SOCKETHANDLE NESocket::socketCreate()
 {
     return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
 }
@@ -718,12 +718,12 @@ AREG_API_IMPL unsigned int NESocket::pendingRead(SOCKETHANDLE hSocket)
     return (isSocketHandleValid(hSocket) && _osControl(hSocket, FIONREAD, result) ? static_cast<unsigned int>(result) : 0);
 }
 
-AREG_API_IMPL bool NESocket::socketInitialize(void)
+AREG_API_IMPL bool NESocket::socketInitialize()
 {
     return _osInitSocket();
 }
 
-AREG_API_IMPL void NESocket::socketRelease(void)
+AREG_API_IMPL void NESocket::socketRelease()
 {
     _osReleaseSocket();
 }
@@ -789,7 +789,7 @@ AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
     return ( isSocketHandleValid(hSocket) && (RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
-AREG_API_IMPL const String & NESocket::getHostname(void)
+AREG_API_IMPL const String & NESocket::getHostname()
 {
     static String result;
 

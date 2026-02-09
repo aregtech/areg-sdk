@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteMessage( void ) = default;
+    virtual ~RemoteMessage() = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -134,18 +134,18 @@ public:
     /**
      * \brief   Returns remote message structure data
      **/
-    inline const NEMemory::sRemoteMessage * getRemoteMessage( void ) const;
+    inline const NEMemory::sRemoteMessage * getRemoteMessage() const;
 
     /**
      * \brief   Returns checksum value of Remote Buffer.
      *          The checksum value cannot be set. It is calculated by call ChecksumMark().
      **/
-    inline unsigned int getChecksum( void ) const;
+    inline unsigned int getChecksum() const;
 
     /**
      * \brief   Returns the ID of remote source set in Remote Buffer header.
      **/
-    inline const ITEM_ID & getSource( void ) const;
+    inline const ITEM_ID & getSource() const;
 
     /**
      * \brief   Sets the ID of source in Remote Buffer.
@@ -156,7 +156,7 @@ public:
     /**
      * \brief   Returns the ID of remote target set in Remote Buffer header.
      **/
-    inline const ITEM_ID & getTarget( void ) const;
+    inline const ITEM_ID & getTarget() const;
 
     /**
      * \brief   Sets the ID of target in Remote Buffer.
@@ -167,7 +167,7 @@ public:
     /**
      * \brief   Returns the message ID value set in remote buffer
      **/
-    inline unsigned int getMessageId( void ) const;
+    inline unsigned int getMessageId() const;
 
     /**
      * \brief   Sets new Message ID value in Remote Buffer.
@@ -178,7 +178,7 @@ public:
     /**
      * \brief   Returns result of processed message
      **/
-    inline unsigned int getResult( void ) const;
+    inline unsigned int getResult() const;
 
     /**
      * \brief   Sets result or processed message
@@ -188,7 +188,7 @@ public:
     /**
      * \brief   Returns Sequence number value set in Remote Buffer.
      **/
-    inline const SequenceNumber & getSequenceNr( void ) const;
+    inline const SequenceNumber & getSequenceNr() const;
 
     /**
      * \brief   Sets new Sequence number value in Remote Buffer.
@@ -199,7 +199,7 @@ public:
     /**
      * \brief   Returns true if marked checksum value is valid. Otherwise, it returns false
      **/
-    bool isChecksumValid( void ) const;
+    bool isChecksumValid() const;
 
     /**
      * \brief   Call when completed modifying buffer. Completion will fix such values as
@@ -210,7 +210,7 @@ public:
      *          It is strongly recommended to call method again if the buffer was changed
      *          or before transferring buffer to remote target.
      **/
-    void bufferCompletionFix( void ) const;
+    void bufferCompletionFix() const;
 
     /**
      * \brief   Initializes new buffer based on given Byte Buffer Header data.
@@ -258,12 +258,12 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset( void ) const override;
+    virtual unsigned int getDataOffset() const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    virtual unsigned int getHeaderSize( void ) const override;
+    virtual unsigned int getHeaderSize() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -272,14 +272,14 @@ private:
     /**
      * \brief   Returns converted instance of Remote Message header.
      **/
-    inline const NEMemory::sRemoteMessageHeader & _getHeader( void ) const;
-    inline NEMemory::sRemoteMessageHeader & _getHeader( void );
+    inline const NEMemory::sRemoteMessageHeader & _getHeader() const;
+    inline NEMemory::sRemoteMessageHeader & _getHeader();
 
     /**
      * \brief   Returns converted instance of Remote Buffer
      **/
-    inline const NEMemory::sRemoteMessage & _getRemoteMessage( void ) const;
-    inline NEMemory::sRemoteMessage & _getRemoteMessage( void );
+    inline const NEMemory::sRemoteMessage & _getRemoteMessage() const;
+    inline NEMemory::sRemoteMessage & _getRemoteMessage();
 
     /**
      * \brief   Calculates and returns the checksum value of given remote message
@@ -290,39 +290,39 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // RemoteMessage class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline const NEMemory::sRemoteMessageHeader & RemoteMessage::_getHeader( void ) const
+inline const NEMemory::sRemoteMessageHeader & RemoteMessage::_getHeader() const
 {
     return reinterpret_cast<const NEMemory::sRemoteMessageHeader &>(*getByteBuffer());
 }
 
-inline NEMemory::sRemoteMessageHeader & RemoteMessage::_getHeader( void )
+inline NEMemory::sRemoteMessageHeader & RemoteMessage::_getHeader()
 {
     ASSERT(mByteBuffer.get() != nullptr);
     return reinterpret_cast<NEMemory::sRemoteMessageHeader &>(*(mByteBuffer.get()));
 }
 
-inline const NEMemory::sRemoteMessage & RemoteMessage::_getRemoteMessage( void ) const
+inline const NEMemory::sRemoteMessage & RemoteMessage::_getRemoteMessage() const
 {
     return reinterpret_cast<const NEMemory::sRemoteMessage &>(*getByteBuffer());
 }
 
-inline NEMemory::sRemoteMessage & RemoteMessage::_getRemoteMessage( void )
+inline NEMemory::sRemoteMessage & RemoteMessage::_getRemoteMessage()
 {
     ASSERT( mByteBuffer.get( ) != nullptr );
     return reinterpret_cast<NEMemory::sRemoteMessage &>(*mByteBuffer.get());
 }
 
-inline const NEMemory::sRemoteMessage * RemoteMessage::getRemoteMessage( void ) const
+inline const NEMemory::sRemoteMessage * RemoteMessage::getRemoteMessage() const
 {
     return reinterpret_cast<const NEMemory::sRemoteMessage *>(getByteBuffer());
 }
 
-inline unsigned int RemoteMessage::getChecksum( void ) const
+inline unsigned int RemoteMessage::getChecksum() const
 {
     return _getHeader().rbhChecksum;
 }
 
-inline const ITEM_ID & RemoteMessage::getSource( void ) const
+inline const ITEM_ID & RemoteMessage::getSource() const
 {
     return _getHeader().rbhSource;
 }
@@ -335,7 +335,7 @@ inline void RemoteMessage::setSource(const ITEM_ID & idSource )
     }
 }
 
-inline const ITEM_ID & RemoteMessage::getTarget( void ) const
+inline const ITEM_ID & RemoteMessage::getTarget() const
 {
     return _getHeader().rbhTarget;
 }
@@ -348,7 +348,7 @@ inline void RemoteMessage::setTarget(const ITEM_ID & idTarget )
     }
 }
 
-inline unsigned int RemoteMessage::getMessageId( void ) const
+inline unsigned int RemoteMessage::getMessageId() const
 {
     return _getHeader().rbhMessageId;
 }
@@ -361,7 +361,7 @@ inline void RemoteMessage::setMessageId( unsigned int newMessageId )
     }
 }
 
-inline unsigned int RemoteMessage::getResult( void ) const
+inline unsigned int RemoteMessage::getResult() const
 {
     return _getHeader().rbhResult;
 }
@@ -374,7 +374,7 @@ inline void RemoteMessage::setResult( unsigned int newResult )
     }
 }
 
-inline const SequenceNumber & RemoteMessage::getSequenceNr(void) const
+inline const SequenceNumber & RemoteMessage::getSequenceNr() const
 {
     return _getHeader().rbhSequenceNr;
 }

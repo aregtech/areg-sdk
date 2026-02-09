@@ -91,12 +91,12 @@ private:
      * \brief   Default constructor. Hidden.
      *          Object cannot be instantiated directly.
      **/
-    RemoteEventFactory( void ) = default;
+    RemoteEventFactory() = default;
 
     /**
      * \brief   Destructor. The object cannot be deleted directly.
      **/
-    ~RemoteEventFactory( void ) = default;
+    ~RemoteEventFactory() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

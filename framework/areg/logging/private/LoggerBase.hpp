@@ -72,7 +72,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~LoggerBase( void ) = default;
+    virtual ~LoggerBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -91,12 +91,12 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger( void ) = 0;
+    virtual bool openLogger() = 0;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger( void ) = 0;
+    virtual void closeLogger() = 0;
 
     /**
      * \brief   Called when message should be logged.
@@ -107,7 +107,7 @@ public:
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened( void ) const = 0;
+    virtual bool isLoggerOpened() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -117,27 +117,27 @@ public:
      * \brief   Called when logger object(s) should be reopened.
      *          If method returns true, the log manager forwards messages to logger object(s).
      **/
-    inline bool reopenLogger( void );
+    inline bool reopenLogger();
 
     /**
      * \brief   Return instance of log configuration object.
      **/
-    inline const LogConfiguration & getLogConfiguration( void ) const;
+    inline const LogConfiguration & getLogConfiguration() const;
 
     /**
      * \return  Returns the layout object to print messages.
      **/
-    inline const LayoutManager & getLayoutMessage( void ) const;
+    inline const LayoutManager & getLayoutMessage() const;
 
     /**
      * \return  Returns the layout object to print "enter scope" message.
      **/
-    inline const LayoutManager & getLayoutEnterScope( void ) const;
+    inline const LayoutManager & getLayoutEnterScope() const;
 
     /**
      * \return  Returns the layout object to output "exit scope" message.
      **/
-    inline const LayoutManager & getLayoutExitScope( void ) const;
+    inline const LayoutManager & getLayoutExitScope() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
@@ -147,12 +147,12 @@ protected:
      * \brief   Creates message layout objects. Returns true if succeeded.
      *          Overwrite method to change layouts.
      **/
-    virtual bool createLayouts( void );
+    virtual bool createLayouts();
 
     /**
      * \brief   Release previously crated layouts
      **/
-    virtual void releaseLayouts( void );
+    virtual void releaseLayouts();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -181,35 +181,35 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    LoggerBase( void ) = delete;
+    LoggerBase() = delete;
     DECLARE_NOCOPY_NOMOVE( LoggerBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool LoggerBase::reopenLogger(void)
+inline bool LoggerBase::reopenLogger()
 {
     closeLogger();
     return openLogger();
 }
 
-inline const LogConfiguration & LoggerBase::getLogConfiguration( void ) const
+inline const LogConfiguration & LoggerBase::getLogConfiguration() const
 {
     return mLogConfiguration;
 }
 
-inline const LayoutManager & LoggerBase::getLayoutMessage(void) const
+inline const LayoutManager & LoggerBase::getLayoutMessage() const
 {
     return mLayoutsMessage;
 }
 
-inline const LayoutManager & LoggerBase::getLayoutEnterScope(void) const
+inline const LayoutManager & LoggerBase::getLayoutEnterScope() const
 {
     return mLayoutsScopeEnter;
 }
 
-inline const LayoutManager & LoggerBase::getLayoutExitScope(void) const
+inline const LayoutManager & LoggerBase::getLayoutExitScope() const
 {
     return mLayoutsScopeExit;
 }

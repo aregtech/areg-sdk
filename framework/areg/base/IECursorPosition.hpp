@@ -67,11 +67,11 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IECursorPosition( void ) = default;
+    IECursorPosition() = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IECursorPosition( void ) = default;
+    virtual ~IECursorPosition() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -86,7 +86,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    virtual unsigned int getPosition( void ) const = 0;
+    virtual unsigned int getPosition() const = 0;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -111,20 +111,20 @@ public:
      * \brief   Move cursor position to the begin and returns 'true' if succeeded.
      *          Operation fails if moving position returns INVALID_CURSOR_POSITION
      **/
-    inline bool moveToBegin( void ) const;
+    inline bool moveToBegin() const;
 
     /**
      * \brief   Move cursor position to the end and returns 'true' if succeeded.
      *          Operation fails if moving position returns INVALID_CURSOR_POSITION
      **/
-    inline bool moveToEnd( void ) const;
+    inline bool moveToEnd() const;
 
 protected:
     /**
      * \brief	Checks and returns whether current position of pointer is valid or not.
      *          The valid position must not be equal to INVALID_CURSOR_POSITION
      **/
-    inline bool isPositionValid( void ) const;
+    inline bool isPositionValid() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Disabled methods
@@ -137,17 +137,17 @@ private:
 // IECursorPosition pure virtual class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool IECursorPosition::isPositionValid( void ) const
+inline bool IECursorPosition::isPositionValid() const
 {
     return (getPosition() != IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
-inline bool IECursorPosition::moveToBegin( void ) const
+inline bool IECursorPosition::moveToBegin() const
 {
     return (setPosition(0, IECursorPosition::eCursorPosition::PositionBegin) != IECursorPosition::INVALID_CURSOR_POSITION);
 }
 
-inline bool IECursorPosition::moveToEnd( void ) const
+inline bool IECursorPosition::moveToEnd() const
 {
     return (setPosition(0, IECursorPosition::eCursorPosition::PositionEnd)   != IECursorPosition::INVALID_CURSOR_POSITION);
 }

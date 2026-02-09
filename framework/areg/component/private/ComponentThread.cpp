@@ -33,7 +33,7 @@ IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Implement static methods
 //////////////////////////////////////////////////////////////////////////
-Component* ComponentThread::getCurrentComponent( void )
+Component* ComponentThread::getCurrentComponent()
 {
     ComponentThread* comThread = ComponentThread::_getCurrentComponentThread();
     return (comThread != nullptr ? comThread->mCurrentComponent : nullptr);
@@ -47,12 +47,12 @@ bool ComponentThread::setCurrentComponent( Component* curComponent )
     return (comThread != nullptr);
 }
 
-inline ComponentThread & ComponentThread::self( void )
+inline ComponentThread & ComponentThread::self()
 {
     return (*this);
 }
 
-inline ComponentThread* ComponentThread::_getCurrentComponentThread( void )
+inline ComponentThread* ComponentThread::_getCurrentComponentThread()
 {
     return RUNTIME_CAST( &(DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
 }
@@ -80,7 +80,7 @@ bool ComponentThread::postEvent( Event& eventElem )
     return EventDispatcher::postEvent(eventElem);
 }
 
-bool ComponentThread::runDispatcher( void )
+bool ComponentThread::runDispatcher()
 {
     bool result{ false };
     if (createComponents() > 0)
@@ -93,7 +93,7 @@ bool ComponentThread::runDispatcher( void )
     return result;
 }
 
-int ComponentThread::createComponents( void )
+int ComponentThread::createComponents()
 {
     int result = 0;
     const NERegistry::ComponentList& comList = ComponentLoader::findComponentList(getName());
@@ -117,7 +117,7 @@ int ComponentThread::createComponents( void )
     return result;
 }
 
-void ComponentThread::destroyComponents( void )
+void ComponentThread::destroyComponents()
 {
     while (mListComponent.isEmpty() == false)
     {
@@ -138,7 +138,7 @@ void ComponentThread::destroyComponents( void )
     }
 }
 
-void ComponentThread::startComponents( void )
+void ComponentThread::startComponents()
 {
     ListComponent::LISTPOS pos = mListComponent.lastPosition();
     while (mListComponent.isValidPosition(pos))
@@ -149,7 +149,7 @@ void ComponentThread::startComponents( void )
     }
 }
 
-void ComponentThread::shutdownComponents( void )
+void ComponentThread::shutdownComponents()
 {
     _shutdownProxies();
     _shutdownComponents();
@@ -172,7 +172,7 @@ DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID&
     return result;
 }
 
-void ComponentThread::terminateSelf(void)
+void ComponentThread::terminateSelf()
 {
     mHasStarted = false;
     removeAllEvents();
@@ -202,7 +202,7 @@ void ComponentThread::terminateSelf(void)
     delete this;
 }
 
-inline void ComponentThread::_shutdownProxies(void)
+inline void ComponentThread::_shutdownProxies()
 {
     TEArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::findThreadProxies(self(), proxyList);
@@ -214,7 +214,7 @@ inline void ComponentThread::_shutdownProxies(void)
     }
 }
 
-inline void ComponentThread::_shutdownComponents(void)
+inline void ComponentThread::_shutdownComponents()
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition();
     while (mListComponent.isValidPosition(pos))
@@ -251,7 +251,7 @@ bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommo
     return DispatcherThread::completionWait(waitForCompleteMs);
 }
 
-int ComponentThread::onThreadExit(void)
+int ComponentThread::onThreadExit()
 {
     shutdownComponents();
     destroyComponents();

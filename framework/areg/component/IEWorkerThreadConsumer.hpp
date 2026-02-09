@@ -62,7 +62,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEWorkerThreadConsumer( void ) = default;
+    virtual ~IEWorkerThreadConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -73,7 +73,7 @@ public:
      *          Is required if component contains few worker threads
      *          and needs few consumers for every single worker thread.
      **/
-    inline const String & getConsumerName( void ) const;
+    inline const String & getConsumerName() const;
 
     /**
      * \brief   Compares passed name with the name of consumer
@@ -121,14 +121,14 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEWorkerThreadConsumer( void ) = delete;
+    IEWorkerThreadConsumer() = delete;
     DECLARE_NOCOPY_NOMOVE( IEWorkerThreadConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // IEWorkerThreadConsumer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const String & IEWorkerThreadConsumer::getConsumerName( void ) const
+inline const String & IEWorkerThreadConsumer::getConsumerName() const
 {
     return mConsumerName;
 }

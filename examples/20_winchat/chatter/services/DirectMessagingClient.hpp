@@ -15,12 +15,12 @@ class DirectMessagingClient   : public DirectMessagerClientBase
 {
 public:
     DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler * handlerParticipants );
-    virtual ~DirectMessagingClient( void ) = default;
+    virtual ~DirectMessagingClient() = default;
 
     /**
      * \brief   Call to send request to leave the chat and release notifications.
      **/
-    void shutdownChat(void);
+    void shutdownChat();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -86,7 +86,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastChatClosed( void ) override;
+    virtual void broadcastChatClosed() override;
 
 /************************************************************************/
 // IEProxyListener Overrides
@@ -108,7 +108,7 @@ protected:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline DirectMessagingClient & self( void );
+    inline DirectMessagingClient & self();
 
     inline void updateChatOutput( NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
 
@@ -121,11 +121,11 @@ private:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectMessagingClient( void ) = delete;
+    DirectMessagingClient() = delete;
     DECLARE_NOCOPY_NOMOVE( DirectMessagingClient );
 };
 
-inline DirectMessagingClient & DirectMessagingClient::self( void )
+inline DirectMessagingClient & DirectMessagingClient::self()
 {
     return (*this);
 }

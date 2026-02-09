@@ -61,7 +61,7 @@ ProxyBase::MapThreadProxyList   ProxyBase::_mapThreadProxies;
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::Listener class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyBase::Listener::Listener( void )
+ProxyBase::Listener::Listener()
     : mMessageId    (static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId))
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
     , mListener     (nullptr)
@@ -289,12 +289,12 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
 // ProxyBase class, methods
 //////////////////////////////////////////////////////////////////////////
 
-void ProxyBase::registerServiceListeners( void )
+void ProxyBase::registerServiceListeners()
 {
     ProxyConnectEvent::addListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
 }
 
-void ProxyBase::unregisterServiceListeners( void )
+void ProxyBase::unregisterServiceListeners()
 {
     ProxyConnectEvent::removeListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
     ProxyBase::ServiceAvailableEvent::removeListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
@@ -340,7 +340,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
     }
 }
 
-void ProxyBase::terminateSelf(void)
+void ProxyBase::terminateSelf()
 {
     if (mProxyInstCount != 0)
     {
@@ -660,7 +660,7 @@ RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAdd
     return nullptr;
 }
 
-void ProxyBase::stopProxy(void)
+void ProxyBase::stopProxy()
 {
     LOG_SCOPE(areg_component_ProxyBase_stopProxy);
 

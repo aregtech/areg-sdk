@@ -113,7 +113,7 @@ NotificationEvent::NotificationEvent( const NotificationEventData& data )
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::setTargetThread( void )
+void NotificationEvent::setTargetThread()
 {
     const ProxyBase * proxy = mData.getProxy();
     DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();

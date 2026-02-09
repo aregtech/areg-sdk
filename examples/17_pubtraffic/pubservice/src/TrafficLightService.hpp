@@ -30,7 +30,7 @@ public:
     }
 
     //! \brief  Returns the data value.
-    inline bool getData( void ) const
+    inline bool getData() const
     {
         return mSwitchOn;
     }
@@ -69,7 +69,7 @@ private:
             {
             }
 
-        virtual ~TrafficSwitchConsumer( void ) = default;
+        virtual ~TrafficSwitchConsumer() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods.
@@ -89,7 +89,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
     //////////////////////////////////////////////////////////////////////////
-        TrafficSwitchConsumer( void ) = delete;
+        TrafficSwitchConsumer() = delete;
         DECLARE_NOCOPY_NOMOVE(TrafficSwitchConsumer);
     };
 
@@ -106,7 +106,7 @@ private:
             {
             }
 
-        virtual ~TimerConsumer( void ) = default;
+        virtual ~TimerConsumer() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods.
@@ -126,7 +126,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
     //////////////////////////////////////////////////////////////////////////
-        TimerConsumer( void ) = delete;
+        TimerConsumer() = delete;
         DECLARE_NOCOPY_NOMOVE(TimerConsumer);
     };
 
@@ -167,15 +167,15 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< Called when receive event that the traffic light is switched on.
-    void onTrafficLightSwitchedOn( void );
+    void onTrafficLightSwitchedOn();
 
     //!< Called when receive event that the traffic light is switched off.
-    void onTrafficLightSwitchedOff( void );
+    void onTrafficLightSwitchedOff();
 
     //!< Automatically triggered when event is dispatched by thread.
-    void onTimerExpired( void );
+    void onTimerExpired();
 
-    inline TrafficLightService & self( void )
+    inline TrafficLightService & self()
     {
         return (*this);
     }
@@ -196,6 +196,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
-    TrafficLightService( void ) = delete;
+    TrafficLightService() = delete;
     DECLARE_NOCOPY_NOMOVE( TrafficLightService );
 };

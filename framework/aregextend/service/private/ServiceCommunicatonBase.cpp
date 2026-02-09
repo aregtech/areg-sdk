@@ -86,7 +86,7 @@ void ServiceCommunicatonBase::removeInstance(const ITEM_ID & cookie)
     mInstanceMap.removeAt(cookie);
 }
 
-void ServiceCommunicatonBase::removeAllInstances(void)
+void ServiceCommunicatonBase::removeAllInstances()
 {
     Lock lock(mLock);
     mInstanceMap.release();
@@ -117,7 +117,7 @@ void ServiceCommunicatonBase::applyServiceConnectionData(const String & hostName
     mServerConnection.setAddress( hostName, portNr );
 }
 
-bool ServiceCommunicatonBase::connectServiceHost(void)
+bool ServiceCommunicatonBase::connectServiceHost()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
 
@@ -143,7 +143,7 @@ bool ServiceCommunicatonBase::connectServiceHost(void)
     return result;
 }
 
-bool ServiceCommunicatonBase::reconnectServiceHost(void)
+bool ServiceCommunicatonBase::reconnectServiceHost()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
 
@@ -167,7 +167,7 @@ bool ServiceCommunicatonBase::reconnectServiceHost(void)
     return result;
 }
 
-void ServiceCommunicatonBase::disconnectServiceHost(void)
+void ServiceCommunicatonBase::disconnectServiceHost()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
     if ( isRunning() )
@@ -177,19 +177,19 @@ void ServiceCommunicatonBase::disconnectServiceHost(void)
     }
 }
 
-bool ServiceCommunicatonBase::isServiceHostConnected(void) const
+bool ServiceCommunicatonBase::isServiceHostConnected() const
 {
     Lock lock( mLock );
     return (mServerConnection.isValid() && isRunning());
 }
 
-bool ServiceCommunicatonBase::isServiceHostPending(void) const
+bool ServiceCommunicatonBase::isServiceHostPending() const
 {
     Lock lock(mLock);
     return ((mServerConnection.isValid() == false) && isRunning());
 }
 
-bool ServiceCommunicatonBase::isServiceHostSetup(void) const
+bool ServiceCommunicatonBase::isServiceHostSetup() const
 {
     Lock lock(mLock);
     return mServerConnection.getAddress().isValid();
@@ -232,7 +232,7 @@ void ServiceCommunicatonBase::connectionLost( SocketAccepted & clientSocket )
     mServerConnection.closeConnection(clientSocket);
 }
 
-void ServiceCommunicatonBase::connectionFailure(void)
+void ServiceCommunicatonBase::connectionFailure()
 {
     if ( isServiceHostConnected())
     {
@@ -240,18 +240,18 @@ void ServiceCommunicatonBase::connectionFailure(void)
     }
 }
 
-void ServiceCommunicatonBase::disconnectServices( void )
+void ServiceCommunicatonBase::disconnectServices()
 {
     removeAllInstances();
 }
 
-void ServiceCommunicatonBase::onServiceReconnectTimerExpired( void )
+void ServiceCommunicatonBase::onServiceReconnectTimerExpired()
 {
     Lock lock( mLock );
     startConnection( );
 }
 
-void ServiceCommunicatonBase::onServiceStart(void)
+void ServiceCommunicatonBase::onServiceStart()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStart);
     Lock lock( mLock );
@@ -259,7 +259,7 @@ void ServiceCommunicatonBase::onServiceStart(void)
     startConnection();
 }
 
-void ServiceCommunicatonBase::onServiceStop(void)
+void ServiceCommunicatonBase::onServiceStop()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStop);
 
@@ -272,13 +272,13 @@ void ServiceCommunicatonBase::onServiceStop(void)
     mEventSendStop.setEvent();
 }
 
-void ServiceCommunicatonBase::onServiceRestart( void )
+void ServiceCommunicatonBase::onServiceRestart()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceRestart);
     restartConnection();
 }
 
-void ServiceCommunicatonBase::onServiceExit( void )
+void ServiceCommunicatonBase::onServiceExit()
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase_onServiceExit );
     onServiceStop( );
@@ -289,7 +289,7 @@ void ServiceCommunicatonBase::onChannelConnected(const ITEM_ID& /*cookie*/)
 {
 }
 
-bool ServiceCommunicatonBase::startConnection(void)
+bool ServiceCommunicatonBase::startConnection()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_startConnection);
     LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
@@ -333,7 +333,7 @@ bool ServiceCommunicatonBase::startConnection(void)
     return result;
 }
 
-bool ServiceCommunicatonBase::restartConnection( void )
+bool ServiceCommunicatonBase::restartConnection()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_restartConnection);
     LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
@@ -344,7 +344,7 @@ bool ServiceCommunicatonBase::restartConnection( void )
     return startConnection();
 }
 
-void ServiceCommunicatonBase::stopConnection(void)
+void ServiceCommunicatonBase::stopConnection()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_stopConnection);
     LOG_WARN("Stopping remote servicing connection");
@@ -362,13 +362,13 @@ void ServiceCommunicatonBase::stopConnection(void)
     mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
 }
 
-bool ServiceCommunicatonBase::startSendThread( void )
+bool ServiceCommunicatonBase::startSendThread()
 {
     return mThreadSend.createThread( NECommon::WAIT_INFINITE ) && 
            mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE );
 }
 
-bool ServiceCommunicatonBase::startReceiveThread( void )
+bool ServiceCommunicatonBase::startReceiveThread()
 {
     return mThreadReceive.createThread( NECommon::WAIT_INFINITE ) &&
            mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE );

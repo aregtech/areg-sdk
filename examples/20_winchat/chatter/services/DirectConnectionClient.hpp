@@ -14,7 +14,7 @@ class DirectConnectionClient  : public DirectConnectionClientBase
 {
 public:
     DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const NEDirectConnection::sParticipant & target );
-    virtual ~DirectConnectionClient( void ) = default;
+    virtual ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -59,6 +59,6 @@ private:
     ChatPrticipantHandler * mParticipantsHandler;
 
 private:
-    DirectConnectionClient( void ) = delete;
+    DirectConnectionClient() = delete;
     DECLARE_NOCOPY_NOMOVE( DirectConnectionClient );
 };

@@ -202,7 +202,7 @@ AREG_API_IMPL unsigned int NEMath::crc32Calculate( const wchar_t * strData )
     return (~result);   // return result
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Init( void )
+AREG_API_IMPL unsigned int NEMath::crc32Init()
 {
     return static_cast<unsigned int>(~0);
 }

@@ -79,7 +79,7 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-ProxyAddress::ProxyAddress( void )
+ProxyAddress::ProxyAddress()
     : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME )
     , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
@@ -220,12 +220,12 @@ bool ProxyAddress::_deliverEvent(Event & serviceEvent, const ITEM_ID & idTarget)
     return result;
 }
 
-bool ProxyAddress::isValid( void ) const
+bool ProxyAddress::isValid() const
 {
     return mChannel.isValid();
 }
 
-void ProxyAddress::invalidateChannel( void )
+void ProxyAddress::invalidateChannel()
 {
     mChannel.invalidate();
 }
@@ -247,7 +247,7 @@ unsigned int ProxyAddress::_magicNumber(const ProxyAddress & proxy)
     return result;
 }
 
-String ProxyAddress::convToString(void) const
+String ProxyAddress::convToString() const
 {
     String result(static_cast<uint32_t>(0xFF));
 
@@ -282,7 +282,7 @@ void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextP
         *out_nextPart = strSource;
 }
 
-bool ProxyAddress::isValidated(void) const
+bool ProxyAddress::isValidated() const
 {
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
 }

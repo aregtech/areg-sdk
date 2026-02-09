@@ -49,50 +49,50 @@ class AREG_API IEServiceEventConsumerBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    IEServiceEventConsumerBase(void) = default;
-    virtual ~IEServiceEventConsumerBase(void) = default;
+    IEServiceEventConsumerBase() = default;
+    virtual ~IEServiceEventConsumerBase() = default;
 
 public:
 
     /**
      * \brief   Triggered when Timer is expired.
      **/
-    virtual void onServiceReconnectTimerExpired(void) = 0;
+    virtual void onServiceReconnectTimerExpired() = 0;
 
     /**
      * \brief   Called when receive event to start service and connection.
      **/
-    virtual void onServiceStart(void) = 0;
+    virtual void onServiceStart() = 0;
 
     /**
      * \brief   Called when receive event to stop service and connection.
      **/
-    virtual void onServiceStop(void) = 0;
+    virtual void onServiceStop() = 0;
 
     /**
      * \brief   Called when receive event to restart service and connection.
      **/
-    virtual void onServiceRestart(void) = 0;
+    virtual void onServiceRestart() = 0;
 
     /**
      * \brief   Called when receive event the client connection is started.
      **/
-    virtual void onServiceConnectionStarted(void) = 0;
+    virtual void onServiceConnectionStarted() = 0;
 
     /**
      * \brief   Called when receive event the client connection is stopped.
      **/
-    virtual void onServiceConnectionStopped(void) = 0;
+    virtual void onServiceConnectionStopped() = 0;
 
     /**
      * \brief   Called when receive event the client connection is lost.
      **/
-    virtual void onServiceConnectionLost(void) = 0;
+    virtual void onServiceConnectionLost() = 0;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit(void) = 0;
+    virtual void onServiceExit() = 0;
 
     /**
      * \brief   Called when received a communication message to dispatch and process.
@@ -135,7 +135,7 @@ public:
      **/
     ReconnectTimerConsumer(IEServiceEventConsumerBase& eventConsumer);
 
-    virtual ~ReconnectTimerConsumer(void) = default;
+    virtual ~ReconnectTimerConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -165,7 +165,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ReconnectTimerConsumer(void) = delete;
+    ReconnectTimerConsumer() = delete;
     DECLARE_NOCOPY_NOMOVE(ReconnectTimerConsumer);
 };
 
@@ -184,7 +184,7 @@ public:
      **/
     ServiceClientEventConsumer(IEServiceEventConsumerBase& eventConsumer);
 
-    virtual ~ServiceClientEventConsumer(void) = default;
+    virtual ~ServiceClientEventConsumer() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden calls
@@ -214,7 +214,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServiceClientEventConsumer(void) = delete;
+    ServiceClientEventConsumer() = delete;
     DECLARE_NOCOPY_NOMOVE(ServiceClientEventConsumer);
 };
 
@@ -233,7 +233,7 @@ public:
      **/
     ServiceServerEventConsumer(IEServiceEventConsumerBase& serviceEventConsumer);
 
-    virtual ~ServiceServerEventConsumer(void) = default;
+    virtual ~ServiceServerEventConsumer() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden calls
@@ -263,7 +263,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServiceServerEventConsumer(void) = delete;
+    ServiceServerEventConsumer() = delete;
     DECLARE_NOCOPY_NOMOVE(ServiceServerEventConsumer);
 };
 

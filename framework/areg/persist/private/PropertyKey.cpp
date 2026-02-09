@@ -73,7 +73,7 @@ PropertyKey::PropertyKey( PropertyKey && source ) noexcept
 {
 }
 
-PropertyKey::PropertyKey(void)
+PropertyKey::PropertyKey()
     : mSection  ( )
     , mModule   ( )
     , mProperty ( )
@@ -165,7 +165,7 @@ bool PropertyKey::operator != ( const PropertyKey & other ) const
     return (*this == other ? false : true);
 }
 
-PropertyKey::operator unsigned int (void) const
+PropertyKey::operator unsigned int () const
 {
     unsigned int result{ NEMath::CHECKSUM_IGNORE };
     if (mSection.isEmpty() == false)
@@ -205,7 +205,7 @@ bool PropertyKey::parseKey( String && key )
     return isValid();
 }
 
-String PropertyKey::convToString(void) const
+String PropertyKey::convToString() const
 {
     String result(static_cast<uint32_t>(0xFF));
     if ( isValid() )
@@ -289,67 +289,67 @@ void PropertyKey::setValues(const String& section, const String& property, const
     mKeyType    = keyType;
 }
 
-const String & PropertyKey::getSection(void) const
+const String & PropertyKey::getSection() const
 {
     return mSection;
 }
 
-const String & PropertyKey::getProperty(void) const
+const String & PropertyKey::getProperty() const
 {
     return mProperty;
 }
 
-const String & PropertyKey::getModule(void) const
+const String & PropertyKey::getModule() const
 {
     return mModule;
 }
 
-const String & PropertyKey::getPosition(void) const
+const String & PropertyKey::getPosition() const
 {
     return mPosition;
 }
 
-NEPersistence::eConfigKeys PropertyKey::getKeyType(void) const
+NEPersistence::eConfigKeys PropertyKey::getKeyType() const
 {
     return mKeyType;
 }
 
-bool PropertyKey::isValid(void) const
+bool PropertyKey::isValid() const
 {
     return ( mSection.isEmpty() == false && mModule.isEmpty() == false && mProperty.isEmpty() == false );
 }
 
-bool PropertyKey::hasModule(void) const
+bool PropertyKey::hasModule() const
 {
     return mModule.isEmpty() == false;
 }
 
-bool PropertyKey::hasProperty(void) const
+bool PropertyKey::hasProperty() const
 {
     return (mProperty.isEmpty() == false);
 }
 
-bool PropertyKey::isAllModules(void) const
+bool PropertyKey::isAllModules() const
 {
     return (mModule == NEPersistence::SYNTAX_ALL_MODULES);
 }
 
-bool PropertyKey::isGroupProperty(void) const
+bool PropertyKey::isGroupProperty() const
 {
     return mPosition.endsWith(NEPersistence::SYNTAX_GROUP) || mProperty.endsWith(NEPersistence::SYNTAX_GROUP);
 }
 
-bool PropertyKey::hasSection(void) const
+bool PropertyKey::hasSection() const
 {
     return (mSection.isEmpty() == false);
 }
 
-bool PropertyKey::hasPosition(void) const
+bool PropertyKey::hasPosition() const
 {
     return mPosition.isEmpty() == false;
 }
 
-void PropertyKey::resetKey(void)
+void PropertyKey::resetKey()
 {
     mSection.clear();
     mProperty.clear();

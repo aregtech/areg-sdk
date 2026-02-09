@@ -35,7 +35,7 @@ WaitableSemaphoreIX::WaitableSemaphoreIX(int maxCount, int initCount /*= 0*/, co
 {
 }
 
-bool WaitableSemaphoreIX::releaseSemaphore(void)
+bool WaitableSemaphoreIX::releaseSemaphore()
 {
     bool sendSignal = false;
 
@@ -81,7 +81,7 @@ bool WaitableSemaphoreIX::notifyRequestOwnership(pthread_t ownerThread)
     return result;
 }
 
-bool WaitableSemaphoreIX::checkCanSignalMultipleThreads(void) const
+bool WaitableSemaphoreIX::checkCanSignalMultipleThreads() const
 {
     return true;
 }

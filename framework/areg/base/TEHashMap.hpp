@@ -122,7 +122,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TEHashMap( void );
+    ~TEHashMap();
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -212,18 +212,18 @@ public:
     /**
      * \brief   Returns true if the hash-map is empty and has no elements.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief	Returns the current size of the hash-map.
      **/
-    inline uint32_t getSize( void ) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief	Returns the position of the first key and value entry in the hash-map, which is
      *          not invalid if the hash-map is not empty. Otherwise, returns invalid position.
      **/
-    inline MAPPOS firstPosition(void) const;
+    inline MAPPOS firstPosition() const;
 
     /**
      * \brief   Returns true if specified position points the first entry in the hash-map.
@@ -234,7 +234,7 @@ public:
     /**
      * \brief   Returns the invalid position of the hash-map.
      **/
-    inline MAPPOS invalidPosition(void) const;
+    inline MAPPOS invalidPosition() const;
 
     /**
      * \brief   Returns true if specified position is invalid, i.e. points the end of the hash-map.
@@ -263,7 +263,7 @@ public:
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::unordered_map<KEY, VALUE>& getData(void) const;
+    inline const std::unordered_map<KEY, VALUE>& getData() const;
 
 /************************************************************************/
 // Operations
@@ -272,12 +272,12 @@ public:
     /**
      * \brief   Remove all entries of the hash map.
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Sets the size of the hash-map to zero and deletes all capacity space.
      */
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief	Searches an element entry by the given key.
@@ -410,7 +410,7 @@ public:
     /**
      * \brief   Removes the first entry in the hash map.
      **/
-    inline void removeFirst(void);
+    inline void removeFirst();
 
     /**
      * \brief   Removes the first entry in the hash map.
@@ -423,7 +423,7 @@ public:
     /**
      * \brief   Removes the last entry in the hash map.
      **/
-    inline void removeLast(void);
+    inline void removeLast();
 
     /**
      * \brief   Removes the last entry in the hash map.
@@ -575,7 +575,7 @@ inline bool TEHashMap<KEY, VALUE>::operator != ( const TEHashMap<KEY, VALUE>& ot
 }
 
 template<typename KEY, typename VALUE>
-inline TEHashMap<KEY, VALUE>::~TEHashMap(void)
+inline TEHashMap<KEY, VALUE>::~TEHashMap()
 {
     mValueList.clear();
 }
@@ -593,19 +593,19 @@ inline const VALUE & TEHashMap<KEY, VALUE>::operator [] ( const KEY & Key ) cons
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::isEmpty(void) const
+inline bool TEHashMap<KEY, VALUE>::isEmpty() const
 {
     return mValueList.empty();
 }
 
 template < typename KEY, typename VALUE >
-inline uint32_t TEHashMap<KEY, VALUE>::getSize( void ) const
+inline uint32_t TEHashMap<KEY, VALUE>::getSize() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPosition( void ) const
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPosition() const
 {
     return _citer2pos(mValueList.begin());
 }
@@ -617,7 +617,7 @@ inline bool TEHashMap<KEY, VALUE>::isFirstPosition(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::invalidPosition(void) const
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::invalidPosition() const
 {
 	return _citer2pos(mValueList.end());
 }
@@ -653,19 +653,19 @@ inline bool TEHashMap<KEY, VALUE>::contains(const KEY& Key) const
 }
 
 template<typename KEY, typename VALUE>
-inline const std::unordered_map<KEY, VALUE>& TEHashMap<KEY, VALUE>::getData(void) const
+inline const std::unordered_map<KEY, VALUE>& TEHashMap<KEY, VALUE>::getData() const
 {
     return mValueList;
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::clear(void)
+inline void TEHashMap<KEY, VALUE>::clear()
 {
     mValueList.clear();
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::release(void)
+inline void TEHashMap<KEY, VALUE>::release()
 {
     mValueList.clear();
 }
@@ -858,7 +858,7 @@ inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& OUT out_Key, VALUE& OUT out_
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::removeFirst( void )
+inline void TEHashMap<KEY, VALUE>::removeFirst()
 {
     if (mValueList.empty() == false)
     {
@@ -887,7 +887,7 @@ inline bool TEHashMap<KEY, VALUE>::removeLast(KEY& OUT out_Key, VALUE& OUT out_V
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::removeLast(void)
+inline void TEHashMap<KEY, VALUE>::removeLast()
 {
     if (mValueList.empty() == false)
     {

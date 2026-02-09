@@ -109,7 +109,7 @@ void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServicePro
     }
 }
 
-inline Subscriber & Subscriber::self(void)
+inline Subscriber & Subscriber::self()
 {
     return (*this);
 }

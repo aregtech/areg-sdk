@@ -98,7 +98,7 @@ protected:
     //!< Copies, moves and destroys the node object.
     ScopeNodeBase( const ScopeNodeBase & src );
     ScopeNodeBase( ScopeNodeBase && src ) noexcept;
-    virtual ~ScopeNodeBase( void ) = default;
+    virtual ~ScopeNodeBase() = default;
 
 /************************************************************************
  * ScopeNodeBase statics
@@ -211,7 +211,7 @@ public:
      *          Only the root and nodes can group child entries.
      * \return  Returns number of nodes that where removed.
      **/
-    virtual unsigned int groupChildNodes( void );
+    virtual unsigned int groupChildNodes();
 
     /**
      * \brief   Generates the scope setting and updates in the configuration.
@@ -230,7 +230,7 @@ public:
      *          Normally,the grouping starts from root node.
      * \return  Returns the number of nodes that it totally grouped.
      **/
-    virtual unsigned int groupRecursive( void );
+    virtual unsigned int groupRecursive();
 
     /**
      * \brief   Removes the priority nodes of specified log priority.
@@ -243,7 +243,7 @@ public:
     /**
      * \brief   Returns true if a node has no children nodes.
      **/
-    virtual bool isEmpty( void ) const;
+    virtual bool isEmpty() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -253,7 +253,7 @@ public:
     /**
      * \brief   Returns node name.
      **/
-    inline const String & getNodeName( void ) const;
+    inline const String & getNodeName() const;
 
     /**
      * \brief   Sets node name.
@@ -263,7 +263,7 @@ public:
     /**
      * \brief   Returns the node priority flag.
      **/
-    inline unsigned int getPriority( void ) const;
+    inline unsigned int getPriority() const;
 
     /**
      * \brief   Sets the node priority flag.
@@ -278,57 +278,57 @@ public:
     /**
      * \brief   Returns true if the object is the root. The root does not have a parent
      **/
-    inline bool isRoot( void ) const;
+    inline bool isRoot() const;
 
     /**
      * \brief   Returns true if the object is a node. Nodes have a parent, it may have child leafs and child nodes.
      **/
-    inline bool isNode( void ) const;
+    inline bool isNode() const;
 
     /**
      * \brief   Returns true if the object is a leaf. Leafs have parent, but cannot have children nodes.
      **/
-    inline bool isLeaf( void ) const;
+    inline bool isLeaf() const;
 
     /**
      * \brief   Returns true if the node is valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns true if the logging priority has debug priority bit set.
      **/
-    inline bool hasPrioDebug( void ) const;
+    inline bool hasPrioDebug() const;
 
     /**
      * \brief   Returns true if the logging priority has info priority bit set.
      **/
-    inline bool hasPrioInfo( void ) const;
+    inline bool hasPrioInfo() const;
 
     /**
      * \brief   Returns true if the logging priority has warning priority bit set.
      **/
-    inline bool hasPrioWarning( void ) const;
+    inline bool hasPrioWarning() const;
 
     /**
      * \brief   Returns true if the logging priority has error priority bit set.
      **/
-    inline bool hasPrioError( void ) const;
+    inline bool hasPrioError() const;
 
     /**
      * \brief   Returns true if the logging priority has fatal error priority bit set.
      **/
-    inline bool hasPrioFatal( void ) const;
+    inline bool hasPrioFatal() const;
 
     /**
      * \brief   Returns true if any logging priority bit is set.
      **/
-    inline bool hasLogsEneabled( void ) const;
+    inline bool hasLogsEneabled() const;
 
     /**
      * \brief   Returns true if the logging scopes priority bit set.
      **/
-    inline bool hasLogScopes( void ) const;
+    inline bool hasLogScopes() const;
 
     /**
      * \brief   Recursively creates a child node out of scopePath and adds in the list.
@@ -357,7 +357,7 @@ protected:
     /**
      * \brief   Returns invalid node object.
      **/
-    static ScopeNodeBase & invalidNode( void );
+    static ScopeNodeBase & invalidNode();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -382,14 +382,14 @@ private:
     /**
      * \brief   Default constructor is inaccessible. Used only internally
      **/
-    ScopeNodeBase( void );
+    ScopeNodeBase();
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeNodeBase inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & ScopeNodeBase::getNodeName( void ) const
+inline const String & ScopeNodeBase::getNodeName() const
 {
     return mNodeName;
 }
@@ -399,7 +399,7 @@ inline void ScopeNodeBase::setNodeName( const String newName )
     mNodeName = newName;
 }
 
-inline unsigned int ScopeNodeBase::getPriority( void ) const
+inline unsigned int ScopeNodeBase::getPriority() const
 {
     return mPrioStates;
 }
@@ -414,57 +414,57 @@ inline void ScopeNodeBase::addPriority( unsigned int prio )
     mPrioStates |= prio;
 }
 
-inline bool ScopeNodeBase::isRoot( void ) const
+inline bool ScopeNodeBase::isRoot() const
 {
     return (mNodeType == ScopeNodeBase::eNode::Root);
 }
 
-inline bool ScopeNodeBase::isNode( void ) const
+inline bool ScopeNodeBase::isNode() const
 {
     return (mNodeType == ScopeNodeBase::eNode::Node);
 }
 
-inline bool ScopeNodeBase::isLeaf( void ) const
+inline bool ScopeNodeBase::isLeaf() const
 {
     return (mNodeType == ScopeNodeBase::eNode::Leaf);
 }
 
-inline bool ScopeNodeBase::isValid( void ) const
+inline bool ScopeNodeBase::isValid() const
 {
     return (mNodeType != ScopeNodeBase::eNode::Invalid);
 }
 
-inline bool ScopeNodeBase::hasPrioDebug( void ) const
+inline bool ScopeNodeBase::hasPrioDebug() const
 {
     return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioDebug)) != 0;
 }
 
-inline bool ScopeNodeBase::hasPrioInfo( void ) const
+inline bool ScopeNodeBase::hasPrioInfo() const
 {
     return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioInfo)) != 0;
 }
 
-inline bool ScopeNodeBase::hasPrioWarning( void ) const
+inline bool ScopeNodeBase::hasPrioWarning() const
 {
     return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioWarning)) != 0;
 }
 
-inline bool ScopeNodeBase::hasPrioError( void ) const
+inline bool ScopeNodeBase::hasPrioError() const
 {
     return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioError)) != 0;
 }
 
-inline bool ScopeNodeBase::hasPrioFatal( void ) const
+inline bool ScopeNodeBase::hasPrioFatal() const
 {
     return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioFatal)) != 0;
 }
 
-inline bool ScopeNodeBase::hasLogsEneabled( void ) const
+inline bool ScopeNodeBase::hasLogsEneabled() const
 {
     return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioLogs)) != 0;
 }
 
-inline bool ScopeNodeBase::hasLogScopes( void ) const
+inline bool ScopeNodeBase::hasLogScopes() const
 {
     return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioScope)) != 0;
 }

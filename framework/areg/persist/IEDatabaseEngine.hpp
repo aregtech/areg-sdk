@@ -32,9 +32,9 @@ class AREG_API IEDatabaseEngine
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    IEDatabaseEngine(void);
+    IEDatabaseEngine();
 
-    virtual ~IEDatabaseEngine(void);
+    virtual ~IEDatabaseEngine();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -48,7 +48,7 @@ public:
      * \brief   Returns true if database engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    virtual bool isOperable(void) const = 0;
+    virtual bool isOperable() const = 0;
 
     /**
      * \brief   Connects to the specified database.
@@ -65,7 +65,7 @@ public:
     /**
      * \brief   Disconnects connected database.
      **/
-    virtual void disconnect(void) = 0;
+    virtual void disconnect() = 0;
 
     /**
      * \brief   Execute the SQL script.
@@ -78,7 +78,7 @@ public:
      * \brief   Call if need to make multiple operation. This call starts the transaction,
      *          that is required either commit or rollback call to complete the transaction.
      **/
-    virtual bool begin(void) = 0;
+    virtual bool begin() = 0;
 
     /**
      * \brief   Commits or rolls back the database changes and returns true if succeeded.
@@ -91,7 +91,7 @@ public:
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
      **/
-    virtual bool rollback(void) = 0;
+    virtual bool rollback() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

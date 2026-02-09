@@ -55,7 +55,7 @@ private:
     /**
      * \brief   Returns reference to Watchdog Manager object.
      **/
-    static WatchdogManager& getInstance( void );
+    static WatchdogManager& getInstance();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -69,7 +69,7 @@ public:
      * \brief   If needed, creates Watchdog Manager and Thread.
      *          Returns reference to the object.
      **/
-    static bool startWatchdogManager( void );
+    static bool startWatchdogManager();
 
     /**
      * \brief   Stops Watchdog Manager and the Thread. Cancels and stops all timers.
@@ -86,12 +86,12 @@ public:
      *          complete the jobs and exit. This should be called if previously
      *          it was requested to stop the Watchdog Manager without waiting for completion.
      **/
-    static void waitWatchdogManager(void);
+    static void waitWatchdogManager();
 
     /**
      * \brief   Returns true if Watchdog Manager has been started and ready to process Watchdogs.
      **/
-    static bool isWatchdogManagerStarted( void );
+    static bool isWatchdogManagerStarted();
 
     /**
      * \brief   Starts the watchdog timer. If succeeds, returns true.
@@ -115,11 +115,11 @@ private:
     /**
      * \brief   Constructor
      **/
-    WatchdogManager( void );
+    WatchdogManager();
     /**
      * \brief   Destructor
      **/
-    virtual ~WatchdogManager( void );
+    virtual ~WatchdogManager();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -158,7 +158,7 @@ private:
     /**
      * \brief   Stops and removes all watchdog timers.
      **/
-    void _removeAllWatchdogs( void );
+    void _removeAllWatchdogs();
 
     /**
      * \brief   Creates system timer for watchdog and registers it in the resource map.

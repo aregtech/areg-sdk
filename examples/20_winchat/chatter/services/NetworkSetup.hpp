@@ -10,7 +10,7 @@ public:
     NetworkSetup( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
     virtual ~NetworkSetup( ) = default;
 
-    void DisconnectServicing( void );
+    void DisconnectServicing();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -58,6 +58,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    NetworkSetup( void ) = delete;
+    NetworkSetup() = delete;
     DECLARE_NOCOPY_NOMOVE( NetworkSetup );
 };

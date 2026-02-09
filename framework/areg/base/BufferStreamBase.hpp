@@ -56,7 +56,7 @@ protected:
     /**
      * \brief	Destructor
      **/
-    virtual ~BufferStreamBase( void ) = default;
+    virtual ~BufferStreamBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -197,7 +197,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable( void ) const override;
+    virtual unsigned int getSizeReadable() const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -206,19 +206,19 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const override;
+    virtual unsigned int getSizeWritable() const override;
 
     /**
      * \brief	Flushes cached data to output stream object.
      *          Implement the function if device has caching mechanism
      **/
-    virtual void flush( void ) override;
+    virtual void flush() override;
 
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor( void ) const override;
+    virtual void resetCursor() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -244,13 +244,13 @@ protected:
      * \brief   Returns pointer to the buffer at current read position.
      *          Returns nullptr if buffer is not valid or read position is at the end of buffer.
      **/
-    const unsigned char * getBufferToRead( void ) const;
+    const unsigned char * getBufferToRead() const;
 
     /**
      * \brief   Returns pointer to the buffer at current write position.
      *          Returns nullptr if buffer is not valid or read position is at the end of buffer.
      **/
-    unsigned char * getBufferToWrite( void );
+    unsigned char * getBufferToWrite();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -269,7 +269,7 @@ private:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    BufferStreamBase( void ) = delete;
+    BufferStreamBase() = delete;
     DECLARE_NOCOPY_NOMOVE( BufferStreamBase );
 };
 

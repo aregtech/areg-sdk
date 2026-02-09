@@ -603,7 +603,7 @@ namespace NEService
         /**
          * \brief   Destructor
          **/
-        ~StateArray( void );
+        ~StateArray();
 
     //////////////////////////////////////////////////////////////////////////
     // Operators, attributes and operations
@@ -621,17 +621,17 @@ namespace NEService
         /**
          * \brief   Returns the number of elements in the array.
          */
-        inline uint32_t getSize(void) const;
+        inline uint32_t getSize() const;
         /**
          * \brief   Resets states in array. All states will be set to NEService::DataIsUnavailable
          **/
-        inline void resetStates( void );
+        inline void resetStates();
 
         /**
          * \brief   Returns true if array has parameters, i.e. the size is
          *          not zero.
          **/
-        inline bool hasParams( void ) const;
+        inline bool hasParams() const;
 
         /**
          * \brief   Sets the state of certain entry in array.
@@ -658,7 +658,7 @@ namespace NEService
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        StateArray(void) = delete;
+        StateArray() = delete;
         DECLARE_NOCOPY_NOMOVE(StateArray);
     };
 
@@ -750,7 +750,7 @@ namespace NEService
     /**
      * \brief   Returns the instance of empty local service interface.
      **/
-    AREG_API NEService::SInterfaceData & getEmptyInterface( void );
+    AREG_API NEService::SInterfaceData & getEmptyInterface();
 
     //////////////////////////////////////////////////////////////////////////
     // Invalid service
@@ -811,7 +811,7 @@ namespace NEService
         /**
          * \brief   Destructor
          **/
-        ~ParameterArray( void );
+        ~ParameterArray();
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -888,7 +888,7 @@ namespace NEService
         /**
          * \brief   Resets all states of parameters
          **/
-        inline void resetAllStates( void );
+        inline void resetAllStates();
 
         /**
          * \brief   Sets all parameter states of specified entry.
@@ -941,7 +941,7 @@ namespace NEService
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        ParameterArray( void ) = delete;
+        ParameterArray() = delete;
         DECLARE_NOCOPY( ParameterArray );
     };
 
@@ -975,14 +975,14 @@ namespace NEService
         /**
          * \brief   Destructor
          **/
-        ~ProxyData( void ) = default;
+        ~ProxyData() = default;
 
     public:
 
         /**
          * \brief   Resets states of Proxy Data
          **/
-        void resetStates( void );
+        void resetStates();
 
         /**
          * \brief	Set state for specified request ID (range in NEService::eFuncIdRange)
@@ -1050,7 +1050,7 @@ namespace NEService
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        ProxyData( void ) = delete;
+        ProxyData() = delete;
         DECLARE_NOCOPY_NOMOVE( ProxyData );
     };
 
@@ -1229,17 +1229,17 @@ inline NEService::eDataStateType& NEService::StateArray::operator [] (unsigned i
     return StateArrayBase::operator[](index);
 }
 
-inline uint32_t NEService::StateArray::getSize(void) const
+inline uint32_t NEService::StateArray::getSize() const
 {
     return StateArrayBase::getSize();
 }
 
-inline void NEService::StateArray::resetStates( void )
+inline void NEService::StateArray::resetStates()
 {
     setAllState(NEService::eDataStateType::DataIsUnavailable);
 }
 
-inline bool NEService::StateArray::hasParams( void ) const
+inline bool NEService::StateArray::hasParams() const
 {
     return (isEmpty() == false);
 }
@@ -1288,7 +1288,7 @@ inline bool NEService::ParameterArray::hasParameters( unsigned int whichRespInde
     return mParamList[whichRespIndex]->hasParams();
 }
 
-inline void NEService::ParameterArray::resetAllStates( void )
+inline void NEService::ParameterArray::resetAllStates()
 {
     for (int col = 0; col < mElemCount; ++col)
     {

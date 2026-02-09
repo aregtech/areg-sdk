@@ -27,12 +27,12 @@
 
 namespace NEUtilities
 {
-    uint64_t _osGetTickCount(void)
+    uint64_t _osGetTickCount()
     {
         return static_cast<uint64_t>(::GetTickCount64());
     }
 
-    TIME64 _osSystemTimeNow(void)
+    TIME64 _osSystemTimeNow()
     {
         struct timespec ts { };
 #ifndef _MINGW

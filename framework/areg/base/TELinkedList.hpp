@@ -63,7 +63,7 @@ public:
     /**
      * \brief   Constructs en empty linked list object.
      **/
-    TELinkedList( void ) = default;
+    TELinkedList() = default;
     
     /**
      * \brief   Copies entries from given source.
@@ -87,7 +87,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TELinkedList( void ) = default;
+    ~TELinkedList() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -191,24 +191,24 @@ public:
     /**
      * \brief   Returns true if the linked list is empty and has no elements.
      **/
-    inline bool isEmpty( void ) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief	Returns the current size of the linked list.
      **/
-    inline uint32_t getSize( void ) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief	Returns the position of the first value entry in the linked list, which is
      *          not invalid if the linked list is not empty. Otherwise, returns invalid position.
      **/
-    inline LISTPOS firstPosition(void) const;
+    inline LISTPOS firstPosition() const;
 
     /**
      * \brief	Returns the position of the last value entry in the linked list, which is
      *          not invalid if the linked list is not empty. Otherwise, returns invalid position.
      **/
-    inline LISTPOS lastPosition(void) const;
+    inline LISTPOS lastPosition() const;
 
     /**
      * \brief   Returns true if specified position points the first entry in the linked list.
@@ -225,7 +225,7 @@ public:
     /**
      * \brief   Returns the invalid position of the linked list.
      **/
-    inline LISTPOS invalidPosition(void) const;
+    inline LISTPOS invalidPosition() const;
 
     /**
      * \brief   Returns true if specified position is invalid, i.e. points the end of the linked list.
@@ -265,7 +265,7 @@ public:
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::list<VALUE>& getData(void) const;
+    inline const std::list<VALUE>& getData() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -274,31 +274,31 @@ public:
     /**
      * \brief   Remove all entries of the linked list.
      **/
-    inline void clear(void);
+    inline void clear();
 
     /**
      * \brief   Delete extra entries in the linked list.
      **/
-    inline void freeExtra(void);
+    inline void freeExtra();
 
     /**
      * \brief   Sets the size of the linked list to zero and deletes all capacity space.
      */
-    inline void release(void);
+    inline void release();
 
     /**
      * \brief   Returns value of head element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE & firstEntry( void ) const;
-    inline VALUE & firstEntry(void);
+    inline const VALUE & firstEntry() const;
+    inline VALUE & firstEntry();
 
     /**
      * \brief   Returns value of tail element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE & lastEntry( void ) const;
-    inline VALUE & lastEntry(void);
+    inline const VALUE & lastEntry() const;
+    inline VALUE & lastEntry();
 
     /**
      * \brief	Returns the value at the given position of the linked list and on output the value
@@ -405,7 +405,7 @@ public:
     /**
      * \brief   Removes head element from Linked List.
      **/
-    inline void removeFirst( void );
+    inline void removeFirst();
 
     /**
      * \brief   Removes the head element from the linked list. On output, the 'value' contains
@@ -417,7 +417,7 @@ public:
     /**
      * \brief   Removes tail element from Linked List.
      **/
-    inline void removeLast( void );
+    inline void removeLast();
 
     /**
      * \brief   Removes the tails element from the linked list. On output, the 'value' contains
@@ -471,13 +471,13 @@ public:
      * \brief   Pops the element at the head of linked list and returns the stored value.
      *          The linked list must not be empty.
      **/
-    inline VALUE popFirst(void);
+    inline VALUE popFirst();
 
     /**
      * \brief   Pops the element at the tails of linked list and returns the stored value.
      *          The linked list must not be empty.
      **/
-    inline VALUE popLast(void);
+    inline VALUE popLast();
 
     /**
      * \brief	Inserts new element before given position. If given position is head element, 
@@ -706,25 +706,25 @@ inline const VALUE & TELinkedList<VALUE>::operator [] ( const LISTPOS atPosition
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::isEmpty( void ) const
+inline bool TELinkedList<VALUE>::isEmpty() const
 {
     return mValueList.empty();
 }
 
 template <typename VALUE >
-inline uint32_t TELinkedList<VALUE>::getSize( void ) const
+inline uint32_t TELinkedList<VALUE>::getSize() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template <typename VALUE >
-inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::firstPosition( void ) const
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::firstPosition() const
 {
     return _citer2pos(mValueList.begin());
 }
 
 template <typename VALUE >
-inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::lastPosition( void ) const
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::lastPosition() const
 {
     return _citer2pos(mValueList.empty() == false ? --mValueList.end() : mValueList.end());
 }
@@ -742,7 +742,7 @@ inline bool TELinkedList<VALUE>::isLastPosition(const LISTPOS pos) const
 }
 
 template <typename VALUE >
-inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::invalidPosition(void) const
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::invalidPosition() const
 {
 	return _citer2pos(mValueList.end());
 }
@@ -770,46 +770,46 @@ inline bool TELinkedList<VALUE>::checkPosition(const LISTPOS pos) const
 }
 
 template <typename VALUE >
-inline void TELinkedList<VALUE>::clear(void)
+inline void TELinkedList<VALUE>::clear()
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-inline void TELinkedList<VALUE>::freeExtra(void)
+inline void TELinkedList<VALUE>::freeExtra()
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-inline void TELinkedList<VALUE>::release(void)
+inline void TELinkedList<VALUE>::release()
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::firstEntry( void ) const
+inline const VALUE & TELinkedList<VALUE>::firstEntry() const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline VALUE& TELinkedList<VALUE>::firstEntry(void)
+inline VALUE& TELinkedList<VALUE>::firstEntry()
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::lastEntry( void ) const	
+inline const VALUE & TELinkedList<VALUE>::lastEntry() const	
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
 template <typename VALUE >
-inline VALUE& TELinkedList<VALUE>::lastEntry(void)
+inline VALUE& TELinkedList<VALUE>::lastEntry()
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
@@ -935,7 +935,7 @@ inline bool TELinkedList<VALUE>::prevEntry(LISTPOS& IN OUT in_out_PrevPosition, 
 }
 
 template <typename VALUE >
-inline void TELinkedList<VALUE>::removeFirst( void )
+inline void TELinkedList<VALUE>::removeFirst()
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_front();
@@ -956,7 +956,7 @@ inline bool TELinkedList<VALUE>::removeFirst(VALUE & OUT value)
 }
 
 template <typename VALUE >
-inline void TELinkedList<VALUE>::removeLast( void )
+inline void TELinkedList<VALUE>::removeLast()
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_back();
@@ -1074,7 +1074,7 @@ inline bool TELinkedList<VALUE>::pushLastIfUnique(VALUE&& newElement, bool updat
 }
 
 template <typename VALUE >
-inline VALUE TELinkedList<VALUE>::popFirst(void)
+inline VALUE TELinkedList<VALUE>::popFirst()
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.front();
@@ -1083,7 +1083,7 @@ inline VALUE TELinkedList<VALUE>::popFirst(void)
 }
 
 template <typename VALUE >
-inline VALUE TELinkedList<VALUE>::popLast(void)
+inline VALUE TELinkedList<VALUE>::popLast()
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.back();
@@ -1218,7 +1218,7 @@ inline bool TELinkedList<VALUE>::contains(const VALUE& elemSearch, LISTPOS start
 }
 
 template<typename VALUE>
-inline const std::list<VALUE>& TELinkedList<VALUE>::getData(void) const
+inline const std::list<VALUE>& TELinkedList<VALUE>::getData() const
 {
     return mValueList;
 }

@@ -82,7 +82,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~NetTcpLogger(void) = default;
+    virtual ~NetTcpLogger() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -101,12 +101,12 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger( void ) override;
+    virtual bool openLogger() override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger( void ) override;
+    virtual void closeLogger() override;
 
     /**
      * \brief   Called when message should be logged.
@@ -117,7 +117,7 @@ public:
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened( void ) const override;
+    virtual bool isLoggerOpened() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -188,7 +188,7 @@ private:
 /************************************************************************/
 
     //!< Wrapper of 'this' pointer.
-    inline NetTcpLogger& self(void);
+    inline NetTcpLogger& self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -205,7 +205,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    NetTcpLogger( void ) = delete;
+    NetTcpLogger() = delete;
     DECLARE_NOCOPY_NOMOVE(NetTcpLogger);
 };
 
@@ -213,7 +213,7 @@ private:
 // NetTcpLogger inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NetTcpLogger& NetTcpLogger::self(void)
+inline NetTcpLogger& NetTcpLogger::self()
 {
     return (*this);
 }

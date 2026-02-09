@@ -357,7 +357,7 @@ namespace   NEUtilities
      *          passed microseconds since January 1, 1970 (UNIX epoch).
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 systemTimeNow( void );
+    AREG_API TIME64 systemTimeNow();
 
     /**
      * \brief   Returns system time data as a 64-bit integer value in microseconds passed since Unix epoch,
@@ -447,7 +447,7 @@ namespace   NEUtilities
     /**
      * \brief   Returns the tick counts information in milliseconds since process has started.
      **/
-    AREG_API TIME64 getTickCount( void );
+    AREG_API TIME64 getTickCount();
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -556,7 +556,7 @@ namespace   NEUtilities
     /**
      * \brief	Generates and returns unique unsigned int value
      **/
-    AREG_API unsigned int generateUniqueId( void );
+    AREG_API unsigned int generateUniqueId();
 
     //!< The data rate type
     typedef std::pair<double, std::string_view>     DataLiteral;
@@ -612,9 +612,9 @@ namespace   NEUtilities
          *          If call start(), it resets starting time.
          *          Call stop() to calculate the duration.
          **/
-        inline Duration( void );
+        inline Duration();
         Duration( const Duration & src ) = default;
-        ~Duration( void ) = default;
+        ~Duration() = default;
 
         Duration & operator = ( const Duration & src ) = default;
 
@@ -627,55 +627,55 @@ namespace   NEUtilities
          * \brief   Starts the timer. Call stop() to calculate duration.
          * \return  Returns the starting time in nanoseconds passed since epoch.
          **/
-        inline TIME64 start( void );
+        inline TIME64 start();
 
         /**
          * \brief   Stops the timer, can calculate duration.
          * \return  Returns the stopping time in nanoseconds passed since epoch.
          **/
-        inline TIME64 stop( void );
+        inline TIME64 stop();
 
         /**
          * \brief   Returns the starting time in nanoseconds since epoch.
          **/
-        inline TIME64 getStart( void ) const;
+        inline TIME64 getStart() const;
 
         /**
          * \brief   Returns the stopping time in nanoseconds since epoch.
          **/
-        inline TIME64 getStop( void ) const;
+        inline TIME64 getStop() const;
 
         /**
          * \brief   Calculates and returns passed time in nanoseconds.
          **/
-        inline uint64_t passedNanoseconds( void ) const;
+        inline uint64_t passedNanoseconds() const;
 
         /**
          * \brief   Calculates and returns passed time in microseconds.
          **/
-        inline uint64_t passedMicroseconds( void ) const;
+        inline uint64_t passedMicroseconds() const;
 
         /**
          * \brief   Calculates and returns passed time in milliseconds.
          **/
-        inline uint64_t passedMilliseconds( void ) const;
+        inline uint64_t passedMilliseconds() const;
 
         /**
          * \brief   Calculates and returns passed time in seconds.
          **/
-        inline uint64_t passedSeconds( void ) const;
+        inline uint64_t passedSeconds() const;
 
         /**
          * \brief   Calculates and returns passed time in minutes.
          **/
-        inline uint64_t passedMinutes( void ) const;
+        inline uint64_t passedMinutes() const;
 
         /**
          * \brief   Returns the duration in nanoseconds since watch timer started.
          *          If the stop was called before, it returns the duration between start and stop calls.
          *          If the stop was not called, it returns the duration since last time started. 
          **/
-        inline uint64_t durationSinceStart( void ) const;
+        inline uint64_t durationSinceStart() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -735,13 +735,13 @@ time_t NEUtilities::convToSeconds(const TIME64& microsecs)
 // NEUtilities::Duration inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NEUtilities::Duration::Duration( void )
+inline NEUtilities::Duration::Duration()
     : mStart        ( std::chrono::steady_clock::now() )
     , mStop         ( mStart )
 {
 }
 
-inline TIME64 NEUtilities::Duration::start( void )
+inline TIME64 NEUtilities::Duration::start()
 {
     mStart      = std::chrono::steady_clock::now();
     mStop       = mStart;
@@ -749,7 +749,7 @@ inline TIME64 NEUtilities::Duration::start( void )
     return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
-inline TIME64 NEUtilities::Duration::stop( void )
+inline TIME64 NEUtilities::Duration::stop()
 {
     if ( mStop == mStart )
     {
@@ -759,42 +759,42 @@ inline TIME64 NEUtilities::Duration::stop( void )
     return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
-inline TIME64 NEUtilities::Duration::getStart( void ) const
+inline TIME64 NEUtilities::Duration::getStart() const
 {
     return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
-inline TIME64 NEUtilities::Duration::getStop( void ) const
+inline TIME64 NEUtilities::Duration::getStop() const
 {
     return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
-inline uint64_t NEUtilities::Duration::passedNanoseconds( void ) const
+inline uint64_t NEUtilities::Duration::passedNanoseconds() const
 {
     return static_cast<uint64_t>((mStop - mStart).count());
 }
 
-inline uint64_t NEUtilities::Duration::passedMicroseconds( void ) const
+inline uint64_t NEUtilities::Duration::passedMicroseconds() const
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
 }
 
-inline uint64_t NEUtilities::Duration::passedMilliseconds( void ) const
+inline uint64_t NEUtilities::Duration::passedMilliseconds() const
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
 }
 
-inline uint64_t NEUtilities::Duration::passedSeconds( void ) const
+inline uint64_t NEUtilities::Duration::passedSeconds() const
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
 }
 
-inline uint64_t NEUtilities::Duration::passedMinutes( void ) const
+inline uint64_t NEUtilities::Duration::passedMinutes() const
 {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
 }
 
-inline uint64_t NEUtilities::Duration::durationSinceStart( void ) const
+inline uint64_t NEUtilities::Duration::durationSinceStart() const
 {
     return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
 }

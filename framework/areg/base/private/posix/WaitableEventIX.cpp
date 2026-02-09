@@ -35,7 +35,7 @@ WaitableEventIX::WaitableEventIX( bool isInitSignaled, bool isAutoReset, const c
 {
 }
 
-bool WaitableEventIX::setEvent(void)
+bool WaitableEventIX::setEvent()
 {
     bool result     = false;
     bool sendSignal = false;
@@ -70,7 +70,7 @@ bool WaitableEventIX::setEvent(void)
     return result;
 }
 
-bool WaitableEventIX::resetEvent(void)
+bool WaitableEventIX::resetEvent()
 {
     bool result = false;
     ObjectLockIX lock(*this);
@@ -98,7 +98,7 @@ bool WaitableEventIX::resetEvent(void)
 }
 
 
-void WaitableEventIX::pulseEvent(void)
+void WaitableEventIX::pulseEvent()
 {
     do 
     {
@@ -132,7 +132,7 @@ bool WaitableEventIX::notifyRequestOwnership( pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableEventIX::checkCanSignalMultipleThreads( void ) const
+bool WaitableEventIX::checkCanSignalMultipleThreads() const
 {
     return true;
 }

@@ -84,12 +84,12 @@ bool WorkerThread::dispatchEvent(Event& eventElem)
     return result;
 }
 
-ComponentThread & WorkerThread::getBindingComponentThread( void ) const
+ComponentThread & WorkerThread::getBindingComponentThread() const
 {
     return mBindingComponent.getMasterThread();
 }
 
-void WorkerThread::terminateSelf(void)
+void WorkerThread::terminateSelf()
 {
     mHasStarted = false;
     removeAllEvents();

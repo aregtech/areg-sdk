@@ -71,7 +71,7 @@ public:
      **/
     DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose);
 
-    ~DataRateHelper(void) = default;
+    ~DataRateHelper() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and actions.
@@ -87,31 +87,31 @@ public:
     /**
      * \brief   Returns the verbose flag, indicating whether the data send / receive computation is enabled.
      **/
-    bool isVerbose(void) const;
+    bool isVerbose() const;
 
     /**
      * \brief   Return the size in bytes of data sent since last query.
      *          If verbose flag is false, returns zero.
      **/
-    inline uint32_t queryBytesSent(void) const;
+    inline uint32_t queryBytesSent() const;
 
     /**
      * \brief   Return the size in bytes of data received since last query.
      *          If verbose flag is false, returns zero.
      **/
-    inline uint32_t queryBytesReceived(void) const;
+    inline uint32_t queryBytesReceived() const;
 
     /**
      * \brief   Return the size of data sent since last query with literal.
      *          If verbose flag is false, returns zero.
      **/
-    inline DataRate queryBytesSentWithLiterals(void) const;
+    inline DataRate queryBytesSentWithLiterals() const;
 
     /**
      * \brief   Return the size of data received since last query with literal.
      *          If verbose flag is false, returns zero.
      **/
-    inline DataRate queryBytesReceivedWithLiterals(void) const;
+    inline DataRate queryBytesReceivedWithLiterals() const;
 
     //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
     static DataRate convertDataRateLiterals(uint32_t sizeBytes);
@@ -127,7 +127,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DataRateHelper(void) = delete;
+    DataRateHelper() = delete;
     DECLARE_NOCOPY_NOMOVE(DataRateHelper);
 };
 
@@ -135,22 +135,22 @@ private:
 // DataRateHelper class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t DataRateHelper::queryBytesSent(void) const
+inline uint32_t DataRateHelper::queryBytesSent() const
 {
     return mSendThread.extractDataSend();
 }
 
-inline uint32_t DataRateHelper::queryBytesReceived(void) const
+inline uint32_t DataRateHelper::queryBytesReceived() const
 {
     return mReceiveThread.extractDataReceive();
 }
 
-inline DataRateHelper::DataRate DataRateHelper::queryBytesSentWithLiterals(void) const
+inline DataRateHelper::DataRate DataRateHelper::queryBytesSentWithLiterals() const
 {
     return DataRateHelper::DataRateHelper::convertDataRateLiterals(queryBytesSent());
 }
 
-inline DataRateHelper::DataRate DataRateHelper::queryBytesReceivedWithLiterals(void) const
+inline DataRateHelper::DataRate DataRateHelper::queryBytesReceivedWithLiterals() const
 {
     return DataRateHelper::DataRateHelper::convertDataRateLiterals(queryBytesReceived());
 }

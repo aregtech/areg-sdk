@@ -91,7 +91,7 @@ EventDataStream::EventDataStream(const IEInStream & stream)
     stream >> mEventDataType >> mBufferName >> mDataBuffer;
 }
 
-EventDataStream::~EventDataStream( void )
+EventDataStream::~EventDataStream()
 {
     mSharedList.clear();
     mDataBuffer.invalidate();
@@ -158,7 +158,7 @@ unsigned int EventDataStream::read( WideString & wide ) const
     return mDataBuffer.read(wide);
 }
 
-void EventDataStream::resetCursor( void ) const
+void EventDataStream::resetCursor() const
 {
     mDataBuffer.moveToBegin();
 }
@@ -194,17 +194,17 @@ unsigned int EventDataStream::write( const WideString & wide )
     return mDataBuffer.write(wide);
 }
 
-void EventDataStream::flush( void )
+void EventDataStream::flush()
 {
 }
 
-unsigned int EventDataStream::getSizeReadable( void ) const
+unsigned int EventDataStream::getSizeReadable() const
 {
     ASSERT(false);
     return 0;
 }
 
-unsigned int EventDataStream::getSizeWritable( void ) const
+unsigned int EventDataStream::getSizeWritable() const
 {
     ASSERT(false);
     return 0;

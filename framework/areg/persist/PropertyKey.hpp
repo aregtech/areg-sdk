@@ -46,12 +46,12 @@ public:
     /**
      * \brief   Default constructor
      **/
-    PropertyKey( void );
+    PropertyKey();
     
     /**
      * \brief   Destructor
      **/
-    ~PropertyKey(void) = default;
+    ~PropertyKey() = default;
 
     /**
      * \brief   Parses and initializes Key.
@@ -134,7 +134,7 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of Key object.
      **/
-    explicit operator unsigned int ( void ) const;
+    explicit operator unsigned int () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -166,65 +166,65 @@ public:
     /**
      * \brief   Returns section part of the Key
      **/
-    const String & getSection( void ) const;
+    const String & getSection() const;
 
     /**
      * \brief   Returns property part of the Key
      **/
-    const String & getProperty( void ) const;
+    const String & getProperty() const;
 
     /**
      * \brief   Returns module part of the Key
      **/
-    const String & getModule( void ) const;
+    const String & getModule() const;
 
     /**
      * \brief   Returns position part of the Key
      **/
-    const String & getPosition( void ) const;
+    const String & getPosition() const;
 
     /**
      * \brief   Returns the type of the property key.
      **/
-    NEPersistence::eConfigKeys getKeyType(void) const;
+    NEPersistence::eConfigKeys getKeyType() const;
 
     /**
      * \brief   Returns true if the Key is valid.
      *          The Key is valid if at least section and property parts are not empty.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief   Returns true if Key is global and applicable to all modules.
      **/
-    bool isAllModules(void) const;
+    bool isAllModules() const;
 
     /**
      * \brief   Returns true if Key belongs to a group of properties.
      *          The key is belongs to a group if either it is global and belongs to all modules,
      *          or the 'position' part of the key ends with '*'.
      **/
-    bool isGroupProperty(void) const;
+    bool isGroupProperty() const;
 
     /**
      * \brief   Returns true if Key has section part.
      **/
-    bool hasSection(void) const;
+    bool hasSection() const;
 
     /**
      * \brief   Returns true if Key has module part.
      **/
-    bool hasModule( void ) const;
+    bool hasModule() const;
 
     /**
      * \brief   Returns true if Key has position part.
      **/
-    bool hasProperty( void ) const;
+    bool hasProperty() const;
 
     /**
      * \brief   Returns true if Key has position part.
      **/
-    bool hasPosition(void) const;
+    bool hasPosition() const;
 
     /**
      * \brief   Parses given string, extracts and initializes Key data.
@@ -237,13 +237,13 @@ public:
     /**
      * \brief   Resets and invalidates Key
      **/
-    void resetKey( void );
+    void resetKey();
 
     /**
      * \brief   Converts Key data to the string.
      *          If Key consists of several parts, each part is concatenated by key-separator symbol.
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief   Checks the exact match of the key by section and module names.

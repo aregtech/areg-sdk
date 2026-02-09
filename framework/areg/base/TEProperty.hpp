@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Constructors
      **/
-    TEProperty( void ) = default;
+    TEProperty() = default;
     TEProperty(const TEProperty<KEY, VALUE>& src) = default;
     TEProperty(TEProperty<KEY, VALUE>&& src)  noexcept = default;
 
@@ -50,7 +50,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEProperty( void ) = default;
+    ~TEProperty() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -130,8 +130,8 @@ public:
     /**
      * \brief   Returns the Key data of the pair object.
      **/
-    inline const KEY & getKey( void ) const;
-    inline KEY & getKey( void );
+    inline const KEY & getKey() const;
+    inline KEY & getKey();
 
     /**
      * \brief   Sets the Value data of the pair from the given source.
@@ -143,8 +143,8 @@ public:
     /**
      * \brief   Returns the Value data of the pair object.
      **/
-    inline const VALUE& getValue(void) const;
-    inline VALUE& getValue(void);
+    inline const VALUE& getValue() const;
+    inline VALUE& getValue();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -230,13 +230,13 @@ inline void TEProperty<KEY, VALUE>::setKey(KEY && Key)
 }
 
 template <typename KEY, typename VALUE>
-inline const KEY& TEProperty<KEY, VALUE>::getKey(void) const
+inline const KEY& TEProperty<KEY, VALUE>::getKey() const
 {
     return mValue.first;
 }
 
 template <typename KEY, typename VALUE>
-inline KEY& TEProperty<KEY, VALUE>::getKey(void)
+inline KEY& TEProperty<KEY, VALUE>::getKey()
 {
     return mValue.first;
 }
@@ -254,13 +254,13 @@ inline void TEProperty<KEY, VALUE>::setValue(VALUE && Value)
 }
 
 template <typename KEY, typename VALUE>
-inline const VALUE& TEProperty<KEY, VALUE>::getValue(void) const
+inline const VALUE& TEProperty<KEY, VALUE>::getValue() const
 {
     return mValue.second;
 }
 
 template <typename KEY, typename VALUE>
-inline VALUE& TEProperty<KEY, VALUE>::getValue(void)
+inline VALUE& TEProperty<KEY, VALUE>::getValue()
 {
     return mValue.second;
 }

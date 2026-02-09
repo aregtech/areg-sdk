@@ -64,7 +64,7 @@ DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, 
 {
 }
 
-DirectChatService::~DirectChatService(void)
+DirectChatService::~DirectChatService()
 {
     _clearList();
 }
@@ -162,7 +162,7 @@ void DirectChatService::requestChatLeave( const NEDirectMessager::sParticipant &
     }
 }
 
-inline void DirectChatService::_clearList(void)
+inline void DirectChatService::_clearList()
 {
     uint32_t count{ mListClients.getSize() };
     for (uint32_t i = 0; i < count; ++ i )

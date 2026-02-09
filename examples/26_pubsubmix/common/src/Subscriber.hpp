@@ -47,7 +47,7 @@ public:
      **/
     Subscriber( const NERegistry::DependencyEntry & entry, Component & owner, int position );
 
-    virtual ~Subscriber( void ) = default;
+    virtual ~Subscriber() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -106,7 +106,7 @@ protected:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline Subscriber & self(void);
+    inline Subscriber & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -124,7 +124,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Subscriber(void);
+    Subscriber();
     DECLARE_NOCOPY_NOMOVE(Subscriber);
 };
 

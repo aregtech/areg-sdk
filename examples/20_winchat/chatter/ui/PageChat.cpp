@@ -283,7 +283,7 @@ void PageChat::OnEditUpdateChat(CCmdUI * pCmdUI)
     pCmdUI->Enable( IsEmpty() == false);
 }
 
-void PageChat::setHeaders( void )
+void PageChat::setHeaders()
 {
     int count = MACRO_ARRAYLEN( PageChat::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
@@ -467,19 +467,19 @@ void PageChat::removeTyping( const CString & /*nickName*/, uint32_t cookie)
     }
 }
 
-bool PageChat::isActivePage( void )
+bool PageChat::isActivePage()
 {
     CPropertySheet * sheet = GetParentSheet();
     return ( sheet != nullptr ? sheet->GetActivePage() == static_cast<const CPropertyPage *>(this) : false);
 }
 
-void PageChat::OnDefaultClicked( void )
+void PageChat::OnDefaultClicked()
 {
     UpdateData(TRUE);
     sendMessage();
 }
 
-void PageChat::sendType(void)
+void PageChat::sendType()
 {
     DirectMessagingClient* client = this->GetChatClient();
     if (client != nullptr)
@@ -488,7 +488,7 @@ void PageChat::sendType(void)
     }
 }
 
-void PageChat::sendMessage(void)
+void PageChat::sendMessage()
 {
     if ((mEditEnabled == TRUE) && (mChatMsg.IsEmpty() == FALSE))
     {
@@ -500,7 +500,7 @@ void PageChat::sendMessage(void)
     }
 }
 
-void PageChat::startTimer(void)
+void PageChat::startTimer()
 {
     if (mTimerId != 0)
         KillTimer(mTimerId);
@@ -510,7 +510,7 @@ void PageChat::startTimer(void)
     SetTimer(mTimerId, mTimerValue, nullptr);
 }
 
-void PageChat::stopTimer(void)
+void PageChat::stopTimer()
 {
     if (mTimerId != 0)
     {

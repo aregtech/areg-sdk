@@ -83,12 +83,12 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_osGetInvalidHandle( void )
+FILEHANDLE File::_osGetInvalidHandle()
 {
     return static_cast<FILEHANDLE>(INVALID_HANDLE_VALUE);
 }
 
-void File::_osCloseFile( void )
+void File::_osCloseFile()
 {
     if ( isOpened( ) )
     {
@@ -98,7 +98,7 @@ void File::_osCloseFile( void )
     mFileHandle = File::_osGetInvalidHandle();
 }
 
-bool File::_osOpenFile( void )
+bool File::_osOpenFile()
 {
     bool result{ isOpened( ) };
     if ( result == false)
@@ -207,13 +207,13 @@ unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosit
     return static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod)));
 }
 
-unsigned int File::_osGetPositionFile( void ) const
+unsigned int File::_osGetPositionFile() const
 {
     ASSERT(mFileHandle != nullptr);
     return static_cast<unsigned int>( SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT) );
 }
 
-bool File::_osTruncateFile( void )
+bool File::_osTruncateFile()
 {
     bool result{ false };
     if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
@@ -224,7 +224,7 @@ bool File::_osTruncateFile( void )
     return result;
 }
 
-void File::_osFlushFile( void )
+void File::_osFlushFile()
 {
     ASSERT(mFileHandle != nullptr);
     ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));

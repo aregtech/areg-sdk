@@ -157,7 +157,7 @@ int ScopeController::removeScopeGroupPriority( const String & scopeGroupName, NE
     return result;
 }
 
-void ScopeController::resetScopes(void)
+void ScopeController::resetScopes()
 {
     mMapLogScope.lock();
 
@@ -174,7 +174,7 @@ void ScopeController::resetScopes(void)
     mMapLogScope.unlock();
 }
 
-void ScopeController::activateDefaults( void )
+void ScopeController::activateDefaults()
 {
     for (const auto& entry : NELogOptions::DEFAULT_LOG_ENABLED_SCOPES)
     {
@@ -205,7 +205,7 @@ void ScopeController::configureScopes( const String & scopeName, unsigned int sc
     }
 }
 
-void ScopeController::configureScopes(void)
+void ScopeController::configureScopes()
 {
     std::vector<Property> scopes;
     Application::getConfigManager().getModuleLogScopes(scopes);

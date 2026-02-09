@@ -57,7 +57,7 @@ TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entr
     setEastWest(NESimpleTrafficLight::eTrafficLight::LightOff);
 }
 
-void TrafficLightService::onTrafficLightSwitchedOn( void )
+void TrafficLightService::onTrafficLightSwitchedOn()
 {
     if ( getSouthNorth( ) == NESimpleTrafficLight::eTrafficLight::LightOff )
     {
@@ -67,7 +67,7 @@ void TrafficLightService::onTrafficLightSwitchedOn( void )
     }
 }
 
-void TrafficLightService::onTrafficLightSwitchedOff( void )
+void TrafficLightService::onTrafficLightSwitchedOff()
 {
     if ( getSouthNorth( ) != NESimpleTrafficLight::eTrafficLight::LightOff )
     {
@@ -79,7 +79,7 @@ void TrafficLightService::onTrafficLightSwitchedOff( void )
     }
 }
 
-void TrafficLightService::onTimerExpired( void )
+void TrafficLightService::onTimerExpired()
 {
     switch (getSouthNorth())
     {

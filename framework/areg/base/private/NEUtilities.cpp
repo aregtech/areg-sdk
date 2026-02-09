@@ -34,13 +34,13 @@ namespace NEUtilities
     /**
      * \brief   Returns value as milliseconds that have elapsed since the system was started.
      **/
-    extern uint64_t _osGetTickCount( void );
+    extern uint64_t _osGetTickCount();
 
     /**
      * \brief   Returns value of the current date and time in microseconds passed since Unix epoch (1 January 1970).
      *          The time is in UTC.
      **/
-    extern TIME64 _osSystemTimeNow(void);
+    extern TIME64 _osSystemTimeNow();
 
     /**
      * \brief   Set the current date and time in the struct pointed to by the `sysTime` argument.
@@ -263,13 +263,13 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
     return out_buffer;
 }
 
-AREG_API_IMPL unsigned int NEUtilities::generateUniqueId( void )
+AREG_API_IMPL unsigned int NEUtilities::generateUniqueId()
 {
     static std::atomic_uint _id(0u);
     return ++ _id;
 }
 
-AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
+AREG_API_IMPL uint64_t NEUtilities::getTickCount()
 {
     return _osGetTickCount();
 }
@@ -295,7 +295,7 @@ AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT sy
     _osSystemTimeNow( sysTime, localTime );
 }
 
-AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
+AREG_API_IMPL TIME64 NEUtilities::systemTimeNow()
 {
     return _osSystemTimeNow();
 }

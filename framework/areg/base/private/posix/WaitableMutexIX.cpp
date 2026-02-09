@@ -35,7 +35,7 @@ WaitableMutexIX::WaitableMutexIX(bool initOwned /*= false*/, const char * asciiN
 {
 }
 
-bool WaitableMutexIX::releaseMutex(void)
+bool WaitableMutexIX::releaseMutex()
 {
     bool result     = false;
     bool sendSignal = false;
@@ -117,7 +117,7 @@ bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)
     return result;
 }
 
-bool WaitableMutexIX::checkCanSignalMultipleThreads(void) const
+bool WaitableMutexIX::checkCanSignalMultipleThreads() const
 {
     return false;
 }

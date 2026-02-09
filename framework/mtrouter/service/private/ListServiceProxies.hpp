@@ -52,7 +52,7 @@ public:
     /**
      * \brief   Default constructor. Creates empty proxy list
      **/
-    ListServiceProxies( void ) = default;
+    ListServiceProxies() = default;
 
     /**
      * \brief   Copies the list of proxies from the given source.
@@ -69,7 +69,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ListServiceProxies( void ) = default;
+    ~ListServiceProxies() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators, operations and attributes
@@ -163,7 +163,7 @@ public:
      * \return  If list of proxy services is not empty, the return value is
      *          not zero. Otherwise, it returns zero.
      **/
-    int stubServiceUnavailable( void );
+    int stubServiceUnavailable();
 
     /**
      * \brief   Search in the list and collects all proxies, which cookie is equal

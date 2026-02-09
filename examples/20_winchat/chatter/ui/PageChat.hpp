@@ -40,7 +40,7 @@ public:
 	enum { IDD = IDD_PAGE_CHAT };
 
 public:
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
@@ -71,16 +71,16 @@ public:
     afx_msg void OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult);
 
 private:
-    void setHeaders( void );
+    void setHeaders();
     void setTabTitle( const String & title );
     void outputMessage(CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie, bool removeType = true);
     void outputTyping(CString nickName, CString message, uint32_t cookie );
     void removeTyping(const CString & nickName, uint32_t cookie);
-    bool isActivePage( void );
-    void sendMessage( void );
-    void sendType( void );
-    void startTimer( void );
-    void stopTimer(void);
+    bool isActivePage();
+    void sendMessage();
+    void sendType();
+    void startTimer();
+    void stopTimer();
 
 private:
     // The chatting edit control

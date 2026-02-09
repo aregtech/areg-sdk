@@ -69,7 +69,7 @@ class ServicingComponent    : public    Component
             {
             }
 
-        virtual ~OptionConsumer( void ) = default;
+        virtual ~OptionConsumer() = default;
 
     private:
     /************************************************************************/
@@ -88,7 +88,7 @@ class ServicingComponent    : public    Component
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-        OptionConsumer( void ) = delete;
+        OptionConsumer() = delete;
         DECLARE_NOCOPY_NOMOVE(OptionConsumer);
     };
 
@@ -105,7 +105,7 @@ class ServicingComponent    : public    Component
             {
             }
 
-        virtual ~TimerConsumer( void ) = default;
+        virtual ~TimerConsumer() = default;
 
     private:
     /************************************************************************/
@@ -124,7 +124,7 @@ class ServicingComponent    : public    Component
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-        TimerConsumer( void ) = delete;
+        TimerConsumer() = delete;
         DECLARE_NOCOPY_NOMOVE(TimerConsumer);
     };
 
@@ -238,7 +238,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    virtual void onThreadRuns() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -253,7 +253,7 @@ private:
     /**
      * \brief   Triggered when Timer is expired. 
      **/
-    void onTimerExpired( void );
+    void onTimerExpired();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -300,25 +300,25 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< Return reference to this object.
-    inline ServicingComponent & self( void );
+    inline ServicingComponent & self();
 
     //!< Called for the thread that waits for user option input command.
-    void _runInputThread(void);
+    void _runInputThread();
 
     //!< Called for the thread that generates image data and sends to the clients.
-    void _runImageThread(void);
+    void _runImageThread();
 
     //!< Calculates and returns time in nanoseconds required to generate one image block.
-    uint64_t _getBlockImageTime(void) const;
+    uint64_t _getBlockImageTime() const;
 
     //!< Outputs the options information.
-    void _printInfo(void) const;
+    void _printInfo() const;
 
     //!< Outputs the application help.
-    void _printHelp(void) const;
+    void _printHelp() const;
 
     //!< Generates and initializes the image blocks.
-    void _initBlockList(void);
+    void _initBlockList();
 
     /**
      * \brief   Updates the statistics  to output on console. Called each time when
@@ -335,14 +335,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
+    ServicingComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ServicingComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent inline methods
 //////////////////////////////////////////////////////////////////////////
-inline ServicingComponent & ServicingComponent::self( void )
+inline ServicingComponent & ServicingComponent::self()
 {
     return (*this);
 }

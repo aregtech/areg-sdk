@@ -68,8 +68,8 @@ class AREG_API NullDispatcherThread    : public ComponentThread
 // Constructor. Hidden. The object cannot be instantiated.
 //////////////////////////////////////////////////////////////////////////
 private:
-    NullDispatcherThread( void );
-    virtual ~NullDispatcherThread( void ) = default;
+    NullDispatcherThread();
+    virtual ~NullDispatcherThread() = default;
 //////////////////////////////////////////////////////////////////////////
 // Overrides to disable base functionalities.
 //////////////////////////////////////////////////////////////////////////
@@ -91,8 +91,8 @@ protected:
     // Disable running function and return error on exit.
     //////////////////////////////////////////////////////////////////////////
     virtual bool onThreadRegistered( Thread * threadObj ) override;
-    virtual void onThreadRuns( void ) override;
-    virtual int onThreadExit( void ) override;
+    virtual void onThreadRuns() override;
+    virtual int onThreadExit() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Disable Thread locking
@@ -126,7 +126,7 @@ IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
-inline NullDispatcherThread::NullDispatcherThread( void )
+inline NullDispatcherThread::NullDispatcherThread()
     : ComponentThread(NullDispatcherName)
 {                   }
 
@@ -158,12 +158,12 @@ bool NullDispatcherThread::onThreadRegistered( Thread * /* threadObj */)
     return false;
 }
 
-void NullDispatcherThread::onThreadRuns( void )
+void NullDispatcherThread::onThreadRuns()
 {
     ASSERT(false);
 }
 
-int NullDispatcherThread::onThreadExit( void )
+int NullDispatcherThread::onThreadExit()
 {
     ASSERT(false);
     return static_cast<int>(IEThreadConsumer::eExitCodes::ExitError);
@@ -195,7 +195,7 @@ IMPLEMENT_RUNTIME(DispatcherThread, Thread)
 // DispatcherThread class statics
 //////////////////////////////////////////////////////////////////////////
 
-DispatcherThread & DispatcherThread::_getNullDispatherThread( void )
+DispatcherThread & DispatcherThread::_getNullDispatherThread()
 {
     return static_cast<DispatcherThread &>(NullDispatcherThread::sSelfNullDispatcher);
 }
@@ -223,7 +223,7 @@ bool DispatcherThread::postEvent( Event& eventElem )
     return true;
 }
 
-void DispatcherThread::triggerExit( void )
+void DispatcherThread::triggerExit()
 {
     LOG_SCOPE( areg_component_private_DispatcherThread_triggerExit );
     LOG_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."

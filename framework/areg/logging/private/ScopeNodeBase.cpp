@@ -24,13 +24,13 @@
 
 #if AREG_LOGS
 
-ScopeNodeBase & ScopeNodeBase::invalidNode( void )
+ScopeNodeBase & ScopeNodeBase::invalidNode()
 {
     static ScopeNodeBase _invalid;
     return _invalid;
 }
 
-ScopeNodeBase::ScopeNodeBase( void )
+ScopeNodeBase::ScopeNodeBase()
     : mNodeType     ( ScopeNodeBase::eNode::Invalid )
     , mPrioStates   ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
     , mNodeName     ( )
@@ -165,7 +165,7 @@ String ScopeNodeBase::makeScopePath( const String & prefix ) const
     return prefix;
 }
 
-unsigned int ScopeNodeBase::groupChildNodes( void )
+unsigned int ScopeNodeBase::groupChildNodes()
 {
     return 0;
 }
@@ -187,7 +187,7 @@ unsigned int ScopeNodeBase::addChildRecursive( const LogScope & logScope )
     return addChildRecursive( scopeName, logScope.getPriority( ) );
 }
 
-unsigned int ScopeNodeBase::groupRecursive( void )
+unsigned int ScopeNodeBase::groupRecursive()
 {
     return 0;
 }
@@ -211,7 +211,7 @@ unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int /* prioRe
     return 0;
 }
 
-bool ScopeNodeBase::isEmpty( void ) const
+bool ScopeNodeBase::isEmpty() const
 {
     return true;
 }

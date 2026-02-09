@@ -42,8 +42,8 @@ class AREG_API IELogDatabaseEngine  : public IEDatabaseEngine
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    IELogDatabaseEngine(void);
-    virtual ~IELogDatabaseEngine(void);
+    IELogDatabaseEngine();
+    virtual ~IELogDatabaseEngine();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -57,7 +57,7 @@ public:
      * \brief   Returns true if the database and the log tables are initialized,
      *          and ready to log messages.
      **/
-    virtual bool areTablesInitialized(void) const = 0;
+    virtual bool areTablesInitialized() const = 0;
 
     /**
      * \brief   Called when logging message should be saved in the database.

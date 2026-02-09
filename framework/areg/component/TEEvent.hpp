@@ -88,8 +88,8 @@
  *                                             , public Data2Consumer
  *  {
  *  public:
- *      AllConsumers( void )          {   ; }
- *      virtual ~AllConsumers( void ) {   ; }
+ *      AllConsumers()          {   ; }
+ *      virtual ~AllConsumers() {   ; }
  *  protected:
  *      virtual void processEvent(const Data1& data);
  *      virtual void processEvent(const Data2& data);
@@ -135,11 +135,11 @@ protected:                                                                      
     /**                                                                                                                     **/             \
     /** Protected constructor, the object cannot be instantiated                                                            **/             \
     /**                                                                                                                     **/             \
-    __##ConsumerClass( void ) = default;                                                                                                    \
+    __##ConsumerClass() = default;                                                                                                    \
     /**                                                                                                                     **/             \
     /** Protected destructor.                                                                                               **/             \
     /**                                                                                                                     **/             \
-    ~__##ConsumerClass( void ) = default;                                                                                                   \
+    ~__##ConsumerClass() = default;                                                                                                   \
     /**                                                                                                                     **/             \
     /** Overrides.                                                                                                          **/             \
     /**                                                                                                                     **/             \
@@ -213,7 +213,7 @@ protected:                                                                      
     /**                                                                                                                     **/             \
     /** \brief  Protected destructor. Should not be called directly, call Destroy() instead.                                **/             \
     /**                                                                                                                     **/             \
-    virtual ~__##EventClass( void );                                                                                                        \
+    virtual ~__##EventClass();                                                                                                        \
 public:                                                                                                                                     \
     /**                                                                                                                     **/             \
     /** \brief  Static function. By default, sends an Event specified in MACRO.                                             **/             \
@@ -368,7 +368,7 @@ public:                                                                         
     /**                                                                                                                     **/             \
     /* \brief	Returns read-only event data.                                                                               **/             \
     /**                                                                                                                     **/             \
-    inline const DATA_CLASS & getData( void ) const;                                                                                        \
+    inline const DATA_CLASS & getData() const;                                                                                        \
 protected:                                                                                                                                  \
     /**                                                                                                                     **/             \
     /** \brief  Event data. Class or simple object, which has copy constructor and assignment operator.                     **/             \
@@ -381,7 +381,7 @@ private:                                                                        
     /*************************************************************************************************************************/             \
     /**       Forbidden calls.                                                                                              **/             \
     /*************************************************************************************************************************/             \
-    __##EventClass( void ) = delete;                                                                                                        \
+    __##EventClass() = delete;                                                                                                        \
     __##EventClass(const __##EventClass<DATA_CLASS> & /*src*/ ) = delete;                                                                   \
     __##EventClass(__##EventClass<DATA_CLASS> && /*src*/ ) noexcept = delete;                                                               \
     __##EventClass<DATA_CLASS>& operator = (const __##EventClass<DATA_CLASS> & /*src*/ ) = delete;                                          \
@@ -438,7 +438,7 @@ __##EventClass<DATA_CLASS>::__##EventClass( const DATA_CLASS & data             
 }                                                                                                                                           \
 /** Destructor implementation. Do nothing                                                                                   **/             \
 template <class DATA_CLASS>                                                                                                                 \
-__##EventClass<DATA_CLASS>::~__##EventClass( void )                                                                                         \
+__##EventClass<DATA_CLASS>::~__##EventClass()                                                                                         \
 { ; }                                                                                                                                       \
 /**                                                                                                                         **/             \
 /** Static function, sends event and pass DataClass object. Before sending, it will search Consumer Thread to forward event **/             \
@@ -560,7 +560,7 @@ inline bool __##EventClass<DATA_CLASS>::removeListener(__##ConsumerClass<DATA_CL
 /* \brief	Returns read-only event data.                                                                                   **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
-inline const DATA_CLASS & __##EventClass<DATA_CLASS>::getData( void ) const                                                                 \
+inline const DATA_CLASS & __##EventClass<DATA_CLASS>::getData() const                                                                 \
 {   return mData;                                                                                                                   }       \
 /**                                                                                                                         **/             \
 /** Private static function to forward event. First it will register event for thread (event consumer thread)               **/             \
@@ -622,13 +622,13 @@ protected:                                                                      
     /** Constructor. When instantiated, it will register consumer in the worker thread passed by ConsumerThreadName         **/                     \
     /** By this, the worker / component thread should already run that we are able to find in resource map                  **/                     \
     /**                                                                                                                     **/                     \
-    __##ConsumerClass##Extended( void );                                                                                                            \
+    __##ConsumerClass##Extended();                                                                                                            \
     /**                                                                                                                     **/                     \
     /** Protected destructor.                                                                                               **/                     \
     /**                                                                                                                     **/                     \
-    ~__##ConsumerClass##Extended( void ) = default;                                                                                                 \
+    ~__##ConsumerClass##Extended() = default;                                                                                                 \
 private:                                                                                                                                            \
-    inline __##ConsumerClass##Extended& self( void )     { return (*this); }                                                                        \
+    inline __##ConsumerClass##Extended& self()     { return (*this); }                                                                        \
 private:                                                                                                                                            \
     /** Forbidden calls.                                                                                                    **/                     \
     __##ConsumerClass##Extended(const __##ConsumerClass##Extended<DATA_CLASS> & /*src*/) = delete;                                                  \
@@ -640,7 +640,7 @@ private:                                                                        
 /** Lookup for thread by name and register consumer having EventClass Runtime Object ID                                     **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-__##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )                                                                        \
+__##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended()                                                                        \
     : __##ConsumerClass<DATA_CLASS> ( )                                                                                                             \
 {                                                                                                                                                   \
     DispatcherThread& dispThread = DispatcherThread::getDispatcherThread(ConsumerThreadName);                                                       \

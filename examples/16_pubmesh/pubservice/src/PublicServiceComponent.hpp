@@ -69,7 +69,7 @@ protected:
      *          The request to shutdown the system.
      * \note    Has no response
      **/
-    virtual void requestSystemShutdown( void ) override;
+    virtual void requestSystemShutdown() override;
 
 private:
 //////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
     LocalHelloWorldClient   mLocalClient;   //! Client of local service
 
-    inline PublicServiceComponent & self( void )
+    inline PublicServiceComponent & self()
     {
         return (*this);
     }
@@ -86,6 +86,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    PublicServiceComponent( void ) = delete;
+    PublicServiceComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( PublicServiceComponent );
 };

@@ -21,7 +21,7 @@
 class HelloThread : public Thread, protected IEThreadConsumer
 {
 public:
-    HelloThread( void )
+    HelloThread()
         : Thread( static_cast<IEThreadConsumer &>(*this), "HelloThread") // set consumer and the name
         , IEThreadConsumer( )
     {  }
@@ -31,7 +31,7 @@ protected:
 /************************************************************************/
 
     //! \brief  This callback is triggered when thread runs and fully operable.
-    virtual void onThreadRuns( void ) override
+    virtual void onThreadRuns() override
     {
         std::cout << "!!! Hello Thread \'" << getName( ) << "\' !!!" << std::endl;
     }

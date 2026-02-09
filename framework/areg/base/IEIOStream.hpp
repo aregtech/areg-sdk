@@ -130,12 +130,12 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEInStream( void ) = default;
+    IEInStream() = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEInStream( void ) = default;
+    virtual ~IEInStream() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -147,22 +147,22 @@ public:
     /**
      * \brief   Reads and returns 8-bit value from buffer
      **/
-    virtual uint8_t read8Bits( void ) const;
+    virtual uint8_t read8Bits() const;
 
     /**
      * \brief   Reads and returns 16-bit value from buffer
      **/
-    virtual uint16_t read16Bits( void ) const;
+    virtual uint16_t read16Bits() const;
 
     /**
      * \brief   Reads and returns 32-bit value from buffer
      **/
-    virtual uint32_t read32Bits( void ) const;
+    virtual uint32_t read32Bits() const;
 
     /**
      * \brief   Reads and returns 64-bit value from buffer
      **/
-    virtual uint64_t read64Bits( void ) const;
+    virtual uint64_t read64Bits() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -208,7 +208,7 @@ public:
     /**
      * \brief   Resets cursor position and moves to the begin of data.
      **/
-    virtual void resetCursor( void ) const = 0;
+    virtual void resetCursor() const = 0;
 
 protected:
     /**
@@ -216,7 +216,7 @@ protected:
      *          i.e. remaining readable size. The returns value is less or equal to
      *          the size of streamable buffer.
      **/
-    virtual unsigned int getSizeReadable( void ) const = 0;
+    virtual unsigned int getSizeReadable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -242,12 +242,12 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEOutStream( void ) = default;
+    IEOutStream() = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEOutStream( void ) = default;
+    virtual ~IEOutStream() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -328,14 +328,14 @@ public:
     /**
      * \brief	Flushes cached data to output stream object.
      **/
-    virtual void flush( void ) = 0;
+    virtual void flush() = 0;
 
 protected:
     /**
      * \brief	Returns the size in bytes of available space in the stream to write data, 
      *          i.e. remaining writable size.
      **/
-    virtual unsigned int getSizeWritable( void ) const = 0;
+    virtual unsigned int getSizeWritable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -357,13 +357,13 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEIOStream( void ) = default;
+    IEIOStream() = default;
 
 public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEIOStream( void ) = default;
+    virtual ~IEIOStream() = default;
 
 public:
 /************************************************************************

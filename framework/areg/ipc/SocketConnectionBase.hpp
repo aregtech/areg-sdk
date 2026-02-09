@@ -42,11 +42,11 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    SocketConnectionBase( void ) = default;
+    SocketConnectionBase() = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~SocketConnectionBase( void ) = default;
+    virtual ~SocketConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations

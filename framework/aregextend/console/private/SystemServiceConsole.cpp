@@ -96,7 +96,7 @@ void SystemServiceConsole::processAttributeEvent( ServiceRequestEvent & /* event
 {
 }
 
-inline void SystemServiceConsole::_outputDataRate(void)
+inline void SystemServiceConsole::_outputDataRate()
 {
     Console& console = Console::getInstance();
     console.lockConsole( );

@@ -61,7 +61,7 @@ RouterClient::RouterClient(IEServiceConnectionConsumer& connectionConsumer, IESe
 {
 }
 
-bool RouterClient::connectServiceHost(void)
+bool RouterClient::connectServiceHost()
 {
     bool result{ true };
     if (isRunning() == false)
@@ -87,7 +87,7 @@ bool RouterClient::connectServiceHost(void)
     return result;
 }
 
-void RouterClient::disconnectServiceHost(void)
+void RouterClient::disconnectServiceHost()
 {
     if (isRunning())
     {
@@ -97,13 +97,13 @@ void RouterClient::disconnectServiceHost(void)
     }
 }
 
-void RouterClient::onServiceExit(void)
+void RouterClient::onServiceExit()
 {
     ServiceClientConnectionBase::onServiceExit();
     triggerExit();
 }
 
-bool RouterClient::isServiceHostPending(void) const
+bool RouterClient::isServiceHostPending() const
 {
     Lock lock(mLock);
     return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::eConnectionState::ConnectionStarting)));

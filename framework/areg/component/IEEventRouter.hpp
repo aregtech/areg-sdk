@@ -46,8 +46,8 @@ protected:
     /**
      * \brief   Protected constructor and destructor.
      **/
-    IEEventRouter( void ) = default;
-    virtual ~IEEventRouter( void ) = default;
+    IEEventRouter() = default;
+    virtual ~IEEventRouter() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

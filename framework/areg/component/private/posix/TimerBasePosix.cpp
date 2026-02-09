@@ -25,7 +25,7 @@
  // Posix specific methods
  //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerBase::_osCreateWaitableTimer( void )
+TIMERHANDLE TimerBase::_osCreateWaitableTimer()
 {
     return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix( ));
 }

@@ -55,12 +55,12 @@ namespace
 // ServiceApplicationBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool ServiceApplicationBase::_osIsValid(void) const
+bool ServiceApplicationBase::_osIsValid() const
 {
     return (mSeMHandle != nullptr && mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osFreeResources(void)
+void ServiceApplicationBase::_osFreeResources()
 {
     if (mSvcHandle != nullptr)
     {
@@ -76,7 +76,7 @@ void ServiceApplicationBase::_osFreeResources(void)
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService(void)
+bool ServiceApplicationBase::_osInitializeService()
 {
     NEMemory::zeroElement<SERVICE_STATUS>(_serviceStatus);
     _serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -90,7 +90,7 @@ bool ServiceApplicationBase::_osInitializeService(void)
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService(void)
+bool ServiceApplicationBase::_osOpenService()
 {
     if (mSeMHandle == nullptr)
     {
@@ -105,7 +105,7 @@ bool ServiceApplicationBase::_osOpenService(void)
     return (mSvcHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osCreateService(void)
+bool ServiceApplicationBase::_osCreateService()
 {
     if (mSeMHandle == nullptr)
     {
@@ -185,7 +185,7 @@ bool ServiceApplicationBase::_osCreateService(void)
     return (mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osDeleteService(void)
+void ServiceApplicationBase::_osDeleteService()
 {
     if (mSvcHandle != nullptr)
     {
@@ -193,7 +193,7 @@ void ServiceApplicationBase::_osDeleteService(void)
     }
 }
 
-bool ServiceApplicationBase::_osRegisterService(void)
+bool ServiceApplicationBase::_osRegisterService()
 {
     if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Service)
     {
@@ -267,7 +267,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
     return result;
 }
 
-int ServiceApplicationBase::_osStartServiceDispatcher(void)
+int ServiceApplicationBase::_osStartServiceDispatcher()
 {
     _serviceTable[0].lpServiceName = getServiceName();
     _serviceTable[0].lpServiceProc = &::_win32ServiceMain;

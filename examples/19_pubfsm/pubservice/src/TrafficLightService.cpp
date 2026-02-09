@@ -41,26 +41,26 @@ TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entr
 
 }
 
-TrafficLightService::~TrafficLightService(void)
+TrafficLightService::~TrafficLightService()
 {
     mLightFsm.releaseFSM();
 }
 
-void TrafficLightService::requestPowerOn(void)
+void TrafficLightService::requestPowerOn()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestPowerOn);
 
     mLightFsm.powerOn();
 }
 
-void TrafficLightService::requestPowerOff(void)
+void TrafficLightService::requestPowerOff()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestPowerOff);
 
     mLightFsm.powerOff();
 }
 
-void TrafficLightService::requestStartTrafficLight(void)
+void TrafficLightService::requestStartTrafficLight()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStartTrafficLight);
 
@@ -76,7 +76,7 @@ void TrafficLightService::requestStartTrafficLight(void)
     responseStartTrafficLight(result);
 }
 
-void TrafficLightService::requestStopTrafficLight(void)
+void TrafficLightService::requestStopTrafficLight()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStopTrafficLight);
 
@@ -92,7 +92,7 @@ void TrafficLightService::requestStopTrafficLight(void)
     responseStopTrafficLight(result);
 }
 
-void TrafficLightService::actionPowerOff(void)
+void TrafficLightService::actionPowerOff()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOff);
     LOG_DBG("Handling traffic light power OFF");
@@ -113,7 +113,7 @@ void TrafficLightService::actionPowerOff(void)
     broadcastSouthNorth(NETrafficController::eVehicleTrafficLight::VehicleLightOFF, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
 }
 
-void TrafficLightService::actionPowerOn(void)
+void TrafficLightService::actionPowerOn()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOn);
 
@@ -135,7 +135,7 @@ void TrafficLightService::actionPowerOn(void)
     broadcastSouthNorth(NETrafficController::eVehicleTrafficLight::VehicleLightsInit, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
 }
 
-void TrafficLightService::actionVehicleYellow(void)
+void TrafficLightService::actionVehicleYellow()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleYellow);
     LOG_DBG("Vehicle light is yellow, pedestrian is red");
@@ -160,7 +160,7 @@ void TrafficLightService::actionVehicleYellow(void)
     LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionVehicleRed(void)
+void TrafficLightService::actionVehicleRed()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleRed);
     LOG_DBG("Vehicle light is red. Initially, pedestrian is red");
@@ -178,7 +178,7 @@ void TrafficLightService::actionVehicleRed(void)
     LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
 }
 
-void TrafficLightService::actionPedestrianRed(void)
+void TrafficLightService::actionPedestrianRed()
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianRed);
     LOG_DBG("Pedestrian light is red. Vehicle light is unchanged.");

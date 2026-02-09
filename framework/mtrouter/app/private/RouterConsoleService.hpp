@@ -48,13 +48,13 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RouterConsoleService( void ) = default;
+    virtual ~RouterConsoleService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RouterConsoleService( void ) = delete;
+    RouterConsoleService() = delete;
     DECLARE_NOCOPY_NOMOVE( RouterConsoleService );
 };
 

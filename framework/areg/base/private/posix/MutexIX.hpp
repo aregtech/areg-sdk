@@ -61,7 +61,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~MutexIX(void);
+    virtual ~MutexIX();
 
 protected:
     /**
@@ -112,14 +112,14 @@ public:
      *          by current thread, the function returns true. Otherwise,
      *          it returns false.
      **/
-    bool tryLock( void ) const;
+    bool tryLock() const;
 
     /**
      * \brief   Call to unlock / release the ownership of the object.
      *          Only the thread that locked the object can unlock it.
      *          In all other cases the call is ignored.
      **/
-    void unlock( void ) const;
+    void unlock() const;
 
 /************************************************************************/
 // IESyncObjectBaseIX overrides.
@@ -127,13 +127,13 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid( void ) const override;
+    virtual bool isValid() const override;
 
     /**
      * \brief   Triggered when synchronization object is going to be deleted.
      *          This should free all resources.
      **/
-    virtual void freeResources( void ) override;
+    virtual void freeResources() override;
 
 //////////////////////////////////////////////////////////////////////////
 // MutexIX class implementation
@@ -206,7 +206,7 @@ public:
     /**
      * \brief   If previously the object is locked, it will be unlocked in destructor.
      **/
-    inline ~ObjectLockIX( void );
+    inline ~ObjectLockIX();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -228,7 +228,7 @@ public:
     /**
      * \brief   Call to unlock mutex to let other threads to take the ownership.
      **/
-    inline void unlock( void ) const;
+    inline void unlock() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor.
@@ -248,7 +248,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ObjectLockIX( void ) = delete;
+    ObjectLockIX() = delete;
     DECLARE_NOCOPY_NOMOVE( ObjectLockIX );
 };
 
@@ -266,7 +266,7 @@ inline ObjectLockIX::ObjectLockIX( const MutexIX & mutex, bool autoLock /*= true
     }
 }
 
-inline ObjectLockIX::~ObjectLockIX( void )
+inline ObjectLockIX::~ObjectLockIX()
 {
     if (mAutolock)
     {
@@ -279,7 +279,7 @@ inline bool ObjectLockIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINI
     return mMutex.lock(msTimeout);
 }
 
-inline void ObjectLockIX::unlock( void ) const
+inline void ObjectLockIX::unlock() const
 {
     mMutex.unlock();
 }

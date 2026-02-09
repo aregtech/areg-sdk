@@ -59,7 +59,7 @@ public:
      * \brief   If Scope Priority is enabled for the Log Scope, creates an 
      *          "exit scope" tracing message and sends it to the configured logging targets.
      **/
-    ~ScopeMessage( void );
+    ~ScopeMessage();
 
 #if AREG_LOGS
 //////////////////////////////////////////////////////////////////////////////
@@ -124,37 +124,37 @@ public:
     /**
      * \brief   Checks if Scope Priority logging is enabled for the Log Scope.
      **/
-    inline bool isScopeEnabled( void ) const;
+    inline bool isScopeEnabled() const;
 
     /**
      * \brief   Checks if Debug priority logging is enabled for the Log Scope.
      **/
-    inline bool isDbgEnabled( void ) const;
+    inline bool isDbgEnabled() const;
 
     /**
      * \brief   Checks if Information or a lower priority logging is enabled for the Log Scope.
      **/
-    inline bool isInfoEnabled( void ) const;
+    inline bool isInfoEnabled() const;
 
     /**
      * \brief   Checks if Warning or a lower priority logging is enabled for the Log Scope.
      **/
-    inline bool isWarnEnabled( void ) const;
+    inline bool isWarnEnabled() const;
 
     /**
      * \brief   Checks if Error or a lower priority logging is enabled for the Log Scope.
      **/
-    inline bool isErrEnabled( void ) const;
+    inline bool isErrEnabled() const;
 
     /**
      * \brief   Checks if Fatal Error priority logging is enabled.
      **/
-    inline bool isFatalEnabled( void ) const;
+    inline bool isFatalEnabled() const;
 
     /**
      * \brief   Checks if the Log Scope has any priority enabled.
      **/
-    inline bool isLogEnabled( void ) const;
+    inline bool isLogEnabled() const;
 
     /**
      * \brief   Checks if the specified log message priority is enabled.
@@ -195,7 +195,7 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
 private:
-    ScopeMessage( void ) = delete;
+    ScopeMessage() = delete;
     DECLARE_NOCOPY_NOMOVE( ScopeMessage );
 };
 
@@ -205,37 +205,37 @@ private:
 
 #if AREG_LOGS
 
-inline bool ScopeMessage::isScopeEnabled(void) const
+inline bool ScopeMessage::isScopeEnabled() const
 {
     return (mScopePrio &  static_cast<unsigned int>(NELogging::PrioScope));
 }
 
-inline bool ScopeMessage::isDbgEnabled(void) const
+inline bool ScopeMessage::isDbgEnabled() const
 {
     return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioDebug));
 }
 
-inline bool ScopeMessage::isInfoEnabled(void) const
+inline bool ScopeMessage::isInfoEnabled() const
 {
     return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioInfo));
 }
 
-inline bool ScopeMessage::isWarnEnabled(void) const
+inline bool ScopeMessage::isWarnEnabled() const
 {
     return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioWarning));
 }
 
-inline bool ScopeMessage::isErrEnabled(void) const
+inline bool ScopeMessage::isErrEnabled() const
 {
     return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioError));
 }
 
-inline bool ScopeMessage::isFatalEnabled(void) const
+inline bool ScopeMessage::isFatalEnabled() const
 {
     return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioFatal));
 }
 
-inline bool ScopeMessage::isLogEnabled(void) const
+inline bool ScopeMessage::isLogEnabled() const
 {
     return (mScopePrio != static_cast<unsigned int>(NELogging::PrioNotset));
 }

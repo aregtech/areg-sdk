@@ -26,7 +26,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-IEByteBuffer::IEByteBuffer( void )
+IEByteBuffer::IEByteBuffer()
     : mByteBuffer( nullptr, ByteBufferDeleter() )
 {
 }
@@ -43,7 +43,7 @@ IEByteBuffer::IEByteBuffer( IEByteBuffer && src ) noexcept
     src.invalidate();
 }
 
-void IEByteBuffer::invalidate( void )
+void IEByteBuffer::invalidate()
 {
     mByteBuffer.reset();
 }
@@ -123,7 +123,7 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
     return result;
 }
 
-unsigned int IEByteBuffer::getAlignedSize(void) const
+unsigned int IEByteBuffer::getAlignedSize() const
 {
     return NEMemory::BLOCK_SIZE;
 }

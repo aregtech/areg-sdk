@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    inline PatientInfoEventData( void );
+    inline PatientInfoEventData();
 
     /**
      * \brief   Initializes the patient information 
@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Gets buffer that contains patient information.
      **/
-    inline const SharedBuffer & getData( void ) const;
+    inline const SharedBuffer & getData() const;
 
     /**
      * \brief   Declare PatientInfoEventData::eUpdateCommands as streamable.
@@ -104,7 +104,7 @@ DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsume
 //////////////////////////////////////////////////////////////////////////
 // PatientInfoEventData class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline PatientInfoEventData::PatientInfoEventData( void )
+inline PatientInfoEventData::PatientInfoEventData()
     : mData ( )
 {
 }
@@ -131,7 +131,7 @@ inline PatientInfoEventData::PatientInfoEventData( PatientInfoEventData && src )
 {
 }
 
-inline const SharedBuffer & PatientInfoEventData::getData( void ) const
+inline const SharedBuffer & PatientInfoEventData::getData() const
 {
     return mData;
 }

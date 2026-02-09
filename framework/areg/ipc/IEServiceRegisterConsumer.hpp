@@ -46,11 +46,11 @@ protected:
     /**
      * \brief   Default destructor
      **/
-    IEServiceRegisterConsumer( void ) = default;
+    IEServiceRegisterConsumer() = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IEServiceRegisterConsumer( void ) = default;
+    virtual ~IEServiceRegisterConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

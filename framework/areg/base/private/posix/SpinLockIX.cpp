@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 
-SpinLockIX::SpinLockIX( void )
+SpinLockIX::SpinLockIX()
     : mSpinLock     ( )
     , mInternLock   ( )
     , mSpinOwner    ( 0 )
@@ -45,12 +45,12 @@ SpinLockIX::SpinLockIX( void )
 #endif  // __APPLE__
 }
 
-SpinLockIX::~SpinLockIX( void )
+SpinLockIX::~SpinLockIX()
 {
     freeResources( );
 }
 
-bool SpinLockIX::lock( void )
+bool SpinLockIX::lock()
 {
     bool result = false;
 
@@ -85,7 +85,7 @@ bool SpinLockIX::lock( void )
     return result;
 }
 
-bool SpinLockIX::unlock( void )
+bool SpinLockIX::unlock()
 {
     bool result = false;
 
@@ -113,7 +113,7 @@ bool SpinLockIX::unlock( void )
     return result;
 }
 
-bool SpinLockIX::tryLock( void )
+bool SpinLockIX::tryLock()
 {
     bool result = false;
 
@@ -152,7 +152,7 @@ bool SpinLockIX::tryLock( void )
     return result;
 }
 
-void SpinLockIX::freeResources( void )
+void SpinLockIX::freeResources()
 {
     if ( mIsValid.load() )
     {
@@ -173,7 +173,7 @@ void SpinLockIX::freeResources( void )
 }
 
 
-inline bool SpinLockIX::_lockSpin( void )
+inline bool SpinLockIX::_lockSpin()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_lock( &mSpinLock );
@@ -183,7 +183,7 @@ inline bool SpinLockIX::_lockSpin( void )
 #endif  // __APPLE__
 }
 
-inline void SpinLockIX::_unlockSpin( void )
+inline void SpinLockIX::_unlockSpin()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_unlock( &mSpinLock );
@@ -192,7 +192,7 @@ inline void SpinLockIX::_unlockSpin( void )
 #endif  // __APPLE__
 }
 
-inline void SpinLockIX::_lockIntern( void )
+inline void SpinLockIX::_lockIntern()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_lock( &mInternLock );
@@ -201,7 +201,7 @@ inline void SpinLockIX::_lockIntern( void )
 #endif  // __APPLE__
 }
 
-inline void SpinLockIX::_unlockIntern( void )
+inline void SpinLockIX::_unlockIntern()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_unlock( &mInternLock );

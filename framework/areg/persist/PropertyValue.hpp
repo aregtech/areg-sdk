@@ -38,7 +38,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    PropertyValue( void ) = default;
+    PropertyValue() = default;
     /**
      * \brief   Initializes Value from string.
      * \param   value       The Value as a string to parse.
@@ -83,7 +83,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~PropertyValue( void ) = default;
+    ~PropertyValue() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -149,22 +149,22 @@ public:
     /**
      * \brief   Converts the property value into the 32-bit unsigned integer.
      **/
-    operator unsigned int(void) const;
+    operator unsigned int() const;
 
     /**
      * \brief   Converts the property value into the string.
      **/
-    operator const String& (void) const;
+    operator const String& () const;
 
     /**
      * \brief   Converts the property value into the floating point digit.
      **/
-    operator double(void) const;
+    operator double() const;
 
     /**
      * \brief   Converts the property value into the boolean.
      **/
-    operator bool(void) const;
+    operator bool() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -173,7 +173,7 @@ public:
     /**
      * \brief   Returns data of Value
      **/
-    const String & getValue( void ) const;
+    const String & getValue() const;
 
     /**
      * \brief   Sets data of Value
@@ -196,7 +196,7 @@ public:
     /**
      * \brief   Returns value as a string
      **/
-    const String & getString( void ) const;
+    const String & getString() const;
 
     /**
      * \brief   Sets value as a string
@@ -207,7 +207,7 @@ public:
     /**
      * \brief   Returns the boolean value of the property value
      **/
-    bool getBoolean(void) const;
+    bool getBoolean() const;
 
     /**
      * \brief   Sets the boolean value.
@@ -229,7 +229,7 @@ public:
     /**
      * \brief   Returns value as a digit with floating point
      **/
-    double getDouble( void ) const;
+    double getDouble() const;
 
     /**
      * \brief   Converts and sets value as a digit with floating point
@@ -301,12 +301,12 @@ public:
     /**
      * \brief   Resets and invalidates Value
      **/
-    void resetValue( void );
+    void resetValue();
 
     /**
      * \brief   Converts and Value data to the string.
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -314,7 +314,7 @@ public:
 private:
 
     //! Parses and normalizes the value data.
-    inline void _parseValue(void);
+    inline void _parseValue();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

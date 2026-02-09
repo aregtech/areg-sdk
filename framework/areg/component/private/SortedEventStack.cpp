@@ -28,7 +28,7 @@ SortedEventStack::SortedEventStack(uint32_t maxQueue)
 {
 }
 
-SortedEventStack::~SortedEventStack(void)
+SortedEventStack::~SortedEventStack()
 {
     for (auto evt : mValueList)
     {
@@ -38,7 +38,7 @@ SortedEventStack::~SortedEventStack(void)
     mValueList.clear();
 }
 
-void SortedEventStack::deleteAllEvents(void)
+void SortedEventStack::deleteAllEvents()
 {
     Lock lock( mSyncObject );
 

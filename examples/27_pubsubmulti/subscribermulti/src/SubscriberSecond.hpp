@@ -35,7 +35,7 @@ public:
      **/
     SubscriberSecond(const NERegistry::DependencyEntry & entry, Component & owner);
 
-    virtual ~SubscriberSecond( void ) = default;
+    virtual ~SubscriberSecond() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -75,6 +75,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SubscriberSecond(void);
+    SubscriberSecond();
     DECLARE_NOCOPY_NOMOVE(SubscriberSecond);
 };

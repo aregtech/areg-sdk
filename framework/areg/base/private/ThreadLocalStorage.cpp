@@ -30,7 +30,7 @@ ThreadLocalStorage::ThreadLocalStorage(Thread & owningThread)
 {
 }
 
-ThreadLocalStorage::~ThreadLocalStorage( void )
+ThreadLocalStorage::~ThreadLocalStorage()
 {
     mStorageList.clear();
 }
@@ -119,7 +119,7 @@ bool ThreadLocalStorage::existKey( const String & Key ) const
     return mStorageList.isValidPosition(pos);
 }
 
-const String & ThreadLocalStorage::getName( void ) const
+const String & ThreadLocalStorage::getName() const
 {
     return mOwningThread.getName();
 }

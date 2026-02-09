@@ -32,7 +32,7 @@ ClientReceiveThread::ClientReceiveThread(IERemoteMessageHandler& remoteService, 
 {
 }
 
-bool ClientReceiveThread::runDispatcher(void)
+bool ClientReceiveThread::runDispatcher()
 {
     LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
     LOG_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());

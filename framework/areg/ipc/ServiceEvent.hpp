@@ -83,7 +83,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~ServiceEventData( void ) = default;
+    ~ServiceEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
@@ -104,12 +104,12 @@ public:
     /**
      * \brief   Returns command saved in event data.
      **/
-    inline ServiceEventData::eServiceEventCommands getCommand( void ) const;
+    inline ServiceEventData::eServiceEventCommands getCommand() const;
 
     /**
      * \brief   Returns message data buffer object saved in event data.
      **/
-    inline const RemoteMessage & getMessage( void ) const;
+    inline const RemoteMessage & getMessage() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -129,7 +129,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceEventData( void );
+    ServiceEventData();
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -159,12 +159,12 @@ inline ServiceEventData::ServiceEventData(ServiceEventData::eServiceEventCommand
 {
 }
 
-inline ServiceEventData::eServiceEventCommands ServiceEventData::getCommand( void ) const
+inline ServiceEventData::eServiceEventCommands ServiceEventData::getCommand() const
 {
     return mServiceCommand;
 }
 
-inline const RemoteMessage& ServiceEventData::getMessage(void) const
+inline const RemoteMessage& ServiceEventData::getMessage() const
 {
     return mMessageData;
 }

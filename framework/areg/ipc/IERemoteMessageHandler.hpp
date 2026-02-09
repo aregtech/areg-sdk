@@ -43,9 +43,9 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    IERemoteMessageHandler( void ) = default;
+    IERemoteMessageHandler() = default;
 
-    virtual ~IERemoteMessageHandler( void ) = default;
+    virtual ~IERemoteMessageHandler() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

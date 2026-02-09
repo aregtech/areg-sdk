@@ -16,7 +16,7 @@
 
 #include "areg/component/NEService.hpp"
 
-ServerConnectionBase::ServerConnectionBase( void )
+ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )
     , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
@@ -55,13 +55,13 @@ bool ServerConnectionBase::createSocket(const String & hostName, unsigned short 
     return mServerSocket.createSocket(hostName, portNr);
 }
 
-bool ServerConnectionBase::createSocket(void)
+bool ServerConnectionBase::createSocket()
 {
     Lock lock(mLock);
     return mServerSocket.createSocket();
 }
 
-void ServerConnectionBase::closeSocket(void)
+void ServerConnectionBase::closeSocket()
 {
     Lock lock(mLock);
     mMasterList.clear();

@@ -79,7 +79,7 @@ public:
      * \brief   Creates an empty Hash Map object where the keys are integers and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE
      **/
-    TEIntegerHashMap( void ) = default;
+    TEIntegerHashMap() = default;
 
     /**
      * \brief	Creates Hash Map object where the keys are integers.
@@ -103,7 +103,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEIntegerHashMap( void ) = default;
+    ~TEIntegerHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ public:
      * \brief   Creates an empty Hash Map object where the keys are Item IDs and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE
      **/
-    TEIdHashMap( void ) = default;
+    TEIdHashMap() = default;
 
     /**
      * \brief   Copies hash map data from given source.
@@ -151,7 +151,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEIdHashMap( void ) = default;
+    ~TEIdHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ public:
      * \brief   Creates an empty Hash Map where keys are strings and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE.
      **/
-    TEStringHashMap( void ) = default;
+    TEStringHashMap() = default;
 
     /**
      * \brief   Copies hash-map values from given source.
@@ -196,7 +196,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEStringHashMap( void ) = default;
+    ~TEStringHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ public:
     /**
      * \brief   Creates Hash Map where keys are pointers.
      **/
-    TEPointerHashMap( void ) = default;
+    TEPointerHashMap() = default;
 
     /**
      * \brief   Copies hash map entries from given source.
@@ -241,7 +241,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEPointerHashMap( void ) = default;
+    ~TEPointerHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ public:
     /**
      * \brief   Creates an empty.
      **/
-    TEIntegerMap(void) = default;
+    TEIntegerMap() = default;
 
     /**
      * \brief   Copies hash-map data from given sources.
@@ -279,7 +279,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEIntegerMap(void) = default;
+    ~TEIntegerMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -302,7 +302,7 @@ public:
     /**
      * \brief   Creates an empty sorted map where the keys are Item IDs.
      **/
-    TEIdMap(void) = default;
+    TEIdMap() = default;
 
     /**
      * \brief   Copies hash map data from given source.
@@ -319,7 +319,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEIdMap(void) = default;
+    ~TEIdMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -339,7 +339,7 @@ public:
     /**
      * \brief   Creates an empty sorted map where keys are strings.
      **/
-    TEStringMap(void) = default;
+    TEStringMap() = default;
 
     /**
      * \brief   Copies map values from given source.
@@ -356,7 +356,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEStringMap(void) = default;
+    ~TEStringMap() = default;
 };
 
 /**
@@ -373,7 +373,7 @@ public:
     /**
      * \brief	Creates an empty Sorted Map where keys are pointers.
      **/
-    TEPointerMap( void ) = default;
+    TEPointerMap() = default;
 
     /**
      * \brief   Copies map entries from given source.
@@ -390,7 +390,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TEPointerMap( void ) = default;
+    ~TEPointerMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -532,7 +532,7 @@ public:
     /**
      * \brief   Creates an empty array of string tokens.
      **/
-    Tokenizer( void ) = default;
+    Tokenizer() = default;
     
     /**
      * \brief   Gets the string and tokenize according delimiters.
@@ -558,7 +558,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~Tokenizer( void ) = default;
+    ~Tokenizer() = default;
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -575,7 +575,7 @@ public:
     /**
      * \brief   Returns list of string split by matching delimiter.
      **/
-    inline const StringArray& getList(void) const;
+    inline const StringArray& getList() const;
 
 private:
 
@@ -639,7 +639,7 @@ TEPointerHashMap<VALUE>::TEPointerHashMap( uint32_t hashSize )
 // Tokenizer class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StringArray& Tokenizer::getList(void) const
+inline const StringArray& Tokenizer::getList() const
 {
     return mTokens;
 }

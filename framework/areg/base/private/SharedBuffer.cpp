@@ -22,7 +22,7 @@
 
 #include <atomic>
 
-inline SharedBuffer& SharedBuffer::self( void )
+inline SharedBuffer& SharedBuffer::self()
 {
     return (*this);
 }
@@ -165,18 +165,18 @@ unsigned int SharedBuffer::setPosition(int offset, IECursorPosition::eCursorPosi
     return mBufferPosition.setPosition(offset, startAt);
 }
 
-bool SharedBuffer::isShared( void ) const
+bool SharedBuffer::isShared() const
 {
     return (isValid() && (mByteBuffer.use_count() > 1) );
 }
 
-void SharedBuffer::invalidate( void )
+void SharedBuffer::invalidate()
 {
     mBufferPosition.invalidate( );
     BufferStreamBase::invalidate();
 }
 
-const unsigned char* SharedBuffer::getBufferAtCurrentPosition( void ) const
+const unsigned char* SharedBuffer::getBufferAtCurrentPosition() const
 {
     const unsigned char* result = nullptr;
     if (isValid())
@@ -194,7 +194,7 @@ const unsigned char* SharedBuffer::getBufferAtCurrentPosition( void ) const
     return result;
 }
 
-SharedBuffer SharedBuffer::clone(void) const
+SharedBuffer SharedBuffer::clone() const
 {
     unsigned int reserved{ getSizeUsed() };
     SharedBuffer result;
@@ -209,32 +209,32 @@ SharedBuffer SharedBuffer::clone(void) const
     return result;
 }
 
-unsigned int SharedBuffer::getPosition(void) const
+unsigned int SharedBuffer::getPosition() const
 {
     return mBufferPosition.getPosition();
 }
 
-bool SharedBuffer::canShare( void ) const
+bool SharedBuffer::canShare() const
 {
     return true;
 }
 
-unsigned int SharedBuffer::getDataOffset(void) const
+unsigned int SharedBuffer::getDataOffset() const
 {
     return sizeof(NEMemory::sBuferHeader);
 }
 
-unsigned int SharedBuffer::getHeaderSize(void) const
+unsigned int SharedBuffer::getHeaderSize() const
 {
     return sizeof(NEMemory::sByteBuffer);
 }
 
-unsigned int SharedBuffer::getAlignedSize(void) const
+unsigned int SharedBuffer::getAlignedSize() const
 {
     return mBlockSize;
 }
 
-uint32_t SharedBuffer::getDefaultBlockSize(void)
+uint32_t SharedBuffer::getDefaultBlockSize()
 {
     static std::atomic_uint32_t    _result{ 0 };
     uint32_t result = _result.load();

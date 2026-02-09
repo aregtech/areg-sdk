@@ -23,7 +23,7 @@
 // Version class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const Version & Version::getInvalidVersion( void )
+const Version & Version::getInvalidVersion()
 {
     static const Version _invalidVersion( 0, 0, 0 );
     return _invalidVersion;
@@ -32,7 +32,7 @@ const Version & Version::getInvalidVersion( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-Version::Version( void )
+Version::Version()
     : mMajor    (0)
     , mMinor    (0)
     , mPatch    (0)
@@ -154,7 +154,7 @@ bool Version::operator > ( const Version & version ) const
             );
 }
 
-String Version::convToString( void ) const
+String Version::convToString() const
 {
     constexpr const char * format{ "%d%c%d%c%d" };
 

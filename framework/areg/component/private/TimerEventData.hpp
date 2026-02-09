@@ -53,7 +53,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    inline TimerEventData( void );
+    inline TimerEventData();
     /**
      * \brief   Constructor. Initializes Timer object
      * \param   timer   The fired Timer object.
@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    inline ~TimerEventData( void ) = default;
+    inline ~TimerEventData() = default;
 
 public:
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +96,7 @@ public:
     /**
      * \brief   Returns the pointer to Timer object.
      **/
-    inline Timer * getTimer( void ) const;
+    inline Timer * getTimer() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -175,13 +175,13 @@ private:
    /**
     * \brief   Destructor
     **/
-    virtual ~TimerEvent( void );
+    virtual ~TimerEvent();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    TimerEvent( void ) = delete;
+    TimerEvent() = delete;
     DECLARE_NOCOPY_NOMOVE( TimerEvent );
 };
 
@@ -189,7 +189,7 @@ private:
 // TimerEventData class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline TimerEventData::TimerEventData( void )
+inline TimerEventData::TimerEventData()
     : mTimer(nullptr)
 {
 }
@@ -210,7 +210,7 @@ inline TimerEventData::TimerEventData( TimerEventData && src ) noexcept
     src.mTimer  = nullptr;
 }
 
-inline Timer* TimerEventData::getTimer( void ) const
+inline Timer* TimerEventData::getTimer() const
 {
     return mTimer;
 }

@@ -53,13 +53,13 @@ IMPLEMENT_RUNTIME(ServiceManager, DispatcherThread)
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-ServiceManager & ServiceManager::getInstance( void )
+ServiceManager & ServiceManager::getInstance()
 {
     static ServiceManager	_theServiceManager;
     return _theServiceManager;
 }
 
-bool ServiceManager::_startServiceManager( void )
+bool ServiceManager::_startServiceManager()
 {
     return getInstance()._startServiceManagerThread( );
 }
@@ -69,12 +69,12 @@ void ServiceManager::_stopServiceManager(bool waitComplete)
     getInstance()._stopServiceManagerThread(waitComplete);
 }
 
-void ServiceManager::_waitServiceManager(void)
+void ServiceManager::_waitServiceManager()
 {
     getInstance()._waitServiceManagerThread();
 }
 
-bool ServiceManager::isServiceManagerStarted( void )
+bool ServiceManager::isServiceManagerStarted()
 {
     return ServiceManager::getInstance().isReady();
 }
@@ -159,7 +159,7 @@ void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceConfigure( void )
+bool ServiceManager::_routingServiceConfigure()
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEventData data(ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices::ServiceRouter, static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)));
@@ -191,7 +191,7 @@ bool ServiceManager::_routingServiceStart( const String & ipAddress, unsigned sh
     return result;
 }
 
-void ServiceManager::_routingServiceStop(void)
+void ServiceManager::_routingServiceStop()
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::stopConnection()
@@ -199,17 +199,17 @@ void ServiceManager::_routingServiceStop(void)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_isRoutingServiceStarted(void)
+bool ServiceManager::_isRoutingServiceStarted()
 {
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostConnected( );
 }
 
-bool ServiceManager::_isRoutingServicePending(void)
+bool ServiceManager::_isRoutingServicePending()
 {
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostPending();
 }
 
-bool ServiceManager::_isRoutingServiceConfigured(void)
+bool ServiceManager::_isRoutingServiceConfigured()
 {
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostSetup( );
 }
@@ -225,7 +225,7 @@ void ServiceManager::_requestCreateThread(const String& componentThread)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ServiceManager::ServiceManager( void )
+ServiceManager::ServiceManager()
     : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
     , IEServiceManagerEventConsumer ( )
     , IEServiceConnectionConsumer   ( )
@@ -269,7 +269,7 @@ void ServiceManager::readyForEvents( bool isReady )
     DispatcherThread::readyForEvents( isReady );
 }
 
-bool ServiceManager::_startServiceManagerThread( void )
+bool ServiceManager::_startServiceManagerThread()
 {
     Lock lock(mLock);
     ASSERT(isReady() || (isRunning() == false));
@@ -289,7 +289,7 @@ void ServiceManager::_stopServiceManagerThread(bool waitComplete)
     }
 }
 
-void ServiceManager::_waitServiceManagerThread(void)
+void ServiceManager::_waitServiceManagerThread()
 {
     completionWait(NECommon::WAIT_INFINITE);
     shutdownThread(NECommon::DO_NOT_WAIT);

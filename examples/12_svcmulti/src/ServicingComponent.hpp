@@ -108,7 +108,7 @@ private:
     int     mCount; //!< The timer event count.
 
 private:
-    inline ServicingComponent & self( void )
+    inline ServicingComponent & self()
     {
         return (*this);
     }
@@ -116,6 +116,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
+    ServicingComponent() = delete;
     DECLARE_NOCOPY_NOMOVE( ServicingComponent );
 };

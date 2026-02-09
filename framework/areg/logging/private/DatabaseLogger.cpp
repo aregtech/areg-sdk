@@ -34,7 +34,7 @@ DatabaseLogger::DatabaseLogger(LogConfiguration& logConfig)
 {
 }
 
-DatabaseLogger::~DatabaseLogger(void)
+DatabaseLogger::~DatabaseLogger()
 {
     Lock lock(mLock);
     if (mDatabase != nullptr)
@@ -44,7 +44,7 @@ DatabaseLogger::~DatabaseLogger(void)
     }
 }
 
-bool DatabaseLogger::openLogger(void)
+bool DatabaseLogger::openLogger()
 {
     Lock lock(mLock);
     bool result{ false };
@@ -67,7 +67,7 @@ bool DatabaseLogger::openLogger(void)
     return result;
 }
 
-void DatabaseLogger::closeLogger(void)
+void DatabaseLogger::closeLogger()
 {
     Lock lock(mLock);
     if (isValid())
@@ -85,12 +85,12 @@ void DatabaseLogger::logMessage(const NELogging::sLogMessage& logMessage)
     }
 }
 
-bool DatabaseLogger::isLoggerOpened(void) const
+bool DatabaseLogger::isLoggerOpened() const
 {
     return false;
 }
 
-void DatabaseLogger::flushLogs(void)
+void DatabaseLogger::flushLogs()
 {
     Lock lock(mLock);
 
@@ -100,13 +100,13 @@ void DatabaseLogger::flushLogs(void)
     }
 }
 
-bool DatabaseLogger::createLayouts(void)
+bool DatabaseLogger::createLayouts()
 {
     // no need to crate layouts for log DB
     return true;
 }
 
-void DatabaseLogger::releaseLayouts(void)
+void DatabaseLogger::releaseLayouts()
 {
 }
 

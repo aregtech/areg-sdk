@@ -57,24 +57,24 @@ public:
      * \brief   Returns the SQL query to read instance dependent log scopes from the database.
      *          The ID of the instance can be specified (bound) to read scopes.
      **/
-    static String getReadScopesQuery(void);
+    static String getReadScopesQuery();
 
     /**
      * \brief   Returns the SQL query to read all instances from the database.
      **/
-    static String getReadInstancesQuery(void);
+    static String getReadInstancesQuery();
 
     /**
      * \brief   Returns the SQL query to read all log messages from the database.
      **/
-    static String getReadAllLogMessagesQuery(void);
+    static String getReadAllLogMessagesQuery();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    LogSqliteDatabase(void);
-    virtual ~LogSqliteDatabase(void);
+    LogSqliteDatabase();
+    virtual ~LogSqliteDatabase();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -84,7 +84,7 @@ public:
      * \brief   Returns true if logging in the database is enabled.
      *          If logging is disabled, no database operation is performed.
      **/
-    inline bool isDabataseLoggingEnabled(void) const;
+    inline bool isDabataseLoggingEnabled() const;
 
     /**
      * \brief   Enables or disables the database logging.
@@ -97,23 +97,23 @@ public:
     /**
      * \brief   Returns database file path.
      **/
-    inline const String& getDatabasePath(void) const;
+    inline const String& getDatabasePath() const;
 
     /**
      * \brief   Returns the initial database file path. The initial file path may contain mask like timestamp,
      *          so that each time database is disconnected and connected again with the empty file path,
      *          it creates new file.
      **/
-    inline const String& getInitialDatabasePath(void) const;
+    inline const String& getInitialDatabasePath() const;
 
     /**
      * \brief   Return SQLite database object
      **/
-    inline SqliteDatabase& getDatabase(void);
-    inline const SqliteDatabase& getDatabase(void) const;
+    inline SqliteDatabase& getDatabase();
+    inline const SqliteDatabase& getDatabase() const;
 
-    inline SqliteStatement& getStatement(void);
-    inline const SqliteStatement& getStatement(void) const;
+    inline SqliteStatement& getStatement();
+    inline const SqliteStatement& getStatement() const;
 
     /**
      * \brief   Checks whether the specified table exists or not.
@@ -141,7 +141,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    virtual bool isOperable(void) const override;
+    virtual bool isOperable() const override;
 
     /**
      * \brief   Connects to the specified database.
@@ -158,7 +158,7 @@ public:
     /**
      * \brief   Disconnects connected SqliteDatabase.
      **/
-    virtual void disconnect(void) override;
+    virtual void disconnect() override;
 
     /**
      * \brief   Execute the SQL script.
@@ -171,7 +171,7 @@ public:
      * \brief   Call if need to make multiple operation. This call starts the transaction,
      *          that is required either commit or rollback call to complete the transaction.
      **/
-    virtual bool begin(void) override;
+    virtual bool begin() override;
 
     /**
      * \brief   Commits or rolls back the SqliteDatabase changes and returns true if succeeded.
@@ -189,7 +189,7 @@ public:
      * \brief   Returns true if the database and the log tables are initialized,
      *          and ready to log messages.
      **/
-    virtual bool areTablesInitialized(void) const override;
+    virtual bool areTablesInitialized() const override;
 
     /**
      * \brief   Called when logging message should be saved in the database.
@@ -264,7 +264,7 @@ public:
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
      **/
-    virtual bool rollback(void) override;
+    virtual bool rollback() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -275,35 +275,35 @@ public:
      * \param   names   On output, the vector contains names of connected instances.
      **/
     void getLogInstanceNames(std::vector<String>& OUT names);
-    std::vector<String> getLogInstanceNames(void);
+    std::vector<String> getLogInstanceNames();
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database.
      * \param   ids     On output, the vector contains IDs of connected instances.
      **/
     void getLogInstances(std::vector<ITEM_ID>& OUT ids);
-    std::vector<ITEM_ID> getLogInstances(void);
+    std::vector<ITEM_ID> getLogInstances();
 
     /**
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
      * \param   names   On output, the vector contains names of threads of connected instances.
      **/
     void getLogThreadNames(std::vector<String>& OUT names);
-    std::vector<String> getLogThreadNames(void);
+    std::vector<String> getLogThreadNames();
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
      * \param   ids     On output, the vector contains IDs of threads of connected instances.
      **/
     void getLogThreads(std::vector<ITEM_ID>& OUT ids);
-    std::vector<ITEM_ID> getLogThreads(void);
+    std::vector<ITEM_ID> getLogThreads();
 
     /**
      * \brief   Call to get the list of log priorities.
      * \param   names   On output, the vector contains names of log priorities.
      **/
     void getPriorityNames(std::vector<String>& OUT names);
-    std::vector<String> getPriorityNames(void);
+    std::vector<String> getPriorityNames();
 
     /**
      * \brief   Call to query and get information of connected instances from log database.
@@ -311,7 +311,7 @@ public:
      * \param   infos   On output, the vector contains information of connected instances.
      **/
     void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& OUT infos);
-    std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos(void);
+    std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos();
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
@@ -327,7 +327,7 @@ public:
      * \param   messages    On output, the vector contains all log messages.
      **/
     void getLogMessages(std::vector<SharedBuffer>& OUT messages);
-    std::vector<SharedBuffer> getLogMessages(void);
+    std::vector<SharedBuffer> getLogMessages();
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
@@ -489,7 +489,7 @@ public:
     /**
      * \brief   Returns number of log instances.
      **/
-    uint32_t countLogInstances(void);
+    uint32_t countLogInstances();
 
     /**
      * \brief   Returns number of filtered log messages of specified instance ID.
@@ -525,17 +525,17 @@ private:
     /**
      * \brief   In the opened database file, creates the tables required to save logs.
      **/
-    inline void _createTables(void);
+    inline void _createTables();
 
     /**
      * \brief   In the opened database file, creates the indexes required by optimize operations.
      **/
-    inline void _createIndexes(void);
+    inline void _createIndexes();
 
     /**
      * \brief   Logs the initial information in the database like logging version and application name.
      **/
-    inline void _initialize(void);
+    inline void _initialize();
 
     /**
      * \brief   Extracts the log message from the SqliteStatement and copies it to the SharedBuffer.
@@ -599,7 +599,7 @@ private:
 // LogSqliteDatabase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-bool LogSqliteDatabase::isDabataseLoggingEnabled(void) const
+bool LogSqliteDatabase::isDabataseLoggingEnabled() const
 {
     return mDbLogEnabled;
 }
@@ -609,32 +609,32 @@ inline void LogSqliteDatabase::setDatabaseLoggingEnabled(bool enable)
     mDbLogEnabled = enable;
 }
 
-inline const String& LogSqliteDatabase::getDatabasePath(void) const
+inline const String& LogSqliteDatabase::getDatabasePath() const
 {
     return mDatabase.getPath();
 }
 
-inline const String& LogSqliteDatabase::getInitialDatabasePath(void) const
+inline const String& LogSqliteDatabase::getInitialDatabasePath() const
 {
     return mDbInitPath;
 }
 
-inline SqliteDatabase& LogSqliteDatabase::getDatabase(void)
+inline SqliteDatabase& LogSqliteDatabase::getDatabase()
 {
     return mDatabase;
 }
 
-inline const SqliteDatabase& LogSqliteDatabase::getDatabase(void) const
+inline const SqliteDatabase& LogSqliteDatabase::getDatabase() const
 {
     return mDatabase;
 }
 
-inline SqliteStatement& LogSqliteDatabase::getStatement(void)
+inline SqliteStatement& LogSqliteDatabase::getStatement()
 {
     return mStmtLogs;
 }
 
-inline const SqliteStatement& LogSqliteDatabase::getStatement(void) const
+inline const SqliteStatement& LogSqliteDatabase::getStatement() const
 {
     return mStmtLogs;
 }

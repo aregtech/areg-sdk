@@ -36,7 +36,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~HardwareWorkerConsumer(void) = default;
+    virtual ~HardwareWorkerConsumer() = default;
 
 protected:
 
@@ -77,12 +77,12 @@ private:
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline HardwareWorkerConsumer & self( void );
+    inline HardwareWorkerConsumer & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    HardwareWorkerConsumer( void ) = delete;
+    HardwareWorkerConsumer() = delete;
     DECLARE_NOCOPY_NOMOVE( HardwareWorkerConsumer );
 };

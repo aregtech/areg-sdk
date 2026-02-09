@@ -49,7 +49,7 @@ public:
      * \brief   Returns invalid Version object. 
      *          The invalid version contains following version numbers (0, 0, 0)
      **/
-    static const Version & getInvalidVersion( void );
+    static const Version & getInvalidVersion();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -58,7 +58,7 @@ public:
     /**
      * \brief   Default constructor. Invalid Version will be created.
      **/
-    Version( void );
+    Version();
     /**
      * \brief   Initialization constructor. Major, Minor and Patch
      *          number will be initialized by give values.
@@ -88,7 +88,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~Version( void ) = default;
+    ~Version() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -178,20 +178,20 @@ public:
     /**
      * \brief   Return Major number of version.
      **/
-    inline unsigned int getMajor( void ) const;
+    inline unsigned int getMajor() const;
     /**
      * \brief   Returns Minor number of version
      **/
-    inline unsigned int getMinor( void ) const;
+    inline unsigned int getMinor() const;
     /**
      * \brief   Returns Patch number of version
      **/
-    inline unsigned int getPatch( void ) const;
+    inline unsigned int getPatch() const;
 
     /**
      * \brief   Returns true, if version is not invalid..
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns true, if passed version object is 
@@ -211,7 +211,7 @@ public:
      * \brief   Converts version object to string in format
      *          "major.minor.patch", and returns string.
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief   Retrieves version information from given string
@@ -243,22 +243,22 @@ private:
 // Version class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline unsigned int Version::getMajor( void ) const
+inline unsigned int Version::getMajor() const
 {
     return mMajor;
 }
 
-inline unsigned int Version::getMinor( void ) const
+inline unsigned int Version::getMinor() const
 {
     return  mMinor;
 }
 
-inline unsigned int Version::getPatch( void ) const
+inline unsigned int Version::getPatch() const
 {
     return mPatch;
 }
 
-inline bool Version::isValid( void ) const
+inline bool Version::isValid() const
 {
     return ( mMajor != 0 || mMinor != 0 );
 }

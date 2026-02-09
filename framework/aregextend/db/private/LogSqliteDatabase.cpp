@@ -409,22 +409,22 @@ namespace
 // LogSqliteDatabase class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-String LogSqliteDatabase::getReadScopesQuery(void)
+String LogSqliteDatabase::getReadScopesQuery()
 {
     return String(_sqlGetScopeLogMessages);
 }
 
-String LogSqliteDatabase::getReadInstancesQuery(void)
+String LogSqliteDatabase::getReadInstancesQuery()
 {
     return String(_sqlGetInstScopeLogMessages);
 }
 
-String LogSqliteDatabase::getReadAllLogMessagesQuery(void)
+String LogSqliteDatabase::getReadAllLogMessagesQuery()
 {
     return String(_sqlGetAllLogMessages);
 }
 
-LogSqliteDatabase::LogSqliteDatabase(void)
+LogSqliteDatabase::LogSqliteDatabase()
     : IELogDatabaseEngine   ( )
 
     , mDatabase             ( )
@@ -436,7 +436,7 @@ LogSqliteDatabase::LogSqliteDatabase(void)
 {
 }
 
-LogSqliteDatabase::~LogSqliteDatabase(void)
+LogSqliteDatabase::~LogSqliteDatabase()
 {
     mStmtLogs.finalize();
     mDatabase.disconnect();
@@ -466,7 +466,7 @@ inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
     return result;
 }
 
-inline void LogSqliteDatabase::_createTables(void)
+inline void LogSqliteDatabase::_createTables()
 {
     VERIFY(mDatabase.execute(_sqlCreateTbVersion));
     VERIFY(mDatabase.execute(_sqlCreateTbInstances));
@@ -474,14 +474,14 @@ inline void LogSqliteDatabase::_createTables(void)
     VERIFY(mDatabase.execute(_sqlCreateTbLogs));
 }
 
-inline void LogSqliteDatabase::_createIndexes(void)
+inline void LogSqliteDatabase::_createIndexes()
 {
     VERIFY(mDatabase.execute(_sqlCraeteIdxCookie));
     VERIFY(mDatabase.execute(_sqlCreateIdxScopes));
     VERIFY(mDatabase.execute(_sqlCreateIdxLogs));
 }
 
-inline void LogSqliteDatabase::_initialize(void)
+inline void LogSqliteDatabase::_initialize()
 {
     Process& proc{ Process::getInstance() };
     DateTime now{ DateTime::getNow() };
@@ -571,7 +571,7 @@ inline void LogSqliteDatabase::_copyLogScopes(SqliteStatement& stmt, NELogging::
     scope.scopePrio = static_cast<uint32_t>(stmt.getUint32(2));
 }
 
-bool LogSqliteDatabase::isOperable(void) const
+bool LogSqliteDatabase::isOperable() const
 {
     return mDatabase.isOperable();
 }
@@ -604,7 +604,7 @@ bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
     return mIsInitialized;
 }
 
-void LogSqliteDatabase::disconnect(void)
+void LogSqliteDatabase::disconnect()
 {
     Lock lock(mLock);
     if ((mDatabase.isOperable() == false) || (mIsInitialized == false))
@@ -625,7 +625,7 @@ bool LogSqliteDatabase::execute(const String& sql)
     return mDatabase.execute(sql);
 }
 
-bool LogSqliteDatabase::begin(void)
+bool LogSqliteDatabase::begin()
 {
     Lock lock(mLock);
     return mDatabase.begin();
@@ -637,7 +637,7 @@ bool LogSqliteDatabase::commit(bool doCommit)
     return mDatabase.commit(doCommit);
 }
 
-bool LogSqliteDatabase::areTablesInitialized(void) const
+bool LogSqliteDatabase::areTablesInitialized() const
 {
     return mIsInitialized;
 }
@@ -769,13 +769,13 @@ bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, unsigned int s
     return execute(sql);
 }
 
-bool LogSqliteDatabase::rollback(void)
+bool LogSqliteDatabase::rollback()
 {
     Lock lock(mLock);
     return mDatabase.rollback();
 }
 
-std::vector<String> LogSqliteDatabase::getLogInstanceNames(void)
+std::vector<String> LogSqliteDatabase::getLogInstanceNames()
 {
     std::vector<String> result;
     getLogInstanceNames(result);
@@ -802,7 +802,7 @@ void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& OUT names)
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(names.size()));
 }
 
-std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances(void)
+std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances()
 {
     std::vector<ITEM_ID> result;
     getLogInstances(result);
@@ -826,7 +826,7 @@ void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& OUT ids)
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
 }
 
-std::vector<String> LogSqliteDatabase::getLogThreadNames(void)
+std::vector<String> LogSqliteDatabase::getLogThreadNames()
 {
     std::vector<String> result;
     getLogThreadNames(result);
@@ -850,7 +850,7 @@ void LogSqliteDatabase::getLogThreadNames(std::vector<String>& OUT names)
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(names.size()));
 }
 
-std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads(void)
+std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads()
 {
     std::vector<ITEM_ID> result;
     getLogThreads(result);
@@ -874,7 +874,7 @@ void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& OUT ids)
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
 }
 
-std::vector<String> LogSqliteDatabase::getPriorityNames(void)
+std::vector<String> LogSqliteDatabase::getPriorityNames()
 {
     std::vector<String> result{
         { 
@@ -895,7 +895,7 @@ void LogSqliteDatabase::getPriorityNames(std::vector<String>& OUT names)
     names = getPriorityNames();
 }
 
-std::vector<NEService::sServiceConnectedInstance> LogSqliteDatabase::getLogInstanceInfos(void)
+std::vector<NEService::sServiceConnectedInstance> LogSqliteDatabase::getLogInstanceInfos()
 {
     std::vector<NEService::sServiceConnectedInstance> result;
     getLogInstanceInfos(result);
@@ -946,7 +946,7 @@ void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(scopes.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(void)
+std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages()
 {
     std::vector<SharedBuffer> result;
     getLogMessages(result);
@@ -1357,7 +1357,7 @@ uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
     return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
 }
 
-uint32_t LogSqliteDatabase::countLogInstances(void)
+uint32_t LogSqliteDatabase::countLogInstances()
 {
     Lock lock(mLock);
     if (mDatabase.isOperable() == false)

@@ -82,13 +82,13 @@ namespace NETrafficLightFSM
         }
 
         FsmEventData( const FsmEventData & data ) = default;
-        ~FsmEventData( void ) = default;
+        ~FsmEventData() = default;
    
     public:
         /**
          * \brief   Returns event data value.
          **/
-        inline const NETrafficLightFSM::eFsmEventData & getData( void ) const
+        inline const NETrafficLightFSM::eFsmEventData & getData() const
         {
             return mData;
         }
@@ -106,7 +106,7 @@ namespace NETrafficLightFSM
     // Hidden / Forbidden methods
     //////////////////////////////////////////////////////////////////////////
     private:
-        FsmEventData( void ) = delete;
+        FsmEventData() = delete;
         NETrafficLightFSM::FsmEventData & operator = ( const NETrafficLightFSM::FsmEventData & src ) = delete;
    };
    

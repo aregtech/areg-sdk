@@ -164,7 +164,7 @@ namespace
 
 
 // the static empty string
-const String & String::getEmptyString(void)
+const String & String::getEmptyString()
 {
     static const String _emptyString{ "" };
     return _emptyString;

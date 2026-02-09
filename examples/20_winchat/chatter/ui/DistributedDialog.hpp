@@ -31,9 +31,9 @@ class DistributedDialog : public CPropertySheet
 public:
     static bool OutputMessage( NEDistributedApp::eWndCommands cmd, void * sender, NECommon::sMessageData * data );
 
-    static DistributedDialog * GetDialog( void );
+    static DistributedDialog * GetDialog();
 
-    static void DefaultCaption( void );
+    static void DefaultCaption();
 
     static void ChangeCaption( LPCTSTR newCaption );
 
@@ -41,9 +41,9 @@ public:
 
     // Construction
 public:
-    DistributedDialog( void );	// standard constructor
+    DistributedDialog();	// standard constructor
 
-    virtual ~DistributedDialog( void );
+    virtual ~DistributedDialog();
 
                                             // Dialog Data
     enum { TITLE = IDS_APPLICATION_TITLE };
@@ -54,7 +54,7 @@ public:
 
     bool RemoveChatPage( const String & connectName );
 
-    void RemoveAllChatPages( void );
+    void RemoveAllChatPages();
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
@@ -69,7 +69,7 @@ protected:
     afx_msg void OnPaint();
     afx_msg void OnDestroy();
     afx_msg HCURSOR OnQueryDragIcon();
-    afx_msg void OnRedirectOK( void );
+    afx_msg void OnRedirectOK();
 
     afx_msg LRESULT OnCmdServiceStartup( WPARAM wParam, LPARAM lParam );
     afx_msg LRESULT OnCmdServiceNetwork( WPARAM wParam, LPARAM lParam );
