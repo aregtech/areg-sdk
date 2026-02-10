@@ -335,7 +335,7 @@ public:
      *          The date and time information is in 'sysTime' parameter.
      * \param[in]   sysTime     The System Time structure as a source of data.
      **/
-    void setDateTime(const NEUtilities::sSystemTime& IN sysTime);
+    void setDateTime(const NEUtilities::sSystemTime& sysTime);
 
     /**
      * \brief   Converts existing date and time value in microseconds passed since Unix epoch to tm structure.
@@ -349,7 +349,7 @@ public:
      *          The date and time information is in 'time' parameter.
      * \param[in]   time    The tm structure as a source of data.
      **/
-    void setDateTime(const struct tm& IN time);
+    void setDateTime(const struct tm& time);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

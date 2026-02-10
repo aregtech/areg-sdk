@@ -283,10 +283,10 @@ public:
      * \brief	Searches an element entry by the given key.
      *          If found element, return true and on exit returns the value of element
      * \param[in]   Key	        The key to search.
-     * \param[out]  out_Value   On output, contains value of found element
+     * \param[out]  Value   On output, contains value of found element
      * \return	Returns true if there is an entry with the specified key.
      **/
-    bool find( const KEY & Key, VALUE & OUT out_Value ) const;
+    bool find( const KEY & Key, VALUE & OUT Value ) const;
 
     /**
      * \brief	Search an element entry by the given key and returns the position in hash-map.
@@ -373,10 +373,10 @@ public:
     /**
      * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
      *          Otherwise, returns false.
-     * \param	Key	        The Key of the entry to search and remove.
-     * \param	out_Value   If succeeded to remove, on output it contains the value of the removed element.
+     * \param[in]	Key	    The Key of the entry to search and remove.
+     * \param[out]  Value   If succeeded to remove, on output it contains the value of the removed element.
      **/
-    inline bool removeAt( const KEY & Key, VALUE & out_Value );
+    inline bool removeAt( const KEY & Key, VALUE & Value );
 
     /**
      * \brief	Update value of an element at the given position and return position of the next entry.
@@ -399,13 +399,13 @@ public:
     /**
      * \brief	Removes an element at the given position. The function returns next position of an entry in the hash map.
      *          or invalid position if removed last element in the map.
-     * \param	atPosition  The valid position of the element in the hash-map to remove.
-     * \param	out_Key     On output, this contains the key of the removed element
-     * \param	out_Value   On output, this contains the value of the removed element.
+     * \param[in[	atPosition  The valid position of the element in the hash-map to remove.
+     * \param[out]	Key     On output, this contains the key of the removed element
+     * \param[out]	Value   On output, this contains the value of the removed element.
      * \return  Returns valid position of the next entry in the hash-map or returns invalid position if
      *          removed last element in the map.
      **/
-    inline MAPPOS removePosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value );
+    inline MAPPOS removePosition(MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value );
 
     /**
      * \brief   Removes the first entry in the hash map.
@@ -414,11 +414,11 @@ public:
 
     /**
      * \brief   Removes the first entry in the hash map.
-     * \param   out_Key     On output it contains the key of the removed element in the hash-map.
-     * \param   out_Value   On output it contains the value of the removed element in the hash-map.
+     * \param[out]  Key     On output it contains the key of the removed element in the hash-map.
+     * \param[out]  Value   On output it contains the value of the removed element in the hash-map.
      * \return  Returns true if hash-map was not empty and first entry is removed. Otherwise, returns false.
      **/
-    inline bool removeFirst(KEY& OUT out_Key, VALUE& OUT out_Value);
+    inline bool removeFirst(KEY& OUT Key, VALUE& OUT Value);
 
     /**
      * \brief   Removes the last entry in the hash map.
@@ -427,27 +427,27 @@ public:
 
     /**
      * \brief   Removes the last entry in the hash map.
-     * \param   out_Key     On output it contains the key of the removed element in the hash-map.
-     * \param   out_Value   On output it contains the value of the removed element in the hash-map.
+     * \param[out]  Key     On output it contains the key of the removed element in the hash-map.
+     * \param[out]  Value   On output it contains the value of the removed element in the hash-map.
      * \return  Returns true if hash-map was not empty and last entry is removed. Otherwise, returns false.
      **/
-    inline bool removeLast(KEY& OUT out_Key, VALUE& OUT out_Value);
+    inline bool removeLast(KEY& OUT Key, VALUE& OUT Value);
 
     /**
      * \brief	Returns position of the next entry in the hash-map followed the given position.
      * \param	atPosition  The position of the entry to get next and extract values.
      * \return	Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
-    inline MAPPOS nextPosition(MAPPOS IN atPosition) const;
+    inline MAPPOS nextPosition(MAPPOS atPosition) const;
 
     /**
      * \brief	Returns position of the next entry in the hash-map followed the given position.
      * \param	atPosition  The position of the entry to get next and extract values.
-     * \param	out_Key     On output, this contains key of given position.
-     * \param	out_Value   On output, this contains value of given position.
+     * \param	Key     On output, this contains key of given position.
+     * \param	Value   On output, this contains value of given position.
      * \return	Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
-    inline MAPPOS nextPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+    inline MAPPOS nextPosition(MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value ) const;
 
     /**
      * \brief	Returns position of the next entry in the hash-map followed the given position.
@@ -455,22 +455,22 @@ public:
      * \param	out_Element On output, this element contains pair of Key and Value specified by given position.
      * \return	Next valid position in the hash-map or invalid position if reached end of hash-map.
      **/
-    inline MAPPOS nextPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element ) const;
+    inline MAPPOS nextPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & OUT out_Element ) const;
 
     /**
      * \brief	Extract data of the key and value of the entry by given position.
      * \param	atPosition	The position of the element to extract key and value.
-     * \param	out_Key	    On output, contains key of the element at given position.
-     * \param	out_Value   On output, contains value of the element at given position.
+     * \param	Key	    On output, contains key of the element at given position.
+     * \param	Value   On output, contains value of the element at given position.
      **/
-    inline void getAtPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+    inline void getAtPosition(MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value ) const;
 
     /**
      * \brief	Extract data of the key and value of the entry by given position.
      * \param	atPosition	The position of the element to extract key and value.
      * \param	out_Element On output, contains the Key and Value pair of the element at given position
      **/
-    inline void getAtPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const;
+    inline void getAtPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & OUT out_Element) const;
 
     /**
      * \brief   Returns the Key of the entry at the given position.
@@ -489,14 +489,14 @@ public:
     /**
      * \brief	Extracts next position, key and value of the element in the hash-map followed position.
      *
-     * \param	in_out_NextPosition	On input this indicates the valid position of the entry in the hash map.
+     * \param[in,out]   nextPos     On input this indicates the valid position of the entry in the hash map.
      *                              On output, this parameter points either next valid entry in the hash-map
      *                              or invalid entry if no more entry is following.
-     * \param	out_NextKey	        On output, this contains key of the next entry in hash map.
-     * \param	out_NextValue       On output, this contain value of the next entry in hash map.
+     * \param[out]	    nextKey	    On output, this contains key of the next entry in hash map.
+     * \param[out]      nextValue   On output, this contain value of the next entry in hash map.
      * \return	Returns true, if there is a next element and the output values are valid.
      **/
-    inline bool nextEntry(MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue ) const;
+    inline bool nextEntry(MAPPOS & OUT nextPos, KEY & OUT nextKey, VALUE & OUT nextValue ) const;
 
      /**
       * \brief   Copies elements from the hash-map into the provided pre-allocated buffer of keys and values.
@@ -671,7 +671,7 @@ inline void TEHashMap<KEY, VALUE>::release()
 }
 
 template < typename KEY, typename VALUE >
-bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value ) const
+bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT Value ) const
 {
     bool result{ false };
     if (mValueList.empty() == false)
@@ -679,7 +679,7 @@ bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value ) const
         auto pos = mValueList.find(Key);
         if (pos != mValueList.end())
         {
-            out_Value = pos->second;
+            Value = pos->second;
             result = true;
         }
     }
@@ -797,7 +797,7 @@ inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY& Key)
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& out_Value)
+inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -806,7 +806,7 @@ inline bool TEHashMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& out_Value)
         if (pos != mValueList.end())
         {
             result = true;
-            out_Value = pos->second;
+            Value = pos->second;
             mValueList.erase(pos);
         }
     }
@@ -823,11 +823,11 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::setPosition
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosition(typename TEHashMap<KEY, VALUE>::MAPPOS IN curPos, KEY& OUT out_Key, VALUE& OUT out_Value)
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosition(typename TEHashMap<KEY, VALUE>::MAPPOS curPos, KEY& OUT Key, VALUE& OUT Value)
 {
     ASSERT( curPos != mValueList.end());
-    out_Key         = curPos->first;
-    out_Value       = curPos->second;
+    Key         = curPos->first;
+    Value       = curPos->second;
 
     return mValueList.erase(curPos);
 }
@@ -840,15 +840,15 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::removePosit
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& OUT out_Key, VALUE& OUT out_Value)
+inline bool TEHashMap<KEY, VALUE>::removeFirst(KEY& OUT Key, VALUE& OUT Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
     {
         auto pos    = mValueList.begin();
         ASSERT(pos != mValueList.end());
-        out_Key = pos->first;
-        out_Value = pos->second;
+        Key = pos->first;
+        Value = pos->second;
 
         mValueList.erase(pos);
         result      = true;
@@ -869,15 +869,15 @@ inline void TEHashMap<KEY, VALUE>::removeFirst()
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::removeLast(KEY& OUT out_Key, VALUE& OUT out_Value)
+inline bool TEHashMap<KEY, VALUE>::removeLast(KEY& OUT Key, VALUE& OUT Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
     {
         auto pos = mValueList.rbegin();
         ASSERT(pos != mValueList.end());
-        out_Key = pos->first;
-        out_Value = pos->second;
+        Key = pos->first;
+        Value = pos->second;
 
         mValueList.erase(pos);
         result = true;
@@ -898,40 +898,40 @@ inline void TEHashMap<KEY, VALUE>::removeLast()
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY& OUT out_Key, VALUE& OUT out_Value) const
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition, KEY& OUT Key, VALUE& OUT Value) const
 {
     ASSERT(atPosition != mValueList.end());
 
-    out_Key		    = atPosition->first;
-    out_Value	    = atPosition->second;
+    Key		    = atPosition->first;
+    Value	    = atPosition->second;
 
     return (++ atPosition);
 }
 
 template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS
-TEHashMap<KEY, VALUE>::nextPosition( TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
+TEHashMap<KEY, VALUE>::nextPosition( TEHashMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
     return nextPosition(atPosition, out_Element.first, out_Element.second);
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition ) const
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition ) const
 {
     ASSERT(atPosition != mValueList.end());
     return (++ atPosition);
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value) const
+inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value) const
 {
     ASSERT(atPosition != mValueList.end());
-    out_Key     = atPosition->first;
-    out_Value   = atPosition->second;
+    Key     = atPosition->first;
+    Value   = atPosition->second;
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
+inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
     getAtPosition(atPosition, out_Element.first, out_Element.second);
 }
@@ -965,14 +965,14 @@ inline VALUE& TEHashMap<KEY, VALUE>::valueAtPosition(TEHashMap<KEY, VALUE>::MAPP
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue) const
+inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & OUT nextPos, KEY & OUT nextKey, VALUE & OUT nextValue) const
 {
-    ASSERT( in_out_NextPosition != mValueList.end() );
+    ASSERT( nextPos != mValueList.end() );
     bool result = false;
-    if (++in_out_NextPosition != mValueList.end())
+    if (++nextPos != mValueList.end())
     {
-        out_NextKey     = in_out_NextPosition->first;
-        out_NextValue   = in_out_NextPosition->second;
+        nextKey     = nextPos->first;
+        nextValue   = nextPos->second;
         result = true;
     }
 

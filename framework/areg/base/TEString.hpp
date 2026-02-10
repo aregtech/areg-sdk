@@ -412,11 +412,11 @@ public:
      *          characters ('_'), which are surrounded by other symbols (whitespace, comma, dot, etc),
      *          or if it starts at the beginning or end of the string.
      *
-     * \param startAt [in, out] On input, this should be valid position in the string to start to search.
+     * \param[in,out]   startAt On input, this should be valid position in the string to start to search.
      *                          On output, it contains the next position of the next word.
-     * \param endAt [out]       On output, it contains the position where the next word finishes.
+     * \param[out]      endAt   On output, it contains the position where the next word finishes.
      **/
-    void findWord(NEString::CharPos& IN OUT startAt, NEString::CharPos& OUT endAt) const;
+    void findWord(NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const;
 
     /**
      * \brief   Searches the whole word in the string at specified 'startAt' position.
@@ -426,12 +426,12 @@ public:
      *          characters ('_'), which are surrounded by other symbols (whitespace, comma, dot, etc),
      *          or if it starts at the beginning or end of the string.
      *
-     * \param   word [out]          On output contains the word that it could find.
-     * \param   startAt [in, out]   On input, this should be valid position in the string to start to search.
+     * \param[out]      word        On output contains the word that it could find.
+     * \param[in,out]   startAt     On input, this should be valid position in the string to start to search.
      *                              On output, it contains the next position of the next word.
-     * \param   endAt [out]         On output, it contains the position where the next word finishes.
+     * \param[out]      endAt       On output, it contains the position where the next word finishes.
      **/
-    void getWord(TEString<CharType>& OUT word, NEString::CharPos& IN OUT startAt, NEString::CharPos& OUT endAt) const;
+    void getWord(TEString<CharType>& OUT word, NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const;
 
     /**
      * \brief   Find the first occurrence of any of the characters in string buffer 'chars'.
@@ -566,11 +566,11 @@ public:
 
     /**
      * \brief   Extracts the substring starting at startPos and given number of characters.
-     * \param   outResult   On output, this parameter contains resulting substring.
-     * \param   startPos    Starting position of the substring to create.
-     *                      By default, the substring starts at the begin, i.e. NEString::START_POS
-     * \param   count       The number of characters in substring, starting at given starting position.
-     *                      By default, it gets characters until end of string.
+     * \param[out]  outResult   On output, this parameter contains resulting substring.
+     * \param[in]   startPos    Starting position of the substring to create.
+     *                          By default, the substring starts at the begin, i.e. NEString::START_POS
+     * \param[in]   count       The number of characters in substring, starting at given starting position.
+     *                          By default, it gets characters until end of string.
      **/
     inline void substring( TEString<CharType> & outResult, NEString::CharPos startPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL ) const;
 
@@ -578,17 +578,17 @@ public:
      * \brief   Searches given phrase in the string starting from given position until the end of string.
      *          If found, copies the string data into the result until the found position and returns position
      *          next after phrase. If not found, will copy complete string until end.
-     * \param   outResult   On output, the string contains result of copied data until found position
-     *                      or contains the complete string until the end.
-     * \param   strPhrase   The phrase to search in the string.
-     * \param   startPos    The starting position to search the string.
+     * \param[out]  outResult   On output, the string contains result of copied data until found position
+     *                          or contains the complete string until the end.
+     * \param[in]   strPhrase   The phrase to search in the string.
+     * \param[in]   startPos    The starting position to search the string.
      * \return  Returns next position after searched phrase and value are followings:
      *              -   Valid string position not equal to NEString::END_POS,
      *                  if found phrase and the phrase is not at the end;
      *              -   NEString::END_POS if found the phrase at end of string;
      *              -   NEString::INVALID_POS if could not find the phrase.
      *
-     * \example     The example of Substr()
+     * \example     The example of substring
      * \code [cpp]
      *
      *  String test("0123 456 789 0123");
@@ -611,10 +611,10 @@ public:
      * \brief   Searches given symbol in the string starting from given position until end of string.
      *          If found, copies the string data into the result until the found position and returns position
      *          next after symbol. If not found, will copy complete string until end.
-     * \param   outResult   On output, the string contains result of copied data until found position
-     *                      or contains the complete string until the end.
-     * \param   chSymbol    The symbol to search in the string.
-     * \param   startPos    The starting position to search the symbol.
+     * \param[out]  outResult   On output, the string contains result of copied data until found position
+     *                          or contains the complete string until the end.
+     * \param[in]   chSymbol    The symbol to search in the string.
+     * \param[in]   startPos    The starting position to search the symbol.
      * \return  Returns next position after searched symbol and value are followings:
      *              -   Valid string position not equal to NEString::END_POS,
      *                  if found phrase and the symbol is not at the end;
@@ -945,7 +945,7 @@ public:
      * \brief   Copies data into given string without trailing whitespace at the begin of the string.
      *          The existing string remain unmodified.
      *
-     * \param   strResult   The destination string to copy result.
+     * \param[out]  strResult   The destination string to copy result.
      **/
     inline void trimLeft( TEString<CharType> & OUT strResult ) const;
     inline void trimLeft(std::basic_string<CharType>& OUT strResult) const;
@@ -960,7 +960,7 @@ public:
      * \brief   Copies data into given string without trailing whitespace at the end of the string.
      *          The existing string remain unmodified.
      *
-     * \param   strResult   The destination string to copy result.
+     * \param[out]  strResult   The destination string to copy result.
      **/
     inline void trimRight( TEString<CharType> & OUT strResult ) const;
     inline void trimRight(std::basic_string<CharType>& OUT strResult) const;
@@ -975,7 +975,7 @@ public:
      * \brief   Copies data into given string without trailing whitespace at the begin and end of the string.
      *          The existing string remain unmodified.
      *
-     * \param   strResult   The destination string to copy result.
+     * \param[out]  strResult   The destination string to copy result.
      **/
     inline void trimAll( TEString<CharType> & OUT strResult ) const;
     void trimAll(std::basic_string<CharType>& OUT strResult) const;
@@ -996,8 +996,8 @@ public:
      *          where new line begins or returns NEString::END_POS if reached end of string.
      * \note    If after reading the line there are still empty new lines.
      *          The returned position value escapes followed empty new lines.
-     * \param   strResult   On output the string contains a line.
-     * \param   startPos    The valid zero-based position to start copying the line. By default it starts from the begging of string.
+     * \param[out]  strResult   On output the string contains a line.
+     * \param[in]   startPos    The valid zero-based position to start copying the line. By default it starts from the begging of string.
      * \return  Returns next position where starts non-empty new line or NEString::END_POS if reached end of string.
      **/
     inline NEString::CharPos readLine(TEString<CharType>& OUT strResult, NEString::CharPos startPos = NEString::START_POS) const;
@@ -1748,7 +1748,7 @@ inline void TEString<CharType>::release()
 }
 
 template<typename CharType>
-void TEString<CharType>::findWord(NEString::CharPos& IN OUT startAt, NEString::CharPos& OUT endAt) const
+void TEString<CharType>::findWord(NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const
 {
     NEString::CharPos pos = startAt;
 
@@ -1789,7 +1789,7 @@ void TEString<CharType>::findWord(NEString::CharPos& IN OUT startAt, NEString::C
 }
 
 template<typename CharType>
-void TEString<CharType>::getWord(TEString<CharType>& OUT word, NEString::CharPos& IN OUT startAt, NEString::CharPos& OUT endAt) const
+void TEString<CharType>::getWord(TEString<CharType>& OUT word, NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const
 {
     findWord(startAt, endAt);
     if (startAt != NEString::END_POS)

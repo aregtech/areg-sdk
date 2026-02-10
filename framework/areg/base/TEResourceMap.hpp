@@ -206,12 +206,12 @@ public:
      *          To get first element key, call resourceFirstKey() method. Check return value
      *          to know whether there are more elements in the map or not.
      * 
-     * \param	nextKey [in, out]   On input, this Key should be valid and point to the valid resource. 
+     * \param[in,out]   nextKey     On input, this Key should be valid and point to the valid resource. 
      *                              On output, this parameter contain the key of the next element in the map.
      * \return	Returns valid pointer to the next registered resource object. Returns nullptr if
      *          reached end of the resource map.
      **/
-    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const;
+    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & OUT nextKey ) const;
 
     /**
      * \brief   Returns the vector object where the data are stored.
@@ -499,7 +499,7 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & OUT nextKey ) const
 {
     Lock lock(mSyncObj);
 

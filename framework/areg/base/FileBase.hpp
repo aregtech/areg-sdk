@@ -537,14 +537,14 @@ public:
      * \brief	Reads string, automatically sets null-terminate symbol at
      *          the end and returns number of characters, which could read.
      * 
-     * \param	buffer      The buffer where the string should be written. 
-     * \param	charCount	Number of characters to write in the string buffer.
-     *                      The string buffer should be long enough to set
-     *                      end-of-string character at the end.
+     * \param[in,out]   buffer      The buffer where the string should be written. 
+     * \param[int]      charCount   Number of characters to write in the string buffer.
+     *                              The string buffer should be long enough to set
+     *                              end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readString( char * IN OUT buffer, int IN charCount ) const;
-    int readString( wchar_t * IN OUT buffer, int IN charCount ) const;
+    int readString( char * OUT buffer, int charCount ) const;
+    int readString( wchar_t * OUT buffer, int charCount ) const;
 
     /**
      * \brief	Read string until end of file or null-terminated character.
@@ -560,14 +560,14 @@ public:
      * \brief	Reads a line of string, automatically sets null-terminate char at
      *          the end and returns number of characters, which could read.
      * 
-     * \param	buffer      The buffer where the string should be written. 
-     * \param	charCount	Number of characters to write in the string buffer.
-     *                      The string buffer should be long enough to set
-     *                      end-of-string character at the end.
+     * \param[in,out]   buffer      The buffer where the string should be written. 
+     * \param[int]      charCount   Number of characters to write in the string buffer.
+     *                              The string buffer should be long enough to set
+     *                              end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readLine( char * IN OUT buffer, int IN charCount) const;
-    int readLine( wchar_t * IN OUT buffer, int IN charCount ) const;
+    int readLine( char * OUT buffer, int charCount) const;
+    int readLine( wchar_t * OUT buffer, int charCount ) const;
 
     /**
      * \brief	Reads a line of string until end of file, or first match of 
@@ -840,9 +840,9 @@ protected:
 
     /**
      * \brief   Normalizes the name, replace special masks such as time-stamp or process name in the give name.
-     * \param[out]  name    On output, contains normalized name of file.
+     * \param[in,out]   name    On output, contains normalized name of file.
      **/
-    static void normalizeName( String & IN OUT name );
+    static void normalizeName( String & OUT name );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

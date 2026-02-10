@@ -181,7 +181,7 @@ public:
      * \param   addrProxy   The address of proxy to disconnect.
      * \return  Returns instance of valid stub service. Otherwise, the service stub is invalid.
      **/
-    const ServiceStub & disconnectProxy( const ProxyAddress & IN addrProxy );
+    const ServiceStub & disconnectProxy( const ProxyAddress & addrProxy );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

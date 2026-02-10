@@ -301,14 +301,14 @@ public:
 
     /**
      * \brief	Returns given position value and on exit position of next element in Linked List container.
-     *          On input, the value of 'in_out_NextPosition' should be valid (for example, should be equal to head position).
+     *          On input, the value of 'nextPos' should be valid (for example, should be equal to head position).
      *          Otherwise assertion is raised.
-     * \param	in_out_NextPosition On input, this should be valid position of element in Linked List container.
+     * \param[in,out]   nextPos     On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of next element in Linked List container
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
      * \return	Returns value of element at the given position.
      **/
-    inline const VALUE & getNext(LISTPOS & IN OUT in_out_NextPosition) const;
+    inline const VALUE & getNext(LISTPOS & OUT nextPos) const;
 
     /**
      * \brief	Returns position of next element in Linked List
@@ -320,14 +320,14 @@ public:
 
     /**
      * \brief	Returns given position value and on exit position of previous element in Linked List container.
-     *          On input, the value of 'in_out_PrevPosition' should be valid (for example, should be equal to tail position).
+     *          On input, the value of 'prevPos' should be valid (for example, should be equal to tail position).
      *          Otherwise assertion is raised.
-     * \param	in_out_PrevPosition On input, this should be valid position of element in Linked List container.
+     * \param[in,out]   prevPos     On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of previous element in Linked List container
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
      * \return	Returns value of element at the given position.
      **/
-    inline const VALUE & getPrev(LISTPOS & IN OUT in_out_PrevPosition) const;
+    inline const VALUE & getPrev(LISTPOS & OUT prevPos) const;
 
     /**
      * \brief	Returns position of previous element in Linked List
@@ -361,32 +361,32 @@ public:
 
     /**
      * \brief	On exit, returns position and value of next element in Linked List container.
-     *          On input, the value of 'in_out_NextPosition' should be valid (for example, should be equal to head position).
+     *          On input, the value of 'nextPos' should be valid (for example, should be equal to head position).
      *          Otherwise assertion is raised.
-     * \param	in_out_NextPosition	On input, this should be valid position of element in Linked List container.
+     * \param[in,out]	nextPos	    On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of next element in Linked List container
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
-     * \param   out_NextValue       If Linked List has next element, this contains value of next element.
+     * \param[out]      nextValue   If Linked List has next element, this contains value of next element.
      *                              Otherwise, the value is unchanged. Check function return value before using parameter
      * \return	Returns true if Linked List has next element. Before using out_value function return value
      *          should be validated.
      **/
-    bool nextEntry(LISTPOS& in_out_NextPosition, VALUE& out_NextValue) const;
+    bool nextEntry(LISTPOS& nextPos, VALUE& nextValue) const;
 
     /**
      * \brief	On exit, returns position and value of previous element in Linked List container.
-     *          On input, the value of 'in_out_PrevPosition' should be valid (for example, should be equal to tail position).
+     *          On input, the value of 'prevPos' should be valid (for example, should be equal to tail position).
      *          Otherwise assertion is raised.
-     * \param	in_out_PrevPosition	On input, this should be valid position of element in Linked List container.
+     * \param[in,out]   prevPos	    On input, this should be valid position of element in Linked List container.
      *                              On output, this contains position of previous element in Linked List container
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
-     * \param   out_PrevValue       If Linked List has previous element, this contains value of previous element.
+     * \param[out]      prevValue   If Linked List has previous element, this contains value of previous element.
      *                              Otherwise, the value is unchanged. Check function return value before using parameter
      *                              value of this parameter.
      * \return	Returns true if Linked List has previous element. Before using out_value function return value
      *          should be validated.
      **/
-    bool prevEntry(LISTPOS& in_out_PrevPosition, VALUE& out_PrevValue) const;
+    bool prevEntry(LISTPOS& prevPos, VALUE& prevValue) const;
 
     /**
      * \brief   Removes head element from Sorted Linked List.
@@ -397,7 +397,7 @@ public:
      * \brief   Removes the head element from the linked list. On output, the 'value' contains
      *          data of removed element. Function returns true if linked list was not empty,
      *          succeeded to remove head and the 'value' contains the data of removed element.
-     * \param   value [out]     If succeeded to remove head element, on output it contains
+     * \param[out]  value       If succeeded to remove head element, on output it contains
      *                          the data of remove element.
      * \return  Returns true if succeeded to remove head. It as well indicates that the 'value'
      *          contains data of removed element.
@@ -413,7 +413,7 @@ public:
      * \brief   Removes the tails element from the linked list. On output, the 'value' contains
      *          data of removed element. Function returns true if linked list was not empty,
      *          succeeded to remove tails and the 'value' contains the data of removed element.
-     * \param   value [out]     If succeeded to remove head element, on output it contains
+     * \param[out]  value       If succeeded to remove head element, on output it contains
      *                          the data of remove element.
      * \return  Returns true if succeeded to remove tail. It as well indicates that the 'value'
      *          contains data of removed element.
@@ -478,11 +478,11 @@ public:
      * \brief	Removes element at given position and on output returns value of removed element.
      * \param	atPosition  On input, position of element to remove from Linked List.
      *                      It should be valid position, otherwise assertion is raised.
-     * \param   out_Value   On output, it contains value of removed element
+     * \param[out]  Value   On output, it contains value of removed element
      * \return  Returns position following nest to removed position or invalid position
      *          if last entry was removed.
      **/
-    inline LISTPOS removeAt(LISTPOS atPosition, VALUE& out_Value);
+    inline LISTPOS removeAt(LISTPOS atPosition, VALUE& Value);
 
     /**
      * \brief	Searches and removes first match of given element from Linked List.
@@ -769,9 +769,9 @@ inline const VALUE& TESortedLinkedList<VALUE>::lastEntry() const
 }
 
 template<typename VALUE>
-inline const VALUE& TESortedLinkedList<VALUE>::getNext(LISTPOS& IN OUT in_out_NextPosition) const
+inline const VALUE& TESortedLinkedList<VALUE>::getNext(LISTPOS& OUT nextPos) const
 {
-    return *in_out_NextPosition++;
+    return *nextPos++;
 }
 
 template <typename VALUE >
@@ -782,13 +782,13 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::ne
 }
 
 template <typename VALUE >
-inline const VALUE & TESortedLinkedList<VALUE>::getPrev(LISTPOS & IN OUT in_out_PrevPosition) const
+inline const VALUE & TESortedLinkedList<VALUE>::getPrev(LISTPOS & OUT prevPos) const
 {
-    ASSERT(in_out_PrevPosition != mValueList.end());
-    LISTPOS pos = in_out_PrevPosition;
+    ASSERT(prevPos != mValueList.end());
+    LISTPOS pos = prevPos;
     LISTPOS beginPos = _citer2pos(mValueList.begin());
     LISTPOS endPos = _citer2pos(mValueList.end());
-    in_out_PrevPosition = in_out_PrevPosition == beginPos ? endPos : --in_out_PrevPosition;
+    prevPos = prevPos == beginPos ? endPos : --prevPos;
     return *pos;
 }
 
@@ -824,14 +824,14 @@ inline const VALUE& TESortedLinkedList<VALUE>::getAt(const TESortedLinkedList<VA
 }
 
 template <typename VALUE >
-bool TESortedLinkedList<VALUE>::nextEntry(TESortedLinkedList<VALUE>::LISTPOS& in_out_NextPosition, VALUE& out_NextValue) const
+bool TESortedLinkedList<VALUE>::nextEntry(TESortedLinkedList<VALUE>::LISTPOS& nextPos, VALUE& nextValue) const
 {
     bool result = false;
-    ASSERT(in_out_NextPosition != mValueList.end());
-    in_out_NextPosition = nextPosition(in_out_NextPosition);
-    if (in_out_NextPosition != mValueList.end())
+    ASSERT(nextPos != mValueList.end());
+    nextPos = nextPosition(nextPos);
+    if (nextPos != mValueList.end())
     {
-        out_NextValue = *in_out_NextPosition;
+        nextValue = *nextPos;
         result = true;
     }
 
@@ -839,14 +839,14 @@ bool TESortedLinkedList<VALUE>::nextEntry(TESortedLinkedList<VALUE>::LISTPOS& in
 }
 
 template <typename VALUE >
-bool TESortedLinkedList<VALUE>::prevEntry(TESortedLinkedList<VALUE>::LISTPOS& in_out_PrevPosition, VALUE& out_PrevValue) const
+bool TESortedLinkedList<VALUE>::prevEntry(TESortedLinkedList<VALUE>::LISTPOS& prevPos, VALUE& prevValue) const
 {
     bool result = false;
-    ASSERT(in_out_PrevPosition != mValueList.end());
-    in_out_PrevPosition = prevPosition(in_out_PrevPosition);
-    if (in_out_PrevPosition != mValueList.end())
+    ASSERT(prevPos != mValueList.end());
+    prevPos = prevPosition(prevPos);
+    if (prevPos != mValueList.end())
     {
-        out_PrevValue = *in_out_PrevPosition;
+        prevValue = *prevPos;
         result = true;
     }
 

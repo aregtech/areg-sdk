@@ -143,7 +143,7 @@ bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
     return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
 }
 
-const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & IN OUT scopePath, unsigned int /* prioStates */ ) const
+const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & OUT scopePath, unsigned int /* prioStates */ ) const
 {
     static ScopeNodeBase _invalidNode;
     scopePath = String::EmptyString;

@@ -24,10 +24,6 @@
     #define TARGET_PLATFORM     0
 #endif // BIT32
 
-#ifndef IN
-    #define IN
-#endif  // !IN
-
 #ifndef OUT
     #define OUT
 #endif  // !OUT

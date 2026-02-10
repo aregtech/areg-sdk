@@ -366,7 +366,7 @@ Thread * Thread::getFirstThread( id_type & OUT threadId )
     return _getMapThreadId().resourceFirstKey( threadId );
 }
 
-Thread * Thread::getNextThread( id_type & IN OUT threadId )
+Thread * Thread::getNextThread( id_type & OUT threadId )
 {
     return _getMapThreadId().resourceNextKey( threadId );
 }

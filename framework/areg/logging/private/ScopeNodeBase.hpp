@@ -152,13 +152,13 @@ public:
      *          the scope is a leaf. All others are nodes.
      *          On output, the 'scopePath' with contain the remaining path or an empty string
      *          if a leaf was created.
-     * \param   scopePath   The path of the scope to create a node. On output, this contains
-     *                      either the remaining path or empty string if a leaf was created.
-     * \param   prioStates  Bitwise logging priority set to scope.
+     * \param[in,out]   scopePath   The path of the scope to create a node. On output, this contains
+     *                              either the remaining path or empty string if a leaf was created.
+     * \param[in]       prioStates  Bitwise logging priority set to scope.
      * \return  Returns created node. It is either a node or a leaf.
      * \note    Only the root and nodes can create nodes or leafs. The leafs return invalid node.
      **/
-    virtual const ScopeNodeBase & makeChildNode( String & IN OUT scopePath, unsigned int prioStates ) const;
+    virtual const ScopeNodeBase & makeChildNode( String & OUT scopePath, unsigned int prioStates ) const;
 
     /**
      * \brief   Adds a child node to the node if it does not contain a child of the same type
@@ -177,9 +177,9 @@ public:
      *          contains the remaining part of the scope after creating child node. It is empty
      *          when creates and adds a leaf.
      *          Only root or nodes can contain child. This method is ignored in case of leaf.
-     * \param   scopePath   The name of the scope to generate a node. On output, this contains
-     *                      the remaining part of the scope name.
-     * \param   prioStates  The log priority bitwise flag to add to nodes.
+     * \param[in,out]   scopePath   The name of the scope to generate a node. On output, this contains
+     *                              the remaining part of the scope name.
+     * \param[in]       prioStates  The log priority bitwise flag to add to nodes.
      * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
      *          it created new entry or updated the existing.
      **/
@@ -334,8 +334,8 @@ public:
      * \brief   Recursively creates a child node out of scopePath and adds in the list.
      *          The recursion continues until leaf. The new entry is added only if it is
      *          not existing in the child list.
-     * \param   scopePath   The path name of the scope to generate and add child nodes.
-     * \param   prioStates  The log priority bitwise flag to add to nodes.
+     * \param[in,out]   scopePath   The path name of the scope to generate and add child nodes.
+     * \param[in]       prioStates  The log priority bitwise flag to add to nodes.
      * \return  Returns the number of nodes created or updated.
      **/
     unsigned int addChildRecursive( String & scopePath, unsigned int prioStates );

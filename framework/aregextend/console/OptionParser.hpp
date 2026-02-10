@@ -397,16 +397,16 @@ public:
      *           2. the parsing completes either when reach 'count' elements or
      *              if any entry of 'cmdLine' is an empty string, assuming that
      *              command line options may end with empty string like "".
-     * \param   cmdLine The list of the strings passed as a command line in the binary
-     *                  same as 'argv' parameter in 'main' function.
-     * \param   count   The number of strings in the 'cmdLine' list.
+     * \param[in]   cmdLine The list of the strings passed as a command line in the binary
+     *                      same as 'argv' parameter in 'main' function.
+     * \param[in]   count   The number of strings in the 'cmdLine' list.
      * \return  Returns true if succeeded to parse without error.
      *          Otherwise, returns false.
      **/
     bool parseCommandLine( const char ** cmdLine, uint32_t count );
     bool parseCommandLine( const wchar_t ** cmdLine, uint32_t count );
-    bool parseCommandLine( char** IN cmdLine, uint32_t count);
-    bool parseCommandLine( wchar_t** IN cmdLine, uint32_t count);
+    bool parseCommandLine( char** cmdLine, uint32_t count);
+    bool parseCommandLine( wchar_t** cmdLine, uint32_t count);
 
     /**
      * \brief   Parses the string passed as an options separated by space ' '.

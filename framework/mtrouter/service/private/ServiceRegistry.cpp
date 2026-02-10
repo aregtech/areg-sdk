@@ -307,7 +307,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<Stub
     }
 }
 
-const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & IN addrProxy)
+const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & addrProxy)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );

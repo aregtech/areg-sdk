@@ -322,7 +322,7 @@ void DateTime::getDateTime(NEUtilities::sSystemTime& OUT sysTime)
     NEUtilities::convToSystemTime(mDateTime, sysTime);
 }
 
-void DateTime::setDateTime(const NEUtilities::sSystemTime& IN sysTime)
+void DateTime::setDateTime(const NEUtilities::sSystemTime& sysTime)
 {
     mDateTime = NEUtilities::convToTime(sysTime);
 }
@@ -332,7 +332,7 @@ void DateTime::getDateTime(tm& OUT time)
     NEUtilities::convToTm(mDateTime, time);
 }
 
-void DateTime::setDateTime(const tm& IN time)
+void DateTime::setDateTime(const tm& time)
 {
     mDateTime = NEUtilities::convToTime(time);
 }

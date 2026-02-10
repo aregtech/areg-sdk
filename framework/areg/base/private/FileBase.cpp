@@ -422,12 +422,12 @@ int FileBase::writeInvert( const unsigned char * buffer, int unsigned length )
     return static_cast<int>(result);
 }
 
-int FileBase::readString( char * IN OUT buffer, int IN charCount) const
+int FileBase::readString( char * OUT buffer, int charCount) const
 {
     return _readString<char>(self(), buffer, charCount);
 }
 
-int FileBase::readString( wchar_t * IN OUT buffer, int IN charCount ) const
+int FileBase::readString( wchar_t * OUT buffer, int charCount ) const
 {
     return _readString<wchar_t>(self(), buffer, charCount);
 }
@@ -442,12 +442,12 @@ int FileBase::readString(WideString & OUT outValue) const
     return _readString<char, WideString>(self(), outValue);
 }
 
-int FileBase::readLine( char * IN OUT buffer, int IN charCount) const
+int FileBase::readLine( char * OUT buffer, int charCount) const
 {
     return _readLine<char>(self(), buffer, charCount);
 }
 
-int FileBase::readLine( wchar_t * IN OUT buffer, int IN charCount ) const
+int FileBase::readLine( wchar_t * OUT buffer, int charCount ) const
 {
     return _readLine<wchar_t>(self(), buffer, charCount);
 }
@@ -690,7 +690,7 @@ void FileBase::flush()
 {
 }
 
-void FileBase::normalizeName(String & IN OUT name)
+void FileBase::normalizeName(String & OUT name)
 {
     // replace all "%time%"
     char fmt[128] { 0 };
