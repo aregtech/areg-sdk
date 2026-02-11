@@ -213,7 +213,7 @@ std::pair<const OptionParser::sOptionSetup*, int> LogCollector::getAppOptions() 
 {
     static  std::pair< const OptionParser::sOptionSetup*, int> _opts( std::pair< const OptionParser::sOptionSetup*
                                                                     , int>(LogCollector::ValidOptions
-                                                                    , static_cast<int>(MACRO_ARRAYLEN(LogCollector::ValidOptions))));
+                                                                    , static_cast<int>(std::size(LogCollector::ValidOptions))));
     return _opts;
 }
 
@@ -306,7 +306,7 @@ void LogCollector::stopConsoleService()
 
 bool LogCollector::_checkCommand(const String& cmd)
 {
-    OptionParser parser( LogCollector::ValidOptions, MACRO_ARRAYLEN( LogCollector::ValidOptions ) );
+    OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
     bool quit{ false };
     bool hasError {false};
 
@@ -595,7 +595,7 @@ void LogCollector::_cleanHelp()
     console.lockConsole();
 
     console.clearLine(NESystemService::COORD_USER_INPUT);
-    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
         console.clearLine(line);

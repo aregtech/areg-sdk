@@ -373,7 +373,7 @@ void Application::setupDefaultConfiguration(IEConfigurationListener * listener /
     Application& theApp = Application::getInstance();
     const String& module = Process::getInstance().getAppName();
 
-    const uint32_t countReadonly{ MACRO_ARRAYLEN(NEApplication::DefaultReadonlyProperties) };
+    const uint32_t countReadonly{ std::size(NEApplication::DefaultReadonlyProperties) };
     NEPersistence::ListProperties defReadonly(countReadonly);
     for (const auto & entry : NEApplication::DefaultReadonlyProperties)
     {

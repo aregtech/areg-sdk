@@ -319,7 +319,7 @@ inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiat
 
 inline void PageConnections::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( PageConnections::HEADER_TITILES );
+    int count = std::size( PageConnections::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlConnections.GetClientRect( &rc );
     int width = rc.Width( ) / count;

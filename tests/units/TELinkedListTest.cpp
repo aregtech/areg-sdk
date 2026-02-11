@@ -374,8 +374,8 @@ TEST(TELinkedListTest, TestMerging)
     //  - create and initialize 2 linked-lists, which values are odd and even integers from 1 to 42 and have 21 entries each.
     constexpr int32_t odds[]    { 1, 3, 5, 7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41 };
     constexpr int32_t evens[]   { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
-    constexpr uint32_t lenOdd{ MACRO_ARRAYLEN(odds) };
-    constexpr uint32_t lenEven{ MACRO_ARRAYLEN(odds) };
+    constexpr uint32_t lenOdd{ std::size(odds) };
+    constexpr uint32_t lenEven{ std::size(odds) };
     LinkedList listOdd, listEven;
     for (uint32_t i = 0u; i < lenOdd; ++i)
     {
@@ -436,8 +436,8 @@ TEST(TELinkedListTest, TestPushUnique)
     constexpr int unique[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int notunique[]{ 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
 
-    EXPECT_EQ(count, MACRO_ARRAYLEN(unique));
-    EXPECT_EQ(count, MACRO_ARRAYLEN(notunique));
+    EXPECT_EQ(count, std::size(unique));
+    EXPECT_EQ(count, std::size(notunique));
 
     LinkedList list;
     for (uint32_t i = 0; i < count; ++i)
@@ -474,7 +474,7 @@ TEST(TELinkedListTest, TestInserting)
     using POS = LinkedList::LISTPOS;
 
     constexpr int notunique[]{ 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5 };
-    constexpr uint32_t count{ MACRO_ARRAYLEN(notunique) };
+    constexpr uint32_t count{ std::size(notunique) };
     constexpr uint32_t len{ count / 2u };
 
     LinkedList list;
@@ -580,7 +580,7 @@ TEST(TELinkedListTest, TestSortAscending)
     using LinkedList = TELinkedList<int>;
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len{ std::size(_arr1) };
     int _dat1[_len]{};
 
     LinkedList list1(_arr1, _len), res1(_res1, _len);
@@ -599,7 +599,7 @@ TEST(TELinkedListTest, TestSortDescending)
     using LinkedList = TELinkedList<int>;
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len{ std::size(_arr1) };
     int _dat1[_len]{};
 
     LinkedList list1(_arr1, _len), res1(_res1, _len);

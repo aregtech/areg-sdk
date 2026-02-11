@@ -520,7 +520,7 @@ inline Type NEMath::getAbs( const Type & val )
 template<typename Type>
 inline NEMath::eDigitSign NEMath::getSign( const Type & val )
 {
-    return static_cast<eDigitSign>((v > 0) - (v < 0));
+    return static_cast<eDigitSign>((val > 0) - (val < 0));
 }
 
 template<typename Digit>

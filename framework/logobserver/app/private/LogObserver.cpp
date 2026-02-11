@@ -326,7 +326,7 @@ void LogObserver::logMain( int argc, char ** argv )
 
     Application::setWorkingDirectory(nullptr);
     String fileConfig(NEApplication::DEFAULT_CONFIG_FILE);
-    OptionParser parser(LogObserver::ValidOptions, MACRO_ARRAYLEN(LogObserver::ValidOptions));
+    OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
     {
         uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::eLoggerOptions::CMD_LogLoad));
@@ -351,7 +351,7 @@ void LogObserver::logMain( int argc, char ** argv )
 
 bool LogObserver::_checkCommand(const String& cmd)
 {
-    OptionParser parser( LogObserver::ValidOptions, MACRO_ARRAYLEN(LogObserver::ValidOptions) );
+    OptionParser parser( LogObserver::ValidOptions, std::size(LogObserver::ValidOptions) );
     bool quit{ false };
     bool hasError {false};
 
@@ -498,7 +498,7 @@ void LogObserver::_cleanHelp()
     console.lockConsole();
 
     console.clearLine(NESystemService::COORD_USER_INPUT);
-    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
         console.clearLine(line);

@@ -237,7 +237,7 @@ void Publisher::processTimer(Timer & timer)
 void Publisher::onThreadRuns()
 {
     Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, MACRO_ARRAYLEN(ValidOptions));
+    OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
     printMessage(String::EmptyString, eCommands::CMD_Undefined);

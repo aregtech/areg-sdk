@@ -156,7 +156,7 @@ void PageConnections::OnEditBroadcastUpdate( CCmdUI* pCmdUI )
 
 void PageConnections::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( HEADER_TITILES );
+    int count = std::size( HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;

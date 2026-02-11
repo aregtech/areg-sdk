@@ -285,7 +285,7 @@ void PageChat::OnEditUpdateChat(CCmdUI * pCmdUI)
 
 void PageChat::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( PageChat::HEADER_TITILES );
+    int count = std::size( PageChat::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;

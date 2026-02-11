@@ -326,8 +326,8 @@ TEST(TEMapTest, TestMerging)
     //  - create and initialize 2 maps, wich keys and values are odd and even integers from 1 to 42 and totally have 21 entries each.
     constexpr int32_t odds[]{ 1, 3, 5, 7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41 };
     constexpr int32_t evens[]{ 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
-    constexpr uint32_t lenOdd{ MACRO_ARRAYLEN(odds) };
-    constexpr uint32_t lenEven{ MACRO_ARRAYLEN(odds) };
+    constexpr uint32_t lenOdd{ std::size(odds) };
+    constexpr uint32_t lenEven{ std::size(odds) };
     Map mapOdd, mapEven;
     for (uint32_t i = 0u; i < lenOdd; ++i)
     {

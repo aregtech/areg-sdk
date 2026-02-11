@@ -330,8 +330,8 @@ TEST(TESortedLinkedListTest, TestMerging)
     //  - create and initialize 2 linked-lists, which values are odd and even integers from 1 to 42 and have 21 entries each.
     constexpr int32_t odds[]    { 1, 3, 5, 7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41 };
     constexpr int32_t evens[]   { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
-    constexpr uint32_t lenOdd{ MACRO_ARRAYLEN(odds) };
-    constexpr uint32_t lenEven{ MACRO_ARRAYLEN(odds) };
+    constexpr uint32_t lenOdd{ std::size(odds) };
+    constexpr uint32_t lenEven{ std::size(odds) };
     SortedList listOdd(true), listEven(false);
     for (uint32_t i = 0u; i < lenOdd; ++i)
     {
@@ -392,8 +392,8 @@ TEST(TESortedLinkedListTest, TestAddIfUnique)
     constexpr int unique[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int notunique[]{ 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
 
-    EXPECT_EQ(count, MACRO_ARRAYLEN(unique));
-    EXPECT_EQ(count, MACRO_ARRAYLEN(notunique));
+    EXPECT_EQ(count, std::size(unique));
+    EXPECT_EQ(count, std::size(notunique));
 
     SortedList list(true);
     for (uint32_t i = 0; i < count; ++i)
@@ -472,7 +472,7 @@ TEST(TESortedLinkedListTest, TestSortingEntries)
     constexpr int _list[]{ 5, 1, 0, 8, 3, 5, 6, 1, 5, 8, 2, 8, 9, 4, 7, 0 };
     constexpr int _asc[] { 0, 0, 1, 1, 2, 3, 4, 5, 5, 5, 6, 7, 8, 8, 8, 9 };
     constexpr int _desc[]{ 9, 8, 8, 8, 7, 6, 5, 5, 5, 4, 3, 2, 1, 1, 0, 0 };
-    constexpr int32_t count{ MACRO_ARRAYLEN(_list) };
+    constexpr int32_t count{ std::size(_list) };
 
     SortedList asc(true);
     SortedList desc(false);

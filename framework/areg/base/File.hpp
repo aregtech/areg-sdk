@@ -68,7 +68,7 @@ public:
      * \brief   File::LEN_SPECIAL_MASKS
      *          The special masked names array length.
      */
-    static constexpr int                LEN_SPECIAL_MASKS   { MACRO_ARRAYLEN(SPEACIAL_MASKS) };
+    static constexpr int                LEN_SPECIAL_MASKS   { std::size(SPEACIAL_MASKS) };
 
     /**
      * \brief   File::TEMP_FILE_PREFIX

@@ -35,13 +35,6 @@
 #define RETURNED_OK             0
 
 /**
- * \brief   Return size of statically defined array
- **/
-#ifndef MACRO_ARRAYLEN
-    #define MACRO_ARRAYLEN(a)   static_cast<uint32_t>(sizeof(a) / sizeof(a[0]))
-#endif  // MACRO_ARRAYLEN
-
-/**
  * \brief   extracts unsigned low-byte value of 16-bit argument
  **/
 #ifndef MACRO_16_LO_BYTE8

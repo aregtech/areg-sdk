@@ -196,7 +196,7 @@ void MultitargetRouter::runConsoleInputSimple()
 
 std::pair<const OptionParser::sOptionSetup*, int> MultitargetRouter::getAppOptions() const
 {
-    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MultitargetRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN(MultitargetRouter::ValidOptions))));
+    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MultitargetRouter::ValidOptions, static_cast<int>(std::size(MultitargetRouter::ValidOptions))));
     return _opts;
 }
 
@@ -279,7 +279,7 @@ void MultitargetRouter::stopConsoleService()
 
 bool MultitargetRouter::_checkCommand(const String& cmd)
 {
-    OptionParser parser( MultitargetRouter::ValidOptions, MACRO_ARRAYLEN( MultitargetRouter::ValidOptions) );
+    OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
     bool quit{ false };
     bool hasError{ false };
 
@@ -552,7 +552,7 @@ void MultitargetRouter::_cleanHelp()
     console.lockConsole();
 
     console.clearLine(NESystemService::COORD_USER_INPUT);
-    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
         console.clearLine(line);

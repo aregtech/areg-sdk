@@ -125,7 +125,7 @@ void PageMessaging::OnDisconnectTriggered()
 
 void PageMessaging::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( PageMessaging::HEADER_TITILES );
+    int count = std::size( PageMessaging::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;
