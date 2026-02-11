@@ -62,7 +62,7 @@ uint64_t DateTime::getProcessTickCount()
     return NEUtilities::getTickCount();
 }
 
-void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const std::string_view& formatName /*= NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT*/)
+void DateTime::formatTime(const DateTime& dateTime, String& result, const std::string_view& formatName /*= NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT*/)
 {
     char buffer[128] = { 0 };
 
@@ -133,7 +133,7 @@ DateTime DateTime::getNow()
     return DateTime( NEUtilities::systemTimeNow() );
 }
 
-void DateTime::getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime )
+void DateTime::getNow( NEUtilities::sSystemTime & timeData, bool localTime )
 {
     NEUtilities::systemTimeNow(timeData, localTime);
 }
@@ -317,7 +317,7 @@ unsigned int DateTime::getDayOfTheWeek() const
     return ((dayOfWeek + 6) % 7);
 }
 
-void DateTime::getDateTime(NEUtilities::sSystemTime& OUT sysTime)
+void DateTime::getDateTime(NEUtilities::sSystemTime& sysTime)
 {
     NEUtilities::convToSystemTime(mDateTime, sysTime);
 }
@@ -327,7 +327,7 @@ void DateTime::setDateTime(const NEUtilities::sSystemTime& sysTime)
     mDateTime = NEUtilities::convToTime(sysTime);
 }
 
-void DateTime::getDateTime(tm& OUT time)
+void DateTime::getDateTime(tm& time)
 {
     NEUtilities::convToTm(mDateTime, time);
 }

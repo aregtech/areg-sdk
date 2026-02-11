@@ -149,7 +149,7 @@ uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassI
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** OUT removedEvent)
+uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
 {
     ASSERT(newEvent != nullptr);
     Lock lock(mSyncObject);
@@ -256,7 +256,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** OUT removedEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t  SortedEventStack::popEvent(Event** OUT stackEvent)
+uint32_t  SortedEventStack::popEvent(Event** stackEvent)
 {
     ASSERT(stackEvent != nullptr);
 

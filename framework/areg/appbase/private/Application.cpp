@@ -329,7 +329,7 @@ bool Application::isServicingReady()
     return (theApp.mAppState == NEApplication::eApplicationState::AppStateReady);
 }
 
-void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
+void Application::queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive )
 {
     ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
 }

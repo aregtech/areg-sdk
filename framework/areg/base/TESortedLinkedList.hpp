@@ -308,7 +308,7 @@ public:
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
      * \return	Returns value of element at the given position.
      **/
-    inline const VALUE & getNext(LISTPOS & OUT nextPos) const;
+    inline const VALUE & getNext(LISTPOS & nextPos) const;
 
     /**
      * \brief	Returns position of next element in Linked List
@@ -327,7 +327,7 @@ public:
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
      * \return	Returns value of element at the given position.
      **/
-    inline const VALUE & getPrev(LISTPOS & OUT prevPos) const;
+    inline const VALUE & getPrev(LISTPOS & prevPos) const;
 
     /**
      * \brief	Returns position of previous element in Linked List
@@ -397,8 +397,8 @@ public:
      * \brief   Removes the head element from the linked list. On output, the 'value' contains
      *          data of removed element. Function returns true if linked list was not empty,
      *          succeeded to remove head and the 'value' contains the data of removed element.
-     * \param[out]  value       If succeeded to remove head element, on output it contains
-     *                          the data of remove element.
+     * \param[out]  value   If succeeded to remove head element, on output it contains
+     *                      the data of remove element.
      * \return  Returns true if succeeded to remove head. It as well indicates that the 'value'
      *          contains data of removed element.
      */
@@ -413,8 +413,8 @@ public:
      * \brief   Removes the tails element from the linked list. On output, the 'value' contains
      *          data of removed element. Function returns true if linked list was not empty,
      *          succeeded to remove tails and the 'value' contains the data of removed element.
-     * \param[out]  value       If succeeded to remove head element, on output it contains
-     *                          the data of remove element.
+     * \param[out]  value   If succeeded to remove head element, on output it contains
+     *                      the data of remove element.
      * \return  Returns true if succeeded to remove tail. It as well indicates that the 'value'
      *          contains data of removed element.
      */
@@ -769,7 +769,7 @@ inline const VALUE& TESortedLinkedList<VALUE>::lastEntry() const
 }
 
 template<typename VALUE>
-inline const VALUE& TESortedLinkedList<VALUE>::getNext(LISTPOS& OUT nextPos) const
+inline const VALUE& TESortedLinkedList<VALUE>::getNext(LISTPOS& nextPos) const
 {
     return *nextPos++;
 }
@@ -782,7 +782,7 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::ne
 }
 
 template <typename VALUE >
-inline const VALUE & TESortedLinkedList<VALUE>::getPrev(LISTPOS & OUT prevPos) const
+inline const VALUE & TESortedLinkedList<VALUE>::getPrev(LISTPOS & prevPos) const
 {
     ASSERT(prevPos != mValueList.end());
     LISTPOS pos = prevPos;

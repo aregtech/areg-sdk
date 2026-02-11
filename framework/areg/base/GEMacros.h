@@ -24,18 +24,6 @@
     #define TARGET_PLATFORM     0
 #endif // BIT32
 
-#ifndef OUT
-    #define OUT
-#endif  // !OUT
-
-#ifndef OPT
-    #define OPT
-#endif  // !OPT
-
-#ifndef IGNORE_PARAM
-    #define IGNORE_PARAM        nullptr
-#endif // !IGNORE_PARAM
-
 /**
  * \brief   An empty MACRO, does nothing
  **/

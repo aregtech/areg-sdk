@@ -416,7 +416,7 @@ public:
      *                          On output, it contains the next position of the next word.
      * \param[out]      endAt   On output, it contains the position where the next word finishes.
      **/
-    void findWord(NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const;
+    void findWord(NEString::CharPos& startAt, NEString::CharPos& endAt) const;
 
     /**
      * \brief   Searches the whole word in the string at specified 'startAt' position.
@@ -431,7 +431,7 @@ public:
      *                              On output, it contains the next position of the next word.
      * \param[out]      endAt       On output, it contains the position where the next word finishes.
      **/
-    void getWord(TEString<CharType>& OUT word, NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const;
+    void getWord(TEString<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const;
 
     /**
      * \brief   Find the first occurrence of any of the characters in string buffer 'chars'.
@@ -947,8 +947,8 @@ public:
      *
      * \param[out]  strResult   The destination string to copy result.
      **/
-    inline void trimLeft( TEString<CharType> & OUT strResult ) const;
-    inline void trimLeft(std::basic_string<CharType>& OUT strResult) const;
+    inline void trimLeft( TEString<CharType> & strResult ) const;
+    inline void trimLeft(std::basic_string<CharType>& strResult) const;
 
     /**
      * \brief   Removes whitespace characters from right side, i.e. from end of the string
@@ -962,8 +962,8 @@ public:
      *
      * \param[out]  strResult   The destination string to copy result.
      **/
-    inline void trimRight( TEString<CharType> & OUT strResult ) const;
-    inline void trimRight(std::basic_string<CharType>& OUT strResult) const;
+    inline void trimRight( TEString<CharType> & strResult ) const;
+    inline void trimRight(std::basic_string<CharType>& strResult) const;
 
     /**
      * \brief   Removes whitespace characters from left and right sides, i.e. from the begin and end of the string
@@ -977,8 +977,8 @@ public:
      *
      * \param[out]  strResult   The destination string to copy result.
      **/
-    inline void trimAll( TEString<CharType> & OUT strResult ) const;
-    void trimAll(std::basic_string<CharType>& OUT strResult) const;
+    inline void trimAll( TEString<CharType> & strResult ) const;
+    void trimAll(std::basic_string<CharType>& strResult) const;
 
     /**
      * \brief   Converts the string, makes all letters to lower case and returns the instance of converted string.
@@ -1000,8 +1000,8 @@ public:
      * \param[in]   startPos    The valid zero-based position to start copying the line. By default it starts from the begging of string.
      * \return  Returns next position where starts non-empty new line or NEString::END_POS if reached end of string.
      **/
-    inline NEString::CharPos readLine(TEString<CharType>& OUT strResult, NEString::CharPos startPos = NEString::START_POS) const;
-    NEString::CharPos readLine(std::basic_string<CharType>& OUT strResult, NEString::CharPos startPos = NEString::START_POS) const;
+    inline NEString::CharPos readLine(TEString<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
+    NEString::CharPos readLine(std::basic_string<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
 
     /**
      * \brief   In the existing string removes all characters, which are not alphanumeric.
@@ -1748,7 +1748,7 @@ inline void TEString<CharType>::release()
 }
 
 template<typename CharType>
-void TEString<CharType>::findWord(NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const
+void TEString<CharType>::findWord(NEString::CharPos& startAt, NEString::CharPos& endAt) const
 {
     NEString::CharPos pos = startAt;
 
@@ -1789,7 +1789,7 @@ void TEString<CharType>::findWord(NEString::CharPos& OUT startAt, NEString::Char
 }
 
 template<typename CharType>
-void TEString<CharType>::getWord(TEString<CharType>& OUT word, NEString::CharPos& OUT startAt, NEString::CharPos& OUT endAt) const
+void TEString<CharType>::getWord(TEString<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const
 {
     findWord(startAt, endAt);
     if (startAt != NEString::END_POS)
@@ -2617,13 +2617,13 @@ inline TEString<CharType>& TEString<CharType>::trimLeft()
 }
 
 template<typename CharType>
-inline void TEString<CharType>::trimLeft(TEString<CharType>& OUT strResult) const
+inline void TEString<CharType>::trimLeft(TEString<CharType>& strResult) const
 {
     trimLeft(strResult.mData);
 }
 
 template<typename CharType>
-inline void TEString<CharType>::trimLeft(std::basic_string<CharType>& OUT strResult) const
+inline void TEString<CharType>::trimLeft(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty() == false)
@@ -2668,13 +2668,13 @@ inline TEString<CharType>& TEString<CharType>::trimRight()
 }
 
 template<typename CharType>
-inline void TEString<CharType>::trimRight(TEString<CharType>& OUT strResult) const
+inline void TEString<CharType>::trimRight(TEString<CharType>& strResult) const
 {
     trimRight(strResult.mData);
 }
 
 template<typename CharType>
-inline void TEString<CharType>::trimRight(std::basic_string<CharType>& OUT strResult) const
+inline void TEString<CharType>::trimRight(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty() == false)
@@ -2737,13 +2737,13 @@ inline TEString<CharType>& TEString<CharType>::trimAll()
 }
 
 template<typename CharType>
-inline void TEString<CharType>::trimAll(TEString<CharType>& OUT strResult) const
+inline void TEString<CharType>::trimAll(TEString<CharType>& strResult) const
 {
     trimAll(strResult.mData);
 }
 
 template<typename CharType>
-inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResult) const
+inline void TEString<CharType>::trimAll(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty() == false)
@@ -2800,13 +2800,13 @@ inline TEString<CharType> & TEString<CharType>::makeUpper()
 }
 
 template<typename CharType>
-inline NEString::CharPos TEString<CharType>::readLine(TEString<CharType>& OUT strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline NEString::CharPos TEString<CharType>::readLine(TEString<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
     return readLine(strResult.mData, startPos);
 }
 
 template<typename CharType>
-NEString::CharPos TEString<CharType>::readLine(std::basic_string<CharType>& OUT strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
+NEString::CharPos TEString<CharType>::readLine(std::basic_string<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
     NEString::CharPos result = NEString::END_POS;
     if (isValidPosition(startPos))

@@ -100,7 +100,7 @@ String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
     return threadAddress.convToString();
 }
 
-ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** OUT out_nextPart /*= nullptr*/ )
+ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** out_nextPart /*= nullptr*/ )
 {
     ThreadAddress result;
     result.convFromString(threadPath, out_nextPart);
@@ -111,7 +111,7 @@ ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const ch
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-void ThreadAddress::convFromString(const char * threadPath, const char** OUT out_nextPart /*= nullptr*/)
+void ThreadAddress::convFromString(const char * threadPath, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource   = threadPath;
     if (out_nextPart != nullptr)

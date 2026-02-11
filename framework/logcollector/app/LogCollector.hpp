@@ -310,12 +310,12 @@ private:
      * \brief   Creates a list of remote messages to send to update log scope priorities.
      *          On output the 'msgList' contains the list of message. Each message contains
      *          instruction to update single scope or single scope group.
-     * \param   optScope    The option entry that contains scope priority update instruction.
-     *                      If the command contains a list of scopes to update, the should be split by ';'.
-     * \param   msgList     On output it contains a list a messages to send to the targets.
-     *                      If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
+     * \param[in]   optScope    The option entry that contains scope priority update instruction.
+     *                          If the command contains a list of scopes to update, the should be split by ';'.
+     * \param[out]  msgList     On output it contains a list a messages to send to the targets.
+     *                          If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
      **/
-    static void _createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage> & OUT msgList);
+    static void _createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage> & msgList);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.

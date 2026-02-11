@@ -75,10 +75,10 @@ void ConnectionConfiguration::setConnectionPort(unsigned short portNr)
     Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::getConnectionIpAddress( unsigned char & OUT field0
-                                                    , unsigned char & OUT field1
-                                                    , unsigned char & OUT field2
-                                                    , unsigned char & OUT field3 )
+bool ConnectionConfiguration::getConnectionIpAddress( unsigned char & field0
+                                                    , unsigned char & field1
+                                                    , unsigned char & field2
+                                                    , unsigned char & field3 )
 {
     bool result = false;
     field0 = field1 = field2 = field3 = 0u;

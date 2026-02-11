@@ -327,12 +327,12 @@ public:
      *          If need to measure the total amount of data, accumulate calls.
      *          If need to measure the data rate per second, call this method each second.
      * 
-     * \param   sizeSend    On output this parameter contains the size of data in bytes
-     *                      sent since the last call of the method.
-     * \param   sizeReceive On output this parameter contains the size of data in bytes
-     *                      received since the last call of the method.
+     * \param[out]  sizeSend    On output this parameter contains the size of data in bytes
+     *                          sent since the last call of the method.
+     * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
+     *                          received since the last call of the method.
      **/
-    static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
+    static void queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive );
 
     /**
      * \brief   Returns the name of the executable process.

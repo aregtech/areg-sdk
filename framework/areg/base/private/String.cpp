@@ -52,7 +52,7 @@ namespace
      * \return  Returns the number of characters copied into the string.
      **/
     template<typename DigitType>
-    inline int32_t _formatBinary( String & OUT result, DigitType number )
+    inline int32_t _formatBinary( String & result, DigitType number )
     {
         char buffer[ NEString::MSG_MIN_BUF_SIZE ]{ 0 };
         char * dst  = buffer;

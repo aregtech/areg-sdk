@@ -573,10 +573,10 @@ public:
 
     /**
      * \brief   Gets the list of log scope properties of the module.
-     * \param   scopeList   On output this contains the list of log scopes properties of the module.
+     * \param[out]  scopeList   On output this contains the list of log scopes properties of the module.
      * \return  The number scopes in the list.
      **/
-    uint32_t getModuleLogScopes(std::vector<Property>& OUT scopeList) const;
+    uint32_t getModuleLogScopes(std::vector<Property>& scopeList) const;
 
     /**
      * \brief   Adds the list of scopes properties to the existing list of the module.

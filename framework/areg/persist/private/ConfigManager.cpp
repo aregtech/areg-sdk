@@ -120,7 +120,7 @@ namespace
         return (elemPos != NECommon::INVALID_POSITION ? &list[elemPos] : nullptr);
     }
 
-    uint32_t _readConfig(const FileBase& file, NEPersistence::ListProperties& OUT listWritable, NEPersistence::ListProperties& OUT listReadonly, const String& module)
+    uint32_t _readConfig(const FileBase& file, NEPersistence::ListProperties& listWritable, NEPersistence::ListProperties& listReadonly, const String& module)
     {
         uint32_t result{ 0 };
 
@@ -800,7 +800,7 @@ void ConfigManager::setLogLayoutExit(const String& newValue, bool isTemporary /*
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& OUT scopeList) const
+uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& scopeList) const
 {
     Lock lock(mLock);
 

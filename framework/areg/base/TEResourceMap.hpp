@@ -185,19 +185,19 @@ public:
     /**
      * \brief   Removes first element of Resource map and returns true if successfully removed.
      *          On output firstElement contains Resource Key and Object pair.
-     * \param   firstElement [out]  On output, this will contain Key and Object pair 
+     * \param[out]  firstElement    On output, this will contain Key and Object pair 
      *                              of first element in resource map.
      * \return  Returns true if successfully removed first element.
      **/
-    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & OUT firstElement );
+    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement );
 
     /**
      * \brief   Returns resource object of first object and the associated unique key in the map.
-     * \param   firstKey [out]  On output, this parameter contains a resource valid key
+     * \param[out]  firstKey    On output, this parameter contains a resource valid key
      *                          if the resource is not empty.
      * \return  Returns pointer of stored Resource Object.
      **/
-    inline RESOURCE_OBJECT resourceFirstKey( RESOURCE_KEY & OUT firstKey ) const;
+    inline RESOURCE_OBJECT resourceFirstKey( RESOURCE_KEY & firstKey ) const;
 
     /**
      * \brief	Returns resource object of next element stored after specified unique Key.
@@ -211,7 +211,7 @@ public:
      * \return	Returns valid pointer to the next registered resource object. Returns nullptr if
      *          reached end of the resource map.
      **/
-    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & OUT nextKey ) const;
+    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & nextKey ) const;
 
     /**
      * \brief   Returns the vector object where the data are stored.
@@ -228,8 +228,8 @@ protected:
      *          This function is called from removeAllResources() for every single
      *          resource being unregistered. Override this function if any additional
      *          work should be performed after unregistering resource.
-     * \param	Key	        The Key value of resource
-     * \param	Resource	Pointer to resource object
+     * \param[in,out]   Key         The Key value of resource
+     * \param[in,out]   Resource    Pointer to resource object
      **/
     inline void cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
 
@@ -469,7 +469,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & OUT firstElement )
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
 {
     Lock lock(mSyncObj);
     bool result{ false };
@@ -484,7 +484,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & OUT firstKey ) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & firstKey ) const
 {
     Lock lock(mSyncObj);
 
@@ -499,7 +499,7 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & OUT nextKey ) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & nextKey ) const
 {
     Lock lock(mSyncObj);
 

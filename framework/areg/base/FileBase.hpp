@@ -237,7 +237,7 @@ public:
      * \param   stream  The instance of file data contains the data.
      * \param   ascii   On output, this contains the ASCII string data.
      **/
-    friend inline const FileBase & operator >> ( const FileBase & stream, String & OUT ascii );
+    friend inline const FileBase & operator >> ( const FileBase & stream, String & ascii );
 
     /**
      * \brief   Writes files data as wide-char string. The file outputs string until reaches end of file,
@@ -245,7 +245,7 @@ public:
      * \param   stream  The instance of file data contains the data.
      * \param   wide    On output, this contains the wide-char string data.
      **/
-    friend inline const FileBase & operator >> ( const FileBase & stream, WideString & OUT wide );
+    friend inline const FileBase & operator >> ( const FileBase & stream, WideString & wide );
 
     //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -421,58 +421,58 @@ public:
     /**
      * \brief   Reads boolean value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readBool(bool & OUT outValue) const;
+    inline bool readBool(bool & Value) const;
 
     /**
      * \brief   Reads 1 byte of data, covert to char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readChar(char & OUT outValue) const;
+    inline bool readChar(char & Value) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to wide char and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readChar(wchar_t & OUT outValue) const;
+    inline bool readChar(wchar_t & Value) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to short integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readShort(short & OUT outValue) const;
+    inline bool readShort(short & Value) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readInt(int & OUT outValue) const;
+    inline bool readInt(int & Value) const;
 
     /**
      * \brief   Reads 8 bytes of data, covert to large integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readLarge(int64_t & OUT outValue) const;
+    inline bool readLarge(int64_t & Value) const;
 
     /**
      * \brief   Reads 2 bytes of data, covert to floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readFloat(float & OUT outValue) const;
+    inline bool readFloat(float & Value) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to double floating value and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
-     * \param   outValue [out]   On output contains value that could read.
+     * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readDouble(double & OUT outValue) const;
+    inline bool readDouble(double & Value) const;
 
     /**
      * \brief   Write 1 byte of char data and if succeeds, returns true.
@@ -543,18 +543,18 @@ public:
      *                              end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readString( char * OUT buffer, int charCount ) const;
-    int readString( wchar_t * OUT buffer, int charCount ) const;
+    int readString( char * buffer, int charCount ) const;
+    int readString( wchar_t * buffer, int charCount ) const;
 
     /**
      * \brief	Read string until end of file or null-terminated character.
      *          It does not validate string data.
      * 
-     * \param	outBuffer	The string containing data
+     * \param[out]  buffer  The string containing data
      * \return	Returns number of characters, which could read.
      **/
-    int readString(String & OUT outBuffer) const;
-    int readString(WideString & OUT outBuffer) const;
+    int readString(String & buffer) const;
+    int readString(WideString & buffer) const;
 
     /**
      * \brief	Reads a line of string, automatically sets null-terminate char at
@@ -566,19 +566,19 @@ public:
      *                              end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readLine( char * OUT buffer, int charCount) const;
-    int readLine( wchar_t * OUT buffer, int charCount ) const;
+    int readLine( char * buffer, int charCount) const;
+    int readLine( wchar_t * buffer, int charCount ) const;
 
     /**
      * \brief	Reads a line of string until end of file, or first match of 
      *          null-terminated character or new line character. 
      *          It does not validate string data.
      * 
-     * \param	outBuffer	On output, this contains a string of a line.
+     * \param[out]  buffer  On output, this contains a string of a line.
      * \return	Returns number of characters, which could read.
      **/
-    int readLine(String & OUT outBuffer) const;
-    int readLine(WideString & OUT outBuffer) const;
+    int readLine(String & buffer) const;
+    int readLine(WideString & buffer) const;
 
     /**
      * \brief	Writes string in file and returns true if succeeded.
@@ -842,7 +842,7 @@ protected:
      * \brief   Normalizes the name, replace special masks such as time-stamp or process name in the give name.
      * \param[in,out]   name    On output, contains normalized name of file.
      **/
-    static void normalizeName( String & OUT name );
+    static void normalizeName( String & name );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1009,44 +1009,44 @@ inline IEOutStream& FileBase::getWriteStream()
     return static_cast<IEOutStream &>(*this);
 }
 
-inline bool FileBase::readBool(bool & OUT outValue) const
+inline bool FileBase::readBool(bool & Value) const
 {
-    return mReadConvert.getBool(outValue);
+    return mReadConvert.getBool(Value);
 }
 
-inline bool FileBase::readChar( char & OUT outValue ) const
+inline bool FileBase::readChar( char & Value ) const
 {
-    return mReadConvert.getChar(outValue);
+    return mReadConvert.getChar(Value);
 }
 
-inline bool FileBase::readChar( wchar_t & OUT outValue ) const
+inline bool FileBase::readChar( wchar_t & Value ) const
 {
-    return mReadConvert.getChar(outValue);
+    return mReadConvert.getChar(Value);
 }
 
-inline bool FileBase::readShort( short & OUT outValue ) const
+inline bool FileBase::readShort( short & Value ) const
 {
-    return mReadConvert.getShort(outValue);
+    return mReadConvert.getShort(Value);
 }
 
-inline bool FileBase::readInt( int & OUT outValue ) const
+inline bool FileBase::readInt( int & Value ) const
 {
-    return mReadConvert.getInt(outValue);
+    return mReadConvert.getInt(Value);
 }
 
-inline bool FileBase::readLarge( int64_t & OUT outValue ) const
+inline bool FileBase::readLarge( int64_t & Value ) const
 {
-    return mReadConvert.getInt64(outValue);
+    return mReadConvert.getInt64(Value);
 }
 
-inline bool FileBase::readFloat(float & OUT outValue) const
+inline bool FileBase::readFloat(float & Value) const
 {
-    return mReadConvert.getFloat(outValue);
+    return mReadConvert.getFloat(Value);
 }
 
-inline bool FileBase::readDouble(double & OUT outValue) const
+inline bool FileBase::readDouble(double & Value) const
 {
-    return mReadConvert.getDouble(outValue);
+    return mReadConvert.getDouble(Value);
 }
 
 inline bool FileBase::writeBool( bool inValue )
@@ -1113,13 +1113,13 @@ inline FileBase & operator << ( FileBase & stream, const WideString & wide )
     return stream;
 }
 
-inline const FileBase & operator >> ( const FileBase & stream, String & OUT ascii )
+inline const FileBase & operator >> ( const FileBase & stream, String & ascii )
 {
     stream.read(ascii);
     return stream;
 }
 
-inline const FileBase & operator >> ( const FileBase & stream, WideString & OUT wide )
+inline const FileBase & operator >> ( const FileBase & stream, WideString & wide )
 {
     stream.read(wide);
     return stream;

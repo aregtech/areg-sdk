@@ -347,10 +347,10 @@ namespace   NEUtilities
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
-     * \param   sysTime     On output the system time parameter contains date-time of current time.
-     * \param   localTime   If true, in output the out_sysTime contains local time values.
+     * \param[out]  sysTime     On output the system time parameter contains date-time of current time.
+     * \param[in]   localTime   If true, in output the out_sysTime contains local time values.
      **/
-    AREG_API void systemTimeNow( sSystemTime & OUT sysTime, bool localTime );
+    AREG_API void systemTimeNow( sSystemTime & sysTime, bool localTime );
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
@@ -380,7 +380,7 @@ namespace   NEUtilities
      * \param[in]   timeValue   64-bit value as microseconds passed since January 1 1970.
      * \param[out]  sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void convToSystemTime( const TIME64 & timeValue, sSystemTime & OUT sysTime );
+    AREG_API void convToSystemTime( const TIME64 & timeValue, sSystemTime & sysTime );
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -413,14 +413,14 @@ namespace   NEUtilities
      * \param[out]  milli   On output, this contains the remaining time in milliseconds.
      * \param[out]  micro   On output, this contains the remaining time in microseconds.
      **/
-    AREG_API void convMicrosecs(const TIME64 & time, time_t & OUT secs, unsigned short & OUT milli, unsigned short & OUT micro);
+    AREG_API void convMicrosecs(const TIME64 & time, time_t & secs, unsigned short & milli, unsigned short & micro);
 
     /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
      * \param[in]   sysTime     The system-time data structure to convert.
      * \param[out]  time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void convToTm( const sSystemTime & sysTime, struct tm & OUT time );
+    AREG_API void convToTm( const sSystemTime & sysTime, struct tm & time );
 
     /**
      * \brief   Converts time in microseconds since Unix epoch (January 1, 1970) to standard 'tm' type.
@@ -428,21 +428,21 @@ namespace   NEUtilities
      * \param[in]   timeMicro   The time in microseconds since Unix epoch (January 1, 1970) to convert.
      * \param[out]  time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void convToTm(const TIME64& timeMicro, struct tm& OUT time);
+    AREG_API void convToTm(const TIME64& timeMicro, struct tm& time);
 
     /**
      * \brief   Converts standard 'tm' type to system-time data structure. In conversion, a milliseconds part of data will not exist.
      * \param[in]   time        Contains date-time of converted system time without information of milliseconds.
      * \param[out]  sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void convToSystemTime( const struct tm & time, sSystemTime & OUT sysTime );
+    AREG_API void convToSystemTime( const struct tm & time, sSystemTime & sysTime );
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
      * \param[in,out]   utcTime     The time structure in UTC time to convert.
      *                              On output the values of structure will be in local time zone.
      **/
-    AREG_API void makeTmLocal( struct tm & OUT utcTime );
+    AREG_API void makeTmLocal( struct tm & utcTime );
 
     /**
      * \brief   Returns the tick counts information in milliseconds since process has started.
@@ -455,7 +455,7 @@ namespace   NEUtilities
      * \param[out]  localTime   On output this structure contains the converted local time.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const sSystemTime & utcTime, sSystemTime & OUT localTime );
+    AREG_API bool convToLocalTime( const sSystemTime & utcTime, sSystemTime & localTime );
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -463,7 +463,7 @@ namespace   NEUtilities
      * \param[out]  localTime   On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const TIME64 & utcTime, sSystemTime & OUT localTime );
+    AREG_API bool convToLocalTime( const TIME64 & utcTime, sSystemTime & localTime );
 
     /**
      * \brief   Converts the system UTC time to local time in structure of tm.
@@ -471,7 +471,7 @@ namespace   NEUtilities
      * \param[out]  localTm     On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTm(const TIME64 & utcTime, struct tm & OUT localTm);
+    AREG_API bool convToLocalTm(const TIME64 & utcTime, struct tm & localTm);
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate names
@@ -521,10 +521,10 @@ namespace   NEUtilities
      * \param[out]   buffer     The output buffer to fill generated name.
      *                          The length of buffer should be big enough
      *                          to contain prefix and prefix.
-     * \param   length          The length of buffer to set name.
+     * \param[in]   length      The length of buffer to set name.
      * \return  Returns the content of 'buffer'. If 'buffer' is invalid, returns nullptr.
      **/
-    AREG_API const char * generateName( const char * prefix, char * OUT buffer, int length);
+    AREG_API const char * generateName( const char * prefix, char * buffer, int length);
 
     /**
      * \brief   This function generates and returns name 
@@ -541,14 +541,14 @@ namespace   NEUtilities
      *                          If this value is nullptr it will use
      *                          NEUtilities::DEFAULT_GENERATED_NAME as
      *                          a prefix for name.
-     * \param[out   buffer      The output buffer to fill generated name.
+     * \param[out]  buffer      The output buffer to fill generated name.
      *                          The length of buffer should be big enough
      *                          to contain prefix and prefix.
-     * \param   length          The length of buffer to set name.
-     * \param   specChar    Special character used in generated name.
+     * \param[in]   length      The length of buffer to set name.
+     * \param[in]   specChar    Special character used in generated name.
      * \return  Returns the content of 'buffer'. If 'buffer' is invalid, returns nullptr.
      **/
-    AREG_API const char * generateName( const char * prefix, char * OUT buffer, int length, const char * specChar);
+    AREG_API const char * generateName( const char * prefix, char * buffer, int length, const char * specChar);
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate unique ID

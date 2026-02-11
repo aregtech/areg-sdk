@@ -280,11 +280,11 @@ public:
     /**
      * \brief	Searches an element entry by the given key.
      *          If found element, return true and on exit returns the value of element
-     * \param	Key	        The key to search.
-     * \param	Value   On output, contains value of found element
+     * \param[in]	Key	    The key to search.
+     * \param[out]	Value   On output, contains value of found element
      * \return	Returns true if there is an entry with the specified key.
      **/
-    inline bool find( const KEY & Key, VALUE & OUT Value ) const;
+    inline bool find( const KEY & Key, VALUE & Value ) const;
 
     /**
      * \brief	Search an element entry by the given key and returns the position in sorted map.
@@ -404,7 +404,7 @@ public:
      * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
      *          removed last element in the map.
      **/
-    inline MAPPOS removePosition(MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value );
+    inline MAPPOS removePosition(MAPPOS atPosition, KEY & Key, VALUE & Value );
 
     /**
      * \brief   Removes the first entry in the sorted map.
@@ -417,7 +417,7 @@ public:
      * \param[out]  Value   On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and first entry is removed. Otherwise, returns false.
      **/
-    inline bool removeFirst(KEY& OUT Key, VALUE& OUT Value);
+    inline bool removeFirst(KEY& Key, VALUE& Value);
 
     /**
      * \brief   Removes the last entry in the sorted map.
@@ -430,7 +430,7 @@ public:
      * \param[out]  Value   On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and last entry is removed. Otherwise, returns false.
      **/
-    inline bool removeLast(KEY& OUT Key, VALUE& OUT Value);
+    inline bool removeLast(KEY& Key, VALUE& Value);
 
     /**
      * \brief	Returns position of the next entry in the sorted map followed the given position.
@@ -446,7 +446,7 @@ public:
      * \param[out]  Value       On output, this contains value of given position.
      * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
      **/
-    inline MAPPOS nextPosition(MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value ) const;
+    inline MAPPOS nextPosition(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
 
     /**
      * \brief	Returns position of the next entry in the sorted map followed the given position.
@@ -454,7 +454,7 @@ public:
      * \param[out]  Element     On output, this element contains pair of Key and Value specified by given position.
      * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
      **/
-    inline MAPPOS nextPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & OUT Element ) const;
+    inline MAPPOS nextPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & Element ) const;
 
     /**
      * \brief	Extract data of the key and value of the entry by given position.
@@ -462,14 +462,14 @@ public:
      * \param[out]  Key	        On output, contains key of the element at given position.
      * \param[out]  Value       On output, contains value of the element at given position.
      **/
-    inline void getAtPosition(MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value ) const;
+    inline void getAtPosition(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
 
     /**
      * \brief	Extract data of the key and value of the entry by given position.
      * \param[in]   atPosition  The position of the element to extract key and value.
      * \param[out]  Element     On output, contains the Key and Value pair of the element at given position
      **/
-    inline void getAtPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & OUT Element) const;
+    inline void getAtPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const;
 
     /**
      * \brief   Returns the Key of the entry at the given position.
@@ -491,23 +491,23 @@ public:
      * \param[in,out]   nextPos     On input this indicates the valid position of the entry in the sorted map.
      *                              On output, this parameter points either next valid entry in the sorted map
      *                              or invalid entry if no more entry is following.
-     * \param[out]  nextKey         On output, this contains key of the next entry in sorted map.
-     * \param[out]  nextValue       On output, this contain value of the next entry in sorted map.
+     * \param[out]      nextKey     On output, this contains key of the next entry in sorted map.
+     * \param[out]      nextValue   On output, this contain value of the next entry in sorted map.
      * \return	Returns true, if there is a next element and the output values are valid.
      **/
-    inline bool nextEntry(MAPPOS & OUT nextPos, KEY & OUT nextKey, VALUE & OUT nextValue ) const;
+    inline bool nextEntry(MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue ) const;
 
      /**
       * \brief   Copies elements from the map into the provided pre-allocated buffer of keys and values.
       *          If `elemCount` is less than the number of elements in the map,
       *          only the first `elemCount` elements are copied. Otherwise, all elements
       *          in the map are copied. No elements are copied if `elemCount` is 0.
-      * \param   keys [in, out]     A pre-allocated buffer where the keys of the map elements will be copied.
+      * \param[in,out]   keys       A pre-allocated buffer where the keys of the map elements will be copied.
       *                             Must be large enough to hold at least `elemCount` elements.
-      * \param   values [in, out]   A pre-allocated buffer where the values of the map elements will be copied.
+      * \param[in,out]   values     A pre-allocated buffer where the values of the map elements will be copied.
       *                             Must be large enough to hold at least `elemCount` elements.
-      * \param   elemCount [in]  The maximum number of elements to copy into the keys and values buffer.
-      *                          If set to 0, no elements are copied.
+      * \param[in]       elemCount  The maximum number of elements to copy into the keys and values buffer.
+      *                             If set to 0, no elements are copied.
       * \return  The number of elements successfully copied.
       **/
     inline uint32_t getElements(KEY * keys, VALUE * values, uint32_t elemCount);
@@ -641,7 +641,7 @@ inline void TEMap<KEY, VALUE>::release()
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT Value ) const
+inline bool TEMap<KEY, VALUE>::find( const KEY & Key, VALUE & Value ) const
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -794,7 +794,7 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::setPosition(typenam
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::removePosition(typename TEMap<KEY, VALUE>::MAPPOS curPos, KEY& OUT Key, VALUE& OUT Value)
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::removePosition(typename TEMap<KEY, VALUE>::MAPPOS curPos, KEY& Key, VALUE& Value)
 {
     ASSERT( curPos != mValueList.end());
     Key         = curPos->first;
@@ -811,7 +811,7 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::removePosition(MAPP
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEMap<KEY, VALUE>::removeFirst(KEY& OUT Key, VALUE& OUT Value)
+inline bool TEMap<KEY, VALUE>::removeFirst(KEY& Key, VALUE& Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -840,7 +840,7 @@ inline void TEMap<KEY, VALUE>::removeFirst()
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEMap<KEY, VALUE>::removeLast(KEY& OUT Key, VALUE& OUT Value)
+inline bool TEMap<KEY, VALUE>::removeLast(KEY& Key, VALUE& Value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -869,7 +869,7 @@ inline void TEMap<KEY, VALUE>::removeLast()
 }
 
 template < typename KEY, typename VALUE >
-inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::nextPosition(TEMap<KEY, VALUE>::MAPPOS atPosition, KEY& OUT Key, VALUE& OUT Value) const
+inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::nextPosition(TEMap<KEY, VALUE>::MAPPOS atPosition, KEY& Key, VALUE& Value) const
 {
     ASSERT(atPosition != mValueList.end());
 
@@ -881,7 +881,7 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::nextPosition(TEMap<
 
 template < typename KEY, typename VALUE >
 inline typename TEMap<KEY, VALUE>::MAPPOS
-TEMap<KEY, VALUE>::nextPosition( TEMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & OUT Element) const
+TEMap<KEY, VALUE>::nextPosition( TEMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const
 {
     return nextPosition(atPosition, Element.first, Element.second);
 }
@@ -906,7 +906,7 @@ inline const VALUE & TEMap<KEY, VALUE>::getAt(const KEY & Key) const
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS atPosition, KEY & OUT Key, VALUE & OUT Value) const
+inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS atPosition, KEY & Key, VALUE & Value) const
 {
     ASSERT(atPosition != mValueList.end());
     Key     = atPosition->first;
@@ -914,7 +914,7 @@ inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS atPositio
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & OUT Element) const
+inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const
 {
     getAtPosition(atPosition, Element.first, Element.second);
 }
@@ -948,7 +948,7 @@ inline VALUE& TEMap<KEY, VALUE>::valueAtPosition(TEMap<KEY, VALUE>::MAPPOS atPos
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEMap<KEY, VALUE>::nextEntry(TEMap<KEY, VALUE>::MAPPOS & OUT nextPos, KEY & OUT nextKey, VALUE & OUT nextValue) const
+inline bool TEMap<KEY, VALUE>::nextEntry(TEMap<KEY, VALUE>::MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue) const
 {
     ASSERT( nextPos != mValueList.end() );
     bool result = false;

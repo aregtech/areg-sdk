@@ -649,7 +649,7 @@ void LogCollector::_processQueryScopes(const OptionParser::sOption& optScope)
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& OUT msgList)
+void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int>(eLoggerOptions::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);

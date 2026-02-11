@@ -436,18 +436,18 @@ protected:
 
     /**
      * \brief   Returns the first thread element from resource map.
-     * \param   threadId    If method succeeds, on output is valid thread ID.
+     * \param[out]  threadId    If method succeeds, on output is valid thread ID.
      * \return  If succeed, returns pointer to valid thread object.
      **/
-    static Thread * getFirstThread( id_type & OUT threadId );
+    static Thread * getFirstThread( id_type & threadId );
 
     /**
      * \brief   Returns the next thread element resource map.
-     * \param   threadId    ON input this should contain valid thread ID.
-     *                      If method succeeds, on output is valid thread ID.
+     * \param[in,out]   threadId    ON input this should contain valid thread ID.
+     *                              If method succeeds, on output is valid thread ID.
      * \return  If succeed, returns pointer to valid thread object.
      **/
-    static Thread * getNextThread( id_type & IN OUT threadId );
+    static Thread * getNextThread( id_type & threadId );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

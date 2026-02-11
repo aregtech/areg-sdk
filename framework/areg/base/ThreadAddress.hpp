@@ -59,18 +59,18 @@ public:
      * \brief	Parses passed path and converts passed path to the Thread Address object.
      *          The path should contain at least following format: "<process ID>::<thread name>".
      *          The first item should be integer.
-     *          If Thread Address was parsed and properly retrieved, on output, parameter 'out_nextPart' 
+     *          If Thread Address was parsed and properly retrieved, on output, parameter 'nextPart' 
      *          will contains address of string in 'threadPath' after Thread Address part.
      *          For example: if path is "<process ID>::<thread name>::<component name>::<service name>::",
-     *          on output, out_nextPart will contain "<component name>::<service name>::" it is not nullptr
-     * \param	threadPath	    The path of thread to convert.
-     * \param   out_nextPart    If successfully retrieved thread address and it is not nullptr, 
+     *          on output, nextPart will contain "<component name>::<service name>::" it is not nullptr
+     * \param[in]	threadPath  The path of thread to convert.
+     * \param[out]  nextPart    If successfully retrieved thread address and it is not nullptr, 
      *                          on output will contain address of string after retrieving Thread address.
      *                          If parsing fails, it will contain same address as 'threadPart'.
      *                          If parameter is nullptr, it will be ignored.
      * \return	Return created from path thread address object.
      **/
-    static ThreadAddress convPathToAddress( const char* const threadPath, const char** OUT out_nextPart = nullptr );
+    static ThreadAddress convPathToAddress( const char* const threadPath, const char** nextPart = nullptr );
 
     /**
      * \brief   Returns the invalid thread address object.
@@ -195,11 +195,11 @@ public:
 
     /**
      * \brief	Parse string and retrieves thread address data from path.
-     * \param	threadPath	    The thread path as a string.
-     * \param	out_nextPart	If not a nullptr, on output this will contain remaining
+     * \param[in]	threadPath	The thread path as a string.
+     * \param[out]	nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting thread path.
      **/
-    void convFromString(const char * threadPath, const char** OUT out_nextPart = nullptr );
+    void convFromString(const char * threadPath, const char** nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

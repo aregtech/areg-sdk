@@ -45,7 +45,7 @@ void AREG_API_IMPL NEDebug::outputMessageOS(const char* /*msg*/)
 #endif  // _DEBUG
 
 #ifdef  _DEBUG
-void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
+void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack )
 {
 
     constexpr char  _stackFormat[]              { "        %s:(%d): %s: %s" };
@@ -60,7 +60,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
     constexpr unsigned int   _symNameLength     { MAX_SYM_NAME };
     constexpr unsigned int   _sizeOfSymInfo     { MACRO_ALIGN_SIZE( sizeof( SYMBOL_INFO ) + _symNameLength * sizeof( char ), sizeof( ULONG64 ) ) };
 
-    out_callStack.clear();
+    callStack.clear();
 
     // Walk through the stack frames.
     HANDLE hProcess = GetCurrentProcess( );
@@ -136,29 +136,29 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
                                     , hasFunction ? symbolInfo->Name     : _msgFunctionUnavailable
                                     , hasModule   ? moduleInfo.ImageName : _msgModuleUnavailable );
 
-                out_callStack.push_back( message );
+                callStack.push_back( message );
 
             }
 
             if ( curDepth > _stackMaxDepth )
             {
-                out_callStack.push_front( _msgIncompleteStack );
+                callStack.push_front( _msgIncompleteStack );
             }
         }
         else
         {
-            out_callStack.push_back( _msgUnknownMachine );
+            callStack.push_back( _msgUnknownMachine );
         }
 
         SymCleanup( hProcess );
     }
     else
     {
-        out_callStack.push_back( _msgCannotExtractSym );
+        callStack.push_back( _msgCannotExtractSym );
     }
 }
 #else   // _DEBUG
-void AREG_API_IMPL NEDebug::dumpExceptionCallStack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& OUT /*out_callStack*/)
+void AREG_API_IMPL NEDebug::dumpExceptionCallStack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& /*callStack*/)
 {
 }
 #endif  // _DEBUG

@@ -475,11 +475,11 @@ public:
      * \brief   Searches all created proxies in the specified thread. On output, the 
      *          parameter 'threadProxyList' contains list of proxies created in the
      *          thread 'ownerThread'.
-     * \param   ownerThread     The thread, which proxies should be returned.
-     * \param   threadProxyList On output, which contains list of proxies created in specified thread.
+     * \param[in]   ownerThread     The thread, which proxies should be returned.
+     * \param[out]  threadProxyList On output, which contains list of proxies created in specified thread.
      * \return  Returns number of proxies added to the list.
      **/
-    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & OUT threadProxyList );
+    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
 
     /**
      * \brief   Creates the request failure event to send to remote proxy. This may happen when either the request of client

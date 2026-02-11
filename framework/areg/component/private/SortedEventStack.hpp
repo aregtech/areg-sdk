@@ -103,19 +103,19 @@ public:
     /**
      * \brief   Pushes the event in the stack considering the priority, so that the events
      *          with the higher priority can be processed earlier.
-     * \param   newEvent            The pointer to the event with the priority.
-     * \param   removedEvent [out]  The address of pointer to receive the removed event.
+     * \param[in]   newEvent        The pointer to the event with the priority.
+     * \param[out]  removedEvent    The address of pointer to receive the removed event.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t pushEvent(Event * newEvent, Event** OUT removedEvent);
+    uint32_t pushEvent(Event * newEvent, Event** removedEvent);
 
     /**
      * \brief   Pops the event from the FIFO stack.
-     * \param   stackEvent [out]    The address of the pointer to point on event object.
-     *                              This parameter must not be nullptr, but it may point to the nullptr object.
+     * \param[out]  stackEvent  The address of the pointer to point on event object.
+     *                          This parameter must not be nullptr, but it may point to the nullptr object.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t popEvent(Event** OUT stackEvent);
+    uint32_t popEvent(Event** stackEvent);
 
     /**
      * \brief   Returns the maximum size of the stack.

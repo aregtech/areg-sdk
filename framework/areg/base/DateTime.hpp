@@ -204,10 +204,10 @@ public:
 
     /**
      * \brief   Retrieves and returns current time either in UTC or local time.
-     * \param   timeData    On output, it will contain the time values.
-     * \param   localTime   If true, timeData is converted to local time.
+     * \param[out]  timeData    On output, it will contain the time values.
+     * \param[in]   localTime   If true, timeData is converted to local time.
      **/
-    static void getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime );
+    static void getNow( NEUtilities::sSystemTime & timeData, bool localTime );
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed since the system was started.
@@ -222,11 +222,11 @@ public:
     /**
      * \brief   Formats time and outputs as a string. The caller should specify the
      *          the time format name for output.
-     * \param   dateTime    The DateTime object to convert to string.
-     * \param   result      On output this contains formated string of DateTime.
-     * \param   formatName  The formating to convert DateTime.
+     * \param[in]   dateTime    The DateTime object to convert to string.
+     * \param[out]  result      On output this contains formated string of DateTime.
+     * \param[in]   formatName  The formating to convert DateTime.
      **/
-    static void formatTime(const DateTime &dateTime, String& OUT result, const std::string_view& formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT);
+    static void formatTime(const DateTime &dateTime, String& result, const std::string_view& formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT);
 
 /************************************************************************/
 // Non-static operations
@@ -328,7 +328,7 @@ public:
      *          On output, the sysTime contains converted and broken date and time values.
      * \param[out]  sysTime     The System Time structure to break the data.
      **/
-    void getDateTime(NEUtilities::sSystemTime& OUT sysTime);
+    void getDateTime(NEUtilities::sSystemTime& sysTime);
 
     /**
      * \brief   Calculates and sets the value in microseconds passed since Unix epoch.
@@ -342,7 +342,7 @@ public:
      *          On output, the 'time' contains converted and broken date and time values.
      * \param[out]  time    The tm structure object to break the data.
      **/
-    void getDateTime(struct tm& OUT time);
+    void getDateTime(struct tm& time);
 
     /**
      * \brief   Calculates and sets the value in microseconds passed since Unix epoch.

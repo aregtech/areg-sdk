@@ -46,7 +46,7 @@ namespace NEUtilities
 #endif  // _MINGW
     }
 
-    void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
+    void _osSystemTimeNow( NEUtilities::sSystemTime & sysTime, bool localTime )
     {
         struct timespec ts { };
         struct tm now { };
@@ -77,14 +77,14 @@ namespace NEUtilities
         }
     }
 
-    void _osMakeTmLocal(struct tm& OUT utcTime)
+    void _osMakeTmLocal(struct tm& utcTime)
     {
         NEMemory::memSet(&utcTime, sizeof(struct tm), 0);
         time_t _timer = mktime(&utcTime);
         localtime_s(&utcTime, &_timer);
     }
 
-    bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& OUT localTime)
+    bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& localTime)
     {
         bool result = false;
 
@@ -105,13 +105,13 @@ namespace NEUtilities
         return result;
     }
 
-    bool _osConvToLocalTm(const TIME64& utcTime, struct tm & OUT localTm)
+    bool _osConvToLocalTm(const TIME64& utcTime, struct tm & localTm)
     {
         time_t secs = static_cast<time_t>(utcTime / NEUtilities::SEC_TO_MICROSECS);
         return (RETURNED_OK == localtime_s(&localTm, &secs));
     }
 
-    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& OUT sysTime)
+    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime)
     {
         time_t secs;
         unsigned short milli, micro;
@@ -126,7 +126,7 @@ namespace NEUtilities
         }
     }
     
-    void _osConvToTm(const TIME64& timeValue, tm& OUT time)
+    void _osConvToTm(const TIME64& timeValue, tm& time)
     {
         time_t secs{ static_cast<time_t>(timeValue / NEUtilities::SEC_TO_MICROSECS) };
         ::gmtime_s(&time, &secs);

@@ -422,44 +422,44 @@ int FileBase::writeInvert( const unsigned char * buffer, int unsigned length )
     return static_cast<int>(result);
 }
 
-int FileBase::readString( char * OUT buffer, int charCount) const
+int FileBase::readString( char * buffer, int charCount) const
 {
     return _readString<char>(self(), buffer, charCount);
 }
 
-int FileBase::readString( wchar_t * OUT buffer, int charCount ) const
+int FileBase::readString( wchar_t * buffer, int charCount ) const
 {
     return _readString<wchar_t>(self(), buffer, charCount);
 }
 
-int FileBase::readString(String & OUT outValue ) const
+int FileBase::readString(String & outValue ) const
 {
     return _readString<char, String>(self(), outValue);
 }
 
-int FileBase::readString(WideString & OUT outValue) const
+int FileBase::readString(WideString & outValue) const
 {
     return _readString<char, WideString>(self(), outValue);
 }
 
-int FileBase::readLine( char * OUT buffer, int charCount) const
+int FileBase::readLine( char * buffer, int charCount) const
 {
     return _readLine<char>(self(), buffer, charCount);
 }
 
-int FileBase::readLine( wchar_t * OUT buffer, int charCount ) const
+int FileBase::readLine( wchar_t * buffer, int charCount ) const
 {
     return _readLine<wchar_t>(self(), buffer, charCount);
 }
 
-int FileBase::readLine( String & OUT outBuffer) const
+int FileBase::readLine( String & buffer) const
 {
-    return _readLine<char, String>(self(), outBuffer);
+    return _readLine<char, String>(self(), buffer);
 }
 
-int FileBase::readLine(WideString & OUT outBuffer) const
+int FileBase::readLine(WideString & buffer) const
 {
-    return _readLine<wchar_t, WideString>(self(), outBuffer);
+    return _readLine<wchar_t, WideString>(self(), buffer);
 }
 
 bool FileBase::writeString( const char* buffer )
@@ -690,7 +690,7 @@ void FileBase::flush()
 {
 }
 
-void FileBase::normalizeName(String & OUT name)
+void FileBase::normalizeName(String & name)
 {
     // replace all "%time%"
     char fmt[128] { 0 };

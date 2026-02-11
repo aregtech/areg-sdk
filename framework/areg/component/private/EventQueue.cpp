@@ -38,7 +38,7 @@ EventQueue::EventQueue( IEQueueListener & eventListener, SortedEventStack & even
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, methods
 //////////////////////////////////////////////////////////////////////////
-void EventQueue::pushEvent( Event& evendElem, Event** OUT removedEvent )
+void EventQueue::pushEvent( Event& evendElem, Event** removedEvent )
 {
     mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
 }

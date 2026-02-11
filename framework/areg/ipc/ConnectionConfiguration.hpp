@@ -117,10 +117,10 @@ public:
     /**
      * \brief   Returns byte sets of connection host IP address of given connection section.
      **/
-    bool getConnectionIpAddress( unsigned char & OUT field0
-                               , unsigned char & OUT field1
-                               , unsigned char & OUT field2
-                               , unsigned char & OUT field3);
+    bool getConnectionIpAddress( unsigned char & field0
+                               , unsigned char & field1
+                               , unsigned char & field2
+                               , unsigned char & field3);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.

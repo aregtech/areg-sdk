@@ -304,12 +304,12 @@ public:
      * \brief	Returns the value at the given position of the linked list and on output the value
      *          of nextPos points the next entry in the linked list or points to the 
      *          invalid position if no more elements exist.
-     * \param[in, out]  nextPos     On input, this should be valid position of the element in the Linked List.
+     * \param[in,out]   nextPos     On input, this should be valid position of the element in the Linked List.
      *                              On output, this contains position of the next entry in the Linked List
      *                              or invalid position if reached end of the linked list.
      **/
-    inline const VALUE & getNext( LISTPOS & OUT nextPos ) const;
-    inline VALUE& getNext(LISTPOS& OUT nextPos);
+    inline const VALUE & getNext( LISTPOS & nextPos ) const;
+    inline VALUE& getNext(LISTPOS& nextPos);
 
     /**
      * \brief	Returns either valid position of the next entry in the Linked List or invalid position if
@@ -326,8 +326,8 @@ public:
      *                              On output, this contains position of the previous entry in the Linked List
      *                              or invalid position if there is no more previous position in the linked list.
      **/
-    inline const VALUE & getPrev( LISTPOS & OUT prevPos ) const;
-    inline VALUE& getPrev(LISTPOS& OUT prevPos);
+    inline const VALUE & getPrev( LISTPOS & prevPos ) const;
+    inline VALUE& getPrev(LISTPOS& prevPos);
 
     /**
      * \brief	Returns either valid position of the previous entry in the Linked List or invalid position if
@@ -389,7 +389,7 @@ public:
      * \param[out]      nextValue   On output, this contain value of the next entry in the linked list.
      * \return	Returns true, if there is a next element and the output value is valid.
      **/
-    inline bool nextEntry( LISTPOS & OUT nextPos, VALUE & OUT nextValue ) const;
+    inline bool nextEntry( LISTPOS & nextPos, VALUE & nextValue ) const;
 
     /**
      * \brief	Extracts previous position and value of the element in the linked list prior position.
@@ -400,7 +400,7 @@ public:
      * \param[out]      prevValue   On output, this contain value of the previous entry in the linked list.
      * \return	Returns true, if there is a previous element and the output value is valid.
      **/
-    inline bool prevEntry( LISTPOS & OUT prevPos, VALUE & OUT prevValue ) const;
+    inline bool prevEntry( LISTPOS & prevPos, VALUE & prevValue ) const;
 
     /**
      * \brief   Removes head element from Linked List.
@@ -411,8 +411,10 @@ public:
      * \brief   Removes the head element from the linked list. On output, the 'value' contains
      *          data of removed element. Function returns true if linked list was not empty 
      *          and the 'value' contains the data of removed element.
+     * \param[out] value   On output, this contains the data of the removed element.
+     * \return  Returns true if linked list was not empty and the 'value' contains the data of removed element.
      **/
-    inline bool removeFirst( VALUE & OUT value );
+    inline bool removeFirst( VALUE & value );
 
     /**
      * \brief   Removes tail element from Linked List.
@@ -423,6 +425,8 @@ public:
      * \brief   Removes the tails element from the linked list. On output, the 'value' contains
      *          data of removed element. Function returns true if linked list was not empty
      *          and the 'value' contains the data of removed element.
+     * \param[out] value   On output, this contains the data of the removed element.
+     * \return  Returns true if linked list was not empty and the 'value' contains the data of removed element.
      **/
     inline bool removeLast(VALUE& value);
 
@@ -518,12 +522,12 @@ public:
     /**
      * \brief	Removes element at given position and returns position of the next entry in the linked list.
      *          Returns invalid position if tail entry is removed.
-     * \param	atPosition  Position of the element to remove from Linked List. 
-     * \param   out_Value   On output, it contains value of removed element
+     * \param[in]   atPosition  Position of the element to remove from Linked List. 
+     * \param[out]  value       On output, it contains value of removed element
      * \return  Returns the position of the next entry in the linked-list.
      *          If the tail entry is removed, returns invalid position.
      **/
-    inline LISTPOS removeAt( LISTPOS atPosition, VALUE & OUT out_Value );
+    inline LISTPOS removeAt( LISTPOS atPosition, VALUE & Value );
 
     /**
      * \brief	Searches and removes first match of entry, which value is equal to the given element.
@@ -816,13 +820,13 @@ inline VALUE& TELinkedList<VALUE>::lastEntry()
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::getNext(LISTPOS& OUT nextPos) const
+inline const VALUE & TELinkedList<VALUE>::getNext(LISTPOS& nextPos) const
 {
     return *nextPos++;
 }
 
 template <typename VALUE >
-inline VALUE& TELinkedList<VALUE>::getNext(LISTPOS& OUT nextPos)
+inline VALUE& TELinkedList<VALUE>::getNext(LISTPOS& nextPos)
 {
     LISTPOS pos = nextPos++;
     return *pos;
@@ -836,7 +840,7 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::nextPosition(L
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& OUT prevPos) const
+inline const VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& prevPos) const
 {
     ASSERT(prevPos != mValueList.end());
     LISTPOS pos = prevPos;
@@ -845,7 +849,7 @@ inline const VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& OUT prevPos) const
 }
 
 template <typename VALUE >
-inline VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& OUT prevPos)
+inline VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& prevPos)
 {
     ASSERT(prevPos != mValueList.end());
     LISTPOS pos = prevPos;
@@ -905,7 +909,7 @@ inline VALUE& TELinkedList<VALUE>::getAt(LISTPOS atPosition)
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::nextEntry(LISTPOS & OUT nextPos, VALUE & OUT nextValue) const
+inline bool TELinkedList<VALUE>::nextEntry(LISTPOS & nextPos, VALUE & nextValue) const
 {
     bool result = false;
     ASSERT(nextPos != mValueList.end());
@@ -920,7 +924,7 @@ inline bool TELinkedList<VALUE>::nextEntry(LISTPOS & OUT nextPos, VALUE & OUT ne
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::prevEntry(LISTPOS& OUT prevPos, VALUE & OUT prevValue) const
+inline bool TELinkedList<VALUE>::prevEntry(LISTPOS& prevPos, VALUE & prevValue) const
 {
     bool result = false;
     ASSERT(prevPos != mValueList.end());
@@ -942,7 +946,7 @@ inline void TELinkedList<VALUE>::removeFirst()
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::removeFirst(VALUE & OUT value)
+inline bool TELinkedList<VALUE>::removeFirst(VALUE & value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -1147,7 +1151,7 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::removeAt(LISTP
 }
 
 template <typename VALUE >
-inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::removeAt(LISTPOS atPosition, VALUE& OUT out_value)
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::removeAt(LISTPOS atPosition, VALUE& out_value)
 {
     LISTPOS result = invalidPosition();
 

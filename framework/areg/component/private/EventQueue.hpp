@@ -88,12 +88,12 @@ public:
     /**
      * \brief   Pushes new Event in the Queue and notifies Event Listener
      *          about new Event element availability.
-     * \param   evendElem       The Event object to push in the Queue.
-     * \param   removedEvent    If pushing new Event causes removing old Event and
-     *                          and the parameter is not nullptr, it will return 
-     *                          the removed Event object.
+     * \param[in]   evendElem       The Event object to push in the Queue.
+     * \param[out]  removedEvent    If pushing new Event causes removing old Event and
+     *                              and the parameter is not nullptr, it will return 
+     *                              the removed Event object.
      **/
-    void pushEvent( Event & evendElem, Event** OUT removedEvent);
+    void pushEvent( Event & evendElem, Event** removedEvent);
 
     /**
      * \brief   Pops Event object from Queue and notifies Event Listener if

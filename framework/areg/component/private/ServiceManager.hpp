@@ -169,12 +169,12 @@ public:
      *          If need to measure the total amount of data, accumulate calls.
      *          If need to measure the data rate per second, call this method each second.
      * 
-     * \param   sizeSend    On output this parameter contains the size of data in bytes
-     *                      sent since the last call of the method.
-     * \param   sizeReceive On output this parameter contains the size of data in bytes
-     *                      received since the last call of the method.
+     * \param[out]  sizeSend    On output this parameter contains the size of data in bytes
+     *                          sent since the last call of the method.
+     * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
+     *                          received since the last call of the method.
      **/
-    static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
+    static void queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive );
 
 private:
 //////////////////////////////////////////////////////////////////////////
@@ -361,12 +361,12 @@ private:
     /**
      * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
      *          If cookie value is 'NEService::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
-     *          On output out_listStubs and out_lisProxies contain the list of remote services.
-     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering.
-     * \param   out_listStubs   On output this contains the list of address of the remote service providers of specified cookie.
-     * \param   out_lisProxies  On output this contains the list of address of the remote service consumers of specified cookie.
+     *          On output listProviders and listConsumer contain the list of remote services.
+     * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering.
+     * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
+     * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumer ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.

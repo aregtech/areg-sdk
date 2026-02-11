@@ -124,7 +124,7 @@ ScopeNode & ScopeNode::operator=( ScopeNode && src ) noexcept
     return (*this);
 }
 
-const ScopeNodeBase & ScopeNode::makeChildNode( String & IN OUT scopePath, unsigned int prioStates ) const
+const ScopeNodeBase & ScopeNode::makeChildNode( String & scopePath, unsigned int prioStates ) const
 {
     if ( scopePath.isEmpty( ) )
     {

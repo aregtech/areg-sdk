@@ -361,12 +361,12 @@ IEThreadConsumer& Thread::getCurrentThreadConsumer()
     return (*consumer);
 }
 
-Thread * Thread::getFirstThread( id_type & OUT threadId )
+Thread * Thread::getFirstThread( id_type & threadId )
 {
     return _getMapThreadId().resourceFirstKey( threadId );
 }
 
-Thread * Thread::getNextThread( id_type & OUT threadId )
+Thread * Thread::getNextThread( id_type & threadId )
 {
     return _getMapThreadId().resourceNextKey( threadId );
 }

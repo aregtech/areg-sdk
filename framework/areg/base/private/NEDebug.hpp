@@ -106,12 +106,12 @@ namespace NEDebug
      *          specified vector object. On output, the vector object will contain
      *          call stack message where the exception was raised.
      *          The function extracts call stack only in debug version.
-     * \param   ep              The pointer to exception structure, which contains pointer to CONTEXT
+     * \param[in]   ep          The pointer to exception structure, which contains pointer to CONTEXT
      *                          object to extract call stack.
-     * \param   out_callStack   On output this will contain the message of call stack.
+     * \param[out]  callStack   On output this will contain the message of call stack.
      **/
 
-    void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack);
+    void AREG_API dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack);
 #endif  // _WIN32
 
     /**

@@ -158,7 +158,7 @@ public:
      * \return  Returns created node. It is either a node or a leaf.
      * \note    Only the root and nodes can create nodes or leafs. The leafs return invalid node.
      **/
-    virtual const ScopeNodeBase & makeChildNode( String & OUT scopePath, unsigned int prioStates ) const;
+    virtual const ScopeNodeBase & makeChildNode( String & scopePath, unsigned int prioStates ) const;
 
     /**
      * \brief   Adds a child node to the node if it does not contain a child of the same type

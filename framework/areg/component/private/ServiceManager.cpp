@@ -79,7 +79,7 @@ bool ServiceManager::isServiceManagerStarted()
     return ServiceManager::getInstance().isReady();
 }
 
-void ServiceManager::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
+void ServiceManager::queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance( );
     sizeSend    = serviceManager.mServiceClient.queryBytesSent( );
@@ -295,7 +295,7 @@ void ServiceManager::_waitServiceManagerThread()
     shutdownThread(NECommon::DO_NOT_WAIT);
 }
 
-void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
+void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & out_listStubs, TEArrayList<ProxyAddress> & out_lisProxies ) const
 {
     LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
     Lock lock( mLock );

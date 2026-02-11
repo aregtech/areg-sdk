@@ -272,45 +272,45 @@ public:
 
     /**
      * \brief   Call to query and get list of names of connected instances from log database.
-     * \param   names   On output, the vector contains names of connected instances.
+     * \param[out]  names   On output, the vector contains names of connected instances.
      **/
-    void getLogInstanceNames(std::vector<String>& OUT names);
+    void getLogInstanceNames(std::vector<String>& names);
     std::vector<String> getLogInstanceNames();
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database.
-     * \param   ids     On output, the vector contains IDs of connected instances.
+     * \param[out]  ids     On output, the vector contains IDs of connected instances.
      **/
-    void getLogInstances(std::vector<ITEM_ID>& OUT ids);
+    void getLogInstances(std::vector<ITEM_ID>& ids);
     std::vector<ITEM_ID> getLogInstances();
 
     /**
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
-     * \param   names   On output, the vector contains names of threads of connected instances.
+     * \param[out]  names   On output, the vector contains names of threads of connected instances.
      **/
-    void getLogThreadNames(std::vector<String>& OUT names);
+    void getLogThreadNames(std::vector<String>& names);
     std::vector<String> getLogThreadNames();
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
-     * \param   ids     On output, the vector contains IDs of threads of connected instances.
+     * \param[out]  ids     On output, the vector contains IDs of threads of connected instances.
      **/
-    void getLogThreads(std::vector<ITEM_ID>& OUT ids);
+    void getLogThreads(std::vector<ITEM_ID>& ids);
     std::vector<ITEM_ID> getLogThreads();
 
     /**
      * \brief   Call to get the list of log priorities.
      * \param   names   On output, the vector contains names of log priorities.
      **/
-    void getPriorityNames(std::vector<String>& OUT names);
+    void getPriorityNames(std::vector<String>& names);
     std::vector<String> getPriorityNames();
 
     /**
      * \brief   Call to query and get information of connected instances from log database.
      *          This query will receive list of all registered instances.
-     * \param   infos   On output, the vector contains information of connected instances.
+     * \param[out]  infos   On output, the vector contains information of connected instances.
      **/
-    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& OUT infos);
+    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
     std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos();
 
     /**
@@ -319,14 +319,14 @@ public:
      * \param[out]  scopes  On output, the vector contains information of log scopes.
      * \param[in]   instID  The ID of the instance.
      **/
-    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, ITEM_ID instId);
+    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
     std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
      * \param[out]  messages    On output, the vector contains all log messages.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& OUT messages);
+    void getLogMessages(std::vector<SharedBuffer>& messages);
     std::vector<SharedBuffer> getLogMessages();
 
     /**
@@ -337,7 +337,7 @@ public:
      * \param[in]   instId      The ID of the instance to get log messages.
      *                          If `NEService::COOKIE_ANY` it receives log messages of all instances.
      **/
-    void getLogInstMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID instId = NEService::COOKIE_ANY);
+    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
     std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = NEService::COOKIE_ANY);
 
     /**
@@ -348,7 +348,7 @@ public:
      * \param[in]   scopeId     The ID of the scope to get log messages.
      *                          If `0` it receives log messages of all scopes.
      **/
-    void getLogScopeMessages(std::vector<SharedBuffer>& OUT messages, uint32_t scopeId = 0);
+    void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
     std::vector<SharedBuffer> getLogScopeMessages(uint32_t scopeId = 0);
 
     /**
@@ -361,7 +361,7 @@ public:
      * \param[in]   scopeId     The ID of the scope to get log messages.
      *                          If `0` it receives log messages of all scopes.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID instId, uint32_t scopeId);
+    void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
     std::vector<SharedBuffer> getLogMessages(ITEM_ID instId, uint32_t scopeId);
 
     /**
@@ -374,7 +374,7 @@ public:
      * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& stmt, int maxEntries = -1);
+    static int getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, int maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
@@ -386,7 +386,7 @@ public:
      * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int getLogMessages(std::vector<SharedBuffer>& OUT logs, SqliteStatement& stmt, int maxEntries = -1);
+    static int getLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int maxEntries = -1);
 
     /**
      * \brief   Fills log instances in the specified array. The array should be initialized and it should have enough space to set data.
@@ -398,7 +398,7 @@ public:
      *                              and prepared to extract instance information.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& OUT infos, SqliteStatement& stmt);
+    static int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& infos, SqliteStatement& stmt);
 
     /**
      * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -415,7 +415,7 @@ public:
      * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
+    static int fillInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
 
     /**
      * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -432,7 +432,7 @@ public:
      * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillLogMessages(std::vector<SharedBuffer>& OUT logs, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
+    static int fillLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database.
@@ -443,7 +443,7 @@ public:
      * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
      * @return  Returns number of scopes of specified instance.
      **/
-    uint32_t setupStatementReadScopes(SqliteStatement& OUT stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadScopes(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Call to setup statement to read the list of logs from logging database.
@@ -454,7 +454,7 @@ public:
      * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
      * @return  Returns number of log messages of specified instance ID.
      **/
-    uint32_t setupStatementReadLogs(SqliteStatement& OUT stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadLogs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Sets up the log filters
@@ -470,7 +470,7 @@ public:
      * \param[in]   instId  The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupStatementReadFilterLogs(SqliteStatement& OUT stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadFilterLogs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.

@@ -40,75 +40,75 @@ ReadConverter::ReadConverter( IEInStream & readStream, IECursorPosition & readPo
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool ReadConverter::getBool( bool & OUT out_value ) const
+bool ReadConverter::getBool( bool & Value ) const
 {
     static constexpr unsigned int size = sizeof(bool);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getChar( char & OUT out_value ) const
+bool ReadConverter::getChar( char & Value ) const
 {
     static constexpr unsigned int size = sizeof(char);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getChar( wchar_t & OUT out_value ) const
+bool ReadConverter::getChar( wchar_t & Value ) const
 {
     static constexpr unsigned int size = sizeof(wchar_t);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getShort( short & OUT out_value ) const
+bool ReadConverter::getShort( short & Value ) const
 {
     static constexpr unsigned int size = sizeof(short);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getInt( int & OUT out_value ) const
+bool ReadConverter::getInt( int & Value ) const
 {
     static constexpr unsigned int size = sizeof(int);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getInt64( int64_t & OUT out_value ) const
+bool ReadConverter::getInt64( int64_t & Value ) const
 {
     static constexpr unsigned int size = sizeof(int64_t);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getFloat( float & OUT out_value ) const
+bool ReadConverter::getFloat( float & Value ) const
 {
     static constexpr unsigned int size = sizeof(float);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getDouble( double & OUT out_value ) const
+bool ReadConverter::getDouble( double & Value ) const
 {
     static constexpr unsigned int size = sizeof(double);
-    return (mReadStream.read(reinterpret_cast<unsigned char *>(&out_value), size) == size);
+    return (mReadStream.read(reinterpret_cast<unsigned char *>(&Value), size) == size);
 }
 
-bool ReadConverter::getString( String & OUT out_value ) const
+bool ReadConverter::getString( String & Value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');
-    out_value.clear();
+    Value.clear();
 
     while ( getChar(ch) )
     {
         result = true;
         if ( NEString::isEndOfString<char>(ch) )
             break;
-        out_value += ch;
+        Value += ch;
     }
     return result;
 }
 
-bool ReadConverter::getString( WideString & OUT out_value ) const
+bool ReadConverter::getString( WideString & Value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');
-    out_value.clear();
+    Value.clear();
 
     while ( getChar(ch) )
     {
@@ -116,13 +116,13 @@ bool ReadConverter::getString( WideString & OUT out_value ) const
         if ( NEString::isEndOfString(ch) )
             break;
 
-        out_value += ch;
+        Value += ch;
     }
 
     return result;
 }
 
-bool ReadConverter::readLine( String & OUT out_value ) const
+bool ReadConverter::readLine( String & Value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');
@@ -139,13 +139,13 @@ bool ReadConverter::readLine( String & OUT out_value ) const
             break;
         }
 
-        out_value += ch;
+        Value += ch;
     }
 
     return result;
 }
 
-bool ReadConverter::readLine( WideString & OUT out_value ) const
+bool ReadConverter::readLine( WideString & Value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');
@@ -162,7 +162,7 @@ bool ReadConverter::readLine( WideString & OUT out_value ) const
             break;
         }
 
-        out_value += ch;
+        Value += ch;
     }
 
     return result;
