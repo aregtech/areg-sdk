@@ -19,7 +19,12 @@
 
 #ifdef	_WIN32
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#endif // !WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <ShlObj.h>
 

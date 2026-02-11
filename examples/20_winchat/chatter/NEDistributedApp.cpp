@@ -7,6 +7,10 @@
 #include "common/NECommon.hpp"
 #include "examples/20_winchat/services/NEDirectConnection.hpp"
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
+
 #include <Windows.h>
 #include <tchar.h>
 

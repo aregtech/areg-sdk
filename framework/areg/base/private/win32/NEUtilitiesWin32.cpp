@@ -21,6 +21,9 @@
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <chrono>
 #include <time.h>
 #include <Windows.h>

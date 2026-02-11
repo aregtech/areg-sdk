@@ -24,9 +24,10 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
 
-#include <string_view>
 #include <stdarg.h>
 #include <wchar.h>
+#include <limits>
+#include <string_view>
 
 /**
  * \brief   String namespace to work with null-terminated strings.
@@ -1162,7 +1163,7 @@ const CharType * NEString::getPrintable( CharType * strSource, NEString::CharCou
 
     if ( NEString::isEmpty<CharType>(strSource) == false )
     {
-        charCount = charCount == NEString::COUNT_ALL ? MAX_INT_32 : charCount;
+        charCount = charCount == NEString::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charCount;
         if ( charCount > 0 )
         {
             result = strSource;
@@ -2065,7 +2066,7 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
     }
     else if ( (dstSpace > 0) && (strDst != nullptr) && (strSrc != nullptr) )
     {
-        charsCopy = charsCopy == NEString::COUNT_ALL ? MAX_INT_32 : charsCopy;
+        charsCopy = charsCopy == NEString::COUNT_ALL ? std::numeric_limits<int32_t>::max() : charsCopy;
         if ( charsCopy > 0 )
         {
             CharDst * dst = strDst;

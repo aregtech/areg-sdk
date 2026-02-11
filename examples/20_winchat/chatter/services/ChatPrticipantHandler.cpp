@@ -4,6 +4,9 @@
  ************************************************************************/
 
 #include "chatter/services/ChatPrticipantHandler.hpp"
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
 //////////////////////////////////////////////////////////////////////////

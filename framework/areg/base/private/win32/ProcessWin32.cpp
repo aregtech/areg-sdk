@@ -20,6 +20,9 @@
 #include "areg/base/File.hpp"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <Psapi.h>
 #include <tchar.h>

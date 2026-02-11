@@ -108,12 +108,6 @@ namespace NEMath
 /************************************************************************/
 
     /**
-     * \brief   NEMath::NUMBER_PI
-     *          PI number constant.
-     **/
-    constexpr double        NUMBER_PI           { M_PI };
-
-    /**
      * \brief   NEMath::CHECKSUM_IGNORE
      *          No checksum is set, ignore.
      **/
@@ -526,7 +520,7 @@ inline Type NEMath::getAbs( const Type & val )
 template<typename Type>
 inline NEMath::eDigitSign NEMath::getSign( const Type & val )
 {
-    return static_cast<eDigitSign>(MACRO_SIGN_OF(val));
+    return static_cast<eDigitSign>((v > 0) - (v < 0));
 }
 
 template<typename Digit>

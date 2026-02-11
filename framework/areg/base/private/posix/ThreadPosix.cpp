@@ -25,12 +25,19 @@
     #define _POSIX_PRIORITY_SCHEDULING
 #endif  // _POSIX_PRIORITY_SCHEDULING
 
-#include <limits.h>
 #include <pthread.h>
 #include <sched.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/types.h>
+
+#ifdef min
+    #undef min
+#endif // min
+#ifdef max
+    #undef max
+#endif // max
+#include <limits>
 
 #if __has_include(<sys/unistd.h>)
     #include <sys/signal.h>
@@ -234,7 +241,7 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     Thread::eThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
-        int schedPrio       { MIN_INT_32 };
+        int schedPrio       { std::numeric_limits<int32_t>::min() };
         pthread_t threadId  { NEUtilities::convToPtr<pthread_t, id_type>(mThreadId) };
         switch (newPriority)
         {
@@ -265,7 +272,7 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
         struct sched_param schedParam;
         schedParam.sched_priority   = schedPrio;
 
-        if ((MIN_INT_32 != schedPrio) && (RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
+        if ((std::numeric_limits<int32_t>::min() != schedPrio) && (RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
         {
             mThreadPriority = newPriority;
         }

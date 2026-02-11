@@ -9,6 +9,9 @@
 
 #ifdef _WIN32
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
 void Application::_osSetupHandlers()

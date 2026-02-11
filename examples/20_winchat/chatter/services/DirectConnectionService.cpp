@@ -10,6 +10,9 @@
 #include "areg/logging/GELog.h"
 #include "areg/component/ComponentLoader.hpp"
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
 DEF_LOG_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );

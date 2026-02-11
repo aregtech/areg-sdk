@@ -190,7 +190,7 @@ namespace NECommon
      * \brief   NECommon::RING_START_POSITION
      *          Defines first index in the ring.
      **/
-    constexpr unsigned int  RING_START_POSITION     { static_cast<unsigned int>(MAX_UINT_32) };
+    constexpr unsigned int  RING_START_POSITION     { std::numeric_limits<uint32_t>::max()};
 
     /**
      * \brief   NECommon::WAIT_INFINITE
@@ -281,7 +281,7 @@ namespace NECommon
      * \brief   NECommon::QUEUE_SIZE_MAXIMUM
      *          A value used when declare component thread. It indicates that maximum queue size should be used.
      **/
-    constexpr unsigned int  QUEUE_SIZE_MAXIMUM      { MAX_UINT_32 };
+    constexpr unsigned int  QUEUE_SIZE_MAXIMUM      { std::numeric_limits<uint32_t>::max() };
 
     /**
      * \brief   NECommon::IGNORE_VALUE

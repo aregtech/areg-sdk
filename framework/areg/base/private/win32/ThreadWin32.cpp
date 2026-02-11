@@ -19,8 +19,12 @@
 
 #ifdef  _WIN32
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <processthreadsapi.h>
+#include <limits>
 
 /************************************************************************/
 // System specific thread routines
@@ -171,9 +175,12 @@ bool Thread::_osCreateSystemThread()
         unsigned long threadId  { 0 };
         unsigned long dwFlags   { mStackSizeKB != NECommon::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
         unsigned long dwStack   { mStackSizeKB * NECommon::ONE_KILOBYTE };
-        HANDLE handle = ::CreateThread( nullptr, dwStack,
-                                      (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine), 
-                                       static_cast<void *>(this), dwFlags, &threadId);
+        HANDLE handle = ::CreateThread( nullptr
+                                      , dwStack
+                                      , (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine)
+                                      , static_cast<void *>(this)
+                                      , dwFlags
+                                      , &threadId);
         if (handle != nullptr)
         {
             result          = true;
@@ -199,7 +206,7 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
 
     if (_isValidNoLock() && (newPriority != mThreadPriority))
     {
-        int Prio = MIN_INT_32;
+        int Prio = std::numeric_limits<int32_t>::min();
         switch (newPriority)
         {
         case Thread::eThreadPriority::PriorityLowest:
@@ -226,8 +233,8 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
         default:
             break;  // do nothing, invalid priority value
         }
-        
-        if ((MIN_INT_32 != Prio)  && (::SetThreadPriority(mThreadHandle, Prio) == TRUE))
+
+        if ((std::numeric_limits<int32_t>::min() != Prio) && (::SetThreadPriority(mThreadHandle, Prio) == TRUE))
         {
             mThreadPriority = newPriority;
         }

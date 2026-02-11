@@ -63,9 +63,7 @@ cmake -B ./build
 cmake --build ./build -j20
 ```
 
-**Binaries location:**
-- **Linux:** `./product/build/<compiler>/<platform>-<arch>-release-shared/bin/`
-- **Windows:** `.\product\build\<compiler>\<platform>-<arch>-release-shared\bin\`
+**Binaries location:** `./product/build/<compiler>/<platform>-<arch>-release-shared/bin/`
 
 **Example:** `./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/`
 
@@ -307,9 +305,6 @@ Cross-compilation enables building Areg SDK for architectures different from you
 | **Clang**         | Linux, Windows    | POSIX, Win32  | x86, x86_64, arm, aarch64     |
 | **MSVC**          | Windows           | Win32         | x86, x86_64                   |
 | **Cygwin GCC**    | Windows           | POSIX         | x86, x86_64                   |
-
-> [!NOTE]
-> Clang cross-compilation for ARM processors has been tested only on Linux.
 
 ### Important Considerations
 

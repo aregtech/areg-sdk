@@ -20,6 +20,9 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Containers.hpp"
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
 #if _MSC_VER

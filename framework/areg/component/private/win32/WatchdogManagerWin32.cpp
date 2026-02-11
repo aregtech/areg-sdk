@@ -22,6 +22,9 @@
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
  //////////////////////////////////////////////////////////////////////////

@@ -26,6 +26,9 @@
 #include "areg/base/Thread.hpp"
 
 #ifdef WINDOWS
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif // !NOMINMAX
     #include <Windows.h>
 #endif  // WINDOWS
 

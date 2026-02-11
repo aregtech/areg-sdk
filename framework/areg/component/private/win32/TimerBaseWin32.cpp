@@ -19,6 +19,9 @@
 
 #ifdef  _WIN32
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
 TIMERHANDLE TimerBase::_osCreateWaitableTimer()

@@ -255,60 +255,9 @@
     #define DECLARE_UNUSED(x)           (()(x))
 #endif  // DECLARE_UNUSED
 
- /**
-  * \brief   PI number
-  **/
-#ifndef M_PI
-  #define M_PI              static_cast<double>(3.14159265358979323846) //  pi
-#endif
-#ifndef M_PI_2
-  #define M_PI_2            static_cast<double>(1.57079632679489661923) //  pi/2
-#endif
-#ifndef M_PI_3
-   #define M_PI_3           static_cast<double>(1.04719755119659774615) //  pi/3
-#endif
-
-#ifndef MAX_INT_32
-    #define MAX_INT_32      static_cast<int32_t>(0x7FFFFFFF)
-#endif  // MAX_INT_32
-
-#ifndef MIN_INT_32
-    #define MIN_INT_32      static_cast<int32_t>(0x80000000)
-#endif  // MIN_INT_32
-
-#ifndef MAX_UINT_32
-    #define MAX_UINT_32     static_cast<uint32_t>(~0)
-#endif  // MAX_UINT_32
-
-#ifndef MIN_UINT_32
-    #define MIN_UINT_32     static_cast<uint32_t>(0)
-#endif  // MIN_UINT_32
-
-#ifndef MAX_INT_64
-    #define MAX_INT_64      static_cast<int64_t>(0x7FFFFFFFFFFFFFFF)
-#endif  // MAX_INT_64
-
-#ifndef MIN_INT_64
-    #define MIN_INT_64      static_cast<int64_t>(0x8000000000000000)
-#endif  // MIN_INT_64
-
-#ifndef MAX_UINT_64
-    #define MAX_UINT_64     static_cast<uint64_t>(~0)
-#endif  // MAX_UINT_64
-
-#ifndef MIN_UINT_64
-    #define MIN_UINT_64     static_cast<uint64_t>(0)
-#endif  // MIN_UINT_64
-
 /************************************************************************
  * \brief   Simple numeric operations
  ************************************************************************/
-/**
- * \brief   Returns the sign of given number
- **/
-#ifndef MACRO_SIGN_OF
-    #define  MACRO_SIGN_OF( val )               ( static_cast<int>((val) > 0) - static_cast<int>((val) < 0) )
-#endif  // MACRO_SIGN_OF
 
 /**
  * \brief   Compares and returns maximum of 2 digits

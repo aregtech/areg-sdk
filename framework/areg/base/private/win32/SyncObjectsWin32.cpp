@@ -19,6 +19,9 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/private/win32/SpinLockWin32.hpp"
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 
 //////////////////////////////////////////////////////////////////////////

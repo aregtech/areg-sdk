@@ -51,7 +51,7 @@ class RuntimeClassID;
 class SortedEventStack  : protected TELockStack<Event *>
 {
     //!< The maximum size of the event queue stack
-    static constexpr uint32_t   MAX_QUEUE_SIZE  { MAX_UINT_32 };
+    static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };
     //< The minimum size of the event queue stack
     static constexpr uint32_t   MIN_QUEUE_SIZE  { 32 };
 //////////////////////////////////////////////////////////////////////////

@@ -1081,5 +1081,5 @@ uint32_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*=
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryDefaultMessageQueue;
     const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultMessageQueueSize();
     const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
-    return ( prop != nullptr ? prop->getValue().getInteger() : MAX_UINT_32 );
+    return ( prop != nullptr ? prop->getValue().getInteger() : std::numeric_limits<uint32_t>::max() );
 }

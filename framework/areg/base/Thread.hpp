@@ -32,6 +32,7 @@
 #include "areg/base/String.hpp"
 
 #include <string_view>
+#include <limits>
 
 /************************************************************************
  * Dependencies
@@ -92,7 +93,7 @@ public:
      **/
     typedef enum class E_ThreadPriority : int
     {
-          PriorityUndefined = MIN_INT_32    //!< Undefined priority. If thread is created and not valid
+          PriorityUndefined = std::numeric_limits<int32_t>::min()    //!< Undefined priority. If thread is created and not valid
         , PriorityLowest    = -2            //!< Lowest priority level
         , PriorityLow       = -1            //!< Below normal priority level
         , PriorityNormal    =  0            //!< Normal priority level. All threads by default are created with normal priority level
