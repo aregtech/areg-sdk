@@ -103,13 +103,13 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
                 else if (isSpace<CharType>(*src) == false)
                 {
                     ++ src;
-                    String str(begin, MACRO_ELEM_COUNT(begin, src));
+                    String str(begin, static_cast<uint32_t>(src - begin));
                     optList.push_back(str);
                 }
                 else
@@ -128,7 +128,7 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -143,13 +143,13 @@ namespace
                 {
                     if ( begin != src ++ )
                     {
-                        String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                        String str( begin, static_cast<uint32_t>( src - begin ) );
                         optList.push_back( str );
                     }
                 }
                 else if (begin != src)
                 {
-                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -163,7 +163,7 @@ namespace
 
         if ( begin != src )
         {
-            String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+            String str( begin, static_cast<uint32_t>( src - begin ) );
             optList.push_back( str );
         }
     }

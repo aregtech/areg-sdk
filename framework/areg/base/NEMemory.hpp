@@ -23,6 +23,7 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMath.hpp"
 
+#include <algorithm>
 #include <new>
 #include <string.h>
 
@@ -36,7 +37,7 @@
 /**
  * \brief   Aligns passed value to the size of uAlign object.
  **/
-#define ALIGNED_TYPE_SIZE(x)    MACRO_ALIGN_SIZE(sizeof(x), sizeof(NEMemory::uAlign))
+#define ALIGNED_TYPE_SIZE(x)    NEMath::alignSize(sizeof(x), sizeof(NEMemory::uAlign))
 
 /**
  * \brief   Gets boolean value of align object.
@@ -765,7 +766,7 @@ inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void 
     {
         if ((memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0))
         {
-            result = MACRO_MIN(dstSpace, count);
+            result = std::min(dstSpace, count);
             ::memcpy(memDst, memSrc, result);
         }
     }

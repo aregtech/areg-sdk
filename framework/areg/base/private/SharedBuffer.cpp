@@ -16,10 +16,12 @@
 #include "areg/base/SharedBuffer.hpp"
 
 #include "areg/appbase/Application.hpp"
+#include "areg/base/NEMath.hpp"
 #include "areg/base/SyncObjects.hpp"
 #include "areg/base/NEString.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
+#include <algorithm>
 #include <atomic>
 
 inline SharedBuffer& SharedBuffer::self()
@@ -34,7 +36,7 @@ SharedBuffer::SharedBuffer( unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
     , IECursorPosition  ( )
 
-    , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
 }
@@ -43,7 +45,7 @@ SharedBuffer::SharedBuffer( unsigned int reserveSize, unsigned int blockSize)
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
     , IECursorPosition  ( )
 
-    , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     reserve(reserveSize, false);
@@ -53,7 +55,7 @@ SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsi
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
     , IECursorPosition  ( )
 
-    , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     reserve(size, false);
@@ -64,10 +66,10 @@ SharedBuffer::SharedBuffer(unsigned int reserveSize, const unsigned char* buffer
     : BufferStreamBase  (static_cast<IECursorPosition&>(self()), static_cast<IECursorPosition&>(self()))
     , IECursorPosition  ( )
 
-    , mBlockSize        (MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE))
+    , mBlockSize        (NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE))
     , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
-    reserveSize = MACRO_MAX(reserveSize, size);
+    reserveSize = std::max(reserveSize, size);
     reserve(reserveSize, false);
     writeData(buffer, size);
 }
@@ -76,7 +78,7 @@ SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= N
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
     , IECursorPosition  ( )
 
-    , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<char>(textString)) + 1u) * sizeof(char);
@@ -88,7 +90,7 @@ SharedBuffer::SharedBuffer(const wchar_t * textString, unsigned int blockSize /*
     : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
     , IECursorPosition  ( )
 
-    , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
 {
     unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);

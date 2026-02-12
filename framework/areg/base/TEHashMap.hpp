@@ -26,6 +26,7 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
 
+#include <algorithm>
 #include <unordered_map>
 
 //////////////////////////////////////////////////////////////////////////
@@ -982,7 +983,7 @@ inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & nex
 template<typename KEY, typename VALUE>
 inline uint32_t TEHashMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint32_t elemCount)
 {
-    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount)};
+    uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount)};
     if (result > 0)
     {
         uint32_t i = 0;

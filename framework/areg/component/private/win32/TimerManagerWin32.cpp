@@ -21,6 +21,7 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/base/NEUtilities.hpp"
+#include "areg/base/NEMath.hpp"
 
 #ifndef NOMINMAX
     #define NOMINMAX
@@ -66,8 +67,8 @@ bool TimerManager::_osSystemTimerStart( Timer & timer )
     int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(timer.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
     dueTime *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger;
-    timeTrigger.LowPart  = static_cast<DWORD>(MACRO_64_LO_BYTE32(dueTime));
-    timeTrigger.HighPart = static_cast<LONG >(MACRO_64_HI_BYTE32(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::loDword(dueTime));
+    timeTrigger.HighPart = static_cast<LONG >(NEMath::hiDword(dueTime));
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );

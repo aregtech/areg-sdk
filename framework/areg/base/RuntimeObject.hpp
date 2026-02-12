@@ -79,11 +79,11 @@ public:                                                                         
 /** RuntimeBase class overrides                                     **/                                 \
 /*********************************************************************/                                 \
     /** \brief   Returns the Runtime Class Identifier object        **/                                 \
-    virtual const RuntimeClassID & getRuntimeClassId() const override;                            \
+    virtual const RuntimeClassID & getRuntimeClassId() const override;                                  \
     /** \brief   Returns the class name (Identifier name)           **/                                 \
-    virtual const String& getRuntimeClassName() const override;                                   \
+    virtual const String& getRuntimeClassName() const override;                                         \
     /** \brief   Returns the calculated number of runtime class.    **/                                 \
-    virtual unsigned int getRuntimeClassNumber() const override;                                  \
+    virtual unsigned int getRuntimeClassNumber() const override;                                        \
     /** \brief   Checks class instance by Class Identifier          **/                                 \
     /**          Checking is done hierarchically and if any class   **/                                 \
     /**          in base hierarchy has same RuntimeClassID,         **/                                 \
@@ -113,16 +113,16 @@ public:                                                                         
 //////////////////////////////////////////////////////////////////////////
 #define IMPLEMENT_RUNTIME(ClassName, BaseClassName)                                                             \
 /** Return class identifier object **/                                                                          \
-const RuntimeClassID & ClassName::_getClassId()                                                           \
+const RuntimeClassID & ClassName::_getClassId()                                                                 \
 {   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
 /** Return class identifier object **/                                                                          \
-const RuntimeClassID & ClassName::getRuntimeClassId() const                                               \
+const RuntimeClassID & ClassName::getRuntimeClassId() const                                                     \
 {   return ClassName::_getClassId();                                                                        }   \
 /** Return class name **/                                                                                       \
-const String& ClassName::getRuntimeClassName() const                                                      \
+const String& ClassName::getRuntimeClassName() const                                                            \
 {   return ClassName::_getClassId().getName();                                                              }   \
 /** Return calculated number **/                                                                                \
-unsigned int ClassName::getRuntimeClassNumber() const                                                     \
+unsigned int ClassName::getRuntimeClassNumber() const                                                           \
 {   return ClassName::_getClassId().getMagic();                                                             }   \
 /** Check class instance by Class Identifier **/                                                                \
 bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                                \
@@ -150,16 +150,16 @@ bool ClassName::isInstanceOfRuntimeClass( unsigned int classMagic ) const       
 //////////////////////////////////////////////////////////////////////////
 #define IMPLEMENT_RUNTIME_TEMPLATE(Template, ClassName, BaseClassName, ClassIdType)                             \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID & ClassName::_getClassId()                                                  \
+Template const RuntimeClassID & ClassName::_getClassId()                                                        \
 {   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID& ClassName::getRuntimeClassId() const                                       \
+Template const RuntimeClassID& ClassName::getRuntimeClassId() const                                             \
 {   return ClassName::_getClassId();                                                                        }   \
 /** Return class name **/                                                                                       \
-Template const String & ClassName::getRuntimeClassName() const                                            \
+Template const String & ClassName::getRuntimeClassName() const                                                  \
 {   return ClassName::_getClassId().getName();                                                              }   \
 /** Return class number **/                                                                                     \
-Template unsigned int ClassName::getRuntimeClassNumber() const                                            \
+Template unsigned int ClassName::getRuntimeClassNumber() const                                                  \
 {   return ClassName::_getClassId().getMagic();                                                             }   \
 /** Check class instance by Class Identifier **/                                                                \
 Template bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                       \

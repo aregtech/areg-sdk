@@ -29,6 +29,8 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
 
+#include <algorithm>
+
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
@@ -1146,7 +1148,7 @@ NEMath::eCompare TERingStack<VALUE>::_compareRings( const VALUE* left, uint32_t 
 {
     ASSERT((leftStart < leftCapacity) && (rightStart < rightCapacity));
     NEMath::eCompare result{ NEMath::eCompare::Equal };
-    uint32_t count = MACRO_MIN(leftCount, rightCount);
+    uint32_t count = std::min(leftCount, rightCount);
     while (count != 0u)
     {
         result = NEMath::compare<VALUE>(left[leftStart], right[rightStart]);

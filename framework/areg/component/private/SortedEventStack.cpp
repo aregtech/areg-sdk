@@ -22,6 +22,8 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Event.hpp"
 
+#include <algorithm>
+
 SortedEventStack::SortedEventStack(uint32_t maxQueue)
     : TELockStack<Event*>( )
     , mMaxQueueSize      (SortedEventStack::_calcQueueSize(maxQueue))
@@ -325,5 +327,5 @@ inline constexpr uint32_t SortedEventStack::_calcQueueSize(uint32_t requestedSiz
     if (requestedSize == NECommon::IGNORE_VALUE)
         requestedSize = Application::getConfigManager().getDefaultMessageQueueSize();
 
-    return (requestedSize != NECommon::IGNORE_VALUE ? MACRO_MAX(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
+    return (requestedSize != NECommon::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
 }

@@ -21,6 +21,7 @@
 #include "areg/base/private/posix/IEWaitableBaseIX.hpp"
 #include "areg/base/SyncObjects.hpp"
 #include "areg/base/Thread.hpp"
+#include <algorithm>
 #include <errno.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -277,7 +278,7 @@ SyncLockAndWaitIX::SyncLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
     {
         SyncResourceMapIX & mapResources { SyncLockAndWaitIX::_mapSyncResources() };
         mapResources.lock();
-        count = MACRO_MIN(NECommon::MAXIMUM_WAITING_OBJECTS, count);
+        count = std::min(NECommon::MAXIMUM_WAITING_OBJECTS, count);
 
         if ( (mMatchCondition == NESyncTypesIX::eMatchCondition::MatchConditionAny ) || (mDescribe == SyncLockAndWaitIX::eWaitType::WaitSingleObject) )
         {

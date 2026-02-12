@@ -193,16 +193,27 @@ inline const char * LoggingEventData::getString( LoggingEventData::eLoggingActio
 {
     switch ( action )
     {
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingUndefined);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingStartLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingStopLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingSetEnableLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingSetDisableLogs);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingSaveScopes);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingLogMessage);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingUpdateScopes);
-    CASE_MAKE_STRING(LoggingEventData::eLoggingAction::LoggingQueryScopes);
-    CASE_DEFAULT("ERR: Undefined LoggingEventData::eLoggingAction value!");
+    case LoggingEventData::eLoggingAction::LoggingUndefined:
+        return "LoggingEventData::eLoggingAction::LoggingUndefined";
+    case LoggingEventData::eLoggingAction::LoggingStartLogs:
+        return "LoggingEventData::eLoggingAction::LoggingStartLogs";
+    case LoggingEventData::eLoggingAction::LoggingStopLogs:
+        return "LoggingEventData::eLoggingAction::LoggingStopLogs";
+    case LoggingEventData::eLoggingAction::LoggingSetEnableLogs:
+        return "LoggingEventData::eLoggingAction::LoggingSetEnableLogs";
+    case LoggingEventData::eLoggingAction::LoggingSetDisableLogs:
+        return "LoggingEventData::eLoggingAction::LoggingSetDisableLogs";
+    case LoggingEventData::eLoggingAction::LoggingSaveScopes:
+        return "LoggingEventData::eLoggingAction::LoggingSaveScopes";
+    case LoggingEventData::eLoggingAction::LoggingLogMessage:
+        return "LoggingEventData::eLoggingAction::LoggingLogMessage";
+    case LoggingEventData::eLoggingAction::LoggingUpdateScopes:
+        return "LoggingEventData::eLoggingAction::LoggingUpdateScopes";
+    case LoggingEventData::eLoggingAction::LoggingQueryScopes:
+        return "LoggingEventData::eLoggingAction::LoggingQueryScopes";
+    default:
+        ASSERT(false);
+        "ERR: Undefined LoggingEventData::eLoggingAction value!";
     }
 }
 

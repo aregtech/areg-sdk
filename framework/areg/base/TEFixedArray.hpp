@@ -553,7 +553,7 @@ template< typename VALUE >
 void TEFixedArray<VALUE>::resize(uint32_t newLength)
 {
     VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[newLength] : nullptr;
-    uint32_t count = MACRO_MIN(newLength, mElemCount);
+    uint32_t count = std::min(newLength, mElemCount);
     for (uint32_t i = 0; i < count; ++ i)
     {
         newList[i] = mValueList[i];
@@ -608,7 +608,7 @@ inline TEFixedArray<VALUE>& TEFixedArray<VALUE>::sort(Compare comp)
 template<typename VALUE>
 inline uint32_t TEFixedArray<VALUE>::getElements(VALUE* list, uint32_t elemCount)
 {
-    uint32_t result{ MACRO_MIN(mElemCount, elemCount) };
+    uint32_t result{ std::min(mElemCount, elemCount) };
     for (uint32_t i = 0; i < result; ++i)
     {
         list[i] = mValueList[i];

@@ -19,6 +19,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/component/TimerBase.hpp"
+#include "areg/base/NEMath.hpp"
 
  /************************************************************************
   * Dependencies.
@@ -239,27 +240,27 @@ inline Watchdog::WATCHDOG_ID Watchdog::watchdogId()
 inline Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
 {
 #if defined(BIT64)
-    return static_cast<WATCHDOG_ID>(MACRO_MAKE_64(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(NEMath::make64(guardId, sequence));
 #else   // !defined(BIT64)
-    return static_cast<WATCHDOG_ID>(MACRO_MAKE_32(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(NEMath::make32(guardId, sequence));
 #endif  // defined(BIT64)
 }
 
 inline Watchdog::GUARD_ID Watchdog::makeGuardId(Watchdog::WATCHDOG_ID watchdogId)
 {
 #if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_HI_BYTE32(watchdogId));
+    return static_cast<GUARD_ID>(NEMath::hiDword(watchdogId));
 #else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_HI_BYTE16(watchdogId));
+    return static_cast<GUARD_ID>(NEMath::hiWord(watchdogId));
 #endif  // defined(BIT64)
 }
 
 inline Watchdog::SEQUENCE_ID Watchdog::makeSequenceId(Watchdog::WATCHDOG_ID watchdogId)
 {
 #if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_LO_BYTE32(watchdogId));
+    return static_cast<GUARD_ID>(NEMath::loDword(watchdogId));
 #else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_LO_BYTE16(watchdogId));
+    return static_cast<GUARD_ID>(NEMath::loWord(watchdogId));
 #endif  // defined(BIT64)
 }
 

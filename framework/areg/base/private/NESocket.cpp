@@ -14,14 +14,18 @@
  ************************************************************************/
 #include "areg/base/NESocket.hpp"
 
-#include "areg/base/GEMacros.h"
 #include "areg/base/NEMemory.hpp"
 #include "areg/logging/GELog.h"
+
+#include <algorithm>
 
 #ifdef   _WIN32
     #ifndef WIN32_LEAN_AND_MEAN
         #define WIN32_LEAN_AND_MEAN
     #endif  // WIN32_LEAN_AND_MEAN
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif  // NOMINMAX
     #include <WinSock2.h>
     #include <WS2tcpip.h>
 #else
@@ -618,7 +622,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
 
         if ( entriesCount > 0 )
         {
-            entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
+            entriesCount= std::min(entriesCount, static_cast<int>((FD_SETSIZE - 1)));
 
 #ifdef  _WIN32
 
@@ -636,7 +640,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
                 if ( NESocket::isSocketAlive(sh))
                 {
                     FD_SET(masterList[count], &readList);
-                    maxSocket = MACRO_MAX(maxSocket, sh);
+                    maxSocket = std::max(maxSocket, sh);
                 }
                 else
                 {
@@ -699,7 +703,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
     }
     else
     {
-        LOG_WARN("Found broken connection of socket [ %u ]", MACRO_MAKE_NUMBER(result));
+        LOG_WARN("Found broken connection of socket [ %u ]", static_cast<size_t>(result));
         return result;
     }
 
@@ -847,10 +851,10 @@ AREG_API_IMPL bool NESocket::isIpAddress(const String& ipaddress)
 
 #else
 
-    // 25[0-5]  --> 250–255
-    // 2[0-4]\d --> 200–249
-    // 1\d{2}   --> 100–199
-    // [1-9]?\d --> 0–99
+    // 25[0-5]  --> 250ï¿½255
+    // 2[0-4]\d --> 200ï¿½249
+    // 1\d{2}   --> 100ï¿½199
+    // [1-9]?\d --> 0ï¿½99
     static const std::regex ipv4Regex(
         R"(^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
         R"(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.)"
