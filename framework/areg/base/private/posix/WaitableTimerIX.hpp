@@ -204,7 +204,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( WaitableTimerIX );
+    AREG_NOCOPY_NOMOVE( WaitableTimerIX );
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)

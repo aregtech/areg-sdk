@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Declare PatientInfoEventData::eUpdateCommands as streamable.
      **/
-    DECLARE_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+    AREG_DECLARE_STREAMABLE( PatientInfoEventData::eUpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -90,12 +90,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Implement PatientInfoEventData::eUpdateCommands streamable.
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+AREG_IMPLEMENT_STREAMABLE( PatientInfoEventData::eUpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Define custom event and the event consumer.
 //////////////////////////////////////////////////////////////////////////
-DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsumer );
+AREG_DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsumer );
 
 //////////////////////////////////////////////////////////////////////////
 // inline methods

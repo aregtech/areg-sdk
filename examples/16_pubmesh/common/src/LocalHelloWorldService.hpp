@@ -60,7 +60,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     LocalHelloWorldService() = delete;
-    DECLARE_NOCOPY_NOMOVE( LocalHelloWorldService );
+    AREG_NOCOPY_NOMOVE( LocalHelloWorldService );
 };
 
 #endif  // PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP

@@ -47,7 +47,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 // Implement Runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(ServiceManager, DispatcherThread)
+AREG_IMPLEMENT_RUNTIME(ServiceManager, DispatcherThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -252,7 +252,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
 bool ServiceManager::postEvent(Event & eventElem)
 {
-    return (RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }
 
 void ServiceManager::readyForEvents( bool isReady )

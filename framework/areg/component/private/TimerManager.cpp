@@ -147,7 +147,7 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
 bool TimerManager::_registerTimer(Timer &timer, id_type whichThreadId)
 {
     Thread * thread = Thread::findThreadById(whichThreadId);
-    DispatcherThread * disp = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    DispatcherThread * disp = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     return (disp != nullptr ? _registerTimer(timer, *disp) : false);
 }
 

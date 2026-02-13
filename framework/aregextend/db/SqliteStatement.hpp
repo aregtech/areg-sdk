@@ -310,7 +310,7 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     SqliteStatement() = delete; //!< Default constructor is not allowed.
-    DECLARE_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
+    AREG_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
 };
 
 inline bool SqliteStatement::isValid() const

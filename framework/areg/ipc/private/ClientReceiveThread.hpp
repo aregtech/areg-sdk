@@ -121,7 +121,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ClientReceiveThread() = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientReceiveThread );
+    AREG_NOCOPY_NOMOVE( ClientReceiveThread );
 };
 
 inline uint32_t ClientReceiveThread::extractDataReceive() const

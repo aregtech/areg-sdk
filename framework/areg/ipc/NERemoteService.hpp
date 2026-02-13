@@ -279,8 +279,8 @@ namespace NERemoteService
 //////////////////////////////////////////////////////////////////////////
 // Make eRemoteServices and eConnectionTypes streamable
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE(NERemoteService::eRemoteServices);
-IMPLEMENT_STREAMABLE(NERemoteService::eConnectionTypes);
-IMPLEMENT_STREAMABLE(NERemoteService::eRemoteConnection);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteServices);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::eConnectionTypes);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteConnection);
 
 #endif  // AREG_IPC_NEREMOTESERVICE_HPP

@@ -73,5 +73,5 @@ private:
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     ServiceHelloWorld() = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceHelloWorld );
+    AREG_NOCOPY_NOMOVE( ServiceHelloWorld );
 };

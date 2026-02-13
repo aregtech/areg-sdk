@@ -17,7 +17,7 @@
  ************************************************************************/
 #include "areg/component/private/ExitEvent.hpp"
 
-IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 
 ExitEvent::ExitEvent()
     : Event   ( Event::eEventType::EventExternal )

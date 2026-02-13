@@ -102,7 +102,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( RemoteEventFactory );
+    AREG_NOCOPY_NOMOVE( RemoteEventFactory );
 };
 
 #endif  // AREG_COMPONENT_REMOTEEVENTFACTORY_HPP

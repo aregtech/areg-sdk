@@ -84,7 +84,7 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
@@ -130,7 +130,7 @@ void NotificationEvent::setTargetThread()
 //////////////////////////////////////////////////////////////////////////
 void IENotificationEventConsumer::startEventProcessing( Event& eventElem )
 {
-    NotificationEvent* eventNotify = RUNTIME_CAST(&eventElem, NotificationEvent);
+    NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
     if (eventNotify != nullptr)
     {
         processNotificationEvent(*eventNotify);

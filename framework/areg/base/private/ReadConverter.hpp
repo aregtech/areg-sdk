@@ -205,7 +205,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ReadConverter() = delete;
-    DECLARE_NOCOPY_NOMOVE( ReadConverter );
+    AREG_NOCOPY_NOMOVE( ReadConverter );
 };
 
 #endif  // AREG_BASE_PRIVATE_READCONVERTER_HPP

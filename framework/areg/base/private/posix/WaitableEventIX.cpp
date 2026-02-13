@@ -55,7 +55,7 @@ bool WaitableEventIX::setEvent()
 #ifdef DEBUG
             else
             {
-                // OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", getName());
+                // AREG_OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", getName());
             }
 #endif // DEBUG
 
@@ -81,11 +81,11 @@ bool WaitableEventIX::resetEvent()
         {
             if (NESyncTypesIX::eEventResetInfo::EventResetAutomatic == mEventReset)
             {
-                OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
+                AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
             }
             else
             {
-                OUTPUT_DBG("Manually reseting event [ %s ]", getName().getString());
+                AREG_OUTPUT_DBG("Manually reseting event [ %s ]", getName().getString());
             }
         }
 #endif // DEBUG
@@ -107,7 +107,7 @@ void WaitableEventIX::pulseEvent()
         {
             if (mIsSignaled == false)
             {
-                OUTPUT_DBG("Pulsing event [ %s ]", getName().getString( ));
+                AREG_OUTPUT_DBG("Pulsing event [ %s ]", getName().getString( ));
 
                 mIsSignaled = true;
                 lock.unlock();
@@ -143,7 +143,7 @@ void WaitableEventIX::notifyReleasedThreads(int numThreads)
 
     if ((mEventReset == NESyncTypesIX::eEventResetInfo::EventResetAutomatic) && (numThreads > 0))
     {
-        OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
+        AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
         mIsSignaled = false;
     }
 }

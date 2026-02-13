@@ -729,7 +729,7 @@ protected:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( File );
+    AREG_NOCOPY_NOMOVE( File );
 };
 
 #endif  // AREG_BASE_FILE_HPP

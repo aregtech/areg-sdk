@@ -98,7 +98,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IERemoteEventConsumer );
+    AREG_NOCOPY_NOMOVE( IERemoteEventConsumer );
 };
 
 #endif  // AREG_COMPONENT_IEREMOTEEVENTCONSUMER_HPP

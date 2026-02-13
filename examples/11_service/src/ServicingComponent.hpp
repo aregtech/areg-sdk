@@ -116,5 +116,5 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     ServicingComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    AREG_NOCOPY_NOMOVE( ServicingComponent );
 };

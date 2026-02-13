@@ -43,7 +43,7 @@ private:
 };
 
 // declaration of custom event.
-DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
+AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
 class TrafficLightService   : public    Component
@@ -90,7 +90,7 @@ private:
     // Forbidden calls.
     //////////////////////////////////////////////////////////////////////////
         TrafficSwitchConsumer() = delete;
-        DECLARE_NOCOPY_NOMOVE(TrafficSwitchConsumer);
+        AREG_NOCOPY_NOMOVE(TrafficSwitchConsumer);
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ private:
     // Forbidden calls.
     //////////////////////////////////////////////////////////////////////////
         TimerConsumer() = delete;
-        DECLARE_NOCOPY_NOMOVE(TimerConsumer);
+        AREG_NOCOPY_NOMOVE(TimerConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,5 +197,5 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
     TrafficLightService() = delete;
-    DECLARE_NOCOPY_NOMOVE( TrafficLightService );
+    AREG_NOCOPY_NOMOVE( TrafficLightService );
 };

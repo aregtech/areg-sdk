@@ -200,7 +200,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ServiceRegistry );
+    AREG_NOCOPY_NOMOVE( ServiceRegistry );
 };
 
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICEREGISTRY_HPP

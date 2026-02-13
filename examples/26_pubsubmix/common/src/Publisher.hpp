@@ -121,7 +121,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     Publisher() = delete;
-    DECLARE_NOCOPY_NOMOVE(Publisher);
+    AREG_NOCOPY_NOMOVE(Publisher);
 };
 
 #endif // PUBLISHER_SRC_PUBLISHER_HPP

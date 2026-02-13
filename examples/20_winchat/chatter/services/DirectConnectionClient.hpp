@@ -60,5 +60,5 @@ private:
 
 private:
     DirectConnectionClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( DirectConnectionClient );
+    AREG_NOCOPY_NOMOVE( DirectConnectionClient );
 };

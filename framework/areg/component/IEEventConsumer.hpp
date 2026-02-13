@@ -91,7 +91,7 @@ public:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEEventConsumer );
+    AREG_NOCOPY_NOMOVE( IEEventConsumer );
 };
 
 #endif  // AREG_COMPONENT_IEEVENTCONSUMER_HPP

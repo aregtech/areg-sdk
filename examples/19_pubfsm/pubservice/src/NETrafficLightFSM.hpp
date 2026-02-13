@@ -118,7 +118,7 @@ namespace NETrafficLightFSM
  *          and declarataion of NETrafficLightFSM::IEFsmEventConsumer, which
  *          will be registered in the same thread, where it is instantiated.
  **/
-DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
+AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 
 //////////////////////////////////////////////////////////////////////////
 // Available predefined Timers of TrafficLight State Machine

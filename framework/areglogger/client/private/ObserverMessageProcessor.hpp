@@ -106,7 +106,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ObserverMessageProcessor() = delete;
-    DECLARE_NOCOPY_NOMOVE(ObserverMessageProcessor);
+    AREG_NOCOPY_NOMOVE(ObserverMessageProcessor);
 };
 
 #endif  // AREG_AREGLOGGER_CLIENT_PRIVATE_OBSERVERMESSAGEPROCESSOR_HPP

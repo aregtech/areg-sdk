@@ -80,5 +80,5 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
 
 bool ClientSendThread::postEvent(Event & eventElem)
 {
-    return (RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }

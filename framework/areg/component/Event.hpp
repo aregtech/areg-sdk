@@ -33,9 +33,9 @@
 /**
  * \brief   MACRO, declares static functions to add and remove
  *          event consumer, which should be available in every Event class.
- *          Do not use them directly, instead use DECLARE_RUNTIME_EVENT
+ *          Do not use them directly, instead use AREG_DECLARE_RUNTIME_EVENT
  **/
-#define DECLARE_EVENT_STATIC_REGISTRATION(EventClass)                                                                   \
+#define AREG_DECLARE_EVENT_REGISTRATION(EventClass)                                                                    \
 public:                                                                                                                 \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
     static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());     \
@@ -53,25 +53,19 @@ public:                                                                         
 /**
  * \brief   MACRO, implements static functions to add and remove
  *          event consumer, which should be available in every Event class.
- *          Do not use them directly, instead use IMPLEMENT_RUNTIME_EVENT
+ *          Do not use them directly, instead use AREG_IMPLEMENT_RUNTIME_EVENT
  **/
-#define IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)                                                                 \
-    /*  Implementation of adding / registering event consumer.                                  */                      \
-    bool EventClass::addListener(IEEventConsumer& eventConsumer, const String & whichThread /*= String::getEmptyString()*/)  \
+#define AREG_IMPLEMENT_EVENT_REGISTRATION(EventClass)                                                                  \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, const String & whichThread)                            \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
-    /*  Implementation of adding / registering event consumer.                                  */                      \
     bool EventClass::addListener(IEEventConsumer& eventConsumer, id_type whichThread)                                   \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
-    /*  Implementation of adding / registering event consumer.                                  */                      \
     bool EventClass::addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }                       \
-    /*  Implementation of removing / unregistering event consumer.                              */                      \
-    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const String& whichThread/*= String::getEmptyString()*/) \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const String& whichThread)                          \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
-    /*  Implementation of removing / unregistering event consumer.                              */                      \
     bool EventClass::removeListener(IEEventConsumer& eventConsumer, id_type whichThread)                                \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
-    /*  Implementation of removing / unregistering event consumer.                              */                      \
     bool EventClass::removeListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)                      \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, dispThread);     }
 
@@ -84,11 +78,9 @@ public:                                                                         
  *
  * \param   EventClass  Event class name.
  **/
-#define DECLARE_RUNTIME_EVENT(EventClass)                                                                               \
-    /*  Declare runtime functions and objects.                                                  */                      \
-    DECLARE_RUNTIME(EventClass)                                                                                         \
-    /*  Declare static functions to add and remove  event consumer.                             */                      \
-    DECLARE_EVENT_STATIC_REGISTRATION(EventClass)
+#define AREG_DECLARE_RUNTIME_EVENT(EventClass)                                                                         \
+    AREG_DECLARE_RUNTIME(EventClass)                                                                                    \
+    AREG_DECLARE_EVENT_REGISTRATION(EventClass)
 
 /**
  * \brief   MACRO, to implement appropriate runtime and event functions
@@ -98,11 +90,9 @@ public:                                                                         
  * \param   EventBaseClass      The base (parent) class of Event
  *                              At least it should be Event.
  **/
-#define IMPLEMENT_RUNTIME_EVENT(EventClass, EventBaseClass)                                                             \
-    /*  Implement event runtime functions.                                                      */                      \
-    IMPLEMENT_RUNTIME(EventClass, EventBaseClass)                                                                       \
-    /*  Implement event static functions.                                                       */                      \
-    IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)
+#define AREG_IMPLEMENT_RUNTIME_EVENT(EventClass, EventBaseClass)                                                       \
+    AREG_IMPLEMENT_RUNTIME(EventClass, EventBaseClass)                                                                  \
+    AREG_IMPLEMENT_EVENT_REGISTRATION(EventClass)
 
 
 /************************************************************************
@@ -130,7 +120,7 @@ class Thread;
  *          should have registered event consumer object which processes
  *          the events. The event consumers are registered and unregistered in
  *          the dispatcher thread by calling addListener() and removeListener()
- *          methods. User DECLARE_RUNTIME_EVENT() and IMPLEMENT_RUNTIME_EVENT()
+ *          methods. User AREG_DECLARE_RUNTIME_EVENT() and AREG_IMPLEMENT_RUNTIME_EVENT()
  *          macros to have appropriate method definition in the event object.
  *
  *          In addition, the system contains several predefined event objects,
@@ -223,7 +213,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Declare Event runtime information.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(Event)
+    AREG_DECLARE_RUNTIME_EVENT(Event)
 
 //////////////////////////////////////////////////////////////////////////
 // Event class statics
@@ -548,10 +538,10 @@ protected:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( Event );
+    AREG_NOCOPY_NOMOVE( Event );
 };
 
-IMPLEMENT_STREAMABLE(Event::eEventType)
+AREG_IMPLEMENT_STREAMABLE(Event::eEventType)
 
 //////////////////////////////////////////////////////////////////////////
 // Event class inline function implementation

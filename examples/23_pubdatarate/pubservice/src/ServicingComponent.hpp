@@ -36,7 +36,7 @@ class OptionData : public NEUtilities::sOptionData
 {
 };
 
-DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
+AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
 
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
@@ -89,7 +89,7 @@ class ServicingComponent    : public    Component
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
         OptionConsumer() = delete;
-        DECLARE_NOCOPY_NOMOVE(OptionConsumer);
+        AREG_NOCOPY_NOMOVE(OptionConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ class ServicingComponent    : public    Component
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
         TimerConsumer() = delete;
-        DECLARE_NOCOPY_NOMOVE(TimerConsumer);
+        AREG_NOCOPY_NOMOVE(TimerConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -336,7 +336,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     ServicingComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    AREG_NOCOPY_NOMOVE( ServicingComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////

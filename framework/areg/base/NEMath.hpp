@@ -291,7 +291,7 @@ namespace NEMath
     /************************************************************************/
     // NEMath::sLargeInteger declare global operators to make streamable
     /************************************************************************/
-        DECLARE_STREAMABLE(NEMath::sLargeInteger);
+        AREG_DECLARE_STREAMABLE(NEMath::sLargeInteger);
     };
 
 /************************************************************************/
@@ -915,6 +915,6 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator =  ( NEMath::sLar
 /************************************************************************/
 // NEMath::sLargeInteger declare global operators to make streamable
 /************************************************************************/
-IMPLEMENT_STREAMABLE(NEMath::sLargeInteger)
+AREG_IMPLEMENT_STREAMABLE(NEMath::sLargeInteger)
 
 #endif  // AREG_BASE_NEMATH_HPP

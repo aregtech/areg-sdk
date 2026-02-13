@@ -17,139 +17,90 @@
  ************************************************************************/
 
 /**
- * \brief   An empty MACRO, does nothing
- **/
-#define EMPTY_MACRO
-
-/**
- * \brief   Success error code. Mainly used in POSIX methods
- **/
-#define RETURNED_OK             0
-
-/**
  * \brief   No copyable class declaration.
+ *          Deletes copy constructor and copy assignment operator.
  **/
-#ifndef DECLARE_NOCOPY
-    #define DECLARE_NOCOPY(ClassName)                                       \
+#ifndef AREG_NOCOPY
+    #define AREG_NOCOPY(ClassName)                                          \
         ClassName( const ClassName & /*src*/ ) = delete;                    \
         ClassName & operator = ( const ClassName & /*src*/ ) = delete
-#endif // !DECLARE_NOCOPY
+#endif // !AREG_NOCOPY
 
 /**
  * \brief   No movable class declaration.
+ *          Deletes move constructor and move assignment operator.
  **/
-#ifndef DECLARE_NOMOVE
-    #define DECLARE_NOMOVE(ClassName)                                       \
+#ifndef AREG_NOMOVE
+    #define AREG_NOMOVE(ClassName)                                          \
         ClassName( ClassName && /*src*/ ) noexcept = delete;                \
         ClassName & operator = ( ClassName && /*src*/ ) noexcept = delete
-#endif // !DECLARE_NOMOVE
+#endif // !AREG_NOMOVE
 
 /**
  * \brief   No copyable and no movable class declaration.
  **/
-#ifndef DECLARE_NOCOPY_NOMOVE
-    #define DECLARE_NOCOPY_NOMOVE( ClassName )                              \
-                DECLARE_NOCOPY( ClassName );                                \
-                DECLARE_NOMOVE(ClassName)
-#endif // !DECLARE_NOCOPY_NOMOVE
+#ifndef AREG_NOCOPY_NOMOVE
+    #define AREG_NOCOPY_NOMOVE( ClassName )                                 \
+                AREG_NOCOPY( ClassName );                                   \
+                AREG_NOMOVE(ClassName)
+#endif // !AREG_NOCOPY_NOMOVE
 
-/**
- * \brief   No copy for class templates.
- *          ClassName   The name of class
- *          Typenames   The name of class
- *      Example: DECLARE_NOCOPY_TEMPLATE(TEString, <CharType>)
- **/
-#ifndef DECLARE_NOCOPY_TEMPLATE
-    #define DECLARE_NOCOPY_TEMPLATE(ClassName, Typenames)                                           \
-        ClassName( const ClassName##Typenames & /*src*/ ) = delete;                                 \
-        ClassName##Typenames & operator = ( const ClassName##Typenames & /*src*/ ) = delete
-#endif // !DECLARE_NOCOPY_TEMPLATE
+//!< Stringification macros. AREG_STRINGIFY_VALUE double-expands before stringifying.
+#ifndef AREG_STRINGIFY
+    #define AREG_STRINGIFY(x)           #x
+    #define AREG_STRINGIFY_VALUE(x)     AREG_STRINGIFY(x)
+#endif // !AREG_STRINGIFY
 
-/**
- * \brief   No move for class templates.
- *          ClassName   The name of class
- *          Typenames   The name of class
- *      Example: DECLARE_NOMOVE_TEMPLATE(TEString, <CharType>)
- **/
-#ifndef DECLARE_NOMOVE_TEMPLATE
-    #define DECLARE_NOMOVE_TEMPLATE(ClassName, Typenames)                                           \
-            ClassName( ClassName##Typenames && /*src*/ ) noexcept = delete;                         \
-            ClassName##Typenames & operator = ( ClassName##Typenames && /*src*/ ) noexcept = delete
-#endif // !DECLARE_NOMOVE_TEMPLATE
-
-#ifndef DECLARE_NOCOPY_NOMOVE_TEMPLATE
-    #define DECLARE_NOCOPY_NOMOVE_TEMPLATE( ClassName, Typenames )                                  \
-                DECLARE_NOCOPY_TEMPLATE( ClassName, Typenames );                                    \
-                DECLARE_NOMOVE_TEMPLATE( ClassName, Typenames )
-
-#endif // !DECLARE_NOCOPY_NOMOVE
-
-#ifndef DECLARE_UNUSED
-    #define DECLARE_UNUSED(x)           (()(x))
-#endif  // DECLARE_UNUSED
-
-//!< MACRO to make strings.
-#ifndef MACRO_MAKE_STRING
-    //!< This macro makes a message string
-    #define MACRO_MAKE_STRING(x)        #x
-    //!< This macro converts a value to a string
-    #define MACRO_CONV_STRING(x)        MACRO_MAKE_STRING(x)
-#endif // !MACRO_MAKE_STRING
-
-//!< This macro makes a message
-#ifndef MACRO_MAKE_MESSAGE
-    #define MACRO_MAKE_MESSAGE(x)       ">>> " ##x
-#endif // !MACRO_MAKE_MESSAGE
-
-#ifndef MACRO_DO_PRAGMA
-    #ifdef MS_VISUAL_CPP
-        #define MACRO_DO_PRAGMA(x) __pragma (#x)
+//!< Compiler pragma, portable across MSVC and GCC/Clang.
+#ifndef AREG_PRAGMA
+    #ifdef _MSC_VER
+        #define AREG_PRAGMA(x) __pragma (x)
     #else
-        #define MACRO_DO_PRAGMA(x) _Pragma (#x)
+        #define AREG_PRAGMA(x) _Pragma (#x)
     #endif
-#endif // MACRO_DO_PRAGMA
+#endif // AREG_PRAGMA
 
-//!< This macro creates and outputs compile time message
-#ifndef MACRO_COMPILER_MESSAGE
-    #define MACRO_COMPILER_MESSAGE(msg)     MACRO_DO_PRAGMA(message (">>> " #msg))
-#endif // !MACRO_COMPILER_MESSAGE
+//!< Emits a compiler message prefixed with ">>> ".
+#ifndef AREG_COMPILER_MSG
+    #define AREG_COMPILER_MSG(msg)      AREG_PRAGMA(message (">>> " #msg))
+#endif // !AREG_COMPILER_MSG
 
-//!< This macro creates and outputs compile time message with prefix "TODO" and the message,
-//! followed with the file name and the line number to prompt.
-#ifndef MACRO_TODO
-    #define MACRO_TODO(msg)                 MACRO_DO_PRAGMA(">>> TODO :: " #msg ": here --> " __FILE__":" MACRO_CONV_STRING(__LINE__))
-#endif // !MACRO_TODO
-
+//!< Emits a compiler TODO message with file and line information.
+#ifndef AREG_TODO
+    #define AREG_TODO(msg)              AREG_PRAGMA(">>> TODO :: " #msg ": here --> " __FILE__":" AREG_STRINGIFY_VALUE(__LINE__))
+#endif // !AREG_TODO
 
 /**
- * \brief   Defined assertion macro.
- *          Valid only for Debug versions
+ * \brief   Defined assertion macros.
+ *          ASSERT / ASSERT_MSG compile to nothing in Release.
+ *          VERIFY / VERIFY_MSG always evaluate the expression,
+ *          but only assert in Debug.
  **/
 #ifdef   _DEBUG
 
     #include <assert.h>
 
     #ifndef ASSERT
-        #define ASSERT(x)                       assert(x)
+        #define ASSERT(x)                       assert((x))
     #endif   // ASSERT
     #ifndef ASSERT_MSG
-        #define  ASSERT_MSG(x, msg)             ASSERT(x)
+        #define ASSERT_MSG(x, msg)              ASSERT((x))
     #endif   // ASSERT_MSG
 
     #ifndef  VERIFY
-        #define VERIFY(x)                       ASSERT(x)
+        #define VERIFY(x)                       ASSERT((x))
     #endif   // VERIFY
     #ifndef  VERIFY_MSG
-        #define VERIFY_MSG(x, msg)              ASSERT_MSG(x, msg)
+        #define VERIFY_MSG(x, msg)              ASSERT_MSG((x), msg)
     #endif   // VERIFY_MSG
 
 #else    // _DEBUG
 
     #ifndef ASSERT
-        #define ASSERT(x)                       EMPTY_MACRO
+        #define ASSERT(x)                       ((void)0)
     #endif   // ASSERT
     #ifndef ASSERT_MSG
-        #define  ASSERT_MSG(x, msg)             EMPTY_MACRO
+        #define ASSERT_MSG(x, msg)              ((void)0)
     #endif   // ASSERT_MSG
 
     #ifndef  VERIFY
@@ -163,11 +114,10 @@
 #endif   // _DEBUG
 
 /**
- * \brief   defines some switches and macros to use in debug version
+ * \brief   Debug new operator for MSVC CRT memory leak detection.
+ *          In Release or non-MSVC builds, maps to plain new.
  **/
 #if defined(_DEBUG) && defined(_MSC_VER)
-   // on non-Windows systems, there is no operator new which takes three parameters
-   // this is defined in a platform specific overloaded new.h
     #include <crtdbg.h>
     #ifndef DEBUG_NEW
       #define DEBUG_NEW    new(_NORMAL_BLOCK, __FILE__, __LINE__)
@@ -179,100 +129,72 @@
 #endif   // _DEBUG
 
 /**
- * \brief   Debugging message output macro.
- *          Valid for Debug version
+ * \brief   Debug output macros. Active only in Debug builds.
  **/
 #ifdef _DEBUG
 
 #include "areg/base/private/NEDebug.hpp"
 
-    /**
-     * \brief   Output Debug message, will have "DBG" prefix
-     **/
-    #ifndef OUTPUT_DBG
+    #ifndef AREG_OUTPUT_DBG
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
-            #define OUTPUT_DBG(...)             NEDebug::outputConsole(NEDebug::eDegubPrio::PrioDbg, __VA_ARGS__)
+            #define AREG_OUTPUT_DBG(...)        NEDebug::outputConsole(NEDebug::eDegubPrio::PrioDbg, __VA_ARGS__)
         #else
-            #define OUTPUT_DBG(...)             EMPTY_MACRO
+            #define AREG_OUTPUT_DBG(...)        ((void)0)
         #endif
     #endif
 
-    /**
-     * \brief   Output Information message, will have "INFO" prefix
-     **/
-    #ifndef OUTPUT_INFO
+    #ifndef AREG_OUTPUT_INFO
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_INFO)
-            #define OUTPUT_INFO(...)            NEDebug::outputConsole(NEDebug::eDegubPrio::PrioInfo, __VA_ARGS__)
+            #define AREG_OUTPUT_INFO(...)       NEDebug::outputConsole(NEDebug::eDegubPrio::PrioInfo, __VA_ARGS__)
         #else
-            #define OUTPUT_INFO(...)            EMPTY_MACRO
+            #define AREG_OUTPUT_INFO(...)       ((void)0)
         #endif
     #endif
 
-    /**
-     * \brief   Output Warning message, will have "WARN" prefix
-     **/
-    #ifndef OUTPUT_WARN
+    #ifndef AREG_OUTPUT_WARN
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_WARN)
-            #define OUTPUT_WARN(...)            NEDebug::outputConsole(NEDebug::eDegubPrio::PrioWarn, __VA_ARGS__)
+            #define AREG_OUTPUT_WARN(...)       NEDebug::outputConsole(NEDebug::eDegubPrio::PrioWarn, __VA_ARGS__)
         #else
-            #define OUTPUT_WARN(...)            EMPTY_MACRO
+            #define AREG_OUTPUT_WARN(...)       ((void)0)
         #endif
     #endif
 
-    /**
-     * \brief   Output Error message, will have "ERR" prefix
-     **/
-    #ifndef OUTPUT_ERR
+    #ifndef AREG_OUTPUT_ERR
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_ERROR)
-            #define OUTPUT_ERR(...)             NEDebug::outputConsole(NEDebug::eDegubPrio::PrioErr, __VA_ARGS__)
+            #define AREG_OUTPUT_ERR(...)        NEDebug::outputConsole(NEDebug::eDegubPrio::PrioErr, __VA_ARGS__)
         #else
-            #define OUTPUT_ERR(...)             EMPTY_MACRO
+            #define AREG_OUTPUT_ERR(...)        ((void)0)
         #endif
     #endif
 
-    /**
-     * \brief   Output message text without change
-     **/
-    #ifndef OUTPUT_MSG
+    #ifndef AREG_OUTPUT_MSG
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL !=  OUTPUT_DEBUG_LEVEL_NONE)
-            #define OUTPUT_MSG(...)             NEDebug::outputConsole( __VA_ARGS__)
+            #define AREG_OUTPUT_MSG(...)        NEDebug::outputConsole( __VA_ARGS__)
         #else
-            #define OUTPUT_MSG(...)             EMPTY_MACRO
+            #define AREG_OUTPUT_MSG(...)        ((void)0)
         #endif
-    #endif
-
-    /**
-     * \brief   Fills call-stack dump into the passed vector
-     *          The exception should be raised and the passed vector should be of type LinkedList<String>
-     **/
-    #ifndef CALLSTACK_DUMP
-        #define CALLSTACK_DUMP(exept, std_vector)   NEDebug::dumpExceptionCallStack(exept, std_vector)
     #endif
 
 #else   // _DEBUG, no meaning for other than Debug build.
 
-    #ifndef OUTPUT_DBG
-        #define OUTPUT_DBG(...)                     EMPTY_MACRO
+    #ifndef AREG_OUTPUT_DBG
+        #define AREG_OUTPUT_DBG(...)            ((void)0)
     #endif
 
-    #ifndef OUTPUT_INFO
-        #define OUTPUT_INFO(...)                    EMPTY_MACRO
+    #ifndef AREG_OUTPUT_INFO
+        #define AREG_OUTPUT_INFO(...)           ((void)0)
     #endif
 
-    #ifndef OUTPUT_WARN
-        #define OUTPUT_WARN(...)                    EMPTY_MACRO
+    #ifndef AREG_OUTPUT_WARN
+        #define AREG_OUTPUT_WARN(...)           ((void)0)
     #endif
 
-    #ifndef OUTPUT_ERR
-        #define OUTPUT_ERR(...)                     EMPTY_MACRO
+    #ifndef AREG_OUTPUT_ERR
+        #define AREG_OUTPUT_ERR(...)            ((void)0)
     #endif
 
-    #ifndef OUTPUT_MSG
-        #define OUTPUT_MSG(...)                     EMPTY_MACRO
-    #endif
-
-    #ifndef CALLSTACK_DUMP
-        #define CALLSTACK_DUMP(exept, std_vector)   EMPTY_MACRO
+    #ifndef AREG_OUTPUT_MSG
+        #define AREG_OUTPUT_MSG(...)            ((void)0)
     #endif
 
 #endif  // _DEBUG

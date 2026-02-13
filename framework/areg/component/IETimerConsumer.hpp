@@ -101,7 +101,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IETimerConsumer );
+    AREG_NOCOPY_NOMOVE( IETimerConsumer );
 };
 
 #endif  // AREG_COMPONENT_IETIMERCONSUMER_HPP

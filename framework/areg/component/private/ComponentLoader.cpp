@@ -465,7 +465,7 @@ void ComponentLoader::unloadModel( bool waitComplete, NERegistry::Model & whichM
             Thread * compThread = Thread::findThreadByName(modelThreads.mListThreads.getAt( i ).mThreadName);
             if (compThread != nullptr)
             {
-                ASSERT(RUNTIME_CAST(compThread, ComponentThread));
+                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
                 threadList.add(compThread);
             }
         }
@@ -512,7 +512,7 @@ void ComponentLoader::waitModelThreads(NERegistry::Model & whichModel)
             Thread * compThread = Thread::findThreadByName(modelThreads.mListThreads.getAt(i).mThreadName);
             if (compThread != nullptr)
             {
-                ASSERT(RUNTIME_CAST(compThread, ComponentThread) != nullptr);
+                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);
                 threadList.add(compThread);
             }
         }

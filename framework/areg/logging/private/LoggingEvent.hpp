@@ -168,7 +168,7 @@ private:
  * \brief   Declare LoggingEvent class, derived from TEEvent object,
  *          and IELoggingEventConsumer class, derived from TEEventConsumer object
  **/
-DECLARE_EVENT(LoggingEventData, LoggingEvent, IELoggingEventConsumer)
+AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, IELoggingEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // LoggingEventData class inline functions
@@ -213,7 +213,7 @@ inline const char * LoggingEventData::getString( LoggingEventData::eLoggingActio
         return "LoggingEventData::eLoggingAction::LoggingQueryScopes";
     default:
         ASSERT(false);
-        "ERR: Undefined LoggingEventData::eLoggingAction value!";
+        return "ERR: Undefined LoggingEventData::eLoggingAction value!";
     }
 }
 

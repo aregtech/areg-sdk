@@ -117,7 +117,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ServiceClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };
 
 inline ServiceClient & ServiceClient::self()

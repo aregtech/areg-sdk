@@ -192,7 +192,7 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(SortedEventStack);
+    AREG_NOCOPY_NOMOVE(SortedEventStack);
 };
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)

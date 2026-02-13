@@ -115,5 +115,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     PubSubController() = delete;
-    DECLARE_NOCOPY_NOMOVE(PubSubController);
+    AREG_NOCOPY_NOMOVE(PubSubController);
 };

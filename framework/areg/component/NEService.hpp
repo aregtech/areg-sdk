@@ -33,21 +33,6 @@
  ************************************************************************/
 
 /**
- * \brief   Converts request message id to index
- **/
-#define GET_REQ_INDEX(msgId)           static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::RequestFirstId) : static_cast<unsigned int>(NECommon::INVALID_INDEX))
-
-/**
- * \brief   Converts response message id to index
- **/
-#define GET_RESP_INDEX(msgId)          static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::ResponseFirstId) : static_cast<unsigned int>(NECommon::INVALID_INDEX))
-
-/**
- * \brief   Converts attribute message id to index
- **/
-#define GET_ATTR_INDEX(msgId)          static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::AttributeFirstId) : static_cast<unsigned int>(NECommon::INVALID_INDEX))
-
-/**
  * \brief       NEService namespace contains defined and fixed constants,
  *              structures, types and classes required to define Service
  *              Interface and interface data used by Proxy and Stub objects.
@@ -533,6 +518,36 @@ namespace NEService
     inline const char * getString( NEService::eFuncIdRange funcId );
 
     /**
+     * \brief   Converts request message ID to array index. Returns INVALID_INDEX if empty.
+     **/
+    inline constexpr unsigned int reqIndex(unsigned int msgId)
+    {
+        return (msgId != static_cast<unsigned int>(eFuncIdRange::EmptyFunctionId))
+                ? msgId - static_cast<unsigned int>(eFuncIdRange::RequestFirstId)
+                : static_cast<unsigned int>(NECommon::INVALID_INDEX);
+    }
+
+    /**
+     * \brief   Converts response message ID to array index. Returns INVALID_INDEX if empty.
+     **/
+    inline constexpr unsigned int respIndex(unsigned int msgId)
+    {
+        return (msgId != static_cast<unsigned int>(eFuncIdRange::EmptyFunctionId))
+                ? msgId - static_cast<unsigned int>(eFuncIdRange::ResponseFirstId)
+                : static_cast<unsigned int>(NECommon::INVALID_INDEX);
+    }
+
+    /**
+     * \brief   Converts attribute message ID to array index. Returns INVALID_INDEX if empty.
+     **/
+    inline constexpr unsigned int attrIndex(unsigned int msgId)
+    {
+        return (msgId != static_cast<unsigned int>(eFuncIdRange::EmptyFunctionId))
+                ? msgId - static_cast<unsigned int>(eFuncIdRange::AttributeFirstId)
+                : static_cast<unsigned int>(NECommon::INVALID_INDEX);
+    }
+
+    /**
      * \brief   Returns true if message ID is in range of attribute call.
      **/
     inline bool isAttributeId(unsigned int msgId);
@@ -659,7 +674,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     private:
         StateArray() = delete;
-        DECLARE_NOCOPY_NOMOVE(StateArray);
+        AREG_NOCOPY_NOMOVE(StateArray);
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -774,7 +789,7 @@ namespace NEService
      *          For example, if there is a response function prototype
      *          responseAREG(const bool &param1, const int &param2)
      *          the 'param1' state can be accessed by index pair
-     *          param1State = states[GET_RESP_INDEX(UPD_ID_responseAREG)][0];
+     *          param1State = states[NEService::respIndex(UPD_ID_responseAREG)][0];
      **/
     class AREG_API ParameterArray
     {
@@ -828,14 +843,14 @@ namespace NEService
          * \brief   Access state by given index of array allowed for writing.
          *          The index is calculated by formula
          *          ('response ID' - NEService::eFuncIdRange::ResponseFirstId) or use
-         *          GET_RESP_INDEX() macro
+         *          NEService::respIndex() macro
          **/
         inline NEService::StateArray & operator [] (unsigned int index);
         /**
          * \brief   Access read-only state by given index of array.
          *          The index is calculated by formula
          *          ('response ID' - NEService::eFuncIdRange::ResponseFirstId) or use
-         *          GET_RESP_INDEX() macro
+         *          NEService::respIndex() macro
          **/
         inline const NEService::StateArray & operator [] (unsigned int index) const;
 
@@ -847,8 +862,8 @@ namespace NEService
         /**
          * \brief   Returns the state of parameter of certain response entry
          *          and certain parameter. The parameter entry is calculated
-         *          row = GET_RESP_INDEX('response ID').
-         * \param   row     The index of response call. Should be GET_RESP_INDEX('response ID')
+         *          row = NEService::respIndex('response ID').
+         * \param   row     The index of response call. Should be NEService::respIndex('response ID')
          * \param   col     The index of parameter entry in response call. 
          *                  First parameter has index zero
          * \return  The state of parameter in call.
@@ -858,7 +873,7 @@ namespace NEService
         /**
          * \brief   Sets state of parameter of certain response.
          * \param   row         The index of response entry, which can be calculated
-         *                      by macro GET_RESP_INDEX('response ID')
+         *                      by macro NEService::respIndex('response ID')
          * \param   col         The index of parameter in response call. 
          *                      First parameter has index zero
          * \param   newValue    The state to set for parameter
@@ -867,16 +882,16 @@ namespace NEService
 
         /**
          * \brief   Returns true if specified response index has parameters.
-         *          The response index is calculated by macro GET_RESP_INDEX('response ID')
+         *          The response index is calculated by macro NEService::respIndex('response ID')
          **/
         inline bool hasParameters(unsigned int whichRespIndex) const;
         /**
          * \brief   Returns true if valid response index. For example,
          *          the response ID RESPONSE_ID_NONE does not have valid
          *          response index. The index of response is calculated
-         *          by macro GET_RESP_INDEX('response ID')
+         *          by macro NEService::respIndex('response ID')
          * \param   whichRespIndex  The index of response, should be calculated by
-         *                          macro GET_RESP_INDEX('response ID')
+         *                          macro NEService::respIndex('response ID')
          * \return  Returns true if given index is valid
          **/
         inline bool isValidParamIndex(unsigned int whichRespIndex) const;
@@ -892,16 +907,16 @@ namespace NEService
 
         /**
          * \brief   Sets all parameter states of specified entry.
-         *          The index should be calculated by GET_RESP_INDEX('response ID')
-         * \param   whichParam  The index of entry, should be calculated by GET_RESP_INDEX('response ID')
+         *          The index should be calculated by NEService::respIndex('response ID')
+         * \param   whichParam  The index of entry, should be calculated by NEService::respIndex('response ID')
          * \param   newState    The state to set
          **/
         inline void setParamState(unsigned int whichParam, NEService::eDataStateType newState);
 
         /**
          * \brief   Resets all states of parameter of specified entry index.
-         *          The index should be calculated by GET_RESP_INDEX('response ID')
-         * \param   whichParam  The index of entry, should be calculated by GET_RESP_INDEX('response ID')
+         *          The index should be calculated by NEService::respIndex('response ID')
+         * \param   whichParam  The index of entry, should be calculated by NEService::respIndex('response ID')
          **/
         void resetParamState(unsigned int whichParam);
 
@@ -942,7 +957,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     private:
         ParameterArray() = delete;
-        DECLARE_NOCOPY( ParameterArray );
+        AREG_NOCOPY( ParameterArray );
     };
 
     /**
@@ -1051,7 +1066,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     private:
         ProxyData() = delete;
-        DECLARE_NOCOPY_NOMOVE( ProxyData );
+        AREG_NOCOPY_NOMOVE( ProxyData );
     };
 
 
@@ -1084,17 +1099,17 @@ namespace NEService
 //////////////////////////////////////////////////////////////////////////
 // Global namespace NEService inline function implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE(NEService::eResultType)
-IMPLEMENT_STREAMABLE(NEService::eDataStateType)
-IMPLEMENT_STREAMABLE(NEService::eRequestType)
-IMPLEMENT_STREAMABLE(NEService::eMessageDataType)
-IMPLEMENT_STREAMABLE(NEService::eServiceConnection)
-IMPLEMENT_STREAMABLE(NEService::eDisconnectReason)
-IMPLEMENT_STREAMABLE(NEService::eServiceRequestType)
-IMPLEMENT_STREAMABLE(NEService::eServiceType)
-IMPLEMENT_STREAMABLE(NEService::eInstanceBitness)
-IMPLEMENT_STREAMABLE(NEService::eMessageSource)
-IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
+AREG_IMPLEMENT_STREAMABLE(NEService::eResultType)
+AREG_IMPLEMENT_STREAMABLE(NEService::eDataStateType)
+AREG_IMPLEMENT_STREAMABLE(NEService::eRequestType)
+AREG_IMPLEMENT_STREAMABLE(NEService::eMessageDataType)
+AREG_IMPLEMENT_STREAMABLE(NEService::eServiceConnection)
+AREG_IMPLEMENT_STREAMABLE(NEService::eDisconnectReason)
+AREG_IMPLEMENT_STREAMABLE(NEService::eServiceRequestType)
+AREG_IMPLEMENT_STREAMABLE(NEService::eServiceType)
+AREG_IMPLEMENT_STREAMABLE(NEService::eInstanceBitness)
+AREG_IMPLEMENT_STREAMABLE(NEService::eMessageSource)
+AREG_IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 
 //////////////////////////////////////////////////////////////////////////
 // namespace NEService inline function implementation
@@ -1313,12 +1328,12 @@ inline void NEService::ParameterArray::setParamState(unsigned int whichParam, NE
 
 inline NEService::eDataStateType NEService::ProxyData::getAttributeState( unsigned int msgId ) const
 {
-    return NEService::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[GET_ATTR_INDEX(msgId)];
+    return NEService::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[NEService::attrIndex(msgId)];
 }
 
 inline NEService::eDataStateType NEService::ProxyData::getParamState( unsigned int msgId ) const
 {
-    const NEService::StateArray& param = mParamState[GET_RESP_INDEX(msgId)];
+    const NEService::StateArray& param = mParamState[NEService::respIndex(msgId)];
     return (param.hasParams() ? param[0u] : NEService::eDataStateType::DataIsUnavailable);
 }
 

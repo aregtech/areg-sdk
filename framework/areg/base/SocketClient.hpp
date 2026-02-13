@@ -104,7 +104,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SocketClient );
+    AREG_NOCOPY_NOMOVE( SocketClient );
 };
 
 #endif  // AREG_BASE_SOCKETCLIENT_HPP

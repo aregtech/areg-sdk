@@ -72,5 +72,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ConnectionList() = delete;
-    DECLARE_NOCOPY_NOMOVE( ConnectionList );
+    AREG_NOCOPY_NOMOVE( ConnectionList );
 };

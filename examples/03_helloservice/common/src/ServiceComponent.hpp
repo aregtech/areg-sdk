@@ -40,5 +40,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ServiceComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceComponent );
+    AREG_NOCOPY_NOMOVE( ServiceComponent );
 };

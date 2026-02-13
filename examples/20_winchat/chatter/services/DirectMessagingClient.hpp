@@ -122,7 +122,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     DirectMessagingClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( DirectMessagingClient );
+    AREG_NOCOPY_NOMOVE( DirectMessagingClient );
 };
 
 inline DirectMessagingClient & DirectMessagingClient::self()

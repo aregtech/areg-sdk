@@ -43,7 +43,7 @@ namespace NEUtilities
                 ? (static_cast<TIME64>(ts.tv_sec) * NEUtilities::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / NEUtilities::MICROSEC_TO_NS)
                 : 0uLL);
 #else   // _MINGW
-        return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+        return (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
                     ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
                     : 0LL);
 #endif  // _MINGW
@@ -56,7 +56,7 @@ namespace NEUtilities
 #ifndef _MINGW
         if (timespec_get(&ts, TIME_UTC) != 0)
 #else   // _MINGW
-        if (RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
+        if (NECommon::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
 #endif  // _MINGW
         {
             if (localTime)
@@ -96,7 +96,7 @@ namespace NEUtilities
         NEUtilities::convMicrosecs(utcTime, secs, milli, micro);
 
         struct tm tmLocal { };
-        if (RETURNED_OK == localtime_s(&tmLocal, &secs))
+        if (NECommon::RETURNED_OK == localtime_s(&tmLocal, &secs))
         {
             NEUtilities::convToSystemTime(tmLocal, localTime);
             localTime.stMillisecs = milli;
@@ -111,7 +111,7 @@ namespace NEUtilities
     bool _osConvToLocalTm(const TIME64& utcTime, struct tm & localTm)
     {
         time_t secs = static_cast<time_t>(utcTime / NEUtilities::SEC_TO_MICROSECS);
-        return (RETURNED_OK == localtime_s(&localTm, &secs));
+        return (NECommon::RETURNED_OK == localtime_s(&localTm, &secs));
     }
 
     void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime)
@@ -121,7 +121,7 @@ namespace NEUtilities
         NEUtilities::convMicrosecs(timeValue, secs, milli, micro);
 
         struct tm gmt {};
-        if (RETURNED_OK == ::gmtime_s(&gmt, &secs))
+        if (NECommon::RETURNED_OK == ::gmtime_s(&gmt, &secs))
         {
             convToSystemTime(gmt, sysTime);
             sysTime.stMillisecs = milli;

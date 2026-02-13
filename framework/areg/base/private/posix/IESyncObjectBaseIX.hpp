@@ -127,7 +127,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     IESyncObjectBaseIX() = delete;
-    DECLARE_NOCOPY_NOMOVE( IESyncObjectBaseIX );
+    AREG_NOCOPY_NOMOVE( IESyncObjectBaseIX );
 };
 
 

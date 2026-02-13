@@ -228,7 +228,7 @@ protected:
 
 private:
     TimerBase() = delete;
-    DECLARE_NOCOPY_NOMOVE(TimerBase);
+    AREG_NOCOPY_NOMOVE(TimerBase);
 };
 
 //////////////////////////////////////////////////////////////////////////

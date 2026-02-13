@@ -949,11 +949,11 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::StopOnOverlap:
-            OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
+            AREG_OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
             break;  // do nothing
 
         default:
-            OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
+            AREG_OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
             ASSERT(false);
             break;
         }

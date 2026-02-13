@@ -363,7 +363,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( LogObserver );
+    AREG_NOCOPY_NOMOVE( LogObserver );
 };
 
 #endif  // AREG_LOGOBSERVER_APP_LOGOBSERVER_HPP

@@ -55,7 +55,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     RouterConsoleService() = delete;
-    DECLARE_NOCOPY_NOMOVE( RouterConsoleService );
+    AREG_NOCOPY_NOMOVE( RouterConsoleService );
 };
 
 #endif  // AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP

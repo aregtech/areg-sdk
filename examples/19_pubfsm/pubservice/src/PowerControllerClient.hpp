@@ -87,7 +87,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Declare the Power Controller Event and the event consumer objects.
 //////////////////////////////////////////////////////////////////////////
-DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerEventConsumer);
+AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerEventConsumer);
 
 /**
  * \brief   The actual power controller service client.
@@ -221,7 +221,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     PowerControllerClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( PowerControllerClient );
+    AREG_NOCOPY_NOMOVE( PowerControllerClient );
 };
 
 //////////////////////////////////////////////////////////////////////////

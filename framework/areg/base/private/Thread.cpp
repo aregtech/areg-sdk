@@ -47,7 +47,7 @@ constexpr std::string_view   STORAGE_THREAD_CONSUMER { "ThreadConsumer" };
 /************************************************************************/
 // Implement runtime
 /************************************************************************/
-IMPLEMENT_RUNTIME(Thread, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 
 /************************************************************************/
 // Define internal static mapping objects

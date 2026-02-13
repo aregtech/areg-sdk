@@ -93,7 +93,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(IEConfigurationListener);
+    AREG_NOCOPY_NOMOVE(IEConfigurationListener);
 };
 
 #endif  // AREG_PERSIST_IECONFIGURATIONLISTENER_HPP

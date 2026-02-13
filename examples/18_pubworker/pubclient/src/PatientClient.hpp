@@ -104,5 +104,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     PatientClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( PatientClient );
+    AREG_NOCOPY_NOMOVE( PatientClient );
 };

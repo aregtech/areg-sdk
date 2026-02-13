@@ -83,7 +83,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEProxyListener );
+    AREG_NOCOPY_NOMOVE( IEProxyListener );
 };
 
 #endif  // AREG_COMPONENT_IEPROXYLISTENER_HPP

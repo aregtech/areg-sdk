@@ -79,7 +79,7 @@ private:
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     ServiceComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceComponent );
+    AREG_NOCOPY_NOMOVE( ServiceComponent );
 };
 
 constexpr char const _modelName[]{ "ClientsModel" };

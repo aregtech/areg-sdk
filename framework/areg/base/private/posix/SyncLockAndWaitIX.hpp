@@ -419,7 +419,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     SyncLockAndWaitIX() = delete;
-    DECLARE_NOCOPY_NOMOVE( SyncLockAndWaitIX );
+    AREG_NOCOPY_NOMOVE( SyncLockAndWaitIX );
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)

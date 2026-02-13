@@ -192,7 +192,7 @@ bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     sigEvent.sigev_notify_function  = funcTimer;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    return (RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
+    return (NECommon::RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
 #endif  // __APPLE__
 }
 
@@ -235,7 +235,7 @@ inline bool TimerPosix::_startTimer()
                     }
                 });
 
-                if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
+                if (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
                 {
                     NESyncTypesIX::convTimeout(mDueTime, msTimeout);
                     result = true;
@@ -273,12 +273,12 @@ inline bool TimerPosix::_startTimer()
                 interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
             }
 
-            if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
+            if (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
             {
                 NESyncTypesIX::convTimeout(mDueTime, msTimeout);
                 result = true;
 
-                if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
+                if (NECommon::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
                 {
                     result          = false;
                     mDueTime.tv_sec = 0;

@@ -59,5 +59,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     NetworkSetup() = delete;
-    DECLARE_NOCOPY_NOMOVE( NetworkSetup );
+    AREG_NOCOPY_NOMOVE( NetworkSetup );
 };

@@ -208,7 +208,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     LogCollectorMessageProcessor() = delete;
-    DECLARE_NOCOPY_NOMOVE(LogCollectorMessageProcessor);
+    AREG_NOCOPY_NOMOVE(LogCollectorMessageProcessor);
 };
 
 #endif // AREG_LOGCOLLECTOR_SERVICE_PRIVATE_LOGCOLLECTORMESSAGEPROCESSOR_HPP

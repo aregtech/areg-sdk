@@ -160,7 +160,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     {
         // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
-        OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
+        AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadTerminated;
         pthread_cancel(threadId);
         mWaitForRun.resetEvent();
@@ -169,7 +169,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     else
     {
         // The thread completed job normally
-        OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
+        AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadCompleted;
         ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
     }
@@ -188,7 +188,7 @@ bool Thread::_osCreateSystemThread()
         {
             mWaitForRun.resetEvent();
             mWaitForExit.resetEvent( );
-            if (RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
+            if (NECommon::RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
             {
                 if (mStackSizeKB != NECommon::STACK_SIZE_DEFAULT)
                 {
@@ -196,8 +196,8 @@ bool Thread::_osCreateSystemThread()
                     ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSizeBytes);
                 }
                 
-                if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
-                    (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
+                if ((NECommon::RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
+                    (NECommon::RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
                 {
                     result          = true;
                     mThreadHandle   = static_cast<THREADHANDLE>(handle);
@@ -272,14 +272,14 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
         struct sched_param schedParam;
         schedParam.sched_priority   = schedPrio;
 
-        if ((std::numeric_limits<int32_t>::min() != schedPrio) && (RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
+        if ((std::numeric_limits<int32_t>::min() != schedPrio) && (NECommon::RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
         {
             mThreadPriority = newPriority;
         }
 #ifdef DEBUG
         else
         {
-            OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
+            AREG_OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
                 , Thread::getString(newPriority)
                 , schedParam.sched_priority
                 , static_cast<id_type>(mThreadId)
@@ -295,7 +295,7 @@ size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
 {
     size_t size{ 0u };
     sPosixThread* thread = reinterpret_cast<sPosixThread*>(handle);
-    return ((thread != nullptr) && (RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
+    return ((thread != nullptr) && (NECommon::RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

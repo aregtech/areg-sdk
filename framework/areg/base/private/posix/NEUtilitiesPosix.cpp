@@ -38,7 +38,7 @@ namespace NEUtilities
     TIME64 _osSystemTimeNow()
     {
         struct timespec ts { 0 };
-        return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+        return (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
                 ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
                 : 0LL);
     }
@@ -48,7 +48,7 @@ namespace NEUtilities
         struct timespec ts { 0 };
         struct tm now { 0 };
 
-        if (RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
+        if (NECommon::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
         {
             if ( localTime )
             {

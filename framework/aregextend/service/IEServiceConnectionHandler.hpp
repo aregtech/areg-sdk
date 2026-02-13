@@ -88,7 +88,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEServiceConnectionHandler );
+    AREG_NOCOPY_NOMOVE( IEServiceConnectionHandler );
 };
 
 #endif  // AREG_AREGEXTEND_SERVICE_IESERVICECONNECTIONHANDLER_HPP
