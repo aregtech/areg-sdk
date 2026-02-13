@@ -48,7 +48,7 @@ class AREG_API Watchdog  : public TimerBase
 // Object specific types and constants
 //////////////////////////////////////////////////////////////////////////
 public:
-#if defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
@@ -57,7 +57,7 @@ public:
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFFFFFF.
      **/
     using GUARD_ID      = unsigned int;
-#else   // !defined(BIT64)
+#elif (AREG_TARGET_PLATFORM == 32)
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
@@ -66,7 +66,7 @@ public:
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFF.
      **/
     using GUARD_ID      = unsigned short;
-#endif  // defined(BIT64)
+#endif  // (AREG_TARGET_PLATFORM == 64)
 
     /**
      * \brief   The watchdog ID, which is generated when the watchdog is started.
@@ -239,29 +239,29 @@ inline Watchdog::WATCHDOG_ID Watchdog::watchdogId()
 
 inline Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
 {
-#if defined(BIT64)
+#if (AREG_TARGET_PLATFORM ==64)
     return static_cast<WATCHDOG_ID>(NEMath::make64(guardId, sequence));
-#else   // !defined(BIT64)
+#elif (AREG_TARGET_PLATFORM == 32)
     return static_cast<WATCHDOG_ID>(NEMath::make32(guardId, sequence));
-#endif  // defined(BIT64)
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::GUARD_ID Watchdog::makeGuardId(Watchdog::WATCHDOG_ID watchdogId)
 {
-#if defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
     return static_cast<GUARD_ID>(NEMath::hiDword(watchdogId));
-#else   // !defined(BIT64)
+#elif (AREG_TARGET_PLATFORM == 32)
     return static_cast<GUARD_ID>(NEMath::hiWord(watchdogId));
-#endif  // defined(BIT64)
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::SEQUENCE_ID Watchdog::makeSequenceId(Watchdog::WATCHDOG_ID watchdogId)
 {
-#if defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
     return static_cast<GUARD_ID>(NEMath::loDword(watchdogId));
-#else   // !defined(BIT64)
+#elif (AREG_TARGET_PLATFORM == 32)
     return static_cast<GUARD_ID>(NEMath::loWord(watchdogId));
-#endif  // defined(BIT64)
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_WATCHDOG_HPP

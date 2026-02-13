@@ -59,7 +59,7 @@
 #include <stddef.h>
 
 //! The digital value type of the pointer.
-#ifdef BIT64
+#if (AREG_TARGET_PLATFORM == 64)
 
     //! The type defining ID. It is 64-bit in 64-bit systems.
     typedef uint64_t    id_type;
@@ -70,7 +70,7 @@
         typedef uint64_t    ptr_type;
     #endif  // _UINTPTR_T_DEFINED
     
-#else   // defined(BIT32)
+#elif   (AREG_TARGET_PLATFORM == 32)
 
     //! The type defining ID. It is 64-bit in 64-bit systems.
     typedef uint32_t    id_type;
@@ -81,7 +81,11 @@
         typedef unsigned long   ptr_type;
     #endif  // _UINTPTR_T_DEFINED
 
-#endif  // BIT64
+#else   // AREG_TARGET_PLATFORM == 0
+
+#error  Unsupported target platform. Please define AREG_TARGET_PLATFORM to 32 or 64.
+
+#endif  // AREG_TARGET_PLATFORM == 64
 
 //! The sequence number type.
 typedef uint64_t        SequenceNumber;

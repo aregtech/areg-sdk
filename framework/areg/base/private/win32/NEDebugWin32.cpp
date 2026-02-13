@@ -91,15 +91,15 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
             frame.AddrStack.Mode    = AddrModeFlat;
             frame.AddrFrame.Mode    = AddrModeFlat;
 
-#if defined(BIT32)
+#if (AREG_TARGET_PLATFORM == 32)
             frame.AddrPC.Offset     = context->Eip;
             frame.AddrStack.Offset  = context->Esp;
             frame.AddrFrame.Offset  = context->Ebp;
-#elif defined(BIT64)
+#elif (AREG_TARGET_PLATFORM == 64)
             frame.AddrPC.Offset     = context->Rip;
             frame.AddrStack.Offset  = context->Rsp;
             frame.AddrFrame.Offset  = context->Rbp;
-#endif // defined(BIT64)
+#endif // (AREG_TARGET_PLATFORM == 64)
 
             char message[_symNameLength + MAX_PATH + 8] = { 0 };
 

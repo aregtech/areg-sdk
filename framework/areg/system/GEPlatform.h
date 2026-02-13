@@ -83,11 +83,11 @@
 #endif // (defined(_WINDOWS) || defined(WINDOWS))
 
 #if defined(BIT32)
-    #define TARGET_PLATFORM     32
+    #define AREG_TARGET_PLATFORM    32
 #elif defined(BIT64)
-    #define TARGET_PLATFORM     64
+    #define AREG_TARGET_PLATFORM    64
 #else
-    #define TARGET_PLATFORM     0
+    #define AREG_TARGET_PLATFORM    0
 #endif // BIT32
 
 
