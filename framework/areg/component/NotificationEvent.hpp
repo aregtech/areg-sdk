@@ -76,7 +76,8 @@ public:
      * \param	proxy	    The pointer of Proxy object which triggered
      *                      notification message
      * \param	notifyType	The result flag of notification event. 
-     *                      See details in NEService::ResultType     * \param	notifyId	The call ID, usually response ID or attribute ID.
+     *                      See details in NEService::ResultType
+     * \param	notifyId	The call ID, usually response ID or attribute ID.
      *                      If request fails, also request ID.
      * \param	seqNr	    The call sequence number.
      **/
