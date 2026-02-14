@@ -965,7 +965,7 @@ inline bool TEMap<KEY, VALUE>::nextEntry(TEMap<KEY, VALUE>::MAPPOS & nextPos, KE
 template<typename KEY, typename VALUE>
 inline uint32_t TEMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint32_t elemCount)
 {
-    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
     if (result > 0)
     {
         uint32_t i = 0;

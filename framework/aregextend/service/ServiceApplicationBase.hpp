@@ -334,7 +334,7 @@ private:
 // Hidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(ServiceApplicationBase);
+    AREG_NOCOPY_NOMOVE(ServiceApplicationBase);
 };
 
 #endif  // AREG_AREGEXTEND_SERVICE_SERVICEAPPLICATIONBASE_HPP

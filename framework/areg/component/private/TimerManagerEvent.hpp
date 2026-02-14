@@ -129,7 +129,7 @@ private:
  *          The TimerManagerEvent is used to send Event Data
  *          The IETimerManagerEventConsumer is used to process data.
  **/
-DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, IETimerManagerEventConsumer)
+AREG_DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, IETimerManagerEventConsumer)
 
 /************************************************************************
  * Inline functions

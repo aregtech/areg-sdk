@@ -133,7 +133,7 @@ public:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(IELogDatabaseEngine);
+    AREG_NOCOPY_NOMOVE(IELogDatabaseEngine);
 };
 
 #endif // AREG_LOGGING_IELOGDATABASEENGINE_HPP

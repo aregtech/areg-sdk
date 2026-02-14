@@ -113,5 +113,5 @@ private:
     String              mModelName;
 
 private:
-    DECLARE_NOCOPY_NOMOVE(PageChat);
+    AREG_NOCOPY_NOMOVE(PageChat);
 };

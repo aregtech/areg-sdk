@@ -104,7 +104,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEServiceRegisterConsumer );
+    AREG_NOCOPY_NOMOVE( IEServiceRegisterConsumer );
 };
 
 #endif  // AREG_IPC_IESERVICEREGISTERCONSUMER_HPP

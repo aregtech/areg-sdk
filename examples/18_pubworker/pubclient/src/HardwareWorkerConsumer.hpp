@@ -84,5 +84,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     HardwareWorkerConsumer() = delete;
-    DECLARE_NOCOPY_NOMOVE( HardwareWorkerConsumer );
+    AREG_NOCOPY_NOMOVE( HardwareWorkerConsumer );
 };

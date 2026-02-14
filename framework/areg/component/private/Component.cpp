@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(Component, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME(Component, RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Static variables
@@ -111,7 +111,7 @@ bool Component::existComponent( const String & roleName )
 
 ComponentThread& Component::_getCurrentComponentThread()
 {
-    ComponentThread* result = RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
+    ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
     ASSERT(result != nullptr);
     return *result;
 }

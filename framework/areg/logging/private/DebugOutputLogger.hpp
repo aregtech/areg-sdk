@@ -168,7 +168,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     DebugOutputLogger() = delete;
-    DECLARE_NOCOPY_NOMOVE( DebugOutputLogger );
+    AREG_NOCOPY_NOMOVE( DebugOutputLogger );
 };
 
 #endif // AREG_LOGS

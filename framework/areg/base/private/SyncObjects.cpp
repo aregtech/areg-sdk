@@ -15,7 +15,10 @@
  ************************************************************************/
 #include "areg/base/SyncObjects.hpp"
 #include "areg/base/NEMemory.hpp"
+#include "areg/base/NEMath.hpp"
 #include "areg/base/Thread.hpp"
+
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////
 // IEResourceLock class implementation
@@ -87,8 +90,8 @@ SyncEvent::~SyncEvent()
 Semaphore::Semaphore( int maxCount, int initCount /* = 0 */ )
     : IEResourceLock( IESyncObject::eSyncObject::SoSemaphore )
 
-    , mMaxCount( MACRO_MAX( maxCount, 1 ) )
-    , mCurrCount( MACRO_IN_RANGE( initCount, 0, mMaxCount ) ? initCount : 0 )
+    , mMaxCount( std::max( maxCount, 1 ) )
+    , mCurrCount( NEMath::isInRange<int>(initCount, 0, mMaxCount) ? initCount : 0 )
 {
     _osCreateSemaphore( );
 }
@@ -256,7 +259,7 @@ Lock::~Lock()
 //////////////////////////////////////////////////////////////////////////
 MultiLock::MultiLock(IESyncObject* pObjects[], int count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
-    , mSizeCount    (MACRO_MIN(count, NECommon::MAXIMUM_WAITING_OBJECTS))
+    , mSizeCount    (std::min(count, NECommon::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
     NEMemory::memZero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );

@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Event class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Event class, static members
@@ -124,13 +124,13 @@ void Event::deliverEvent()
 
 bool Event::registerForThread( id_type whichThread /*= 0*/ )
 {
-    return registerForThread(whichThread != 0 ? RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread)
-                                              : RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
+    return registerForThread(whichThread != 0 ? AREG_RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread)
+                                              : AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
 }
 
 bool Event::registerForThread( const char* whichThread )
 {
-    return registerForThread(whichThread != nullptr ? RUNTIME_CAST(Thread::findThreadByName(whichThread), DispatcherThread) : nullptr);
+    return registerForThread(whichThread != nullptr ? AREG_RUNTIME_CAST(Thread::findThreadByName(whichThread), DispatcherThread) : nullptr);
 }
 
 bool Event::registerForThread( DispatcherThread * dispatchThread )

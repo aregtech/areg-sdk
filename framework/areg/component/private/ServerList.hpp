@@ -180,7 +180,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ServerList );
+    AREG_NOCOPY_NOMOVE( ServerList );
 };
 
 #endif  // AREG_COMPONENT_PRIVATE_SERVERLIST_HPP

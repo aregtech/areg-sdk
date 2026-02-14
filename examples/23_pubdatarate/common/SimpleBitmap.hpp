@@ -15,6 +15,7 @@
 #include "areg/base/SyncObjects.hpp"
 #include "common/NELargeData.hpp"
 
+#include <algorithm>
 #include <string>
 
 /**
@@ -457,7 +458,7 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     uint32_t width = getWidth();
     uint32_t height = getHeight();
     uint32_t remain = height - rowIndex;
-    lines = MACRO_MIN(lines, remain);
+    lines = std::min(lines, remain);
     uint32_t sizePixels = _dataSize(width, lines);
     uint32_t sizeBlock = sizePixels + sizeof(NELargeData::sImageBlock);
     NELargeData::sImageBlock* block = result.initialize(sizeBlock);

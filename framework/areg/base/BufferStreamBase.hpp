@@ -270,7 +270,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     BufferStreamBase() = delete;
-    DECLARE_NOCOPY_NOMOVE( BufferStreamBase );
+    AREG_NOCOPY_NOMOVE( BufferStreamBase );
 };
 
 #endif  // AREG_BASE_BUFFERSTREAMBASE_HPP

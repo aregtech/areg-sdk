@@ -62,5 +62,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ClientComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientComponent );
+    AREG_NOCOPY_NOMOVE( ClientComponent );
 };

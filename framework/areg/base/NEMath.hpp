@@ -22,6 +22,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEIOStream.hpp"
 
+#include <type_traits>
+
 /**
  * \brief       Basic Math functions, helper classes and CRC
  **/
@@ -289,37 +291,12 @@ namespace NEMath
     /************************************************************************/
     // NEMath::sLargeInteger declare global operators to make streamable
     /************************************************************************/
-        DECLARE_STREAMABLE(NEMath::sLargeInteger);
+        AREG_DECLARE_STREAMABLE(NEMath::sLargeInteger);
     };
 
 /************************************************************************/
 // Basic math global functions
 /************************************************************************/
-    /**
-     * \brief   Returns minimum of 2 values passed to function.
-     *          The Type should support operator less ( operator < )
-     * \param   a       The left-side object to compare
-     * \param   b       The right-side object to compare
-     * \return  Returns the minimum object of 2 given.
-     * \tparam  Type    The type of object. Can be primitive or an object,
-     *                  which has defined operator less ( operator < )
-     **/
-    template <typename Type>
-    inline Type & getMin( const Type & a, const Type & b );
-
-    /**
-     * \brief   Returns maximum of 2 values passed to function.
-     *          The Type should support operator more ( operator < )
-     * \param   a       The left-side object to compare
-     * \param   b       The right-side object to compare
-     * \return  Returns the maximum object of 2 given.
-     * \tparam  Type    The type of object. Can be primitive or an object,
-     *                  which has defined operator more ( operator > )
-     **/
-    template <typename Type>
-    inline const Type & getMax( const Type & a, const Type & b );
-
-
     /**
      * \brief   Returns the sign of given object.
      *          The object should be possible to compare with 0 and should support
@@ -473,16 +450,6 @@ namespace NEMath
     inline Type getAbs( const Type & val );
 
     /**
-     * \brief   Returns absolute value of given digit. The difference with getAbs() method
-     *          is that it works only for digits.
-     * \param   number  The number to get absolute value
-     * \return  Returns absolute value of digit.
-     * \tparam  Digit   Any primitive type
-     **/
-    template<typename Digit>
-    inline Digit makeAbsolute( Digit number );
-
-    /**
      * \brief   Compares 2 type of objects (primitives of objects) and return:
      *          -- NEMath::eCompare::Equal if `left` and `right` objects are equal.
      *          -- NEMath::eCompare::Bigger if `left object is bigger than the `right` object.
@@ -494,22 +461,149 @@ namespace NEMath
     template<typename Type>
     inline NEMath::eCompare compare(const Type & left, const Type & right);
 
+/************************************************************************/
+// Numeric utility functions
+/************************************************************************/
+
+    /**
+     * \brief   Checks whether the value is in the range [rangeMin, rangeMax].
+     * \param   value       The value to check.
+     * \param   rangeMin    The minimum of the range (inclusive).
+     * \param   rangeMax    The maximum of the range (inclusive).
+     * \return  Returns true if value is within [rangeMin, rangeMax].
+     * \tparam  T           Any type that supports operator <= .
+     **/
+    template <typename T>
+    inline constexpr bool isInRange(T value, T rangeMin, T rangeMax) noexcept;
+
+    /**
+     * \brief   Calculates and returns the nearest aligned value for the given length.
+     * \param   len     The value to align.
+     * \param   block   The alignment block size.
+     * \return  The smallest multiple of block that is >= len.
+     * \tparam  T       An arithmetic type.
+     **/
+    template <typename T>
+    inline constexpr T alignSize(T len, T block) noexcept;
+
+/************************************************************************/
+// Bit manipulation functions
+/************************************************************************/
+
+    /**
+     * \brief   Extracts the lowest 8 bits (byte) from the given integral value.
+     * \param   value   The integral value to extract the low byte from.
+     * \return  The lowest 8-bit value as uint8_t.
+     * \tparam  T       An integral type (e.g., uint16_t, uint32_t).
+     **/
+    template <typename T>
+    inline constexpr uint8_t loByte(T value) noexcept;
+
+    /**
+     * \brief   Extracts the highest 8 bits (byte) from the given integral value.
+     *          For a 16-bit value, returns bits [15:8].
+     *          For a 32-bit value, returns bits [31:24].
+     * \param   value   The integral value to extract the high byte from.
+     * \return  The highest 8-bit value as uint8_t.
+     * \tparam  T       An integral type (e.g., uint16_t, uint32_t).
+     **/
+    template <typename T>
+    inline constexpr uint8_t hiByte(T value) noexcept;
+
+    /**
+     * \brief   Extracts the low 16 bits (word) from a 32-bit value.
+     * \param   value   The 32-bit value to extract the low word from.
+     * \return  The low 16-bit value as uint16_t.
+     **/
+    inline constexpr uint16_t loWord(uint32_t value) noexcept;
+
+    /**
+     * \brief   Extracts the high 16 bits (word) from a 32-bit value.
+     * \param   value   The 32-bit value to extract the high word from.
+     * \return  The high 16-bit value as uint16_t.
+     **/
+    inline constexpr uint16_t hiWord(uint32_t value) noexcept;
+
+    /**
+     * \brief   Extracts the low 32 bits (dword) from a 64-bit value.
+     * \param   value   The 64-bit value to extract the low dword from.
+     * \return  The low 32-bit value as uint32_t.
+     **/
+    inline constexpr uint32_t loDword(uint64_t value) noexcept;
+
+    /**
+     * \brief   Extracts the high 32 bits (dword) from a 64-bit value.
+     * \param   value   The 64-bit value to extract the high dword from.
+     * \return  The high 32-bit value as uint32_t.
+     **/
+    inline constexpr uint32_t hiDword(uint64_t value) noexcept;
+
+    /**
+     * \brief   Swaps the byte order of a 16-bit or 32-bit integral value.
+     *          Uses compile-time branching (if constexpr) based on sizeof(T).
+     * \param   value   The value whose bytes to swap.
+     * \return  The byte-swapped value.
+     * \tparam  T       An integral type, must be 2 or 4 bytes wide.
+     **/
+    template <typename T>
+    inline constexpr T swapBytes(T value) noexcept;
+
+    /**
+     * \brief   Composes a 32-bit value from two 16-bit values.
+     * \param   hi  The high 16 bits.
+     * \param   lo  The low 16 bits.
+     * \return  The composed 32-bit value.
+     **/
+    inline constexpr uint32_t make32(uint16_t hi, uint16_t lo) noexcept;
+
+    /**
+     * \brief   Composes a 64-bit value from two 32-bit values.
+     * \param   hi  The high 32 bits.
+     * \param   lo  The low 32 bits.
+     * \return  The composed 64-bit value.
+     **/
+    inline constexpr uint64_t make64(uint32_t hi, uint32_t lo) noexcept;
+
+    /**
+     * \brief   Constructs a 32-bit value from four bytes (most significant first).
+     * \param   b3  Bits [31:24].
+     * \param   b2  Bits [23:16].
+     * \param   b1  Bits [15:8].
+     * \param   b0  Bits [7:0].
+     * \return  The constructed 32-bit value.
+     **/
+    inline constexpr uint32_t construct32(uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept;
+
+    /**
+     * \brief   Constructs a 64-bit value from eight bytes (most significant first).
+     * \param   b7  Bits [63:56].
+     * \param   b6  Bits [55:48].
+     * \param   b5  Bits [47:40].
+     * \param   b4  Bits [39:32].
+     * \param   b3  Bits [31:24].
+     * \param   b2  Bits [23:16].
+     * \param   b1  Bits [15:8].
+     * \param   b0  Bits [7:0].
+     * \return  The constructed 64-bit value.
+     **/
+    inline constexpr uint64_t construct64(uint8_t b7, uint8_t b6, uint8_t b5, uint8_t b4,
+                                          uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept;
+
+    /**
+     * \brief   Computes the absolute difference (delta) between two values.
+     *          Works with any type that supports comparison and subtraction.
+     * \param   a   The first value.
+     * \param   b   The second value.
+     * \return  The absolute difference between a and b.
+     * \tparam  T   A type that supports operator > and operator -.
+     **/
+    template <typename T>
+    inline constexpr T delta(T a, T b) noexcept;
+
 }
 //////////////////////////////////////////////////////////////////////////
 // NEMath namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
-
-template <typename Type>
-inline Type & NEMath::getMin( const Type & a, const Type & b )
-{
-    return MACRO_MIN(a, b);
-}
-
-template <typename Type>
-inline const Type & NEMath::getMax( const Type & a, const Type & b )
-{
-    return MACRO_MAX(a, b);
-}
 
 template <typename Type>
 inline Type NEMath::getAbs( const Type & val )
@@ -521,13 +615,6 @@ template<typename Type>
 inline NEMath::eDigitSign NEMath::getSign( const Type & val )
 {
     return static_cast<eDigitSign>((val > 0) - (val < 0));
-}
-
-template<typename Digit>
-inline Digit NEMath::makeAbsolute( Digit number )
-{
-    Digit mask = number >> (sizeof( Digit ) * 8 - 1);
-    return ((number + mask) ^ mask);
 }
 
 template<typename Type>
@@ -564,6 +651,119 @@ inline unsigned int NEMath::getHighBits( const sLargeInteger &num )
 inline unsigned int NEMath::getLowBits( const sLargeInteger &num )
 {
     return (num.loBits);
+}
+
+/************************************************************************/
+// NEMath numeric utility inline functions implementation
+/************************************************************************/
+
+template <typename T>
+inline constexpr bool NEMath::isInRange(T value, T rangeMin, T rangeMax) noexcept
+{
+    return (rangeMin <= value) && (value <= rangeMax);
+}
+
+template <typename T>
+inline constexpr T NEMath::alignSize(T len, T block) noexcept
+{
+    return (((len) + (block - 1)) / block) * block;
+}
+
+/************************************************************************/
+// NEMath bit manipulation inline functions implementation
+/************************************************************************/
+
+template <typename T>
+inline constexpr uint8_t NEMath::loByte(T value) noexcept
+{
+    static_assert(std::is_integral_v<T>, "loByte requires an integral type");
+    return static_cast<uint8_t>(static_cast<std::make_unsigned_t<T>>(value) & 0xFF);
+}
+
+template <typename T>
+inline constexpr uint8_t NEMath::hiByte(T value) noexcept
+{
+    static_assert(std::is_integral_v<T>, "hiByte requires an integral type");
+    return static_cast<uint8_t>((static_cast<std::make_unsigned_t<T>>(value) >> ((sizeof(T) - 1) * 8)) & 0xFF);
+}
+
+inline constexpr uint16_t NEMath::loWord(uint32_t value) noexcept
+{
+    return static_cast<uint16_t>(value & 0xFFFF);
+}
+
+inline constexpr uint16_t NEMath::hiWord(uint32_t value) noexcept
+{
+    return static_cast<uint16_t>((value >> 16) & 0xFFFF);
+}
+
+inline constexpr uint32_t NEMath::loDword(uint64_t value) noexcept
+{
+    return static_cast<uint32_t>(value & 0xFFFFFFFF);
+}
+
+inline constexpr uint32_t NEMath::hiDword(uint64_t value) noexcept
+{
+    return static_cast<uint32_t>((value >> 32) & 0xFFFFFFFF);
+}
+
+template <typename T>
+inline constexpr T NEMath::swapBytes(T value) noexcept
+{
+    static_assert(std::is_integral_v<T>, "swapBytes requires an integral type");
+    static_assert(sizeof(T) == 2 || sizeof(T) == 4, "swapBytes supports only 16-bit and 32-bit types");
+
+    using U = std::make_unsigned_t<T>;
+    U n = static_cast<U>(value);
+
+    if constexpr (sizeof(T) == 2)
+    {
+        return static_cast<T>(((n << 8) & 0xFF00) | ((n >> 8) & 0x00FF));
+    }
+    else
+    {
+        return static_cast<T>(((n & 0x000000FF) << 24) |
+                              ((n & 0x0000FF00) <<  8) |
+                              ((n & 0x00FF0000) >>  8) |
+                              ((n & 0xFF000000) >> 24));
+    }
+}
+
+inline constexpr uint32_t NEMath::make32(uint16_t hi, uint16_t lo) noexcept
+{
+    return (static_cast<uint32_t>(hi) << 16) | static_cast<uint32_t>(lo);
+}
+
+inline constexpr uint64_t NEMath::make64(uint32_t hi, uint32_t lo) noexcept
+{
+    return (static_cast<uint64_t>(hi) << 32) | static_cast<uint64_t>(lo);
+}
+
+inline constexpr uint32_t NEMath::construct32(uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept
+{
+    return (static_cast<uint32_t>(b3) << 24) |
+           (static_cast<uint32_t>(b2) << 16) |
+           (static_cast<uint32_t>(b1) <<  8) |
+           (static_cast<uint32_t>(b0));
+}
+
+inline constexpr uint64_t NEMath::construct64(uint8_t b7, uint8_t b6, uint8_t b5, uint8_t b4,
+                                              uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept
+{
+    return (static_cast<uint64_t>(b7) << 56) |
+           (static_cast<uint64_t>(b6) << 48) |
+           (static_cast<uint64_t>(b5) << 40) |
+           (static_cast<uint64_t>(b4) << 32) |
+           (static_cast<uint64_t>(b3) << 24) |
+           (static_cast<uint64_t>(b2) << 16) |
+           (static_cast<uint64_t>(b1) <<  8) |
+           (static_cast<uint64_t>(b0));
+}
+
+template <typename T>
+inline constexpr T NEMath::delta(T a, T b) noexcept
+{
+    return (a > b ? a - b : b - a);
 }
 
 /************************************************************************/
@@ -715,6 +915,6 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator =  ( NEMath::sLar
 /************************************************************************/
 // NEMath::sLargeInteger declare global operators to make streamable
 /************************************************************************/
-IMPLEMENT_STREAMABLE(NEMath::sLargeInteger)
+AREG_IMPLEMENT_STREAMABLE(NEMath::sLargeInteger)
 
 #endif  // AREG_BASE_NEMATH_HPP

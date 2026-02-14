@@ -40,8 +40,8 @@ SpinLockIX::SpinLockIX()
     mInternLock = OS_UNFAIR_LOCK_INIT;
     mIsValid    = true;
 #else   // __APPLE__
-    mIsValid =  (RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) &&
-                (RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
+    mIsValid =  (NECommon::RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) &&
+                (NECommon::RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
 #endif  // __APPLE__
 }
 
@@ -129,7 +129,7 @@ bool SpinLockIX::tryLock()
 #ifdef __APPLE__
             if ( ::os_unfair_lock_trylock( &mSpinLock ) )
 #else   // !__APPLE__
-            if ( RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
+            if ( NECommon::RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
 #endif  // __APPLE__
             {
                 _lockIntern( );
@@ -179,7 +179,7 @@ inline bool SpinLockIX::_lockSpin()
     ::os_unfair_lock_lock( &mSpinLock );
     return true;
 #else   // !__APPLE__
-    return (RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
+    return (NECommon::RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
 #endif  // __APPLE__
 }
 

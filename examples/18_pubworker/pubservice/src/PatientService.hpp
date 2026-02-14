@@ -78,5 +78,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     PatientService() = delete;
-    DECLARE_NOCOPY_NOMOVE( PatientService );
+    AREG_NOCOPY_NOMOVE( PatientService );
 };

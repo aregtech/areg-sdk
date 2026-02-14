@@ -63,7 +63,7 @@ class AREG_API NullDispatcherThread    : public ComponentThread
     /**
      * \brief   Declare Runtime to be able to cast and validate thread.
      **/
-    DECLARE_RUNTIME(NullDispatcherThread)
+    AREG_DECLARE_RUNTIME(NullDispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Constructor. Hidden. The object cannot be instantiated.
 //////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( NullDispatcherThread );
+    AREG_NOCOPY_NOMOVE( NullDispatcherThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ NullDispatcherThread   NullDispatcherThread::sSelfNullDispatcher;
 //////////////////////////////////////////////////////////////////////////
 // Runtime information to identify NullDispatcher object
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
+AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
 
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class Constructor 
@@ -189,7 +189,7 @@ bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout *
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(DispatcherThread, Thread)
+AREG_IMPLEMENT_RUNTIME(DispatcherThread, Thread)
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class statics
@@ -288,14 +288,14 @@ bool DispatcherThread::isExitEvent(const Event * checkEvent) const
 DispatcherThread * DispatcherThread::findEventConsumerThread( const RuntimeClassID & whichClass )
 {
     DispatcherThread * result = nullptr;
-    Thread* dispThread = RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
+    Thread* dispThread = AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
     result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
     id_type threadId = Thread::INVALID_THREAD_ID;
     dispThread = Thread::getFirstThread(threadId);
     while ((result == nullptr) && (dispThread != nullptr))
     {
-        dispThread = dispThread != nullptr ? RUNTIME_CAST(dispThread, DispatcherThread) : nullptr;
+        dispThread = dispThread != nullptr ? AREG_RUNTIME_CAST(dispThread, DispatcherThread) : nullptr;
         result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
         dispThread = Thread::getNextThread(threadId);

@@ -21,6 +21,8 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
 
+#include <algorithm>
+
 //////////////////////////////////////////////////////////////////////////
 // Local methods.
 //////////////////////////////////////////////////////////////////////////
@@ -46,14 +48,14 @@ inline int _readString(const FileBase & file, ClassType & outValue)
         buffer[0]               = NEString::EndOfString;
         unsigned int oldPos     = file.getPosition();
         unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-        readLength              = MACRO_MIN(strLength, readLength);
+        readLength              = std::min(strLength, readLength);
         buffer[readLength]      = NEString::EndOfString;
 
         length = readLength;
         if ( readLength != 0 )
         {
             const CharType * str = NEString::getPrintable<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
-            length = context != nullptr ? MACRO_ELEM_COUNT( buffer, context ) : readLength;
+            length = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
 
             outValue    += str;
             result      += length;
@@ -90,14 +92,14 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
         buffer[0]               = NEString::EndOfString;
         unsigned int oldPos     = file.getPosition();
         unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-        readLength              = MACRO_MIN(strLength, readLength);
+        readLength              = std::min(strLength, readLength);
         buffer[readLength]      = NEString::EndOfString;
 
         length = readLength;
         if ( readLength != 0 )
         {
             const CharType * str = NEString::getLine<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
-            length   = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
+            length   = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
             outValue+= str;
             result  += length;
             int newPos  = static_cast<int>( (result * sizeof(CharType)) + oldPos );
@@ -125,14 +127,14 @@ inline int _readString(const FileBase & file, CharType * buffer, int charCount)
             unsigned int oldPos     = file.getPosition();
             CharType * context      = nullptr;
             unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-            readLength              = MACRO_MIN(strLength, readLength);
+            readLength              = std::min(strLength, readLength);
             buffer[readLength]      = NEString::EndOfString;
 
             if ( readLength != 0 )
             {
                 NEString::getPrintable<CharType>( buffer, charCount, &context );
                 ASSERT((context == nullptr) || (context >= buffer));
-                result = context != nullptr ? MACRO_ELEM_COUNT( buffer, context ) : readLength;
+                result = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
                 file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
             }
@@ -155,13 +157,13 @@ inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
             unsigned int oldPos     = file.getPosition();
             CharType * context      = nullptr;
             unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
-            readLength              = MACRO_MIN(strLength, readLength);
+            readLength              = std::min(strLength, readLength);
             buffer[readLength]      = NEString::EndOfString;
             if ( readLength != 0 )
             {
                 NEString::getLine<CharType>(buffer, charCount, &context);
                 ASSERT((context == nullptr) || (context >= buffer));
-                result = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
+                result = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
                 file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
             }

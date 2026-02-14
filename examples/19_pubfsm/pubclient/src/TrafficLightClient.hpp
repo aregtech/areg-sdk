@@ -102,5 +102,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     TrafficLightClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( TrafficLightClient );
+    AREG_NOCOPY_NOMOVE( TrafficLightClient );
 };

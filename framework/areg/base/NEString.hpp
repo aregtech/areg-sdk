@@ -24,6 +24,7 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
 
+#include <algorithm>
 #include <stdarg.h>
 #include <wchar.h>
 #include <limits>
@@ -1217,7 +1218,7 @@ NEString::CharPos NEString::findLast( CharType   chSearch
                 {
                     if (*end == chSearch)
                     {
-                        result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, end));
+                        result = static_cast<NEString::CharPos>(end - strSource);
                         if ((out_next != nullptr) && (end >= strSource))
                         {
                             *out_next = end;
@@ -1236,7 +1237,7 @@ NEString::CharPos NEString::findLast( CharType   chSearch
                 {
                     if (NEString::makeLower<CharType>(*end) == ch)
                     {
-                        result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, end));
+                        result = static_cast<NEString::CharPos>(end - strSource);
                         if ((out_next != nullptr) && (end >= strSource))
                         {
                             *out_next = end;
@@ -1292,7 +1293,7 @@ NEString::CharPos NEString::findLast( const CharType * strPhrase
                         if (two < strPhrase)
                         {
                             ++one;
-                            result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, one));
+                            result = static_cast<NEString::CharPos>(one - strSource);
                             if ((out_next != nullptr) && (one >= strSource))
                                 *out_next = one;
 
@@ -1323,7 +1324,7 @@ NEString::CharPos NEString::findLast( const CharType * strPhrase
                         if (two < strPhrase)
                         {
                             ++one;
-                            result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, one));
+                            result = static_cast<NEString::CharPos>(one - strSource);
                             if ((out_next != nullptr) && (one >= strSource))
                                 *out_next = one;
 
@@ -2044,7 +2045,7 @@ inline NEString::CharCount NEString::getStringLineLength(const CharType* theStri
         }
     }
 
-    return static_cast<NEString::CharCount>( MACRO_ELEM_COUNT(start, theString) );
+    return static_cast<NEString::CharCount>( theString - start );
 }
 
 template<typename CharDst, typename CharSrc>
@@ -2071,7 +2072,7 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
         {
             CharDst * dst = strDst;
             dstSpace -= 1;
-            charsCopy = MACRO_MIN(dstSpace, charsCopy);
+            charsCopy = std::min(dstSpace, charsCopy);
             for ( ; (*strSrc != static_cast<CharDst>(EndOfString)) && (charsCopy != 0); -- charsCopy )
                 *dst++ = static_cast<CharDst>(*strSrc++);
 

@@ -362,7 +362,7 @@ String File::getParentDir(const char * filePath)
     const char * end = nullptr;
     if (File::findParent(filePath, &end))
     {
-        result.assign(filePath, static_cast<NEString::CharCount>(MACRO_ELEM_COUNT(filePath, end)) );
+        result.assign(filePath, static_cast<NEString::CharCount>(end - filePath) );
     }
 
     return result;
@@ -378,7 +378,7 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
     {
         if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
         {
-            String node(start, static_cast<uint32_t>(MACRO_ELEM_COUNT(start, end)));
+            String node(start, static_cast<uint32_t>(end - start));
             if (node.isEmpty() == false)
                 in_out_List.pushLast( node );
 
@@ -392,7 +392,7 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
 
     if (start != end)
     {
-        String node(start, static_cast<uint32_t>(MACRO_ELEM_COUNT(start, end)));
+        String node(start, static_cast<uint32_t>(end - start));
         if (node.isEmpty() == false)
             in_out_List.pushLast( node );
     }

@@ -28,7 +28,7 @@
 // Implement runtime
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
+AREG_IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Implement static methods
@@ -54,7 +54,7 @@ inline ComponentThread & ComponentThread::self()
 
 inline ComponentThread* ComponentThread::_getCurrentComponentThread()
 {
-    return RUNTIME_CAST( &(DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
+    return AREG_RUNTIME_CAST( &(DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
 }
 
 //////////////////////////////////////////////////////////////////////////

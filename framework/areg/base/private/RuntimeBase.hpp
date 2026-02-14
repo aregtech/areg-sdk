@@ -105,7 +105,7 @@ public:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( RuntimeBase );
+    AREG_NOCOPY_NOMOVE( RuntimeBase );
     bool operator == ( const RuntimeBase & /*other*/ ) const = delete;
     bool operator != ( const RuntimeBase & /*other*/ ) const = delete;
 };

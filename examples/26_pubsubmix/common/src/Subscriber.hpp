@@ -125,7 +125,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     Subscriber();
-    DECLARE_NOCOPY_NOMOVE(Subscriber);
+    AREG_NOCOPY_NOMOVE(Subscriber);
 };
 
 #endif // PUBSUBMIX_COMMON_SUBSCRIBER_HPP

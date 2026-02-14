@@ -20,6 +20,8 @@
 #include "areg/base/TEArrayList.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
+#include <algorithm>
+
 /**
  * \brief   Test TEArrayList constructors.
  **/
@@ -44,11 +46,11 @@ TEST(TEArrayListTest, TestConstructors)
 
     Array arr3(_capacity, 3u);
     EXPECT_EQ(arr3.getSize(), 3u);
-    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(MACRO_MAX(3, _capacity)));
+    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(std::max(3, _capacity)));
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), static_cast<uint32_t>(_len));
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(static_cast<uint32_t>(_len), NECommon::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), static_cast<uint32_t>(_len));
@@ -115,11 +117,11 @@ TEST(TEArrayListTest, TestArrayContent)
 
     Array arr3(_capacity, 3);
     EXPECT_EQ(arr3.getSize(), 3u);
-    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(MACRO_MAX(3, _capacity)));
+    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(std::max(3, _capacity)));
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), _len);
@@ -161,7 +163,7 @@ TEST(TEArrayListTest, TestGetSetAndContent)
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
     const int* values = arr4.getValues();
     ASSERT_TRUE(::memcmp(values, _arr, sizeof(int) * _len) == 0);
 
@@ -310,7 +312,7 @@ TEST(TEArrayListTest, TestCopyMove)
     const int* data2 = arr2.getValues();
     ASSERT_TRUE(arr1 != arr2);
     ASSERT_TRUE(arr1.getSize() != arr2.getSize());
-    ASSERT_TRUE(memcmp(data1, data2, MACRO_MIN(_len1, _len2) * sizeof(int)) != 0);
+    ASSERT_TRUE(memcmp(data1, data2, std::min(_len1, _len2) * sizeof(int)) != 0);
 
     arr2.copy(arr1);
     data1 = arr1.getValues();

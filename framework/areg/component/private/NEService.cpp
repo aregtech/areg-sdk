@@ -205,12 +205,12 @@ void NEService::ProxyData::setDataState( unsigned int msgId, NEService::eDataSta
         }
         else
         {
-            mAttrState[GET_ATTR_INDEX(msgId)]   = newState;
+            mAttrState[NEService::attrIndex(msgId)]   = newState;
         }
     }
     else if ( NEService::isResponseId(msgId) )
     {
-        mParamState.setParamState(GET_RESP_INDEX(msgId), newState);
+        mParamState.setParamState(NEService::respIndex(msgId), newState);
     }
     // else ignore
 }
@@ -229,7 +229,7 @@ NEService::eDataStateType NEService::ProxyData::getDataState( unsigned int msgId
 
 unsigned int NEService::ProxyData::getResponseId( unsigned int requestId ) const
 {
-    unsigned int index = GET_REQ_INDEX(requestId);
+    unsigned int index = NEService::reqIndex(requestId);
     return  (
                 (static_cast<int>(index) >= 0) && (index < mIfData.idRequestCount) ? 
                         static_cast<unsigned int>(mIfData.idRequestToResponseMap[index]) :

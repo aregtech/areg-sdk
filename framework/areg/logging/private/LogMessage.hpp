@@ -210,7 +210,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     LogMessage() = delete;
-    DECLARE_NOMOVE( LogMessage );
+    AREG_NOMOVE( LogMessage );
 };
 
 #if AREG_LOGS

@@ -29,6 +29,8 @@
 #include "areg/base/IEIOStream.hpp"
 
 #include <algorithm>
+
+#include <algorithm>
 #include <list>
 
 //////////////////////////////////////////////////////////////////////////
@@ -1174,7 +1176,7 @@ inline void TESortedLinkedList<VALUE>::merge(TESortedLinkedList<VALUE>&& source)
 template<typename VALUE>
 inline uint32_t TESortedLinkedList<VALUE>::getElements(VALUE* list, uint32_t elemCount)
 {
-    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
     uint32_t i = 0;
     for (const auto& entry : mValueList)
     {

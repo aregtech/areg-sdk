@@ -167,7 +167,7 @@ protected:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEEventDispatcher );
+    AREG_NOCOPY_NOMOVE( IEEventDispatcher );
 };
 
 #endif  // AREG_COMPONENT_PRIVATE_IEEVENTDISPATCHER_HPP

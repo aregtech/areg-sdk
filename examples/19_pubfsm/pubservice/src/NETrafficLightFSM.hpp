@@ -118,7 +118,7 @@ namespace NETrafficLightFSM
  *          and declarataion of NETrafficLightFSM::IEFsmEventConsumer, which
  *          will be registered in the same thread, where it is instantiated.
  **/
-DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
+AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 
 //////////////////////////////////////////////////////////////////////////
 // Available predefined Timers of TrafficLight State Machine
@@ -156,8 +156,10 @@ inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::eFsmE
 {
     switch ( value )
     {
-    CASE_MAKE_STRING( NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight );
-    CASE_DEFAULT( "ERR: Unexpected NETrafficLightFSM::eFsmEventData event value!" );
+    case NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight:
+        return "NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight";
+    default:
+        return "ERR: Unexpected NETrafficLightFSM::eFsmEventData event value!";
     }
 }
 
@@ -168,13 +170,20 @@ inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::eFsmT
 {
     switch ( value )
     {
-    CASE_MAKE_STRING( NETrafficLightFSM::eFsmTimerData::Red );
-    CASE_MAKE_STRING( NETrafficLightFSM::eFsmTimerData::YellowRed );
-    CASE_MAKE_STRING( NETrafficLightFSM::eFsmTimerData::Green );
-    CASE_MAKE_STRING( NETrafficLightFSM::eFsmTimerData::YellowGreen );
-    CASE_MAKE_STRING( NETrafficLightFSM::eFsmTimerData::PedestrianWalk );
-    CASE_MAKE_STRING( NETrafficLightFSM::eFsmTimerData::VehicleWait );
-    CASE_DEFAULT( "ERR: Unexpected NETrafficLightFSM::eFsmTimerData timer value!" );
+    case NETrafficLightFSM::eFsmTimerData::Red:
+        return "NETrafficLightFSM::eFsmTimerData::Red";
+    case NETrafficLightFSM::eFsmTimerData::YellowRed:
+        return "NETrafficLightFSM::eFsmTimerData::YellowRed";
+    case NETrafficLightFSM::eFsmTimerData::Green:
+        return "NETrafficLightFSM::eFsmTimerData::Green";
+    case NETrafficLightFSM::eFsmTimerData::YellowGreen:
+        return "NETrafficLightFSM::eFsmTimerData::YellowGreen";
+    case NETrafficLightFSM::eFsmTimerData::PedestrianWalk:
+        return "NETrafficLightFSM::eFsmTimerData::PedestrianWalk";
+    case NETrafficLightFSM::eFsmTimerData::VehicleWait:
+        return "NETrafficLightFSM::eFsmTimerData::VehicleWait";
+    default:
+        return "ERR: Unexpected NETrafficLightFSM::eFsmTimerData timer value!";
     }
 }
 

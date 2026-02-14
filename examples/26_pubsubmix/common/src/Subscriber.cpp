@@ -16,6 +16,7 @@
 #include "aregextend/console/Console.hpp"
 #include "common/src/NECommon.hpp"
 
+#include <algorithm>
 #include <string_view>
 
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
@@ -32,7 +33,7 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
     , mCoordStr     ( { NECommon::CoordString.posX     , NECommon::CoordString.posY   + position * 3 })
     , mCoordSep     ( { NECommon::CoordSeparator.posX  , NECommon::CoordSeparator.posY+ position * 3 })
 {
-    NECommon::CoordInfoMsg.posY = MACRO_MAX(NECommon::CoordInfoMsg.posY + 1, NECommon::CoordSeparator.posY);
+    NECommon::CoordInfoMsg.posY = std::max(NECommon::CoordInfoMsg.posY + 1, NECommon::CoordSeparator.posY);
 }
 
 bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )

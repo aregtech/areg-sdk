@@ -22,6 +22,15 @@
 
 #include <string_view>
 
+//!< Test-local macros for changing/querying scope priorities (moved from GELog.h).
+#if AREG_LOGS
+    #define SCOPE_PRIORITY_CHANGE(scope, prio)  NELogging::setScopePriority(#scope, static_cast<unsigned int>(prio))
+    #define SCOPE_PRIORITY_GET(scope)           NELogging::getScopePriority(#scope)
+#else
+    #define SCOPE_PRIORITY_CHANGE(scope, prio)  ((3-2) > 0)
+    #define SCOPE_PRIORITY_GET(scope)           static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid)
+#endif
+
 namespace
 {
     //!< The default config file

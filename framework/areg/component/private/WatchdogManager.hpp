@@ -234,7 +234,7 @@ private:
 //  Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( WatchdogManager );
+    AREG_NOCOPY_NOMOVE( WatchdogManager );
 
 };
 

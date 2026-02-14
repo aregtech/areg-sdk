@@ -74,12 +74,12 @@ MutexIX::~MutexIX()
 
 inline void MutexIX::_initPosixMutex( bool isRecursive )
 {
-    if ( RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
+    if ( NECommon::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
         mMutexValid = true;
-        if ( RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
+        if ( NECommon::RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
         {
-            if ( RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
+            if ( NECommon::RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
             {
                 mMutexAttrValid = true;
             }
@@ -106,7 +106,7 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
     {
         if ( NECommon::WAIT_INFINITE == msTimeout )
         {
-            result = RETURNED_OK == ::pthread_mutex_lock( &mPosixMutex );
+            result = NECommon::RETURNED_OK == ::pthread_mutex_lock( &mPosixMutex );
         }
         else
         {
@@ -120,7 +120,7 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 
             while (!result)
             {
-                if (RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
+                if (NECommon::RETURNED_OK == ::pthread_mutex_trylock(&mPosixMutex))
                 {
                     result = true;
                 }
@@ -143,7 +143,7 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
                 }
             }
 #else   // !__APPLE__
-            result = RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
+            result = NECommon::RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &deadline );
 #endif  // __APPLE__
         }
     }
@@ -153,7 +153,7 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 
 bool MutexIX::tryLock() const
 {
-    return (RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
+    return (NECommon::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
 }
 
 void MutexIX::unlock() const

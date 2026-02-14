@@ -488,7 +488,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(LogObserverBase);
+    AREG_NOCOPY_NOMOVE(LogObserverBase);
 };
 
 #endif // AREG_AREGLOGGER_CLIENT_LOGOBSERVERBASE_HPP

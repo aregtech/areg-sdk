@@ -128,7 +128,7 @@ bool Object::operator != ( const Object & other ) const
  **/
 Object::operator unsigned int () const
 {
-    return MACRO_PTR2INT32(this);
+    return static_cast<unsigned int>(reinterpret_cast<uintptr_t>(this));
 }
 
 /**

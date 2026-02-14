@@ -21,6 +21,7 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#include <algorithm>
 #include <string.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -253,7 +254,7 @@ unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned i
 
                 unsigned int usedSize   = mByteBuffer->bufHeader.biUsed;
                 unsigned int newPos     = writePos + result;
-                setSizeUsed( MACRO_MAX(usedSize, newPos) );
+                setSizeUsed( std::max(usedSize, newPos) );
                 mWritePosition.setPosition(static_cast<int>(newPos), IECursorPosition::eCursorPosition::PositionBegin);
             }
         }
@@ -277,7 +278,7 @@ unsigned int BufferStreamBase::writeData(const unsigned char* buffer, unsigned i
         result = NEMemory::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
         unsigned int usedSize   = mByteBuffer->bufHeader.biUsed;
         unsigned int newPos     = writePos + result;
-        setSizeUsed( MACRO_MAX(usedSize, newPos) );
+        setSizeUsed( std::max(usedSize, newPos) );
         mWritePosition.setPosition(static_cast<int>(newPos), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -294,7 +295,7 @@ unsigned int BufferStreamBase::readData(unsigned char* buffer, unsigned int size
     {
         ASSERT(buffer != nullptr);
         unsigned int remain = getSizeReadable();
-        result = MACRO_MIN(remain, size);
+        result = std::min(remain, size);
 
         if (result != 0)
         {

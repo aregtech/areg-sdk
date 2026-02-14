@@ -36,7 +36,7 @@ void WaitableTimerIX::_posixTimerRoutine(union sigval si)
 {
     WaitableTimerIX *timer = reinterpret_cast<WaitableTimerIX *>(si.sival_ptr);
 
-    OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, reinterpret_cast<id_type>(pthread_self()));
+    AREG_OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, reinterpret_cast<id_type>(pthread_self()));
     if ( timer != nullptr )
     {
         timer->_timerExpired();
@@ -71,7 +71,7 @@ WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name
     sigEvent.sigev_notify_function  = &WaitableTimerIX::_posixTimerRoutine;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    if (RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
+    if (NECommon::RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
     {
         mTimerId = static_cast<timer_t>(0);
     }
@@ -135,7 +135,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
         mIsSignaled     = false;
         mThreadId       = Thread::getCurrentThreadId();
         result          = true;
-        if ( RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
+        if ( NECommon::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
         {
             result = false;
             _resetTimer();
@@ -221,7 +221,7 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
     ObjectLockIX lock(*this);
     if (mResetInfo == NESyncTypesIX::eEventResetInfo::EventResetAutomatic)
     {
-        OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
+        AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
         mIsSignaled = false;
     }
 }
@@ -292,12 +292,12 @@ inline void WaitableTimerIX::_timerExpired()
             mIsSignaled = true;
             sendSignal  = true;
 
-            OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", getName().getString( ), mFiredCount, mTimeout);
+            AREG_OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", getName().getString( ), mFiredCount, mTimeout);
         }
 #ifdef DEBUG
         else
         {
-            OUTPUT_WARN("The waitable timer was previously canceled, ignoring processing");
+            AREG_OUTPUT_WARN("The waitable timer was previously canceled, ignoring processing");
         }
 #endif // DEBUG
 

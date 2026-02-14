@@ -118,7 +118,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     LogEventProcessor() = delete;
-    DECLARE_NOCOPY_NOMOVE( LogEventProcessor );
+    AREG_NOCOPY_NOMOVE( LogEventProcessor );
 };
 
 #endif  // AREG_LOGS

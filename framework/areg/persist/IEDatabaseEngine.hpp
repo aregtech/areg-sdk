@@ -97,7 +97,7 @@ public:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(IEDatabaseEngine);
+    AREG_NOCOPY_NOMOVE(IEDatabaseEngine);
 };
 
 #endif  // AREG_PERSIST_IEDATABASEENGINE_HPP

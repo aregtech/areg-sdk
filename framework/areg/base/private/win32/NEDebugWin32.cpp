@@ -17,6 +17,7 @@
 
 #ifdef  _WIN32
 
+#include "areg/base/NEMath.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Containers.hpp"
 
@@ -38,8 +39,10 @@
 #ifdef  _DEBUG
 void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 {
-    if ( NEString::isEmpty<char>( msg ) == false )
-        ::OutputDebugStringA( msg );
+    if (NEString::isEmpty<char>(msg) == false)
+    {
+        ::OutputDebugStringA(msg);
+    }
 }
 #else   // _DEBUG
 void AREG_API_IMPL NEDebug::outputMessageOS(const char* /*msg*/)
@@ -61,7 +64,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
 
     constexpr unsigned int   _stackMaxDepth     { 64 };
     constexpr unsigned int   _symNameLength     { MAX_SYM_NAME };
-    constexpr unsigned int   _sizeOfSymInfo     { MACRO_ALIGN_SIZE( sizeof( SYMBOL_INFO ) + _symNameLength * sizeof( char ), sizeof( ULONG64 ) ) };
+    constexpr unsigned int   _sizeOfSymInfo     { NEMath::alignSize(static_cast<uint32_t>(sizeof( SYMBOL_INFO )) + _symNameLength * static_cast<uint32_t>(sizeof( char )), static_cast<uint32_t>(sizeof(ULONG64))) };
 
     callStack.clear();
 
@@ -88,15 +91,15 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
             frame.AddrStack.Mode    = AddrModeFlat;
             frame.AddrFrame.Mode    = AddrModeFlat;
 
-#if defined(BIT32)
+#if (AREG_TARGET_PLATFORM == 32)
             frame.AddrPC.Offset     = context->Eip;
             frame.AddrStack.Offset  = context->Esp;
             frame.AddrFrame.Offset  = context->Ebp;
-#elif defined(BIT64)
+#elif (AREG_TARGET_PLATFORM == 64)
             frame.AddrPC.Offset     = context->Rip;
             frame.AddrStack.Offset  = context->Rsp;
             frame.AddrFrame.Offset  = context->Rbp;
-#endif // defined(BIT64)
+#endif // (AREG_TARGET_PLATFORM == 64)
 
             char message[_symNameLength + MAX_PATH + 8] = { 0 };
 

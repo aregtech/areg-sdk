@@ -19,6 +19,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/base/NEMath.hpp"
 
 /**
  * \brief   Test TEHashMap constructors.
@@ -220,8 +221,8 @@ TEST(TEHashMapTest, TestPositionOperations)
         EXPECT_EQ(nextValue, Value);
         if (hashMap.isValidPosition(pos))
         {
-            EXPECT_EQ(MACRO_DELTA(hashMap.keyAtPosition(pos), nextKey), 1);
-            EXPECT_EQ(MACRO_DELTA(hashMap.valueAtPosition(pos), nextValue), coef);
+            EXPECT_EQ(NEMath::delta(hashMap.keyAtPosition(pos), nextKey), 1);
+            EXPECT_EQ(NEMath::delta(hashMap.valueAtPosition(pos), nextValue), coef);
         }
 
         pos = hashMap.nextPosition(cur);

@@ -65,7 +65,7 @@ class AREG_API DispatcherThread : public Thread
 //////////////////////////////////////////////////////////////////////////
 // Declare this to make runtime information available for dispatcher thread.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(DispatcherThread)
+    AREG_DECLARE_RUNTIME(DispatcherThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Static functions
@@ -279,7 +279,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     DispatcherThread() = delete;
-    DECLARE_NOCOPY_NOMOVE( DispatcherThread );
+    AREG_NOCOPY_NOMOVE( DispatcherThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -288,25 +288,25 @@ private:
 
 inline DispatcherThread & DispatcherThread::getDispatcherThread( const String & threadName )
 {
-    DispatcherThread * dispThread = RUNTIME_CAST(threadName.isEmpty() == false ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
+    DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.isEmpty() == false ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline DispatcherThread & DispatcherThread::getDispatcherThread( id_type threadId )
 {
-    DispatcherThread* dispThread = RUNTIME_CAST(threadId != 0 ? Thread::findThreadById(threadId) : Thread::getCurrentThread(), DispatcherThread);
+    DispatcherThread* dispThread = AREG_RUNTIME_CAST(threadId != 0 ? Thread::findThreadById(threadId) : Thread::getCurrentThread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline DispatcherThread & DispatcherThread::getDispatcherThread(const ThreadAddress & threadAddr )
 {
-    DispatcherThread* dispThread = RUNTIME_CAST(Thread::findThreadByAddress(threadAddr), DispatcherThread);
+    DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::findThreadByAddress(threadAddr), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline DispatcherThread & DispatcherThread::getCurrentDispatcherThread()
 {
-    DispatcherThread* currThread = RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
+    DispatcherThread* currThread = AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
     return ( currThread != nullptr ? *currThread : DispatcherThread::_getNullDispatherThread() );
 }
 

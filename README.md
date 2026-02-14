@@ -52,6 +52,7 @@ Most C++ projects don't fail on algorithms. They fail on **threads, IPC, and bri
 - [Documentation](#documentation)
 - [License](#license)
 - [Community and Contribution](#community-and-contribution)
+- [Coding Style](#coding-style)
 
 > [!IMPORTANT]
 > Complete technical documentation, build guides, and integration patterns are available in the [Wiki](./docs/wiki/).
@@ -193,12 +194,10 @@ See [CMake Configuration Guide](./docs/wiki/02d-cmake-config.md) for detailed se
 
 ### Quick Build
 
-```bash
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 cmake -B build
 cmake --build build -j20
-```
 
 > [!TIP]
 > These commands work in Linux or macOS Terminal, Windows CMD, or PowerShell.
@@ -210,7 +209,6 @@ cmake --build build -j20
 The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated multithreading:
 
 **Example location after build:**
-```bash
 # Linux:
 ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/01_minimalrpc
 
@@ -219,7 +217,6 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 
 # Windows (adjust for compiler):
 .\product\build\msvc-cl\windows-64-amd64-release-shared\bin\01_minimalrpc.exe
-```
 
 **What happens:**
 - Service **Consumer** and **Provider** run in separate threads
@@ -227,16 +224,13 @@ The [`01_minimalrpc`](./examples/01_minimalrpc/) example demonstrates automated 
 - Communication is fully automated with zero manual wiring
 
 **Message flow:**
-```
 🟢 main() → 🏗 load model → 🔗 auto-connect → 📤 Consumer request → 🖨 Provider prints → ✅ exit
-```
 
 ---
 
 ### Understanding the Code
 
 **1. Service Provider (responds to requests):**
-```cpp
 class ServiceProvider : public Component, protected HelloServiceStub {
 public:
   ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
@@ -247,10 +241,8 @@ public:
     Application::signalAppQuit();
   }
 };
-```
 
 **2. Service Consumer (initiates requests):**
-```cpp
 class ServiceConsumer : public Component, protected HelloServiceClientBase {
 public:
   ServiceConsumer(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
@@ -264,10 +256,8 @@ public:
     return true;
   }
 };
-```
 
 **3. Model (defines threads and dependencies):**
-```cpp
 BEGIN_MODEL("ServiceModel")
   BEGIN_REGISTER_THREAD("Thread1")
     BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceProvider)
@@ -281,10 +271,8 @@ BEGIN_MODEL("ServiceModel")
     END_REGISTER_COMPONENT("ServiceClient")
   END_REGISTER_THREAD("Thread2")
 END_MODEL("ServiceModel")
-```
 
 **4. Main function (loads model and runs):**
-```cpp
 int main() {
   Application::initApplication();
   Application::loadModel("ServiceModel");
@@ -292,7 +280,6 @@ int main() {
   Application::releaseApplication();
   return 0;
 }
-```
 
 📄 **Full source:** [examples/01_minimalrpc/src/main.cpp](./examples/01_minimalrpc/src/main.cpp)
 
@@ -324,7 +311,7 @@ Use the project setup script to bootstrap a new Areg-based application:
 ```
 
 **On Windows:**
-```bash
+```powershell
 .\areg-sdk\tools\setup-project.bat
 ```
 
@@ -335,11 +322,9 @@ The script will:
 - Create "Hello Service" example as starting point
 
 After generation, build with:
-```bash
 cd <your_project>
 cmake -B build
 cmake --build build -j20
-```
 
 For multiprocess projects, ensure `mtrouter` is running to enable Service Consumer-Provider communication.
 
@@ -573,6 +558,7 @@ Areg SDK is released under the **[Apache License 2.0](LICENSE.txt)** - a permiss
 - 🛠️ [Contribute to open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) - Review [contribution guidelines](CONTRIBUTING.md) first
 - 💡 Share ideas or request features via [issues](https://github.com/aregtech/areg-sdk/issues) or [discussions](https://github.com/aregtech/areg-sdk/discussions)
 - 🔀 Submit pull requests following [contribution guidelines](CONTRIBUTING.md)
+- 📝 Areg SDK coding style is defined in `./docs/AREG_CODING_STYLE.md`.
 - ⭐ **Give us a star** if you find Areg SDK useful - it helps others discover the project
 - 🌍 **Showcase your project** - Building with Areg SDK? [Share your work](https://github.com/aregtech/areg-sdk/discussions/new?category=show-and-tell)!
 

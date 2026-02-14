@@ -87,5 +87,5 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     PublicServiceComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicServiceComponent );
+    AREG_NOCOPY_NOMOVE( PublicServiceComponent );
 };

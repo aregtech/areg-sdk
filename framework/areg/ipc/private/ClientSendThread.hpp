@@ -147,7 +147,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ClientSendThread() = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientSendThread );
+    AREG_NOCOPY_NOMOVE( ClientSendThread );
 };
 
 inline uint32_t ClientSendThread::extractDataSend() const

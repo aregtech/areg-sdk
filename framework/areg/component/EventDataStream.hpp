@@ -322,7 +322,7 @@ protected:
 #endif  // _MSC_VER
 };
 
-IMPLEMENT_STREAMABLE(EventDataStream::eEventData)
+AREG_IMPLEMENT_STREAMABLE(EventDataStream::eEventData)
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream inline functions implementation

@@ -215,19 +215,19 @@ bool File::_osOpenFile()
             }
             else
             {
-                OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.getString(), static_cast<id_type>(errno));
+                AREG_OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.getString(), static_cast<id_type>(errno));
                 delete file;
                 file = nullptr;
             }
         }
         else
         {
-            OUTPUT_ERR("Either file name or file open mode is not set.");
+            AREG_OUTPUT_ERR("Either file name or file open mode is not set.");
         }
     }
     else
     {
-        OUTPUT_WARN("File is already opened. Close file.");
+        AREG_OUTPUT_WARN("File is already opened. Close file.");
     }
 
     return (file != nullptr);
@@ -247,11 +247,11 @@ unsigned int File::_osReadFile(unsigned char* buffer, unsigned int size) const
 #ifdef  _DEBUG
     else if (sizeRead < 0)
     {
-        OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(errno));
+        AREG_OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(errno));
     }
     else
     {
-        OUTPUT_DBG("Finished to read file [ %s ]", mFileName.getString());
+        AREG_OUTPUT_DBG("Finished to read file [ %s ]", mFileName.getString());
     }
 #endif  // !_DEBUG
 
@@ -266,7 +266,7 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     int result = ::write(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
     if (result != static_cast<int>(size))
     {
-        OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(errno));
+        AREG_OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(errno));
         result = 0;
     }
 
@@ -294,7 +294,7 @@ unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosit
         break;
 
     default:
-        OUTPUT_ERR("Unexpected cursor position value [ %d ]!", startAt);
+        AREG_OUTPUT_ERR("Unexpected cursor position value [ %d ]!", startAt);
         break;
     }
 
@@ -310,7 +310,7 @@ unsigned int File::_osGetPositionFile() const
 bool File::_osTruncateFile()
 {
     ASSERT(mFileHandle != nullptr);
-    return (RETURNED_OK == ftruncate(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0));
+    return (NECommon::RETURNED_OK == ftruncate(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0));
 }
 
 void File::_osFlushFile()

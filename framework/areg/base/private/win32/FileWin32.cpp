@@ -204,7 +204,7 @@ unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosit
         break;
 
     default:
-        OUTPUT_ERR("Unexpected FileBase::eCursorPosition type.");
+        AREG_OUTPUT_ERR("Unexpected FileBase::eCursorPosition type.");
         moveMethod = FILE_CURRENT;
         moveOffset = 0;
     }

@@ -15,7 +15,7 @@
  * \brief       Areg Platform Runtime Object class.
  *              All instances of Runtime Object may have individual
  *              class ID. To define class ID, use macro:
- *              DECLARE_RUNTIME and IMPLEMENT_RUNTIME
+ *              AREG_DECLARE_RUNTIME and AREG_IMPLEMENT_RUNTIME
  *
  ************************************************************************/
 /************************************************************************
@@ -42,16 +42,16 @@
  *
  *              class MyClass   : public RuntimeObject
  *              {
- *                  DECLARE_RUNTIME(MyClass)
+ *                  AREG_DECLARE_RUNTIME(MyClass)
  *              public:
  *                  MyClass();
  *                  ~MyClass();
  *              };
- *              IMPLEMENT_RUNTIME(MyClass, RuntimeObject)
+ *              AREG_IMPLEMENT_RUNTIME(MyClass, RuntimeObject)
  * 
  *              MyClass* convert(RuntimeObject& runtimeObj)
  *              {
- *                  return RUNTIME_CAST(&runtimeObj, MyClass);
+ *                  return AREG_RUNTIME_CAST(&runtimeObj, MyClass);
  *              }
  **/
 
@@ -63,42 +63,28 @@
  * \brief   Declare this MACRO in your class to make runtime compatible
  *          Your class should be derived from RuntimeObject class.
  * \param   ClassName   The name of Runtime Class. Should not be string.
- * \example DECLARE_RUNTIME(MyClass)
+ * \example AREG_DECLARE_RUNTIME(MyClass)
  **/
 //////////////////////////////////////////////////////////////////////////
-// DECLARE_RUNTIME macro definition
+// AREG_DECLARE_RUNTIME macro definition
 //////////////////////////////////////////////////////////////////////////
-#define DECLARE_RUNTIME(ClassName)                                                                      \
-/*********************************************************************/                                 \
-/** Static members and constants                                    **/                                 \
-/*********************************************************************/                                 \
+#define AREG_DECLARE_RUNTIME(ClassName)                                                                 \
 public:                                                                                                 \
     /** \brief   Returns RuntimeClassID object                      **/                                 \
-    static const RuntimeClassID & _getClassId();                                                  \
-/*********************************************************************/                                 \
-/** RuntimeBase class overrides                                     **/                                 \
-/*********************************************************************/                                 \
+    static const RuntimeClassID & _getClassId();                                                        \
     /** \brief   Returns the Runtime Class Identifier object        **/                                 \
-    virtual const RuntimeClassID & getRuntimeClassId() const override;                            \
+    virtual const RuntimeClassID & getRuntimeClassId() const override;                                  \
     /** \brief   Returns the class name (Identifier name)           **/                                 \
-    virtual const String& getRuntimeClassName() const override;                                   \
+    virtual const String& getRuntimeClassName() const override;                                         \
     /** \brief   Returns the calculated number of runtime class.    **/                                 \
-    virtual unsigned int getRuntimeClassNumber() const override;                                  \
-    /** \brief   Checks class instance by Class Identifier          **/                                 \
-    /**          Checking is done hierarchically and if any class   **/                                 \
-    /**          in base hierarchy has same RuntimeClassID,         **/                                 \
-    /**          returns true. Otherwise, return false.             **/                                 \
-    /** \param   classId    The Class Identifier to check.          **/                                 \
+    virtual unsigned int getRuntimeClassNumber() const override;                                        \
+    /** \brief   Checks class instance by Class Identifier.         **/                                 \
+    /**          Checking is done hierarchically.                   **/                                 \
     virtual bool isInstanceOfRuntimeClass(const RuntimeClassID & classId) const override;               \
-    /** \brief   Checks class instance by given name                **/                                 \
-    /**          Checking is done hierarchically and if any class   **/                                 \
-    /**          in base hierarchy has same name, returns true.     **/                                 \
-    /**          Otherwise, return false.                           **/                                 \
-    /** \param   className  The name of class to check.             **/                                 \
+    /** \brief   Checks class instance by given name.               **/                                 \
     virtual bool isInstanceOfRuntimeClass(const char * className) const override;                       \
     virtual bool isInstanceOfRuntimeClass(const String & className) const override;                     \
-    /** \brief   Checks class instance by name.                     **/                                 \
-    /** \param   className   The name of class to check.            **/                                 \
+    /** \brief   Checks class instance by magic number.             **/                                 \
     virtual bool isInstanceOfRuntimeClass( unsigned int classMagic ) const override;                    \
 
 
@@ -106,33 +92,27 @@ public:                                                                         
  * \brief   Use this MACRO in source code and specify the base class of Runtime Object.
  * \param   ClassName       The name of Runtime Class. Should not be string.
  * \param   BaseClassName   The name of base / parent class. Should not be string.
- * \example IMPLEMENT_RUNTIME(MyClass, RuntimeObject)
+ * \example AREG_IMPLEMENT_RUNTIME(MyClass, RuntimeObject)
  **/
 //////////////////////////////////////////////////////////////////////////
-// IMPLEMENT_RUNTIME macro definition
+// AREG_IMPLEMENT_RUNTIME macro definition
 //////////////////////////////////////////////////////////////////////////
-#define IMPLEMENT_RUNTIME(ClassName, BaseClassName)                                                             \
-/** Return class identifier object **/                                                                          \
-const RuntimeClassID & ClassName::_getClassId()                                                           \
+#define AREG_IMPLEMENT_RUNTIME(ClassName, BaseClassName)                                                        \
+const RuntimeClassID & ClassName::_getClassId()                                                                 \
 {   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
-/** Return class identifier object **/                                                                          \
-const RuntimeClassID & ClassName::getRuntimeClassId() const                                               \
+const RuntimeClassID & ClassName::getRuntimeClassId() const                                                     \
 {   return ClassName::_getClassId();                                                                        }   \
-/** Return class name **/                                                                                       \
-const String& ClassName::getRuntimeClassName() const                                                      \
+const String& ClassName::getRuntimeClassName() const                                                            \
 {   return ClassName::_getClassId().getName();                                                              }   \
-/** Return calculated number **/                                                                                \
-unsigned int ClassName::getRuntimeClassNumber() const                                                     \
+unsigned int ClassName::getRuntimeClassNumber() const                                                           \
 {   return ClassName::_getClassId().getMagic();                                                             }   \
-/** Check class instance by Class Identifier **/                                                                \
+/* All 4 isInstanceOfRuntimeClass overloads: check own ID, then delegate to base. */                            \
 bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                                \
 {   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
-/** Check class instance by name **/                                                                            \
 bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                                        \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
 bool ClassName::isInstanceOfRuntimeClass( const String & className ) const                                      \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
-/** Check class instance by number **/                                                                          \
 bool ClassName::isInstanceOfRuntimeClass( unsigned int classMagic ) const                                       \
 {   return ((classMagic == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(classMagic));   }
 
@@ -143,23 +123,23 @@ bool ClassName::isInstanceOfRuntimeClass( unsigned int classMagic ) const       
  * \param   ClassName       The name of Runtime Class. Should not be string.
  * \param   BaseClassName   The name of base / parent class. Should not be string.
  * \param   ClassIdType     The template Runtime Class ID
- * \example IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS, class DATA_CLASS_TYPE>, MyClass<DATA_CLASS, DATA_CLASS_TYPE>, RuntimeObject, MyClass);
+ * \example AREG_IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS, class DATA_CLASS_TYPE>, MyClass<DATA_CLASS, DATA_CLASS_TYPE>, RuntimeObject, MyClass);
  **/
 //////////////////////////////////////////////////////////////////////////
-// IMPLEMENT_RUNTIME_TEMPLATE macro definition
+// AREG_IMPLEMENT_RUNTIME_TEMPLATE macro definition
 //////////////////////////////////////////////////////////////////////////
-#define IMPLEMENT_RUNTIME_TEMPLATE(Template, ClassName, BaseClassName, ClassIdType)                             \
+#define AREG_IMPLEMENT_RUNTIME_TEMPLATE(Template, ClassName, BaseClassName, ClassIdType)                        \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID & ClassName::_getClassId()                                                  \
+Template const RuntimeClassID & ClassName::_getClassId()                                                        \
 {   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID& ClassName::getRuntimeClassId() const                                       \
+Template const RuntimeClassID& ClassName::getRuntimeClassId() const                                             \
 {   return ClassName::_getClassId();                                                                        }   \
 /** Return class name **/                                                                                       \
-Template const String & ClassName::getRuntimeClassName() const                                            \
+Template const String & ClassName::getRuntimeClassName() const                                                  \
 {   return ClassName::_getClassId().getName();                                                              }   \
 /** Return class number **/                                                                                     \
-Template unsigned int ClassName::getRuntimeClassNumber() const                                            \
+Template unsigned int ClassName::getRuntimeClassNumber() const                                                  \
 {   return ClassName::_getClassId().getMagic();                                                             }   \
 /** Check class instance by Class Identifier **/                                                                \
 Template bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                       \
@@ -180,34 +160,18 @@ Template bool ClassName::isInstanceOfRuntimeClass( unsigned int classMagic ) con
  * \param   ptr         Pointer to object
  * \param   ClassName   The name of class to cast
  **/
-#define RUNTIME_CONST_EXACT_CAST(ptr, ClassName)    static_cast<const ClassName *>(::RuntimeCast(static_cast<const RuntimeObject *>(ptr), #ClassName))
+/**
+ * \brief   Runtime const cast using ClassID lookup (fast path, used in Release and Debug).
+ **/
+#define AREG_RUNTIME_CONST_CAST(ptr, ClassName)     static_cast<const ClassName *>(::RuntimeCast(static_cast<const RuntimeObject *>(ptr), ClassName::_getClassId()))
 
 /**
- * \brief   Use this MACRO to make fast casting of instance of constant object during runtime.
- *          It returns pointer of object if the Runtime Class ID is matching to given ClassName
- *          object. Otherwise, it will return nullptr pointer.
- * \param   ptr         Pointer to object
- * \param   ClassName   The name of class to cast
+ * \brief   Runtime cast. Returns non-const pointer if the object is an instance of ClassName.
  **/
-#define RUNTIME_CONST_FAST_CAST(ptr, ClassName)     static_cast<const ClassName *>(::RuntimeCast(static_cast<const RuntimeObject *>(ptr), ClassName::_getClassId()))
+#define AREG_RUNTIME_CAST(ptr, ClassName)            const_cast<ClassName *>(AREG_RUNTIME_CONST_CAST(ptr, ClassName))
 
-/**
- * \brief   Use this MACRO to make casting of instance of constant object during runtime.
- *          It returns pointer of object if the Runtime Class ID is matching to given ClassName
- *          object. Otherwise, it will return nullptr pointer.
- * \param   ptr         Pointer to object
- * \param   ClassName   The name of class to cast
- **/
-#define RUNTIME_CONST_CAST(ptr, ClassName)          RUNTIME_CONST_FAST_CAST(ptr, ClassName)
-
-/**
- * \brief   Use this MACRO to make fast casting of instance of object during runtime.
- *          It returns pointer of object if the Runtime Class ID is matching to given ClassName
- *          object. Otherwise, it will return nullptr pointer.
- * \param   ptr         Pointer to object
- * \param   ClassName   The name of class to cast
- **/
-#define RUNTIME_CAST(ptr, ClassName)          const_cast<ClassName *>(RUNTIME_CONST_CAST(ptr, ClassName))
+// Kept for reference: string-based exact cast (slower, uses class name string lookup).
+// #define AREG_RUNTIME_CONST_EXACT_CAST(ptr, ClassName)  static_cast<const ClassName *>(::RuntimeCast(static_cast<const RuntimeObject *>(ptr), #ClassName))
 
 /************************************************************************/
 // Runtime object MACRO definition. End
@@ -247,7 +211,7 @@ public:
     /**
      * \brief   The Runtime Object should contain runtime information.
      **/
-    DECLARE_RUNTIME(RuntimeObject)
+    AREG_DECLARE_RUNTIME(RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -332,7 +296,7 @@ public:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( RuntimeObject );
+    AREG_NOCOPY_NOMOVE( RuntimeObject );
 };
 
 //////////////////////////////////////////////////////////////////////////

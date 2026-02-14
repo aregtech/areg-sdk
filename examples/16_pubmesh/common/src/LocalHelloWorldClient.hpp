@@ -99,7 +99,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     LocalHelloWorldClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( LocalHelloWorldClient );
+    AREG_NOCOPY_NOMOVE( LocalHelloWorldClient );
 };
 
 #endif // PUBMESH_COMMON_SRC_LOCALHELLOWORLDCLIENT_HPP

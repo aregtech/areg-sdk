@@ -287,7 +287,7 @@ private:
 //  Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( TimerManager );
+    AREG_NOCOPY_NOMOVE( TimerManager );
 };
 
 #endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGER_HPP

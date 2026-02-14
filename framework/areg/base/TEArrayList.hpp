@@ -24,6 +24,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/TETemplateBase.hpp"
+#include <algorithm>
 #include <vector>
 
 #include "areg/base/NECommon.hpp"
@@ -496,7 +497,7 @@ TEArrayList< VALUE >::TEArrayList( uint32_t capacity /*= NECommon::ARRAY_DEFAULT
     : Constless<std::vector<VALUE>>( )
     , mValueList( )
 {
-    capacity = MACRO_MAX( resize, capacity );
+    capacity = std::max( resize, capacity );
     if (capacity != 0)
     {
         mValueList.reserve(capacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : capacity);
@@ -941,7 +942,7 @@ void TEArrayList< VALUE >::removeAt(uint32_t index, uint32_t elemCount /*= 1*/)
     if (elemCount != 0)
     {
         uint32_t remain = static_cast<uint32_t>(mValueList.size()) - index;
-        elemCount = MACRO_MIN(elemCount, remain);
+        elemCount = std::min(elemCount, remain);
         ASSERT(isValidIndex(index));
         ASSERT(isValidIndex(index + elemCount - 1));
 
@@ -1095,7 +1096,7 @@ inline TEArrayList<VALUE>& TEArrayList<VALUE>::sort(Compare comp)
 template<typename VALUE>
 inline uint32_t TEArrayList<VALUE>::getElements(VALUE* list, uint32_t elemCount)
 {
-    uint32_t result{ MACRO_MIN(static_cast<uint32_t>(mValueList.size()), elemCount) };
+    uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
     for (uint32_t i = 0; i < result; ++i)
     {
         list[i] = mValueList[i];

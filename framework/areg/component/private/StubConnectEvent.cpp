@@ -18,7 +18,7 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/base/IEIOStream.hpp"
 
-IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
 StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
     : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()

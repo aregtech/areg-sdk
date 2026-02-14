@@ -73,6 +73,11 @@ namespace NECommon
     };
 
     /**
+     * \brief   The success return code.
+     **/
+    constexpr int           RETURNED_OK             { 0 };
+
+    /**
      * \brief   The value of invalid position in buffer, list or array.
      **/
     constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(NECommon::eIndex::InvalidIndex) };

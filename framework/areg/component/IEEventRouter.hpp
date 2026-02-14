@@ -65,7 +65,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEEventRouter );
+    AREG_NOCOPY_NOMOVE( IEEventRouter );
 };
 
 #endif  // AREG_COMPONENT_IEEVENTROUTER_HPP

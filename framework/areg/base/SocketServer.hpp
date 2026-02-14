@@ -146,7 +146,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SocketServer );
+    AREG_NOCOPY_NOMOVE( SocketServer );
 };
 
 #endif  // AREG_BASE_SOCKETSERVER_HPP

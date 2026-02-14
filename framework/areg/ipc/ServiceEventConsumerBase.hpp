@@ -116,7 +116,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(IEServiceEventConsumerBase);
+    AREG_NOCOPY_NOMOVE(IEServiceEventConsumerBase);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,7 +166,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     ReconnectTimerConsumer() = delete;
-    DECLARE_NOCOPY_NOMOVE(ReconnectTimerConsumer);
+    AREG_NOCOPY_NOMOVE(ReconnectTimerConsumer);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     ServiceClientEventConsumer() = delete;
-    DECLARE_NOCOPY_NOMOVE(ServiceClientEventConsumer);
+    AREG_NOCOPY_NOMOVE(ServiceClientEventConsumer);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -264,7 +264,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     ServiceServerEventConsumer() = delete;
-    DECLARE_NOCOPY_NOMOVE(ServiceServerEventConsumer);
+    AREG_NOCOPY_NOMOVE(ServiceServerEventConsumer);
 };
 
 #endif // AREG_IPC_SERVICEEVENTCONSUMERBASE_HPP

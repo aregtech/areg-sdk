@@ -44,7 +44,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ControllerComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( ControllerComponent );
+    AREG_NOCOPY_NOMOVE( ControllerComponent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,5 +77,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     SecondaryComponent() = delete;
-    DECLARE_NOCOPY_NOMOVE( SecondaryComponent );
+    AREG_NOCOPY_NOMOVE( SecondaryComponent );
 };

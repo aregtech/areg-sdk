@@ -555,7 +555,7 @@ public:
      *      printf("File  : %s\n", filePath);
      *      while( File::findParent(filePath, &nextPos, lastPos) )
      *      {
-     *          String str(filePath, MACRO_ELEM_COUNT(filePath, nextPos));
+     *          String str(filePath, static_cast<uint32_t>(nextPos - filePath));
      *          printf("Parent: %s .\n", str.getString());
      *          lastPos = nextPos;
      *      }
@@ -729,7 +729,7 @@ protected:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( File );
+    AREG_NOCOPY_NOMOVE( File );
 };
 
 #endif  // AREG_BASE_FILE_HPP

@@ -73,5 +73,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     PatientServiceWorkerConsumer() = delete;
-    DECLARE_NOCOPY_NOMOVE( PatientServiceWorkerConsumer );
+    AREG_NOCOPY_NOMOVE( PatientServiceWorkerConsumer );
 };

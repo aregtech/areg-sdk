@@ -127,7 +127,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     PublicHelloWorldClient() = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicHelloWorldClient );
+    AREG_NOCOPY_NOMOVE( PublicHelloWorldClient );
 };
 
 #endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDCLIENT_HPP

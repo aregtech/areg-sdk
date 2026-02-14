@@ -70,7 +70,7 @@ public:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEQueueListener );
+    AREG_NOCOPY_NOMOVE( IEQueueListener );
 };
 
 #endif  // AREG_COMPONENT_PRIVATE_IEQUEUELISTENER_HPP

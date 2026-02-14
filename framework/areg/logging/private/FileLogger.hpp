@@ -107,7 +107,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     FileLogger() = delete;
-    DECLARE_NOCOPY_NOMOVE( FileLogger );
+    AREG_NOCOPY_NOMOVE( FileLogger );
 };
 
 #endif  // AREG_LOGS

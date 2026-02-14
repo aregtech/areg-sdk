@@ -178,7 +178,7 @@ bool ProxyAddress::isStubCompatible(const StubAddress & addrStub ) const
 void ProxyAddress::setThread( const String & threadName )
 {
     Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
-    DispatcherThread * dispatcher = RUNTIME_CAST( thread, DispatcherThread);
+    DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->isValid() )
     {
         mThreadName = dispatcher->getAddress().getThreadName();
@@ -206,7 +206,7 @@ bool ProxyAddress::_deliverEvent(Event & serviceEvent, const ITEM_ID & idTarget)
 {
     bool result{ false };
     Thread* thread = idTarget != NEService::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(idTarget)) : nullptr;
-    DispatcherThread* dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     if (dispatcher != nullptr)
     {
         result = serviceEvent.registerForThread(dispatcher);

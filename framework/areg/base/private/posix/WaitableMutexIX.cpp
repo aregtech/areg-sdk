@@ -54,12 +54,12 @@ bool WaitableMutexIX::releaseMutex()
                 mLockCount  = 0;
                 sendSignal  = true;
 
-                OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", getName().getString( ));
+                AREG_OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", getName().getString( ));
             }
             else if (mLockCount > 1)
             {
                 ASSERT(mOwnerThread != static_cast<pthread_t>(0));
-                OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
+                AREG_OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
                             , mLockCount - 1
                             , reinterpret_cast<id_type>(mOwnerThread));
 
@@ -69,7 +69,7 @@ bool WaitableMutexIX::releaseMutex()
             else
             {
                 ASSERT(mOwnerThread == static_cast<pthread_t>(0));
-                OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
+                AREG_OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
             }
 #endif // DEBUG
         }
@@ -103,7 +103,7 @@ bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)
             mLockCount  = 1;
             mOwnerThread= ownerThread;
 
-            OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore"
+            AREG_OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore"
                             , getName().getString( )
                             , reinterpret_cast<id_type>(ownerThread));
         }

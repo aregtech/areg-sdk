@@ -96,7 +96,7 @@ private:
     // Forbidden calls
     /************************************************************************/
         TrafficLightEventConsumer() = delete;
-        DECLARE_NOCOPY_NOMOVE( TrafficLightEventConsumer );
+        AREG_NOCOPY_NOMOVE( TrafficLightEventConsumer );
     };
 
 private:
@@ -142,7 +142,7 @@ private:
     // Forbidden calls
     /************************************************************************/
         TrafficLightTimerConsumer() = delete;
-        DECLARE_NOCOPY_NOMOVE( TrafficLightTimerConsumer );
+        AREG_NOCOPY_NOMOVE( TrafficLightTimerConsumer );
     };
 
 //////////////////////////////////////////////////////////////////////////

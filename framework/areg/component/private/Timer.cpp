@@ -20,6 +20,7 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/base/NEMath.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_component_Timer_startTimer);
@@ -119,7 +120,7 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
         mStartedAt = mExpiredAt;
     }
 
-    mExpiredAt = MACRO_MAKE_64(highValue, lowValue);
+    mExpiredAt = NEMath::make64(highValue, lowValue);
     mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
     mActive = mEventsCount != 0;
 
@@ -137,7 +138,7 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
 
 void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
 {
-    mStartedAt = MACRO_MAKE_64(highValue, lowValue);
+    mStartedAt = NEMath::make64(highValue, lowValue);
     mExpiredAt = 0;
 }
 

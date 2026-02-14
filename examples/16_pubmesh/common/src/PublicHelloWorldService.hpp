@@ -89,7 +89,7 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
     PublicHelloWorldService() = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicHelloWorldService );
+    AREG_NOCOPY_NOMOVE( PublicHelloWorldService );
 };
 
 #endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP

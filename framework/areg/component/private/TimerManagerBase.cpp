@@ -19,7 +19,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Implement Runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
+AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
 
 TimerManagerBase::TimerManagerBase(const String& threadName)
     : DispatcherThread              (threadName, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
@@ -29,7 +29,7 @@ TimerManagerBase::TimerManagerBase(const String& threadName)
 
 bool TimerManagerBase::postEvent(Event& eventElem)
 {
-    return (RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }
 
 bool TimerManagerBase::runDispatcher()

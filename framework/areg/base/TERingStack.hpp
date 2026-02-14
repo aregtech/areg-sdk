@@ -29,6 +29,8 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
 
+#include <algorithm>
+
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
@@ -947,11 +949,11 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::StopOnOverlap:
-            OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
+            AREG_OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
             break;  // do nothing
 
         default:
-            OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
+            AREG_OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
             ASSERT(false);
             break;
         }
@@ -1146,7 +1148,7 @@ NEMath::eCompare TERingStack<VALUE>::_compareRings( const VALUE* left, uint32_t 
 {
     ASSERT((leftStart < leftCapacity) && (rightStart < rightCapacity));
     NEMath::eCompare result{ NEMath::eCompare::Equal };
-    uint32_t count = MACRO_MIN(leftCount, rightCount);
+    uint32_t count = std::min(leftCount, rightCount);
     while (count != 0u)
     {
         result = NEMath::compare<VALUE>(left[leftStart], right[rightStart]);

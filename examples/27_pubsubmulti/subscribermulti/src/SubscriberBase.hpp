@@ -82,5 +82,5 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     SubscriberBase();
-    DECLARE_NOCOPY_NOMOVE(SubscriberBase);
+    AREG_NOCOPY_NOMOVE(SubscriberBase);
 };

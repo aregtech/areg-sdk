@@ -104,7 +104,7 @@ protected:
     //! Override the default implementation to escape assertion
     virtual bool postEvent(Event& eventElem) override
     {
-        ASSERT(RUNTIME_CAST(&eventElem, TimerEvent) != nullptr);    // Make sure that only timer events are passed.
+        ASSERT(AREG_RUNTIME_CAST(&eventElem, TimerEvent) != nullptr);    // Make sure that only timer events are passed.
         return EventDispatcher::postEvent(eventElem);
     }
 private:

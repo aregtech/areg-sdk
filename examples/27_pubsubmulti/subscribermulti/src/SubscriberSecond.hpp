@@ -76,5 +76,5 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     SubscriberSecond();
-    DECLARE_NOCOPY_NOMOVE(SubscriberSecond);
+    AREG_NOCOPY_NOMOVE(SubscriberSecond);
 };

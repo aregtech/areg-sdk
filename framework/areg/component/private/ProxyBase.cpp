@@ -149,7 +149,7 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 // ProxyBase::ServiceAvailableEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : Event             ( Event::eEventType::EventExternal )
@@ -568,7 +568,7 @@ void ProxyBase::processProxyEvent( ProxyEvent& /*eventElem*/ )
 
 void ProxyBase::processGenericEvent( Event& eventElem )
 {
-    ProxyBase::ServiceAvailableEvent * serviceEvent = RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
+    ProxyBase::ServiceAvailableEvent * serviceEvent = AREG_RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
     if ( serviceEvent != nullptr )
     {
         processServiceAvailableEvent( serviceEvent->getConsumer(), serviceEvent->getEventDalay() );
