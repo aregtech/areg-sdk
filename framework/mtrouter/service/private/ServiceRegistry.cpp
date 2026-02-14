@@ -214,7 +214,7 @@ ServiceRegistry::MAPPOS ServiceRegistry::findService( const ServiceAddress & add
     return find(ServiceStub(addrService));
 }
 
-void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAddress> & OUT out_stubServiceList, TEArrayList<ProxyAddress> & OUT out_proxyServiceList ) const
+void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers ) const
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceList);
     LOG_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
@@ -232,7 +232,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
                         , StubAddress::convAddressToPath(addrStub).getString()
                         , NEService::getString(svcStub.getServiceStatus()));
 
-            out_stubServiceList.add(addrStub);
+            listProviders.add(addrStub);
         }
         else
         {
@@ -253,7 +253,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , NEService::getString(svcProxy.getServiceStatus()));
 
-                out_proxyServiceList.add(addrProxy);
+                listConsumers.add(addrProxy);
             }
             else
             {
@@ -266,7 +266,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
     }
 }
 
-void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources)
+void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & stubSource, TEArrayList<ProxyAddress> & proxySources)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceSources);
     LOG_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));
@@ -307,7 +307,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<Stub
     }
 }
 
-const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & IN addrProxy)
+const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & addrProxy)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );

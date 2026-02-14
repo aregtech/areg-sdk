@@ -267,7 +267,7 @@ private:
     /**
      * \brief   Destructor.
      **/
-    ~SyncLockAndWaitIX( void );
+    ~SyncLockAndWaitIX();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -276,51 +276,51 @@ private:
     /**
      * \brief   Returns static list of waitables, where keys are id_type and values are waitables.
      **/
-    static SyncLockAndWaitIX::MapWaitIDResource& _mapWaitResourceIds(void);
+    static SyncLockAndWaitIX::MapWaitIDResource& _mapWaitResourceIds();
 
     /**
      * \brief   Returns the static instance of synchronization resource map.
      */
-    static SyncResourceMapIX& _mapSyncResources(void);
+    static SyncResourceMapIX& _mapSyncResources();
 
     /**
      * \brief   Returns true if no event in the list is fired.
      **/
-    inline bool _noEventFired( void ) const;
+    inline bool _noEventFired() const;
 
     /**
      * \brief   Initializes internal POSIX objects. Returns true if initialization succeeded.
      **/
-    inline bool _initPosixSyncObjects( void );
+    inline bool _initPosixSyncObjects();
 
     /**
      * \brief   Releases internal POSIX objects to free resources.
      **/
-    inline void _releasePosixSyncObjects( void );
+    inline void _releasePosixSyncObjects();
 
     /**
      * \brief   Returns true if object is valid. The LockAndWait object is valid if internal POSIX objects are
      *          initialized and the waiting list not empty.
      **/
-    inline bool _isValid( void ) const;
+    inline bool _isValid() const;
 
     /**
      * \brief   Locks the WaitAndLock object, waits for event fired criteria.
      *          This may block the calling thread.
      * \return  Returns true if locking succeeded.
      **/
-    inline bool _lock( void );
+    inline bool _lock();
 
     /**
      * \brief   Unlocks WaitAndLock object.
      **/
-    inline void _unlock( void );
+    inline void _unlock();
 
     /**
      * \brief   Called to wait for condition variable. Either it waits with infinite wait flag or with timeout.
      * \return  Returns POSIX error code. If 0, the waiting method succeeded.
      **/
-    inline int _waitCondition( void );
+    inline int _waitCondition();
 
     /**
      * \brief   Returns the index of registered waitable in the list.
@@ -332,12 +332,12 @@ private:
      * \brief   Called to notify the event has been fired.
      * \return  Returns true if succeeded to notify.
      **/
-    inline bool _notifyEvent( void );
+    inline bool _notifyEvent();
 
     /**
      * \brief   Checks whether the waiting list is empty.
      **/
-    inline bool _isEmpty( void ) const;
+    inline bool _isEmpty() const;
 
     /**
      * \brief   Checks whether the waitable event is fired or not.
@@ -418,8 +418,8 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    SyncLockAndWaitIX( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( SyncLockAndWaitIX );
+    SyncLockAndWaitIX() = delete;
+    AREG_NOCOPY_NOMOVE( SyncLockAndWaitIX );
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)

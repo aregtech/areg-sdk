@@ -89,7 +89,7 @@ public:
     /**
      * \brief   
      **/
-    virtual ~IEResourceLock( void ) = default;
+    virtual ~IEResourceLock() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -103,14 +103,14 @@ public:
      *          the current thread already owns the synchronization object, the return value is true.
      *          If another thread already owns the synchronization object, the return value is false.
      **/
-    virtual bool tryLock( void );
+    virtual bool tryLock();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEResourceLock( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IEResourceLock );
+    IEResourceLock() = delete;
+    AREG_NOCOPY_NOMOVE( IEResourceLock );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ public:
     /**
      * \brief	Destructor
      **/
-    virtual ~Mutex( void );
+    virtual ~Mutex();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -171,7 +171,7 @@ public:
      *          to call the method. Otherwise, the mutex locked state is not changed.
      * \return	Returns true if succeeded.
      **/
-    inline virtual bool unlock( void ) override;
+    inline virtual bool unlock() override;
 
     /**
      * \brief   Attempts to get Mutex object ownership without blocking thread.
@@ -180,7 +180,7 @@ public:
      *          the current thread already owns the Mutex, the return value is true.
      *          If another thread already owns the Mutex, the return value is false.
      **/
-    inline virtual bool tryLock( void ) override;
+    inline virtual bool tryLock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -189,12 +189,12 @@ public:
     /**
      * \brief   Return true if Mutex is already locked by any thread.
      **/
-    inline bool isLocked( void ) const;
+    inline bool isLocked() const;
 
     /**
      * \brief   Returns the ID of Thread, which is currently owning mutex
      **/
-    inline id_type getOwnerThreadId( void ) const;
+    inline id_type getOwnerThreadId() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden or OS specific implementations
@@ -210,7 +210,7 @@ private:
     /**
      * \brief   Unlocks the mutex, release the ownership.
      **/
-    bool _osUnlockMutex( void );
+    bool _osUnlockMutex();
 
     /**
      * \brief   OS specific method to create mutex.
@@ -240,7 +240,7 @@ private:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( Mutex );
+    AREG_NOCOPY_NOMOVE( Mutex );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -291,7 +291,7 @@ public:
     /**
      * \brief   Destructor. Sets Event to signal state first.
      **/
-    virtual ~SyncEvent( void );
+    virtual ~SyncEvent();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -315,7 +315,7 @@ public:
      * \brief	Unlock Event, i.e. set to signaled state
      * \return	Return true if successfully set event state to signaled.
      **/
-    inline virtual bool unlock( void ) override;
+    inline virtual bool unlock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -324,23 +324,23 @@ public:
     /**
      * \brief	Manually sets event state to signaled. Same as calling Unlock()
      **/
-    inline bool setEvent( void );
+    inline bool setEvent();
 
     /**
      * \brief   Manually resets state of event, i.e. set is non-signaled.
      **/
-    inline bool resetEvent( void );
+    inline bool resetEvent();
 
     /**
      * \brief   Pulse event once. If it was not set, it sets once and immediately
      *          reset to non-signaled state.
      **/
-    inline void pulseEvent( void );
+    inline void pulseEvent();
 
     /**
      * \brief   Returns true if event is auto-reset
      **/
-    inline bool isAutoReset( void ) const;
+    inline bool isAutoReset() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden or OS specific implementations
@@ -370,18 +370,18 @@ private:
     /**
      * \brief   The OS specific call to set the even in a signaled state.
      **/
-    bool _osSetEvent( void );
+    bool _osSetEvent();
 
     /**
      * \brief   The OS specific call to reset the event, i.e. to set in non-signaled state.
      **/
-    bool _osResetEvent( void );
+    bool _osResetEvent();
 
     /**
      * \brief   The OS specific call to pulse one time the event to be signaled and release a thread,
      *          then immediately switch to a non-signaled state.
      **/
-    void _osPulseEvent( void );
+    void _osPulseEvent();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -396,7 +396,7 @@ private:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SyncEvent );
+    AREG_NOCOPY_NOMOVE( SyncEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -453,7 +453,7 @@ public:
     /**
      * \brief   Destructor. Unlocks Semaphore and destroy object.
      **/
-    virtual ~Semaphore( void );
+    virtual ~Semaphore();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -474,12 +474,12 @@ public:
      * \brief   Unlocks Semaphore, i.e. signals it, and increase lock count number.
      * \return  Returns true if successfully signaled semaphore
      **/
-    inline virtual bool unlock( void ) override;
+    inline virtual bool unlock() override;
 
     /**
      * \brief   Always return false. No implementation for Semaphore.
      **/
-    inline virtual bool tryLock( void ) override;
+    inline virtual bool tryLock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -488,12 +488,12 @@ public:
     /**
      * \brief   Returns the maximum lock count of Semaphore object
      **/
-    inline long getMaxCount( void ) const;
+    inline long getMaxCount() const;
 
     /**
      * \brief   Returns the current lock count of Semaphore object.
      **/
-    inline long getCurrentCount( void ) const;
+    inline long getCurrentCount() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden or OS specific methods
@@ -503,12 +503,12 @@ private:
     /**
      * \brief   The OS specific implementation to create a semaphore.
      **/
-    void _osCreateSemaphore( void );
+    void _osCreateSemaphore();
 
     /**
      * \brief   The OS specific implementation to release a semaphore.
      **/
-    void _osReleaseSemaphore( void );
+    void _osReleaseSemaphore();
 
     /**
      * \brief   Takes the semaphore ownership and locks it. If the semaphore is
@@ -520,7 +520,7 @@ private:
      * \brief   Unlocks previously locked semaphore, so that the other waiting threads
      *          can take the ownership and continue execution.
      **/
-    bool _osUnlock( void );
+    bool _osUnlock();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -548,8 +548,8 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Semaphore( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( Semaphore );
+    Semaphore() = delete;
+    AREG_NOCOPY_NOMOVE( Semaphore );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -578,12 +578,12 @@ public:
     /**
      * \brief	Constructor. Creates and Initialize critical section object
      **/
-    CriticalSection( void );
+    CriticalSection();
 
     /**
      * \brief   Destructor. Destroys critical section object
      **/
-    virtual ~CriticalSection( void );
+    virtual ~CriticalSection();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -598,7 +598,7 @@ public:
      *          the lock() function accept a specified time-out interval.
      * \return  CriticalSection always return true.
      **/
-    inline bool lock( void );
+    inline bool lock();
 
     /**
      * \brief   Waits for ownership of critical section object. If the critical
@@ -614,7 +614,7 @@ public:
      * \brief   Releases ownership of the specified critical section object.
      * \return	In case of critical section, always return true
      **/
-    virtual bool unlock( void ) override;
+    virtual bool unlock() override;
 
     /**
      * \brief   Attempts to enter a critical section without blocking thread.
@@ -626,7 +626,7 @@ public:
      *          If another thread already owns the critical section,
      *          the return value is false.
      **/
-    virtual bool tryLock( void ) override;
+    virtual bool tryLock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden or OS specific calls
@@ -636,33 +636,33 @@ private:
     /**
      * \brief   The OS specific call to create critical section.
      **/
-    void _osCreateCriticalSection( void );
+    void _osCreateCriticalSection();
 
     /**
      * \brief   The OS specific call to release critical section.
      **/
-    void _osReleaseCriticalSection( void );
+    void _osReleaseCriticalSection();
 
     /**
      * \brief   The OS specific implementation to enter and lock critical section.
      **/
-    bool _osLock( void );
+    bool _osLock();
 
     /**
      * \brief   The OS specific implementation to enter and lock critical section.
      **/
-    bool _osUnlock( void );
+    bool _osUnlock();
 
     /**
      * \brief   The OS specific implementation to try to lock the critical section.
      **/
-    bool _osTryLock( void );
+    bool _osTryLock();
 
     //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( CriticalSection );
+    AREG_NOCOPY_NOMOVE( CriticalSection );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -690,12 +690,12 @@ public:
     /**
      * \brief	Constructor. Creates and Initialize spin-lock object.
      **/
-    SpinLock( void );
+    SpinLock();
 
     /**
      * \brief   Destroys spin-lock object
      **/
-    virtual ~SpinLock( void ) = default;
+    virtual ~SpinLock() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -709,7 +709,7 @@ public:
      *          the lock() function accept a specified time-out interval.
      * \return  Spin-lock always return true
      **/
-    inline bool lock( void );
+    inline bool lock();
 
     /**
      * \brief   Waits for ownership of spin-lock object. If the spin-lock
@@ -725,7 +725,7 @@ public:
      * \brief   Releases ownership of the spin-lock object.
      * \return  Spin-lock always return true
      **/
-    inline virtual bool unlock( void ) override;
+    inline virtual bool unlock() override;
 
     /**
      * \brief   Attempts to take the spin-lock ownership without blocking thread.
@@ -736,7 +736,7 @@ public:
      *          If another thread already owns the critical section,
      *          the return value is false.
      **/
-    inline virtual bool tryLock( void ) override;
+    inline virtual bool tryLock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -757,7 +757,7 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SpinLock );
+    AREG_NOCOPY_NOMOVE( SpinLock );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -787,7 +787,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ResourceLock( void );
+    virtual ~ResourceLock();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -808,7 +808,7 @@ public:
      * \brief   Releases ownership of the resource lock object.
      * \return  Always returns true.
      **/
-    inline virtual bool unlock( void ) override;
+    inline virtual bool unlock() override;
 
     /**
      * \brief   Attempts to take the resource lock ownership without blocking thread.
@@ -818,7 +818,7 @@ public:
      *          the method returns true. Otherwise, it returns false. After each there should
      *          be unlock called.
      **/
-    inline virtual bool tryLock( void ) override;
+    inline virtual bool tryLock() override;
 
 private:
 
@@ -831,7 +831,7 @@ private:
     /**
      * \brief   Releases the not used resource lock.
      **/
-    void _osReleaseResourceLock( void );
+    void _osReleaseResourceLock();
 
     /**
      * \brief   Call to lock the resource. It suspends the calling thread if the resources is already locked.
@@ -844,19 +844,19 @@ private:
      * \brief   Call to unlock previously locked resources. It releases resource lock and lets the other threads
      *          to lock and take the ownership.
      **/
-    bool _osUnlock( void );
+    bool _osUnlock();
 
     /**
      * \brief   Tries to lock the resource lock. If resource lock is free, it locks and immediately returns true.
      *          Otherwise, it is not locked and immediately returns false.
      **/
-    bool _osTryLock( void );
+    bool _osTryLock();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ResourceLock );
+    AREG_NOCOPY_NOMOVE( ResourceLock );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -886,12 +886,12 @@ public:
     /**
      * \brief   Constructor.
      **/
-    NolockSyncObject( void );
+    NolockSyncObject();
 
     /**
      * \brief   Destructor
      **/
-    virtual ~NolockSyncObject( void ) = default;
+    virtual ~NolockSyncObject() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -902,7 +902,7 @@ public:
      * \return  Spin-lock always return true
      * \return	Always returns true.
      **/
-    inline bool lock( void );
+    inline bool lock();
 
     /**
      * \brief   No real locking when call this method.
@@ -914,18 +914,18 @@ public:
      * \brief   No real unlocking.
      * \return	Always returns true.
      **/
-    inline virtual bool unlock( void ) override;
+    inline virtual bool unlock() override;
 
     /**
      * \brief   Always return true. No real locking.
      **/
-    inline virtual bool tryLock( void ) override;
+    inline virtual bool tryLock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( NolockSyncObject );
+    AREG_NOCOPY_NOMOVE( NolockSyncObject );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -965,7 +965,7 @@ public:
     /**
      * \brief   Destructor. Signals and Destroys waitable timer.
      **/
-    virtual ~SyncTimer( void );
+    virtual ~SyncTimer();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESyncObject interface
@@ -989,7 +989,7 @@ public:
      *          To set due time, timer is using parameters passed in constructor.
      * \return  Return true if timer was successfully activate.
      **/
-    inline virtual bool unlock( void ) override;
+    inline virtual bool unlock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -999,7 +999,7 @@ public:
      * \brief   Activates timer manually. Same as unlock() function call.
      * \return  Returns true if waitable timer successfully activated
      **/
-    inline bool setTimer( void );
+    inline bool setTimer();
 
     /**
      * \brief   Sets the specified waitable timer to the inactive state.
@@ -1010,23 +1010,23 @@ public:
      *          and its state is set to signaled. If the timer is already in
      *          the signaled state, it remains in that state.
      **/
-    inline bool cancelTimer( void );
+    inline bool cancelTimer();
 
     /**
      * \brief   Returns due time in milliseconds of waitable timer
      **/
-    inline unsigned int dueTime( void ) const;
+    inline unsigned int dueTime() const;
 
     /**
      * \brief   If true, the waitable timer is periodic
      **/
-    inline bool isPeriodic( void ) const;
+    inline bool isPeriodic() const;
 
     /**
      * \brief   If true, it is auto-reset waitable timer
      *          Otherwise, it is manual reset.
      **/
-    inline bool isAutoreset( void ) const;
+    inline bool isAutoreset() const;
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods
@@ -1041,7 +1041,7 @@ private:
     /**
      * \brief   OS specific call to release the synchronization timer.
      **/
-    void _osReleaseTime( void );
+    void _osReleaseTime();
 
     /**
      * \brief   Call to lock the thread for specified timeout. If timer is fired, it releases
@@ -1052,13 +1052,13 @@ private:
     /**
      * \brief   Sets the timer with the timeout specified in the constructor.
      **/
-    bool _osSetTimer( void );
+    bool _osSetTimer();
 
     /**
      * \brief   Cancels the timer if did not expired, so that the locked threads are released.
      *          The same method is called to unlock the timer.
      **/
-    bool _osCancelTimer( void );
+    bool _osCancelTimer();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1081,8 +1081,8 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    SyncTimer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( SyncTimer );
+    SyncTimer() = delete;
+    AREG_NOCOPY_NOMOVE( SyncTimer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1111,25 +1111,25 @@ private:
  *          class MyClass
  *          {
  *          public:
- *              MyClass( void );
- *              void foo( void );
- *              void bar( void );
+ *              MyClass();
+ *              void foo();
+ *              void bar();
  *
  *          private:
  *              Mutex mMutex;
  *          };
  *
- *          MyClass::MyClass( void )
+ *          MyClass::MyClass()
  *              : mMutex(true)
  *          {   ; }
  *
- *          void MyClass::foo( void )
+ *          void MyClass::foo()
  *          {
  *              Lock lock(mMutex);
  *              // perform actions here
  *          }
  *
- *          void MyClass::bar( void )
+ *          void MyClass::bar()
  *          {
  *              Lock lock(mMutex);
  *              // perform actions here
@@ -1162,7 +1162,7 @@ public:
      *          unlock() method of synchronization object to release
      *          ownership of object.
      **/
-    ~Lock( void );
+    ~Lock();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1181,7 +1181,7 @@ public:
      * \brief   Called to unlock synchronization object manually
      * \return  Returns true if synchronization object successfully unlocked.
      **/
-    inline bool unlock( void );
+    inline bool unlock();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1203,8 +1203,8 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Lock( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( Lock );
+    Lock() = delete;
+    AREG_NOCOPY_NOMOVE( Lock );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1286,7 +1286,7 @@ public:
      * \brief   Destructor. If auto-lock is enabled, unlocks all synchronization
      *          objects and free resources.
      **/
-    ~MultiLock( void );
+    ~MultiLock();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1319,7 +1319,7 @@ public:
     /**
      * \brief   Unlocks every synchronization object, which was locked before
      **/
-    bool unlock( void );
+    bool unlock();
 
     /**
      * \brief   Unlocks certain entry in the synchronization objects list.
@@ -1370,8 +1370,8 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    MultiLock( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( MultiLock );
+    MultiLock() = delete;
+    AREG_NOCOPY_NOMOVE( MultiLock );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1433,8 +1433,8 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Wait(void);
-    ~Wait(void);
+    Wait();
+    ~Wait();
 
 //////////////////////////////////////////////////////////////////////////
 // Static operations
@@ -1527,11 +1527,11 @@ private:
     /**
      * \brief   Initializes the timer object depending on the OS.
      **/
-    void _osInitTimer(void);
+    void _osInitTimer();
     /**
      * \brief   Releases the timer object depending on the OS.
      **/
-    void _osReleaseTimer(void);
+    void _osReleaseTimer();
     /**
      * \brief   OS dependent implementation of thread waiting.
      *          The accuracy depends on the OS and hardware provided features.
@@ -1552,7 +1552,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(Wait);
+    AREG_NOCOPY_NOMOVE(Wait);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1568,23 +1568,23 @@ inline bool Mutex::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
     return _osLockMutex( timeout );
 }
 
-inline bool Mutex::tryLock( void )
+inline bool Mutex::tryLock()
 {
     return lock( NECommon::DO_NOT_WAIT );
 }
 
-inline bool Mutex::unlock( void )
+inline bool Mutex::unlock()
 {
     ASSERT( mSyncObject != nullptr );
     return _osUnlockMutex( );
 }
 
-inline bool Mutex::isLocked( void ) const
+inline bool Mutex::isLocked() const
 {
     return (mOwnerThreadId.load() != 0);
 }
 
-inline id_type Mutex::getOwnerThreadId( void ) const
+inline id_type Mutex::getOwnerThreadId() const
 {
     return mOwnerThreadId.load();
 }
@@ -1593,12 +1593,12 @@ inline id_type Mutex::getOwnerThreadId( void ) const
 // SyncEvent class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SyncEvent::isAutoReset( void ) const
+inline bool SyncEvent::isAutoReset() const
 {
     return mAutoReset;
 }
 
-inline bool SyncEvent::unlock( void )
+inline bool SyncEvent::unlock()
 {
     return (mSyncObject != nullptr ? _osUnlockEvent(mSyncObject) : false);
 }
@@ -1608,17 +1608,17 @@ inline bool SyncEvent::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE *
     return (mSyncObject != nullptr ? _osLockEvent(timeout) : false);
 }
 
-inline bool SyncEvent::setEvent( void )
+inline bool SyncEvent::setEvent()
 {
     return (mSyncObject != nullptr ? _osSetEvent( ) : false);
 }
 
-inline bool SyncEvent::resetEvent( void )
+inline bool SyncEvent::resetEvent()
 {
     return (mSyncObject != nullptr ? _osResetEvent( ) : false);
 }
 
-inline void SyncEvent::pulseEvent( void )
+inline void SyncEvent::pulseEvent()
 {
     if (mSyncObject != nullptr)
     {
@@ -1629,12 +1629,12 @@ inline void SyncEvent::pulseEvent( void )
 //////////////////////////////////////////////////////////////////////////
 // Semaphore class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline long Semaphore::getMaxCount( void ) const
+inline long Semaphore::getMaxCount() const
 {
     return mMaxCount;
 }
 
-inline long Semaphore::getCurrentCount( void ) const
+inline long Semaphore::getCurrentCount() const
 {
     return mCurrCount.load();
 }
@@ -1649,19 +1649,19 @@ inline bool CriticalSection::lock( unsigned int  /*timeout = NECommon::WAIT_INFI
     return _osLock( );
 }
 
-inline bool CriticalSection::unlock( void )
+inline bool CriticalSection::unlock()
 {
     ASSERT( mSyncObject != nullptr );
     return _osUnlock( );
 }
 
-inline bool CriticalSection::tryLock( void )
+inline bool CriticalSection::tryLock()
 {
     ASSERT( mSyncObject != nullptr );
     return _osTryLock( );
 }
 
-inline bool CriticalSection::lock( void )
+inline bool CriticalSection::lock()
 {
     return lock( NECommon::WAIT_INFINITE );
 }
@@ -1670,18 +1670,18 @@ inline bool CriticalSection::lock( void )
 // SpinLock class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SpinLock::unlock( void )
+inline bool SpinLock::unlock()
 {
     mLock.store( false, std::memory_order_release );
     return true;
 }
 
-inline bool SpinLock::tryLock( void )
+inline bool SpinLock::tryLock()
 {
     return ((mLock.load( std::memory_order_relaxed ) == false) && (mLock.exchange( true, std::memory_order_acquire ) == false));
 }
 
-inline bool SpinLock::lock( void )
+inline bool SpinLock::lock()
 {
     return lock( NECommon::WAIT_INFINITE );
 }
@@ -1696,13 +1696,13 @@ inline bool ResourceLock::lock( unsigned int timeout /*= NECommon::WAIT_INFINITE
     return _osLock( timeout );
 }
 
-inline bool ResourceLock::unlock( void )
+inline bool ResourceLock::unlock()
 {
     ASSERT( mSyncObject != nullptr );
     return _osUnlock( );
 }
 
-inline bool ResourceLock::tryLock( void )
+inline bool ResourceLock::tryLock()
 {
     ASSERT( mSyncObject != nullptr );
     return _osTryLock( );
@@ -1712,7 +1712,7 @@ inline bool ResourceLock::tryLock( void )
 // NolockSyncObject class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NolockSyncObject::lock( void )
+inline bool NolockSyncObject::lock()
 {
     return true;
 }
@@ -1722,12 +1722,12 @@ inline bool NolockSyncObject::lock( unsigned int /*timeout = NECommon::WAIT_INFI
     return true;
 }
 
-inline bool NolockSyncObject::unlock( void )
+inline bool NolockSyncObject::unlock()
 {
     return true;
 }
 
-inline bool NolockSyncObject::tryLock( void )
+inline bool NolockSyncObject::tryLock()
 {
     return true;
 }
@@ -1742,35 +1742,35 @@ inline bool SyncTimer::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE *
     return _osLock( timeout );
 }
 
-inline bool SyncTimer::unlock( void )
+inline bool SyncTimer::unlock()
 {
     ASSERT( mSyncObject != nullptr );
     return _osCancelTimer( );
 }
 
-inline bool SyncTimer::setTimer( void )
+inline bool SyncTimer::setTimer()
 {
     ASSERT( mSyncObject != nullptr );
     return _osSetTimer( );
 }
 
-inline bool SyncTimer::cancelTimer( void )
+inline bool SyncTimer::cancelTimer()
 {
     ASSERT( mSyncObject != nullptr );
     return _osCancelTimer( );
 }
 
-inline unsigned int SyncTimer::dueTime( void ) const
+inline unsigned int SyncTimer::dueTime() const
 {
     return mTimeout;
 }
 
-inline bool SyncTimer::isPeriodic( void ) const
+inline bool SyncTimer::isPeriodic() const
 {
     return mIsPeriodic;
 }
 
-inline bool SyncTimer::isAutoreset( void ) const
+inline bool SyncTimer::isAutoreset() const
 {
     return mIsAutoReset;
 }
@@ -1783,7 +1783,7 @@ inline bool Lock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */)
     return mSyncObject.lock(timeout);
 }
 
-inline bool Lock::unlock( void )
+inline bool Lock::unlock()
 {
     return mSyncObject.unlock();
 }

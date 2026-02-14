@@ -31,7 +31,7 @@ bool SocketClient::createSocket(const char * hostName, unsigned short portNr)
     return ( mAddress.resolveAddress(hostName, portNr, false) && createSocket());
 }
 
-bool SocketClient::createSocket( void )
+bool SocketClient::createSocket()
 {
     decreaseLock();
 

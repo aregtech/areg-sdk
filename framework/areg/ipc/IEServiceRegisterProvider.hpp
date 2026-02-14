@@ -40,12 +40,12 @@ protected:
     /**
      * \brief   Protected constructor.
      **/
-    IEServiceRegisterProvider( void ) = default;
+    IEServiceRegisterProvider() = default;
 
     /**
      * \brief   Protected destructor.
      **/
-    virtual ~IEServiceRegisterProvider( void ) = default;
+    virtual ~IEServiceRegisterProvider() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -93,7 +93,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(IEServiceRegisterProvider);
+    AREG_NOCOPY_NOMOVE(IEServiceRegisterProvider);
 };
 
 #endif // AREG_IPC_IESERVICEREGISTERPROVIDER_HPP

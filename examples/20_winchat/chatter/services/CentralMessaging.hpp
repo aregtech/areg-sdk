@@ -17,7 +17,7 @@ class CentralMessaging    : public CentralMessagerClientBase
 //////////////////////////////////////////////////////////////////////////
 public:
     CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
-    virtual ~CentralMessaging( void ) = default;
+    virtual ~CentralMessaging() = default;
 
 public:
 
@@ -82,7 +82,7 @@ protected:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline CentralMessaging & self( void );
+    inline CentralMessaging & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden variables
@@ -96,13 +96,13 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    CentralMessaging( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( CentralMessaging );
+    CentralMessaging() = delete;
+    AREG_NOCOPY_NOMOVE( CentralMessaging );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessaging inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline CentralMessaging & CentralMessaging::self( void )
+inline CentralMessaging & CentralMessaging::self()
 {   return (*this);     }

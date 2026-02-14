@@ -56,14 +56,14 @@ class LogScopeMap   : public TELockResourceMap<unsigned int, LogScope *, MapLogS
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    LogScopeMap( void ) = default;
-    ~LogScopeMap( void ) = default;
+    LogScopeMap() = default;
+    ~LogScopeMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( LogScopeMap );
+    AREG_NOCOPY_NOMOVE( LogScopeMap );
 };
 
 /**
@@ -78,8 +78,8 @@ class ScopeController
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ScopeController( void ) = default;
-    ~ScopeController( void ) = default;
+    ScopeController() = default;
+    ~ScopeController() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -89,7 +89,7 @@ public:
     /**
      * \brief   Returns the list of scopes registered in the application.
      **/
-    inline const LogScopeMap & getScopeList( void ) const;
+    inline const LogScopeMap & getScopeList() const;
 
     /**
      * \brief   By given scope ID it returns instance of Log Scope object.
@@ -291,17 +291,17 @@ public:
      * \brief   Clears the list of configured scopes.
      *          Call this method if making new configuration.
      **/
-    inline void clearConfigScopes( void );
+    inline void clearConfigScopes();
 
     /**
      * \brief   Call to reset and disable any message priority of scopes.
      **/
-    void resetScopes(void);
+    void resetScopes();
 
     /**
      * \brief   Activates default scopes listed in the internally.
      **/
-    void activateDefaults( void );
+    void activateDefaults();
 
     /**
      * \brief   Configures the scope or scope group defined in the property.
@@ -321,7 +321,7 @@ public:
      * \brief   Picks up the list of configured scopes and log priorities and sets the scope priorities,
      *          so that they are activated or deactivated.
      **/
-    void configureScopes(void);
+    void configureScopes();
 
     /**
      * \brief   Activates specified scope. The system cannot log if a scope is inactive.
@@ -380,14 +380,14 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ScopeController );
+    AREG_NOCOPY_NOMOVE( ScopeController );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeController inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const LogScopeMap & ScopeController::getScopeList( void ) const
+inline const LogScopeMap & ScopeController::getScopeList() const
 {
     return mMapLogScope;
 }
@@ -472,7 +472,7 @@ inline int ScopeController::removeScopeGroupPriority( const String & scopeGroupN
     return removeScopeGroupPriority( scopeGroupName, NELogging::stringToLogPrio( remPrio ) );
 }
 
-inline void ScopeController::clearConfigScopes( void )
+inline void ScopeController::clearConfigScopes()
 {
     mConfigScopeList.clear( );
     mConfigScopeGroup.clear( );

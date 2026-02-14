@@ -91,18 +91,18 @@ private:
      * \brief   Default constructor. Hidden.
      *          Object cannot be instantiated directly.
      **/
-    RemoteEventFactory( void ) = default;
+    RemoteEventFactory() = default;
 
     /**
      * \brief   Destructor. The object cannot be deleted directly.
      **/
-    ~RemoteEventFactory( void ) = default;
+    ~RemoteEventFactory() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( RemoteEventFactory );
+    AREG_NOCOPY_NOMOVE( RemoteEventFactory );
 };
 
 #endif  // AREG_COMPONENT_REMOTEEVENTFACTORY_HPP

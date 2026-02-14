@@ -53,7 +53,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEWaitableBaseIX( void );
+    virtual ~IEWaitableBaseIX();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -79,7 +79,7 @@ public:
      *          multiple threads can get waitable signaled state. For example, waitable Mutex 
      *          signals only one thread, when waitable Event can signal multiple threads.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const = 0;
+    virtual bool checkCanSignalMultipleThreads() const = 0;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -94,14 +94,14 @@ public:
      * \brief   Call when synchronization object is going to be deleted.
      *          This releases all waiting threads with failure code.
      **/
-    virtual void freeResources( void );
+    virtual void freeResources();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEWaitableBaseIX( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IEWaitableBaseIX );
+    IEWaitableBaseIX() = delete;
+    AREG_NOCOPY_NOMOVE( IEWaitableBaseIX );
 };
 
 //////////////////////////////////////////////////////////////////////////

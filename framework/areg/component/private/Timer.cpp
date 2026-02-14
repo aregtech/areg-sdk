@@ -20,6 +20,7 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/base/NEMath.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_component_Timer_startTimer);
@@ -48,7 +49,7 @@ Timer::Timer( IETimerConsumer& timerConsumer
 {
 }
 
-Timer::~Timer(void)
+Timer::~Timer()
 {
     _stopTimer();
 }
@@ -105,7 +106,7 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     }
 }
 
-void Timer::stopTimer(void)
+void Timer::stopTimer()
 {
     _stopTimer();
 }
@@ -119,7 +120,7 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
         mStartedAt = mExpiredAt;
     }
 
-    mExpiredAt = MACRO_MAKE_64(highValue, lowValue);
+    mExpiredAt = NEMath::make64(highValue, lowValue);
     mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
     mActive = mEventsCount != 0;
 
@@ -137,11 +138,11 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
 
 void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
 {
-    mStartedAt = MACRO_MAKE_64(highValue, lowValue);
+    mStartedAt = NEMath::make64(highValue, lowValue);
     mExpiredAt = 0;
 }
 
-void Timer::_queueTimer( void )
+void Timer::_queueTimer()
 {
     Lock lock(mLock);
 
@@ -158,7 +159,7 @@ void Timer::_queueTimer( void )
     }
 }
 
-void Timer::_unqueueTimer( void )
+void Timer::_unqueueTimer()
 {
     Lock lock(mLock);
 
@@ -174,7 +175,7 @@ void Timer::_unqueueTimer( void )
     }
 }
 
-inline void Timer::_stopTimer(void)
+inline void Timer::_stopTimer()
 {
     Lock lock(mLock);
 

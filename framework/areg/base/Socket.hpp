@@ -56,7 +56,7 @@ protected:
      *          with invalid socket object. Before sending
      *          or receiving data, the socket should be created.
      **/
-    Socket( void );
+    Socket();
 
     /**
      * \brief   Initialization constructor. Sets socket descriptor and socket address
@@ -81,7 +81,7 @@ protected:
      * \brief   Destructor. Invalidates socket object, decrease reference counter,
      *          and if reference counter is reaching zero, close socket.
      **/
-    virtual ~Socket( void );
+    virtual ~Socket();
 
     /**
      *  \brief	Assigns socket data taken from given source.
@@ -135,7 +135,7 @@ public:
      *
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( void ) = 0;
+    virtual bool createSocket() = 0;
 
     /**
      * \brief   Closes existing socket.
@@ -143,7 +143,7 @@ public:
      *                  will be closed only if reference count to existing valid 
      *                  socket reaches zero.
      **/
-    virtual void closeSocket( void );
+    virtual void closeSocket();
 
     /**
      * \brief   If socket is valid, sends data using existing socket connection and returns
@@ -179,43 +179,43 @@ public:
      * \brief   Returns socket descriptor of object.
      *          If socket was created, the value is not equal to NESocket::InvalidSocketHandle
      **/
-    inline SOCKETHANDLE getHandle( void ) const;
+    inline SOCKETHANDLE getHandle() const;
 
     /**
      * \brief   Returns true if existing socket descriptor is valid.
      *          The function is not checking socket descriptor validation.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Checks and returns socket alive state.
      * \return  Returns true if socket is alive and is not closed.
      **/
-    inline bool isAlive( void ) const;
+    inline bool isAlive() const;
 
     /**
      * \brief   Checks and returns number of bytes remain to read from socket buffer.
      *          Returns negative value if socket is invalid.
      * \return  Returns number of bytes available to read from socket buffer.
      **/
-    inline int pendingRead( void ) const;
+    inline int pendingRead() const;
 
     /**
      * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableSend( void ) const;
+    inline bool disableSend() const;
 
     /**
      * \brief   Sets socket in write-only more, i.e. no receive message is possible anymore.
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableReceive( void ) const;
+    inline bool disableReceive() const;
 
     /**
      * \brief   Return Socket Address object.
      **/
-    inline const NESocket::SocketAddress & getAddress( void ) const;
+    inline const NESocket::SocketAddress & getAddress() const;
 
     /**
      * \brief   Sets socket address. The address should be either invalid
@@ -242,12 +242,12 @@ public:
     /**
      * \brief   Returns the packet size in bytes to send data.
      **/
-    inline unsigned int getSendPacketSize(void) const;
+    inline unsigned int getSendPacketSize() const;
 
     /**
      * \brief   Returns the packet size in bytes to receive data.
      **/
-    inline unsigned int getRecvPacketSize(void) const;
+    inline unsigned int getRecvPacketSize() const;
 
 protected:
 /************************************************************************/
@@ -266,7 +266,7 @@ protected:
     /**
      * \brief   Decreases lock counter and if it is zero, the calls method to close socket.
      **/
-    void decreaseLock( void );
+    void decreaseLock();
 
     /**
      * \brief   Sets the socket packet size in bytes to send data. The packet cannot be smaller than NESocket::PACKET_MIN_SIZE
@@ -336,12 +336,12 @@ protected:
 // Socket class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline SOCKETHANDLE Socket::getHandle( void ) const
+inline SOCKETHANDLE Socket::getHandle() const
 {
     return (mSocket.get() != nullptr ? *mSocket : NESocket::InvalidSocketHandle);
 }
 
-inline const NESocket::SocketAddress & Socket::getAddress( void ) const
+inline const NESocket::SocketAddress & Socket::getAddress() const
 {
     return mAddress;
 }
@@ -351,37 +351,37 @@ inline void Socket::setAddress( const NESocket::SocketAddress & newAddress )
     mAddress = newAddress;
 }
 
-inline bool Socket::isValid( void ) const
+inline bool Socket::isValid() const
 {
     return (mSocket.get() != nullptr) && NESocket::isSocketHandleValid(*mSocket);
 }
 
-inline bool Socket::isAlive(void) const
+inline bool Socket::isAlive() const
 {
     return (mSocket.get() != nullptr) && NESocket::isSocketAlive(*mSocket);
 }
 
-inline int Socket::pendingRead(void) const
+inline int Socket::pendingRead() const
 {
     return (mSocket.get() != nullptr) && NESocket::pendingRead(*mSocket);
 }
 
-inline bool Socket::disableSend( void ) const
+inline bool Socket::disableSend() const
 {
     return (mSocket.get() != nullptr) && NESocket::disableSend(*mSocket);
 }
 
-inline bool Socket::disableReceive( void ) const
+inline bool Socket::disableReceive() const
 {
     return (mSocket.get() != nullptr) && NESocket::disableReceive(*mSocket);
 }
 
-inline unsigned int Socket::getSendPacketSize(void) const
+inline unsigned int Socket::getSendPacketSize() const
 {
     return (isValid() ? mSendSize : NESocket::PACKET_INVALID_SIZE);
 }
 
-unsigned int Socket::getRecvPacketSize(void) const
+unsigned int Socket::getRecvPacketSize() const
 {
     return (isValid() ? mRecvSize : NESocket::PACKET_INVALID_SIZE);
 }

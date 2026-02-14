@@ -53,12 +53,12 @@ private:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ChatParticipantService & self( void );
+    inline ChatParticipantService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ChatParticipantService( void );
+    ChatParticipantService();
     ChatParticipantService( const ChatParticipantService & /*src*/ );
     const ChatParticipantService & operator = (const ChatParticipantService & /*src*/);
 };
@@ -67,7 +67,7 @@ private:
 // ChatParticipantService inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline ChatParticipantService & ChatParticipantService::self( void )
+inline ChatParticipantService & ChatParticipantService::self()
 {
     return (*this);
 }

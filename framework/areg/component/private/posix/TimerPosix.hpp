@@ -80,12 +80,12 @@ public:
      *                          or until period is not expired (value is any number),
      *                          or endless until it is not stopped (value TIMER_PERIOD_ENDLESS).
      **/
-    TimerPosix( void );
+    TimerPosix();
 
     /**
      * \brief   Destructor.
      **/
-    ~TimerPosix( void );
+    ~TimerPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes / Operations.
@@ -96,29 +96,29 @@ public:
     /**
      * \brief   Returns POSIX timer ID.
      **/
-    inline timer_t getTimerId( void ) const;
+    inline timer_t getTimerId() const;
 #endif  // !__APPLE__
 
     /**
      * \brief   Returns POSIX timer context pointer.
      **/
-    inline void * getContext( void ) const;
+    inline void * getContext() const;
 
     /**
      * \brief   Returns POSIX timer context ID.
      **/
-    inline id_type getContextId( void ) const;
+    inline id_type getContextId() const;
 
     /**
      * \brief   Returns timeout due date and time when timer expired or should expire next.
      **/
-    inline const timespec & getDueTime( void ) const;
+    inline const timespec & getDueTime() const;
 
 
     /**
      * \brief   Returns true if timer is valid, i.e. the timer ID and context are valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Creates, but do not start timer.
@@ -145,22 +145,22 @@ public:
      *          The timer should be initialized before calling this method.
      * \return  Returns true if timer is restarted with success.
      **/
-    bool restartTimer( void );
+    bool restartTimer();
 
     /**
      * \brief   Stops timer, resets timeout and period values.
      **/
-    bool stopTimer( void );
+    bool stopTimer();
 
     /**
      * \brief   Pause timer. So that, when it is restarted it will use same timeout and remaining period count.
      **/
-    bool pauseTimer( void );
+    bool pauseTimer();
 
     /**
      * \brief   Destroys and invalidates the timer.
      **/
-    void destroyTimer( void );
+    void destroyTimer();
 
     /**
      * \brief   Called by timer manager when timer is expired. Returns true if timer 
@@ -171,7 +171,7 @@ public:
      * \return  Returns true if timer can continue running. Returns false if timer 
      *          should be stopped.
      **/
-    void timerExpired( void );
+    void timerExpired();
 
 //////////////////////////////////////////////////////////////////////////
 // Internal private methods.
@@ -189,23 +189,23 @@ private:
      * \brief	Initializes and starts the timer.
      * \return	Returns true if timer succeeded to start.
      **/
-    inline bool _startTimer( void );
+    inline bool _startTimer();
 
     /**
      * \brief   Stops the timer.
      **/
-    inline void _stopTimer( void );
+    inline void _stopTimer();
 
     /**
      * \brief   Destroys the timer.
      **/
-    inline void _destroyTimer( void );
+    inline void _destroyTimer();
 
     /**
      * \brief   Returns true if timer is started. The timer considered started if
      *          due time is not zero.
      **/
-    inline bool _isStarted( void ) const;
+    inline bool _isStarted() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -257,7 +257,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( TimerPosix );
+    AREG_NOCOPY_NOMOVE( TimerPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -265,32 +265,32 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef __APPLE__
-inline timer_t TimerPosix::getTimerId(void) const
+inline timer_t TimerPosix::getTimerId() const
 {
 	SpinAutolockIX lock(mLock);
     return mTimerId;
 }
 #endif  // !__APPLE__
 
-inline void * TimerPosix::getContext(void) const
+inline void * TimerPosix::getContext() const
 {
 	SpinAutolockIX lock(mLock);
     return mContext;
 }
 
-inline id_type TimerPosix::getContextId(void) const
+inline id_type TimerPosix::getContextId() const
 {
     SpinAutolockIX lock(mLock);
     return mContextId;
 }
 
-inline const timespec & TimerPosix::getDueTime(void) const
+inline const timespec & TimerPosix::getDueTime() const
 {
 	SpinAutolockIX lock(mLock);
     return mDueTime;
 }
 
-inline bool TimerPosix::isValid(void) const
+inline bool TimerPosix::isValid() const
 {
 	SpinAutolockIX lock(mLock);
 #ifdef __APPLE__
@@ -300,7 +300,7 @@ inline bool TimerPosix::isValid(void) const
 #endif  // __APPLE__
 }
 
-inline bool TimerPosix::_isStarted(void) const
+inline bool TimerPosix::_isStarted() const
 {
     return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
 }

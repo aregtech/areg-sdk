@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, constructor / destructor
@@ -63,12 +63,12 @@ IEOutStream & StubEvent::writeStream( IEOutStream & stream ) const
     return stream;
 }
 
-void StubEvent::deliverEvent( void )
+void StubEvent::deliverEvent()
 {
     if ( mTargetThread == nullptr )
     {
         Thread * thread = Thread::findThreadByName( mTargetStubAddress.getThread() );
-        registerForThread( thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr );
+        registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
     }
 
     if ( mTargetThread != nullptr )
@@ -155,26 +155,26 @@ inline void IEStubEventConsumer::_localProcessConnectEvent( StubConnectEvent & n
 void IEStubEventConsumer::startEventProcessing( Event & eventElem )
 {
     mCurEvent = &eventElem;
-    StubEvent* stubEvent = RUNTIME_CAST(&eventElem, StubEvent);
+    StubEvent* stubEvent = AREG_RUNTIME_CAST(&eventElem, StubEvent);
     if ( stubEvent != nullptr )
     {
         if ( stubEvent->getTargetStub() == mStubAddress )
         {
-            RequestEvent* reqEvent = RUNTIME_CAST(stubEvent, RequestEvent);
+            RequestEvent* reqEvent = AREG_RUNTIME_CAST(stubEvent, RequestEvent);
             if (reqEvent != nullptr)
             {
                 _localProcessRequestEvent(*reqEvent);
             }
             else
             {
-                NotifyRequestEvent * notifyRequest = RUNTIME_CAST(stubEvent, NotifyRequestEvent);
+                NotifyRequestEvent * notifyRequest = AREG_RUNTIME_CAST(stubEvent, NotifyRequestEvent);
                 if ( notifyRequest != nullptr )
                 {
                     _localProcessNotifyRequestEvent(*notifyRequest);
                 }
                 else
                 {
-                    StubConnectEvent * stubConnectEvent = RUNTIME_CAST(stubEvent, StubConnectEvent);
+                    StubConnectEvent * stubConnectEvent = AREG_RUNTIME_CAST(stubEvent, StubConnectEvent);
                     if (stubConnectEvent != nullptr)
                     {
                         _localProcessConnectEvent(*stubConnectEvent);

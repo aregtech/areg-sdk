@@ -51,7 +51,7 @@ class RuntimeClassID;
 class SortedEventStack  : protected TELockStack<Event *>
 {
     //!< The maximum size of the event queue stack
-    static constexpr uint32_t   MAX_QUEUE_SIZE  { MAX_UINT_32 };
+    static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };
     //< The minimum size of the event queue stack
     static constexpr uint32_t   MIN_QUEUE_SIZE  { 32 };
 //////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ class SortedEventStack  : protected TELockStack<Event *>
 public:
     SortedEventStack( uint32_t maxQueue );
 
-    ~SortedEventStack(void);
+    ~SortedEventStack();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -69,7 +69,7 @@ public:
     /**
      * \brief   Deletes all events from the stack, except "Exit" event if present.
      **/
-    void deleteAllEvents(void);
+    void deleteAllEvents();
 
     /**
      * \brief   Deletes all events with priorities lower than the specified, except "Exit" event.
@@ -103,45 +103,45 @@ public:
     /**
      * \brief   Pushes the event in the stack considering the priority, so that the events
      *          with the higher priority can be processed earlier.
-     * \param   newEvent            The pointer to the event with the priority.
-     * \param   removedEvent [out]  The address of pointer to receive the removed event.
+     * \param[in]   newEvent        The pointer to the event with the priority.
+     * \param[out]  removedEvent    The address of pointer to receive the removed event.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t pushEvent(Event * newEvent, Event** OUT removedEvent);
+    uint32_t pushEvent(Event * newEvent, Event** removedEvent);
 
     /**
      * \brief   Pops the event from the FIFO stack.
-     * \param   stackEvent [out]    The address of the pointer to point on event object.
-     *                              This parameter must not be nullptr, but it may point to the nullptr object.
+     * \param[out]  stackEvent  The address of the pointer to point on event object.
+     *                          This parameter must not be nullptr, but it may point to the nullptr object.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t popEvent(Event** OUT stackEvent);
+    uint32_t popEvent(Event** stackEvent);
 
     /**
      * \brief   Returns the maximum size of the stack.
      **/
-    inline constexpr uint32_t getMaxSize(void) const;
+    inline constexpr uint32_t getMaxSize() const;
 
     /**
      * \brief   Returns true if the stack is empty.
      **/
-    inline bool isEmpty(void) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief   Returns the number of elements in the stack.
      **/
-    inline uint32_t getCount(void) const;
+    inline uint32_t getCount() const;
 
     /**
      * \brief   Locks the stack, so that the all other threads cannot access.
      * \return  Returns true, if succeeded to lock the stack.
      **/
-    inline bool lockStack(void);
+    inline bool lockStack();
 
     /**
      * \brief   Unlocks the stack, so that all other threads cann access.
      **/
-    inline void unlockStack(void);
+    inline void unlockStack();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -192,7 +192,7 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(SortedEventStack);
+    AREG_NOCOPY_NOMOVE(SortedEventStack);
 };
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -204,28 +204,28 @@ private:
 // SortedEventStack class inline implementation.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SortedEventStack::isEmpty(void) const
+inline bool SortedEventStack::isEmpty() const
 {
     Lock lock(mSyncObject);
     return mValueList.empty();
 }
 
-inline uint32_t SortedEventStack::getCount(void) const
+inline uint32_t SortedEventStack::getCount() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline bool SortedEventStack::lockStack(void)
+inline bool SortedEventStack::lockStack()
 {
     return lock();
 }
 
-inline void SortedEventStack::unlockStack(void)
+inline void SortedEventStack::unlockStack()
 {
     unlock();
 }
 
-inline constexpr uint32_t SortedEventStack::getMaxSize(void) const
+inline constexpr uint32_t SortedEventStack::getMaxSize() const
 {
     return mMaxQueueSize;
 }

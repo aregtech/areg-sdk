@@ -17,13 +17,13 @@
 #include "areg/component/Channel.hpp"
 #include "areg/base/NECommon.hpp"
 
-const Channel & Channel::getInvalidChannel( void )
+const Channel & Channel::getInvalidChannel()
 {
     static const Channel _invalidChannel( NEService::SOURCE_UNKNOWN, NEService::TARGET_UNKNOWN, NEService::COOKIE_UNKNOWN );
     return _invalidChannel;
 }
 
-Channel::Channel( void )
+Channel::Channel()
     : mSource( NEService::SOURCE_UNKNOWN )
     , mTarget( NEService::TARGET_UNKNOWN )
     , mCookie( NEService::COOKIE_UNKNOWN ) 
@@ -67,7 +67,7 @@ Channel & Channel::operator = ( Channel && source ) noexcept
     return (*this);
 }
 
-String Channel::convToString( void ) const
+String Channel::convToString() const
 {
     constexpr const char * format{ "%llu.%llu.%llu" };
 

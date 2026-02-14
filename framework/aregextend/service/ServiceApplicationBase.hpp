@@ -52,7 +52,7 @@ protected:
      **/
     ServiceApplicationBase(ServiceCommunicatonBase& commBase);
 
-    virtual ~ServiceApplicationBase(void) = default;
+    virtual ~ServiceApplicationBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -81,57 +81,57 @@ public:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions(void) const = 0;
+    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions() const = 0;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
      **/
-    virtual wchar_t* getServiceNameW(void) const = 0;
+    virtual wchar_t* getServiceNameW() const = 0;
 
      /**
       * \brief   Returns the ASCII name of the service application.
       **/
-    virtual char* getServiceNameA(void) const = 0;
+    virtual char* getServiceNameA() const = 0;
 
     /**
      * \brief   Returns the UNICODE display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    virtual wchar_t* getServiceDisplayNameW(void) const = 0;
+    virtual wchar_t* getServiceDisplayNameW() const = 0;
 
      /**
       * \brief   Returns the ASCII display name of the service application.
       *          This optional display name could be valid only for specific OS.
       *          For example, in Windows this name is displayed in the list of services.
       **/
-    virtual char* getServiceDisplayNameA(void) const = 0;
+    virtual char* getServiceDisplayNameA() const = 0;
 
     /**
      * \brief   Returns the UNICODE description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    virtual wchar_t* getServiceDescriptionW(void) const = 0;
+    virtual wchar_t* getServiceDescriptionW() const = 0;
 
     /**
      * \brief   Returns the ASCII description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    virtual char* getServiceDescriptionA(void) const = 0;
+    virtual char* getServiceDescriptionA() const = 0;
 
     /**
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eRemoteServices getServiceType(void) const = 0;
+    virtual NERemoteService::eRemoteServices getServiceType() const = 0;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eConnectionTypes getConnectionType(void) const = 0;
+    virtual NERemoteService::eConnectionTypes getConnectionType() const = 0;
 
 /************************************************************************/
 // SystemServiceBase overrides
@@ -161,55 +161,55 @@ public:
     /**
      * \brief   Triggered when application is going to exit.
      **/
-    virtual void serviceRelease( void ) override;
+    virtual void serviceRelease() override;
 
     /**
      * \brief   Call to install (register) message router service in the system.
      * \return  Returns true if registration succeeded.
      **/
-    virtual bool serviceInstall( void ) override;
+    virtual bool serviceInstall() override;
 
     /**
      * \brief   Call to uninstall (unregister) message router service in the system.
      **/
-    virtual void serviceUninstall( void ) override;
+    virtual void serviceUninstall() override;
 
     /**
      * \brief   Registers system service in the system.
      **/
-    virtual bool registerService( void ) override;
+    virtual bool registerService() override;
 
     /**
      * \brief   Opens operating system service DB for further processing.
      * \return  Returns true if succeeded.
      **/
-    virtual bool serviceOpen( void ) override;
+    virtual bool serviceOpen() override;
 
     /**
      * \brief   Called to start message router service.
      * \return  Returns true, if started with success.
      **/
-    virtual bool serviceStart( void ) override;
+    virtual bool serviceStart() override;
 
     /**
      * \brief   Called to pause message router service.
      **/
-    virtual void servicePause( void ) override;
+    virtual void servicePause() override;
 
     /**
      * \brief   Called to resume paused message router service.
      **/
-    virtual bool serviceContinue( void ) override;
+    virtual bool serviceContinue() override;
 
     /**
      * \brief   Called to stop message router service.
      **/
-    virtual void serviceStop( void ) override;
+    virtual void serviceStop() override;
 
     /**
      * \brief   Called to shutdown the system service.
      **/
-    virtual void serviceShutdown(void) override;
+    virtual void serviceShutdown() override;
 
     /**
      * \brief   Sets the state of message router service.
@@ -219,7 +219,7 @@ public:
     /**
      * \brief   Run application as a background process without input or output on console.
      **/
-    virtual void runService(void) override;
+    virtual void runService() override;
 
     /**
      * \brief   Called to setup service and start service dispatcher.
@@ -228,7 +228,7 @@ public:
      *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
      *          In all other cases it should return RESULT_FAILED_INIT.
      **/
-    virtual int startServiceDispatcher( void ) override;
+    virtual int startServiceDispatcher() override;
 
 protected:
 
@@ -277,38 +277,38 @@ private:
     /**
      * \brief   OS specific validity check of the service.
      **/
-    bool _osIsValid( void ) const;
+    bool _osIsValid() const;
 
     /**
      * \brief   Called to free engaged resources.
      **/
-    void _osFreeResources( void );
+    void _osFreeResources();
 
     /**
      * \brief   OS specific initialization of the service.
      **/
-    bool _osInitializeService( void );
+    bool _osInitializeService();
 
     /**
      * \brief   OS specific implementation to open service.
      **/
-    bool _osOpenService( void );
+    bool _osOpenService();
 
     /**
      * \brief   OS specific implementation to create service.
      **/
-    bool _osCreateService( void );
+    bool _osCreateService();
 
     /**
      * \brief   OS specific implementation of deleting service.
      **/
-    void _osDeleteService( void );
+    void _osDeleteService();
 
     /**
      * \brief   Registers service and returns true if handle is valid.
      *          The method is valid for Windows OS.
      **/
-    bool _osRegisterService( void );
+    bool _osRegisterService();
 
     /**
      * \brief   OS specific implementation of changing the state of the log collector service.
@@ -322,7 +322,7 @@ private:
      *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
      *          In all other cases it should return RESULT_FAILED_INIT.
      **/
-    int _osStartServiceDispatcher( void );
+    int _osStartServiceDispatcher();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -334,7 +334,7 @@ private:
 // Hidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(ServiceApplicationBase);
+    AREG_NOCOPY_NOMOVE(ServiceApplicationBase);
 };
 
 #endif  // AREG_AREGEXTEND_SERVICE_SERVICEAPPLICATIONBASE_HPP

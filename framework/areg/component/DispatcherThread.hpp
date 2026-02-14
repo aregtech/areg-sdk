@@ -65,7 +65,7 @@ class AREG_API DispatcherThread : public Thread
 //////////////////////////////////////////////////////////////////////////
 // Declare this to make runtime information available for dispatcher thread.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(DispatcherThread)
+    AREG_DECLARE_RUNTIME(DispatcherThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Static functions
@@ -105,7 +105,7 @@ public:
      *          registered in resource map or it is not a dispatcher thread,
      *          the NullDispatcher will be returned.
      **/
-    static inline DispatcherThread & getCurrentDispatcherThread( void );
+    static inline DispatcherThread & getCurrentDispatcherThread();
 
     /**
      * \brief   Static method to get reference to the current Event Dispatcher
@@ -114,7 +114,7 @@ public:
      *          Dispatcher thread, the Event Dispatcher (invalid dispatcher) of 
      *          NullDispatcher will be returned.
      **/
-    static inline EventDispatcher & getCurrentDispatcher( void );
+    static inline EventDispatcher & getCurrentDispatcher();
 
     /**
      * \brief   For specified event class ID it searches the appropriate dispatcher thread.
@@ -148,7 +148,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~DispatcherThread( void ) = default;
+    virtual ~DispatcherThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -157,7 +157,7 @@ public:
      * \brief   Returns reference to Event Dispatcher object of the thread.
      *          Every Dispatching Thread has one event dispatcher object.
      **/
-    inline EventDispatcher & getEventDispatcher( void );
+    inline EventDispatcher & getEventDispatcher();
 
     /**
      * \brief   Returns true if specified event is special exit event.
@@ -183,7 +183,7 @@ public:
      * \brief   This call does not stop dispatcher, but sets exit event in the queue
      *          and when all messages are dispatched, the dispatcher will be stopped and exit loop.
      **/
-    virtual void triggerExit( void ) override;
+    virtual void triggerExit() override;
 
     /**
      * \brief	Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT and it expires,
@@ -256,12 +256,12 @@ private:
      *          not dispatching events.
      *          The object is required for error cases.
      **/
-    static DispatcherThread & _getNullDispatherThread( void );
+    static DispatcherThread & _getNullDispatherThread();
 
     /**
      * \brief   Return reference to self object.
      **/
-    inline DispatcherThread & self( void );
+    inline DispatcherThread & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -278,8 +278,8 @@ protected:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DispatcherThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( DispatcherThread );
+    DispatcherThread() = delete;
+    AREG_NOCOPY_NOMOVE( DispatcherThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -288,39 +288,39 @@ private:
 
 inline DispatcherThread & DispatcherThread::getDispatcherThread( const String & threadName )
 {
-    DispatcherThread * dispThread = RUNTIME_CAST(threadName.isEmpty() == false ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
+    DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.isEmpty() == false ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline DispatcherThread & DispatcherThread::getDispatcherThread( id_type threadId )
 {
-    DispatcherThread* dispThread = RUNTIME_CAST(threadId != 0 ? Thread::findThreadById(threadId) : Thread::getCurrentThread(), DispatcherThread);
+    DispatcherThread* dispThread = AREG_RUNTIME_CAST(threadId != 0 ? Thread::findThreadById(threadId) : Thread::getCurrentThread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
 inline DispatcherThread & DispatcherThread::getDispatcherThread(const ThreadAddress & threadAddr )
 {
-    DispatcherThread* dispThread = RUNTIME_CAST(Thread::findThreadByAddress(threadAddr), DispatcherThread);
+    DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::findThreadByAddress(threadAddr), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
-inline DispatcherThread & DispatcherThread::getCurrentDispatcherThread( void )
+inline DispatcherThread & DispatcherThread::getCurrentDispatcherThread()
 {
-    DispatcherThread* currThread = RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
+    DispatcherThread* currThread = AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
     return ( currThread != nullptr ? *currThread : DispatcherThread::_getNullDispatherThread() );
 }
 
-inline EventDispatcher & DispatcherThread::getCurrentDispatcher( void )
+inline EventDispatcher & DispatcherThread::getCurrentDispatcher()
 {
     return getCurrentDispatcherThread().getEventDispatcher();
 }
 
-inline EventDispatcher & DispatcherThread::getEventDispatcher( void )
+inline EventDispatcher & DispatcherThread::getEventDispatcher()
 {
     return static_cast<EventDispatcher &>(self());
 }
 
-inline DispatcherThread & DispatcherThread::self( void )
+inline DispatcherThread & DispatcherThread::self()
 {
     return (*this);
 }

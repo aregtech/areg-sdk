@@ -19,6 +19,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/component/TimerBase.hpp"
+#include "areg/base/NEMath.hpp"
 
  /************************************************************************
   * Dependencies.
@@ -47,7 +48,7 @@ class AREG_API Watchdog  : public TimerBase
 // Object specific types and constants
 //////////////////////////////////////////////////////////////////////////
 public:
-#if defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
@@ -56,7 +57,7 @@ public:
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFFFFFF.
      **/
     using GUARD_ID      = unsigned int;
-#else   // !defined(BIT64)
+#elif (AREG_TARGET_PLATFORM == 32)
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
@@ -65,7 +66,7 @@ public:
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFF.
      **/
     using GUARD_ID      = unsigned short;
-#endif  // defined(BIT64)
+#endif  // (AREG_TARGET_PLATFORM == 64)
 
     /**
      * \brief   The watchdog ID, which is generated when the watchdog is started.
@@ -102,7 +103,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~Watchdog( void );
+    virtual ~Watchdog();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -111,41 +112,41 @@ public:
     /**
      * \brief   Call to start the watchdog.
      **/
-    void startGuard(void);
+    void startGuard();
 
     /**
      * \brief   Call to stop the watchdog.
      **/
-    void stopGuard(void);
+    void stopGuard();
 
     /**
      * \brief   Returns true if watchdog object is valid and can start timer.
      *          The Watchdog is valid if the timeout is not zero.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns the watchdog ID.
      */
-    inline Watchdog::GUARD_ID getId(void) const;
+    inline Watchdog::GUARD_ID getId() const;
 
     /**
      * \brief   Returns the watchdog activation sequence number.
      **/
-    inline Watchdog::SEQUENCE_ID getSequence(void) const;
+    inline Watchdog::SEQUENCE_ID getSequence() const;
 
     /**
      * \brief   Returns the instance of component thread that contains this watchdog.
      *          If watchdog belongs to worker thread, it returns the thread of owning component.
      *          The component thread of the watchdog is always valid.
      **/
-    inline const ComponentThread& getComponentThread(void) const;
+    inline const ComponentThread& getComponentThread() const;
 
     /**
      * \brief   Out of Guard ID and Sequence number generates watchdog ID.
      *          The ID changed each time when timer is started.
      **/
-    inline WATCHDOG_ID watchdogId(void);
+    inline WATCHDOG_ID watchdogId();
 
     /**
      * \brief   Out of passed Guard ID and Sequence number generates watchdog ID.
@@ -179,7 +180,7 @@ private:
      * \brief   This static method generates unique Guard ID for each watchdog object.
      * \return  Generated unique identifier of the Watchdog object.
      **/
-    static GUARD_ID _generateId(void);
+    static GUARD_ID _generateId();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -203,64 +204,64 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Watchdog(void) = delete;
-    DECLARE_NOCOPY_NOMOVE(Watchdog);
+    Watchdog() = delete;
+    AREG_NOCOPY_NOMOVE(Watchdog);
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Watchdog inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Watchdog::isValid(void) const
+inline bool Watchdog::isValid() const
 {
     return (mHandle != nullptr);
 }
 
-inline Watchdog::GUARD_ID Watchdog::getId(void) const
+inline Watchdog::GUARD_ID Watchdog::getId() const
 {
     return mGuardId;
 }
 
-inline Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
+inline Watchdog::SEQUENCE_ID Watchdog::getSequence() const
 {
     return mSequence;
 }
 
-inline const ComponentThread& Watchdog::getComponentThread(void) const
+inline const ComponentThread& Watchdog::getComponentThread() const
 {
     return mComponentThread;
 }
 
-inline Watchdog::WATCHDOG_ID Watchdog::watchdogId(void)
+inline Watchdog::WATCHDOG_ID Watchdog::watchdogId()
 {
     return Watchdog::makeWatchdogId(mGuardId, mSequence);
 }
 
 inline Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
 {
-#if defined(BIT64)
-    return static_cast<WATCHDOG_ID>(MACRO_MAKE_64(guardId, sequence));
-#else   // !defined(BIT64)
-    return static_cast<WATCHDOG_ID>(MACRO_MAKE_32(guardId, sequence));
-#endif  // defined(BIT64)
+#if (AREG_TARGET_PLATFORM ==64)
+    return static_cast<WATCHDOG_ID>(NEMath::make64(guardId, sequence));
+#elif (AREG_TARGET_PLATFORM == 32)
+    return static_cast<WATCHDOG_ID>(NEMath::make32(guardId, sequence));
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::GUARD_ID Watchdog::makeGuardId(Watchdog::WATCHDOG_ID watchdogId)
 {
-#if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_HI_BYTE32(watchdogId));
-#else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_HI_BYTE16(watchdogId));
-#endif  // defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
+    return static_cast<GUARD_ID>(NEMath::hiDword(watchdogId));
+#elif (AREG_TARGET_PLATFORM == 32)
+    return static_cast<GUARD_ID>(NEMath::hiWord(watchdogId));
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::SEQUENCE_ID Watchdog::makeSequenceId(Watchdog::WATCHDOG_ID watchdogId)
 {
-#if defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_64_LO_BYTE32(watchdogId));
-#else   // !defined(BIT64)
-    return static_cast<GUARD_ID>(MACRO_32_LO_BYTE16(watchdogId));
-#endif  // defined(BIT64)
+#if (AREG_TARGET_PLATFORM == 64)
+    return static_cast<GUARD_ID>(NEMath::loDword(watchdogId));
+#elif (AREG_TARGET_PLATFORM == 32)
+    return static_cast<GUARD_ID>(NEMath::loWord(watchdogId));
+#endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_WATCHDOG_HPP

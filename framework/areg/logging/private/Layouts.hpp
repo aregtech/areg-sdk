@@ -75,7 +75,7 @@ public:
     /**
      * \brief   Destructor. Public
      **/
-    virtual ~IELayout( void ) = default;
+    virtual ~IELayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Returns the layout type
      **/
-    inline NELogOptions::eLayouts getLayoutType( void ) const;
+    inline NELogOptions::eLayouts getLayoutType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -115,8 +115,8 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IELayout( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IELayout );
+    IELayout() = delete;
+    AREG_NOCOPY_NOMOVE( IELayout );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    TickCountLayout( void );
+    TickCountLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -151,7 +151,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~TickCountLayout( void ) = default;
+    virtual ~TickCountLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -200,7 +200,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    DayTimeLaytout( void );
+    DayTimeLaytout();
 
     /**
      * \brief   Copies data from given source.
@@ -217,7 +217,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~DayTimeLaytout( void ) = default;
+    virtual ~DayTimeLaytout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -266,7 +266,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    ModuleIdLayout( void );
+    ModuleIdLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -283,7 +283,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ModuleIdLayout( void ) = default;
+    virtual ~ModuleIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -332,7 +332,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    MessageLayout( void );
+    MessageLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -349,7 +349,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~MessageLayout( void ) = default;
+    virtual ~MessageLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -398,7 +398,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    EndOfLineLayout( void );
+    EndOfLineLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -415,7 +415,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~EndOfLineLayout( void ) = default;
+    virtual ~EndOfLineLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -464,7 +464,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    PriorityLayout( void );
+    PriorityLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -481,7 +481,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~PriorityLayout( void ) = default;
+    virtual ~PriorityLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -530,7 +530,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    ScopeIdLayout( void );
+    ScopeIdLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -547,7 +547,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ScopeIdLayout( void ) = default;
+    virtual ~ScopeIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -596,7 +596,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    ThreadIdLayout( void );
+    ThreadIdLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -613,7 +613,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ThreadIdLayout( void ) = default;
+    virtual ~ThreadIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -662,7 +662,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    ModuleNameLayout( void );
+    ModuleNameLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -679,7 +679,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ModuleNameLayout( void ) = default;
+    virtual ~ModuleNameLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -728,7 +728,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    ThreadNameLayout( void );
+    ThreadNameLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -745,7 +745,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ThreadNameLayout( void ) = default;
+    virtual ~ThreadNameLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -794,7 +794,7 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    ScopeNameLayout( void );
+    ScopeNameLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -811,7 +811,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ScopeNameLayout( void ) = default;
+    virtual ~ScopeNameLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -860,7 +860,7 @@ public:
     /**
      * \brief   Sets layout type value.
      **/
-    AnyTextLayout( void );
+    AnyTextLayout();
 
     /**
      * \brief   Sets layout type value and the text to output in the stream.
@@ -889,7 +889,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~AnyTextLayout( void ) = default;
+    virtual ~AnyTextLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -947,7 +947,7 @@ public:
     /**
      * \brief   Sets layout type value.
      **/
-    CookieIdLayout( void );
+    CookieIdLayout();
 
     /**
      * \brief   Copies data from given source.
@@ -964,7 +964,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~CookieIdLayout( void ) = default;
+    virtual ~CookieIdLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -1006,7 +1006,7 @@ public:
 // IELayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogOptions::eLayouts IELayout::getLayoutType( void ) const
+inline NELogOptions::eLayouts IELayout::getLayoutType() const
 {
     return mLayout;
 }

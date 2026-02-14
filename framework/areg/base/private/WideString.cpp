@@ -52,7 +52,7 @@ namespace
      * \return  Returns the number of characters copied into the string.
      **/
     template<typename DigitType>
-    inline int32_t _formatBinary( WideString & OUT result, DigitType number )
+    inline int32_t _formatBinary( WideString & result, DigitType number )
     {
         wchar_t buffer[ NEString::MSG_MIN_BUF_SIZE ]{ 0 };
         wchar_t * dst  = buffer;
@@ -164,7 +164,7 @@ namespace
 
 
 // the static empty string
-const WideString & WideString::getEmptyString(void)
+const WideString & WideString::getEmptyString()
 {
     static const WideString _emptyString{ L"" };
     return _emptyString;

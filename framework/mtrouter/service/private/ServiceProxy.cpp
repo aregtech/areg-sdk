@@ -17,7 +17,7 @@
 
 #include <utility>
 
-ServiceProxy::ServiceProxy( void )
+ServiceProxy::ServiceProxy()
     : mProxyAddress ( )
     , mConnectStatus( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
@@ -145,7 +145,7 @@ bool ServiceProxy::stubAvailable( const StubAddress & addrStub )
     return isConnected();
 }
 
-bool ServiceProxy::stubUnavailable(void)
+bool ServiceProxy::stubUnavailable()
 {
     mConnectStatus = NEService::eServiceConnection::ServiceConnectionUnknown;
     if ( mProxyAddress.isValid() )

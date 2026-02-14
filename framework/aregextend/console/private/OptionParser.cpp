@@ -103,13 +103,13 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
                 else if (isSpace<CharType>(*src) == false)
                 {
                     ++ src;
-                    String str(begin, MACRO_ELEM_COUNT(begin, src));
+                    String str(begin, static_cast<uint32_t>(src - begin));
                     optList.push_back(str);
                 }
                 else
@@ -128,7 +128,7 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -143,13 +143,13 @@ namespace
                 {
                     if ( begin != src ++ )
                     {
-                        String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                        String str( begin, static_cast<uint32_t>( src - begin ) );
                         optList.push_back( str );
                     }
                 }
                 else if (begin != src)
                 {
-                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -163,20 +163,20 @@ namespace
 
         if ( begin != src )
         {
-            String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+            String str( begin, static_cast<uint32_t>( src - begin ) );
             optList.push_back( str );
         }
     }
 } // namespace
 
-const OptionParser::sOptionSetup OptionParser::getDefaultOptionSetup( void )
+const OptionParser::sOptionSetup OptionParser::getDefaultOptionSetup()
 {
     static sOptionSetup _defaultSetup{ "", "", 0, STRING_NO_RANGE, { }, { }, { } };
     return _defaultSetup;
 }
 
 
-OptionParser::OptionParser( void )
+OptionParser::OptionParser()
     : mCmdLine      ( )
     , mSetupOptions ( )
     , mInputOptions ( )
@@ -404,7 +404,7 @@ uint32_t OptionParser::findOption(int optId) const
     return result;
 }
 
-void OptionParser::sort(void)
+void OptionParser::sort()
 {
     mInputOptions.sort([](const OptionParser::sOption& opt1, const OptionParser::sOption& opt2)
                         {

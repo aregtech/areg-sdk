@@ -63,7 +63,7 @@ public:
     /**
      * \brief   Default Constructor. Initializes empty list
      **/
-    EventConsumerList( void ) = default;
+    EventConsumerList() = default;
     /**
      * \brief   Copy constructor.
      * \param   src     The source of data to copy.
@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~EventConsumerList( void );
+    ~EventConsumerList();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -121,7 +121,7 @@ public:
     /**
      * \brief   Removes all Event Consumers from the list.
      **/
-    void removeAllConsumers( void );
+    void removeAllConsumers();
 
     /**
      * \brief   Returns true, if the specified Event Consumer already exists in the list.

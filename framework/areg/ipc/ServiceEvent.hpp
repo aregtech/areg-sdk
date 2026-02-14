@@ -83,7 +83,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~ServiceEventData( void ) = default;
+    ~ServiceEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
@@ -104,12 +104,12 @@ public:
     /**
      * \brief   Returns command saved in event data.
      **/
-    inline ServiceEventData::eServiceEventCommands getCommand( void ) const;
+    inline ServiceEventData::eServiceEventCommands getCommand() const;
 
     /**
      * \brief   Returns message data buffer object saved in event data.
      **/
-    inline const RemoteMessage & getMessage( void ) const;
+    inline const RemoteMessage & getMessage() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -129,7 +129,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceEventData( void );
+    ServiceEventData();
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,11 +137,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 //!< Declaration event and consumer for the service connected client.
 //!< Declare ServiceClientEvent and IEServiceClientEventConsumer
-DECLARE_EVENT(ServiceEventData, ServiceClientEvent, IEServiceClientEventConsumer)
+AREG_DECLARE_EVENT(ServiceEventData, ServiceClientEvent, IEServiceClientEventConsumer)
 
 //!< Declaration event and consumer for the service connection server.
 //!< Declare ServiceServerEvent and IEServiceServerEventConsumer
-DECLARE_EVENT(ServiceEventData, ServiceServerEvent, IEServiceServerEventConsumer)
+AREG_DECLARE_EVENT(ServiceEventData, ServiceServerEvent, IEServiceServerEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////////
 // ServiceEventData class inline methods
@@ -159,12 +159,12 @@ inline ServiceEventData::ServiceEventData(ServiceEventData::eServiceEventCommand
 {
 }
 
-inline ServiceEventData::eServiceEventCommands ServiceEventData::getCommand( void ) const
+inline ServiceEventData::eServiceEventCommands ServiceEventData::getCommand() const
 {
     return mServiceCommand;
 }
 
-inline const RemoteMessage& ServiceEventData::getMessage(void) const
+inline const RemoteMessage& ServiceEventData::getMessage() const
 {
     return mMessageData;
 }

@@ -57,7 +57,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(ComponentThread)
+    AREG_DECLARE_RUNTIME(ComponentThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Static functions
@@ -72,7 +72,7 @@ public:
      *          current Component set in the thread, it will return nullptr.
      * \return  Returns the current Component object of current Component Thread.
      **/
-    static Component * getCurrentComponent( void );
+    static Component * getCurrentComponent();
 
     /**
      * \brief   Sets current Component object of current Component Thread.
@@ -114,7 +114,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ComponentThread( void ) = default;
+    virtual ~ComponentThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
@@ -127,13 +127,13 @@ public:
      *          thread is not valid and not operable anymore.
      *          The method does not automatically delete the component thread object.
      **/
-    void terminateSelf( void );
+    void terminateSelf();
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
      *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
      **/
-    inline uint32_t getWatchdogTimeout(void) const;
+    inline uint32_t getWatchdogTimeout() const;
 
 /************************************************************************/
 // Thread overrides
@@ -195,7 +195,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual bool runDispatcher() override;
 
     /**
      * \brief   Search for consumer thread that can dispatch event.
@@ -217,7 +217,7 @@ protected:
      *          This method is triggered after exiting from Run() function.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit( void ) override;
+    virtual int onThreadExit() override;
 
 /************************************************************************/
 // ComponentThread overrides
@@ -230,7 +230,7 @@ protected:
      *          object. Overwrite for additional operations.
      * \return	Returns number of instantiated components.
      **/
-    virtual int createComponents( void );
+    virtual int createComponents();
 
     /**
      * \brief	Called after components are created.
@@ -238,7 +238,7 @@ protected:
      *          start call to start initialization.
      *          Overwrite for additional operations
      **/
-    virtual void startComponents( void );
+    virtual void startComponents();
 
     /**
      * \brief	Triggered after getting exit notification.
@@ -247,7 +247,7 @@ protected:
      *          clean up component.
      *          Overwrite for additional operation.
      **/
-    virtual void shutdownComponents( void );
+    virtual void shutdownComponents();
 
     /**
      * \brief   Called after shutting down components.
@@ -255,7 +255,7 @@ protected:
      *          appropriate registered delete function
      *          to destroy components.
      **/
-    virtual void destroyComponents( void );
+    virtual void destroyComponents();
 
 /************************************************************************/
 // IEEventDispatcher overrides
@@ -278,24 +278,24 @@ private:
     /**
      * \brief   Returns reference to component thread.
      **/
-    inline ComponentThread & self( void );
+    inline ComponentThread & self();
 
     /**
      * \brief   Returns pointer of current component thread.
      *          If returns nullptr, the current thread is not
      *          a Component Thread.
      **/
-    static inline ComponentThread * _getCurrentComponentThread( void );
+    static inline ComponentThread * _getCurrentComponentThread();
 
     /**
      * \brief   Called to shutdown proxies registered in the thread.
      **/
-    inline void _shutdownProxies( void );
+    inline void _shutdownProxies();
 
     /**
      * \brief   Called to shutdown components registered in the thread.
      **/
-    inline void _shutdownComponents( void );
+    inline void _shutdownComponents();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -332,15 +332,15 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ComponentThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ComponentThread );
+    ComponentThread() = delete;
+    AREG_NOCOPY_NOMOVE( ComponentThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ComponentThread::getWatchdogTimeout(void) const
+inline uint32_t ComponentThread::getWatchdogTimeout() const
 {
     return mWatchdog.getTimeout();
 }

@@ -36,12 +36,12 @@ public:
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
     void OnAddConnection( NEConnectionManager::sConnection & data );
     void OnRemoveConnection( NEConnectionManager::sConnection & data );
-    void OnUpdateConnection( void );
-    void OnDisconnectTriggered( void );
+    void OnUpdateConnection();
+    void OnDisconnectTriggered();
     void OnTypeMessage( uint32_t cookie, NECommon::sMessageData & data );
     void OnSendMessage( uint32_t cookie, NECommon::sMessageData & data );
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
@@ -62,11 +62,11 @@ public:
 
 private:
 
-    void setHeaders( void );
+    void setHeaders();
 
-    void cleanService( void );
+    void cleanService();
 
-    bool isServiceConnected( void ) const;
+    bool isServiceConnected() const;
 
     void outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie );
     void outputMessage( const String & nickname, const String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );

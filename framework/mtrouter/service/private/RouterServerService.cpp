@@ -36,7 +36,7 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 // RouterServerService class implementation
 //////////////////////////////////////////////////////////////////////////
 
-RouterServerService::RouterServerService( void )
+RouterServerService::RouterServerService()
     : ServiceCommunicatonBase   ( NEService::COOKIE_ROUTER, NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
     , IEServiceRegisterConsumer ( )
     , IEServiceRegisterProvider ( )
@@ -243,7 +243,7 @@ void RouterServerService::onServiceMessageSend(const RemoteMessage &msgSend)
     }
 }
 
-void RouterServerService::disconnectServices(void)
+void RouterServerService::disconnectServices()
 {
     ServiceCommunicatonBase::disconnectServices( );
 
@@ -264,7 +264,7 @@ void RouterServerService::disconnectServices(void)
     mServiceRegistry.clear( );
 }
 
-void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
+void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, TEArrayList<StubAddress> & out_listStubs, TEArrayList<ProxyAddress> & out_lisProxies ) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }
@@ -506,14 +506,14 @@ void RouterServerService::failedProcessMessage(const RemoteMessage & /* msgUnpro
 {
 }
 
-void RouterServerService::onServiceConnectionStarted( void )
+void RouterServerService::onServiceConnectionStarted()
 {
 }
 
-void RouterServerService::onServiceConnectionStopped( void )
+void RouterServerService::onServiceConnectionStopped()
 {
 }
 
-void RouterServerService::onServiceConnectionLost( void )
+void RouterServerService::onServiceConnectionLost()
 {
 }

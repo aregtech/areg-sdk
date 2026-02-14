@@ -12,9 +12,27 @@
  ************************************************************************/
 
 /************************************************************************
- * \brief   This header file is included internally as a wrapper for 
-            system dependent header files 
+ * \brief   This header file is included internally as a wrapper for
+            system dependent header files
  ************************************************************************/
+
+#if defined(AREG_NAMESPACE) && (AREG_NAMESPACE == 0)
+    #undef AREG_NAMESPACE_BEGIN
+    #undef AREG_NAMESPACE_END
+    #undef AREG_NAMESPACE_USE
+
+    #define AREG_NAMESPACE_BEGIN
+    #define AREG_NAMESPACE_END
+    #define AREG_NAMESPACE_USE
+#else // defined(AREG_NAMESPACE)
+    #undef AREG_NAMESPACE_BEGIN
+    #undef AREG_NAMESPACE_END
+    #undef AREG_NAMESPACE_USE
+
+    #define AREG_NAMESPACE_BEGIN    namespace areg {
+    #define AREG_NAMESPACE_END      }
+    #define AREG_NAMESPACE_USE      using namespace areg;
+#endif // defined(AREG_NAMESPACE)
 
 #if !defined(DEBUG) && !defined(NDEBUG)
     #define DEBUG
@@ -63,5 +81,14 @@
     #error  Unsupported OS.
 
 #endif // (defined(_WINDOWS) || defined(WINDOWS))
+
+#if defined(BIT32)
+    #define AREG_TARGET_PLATFORM    32
+#elif defined(BIT64)
+    #define AREG_TARGET_PLATFORM    64
+#else
+    #define AREG_TARGET_PLATFORM    0
+#endif // BIT32
+
 
 #endif // AREG_GEPLATFORM_H

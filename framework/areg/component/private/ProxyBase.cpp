@@ -61,7 +61,7 @@ ProxyBase::MapThreadProxyList   ProxyBase::_mapThreadProxies;
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::Listener class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyBase::Listener::Listener( void )
+ProxyBase::Listener::Listener()
     : mMessageId    (static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId))
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
     , mListener     (nullptr)
@@ -149,7 +149,7 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 // ProxyBase::ServiceAvailableEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : Event             ( Event::eEventType::EventExternal )
@@ -233,7 +233,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 }
 
 
-int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & OUT threadProxyList )
+int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
     int result = proxyList != nullptr ? static_cast<int32_t>(proxyList->getSize()) : 0;
@@ -289,12 +289,12 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
 // ProxyBase class, methods
 //////////////////////////////////////////////////////////////////////////
 
-void ProxyBase::registerServiceListeners( void )
+void ProxyBase::registerServiceListeners()
 {
     ProxyConnectEvent::addListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
 }
 
-void ProxyBase::unregisterServiceListeners( void )
+void ProxyBase::unregisterServiceListeners()
 {
     ProxyConnectEvent::removeListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
     ProxyBase::ServiceAvailableEvent::removeListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
@@ -340,7 +340,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
     }
 }
 
-void ProxyBase::terminateSelf(void)
+void ProxyBase::terminateSelf()
 {
     if (mProxyInstCount != 0)
     {
@@ -568,7 +568,7 @@ void ProxyBase::processProxyEvent( ProxyEvent& /*eventElem*/ )
 
 void ProxyBase::processGenericEvent( Event& eventElem )
 {
-    ProxyBase::ServiceAvailableEvent * serviceEvent = RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
+    ProxyBase::ServiceAvailableEvent * serviceEvent = AREG_RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
     if ( serviceEvent != nullptr )
     {
         processServiceAvailableEvent( serviceEvent->getConsumer(), serviceEvent->getEventDalay() );
@@ -660,7 +660,7 @@ RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAdd
     return nullptr;
 }
 
-void ProxyBase::stopProxy(void)
+void ProxyBase::stopProxy()
 {
     LOG_SCOPE(areg_component_ProxyBase_stopProxy);
 

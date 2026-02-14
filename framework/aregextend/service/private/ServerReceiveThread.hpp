@@ -55,7 +55,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServerReceiveThread( void ) = default;
+    virtual ~ServerReceiveThread() = default;
 
 /************************************************************************/
 // Actions and attributes.
@@ -65,7 +65,7 @@ public:
      * \brief   Returns accumulative value of received data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataReceive( void ) const;
+    inline uint32_t extractDataReceive() const;
 
     /**
      * \brief   Call to enable or disable the received data calculation.
@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Returns flag, indicating whether data calculation is enabled or not.
      **/
-    inline bool isCalculateDataEnabled(void) const;
+    inline bool isCalculateDataEnabled() const;
 
 protected:
 /************************************************************************/
@@ -91,7 +91,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual bool runDispatcher() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -122,15 +122,15 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerReceiveThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServerReceiveThread );
+    ServerReceiveThread() = delete;
+    AREG_NOCOPY_NOMOVE( ServerReceiveThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerReceiveThread::extractDataReceive(void) const
+inline uint32_t ServerReceiveThread::extractDataReceive() const
 {
     return mBytesReceive.exchange(0);
 }
@@ -144,7 +144,7 @@ inline void ServerReceiveThread::setEnableCalculateData(bool enable)
     }
 }
 
-inline bool ServerReceiveThread::isCalculateDataEnabled(void) const
+inline bool ServerReceiveThread::isCalculateDataEnabled() const
 {
     return mSaveDataReceive;
 }

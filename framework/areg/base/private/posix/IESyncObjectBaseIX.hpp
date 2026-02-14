@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IESyncObjectBaseIX( void ) = default;
+    virtual ~IESyncObjectBaseIX() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -85,12 +85,12 @@ public:
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline NESyncTypesIX::eSyncObject getSyncType( void ) const;
+    inline NESyncTypesIX::eSyncObject getSyncType() const;
 
     /**
      * \brief   Returns synchronization object name.
      **/
-    inline const String & getName( void ) const;
+    inline const String & getName() const;
 
 /************************************************************************/
 // IESyncObjectBaseIX overrides.
@@ -99,13 +99,13 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid( void ) const = 0;
+    virtual bool isValid() const = 0;
 
     /**
      * \brief   Triggered when synchronization object is going to be deleted.
      *          This should free all resources.
      **/
-    virtual void freeResources( void ) = 0;
+    virtual void freeResources() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -126,20 +126,20 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    IESyncObjectBaseIX( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IESyncObjectBaseIX );
+    IESyncObjectBaseIX() = delete;
+    AREG_NOCOPY_NOMOVE( IESyncObjectBaseIX );
 };
 
 
 //////////////////////////////////////////////////////////////////////////
 // IESyncObjectBaseIX class inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline NESyncTypesIX::eSyncObject IESyncObjectBaseIX::getSyncType( void ) const
+inline NESyncTypesIX::eSyncObject IESyncObjectBaseIX::getSyncType() const
 {
     return mSyncType;
 }
 
-inline const String & IESyncObjectBaseIX::getName( void ) const
+inline const String & IESyncObjectBaseIX::getName() const
 {
     return mSyncName;
 }

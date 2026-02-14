@@ -49,7 +49,7 @@ namespace
 
 namespace NESocket
 {
-    bool _osInitSocket(void)
+    bool _osInitSocket()
     {
         bool result = true;
         if (_instanceCount.fetch_add(1) == 0)
@@ -66,7 +66,7 @@ namespace NESocket
         return result;
     }
 
-    void _osReleaseSocket(void)
+    void _osReleaseSocket()
     {
         if (_instanceCount.fetch_sub(1) == 1)
         {
@@ -163,14 +163,14 @@ namespace NESocket
     bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long& arg)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
-        return (RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
+        return (NECommon::RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
     }
 
     bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long& value)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         int len{ sizeof(unsigned long) };
-        return (RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char *>(&value), &len));
+        return (NECommon::RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char *>(&value), &len));
     }
 
 } // namespace NESocket

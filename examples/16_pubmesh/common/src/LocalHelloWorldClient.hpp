@@ -37,7 +37,7 @@ public:
      **/
     LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout );
 
-    virtual ~LocalHelloWorldClient(void) = default;
+    virtual ~LocalHelloWorldClient() = default;
 
 protected:
     /**
@@ -79,7 +79,7 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline LocalHelloWorldClient & self( void )
+    inline LocalHelloWorldClient & self()
     {
         return (*this);
     }
@@ -98,8 +98,8 @@ private:
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LocalHelloWorldClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LocalHelloWorldClient );
+    LocalHelloWorldClient() = delete;
+    AREG_NOCOPY_NOMOVE( LocalHelloWorldClient );
 };
 
 #endif // PUBMESH_COMMON_SRC_LOCALHELLOWORLDCLIENT_HPP

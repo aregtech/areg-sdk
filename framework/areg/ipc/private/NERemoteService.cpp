@@ -86,7 +86,7 @@ namespace
 
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageHelloServer( void )
+AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageHelloServer()
 {
     static constexpr NEMemory::sRemoteMessage _messageHelloServer
     {
@@ -111,7 +111,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageHelloS
     return _messageHelloServer;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeServer( void )
+AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeServer()
 {
     static constexpr NEMemory::sRemoteMessage _messageByeServer
     {
@@ -161,7 +161,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
     return _messageAcceptClient;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegisterService( void )
+AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegisterService()
 {
     static constexpr NEMemory::sRemoteMessage _messageRegisterService
     {
@@ -186,7 +186,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegist
     return _messageRegisterService;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageQueryInstances( void )
+AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageQueryInstances()
 {
     static constexpr NEMemory::sRemoteMessage _messageQueryService
     {
@@ -212,7 +212,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageQueryI
 }
 
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotifyInstances( void )
+AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotifyInstances()
 {
     static constexpr NEMemory::sRemoteMessage _messageQueryService
     {
@@ -237,7 +237,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
     return _messageQueryService;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegisterNotify( void )
+AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegisterNotify()
 {
     static constexpr NEMemory::sRemoteMessage _messageRegisterNotify
     {

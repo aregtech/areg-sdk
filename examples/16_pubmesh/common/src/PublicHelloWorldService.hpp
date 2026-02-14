@@ -36,7 +36,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~PublicHelloWorldService(void) = default;
+    virtual ~PublicHelloWorldService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -88,8 +88,8 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    PublicHelloWorldService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicHelloWorldService );
+    PublicHelloWorldService() = delete;
+    AREG_NOCOPY_NOMOVE( PublicHelloWorldService );
 };
 
 #endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP

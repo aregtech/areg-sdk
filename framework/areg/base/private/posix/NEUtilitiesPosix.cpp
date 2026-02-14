@@ -28,27 +28,27 @@
 
 namespace NEUtilities
 {
-    uint64_t _osGetTickCount( void )
+    uint64_t _osGetTickCount()
     {
         struct timespec ts;
         ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
         return ((ts.tv_sec * NEUtilities::SEC_TO_MILLISECS) + (ts.tv_nsec / NEUtilities::MILLISEC_TO_NS));
     }
 
-    TIME64 _osSystemTimeNow(void)
+    TIME64 _osSystemTimeNow()
     {
         struct timespec ts { 0 };
-        return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+        return (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
                 ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
                 : 0LL);
     }
 
-    void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
+    void _osSystemTimeNow( NEUtilities::sSystemTime & sysTime, bool localTime )
     {
         struct timespec ts { 0 };
         struct tm now { 0 };
 
-        if (RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
+        if (NECommon::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
         {
             if ( localTime )
             {
@@ -70,14 +70,14 @@ namespace NEUtilities
         }
     }
 
-    void _osMakeTmLocal(struct tm& IN OUT utcTime)
+    void _osMakeTmLocal(struct tm& utcTime)
     {
         NEMemory::memSet(&utcTime, sizeof(struct tm), 0);
         time_t _timer = mktime(&utcTime);
         localtime_r(&_timer, &utcTime);
     }
 
-    bool _osConvToLocalTime(const TIME64& IN utcTime, sSystemTime& OUT localTime)
+    bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& localTime)
     {
         bool result = false;
 
@@ -98,13 +98,13 @@ namespace NEUtilities
         return result;
     }
 
-    bool _osConvToLocalTm(const TIME64& IN utcTime, struct tm& OUT localTm)
+    bool _osConvToLocalTm(const TIME64& utcTime, struct tm& localTm)
     {
         time_t secs = static_cast<time_t>(utcTime / NEUtilities::SEC_TO_MICROSECS);
         return (::localtime_r(&secs, &localTm) != nullptr);
     }
 
-    void _osConvToSystemTime(const TIME64& IN timeValue, NEUtilities::sSystemTime& OUT sysTime)
+    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime)
     {
         time_t secs;
         unsigned short milli, micro;
@@ -119,7 +119,7 @@ namespace NEUtilities
         }
     }
 
-    void _osConvToTm(const TIME64& IN timeValue, tm& OUT time)
+    void _osConvToTm(const TIME64& timeValue, tm& time)
     {
         time_t secs{ static_cast<time_t>(timeValue / NEUtilities::SEC_TO_MICROSECS) };
         ::gmtime_r(&secs, &time);

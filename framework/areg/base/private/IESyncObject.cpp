@@ -34,7 +34,7 @@ IESyncObject::IESyncObject(IESyncObject::eSyncObject syncObjectType)
     ASSERT( mSyncObjectType != IESyncObject::eSyncObject::SoUnknown );
 }
 
-IESyncObject::~IESyncObject( void )
+IESyncObject::~IESyncObject()
 {
     _osDestroySyncObject();
 }
@@ -47,7 +47,7 @@ bool IESyncObject::lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
     return false;
 }
 
-bool IESyncObject::unlock(void)
+bool IESyncObject::unlock()
 {
     return false;
 }

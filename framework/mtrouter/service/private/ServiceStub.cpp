@@ -17,7 +17,7 @@
 
 #include <utility>
 
-ServiceStub::ServiceStub( void )
+ServiceStub::ServiceStub()
     : mStubAddress  ( )
     , mConnectStatus( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
@@ -120,13 +120,13 @@ bool ServiceStub::operator == ( const ServiceStub & stubService ) const
     return static_cast<const ServiceAddress &>(mStubAddress) == static_cast<const ServiceAddress &>(stubService.mStubAddress);
 }
 
-ServiceStub::operator unsigned int ( void ) const
+ServiceStub::operator unsigned int () const
 {
     const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mStubAddress);
     return static_cast<unsigned int>(addrService);
 }
 
-bool ServiceStub::isValid( void ) const
+bool ServiceStub::isValid() const
 {
     return mStubAddress.isValid() && (mStubAddress.getSource() != NEService::SOURCE_UNKNOWN) && (mStubAddress.getCookie() != NEService::COOKIE_UNKNOWN);
 }

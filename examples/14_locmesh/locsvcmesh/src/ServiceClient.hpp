@@ -36,7 +36,7 @@ public:
      **/
     ServiceClient( const String & roleName, Component & owner );
 
-    virtual ~ServiceClient(void) = default;
+    virtual ~ServiceClient() = default;
 
 protected:
 
@@ -91,7 +91,7 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void )
+    inline ServiceClient & self()
     {
         return (*this);
     }
@@ -111,6 +111,6 @@ private:
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };

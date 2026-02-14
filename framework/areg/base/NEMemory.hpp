@@ -23,6 +23,7 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMath.hpp"
 
+#include <algorithm>
 #include <new>
 #include <string.h>
 
@@ -36,7 +37,7 @@
 /**
  * \brief   Aligns passed value to the size of uAlign object.
  **/
-#define ALIGNED_TYPE_SIZE(x)    MACRO_ALIGN_SIZE(sizeof(x), sizeof(NEMemory::uAlign))
+#define ALIGNED_TYPE_SIZE(x)    NEMath::alignSize(sizeof(x), sizeof(NEMemory::uAlign))
 
 /**
  * \brief   Gets boolean value of align object.
@@ -150,8 +151,8 @@ namespace NEMemory
 //////////////////////////////////////////////////////////////////////////
     
     class _EmptyClass;                                          //!< Dummy class declaration
-    typedef void ( *                _EmptyMethod     ) (void);  //!< Dummy pointer to global function declaration
-    typedef void (_EmptyClass::*    _EmptyClassMethod) (void);  //!< Dummy pointer to class function declaration
+    typedef void ( *                _EmptyMethod     ) ();  //!< Dummy pointer to global function declaration
+    typedef void (_EmptyClass::*    _EmptyClassMethod) ();  //!< Dummy pointer to class function declaration
     typedef int   _EmptyClass::*    _EmptyClassMember;          //!< Dummy pointer to class variable declaration
 
     /**
@@ -202,9 +203,9 @@ namespace NEMemory
         TEAlign<float>                         alignFloat;     //!< float value
         TEAlign<double>                        alignDouble;    //!< double
         TEAlign<void *>                        alignPtr;       //!< pointer value
-        TEAlign<void (*)( void )>              alignFunc;      //!< pointer to function value
+        TEAlign<void (*)()>              alignFunc;      //!< pointer to function value
         TEAlign<_EmptyClass *>                 alignClsPtr;    //!< pointer to class value
-        TEAlign<void (_EmptyClass::*)( void )> alignClsFunc;   //!< pointer to class function value
+        TEAlign<void (_EmptyClass::*)()> alignClsFunc;   //!< pointer to class function value
         TEAlign<int _EmptyClass::*>            alignClsVar;    //!< pointer to class variable value
 
     };
@@ -765,7 +766,7 @@ inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void 
     {
         if ((memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0))
         {
-            result = MACRO_MIN(dstSpace, count);
+            result = std::min(dstSpace, count);
             ::memcpy(memDst, memSrc, result);
         }
     }

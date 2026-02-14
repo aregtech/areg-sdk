@@ -61,7 +61,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime event.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(ServiceResponseEvent)
+    AREG_DECLARE_RUNTIME_EVENT(ServiceResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -100,7 +100,7 @@ protected:
      * \brief   Destructor. Protected.
      * \remark  Do not call directly, use Destroy() method to clean properly.
      **/
-    virtual ~ServiceResponseEvent( void ) = default;
+    virtual ~ServiceResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -110,17 +110,17 @@ public:
     /**
      * \brief   Get and set response message ID.
      **/
-    inline unsigned int getResponseId( void ) const;
+    inline unsigned int getResponseId() const;
 
     /**
      * \brief   Returns response call result
      **/
-    inline NEService::ResultType getResult( void ) const;
+    inline NEService::ResultType getResult() const;
 
     /**
      * \brief   Returns sequence number of call.
      **/
-    inline const SequenceNumber & getSequenceNumber( void ) const;
+    inline const SequenceNumber & getSequenceNumber() const;
 
     /**
      * \brief   Sets sequence number of call.
@@ -186,25 +186,25 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceResponseEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceResponseEvent );
+    ServiceResponseEvent() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline unsigned int ServiceResponseEvent::getResponseId( void ) const
+inline unsigned int ServiceResponseEvent::getResponseId() const
 {
     return mResponseId;
 }
 
-inline NEService::ResultType ServiceResponseEvent::getResult( void ) const
+inline NEService::ResultType ServiceResponseEvent::getResult() const
 {
     return mResult;
 }
 
-inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber( void ) const
+inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber() const
 {
     return mSequenceNr;
 }

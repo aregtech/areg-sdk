@@ -101,7 +101,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~SystemServiceBase( void ) = default;
+    virtual ~SystemServiceBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -184,55 +184,55 @@ public:
     /**
      * \brief   Triggered when service application is going to exit.
      **/
-    virtual void serviceRelease( void ) = 0;
+    virtual void serviceRelease() = 0;
 
     /**
      * \brief   Call to create and install the service in the system.
      * \return  Returns true if registration succeeded.
      **/
-    virtual bool serviceInstall( void ) = 0;
+    virtual bool serviceInstall() = 0;
 
     /**
      * \brief   Call to delete and uninstall the service in the system.
      **/
-    virtual void serviceUninstall( void ) = 0;
+    virtual void serviceUninstall() = 0;
 
     /**
      * \brief   Registers system service in the system.
      **/
-    virtual bool registerService( void ) = 0;
+    virtual bool registerService() = 0;
 
     /**
      * \brief   Opens operating system service for further processing.
      * \return  Returns true if succeeded.
      **/
-    virtual bool serviceOpen( void ) = 0;
+    virtual bool serviceOpen() = 0;
 
     /**
      * \brief   Called to start the system service.
      * \return  Returns true, if started with success.
      **/
-    virtual bool serviceStart( void ) = 0;
+    virtual bool serviceStart() = 0;
 
     /**
      * \brief   Called to pause the system service.
      **/
-    virtual void servicePause( void ) = 0;
+    virtual void servicePause() = 0;
 
     /**
      * \brief   Called to resume paused system service.
      **/
-    virtual bool serviceContinue( void ) = 0;
+    virtual bool serviceContinue() = 0;
 
     /**
      * \brief   Called to stop the system service.
      **/
-    virtual void serviceStop( void ) = 0;
+    virtual void serviceStop() = 0;
 
     /**
      * \brief   Called to shutdown the system service.
      **/
-    virtual void serviceShutdown( void ) = 0;
+    virtual void serviceShutdown() = 0;
 
     /**
      * \brief   Sets the state of the system service.
@@ -246,7 +246,7 @@ public:
      *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
      *          In all other cases it should return RESULT_FAILED_INIT.
      **/
-    virtual int startServiceDispatcher( void ) = 0;
+    virtual int startServiceDispatcher() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -255,7 +255,7 @@ public:
     /**
      * \brief   Returns current command of message router service.
      **/
-    inline NESystemService::eServiceOption getCurrentOption( void ) const;
+    inline NESystemService::eServiceOption getCurrentOption() const;
 
     /**
      * \brief   Sets the current command of message router service.
@@ -266,22 +266,22 @@ public:
     /**
      * \brief   Returns the state of message router service.
      **/
-    inline NESystemService::eSystemServiceState getState( void ) const;
+    inline NESystemService::eSystemServiceState getState() const;
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
-    inline DataRateHelper& getDataRateHelper(void) const;
+    inline DataRateHelper& getDataRateHelper() const;
 
     /**
      * \brief   Return the instance of the communication controller object.
      **/
-    inline ServiceCommunicatonBase& getCommunicationController(void) const;
+    inline ServiceCommunicatonBase& getCommunicationController() const;
 
     /**
      * \brief   Resets default options.
      **/
-    void resetDefaultOptions(void);
+    void resetDefaultOptions();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -305,33 +305,33 @@ protected:
     /**
      * \brief   Triggered to start the console service.
      **/
-    virtual void startConsoleService( void ) = 0;
+    virtual void startConsoleService() = 0;
 
     /**
      * \brief   Stops the consoler service.
      **/
-    virtual void stopConsoleService( void ) = 0;
+    virtual void stopConsoleService() = 0;
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    virtual Console::CallBack getOptionCheckCallback( void ) const = 0;
+    virtual Console::CallBack getOptionCheckCallback() const = 0;
 
     /**
      * \brief   Triggered if need to run console with extended features.
      *          In extended feature, the console can output message at any position on the screen.
      **/
-    virtual void runConsoleInputExtended( void ) = 0;
+    virtual void runConsoleInputExtended() = 0;
 
     /**
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
-    virtual void runConsoleInputSimple( void ) = 0;
+    virtual void runConsoleInputSimple() = 0;
 
     /**
      * \brief   Run application as a background process without input or output on console.
      **/
-    virtual void runService(void) = 0;
+    virtual void runService() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -363,29 +363,29 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SystemServiceBase );
+    AREG_NOCOPY_NOMOVE( SystemServiceBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceBase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NESystemService::eSystemServiceState SystemServiceBase::getState( void ) const
+inline NESystemService::eSystemServiceState SystemServiceBase::getState() const
 {
     return mSystemServiceState;
 }
 
-inline DataRateHelper& SystemServiceBase::getDataRateHelper(void) const
+inline DataRateHelper& SystemServiceBase::getDataRateHelper() const
 {
     return  mCommunication.getDataRateHelper();
 }
 
-inline ServiceCommunicatonBase& SystemServiceBase::getCommunicationController(void) const
+inline ServiceCommunicatonBase& SystemServiceBase::getCommunicationController() const
 {
     return const_cast<ServiceCommunicatonBase&>(mCommunication);
 }
 
-inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption(void) const
+inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption() const
 {
     return mSystemServiceOption;
 }

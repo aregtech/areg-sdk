@@ -19,6 +19,9 @@
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
 #endif
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include "register/res/targetver.h"
 #include "register/res/resource.h"
 

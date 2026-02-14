@@ -32,7 +32,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 
-    inline ClientComponent & self( void )
+    inline ClientComponent & self()
     {
         return (*this);
     }
@@ -48,6 +48,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientComponent );
+    ClientComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ClientComponent );
 };

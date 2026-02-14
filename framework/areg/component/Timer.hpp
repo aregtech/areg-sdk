@@ -97,7 +97,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~Timer( void );
+    virtual ~Timer();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -150,7 +150,7 @@ public:
     /**
      * \brief   Call to stop previously started timer.
      **/
-    void stopTimer( void );
+    void stopTimer();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -159,12 +159,12 @@ public:
     /**
      * \brief   Returns Timer Consumer object.
      **/
-    inline IETimerConsumer & getConsumer( void ) const;
+    inline IETimerConsumer & getConsumer() const;
 
     /**
      * \brief   Returns true if timer is stopped. The timer is stopped if timeout value is zero.
      **/
-    inline bool isStopped( void ) const;
+    inline bool isStopped() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -251,7 +251,7 @@ private:
      *          The function will be ignored if maximum queue count in zero and/or is less
      *          than the event count.
      **/
-    void _queueTimer( void );
+    void _queueTimer();
 
     /**
      * \brief   Triggered in Timer Event object destructor, indicating that timer is removed from queue.
@@ -260,41 +260,41 @@ private:
      *          The function will be ignored if timer was stopped manually or it is completed to be fired.
      *          The function will be ignored if the maximum queue count is zero.
      **/
-    void _unqueueTimer( void );
+    void _unqueueTimer();
 
     /**
      * \brief   Called to stop and release the timer.
      */
-    inline void _stopTimer(void);
+    inline void _stopTimer();
 
     /**
      * \brief   Returns reference to Timer object.
      **/
-    inline Timer & self( void );
+    inline Timer & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    Timer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE(Timer);
+    Timer() = delete;
+    AREG_NOCOPY_NOMOVE(Timer);
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Timer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Timer & Timer::self( void )
+inline Timer & Timer::self()
 {
     return (*this);
 }
 
-inline IETimerConsumer& Timer::getConsumer( void ) const
+inline IETimerConsumer& Timer::getConsumer() const
 {
     return mConsumer;
 }
 
-inline bool Timer::isStopped( void ) const
+inline bool Timer::isStopped() const
 {
     return (mTimeoutInMs == NECommon::INVALID_TIMEOUT);
 }

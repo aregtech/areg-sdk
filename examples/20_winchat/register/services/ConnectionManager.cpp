@@ -37,7 +37,7 @@ END_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
 
 ConnectionManager *   ConnectionManager::sService   = nullptr;
 
-ConnectionManager * ConnectionManager::getService( void )
+ConnectionManager * ConnectionManager::getService()
 {
     return ConnectionManager::sService;
 }
@@ -53,7 +53,7 @@ ConnectionManager::ConnectionManager( const NERegistry::ComponentEntry & entry, 
     ConnectionManager::sService   = this;
 }
 
-ConnectionManager::~ConnectionManager( void )
+ConnectionManager::~ConnectionManager()
 {
     ConnectionManager::sService = nullptr;
     mWnd    =   0;
@@ -339,7 +339,7 @@ inline bool ConnectionManager::connectionExist( uint32_t cookie ) const
     return mapConnections.contains(cookie);
 }
 
-inline uint32_t ConnectionManager::getNextCookie( void )
+inline uint32_t ConnectionManager::getNextCookie()
 {
     ++ mCookies;
     while ( (mCookies == 0) || (connectionExist(mCookies) == true) )

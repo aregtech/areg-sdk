@@ -26,7 +26,7 @@ FileLogger::FileLogger( LogConfiguration & logConfig)
 {
 }
 
-bool FileLogger::openLogger( void )
+bool FileLogger::openLogger()
 {
     if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
     {
@@ -65,7 +65,7 @@ bool FileLogger::openLogger( void )
     return mLogFile.isOpened();
 }
 
-void FileLogger::closeLogger(void)
+void FileLogger::closeLogger()
 {
     if ( mLogFile.isOpened() )
     {
@@ -111,12 +111,12 @@ void FileLogger::logMessage( const NELogging::sLogMessage & logMessage )
     }
 }
 
-bool FileLogger::isLoggerOpened(void) const
+bool FileLogger::isLoggerOpened() const
 {
     return mLogFile.isOpened();
 }
 
-void FileLogger::flushLogs(void)
+void FileLogger::flushLogs()
 {
     mLogFile.flush();
 }

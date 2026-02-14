@@ -95,7 +95,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServiceClientConnectionBase( void );
+    virtual ~ServiceClientConnectionBase();
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -104,19 +104,19 @@ public:
     /**
      * \brief   Returns the value of cookie set in connection.
      **/
-    inline const ITEM_ID & getConnectionCookie( void ) const;
+    inline const ITEM_ID & getConnectionCookie() const;
 
     /**
      * \brief   Each time querying the bytes sent via network connection returns
      *          the value after last query.
      **/
-    inline uint32_t queryBytesSent( void );
+    inline uint32_t queryBytesSent();
 
     /**
      * \brief   Each time querying the bytes received via network connection returns
      *          the value after last query.
      **/
-    inline uint32_t queryBytesReceived( void );
+    inline uint32_t queryBytesReceived();
 
     /**
      * \brief   Enable or disable the data rate calculation.
@@ -128,32 +128,32 @@ public:
     /**
      * \brief   Returns enable or disable the data rate calculation flag.
      **/
-    inline bool isCalculateDataRateEnabled(void) const;
+    inline bool isCalculateDataRateEnabled() const;
 
     /**
      * \brief   Returns true if the connection status is either connecting or connected.
      **/
-    inline bool isConnectState( void ) const;
+    inline bool isConnectState() const;
 
     /**
      * \brief   Returns true if the connection state is connected.
      **/
-    inline bool isConnectedState( void ) const;
+    inline bool isConnectedState() const;
 
     /**
      * \brief   Returns true if the connection status is either disconnecting or disconnected.
      **/
-    inline bool isDisconnectState( void ) const;
+    inline bool isDisconnectState() const;
 
     /**
      * \brief   Registers the client socket connection thread to receive service commands.
      **/
-    inline void registerForServiceClientCommands(void);
+    inline void registerForServiceClientCommands();
 
     /**
      * \brief   Unregisters the client socket connection thread to receive service commands.
      **/
-    inline void unregisterForServiceClientCommands(void);
+    inline void unregisterForServiceClientCommands();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -201,7 +201,7 @@ protected:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost( void ) override;
+    virtual bool connectServiceHost() override;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -209,27 +209,27 @@ protected:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    virtual bool reconnectServiceHost( void ) override;
+    virtual bool reconnectServiceHost() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost( void ) override;
+    virtual void disconnectServiceHost() override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isServiceHostConnected( void ) const override;
+    virtual bool isServiceHostConnected() const override;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
      **/
-    virtual bool isServiceHostPending(void) const override;
+    virtual bool isServiceHostPending() const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isServiceHostSetup( void ) const override;
+    virtual bool isServiceHostSetup() const override;
 
     /**
      * \brief   Creates the service connect request message, sets the message target and the source.
@@ -259,42 +259,42 @@ protected:
     /**
      * \brief   Triggered when Timer is expired.
      **/
-    virtual void onServiceReconnectTimerExpired(void) override;
+    virtual void onServiceReconnectTimerExpired() override;
 
     /**
      * \brief   Called when receive event to start service and connection.
      **/
-    virtual void onServiceStart(void) override;
+    virtual void onServiceStart() override;
 
     /**
      * \brief   Called when receive event to stop service and connection.
      **/
-    virtual void onServiceStop(void) override;
+    virtual void onServiceStop() override;
 
     /**
      * \brief   Called when receive event to restart service and connection.
      **/
-    virtual void onServiceRestart( void ) override;
+    virtual void onServiceRestart() override;
 
     /**
      * \brief   Called when receive event the client connection is started.
      **/
-    virtual void onServiceConnectionStarted(void) override;
+    virtual void onServiceConnectionStarted() override;
 
     /**
      * \brief   Called when receive event the client connection is stopped.
      **/
-    virtual void onServiceConnectionStopped(void) override;
+    virtual void onServiceConnectionStopped() override;
 
     /**
      * \brief   Called when receive event the client connection is lost.
      **/
-    virtual void onServiceConnectionLost(void) override;
+    virtual void onServiceConnectionLost() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit(void) override;
+    virtual void onServiceExit() override;
 
     /**
      * \brief   Called when received a communication message to dispatch and process.
@@ -321,7 +321,7 @@ protected:
     /**
      * \brief   Returns true if client socket connection is started, connected with the remote service and ready to operate.
      **/
-    inline bool isConnectionStarted(void) const;
+    inline bool isConnectionStarted() const;
 
     /**
      * \brief   Call to send an event with the command to process.
@@ -340,12 +340,12 @@ protected:
     /**
      * \brief   Called to start client socket connection. Returns true if connected.
      **/
-    bool startConnection( void );
+    bool startConnection();
 
     /**
      * \brief   Called when connection is lost and should be immediately canceled.
      **/
-    void cancelConnection( void );
+    void cancelConnection();
 
     /**
      * \brief   Sets client socket connection state.
@@ -356,7 +356,7 @@ protected:
     /**
      * \brief   Returns current client socket connection state.
      **/
-    inline ServiceClientConnectionBase::eConnectionState getConnectionState( void ) const;
+    inline ServiceClientConnectionBase::eConnectionState getConnectionState() const;
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
@@ -372,7 +372,7 @@ private:
     /**
      * \brief   Returns instance of client servicing object.
      **/
-    inline ServiceClientConnectionBase & self( void );
+    inline ServiceClientConnectionBase & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -465,30 +465,30 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClientConnectionBase( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClientConnectionBase );
+    ServiceClientConnectionBase() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClientConnectionBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceClientConnectionBase class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ServiceClientConnectionBase & ServiceClientConnectionBase::self( void )
+inline ServiceClientConnectionBase & ServiceClientConnectionBase::self()
 {
     return (*this);
 }
 
-inline const ITEM_ID & ServiceClientConnectionBase::getConnectionCookie( void ) const
+inline const ITEM_ID & ServiceClientConnectionBase::getConnectionCookie() const
 {
     return mClientConnection.getCookie();
 }
 
-inline uint32_t ServiceClientConnectionBase::queryBytesSent( void )
+inline uint32_t ServiceClientConnectionBase::queryBytesSent()
 {
     return mThreadSend.extractDataSend();
 }
 
-inline uint32_t ServiceClientConnectionBase::queryBytesReceived( void )
+inline uint32_t ServiceClientConnectionBase::queryBytesReceived()
 {
     return mThreadReceive.extractDataReceive();
 }
@@ -499,32 +499,32 @@ inline void ServiceClientConnectionBase::enableCalculateDataRate(bool enable)
     mThreadSend.setEnableCalculateData(enable);
 }
 
-inline bool ServiceClientConnectionBase::isCalculateDataRateEnabled(void) const
+inline bool ServiceClientConnectionBase::isCalculateDataRateEnabled() const
 {
     return mThreadReceive.isCalculateDataEnabled() && mThreadSend.isCalculateDataEnabled();
 }
 
-inline bool ServiceClientConnectionBase::isConnectState( void ) const
+inline bool ServiceClientConnectionBase::isConnectState() const
 {
     return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::ConnectState)) != 0;
 }
 
-inline bool ServiceClientConnectionBase::isConnectedState( void ) const
+inline bool ServiceClientConnectionBase::isConnectedState() const
 {
     return (mConnectionState == ServiceClientConnectionBase::eConnectionState::ConnectionStarted);
 }
 
-inline bool ServiceClientConnectionBase::isDisconnectState( void ) const
+inline bool ServiceClientConnectionBase::isDisconnectState() const
 {
     return ((static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::DisconnectState)) != 0);
 }
 
-inline void ServiceClientConnectionBase::registerForServiceClientCommands(void)
+inline void ServiceClientConnectionBase::registerForServiceClientCommands()
 {
     ServiceClientEvent::addListener(static_cast<IEServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
-inline void ServiceClientConnectionBase::unregisterForServiceClientCommands(void)
+inline void ServiceClientConnectionBase::unregisterForServiceClientCommands()
 {
     ServiceClientEvent::removeListener(static_cast<IEServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
@@ -550,7 +550,7 @@ inline const char * ServiceClientConnectionBase::getString(ServiceClientConnecti
     }
 }
 
-inline bool ServiceClientConnectionBase::isConnectionStarted(void) const
+inline bool ServiceClientConnectionBase::isConnectionStarted() const
 {
     const ITEM_ID & cookie = mClientConnection.getCookie();
     return (mClientConnection.isValid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
@@ -561,7 +561,7 @@ inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientC
     mConnectionState = newState;
 }
 
-inline ServiceClientConnectionBase::eConnectionState ServiceClientConnectionBase::getConnectionState(void) const
+inline ServiceClientConnectionBase::eConnectionState ServiceClientConnectionBase::getConnectionState() const
 {
     return mConnectionState;
 }

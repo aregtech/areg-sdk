@@ -97,7 +97,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~NotificationEventData( void ) = default;
+    ~NotificationEventData() = default;
 
     /**
      * \brief   Copies data from given source.
@@ -118,7 +118,7 @@ public:
     /**
      * \brief   Returns Proxy pointer if any was set or returns null.
      **/
-    inline const ProxyBase * getProxy( void ) const;
+    inline const ProxyBase * getProxy() const;
     /**
      * \brief   Sets the proxy object
      **/
@@ -127,7 +127,8 @@ public:
     /**
      * \brief   Returns the result of notification type.
      **/
-    inline NEService::ResultType getNotifyType( void ) const;
+    inline NEService::ResultType getNotifyType() const;
+
     /**
      * \brief   Sets the result of notification
      **/
@@ -136,7 +137,7 @@ public:
     /**
      * \brief   Returns notification message ID.
      **/
-    inline unsigned int getNotifyId( void ) const;
+    inline unsigned int getNotifyId() const;
     /**
      * \brief   Sets notification message ID
      **/
@@ -145,7 +146,7 @@ public:
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline const SequenceNumber & getSequenceNr( void ) const;
+    inline const SequenceNumber & getSequenceNr() const;
     /**
      * \brief   Sets sequence number of a caller.
      **/
@@ -176,7 +177,7 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    NotificationEventData( void ) = delete;
+    NotificationEventData() = delete;
 };
 
 
@@ -204,7 +205,7 @@ class AREG_API NotificationEvent   : public Event
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, Declare Runtime Event
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(NotificationEvent)
+    AREG_DECLARE_RUNTIME_EVENT(NotificationEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
@@ -234,7 +235,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~NotificationEvent( void ) = default;
+    virtual ~NotificationEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -243,14 +244,14 @@ public:
     /**
      * \brief   Returns Notification Event object for read only.
      **/
-    inline const NotificationEventData & getData( void ) const;
+    inline const NotificationEventData & getData() const;
 
 protected:
     /**
      * \brief   Returns Notification Event object for update.
      *          Protected.
      **/
-    inline NotificationEventData & getData( void );
+    inline NotificationEventData & getData();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden functions
@@ -259,7 +260,7 @@ private:
     /**
      * \brief   Sets current thread as a event target thread.
      **/
-    void setTargetThread( void );
+    void setTargetThread();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -274,8 +275,8 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    NotificationEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( NotificationEvent );
+    NotificationEvent() = delete;
+    AREG_NOCOPY_NOMOVE( NotificationEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -296,12 +297,12 @@ protected:
     /**
      * \brief   Default constructor.
      **/
-    IENotificationEventConsumer( void ) = default;
+    IENotificationEventConsumer() = default;
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~IENotificationEventConsumer( void ) = default;
+    virtual ~IENotificationEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -339,7 +340,7 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IENotificationEventConsumer );
+    AREG_NOCOPY_NOMOVE( IENotificationEventConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -350,7 +351,7 @@ private:
 // class NotificationEventData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyBase* NotificationEventData::getProxy( void ) const
+inline const ProxyBase* NotificationEventData::getProxy() const
 {
     return mProxy;
 }
@@ -360,7 +361,7 @@ inline void NotificationEventData::setProxy( const ProxyBase & proxy )
     mProxy = &proxy;
 }
 
-inline NEService::ResultType NotificationEventData::getNotifyType( void ) const
+inline NEService::ResultType NotificationEventData::getNotifyType() const
 {
     return mNotifyType;
 }
@@ -370,7 +371,7 @@ inline void NotificationEventData::setNotifyType( NEService::ResultType notifyTy
     mNotifyType = notifyType;
 }
 
-inline unsigned int NotificationEventData::getNotifyId( void ) const
+inline unsigned int NotificationEventData::getNotifyId() const
 {
     return mNotifyId;
 }
@@ -380,7 +381,7 @@ inline void NotificationEventData::setNotifyId( unsigned int notifyId )
     mNotifyId = notifyId;
 }
 
-inline const SequenceNumber & NotificationEventData::getSequenceNr( void ) const
+inline const SequenceNumber & NotificationEventData::getSequenceNr() const
 {
     return mSequenceNr;
 }
@@ -393,12 +394,12 @@ inline void NotificationEventData::setSequenceNr(const SequenceNumber & seqNr )
 //////////////////////////////////////////////////////////////////////////
 // class NotificationEvent inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const NotificationEventData & NotificationEvent::getData( void ) const
+inline const NotificationEventData & NotificationEvent::getData() const
 {
     return mData;
 }
 
-inline NotificationEventData & NotificationEvent::getData( void )
+inline NotificationEventData & NotificationEvent::getData()
 {
     return mData;
 }

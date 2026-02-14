@@ -40,7 +40,7 @@ EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue
 {
 }
 
-EventDispatcherBase::~EventDispatcherBase( void )
+EventDispatcherBase::~EventDispatcherBase()
 {
     mHasStarted = false;
 }
@@ -59,13 +59,13 @@ void EventDispatcherBase::signalEvent( uint32_t eventCount )
     eventCount != 0 ? mEventQueue.setEvent() : mEventQueue.resetEvent();
 }
 
-bool EventDispatcherBase::startDispatcher( void )
+bool EventDispatcherBase::startDispatcher()
 {
     mEventExit.resetEvent( );
     return runDispatcher( );
 }
 
-void EventDispatcherBase::stopDispatcher( void )
+void EventDispatcherBase::stopDispatcher()
 {
     mExternalEvents.lockQueue( );
     if ( mHasStarted )
@@ -78,7 +78,7 @@ void EventDispatcherBase::stopDispatcher( void )
     mExternalEvents.unlockQueue( );
 }
 
-void EventDispatcherBase::exitDispatcher(void)
+void EventDispatcherBase::exitDispatcher()
 {
     mInternalEvents.removeAllEvents();
     mExternalEvents.removeAllEvents();
@@ -86,7 +86,7 @@ void EventDispatcherBase::exitDispatcher(void)
     mEventExit.setEvent();
 }
 
-void EventDispatcherBase::shutdownDispatcher( void )
+void EventDispatcherBase::shutdownDispatcher()
 {
     mExternalEvents.lockQueue( );
     if ( mHasStarted )
@@ -205,7 +205,7 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
     return result;
 }
 
-bool EventDispatcherBase::runDispatcher( void )
+bool EventDispatcherBase::runDispatcher()
 {
     readyForEvents( true );
 
@@ -272,7 +272,7 @@ void EventDispatcherBase::readyForEvents( bool isReady )
     mExternalEvents.unlockQueue( );
 }
 
-Event* EventDispatcherBase::pickEvent( void )
+Event* EventDispatcherBase::pickEvent()
 {
     return mExternalEvents.popEvent();
 }
@@ -344,7 +344,7 @@ inline void EventDispatcherBase::_clean()
     mConsumerMap.unlock();
 }
 
-bool EventDispatcherBase::pulseExit(void)
+bool EventDispatcherBase::pulseExit()
 {
     return mEventExit.setEvent();
 }

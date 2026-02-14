@@ -70,7 +70,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // Hidden calls.
     //////////////////////////////////////////////////////////////////////////
-    inline ServiceComponent & self( void )
+    inline ServiceComponent & self()
     {
         return (*this);
     }
@@ -78,8 +78,8 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-    ServiceComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceComponent );
+    ServiceComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceComponent );
 };
 
 constexpr char const _modelName[]{ "ClientsModel" };

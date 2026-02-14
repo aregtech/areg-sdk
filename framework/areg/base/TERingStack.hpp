@@ -29,6 +29,8 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
 
+#include <algorithm>
+
 /************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
@@ -84,7 +86,7 @@ protected:
     /**
      * \brief   Destructor. Public
      **/
-    ~TERingStack( void );
+    ~TERingStack();
 
 protected:
     /**
@@ -178,17 +180,17 @@ public:
     /**
      * \brief   Returns number of elements saved in stack.
      **/
-    uint32_t getSize( void ) const;
+    uint32_t getSize() const;
 
     /**
      * \brief   Returns true if Ring Stack is empty
      **/
-    bool isEmpty( void ) const;
+    bool isEmpty() const;
 
     /**
      * \brief   Returns the overlapping type of the Ring Stack
      **/
-    NECommon::eRingOverlap getOverlap(void) const;
+    NECommon::eRingOverlap getOverlap() const;
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
@@ -196,25 +198,25 @@ public:
      *          the function will return immediately and thread will continue to run.
      * \return  Returns true if stack successfully locked
      **/
-    bool lock( void ) const;
+    bool lock() const;
 
     /**
      * \brief   If stack previously was locked by thread, it will unlock stack
      *          In case if NolockSyncObject is used, nothing will happen.
      * \return  Returns true if stack successfully unlocked
      **/
-    bool unlock( void ) const;
+    bool unlock() const;
 
     /**
      * \brief   Returns capacity value of ring stack
      **/
-    uint32_t capacity( void ) const;
+    uint32_t capacity() const;
 
     /**
      * \brief   Returns true if Ring Stack is full. The function returns false if
      *          the ring stack is of 'resize of overlap' type, because it automatically changes the size.
      **/
-    bool isFull( void ) const;
+    bool isFull() const;
 
     /**
      * \brief   Returns true if specified zero-based normalized index is valid.
@@ -257,23 +259,23 @@ public:
      *          The stack should not be empty when method is called.
      * \return  Returns value of remove element.
      **/
-    VALUE pop( void );
+    VALUE pop();
 
     /**
      * \brief   Removes all elements from Ring stack and makes it empty.
      *          The capacity of stack remains unchanged. The change capacity value, resize stack.
      **/
-    void clear( void );
+    void clear();
 
     /**
      * \brief   Clears the ring stack, deletes the list and sets capacity zero.
      **/
-    void release( void );
+    void release();
 
     /**
      * \brief   Removes the extra entries in the ring stack and makes capacity equal to the number of elements in the stack.
      **/
-    void freeExtra(void);
+    void freeExtra();
 
     /**
      * \brief   Adds elements from given source. The elements will be copied at the end of stack.
@@ -387,7 +389,7 @@ private:
     /**
      * \brief   Empties stack without locking object. The capacity of stack remain unchanged. All elements are lost.
      **/
-    void _emptyStack( void );
+    void _emptyStack();
 
     /**
      * \brief   Copies entries from the give source `src` to the destination `dst.
@@ -444,7 +446,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TERingStack( void ) = delete;
+    TERingStack() = delete;
     TERingStack( const TERingStack<VALUE> & /*src*/ ) = delete;
     TERingStack( TERingStack<VALUE> && /*src*/ ) noexcept = delete;
 };
@@ -495,7 +497,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TELockRingStack( void ) = default;
+    ~TELockRingStack() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -584,7 +586,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~TENolockRingStack( void ) = default;
+    ~TENolockRingStack() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -682,7 +684,7 @@ TERingStack<VALUE>::TERingStack(IEResourceLock& syncObject, TERingStack<VALUE> &
 }
 
 template <typename VALUE>
-TERingStack<VALUE>::~TERingStack( void )
+TERingStack<VALUE>::~TERingStack()
 {
     _emptyStack();
     delete[] reinterpret_cast<unsigned char*>(mStackList);
@@ -753,46 +755,46 @@ VALUE& TERingStack<VALUE>::operator [] (uint32_t index)
 }
 
 template <typename VALUE>
-uint32_t TERingStack<VALUE>::getSize( void ) const
+uint32_t TERingStack<VALUE>::getSize() const
 {
     Lock lock( mSyncObj );
     return mElemCount;
 }
 
 template <typename VALUE>
-bool TERingStack<VALUE>::isEmpty( void ) const
+bool TERingStack<VALUE>::isEmpty() const
 {
     Lock lock( mSyncObj );
     return (mElemCount == 0);
 }
 
 template <typename VALUE>
-NECommon::eRingOverlap TERingStack<VALUE>::getOverlap(void) const
+NECommon::eRingOverlap TERingStack<VALUE>::getOverlap() const
 {
     return mOnOverlap;
 }
 
 template <typename VALUE>
-bool TERingStack<VALUE>::lock( void ) const
+bool TERingStack<VALUE>::lock() const
 {
     return mSyncObj.lock(NECommon::WAIT_INFINITE);
 }
 
 template <typename VALUE>
-bool TERingStack<VALUE>::unlock( void ) const
+bool TERingStack<VALUE>::unlock() const
 {
     return mSyncObj.unlock();
 }
 
 template <typename VALUE>
-uint32_t TERingStack<VALUE>::capacity( void ) const
+uint32_t TERingStack<VALUE>::capacity() const
 {
     Lock lock(mSyncObj);
     return mCapacity;
 }
 
 template <typename VALUE>
-bool TERingStack<VALUE>::isFull( void ) const
+bool TERingStack<VALUE>::isFull() const
 {
     Lock lock(mSyncObj);
     return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOverlap) && (mElemCount == mCapacity);
@@ -836,14 +838,14 @@ void TERingStack<VALUE>::setAt(uint32_t index, const VALUE& newValue)
 }
 
 template <typename VALUE>
-void TERingStack<VALUE>::clear( void )
+void TERingStack<VALUE>::clear()
 {
     Lock lock(mSyncObj);
     _emptyStack();
 }
 
 template<typename VALUE>
-void TERingStack<VALUE>::release(void)
+void TERingStack<VALUE>::release()
 {
     Lock lock(mSyncObj);
     _emptyStack();
@@ -853,7 +855,7 @@ void TERingStack<VALUE>::release(void)
 }
 
 template<typename VALUE>
-void TERingStack<VALUE>::freeExtra(void)
+void TERingStack<VALUE>::freeExtra()
 {
     if (mCapacity == mElemCount)
         return;
@@ -947,11 +949,11 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::StopOnOverlap:
-            OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
+            AREG_OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
             break;  // do nothing
 
         default:
-            OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
+            AREG_OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
             ASSERT(false);
             break;
         }
@@ -961,7 +963,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
 }
 
 template <typename VALUE>
-VALUE TERingStack<VALUE>::pop( void )
+VALUE TERingStack<VALUE>::pop()
 {
     Lock lock(mSyncObj);
     ASSERT( isEmpty() == false );
@@ -1086,7 +1088,7 @@ bool TERingStack<VALUE>::contains(const VALUE& elem, uint32_t startAt /*= NEComm
 }
 
 template <typename VALUE>
-void TERingStack<VALUE>::_emptyStack( void )
+void TERingStack<VALUE>::_emptyStack()
 {
     // do not delete stack, only remove elements and reset data.
     // keep capacity same
@@ -1146,7 +1148,7 @@ NEMath::eCompare TERingStack<VALUE>::_compareRings( const VALUE* left, uint32_t 
 {
     ASSERT((leftStart < leftCapacity) && (rightStart < rightCapacity));
     NEMath::eCompare result{ NEMath::eCompare::Equal };
-    uint32_t count = MACRO_MIN(leftCount, rightCount);
+    uint32_t count = std::min(leftCount, rightCount);
     while (count != 0u)
     {
         result = NEMath::compare<VALUE>(left[leftStart], right[rightStart]);

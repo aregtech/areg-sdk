@@ -91,7 +91,7 @@ private:
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline PatientClient & self( void );
+    inline PatientClient & self();
 
 private:
     /**
@@ -103,6 +103,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PatientClient );
+    PatientClient() = delete;
+    AREG_NOCOPY_NOMOVE( PatientClient );
 };

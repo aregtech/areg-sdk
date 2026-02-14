@@ -28,7 +28,7 @@
 // ScopeLeaf class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ScopeLeaf::ScopeLeaf( void )
+ScopeLeaf::ScopeLeaf()
     : ScopeNodeBase ( ScopeNodeBase::eNode::Leaf )
 {
 }
@@ -65,7 +65,7 @@ unsigned int ScopeLeaf::updateConfigNode(ConfigManager& config, const String & p
 // ScopeNode class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ScopeNode::ScopeNode( void )
+ScopeNode::ScopeNode()
     : ScopeNodeBase ( ScopeNodeBase::eNode::Node )
     , mChildNodes   ( true )
     , mChildLeafs   ( true )
@@ -124,7 +124,7 @@ ScopeNode & ScopeNode::operator=( ScopeNode && src ) noexcept
     return (*this);
 }
 
-const ScopeNodeBase & ScopeNode::makeChildNode( String & IN OUT scopePath, unsigned int prioStates ) const
+const ScopeNodeBase & ScopeNode::makeChildNode( String & scopePath, unsigned int prioStates ) const
 {
     if ( scopePath.isEmpty( ) )
     {
@@ -195,7 +195,7 @@ String ScopeNode::makeScopePath( const String & prefix ) const
     return String(scope, len);
 }
 
-unsigned int ScopeNode::groupChildNodes( void ) 
+unsigned int ScopeNode::groupChildNodes() 
 {
     unsigned int result{ 0 };
     unsigned int sameLeafs{ mChildLeafs.getSize( ) };
@@ -280,7 +280,7 @@ unsigned int ScopeNode::updateConfigNode( ConfigManager & config, const String &
     return result;
 }
 
-unsigned int ScopeNode::groupRecursive( void )
+unsigned int ScopeNode::groupRecursive()
 {
     unsigned int result{ 0 };
     for ( auto pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
@@ -363,7 +363,7 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
     return result;
 }
 
-bool ScopeNode::isEmpty( void ) const
+bool ScopeNode::isEmpty() const
 {
     return mChildLeafs.isEmpty() && mChildNodes.isEmpty();
 }
@@ -372,7 +372,7 @@ bool ScopeNode::isEmpty( void ) const
 // ScopeRoot class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ScopeRoot::ScopeRoot( void )
+ScopeRoot::ScopeRoot()
     : ScopeNode     ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) )
 {
 }

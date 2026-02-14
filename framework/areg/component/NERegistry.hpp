@@ -138,7 +138,7 @@ namespace NERegistry
          *          Creates invalid Service Entry and required by Array List object.
          *          Invalid Service Entry has an empty service name.
          **/
-        ServiceEntry( void ) = default;
+        ServiceEntry() = default;
 
         /**
          * \brief   Initialize service entry by given name and version numbers.
@@ -178,7 +178,7 @@ namespace NERegistry
         /**
          * \brief   Destructor.
          **/
-        ~ServiceEntry( void ) = default;
+        ~ServiceEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceEntry class, Operators
@@ -212,7 +212,7 @@ namespace NERegistry
          * \brief   Returns true if service entry is valid.
          *          The Service Entry is valid if name is not empty and version is valid.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceEntry class, Member variables
@@ -248,7 +248,7 @@ namespace NERegistry
         /**
          * \brief   Default constructor.
          **/
-        ServiceList( void ) = default;
+        ServiceList() = default;
 
         /**
          * \brief   Creates Service List and adds specified Service Entry to the list as first element.
@@ -271,7 +271,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~ServiceList( void ) = default;
+        ~ServiceList() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ServiceList class, operator
@@ -304,7 +304,7 @@ namespace NERegistry
         /**
          * \brief   Returns true if service entry list is valid
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Searches Service Entry having given name. Returns valid
@@ -368,7 +368,7 @@ namespace NERegistry
         /**
          * \brief   Creates invalid Worker Thread Entry.
          **/
-        WorkerThreadEntry( void );
+        WorkerThreadEntry();
 
         /**
          * \brief   Initialize Worker Thread Entry by given name and specifying the name of Master Thread.
@@ -404,7 +404,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~WorkerThreadEntry( void ) = default;
+        ~WorkerThreadEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadEntry class, Operators
@@ -432,7 +432,7 @@ namespace NERegistry
          * \brief   Returns true if Worker Thread Entry is valid.
          *          The Entry is valid if neither Worker Thread nor Consumer names are empty.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadEntry class, Member variables.
@@ -480,7 +480,7 @@ namespace NERegistry
         /**
          * \brief   Default constructor.
          **/
-        WorkerThreadList( void ) = default;
+        WorkerThreadList() = default;
 
         /**
          * \brief   Creates Worker Thread List and adds specified Worker Thread Entry to the list as first element.
@@ -503,7 +503,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~WorkerThreadList( void ) = default;
+        ~WorkerThreadList() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::WorkerThreadList class, Operator
@@ -536,7 +536,7 @@ namespace NERegistry
         /**
          * \brief   Returns true if list is valid
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Searches Worker Thread Entry having given name. Returns valid
@@ -603,7 +603,7 @@ namespace NERegistry
         /**
          * \brief   Creates empty Dependency Entry and required by Array List object
          **/
-        DependencyEntry( void ) = default;
+        DependencyEntry() = default;
 
         /**
          * \brief   Sets the role name of dependent Component
@@ -620,7 +620,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~DependencyEntry( void )= default;
+        ~DependencyEntry()= default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyEntry class, Operators
@@ -648,7 +648,7 @@ namespace NERegistry
         /**
          * \brief   Returns true if entry is valid. The entry is valid if role name is not empty
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Sets the role name of dependent service.
@@ -659,7 +659,7 @@ namespace NERegistry
         /**
          * \brief   Returns the role name of dependent service.
          **/
-        const String & getDepdendentService( void ) const;
+        const String & getDepdendentService() const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyEntry class, Member variables
@@ -695,7 +695,7 @@ namespace NERegistry
         /**
          * \brief   Creates empty list of dependent services.
          **/
-        DependencyList( void ) = default;
+        DependencyList() = default;
 
         /**
          * \brief   If passed entry is valid, creates a dependency list with one entry.
@@ -719,7 +719,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~DependencyList( void ) = default;
+        ~DependencyList() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::DependencyList class, Operator
@@ -780,7 +780,7 @@ namespace NERegistry
         /**
          * \brief   Returns true if dependency list is valid.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -820,7 +820,7 @@ namespace NERegistry
         /**
          * \brief   Creates invalid Component Entry.
          **/
-        ComponentEntry( void );
+        ComponentEntry();
 
         /**
          * \brief   Initialize Component Entry by given Role Name, component thread, component create and delete methods,
@@ -887,7 +887,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~ComponentEntry( void ) = default;
+        ~ComponentEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentEntry class, Operators
@@ -920,7 +920,7 @@ namespace NERegistry
          * \brief   Returns true if Component Entry is valid.
          *          The Entry is valid if Role Name of Component Entry is not empty.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Adds supported Service Entry in Component Entry object.
@@ -1097,17 +1097,17 @@ namespace NERegistry
         /**
          * \brief   Returns list of supported Services of Component Entry object
          **/
-        const NERegistry::ServiceList & getSupportedServices( void ) const;
+        const NERegistry::ServiceList & getSupportedServices() const;
 
         /**
          * \brief   Returns list of Worker Threads of Component Entry object
          **/
-        const NERegistry::WorkerThreadList & getWorkerThreads( void ) const;
+        const NERegistry::WorkerThreadList & getWorkerThreads() const;
 
         /**
          * \brief   Returns list of Dependencies of Component Entry object
          **/
-        const NERegistry::DependencyList & getDependencyServices( void ) const;
+        const NERegistry::DependencyList & getDependencyServices() const;
 
         /**
          * \brief   Sets pointers to create and delete component methods to be called when instantiating component object.
@@ -1127,17 +1127,17 @@ namespace NERegistry
         /**
          * \brief   Resets component data.
          **/
-        void resetData( void );
+        void resetData();
 
         /**
          * \brief   Returns component data object. Check if data holds a value before use.
          **/
-        std::any getData( void ) const;
+        std::any getData() const;
 
         /**
          * \brief   Returns true if component data is set. Otherwise, returns false.
          **/
-        bool hasData(void) const;
+        bool hasData() const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentEntry class, Member variables
@@ -1213,7 +1213,7 @@ namespace NERegistry
         /**
          * \brief   Creates empty list.
          **/
-        ComponentList( void ) = default;
+        ComponentList() = default;
 
         /**
          * \brief   Creates Component List and adds specified Component Entry to the list as first element.
@@ -1236,7 +1236,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~ComponentList( void ) = default;
+        ~ComponentList() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentList class, Operators
@@ -1269,7 +1269,7 @@ namespace NERegistry
         /**
          * \brief   Returns true if Component List is valid.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Searches Component Entry having given name. Returns valid
@@ -1354,7 +1354,7 @@ namespace NERegistry
         /**
          * \brief   Creates invalid Thread Entry.
          **/
-        ComponentThreadEntry( void );
+        ComponentThreadEntry();
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name.
@@ -1402,7 +1402,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~ComponentThreadEntry( void ) = default;
+        ~ComponentThreadEntry() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadEntry class, Operators
@@ -1436,7 +1436,7 @@ namespace NERegistry
          * \brief   Returns true if Thread Entry is valid.
          *          The Entry is valid if Name of Thread Entry is not empty.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Adds supported Component Entry in Thread Entry object.
@@ -1588,7 +1588,7 @@ namespace NERegistry
         /**
          * \brief   Default constructor.
          **/
-        ComponentThreadList( void ) = default;
+        ComponentThreadList() = default;
 
         /**
          * \brief   Creates Component Thread List and adds specified Thread Entry to the list as first element.
@@ -1611,7 +1611,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~ComponentThreadList( void ) = default;
+        ~ComponentThreadList() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::ComponentThreadList class, Operators
@@ -1644,7 +1644,7 @@ namespace NERegistry
         /**
          * \brief   Returns true if Thread List is valid.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Searches Thread Entry having given name. Returns valid
@@ -1720,7 +1720,7 @@ namespace NERegistry
         /**
          * \brief   Creates empty Model.
          **/
-        Model( void );
+        Model();
 
         /**
          * \brief   Initialize empty Model and sets given Name.
@@ -1741,7 +1741,7 @@ namespace NERegistry
         /**
          * \brief   Destructor
          **/
-        ~Model( void ) = default;
+        ~Model() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::Model class, Operators
@@ -1768,12 +1768,12 @@ namespace NERegistry
          * \brief   Returns true, if Mode is valid.
          *          The Model is valid if Name is not empty and it contains at least one thread entry.
          **/
-        bool isValid( void ) const;
+        bool isValid() const;
 
         /**
          * \brief   Returns the name of model.
          **/
-        const String & getModelName( void ) const;
+        const String & getModelName() const;
 
         /**
          * \brief   Searches specified Component Entry  and returns true if
@@ -1796,12 +1796,12 @@ namespace NERegistry
         /**
          * \brief   Returns true if Model is loaded. Otherwise, returns false.
          **/
-        bool isModelLoaded( void ) const;
+        bool isModelLoaded() const;
 
         /**
          * \brief   Returns the List of Thread Entries.
          **/
-        const NERegistry::ComponentThreadList & getThreadList( void ) const;
+        const NERegistry::ComponentThreadList & getThreadList() const;
 
         /**
          * \brief   Sets flag and marks Model as loaded or unloaded.
@@ -1897,7 +1897,7 @@ namespace NERegistry
          *          Returns valid duration until the current time if model is still loaded.
          *          Returns last alive duration if it was alive and currently is stopped.
          **/
-        inline TIME64 getAliveDuration( void ) const;
+        inline TIME64 getAliveDuration() const;
 
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::Model class, Member variables
@@ -1931,57 +1931,57 @@ namespace NERegistry
     /**
       * \brief   Predefined invalid Service Entry.
       **/
-     AREG_API const NERegistry::ServiceEntry & invalidServiceEntry( void );;
+     AREG_API const NERegistry::ServiceEntry & invalidServiceEntry();;
 
      /**
       * \brief   Predefined invalid Service List.
       **/
-    AREG_API const NERegistry::ServiceList & invalidServiceList( void );
+    AREG_API const NERegistry::ServiceList & invalidServiceList();
 
     /**
      * \brief   Predefined invalid Worker Thread Entry.
      **/
-    AREG_API const NERegistry::WorkerThreadEntry & invalidWorkerThreadEntry( void );
+    AREG_API const NERegistry::WorkerThreadEntry & invalidWorkerThreadEntry();
 
     /**
      * \brief   Predefined invalid Worker Thread List.
      **/
-    AREG_API const NERegistry::WorkerThreadList & invalidWorkerThreadList( void );
+    AREG_API const NERegistry::WorkerThreadList & invalidWorkerThreadList();
 
     /**
      * \brief   Predefined invalid service dependency entry.
      **/
-    AREG_API const NERegistry::DependencyEntry & invalidDepedencyEntry( void );
+    AREG_API const NERegistry::DependencyEntry & invalidDepedencyEntry();
 
     /**
      * \brief   Predefined invalid service dependency list.
      **/
-    AREG_API const NERegistry::DependencyList & invalidDepedencyList( void );
+    AREG_API const NERegistry::DependencyList & invalidDepedencyList();
 
     /**
      * \brief   Predefined Invalid Component Entry.
      **/
-    AREG_API const NERegistry::ComponentEntry & invalidComponentEntry( void );
+    AREG_API const NERegistry::ComponentEntry & invalidComponentEntry();
 
     /**
      * \brief   Predefined invalid Component List.
      **/
-    AREG_API const NERegistry::ComponentList & invalidComponentList( void );
+    AREG_API const NERegistry::ComponentList & invalidComponentList();
 
     /**
      * \brief   Predefined invalid Thread Entry.
      **/
-    AREG_API const NERegistry::ComponentThreadEntry & invalidThreadEntry( void );
+    AREG_API const NERegistry::ComponentThreadEntry & invalidThreadEntry();
 
     /**
      * \brief   Predefined invalid Thread List. Contains single invalid thread entry.
      **/
-    AREG_API const NERegistry::ComponentThreadList & invalidThreadList( void );
+    AREG_API const NERegistry::ComponentThreadList & invalidThreadList();
 
     /**
      * \brief   Predefined invalid Model.
      **/
-    AREG_API const NERegistry::Model & invalidModel( void );
+    AREG_API const NERegistry::Model & invalidModel();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2013,7 +2013,7 @@ inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::
     return (mListThreads.isValidIndex(index) ? mListThreads[index] : NERegistry::invalidThreadEntry());
 }
 
-inline TIME64 NERegistry::Model::getAliveDuration( void ) const
+inline TIME64 NERegistry::Model::getAliveDuration() const
 {
     return (mLoadState == eModelState::ModelInitialized ? 0 : mAliveDuration.durationSinceStart());
 }

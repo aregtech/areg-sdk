@@ -88,7 +88,7 @@ StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & si
     masterComp.registerServerItem(self());
 }
 
-StubBase::~StubBase( void )
+StubBase::~StubBase()
 {
     _mapRegisteredStubs.unregisterResourceObject(mAddress);
 }
@@ -105,7 +105,7 @@ bool StubBase::isBusy( unsigned int requestId ) const
     return result;
 }
 
-SessionID StubBase::unblockCurrentRequest( void )
+SessionID StubBase::unblockCurrentRequest()
 {
     SessionID result = StubBase::INVALID_SESSION_ID;
     StubBase::Listener listener;
@@ -255,12 +255,12 @@ void StubBase::sendServiceResponse( ServiceResponseEvent & eventElem ) const
     eventElem.getTargetProxy().deliverServiceEvent(eventElem);
 }
 
-void StubBase::cancelCurrentRequest( void )
+void StubBase::cancelCurrentRequest()
 {
     mCurrListener   = mListListener.invalidPosition();
 }
 
-ComponentThread & StubBase::getComponentThread( void ) const
+ComponentThread & StubBase::getComponentThread() const
 {
     return mComponent.getMasterThread();
 }
@@ -285,7 +285,7 @@ void StubBase::shutdownServiceInterface( Component & holder )
     StubConnectEvent::removeListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
-void StubBase::errorAllRequests( void )
+void StubBase::errorAllRequests()
 {
     LOG_SCOPE( areg_component_StubBase_errorAllRequests );
     LOG_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", getServiceRole().getString(), getServiceName().getString() );
@@ -319,7 +319,7 @@ void StubBase::errorAllRequests( void )
     }
 }
 
-void StubBase::cancelAllRequests( void )
+void StubBase::cancelAllRequests()
 {
     const unsigned int numOfReqs= getNumberOfRequests();
     const unsigned int* reqIds  = getRequestIds();
@@ -522,37 +522,37 @@ void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEServ
     mConnectionStatus = status;
 }
 
-const Version & StubBase::getImplVersion( void ) const
+const Version & StubBase::getImplVersion() const
 {
     return mInterface.idVersion;
 }
 
-unsigned int StubBase::getNumberOfRequests( void ) const
+unsigned int StubBase::getNumberOfRequests() const
 {
     return mInterface.idRequestCount;
 }
 
-unsigned int StubBase::getNumberOfResponses( void ) const
+unsigned int StubBase::getNumberOfResponses() const
 {
     return mInterface.idResponseCount;
 }
 
-unsigned int StubBase::getNumberOfAttributes( void ) const
+unsigned int StubBase::getNumberOfAttributes() const
 {
     return mInterface.idAttributeCount;
 }
 
-const unsigned int * StubBase::getRequestIds( void ) const
+const unsigned int * StubBase::getRequestIds() const
 {
     return mInterface.idRequestList;
 }
 
-const unsigned int * StubBase::getResponseIds( void ) const
+const unsigned int * StubBase::getResponseIds() const
 {
     return mInterface.idResponseList;
 }
 
-const unsigned int * StubBase::getAttributeIds( void ) const
+const unsigned int * StubBase::getAttributeIds() const
 {
     return mInterface.idAttributeList;
 }

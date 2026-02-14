@@ -42,7 +42,7 @@ public:
     /**
      * \brief   Defines invalid channel object.
      **/
-    static const Channel & getInvalidChannel( void);                //!< Invalid channel
+    static const Channel & getInvalidChannel();                //!< Invalid channel
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -52,7 +52,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    Channel( void );
+    Channel();
 
     /**
      * \brief   Constructor. Sets channel data, which are the communication source and target IDs, and the cookie set by system.
@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~Channel( void ) = default;
+    ~Channel() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -112,7 +112,7 @@ public:
     /**
      * \brief   Converts channel object to 32-bit unsigned integer value.
      **/
-    inline explicit operator const ITEM_ID & ( void ) const;
+    inline explicit operator const ITEM_ID & () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -140,7 +140,7 @@ public:
     /**
      * \brief   Returns the source ID of channel.
      **/
-    inline const ITEM_ID & getSource( void ) const;
+    inline const ITEM_ID & getSource() const;
 
     /**
      * \brief   Sets the source ID of channel.
@@ -151,7 +151,7 @@ public:
     /**
      * \brief   Returns the target ID of channel.
      **/
-    inline const ITEM_ID & getTarget( void ) const;
+    inline const ITEM_ID & getTarget() const;
     /**
      * \brief   Sets the source ID of channel.
      * \param   target  The new target ID to set in channel
@@ -162,7 +162,7 @@ public:
     /**
      * \brief   Returns the cookie ID of channel.
      **/
-    inline const ITEM_ID & getCookie( void ) const;
+    inline const ITEM_ID & getCookie() const;
 
     /**
      * \brief   Sets the source ID of channel.
@@ -173,18 +173,18 @@ public:
     /**
      * \brief   Returns true, if channel data is valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Invalidates channel.
      **/
-    inline void invalidate( void );
+    inline void invalidate();
 
 public:
     /**
      * \brief   Converts channel data to string
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief   Creates channel data from string
@@ -215,7 +215,7 @@ private:
 // Channel class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & Channel::getSource(void) const
+inline const ITEM_ID & Channel::getSource() const
 {
     return mSource;
 }
@@ -225,7 +225,7 @@ inline void Channel::setSource(const ITEM_ID & source)
     mSource = source;
 }
 
-inline const ITEM_ID & Channel::getTarget(void) const
+inline const ITEM_ID & Channel::getTarget() const
 {
     return mTarget;
 }
@@ -235,7 +235,7 @@ inline void Channel::setTarget(const ITEM_ID & target)
     mTarget = target;
 }
 
-inline const ITEM_ID & Channel::getCookie(void) const
+inline const ITEM_ID & Channel::getCookie() const
 {
     return mCookie;
 }
@@ -255,17 +255,17 @@ inline bool Channel::operator!=(const Channel & other) const
     return ( this != & other ? (mCookie != other.mCookie) || (mTarget != other.mTarget) || (mSource != other.mSource) : false );
 }
 
-inline Channel::operator const ITEM_ID & ( void ) const
+inline Channel::operator const ITEM_ID & () const
 {
     return mSource;
 }
 
-inline bool Channel::isValid( void ) const
+inline bool Channel::isValid() const
 {
     return (mCookie != NEService::COOKIE_UNKNOWN);
 }
 
-inline void Channel::invalidate( void )
+inline void Channel::invalidate()
 {
     mSource = NEService::SOURCE_UNKNOWN;
     mTarget = NEService::TARGET_UNKNOWN;

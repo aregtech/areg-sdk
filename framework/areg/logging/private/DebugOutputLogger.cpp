@@ -36,7 +36,7 @@ DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
 {
 }
 
-bool DebugOutputLogger::openLogger(void)
+bool DebugOutputLogger::openLogger()
 {
 #if defined(OUTPUT_DEBUG)
     if ( mIsOpened == false )
@@ -65,7 +65,7 @@ bool DebugOutputLogger::openLogger(void)
     return mIsOpened;
 }
 
-void DebugOutputLogger::closeLogger(void)
+void DebugOutputLogger::closeLogger()
 {
 #if defined(OUTPUT_DEBUG)
     if ( mIsOpened )
@@ -124,7 +124,7 @@ void DebugOutputLogger::logMessage(const NELogging::sLogMessage & /*logMessage*/
 #endif // !defined(OUTPUT_DEBUG)
 
 
-bool DebugOutputLogger::isLoggerOpened(void) const
+bool DebugOutputLogger::isLoggerOpened() const
 {
     return mIsOpened;
 }
@@ -163,7 +163,7 @@ unsigned int DebugOutputLogger::write( const WideString & wide )
     return wide.getSpace();
 }
 
-void DebugOutputLogger::flush(void)
+void DebugOutputLogger::flush()
 {
 #if defined(OUTPUT_DEBUG)
     NEDebug::outputMessageOS(mOutputMessageA.getString());
@@ -172,7 +172,7 @@ void DebugOutputLogger::flush(void)
     mOutputMessageA.clear();
 }
 
-unsigned int DebugOutputLogger::getSizeWritable(void) const
+unsigned int DebugOutputLogger::getSizeWritable() const
 {
     return static_cast<unsigned int>(0xFFFF);
 }

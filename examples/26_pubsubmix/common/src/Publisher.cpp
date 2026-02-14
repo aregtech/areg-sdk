@@ -77,7 +77,7 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::eService
     return result;
 }
 
-void Publisher::start(void)
+void Publisher::start()
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_start);
 
@@ -106,7 +106,7 @@ void Publisher::start(void)
     mTimerOnChange.startTimer(NEPubSubMix::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
 }
 
-void Publisher::stop(void)
+void Publisher::stop()
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_stop);
 
@@ -119,7 +119,7 @@ void Publisher::stop(void)
     setServiceProviderState(NEPubSubMix::eServiceState::Stopped);
 }
 
-void Publisher::invalidate(void)
+void Publisher::invalidate()
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_invalidate);
 
@@ -137,7 +137,7 @@ void Publisher::invalidate(void)
     invalidateStringOnChange();
 }
 
-void Publisher::quit(void)
+void Publisher::quit()
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_quit);
 
@@ -188,7 +188,7 @@ void Publisher::processTimer(Timer & timer)
     }
 }
 
-inline Publisher & Publisher::self(void)
+inline Publisher & Publisher::self()
 {
     return (*this);
 }

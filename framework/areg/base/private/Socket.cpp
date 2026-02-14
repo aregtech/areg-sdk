@@ -25,7 +25,7 @@
 // Socket class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Socket::Socket( void )
+Socket::Socket()
     : mSocket   ( )
     , mAddress  ( )
     , mSendSize ( NESocket::PACKET_DEFAULT_SIZE)
@@ -63,7 +63,7 @@ Socket::Socket( Socket && source ) noexcept
     static_cast<void>(NESocket::socketInitialize( ));
 }
 
-Socket::~Socket(void)
+Socket::~Socket()
 {
     decreaseLock();
     static_cast<void>(NESocket::socketRelease());
@@ -99,7 +99,7 @@ Socket & Socket::operator = ( Socket && src ) noexcept
 	return (*this);
 }
 
-void Socket::closeSocket(void)
+void Socket::closeSocket()
 {
     decreaseLock( );
 }
@@ -125,7 +125,7 @@ bool Socket::setAddress(const char * hostName, unsigned short portNr, bool isSer
     return mAddress.resolveAddress(hostName, portNr, isServer);
 }
 
-void Socket::decreaseLock(void)
+void Socket::decreaseLock()
 {
     if ( isValid() )
     {

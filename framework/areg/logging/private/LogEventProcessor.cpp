@@ -69,12 +69,12 @@ void LogEventProcessor::processLogEvent( LoggingEventData::eLoggingAction cmdLog
     }
 }
 
-inline void LogEventProcessor::_loggingStartLogs( void )
+inline void LogEventProcessor::_loggingStartLogs()
 {
     mLogManager.startLogs( );
 }
 
-inline void LogEventProcessor::_loggingStopLogs( void )
+inline void LogEventProcessor::_loggingStopLogs()
 {
     mLogManager.stopLogs( );
 }
@@ -84,7 +84,7 @@ inline void LogEventProcessor::_loggingSetEnableLogs( bool logsEnable )
     mLogManager.mLogConfig.setRemoteTcpEnable(logsEnable);
 }
 
-inline void LogEventProcessor::_loggingSaveScopes( void )
+inline void LogEventProcessor::_loggingSaveScopes()
 {
     mLogManager.mLogConfig.saveConfiguration( );
 }

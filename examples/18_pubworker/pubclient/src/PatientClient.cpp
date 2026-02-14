@@ -20,7 +20,7 @@ PatientClient::PatientClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-PatientClient & PatientClient::self(void)
+PatientClient & PatientClient::self()
 {
     return (*this);
 }

@@ -21,18 +21,21 @@
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
 
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <chrono>
 #include <time.h>
 #include <Windows.h>
 
 namespace NEUtilities
 {
-    uint64_t _osGetTickCount(void)
+    uint64_t _osGetTickCount()
     {
         return static_cast<uint64_t>(::GetTickCount64());
     }
 
-    TIME64 _osSystemTimeNow(void)
+    TIME64 _osSystemTimeNow()
     {
         struct timespec ts { };
 #ifndef _MINGW
@@ -40,20 +43,20 @@ namespace NEUtilities
                 ? (static_cast<TIME64>(ts.tv_sec) * NEUtilities::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / NEUtilities::MICROSEC_TO_NS)
                 : 0uLL);
 #else   // _MINGW
-        return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+        return (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
                     ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
                     : 0LL);
 #endif  // _MINGW
     }
 
-    void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
+    void _osSystemTimeNow( NEUtilities::sSystemTime & sysTime, bool localTime )
     {
         struct timespec ts { };
         struct tm now { };
 #ifndef _MINGW
         if (timespec_get(&ts, TIME_UTC) != 0)
 #else   // _MINGW
-        if (RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
+        if (NECommon::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
 #endif  // _MINGW
         {
             if (localTime)
@@ -77,14 +80,14 @@ namespace NEUtilities
         }
     }
 
-    void _osMakeTmLocal(struct tm& IN OUT utcTime)
+    void _osMakeTmLocal(struct tm& utcTime)
     {
         NEMemory::memSet(&utcTime, sizeof(struct tm), 0);
         time_t _timer = mktime(&utcTime);
         localtime_s(&utcTime, &_timer);
     }
 
-    bool _osConvToLocalTime(const TIME64& IN utcTime, sSystemTime& OUT localTime)
+    bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& localTime)
     {
         bool result = false;
 
@@ -93,7 +96,7 @@ namespace NEUtilities
         NEUtilities::convMicrosecs(utcTime, secs, milli, micro);
 
         struct tm tmLocal { };
-        if (RETURNED_OK == localtime_s(&tmLocal, &secs))
+        if (NECommon::RETURNED_OK == localtime_s(&tmLocal, &secs))
         {
             NEUtilities::convToSystemTime(tmLocal, localTime);
             localTime.stMillisecs = milli;
@@ -105,20 +108,20 @@ namespace NEUtilities
         return result;
     }
 
-    bool _osConvToLocalTm(const TIME64& IN utcTime, struct tm & OUT localTm)
+    bool _osConvToLocalTm(const TIME64& utcTime, struct tm & localTm)
     {
         time_t secs = static_cast<time_t>(utcTime / NEUtilities::SEC_TO_MICROSECS);
-        return (RETURNED_OK == localtime_s(&localTm, &secs));
+        return (NECommon::RETURNED_OK == localtime_s(&localTm, &secs));
     }
 
-    void _osConvToSystemTime(const TIME64& IN timeValue, NEUtilities::sSystemTime& OUT sysTime)
+    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime)
     {
         time_t secs;
         unsigned short milli, micro;
         NEUtilities::convMicrosecs(timeValue, secs, milli, micro);
 
         struct tm gmt {};
-        if (RETURNED_OK == ::gmtime_s(&gmt, &secs))
+        if (NECommon::RETURNED_OK == ::gmtime_s(&gmt, &secs))
         {
             convToSystemTime(gmt, sysTime);
             sysTime.stMillisecs = milli;
@@ -126,7 +129,7 @@ namespace NEUtilities
         }
     }
     
-    void _osConvToTm(const TIME64& IN timeValue, tm& OUT time)
+    void _osConvToTm(const TIME64& timeValue, tm& time)
     {
         time_t secs{ static_cast<time_t>(timeValue / NEUtilities::SEC_TO_MICROSECS) };
         ::gmtime_s(&time, &secs);

@@ -40,7 +40,7 @@ public:
     /**
      * \brief   Predefines invalid client info object
      **/
-    static const ClientInfo & getInvalidClientInfo( void );
+    static const ClientInfo & getInvalidClientInfo();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -49,7 +49,7 @@ public:
     /**
      * \brief   Initializes default values.
      **/
-    ClientInfo( void );
+    ClientInfo();
     /**
      * \brief   Initializes object and sets client Proxy address value.
      * \param   client  The Proxy address of the client
@@ -73,7 +73,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ClientInfo( void ) = default;
+    ~ClientInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -132,7 +132,7 @@ public:
     /**
      * \brief   Operator to covert client info to 32-bit unsigned integer.
      **/
-    explicit operator unsigned int ( void ) const;
+    explicit operator unsigned int () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -163,22 +163,22 @@ public:
      *          For more information, see description of states
      *          defined in ClientInfo::eClientState
      **/
-    inline NEService::eServiceConnection getConnectionStatus( void ) const;
+    inline NEService::eServiceConnection getConnectionStatus() const;
 
     /**
      * \brief   Returns the address of Proxy of client
      **/
-    inline const ProxyAddress & getAddress( void ) const;
+    inline const ProxyAddress & getAddress() const;
 
     /**
      * \brief   Returns true if client is in waiting state
      **/
-    inline bool isWaitingConnection( void ) const;
+    inline bool isWaitingConnection() const;
 
     /**
      * \brief   Returns true if client is in connected state.
      **/
-    inline bool isConnected( void ) const;
+    inline bool isConnected() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -218,22 +218,22 @@ namespace std
 // ClientInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::eServiceConnection ClientInfo::getConnectionStatus( void ) const
+inline NEService::eServiceConnection ClientInfo::getConnectionStatus() const
 {
     return mClientState;
 }
 
-inline const ProxyAddress & ClientInfo::getAddress( void ) const
+inline const ProxyAddress & ClientInfo::getAddress() const
 {
     return mClientAddress;
 }
 
-inline bool ClientInfo::isWaitingConnection( void ) const
+inline bool ClientInfo::isWaitingConnection() const
 {
     return (mClientState == NEService::eServiceConnection::ServicePending);
 }
 
-inline bool ClientInfo::isConnected( void ) const
+inline bool ClientInfo::isConnected() const
 {
     return (mClientState == NEService::eServiceConnection::ServiceConnected);
 }

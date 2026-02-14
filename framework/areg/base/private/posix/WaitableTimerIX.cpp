@@ -36,7 +36,7 @@ void WaitableTimerIX::_posixTimerRoutine(union sigval si)
 {
     WaitableTimerIX *timer = reinterpret_cast<WaitableTimerIX *>(si.sival_ptr);
 
-    OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, reinterpret_cast<id_type>(pthread_self()));
+    AREG_OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, reinterpret_cast<id_type>(pthread_self()));
     if ( timer != nullptr )
     {
         timer->_timerExpired();
@@ -71,14 +71,14 @@ WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name
     sigEvent.sigev_notify_function  = &WaitableTimerIX::_posixTimerRoutine;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    if (RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
+    if (NECommon::RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
     {
         mTimerId = static_cast<timer_t>(0);
     }
 #endif  // __APPLE__
 }
 
-WaitableTimerIX::~WaitableTimerIX(void)
+WaitableTimerIX::~WaitableTimerIX()
 {
     _resetTimer();
 }
@@ -135,7 +135,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
         mIsSignaled     = false;
         mThreadId       = Thread::getCurrentThreadId();
         result          = true;
-        if ( RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
+        if ( NECommon::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
         {
             result = false;
             _resetTimer();
@@ -146,7 +146,7 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
     return result;
 }
 
-bool WaitableTimerIX::stopTimer(void)
+bool WaitableTimerIX::stopTimer()
 {
     bool sendSignal = false;
     do 
@@ -169,7 +169,7 @@ bool WaitableTimerIX::stopTimer(void)
 
 
 
-bool WaitableTimerIX::cancelTimer(void)
+bool WaitableTimerIX::cancelTimer()
 {
     bool sendSignal = false;
     do 
@@ -196,7 +196,7 @@ bool WaitableTimerIX::checkSignaled(pthread_t /*contextThread*/) const
     return mIsSignaled;
 }
 
-bool WaitableTimerIX::isValid( void ) const
+bool WaitableTimerIX::isValid() const
 {
     ObjectLockIX lock(*this);
 #ifdef __APPLE__
@@ -211,7 +211,7 @@ bool WaitableTimerIX::notifyRequestOwnership(pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableTimerIX::checkCanSignalMultipleThreads(void) const
+bool WaitableTimerIX::checkCanSignalMultipleThreads() const
 {
     return true;
 }
@@ -221,12 +221,12 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
     ObjectLockIX lock(*this);
     if (mResetInfo == NESyncTypesIX::eEventResetInfo::EventResetAutomatic)
     {
-        OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
+        AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
         mIsSignaled = false;
     }
 }
 
-inline void WaitableTimerIX::_resetTimer( void )
+inline void WaitableTimerIX::_resetTimer()
 {
     _stopTimer();
 #ifdef __APPLE__
@@ -245,7 +245,7 @@ inline void WaitableTimerIX::_resetTimer( void )
     mThreadId   = 0;
 }
 
-inline void WaitableTimerIX::_stopTimer( void )
+inline void WaitableTimerIX::_stopTimer()
 {
 #ifdef __APPLE__
     if (mTimerSource != nullptr)
@@ -272,7 +272,7 @@ inline void WaitableTimerIX::_stopTimer( void )
     mThreadId   = 0;
 }
 
-inline void WaitableTimerIX::_timerExpired(void)
+inline void WaitableTimerIX::_timerExpired()
 {
     bool sendSignal = false;
 
@@ -292,12 +292,12 @@ inline void WaitableTimerIX::_timerExpired(void)
             mIsSignaled = true;
             sendSignal  = true;
 
-            OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", getName().getString( ), mFiredCount, mTimeout);
+            AREG_OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", getName().getString( ), mFiredCount, mTimeout);
         }
 #ifdef DEBUG
         else
         {
-            OUTPUT_WARN("The waitable timer was previously canceled, ignoring processing");
+            AREG_OUTPUT_WARN("The waitable timer was previously canceled, ignoring processing");
         }
 #endif // DEBUG
 

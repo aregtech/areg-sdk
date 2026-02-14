@@ -53,12 +53,12 @@ protected:
      * \brief   Default constructor
      *          Protected, cannot be instantiated.
      **/
-    IEEventDispatcher( void ) = default;
+    IEEventDispatcher() = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEEventDispatcher( void ) = default;
+    virtual ~IEEventDispatcher() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations.
@@ -67,18 +67,18 @@ public:
     /**
      * \brief   Call to start dispatcher. Returns true if successfully started.
      **/
-    virtual bool startDispatcher( void ) = 0;
+    virtual bool startDispatcher() = 0;
 
     /**
      * \brief   Call to stop running dispatcher.
      **/
-    virtual void stopDispatcher( void ) = 0;
+    virtual void stopDispatcher() = 0;
 
     /**
      * \brief   Called when dispatcher completed the job and exit.
      *          The cleanups should be done here.
      **/
-    virtual void exitDispatcher( void ) = 0;
+    virtual void exitDispatcher() = 0;
 
     /**
      * \brief   Call to queue event object in the event queue of dispatcher.
@@ -167,7 +167,7 @@ protected:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEEventDispatcher );
+    AREG_NOCOPY_NOMOVE( IEEventDispatcher );
 };
 
 #endif  // AREG_COMPONENT_PRIVATE_IEEVENTDISPATCHER_HPP

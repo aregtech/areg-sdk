@@ -33,7 +33,7 @@ protected:
      **/
     SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr);
 
-    virtual ~SubscriberBase( void ) = default;
+    virtual ~SubscriberBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -81,6 +81,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SubscriberBase(void);
-    DECLARE_NOCOPY_NOMOVE(SubscriberBase);
+    SubscriberBase();
+    AREG_NOCOPY_NOMOVE(SubscriberBase);
 };

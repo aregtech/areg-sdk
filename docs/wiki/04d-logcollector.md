@@ -532,13 +532,13 @@ logger::*::port::tcpip      = 8282          # Listen port
 
 **Configuration breakdown:**
 
-| Property | Default | Description |
-|----------|---------|-------------|
-| `logger::*::service` | `logcollector` | Log Collector process name |
-| `logger::*::connect` | `tcpip` | Communication protocol (TCP/IP only) |
-| `logger::*::enable::tcpip` | `true` | Enable/disable TCP/IP |
-| `logger::*::address::tcpip` | `127.0.0.1` | IP address to bind |
-| `logger::*::port::tcpip` | `8282` | Port number |
+| Property                    | Default        | Description                          |
+| --------------------------- | -------------- | ------------------------------------ |
+| `logger::*::service`        | `logcollector` | Log Collector process name           |
+| `logger::*::connect`        | `tcpip`        | Communication protocol (TCP/IP only) |
+| `logger::*::enable::tcpip`  | `true`         | Enable/disable TCP/IP                |
+| `logger::*::address::tcpip` | `127.0.0.1`    | IP address to bind                   |
+| `logger::*::port::tcpip`    | `8282`         | Port number                          |
 
 ---
 

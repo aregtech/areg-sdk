@@ -48,8 +48,8 @@ protected:
     /**
      * \brief   Protected constructor and destructor.
      **/
-    IEEventConsumer( void ) = default;
-    virtual ~IEEventConsumer( void ) = default;
+    IEEventConsumer() = default;
+    virtual ~IEEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -91,7 +91,7 @@ public:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEEventConsumer );
+    AREG_NOCOPY_NOMOVE( IEEventConsumer );
 };
 
 #endif  // AREG_COMPONENT_IEEVENTCONSUMER_HPP

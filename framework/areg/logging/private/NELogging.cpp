@@ -37,7 +37,7 @@ namespace
      *          The target, source and the message ID should be set before sending the message.
      *          Otherwise, the message ID is an empty function and message will be ignored by any component.
      **/
-    const NEMemory::sRemoteMessage& _getLogEmptyMessage(void)
+    const NEMemory::sRemoteMessage& _getLogEmptyMessage()
     {
         static constexpr NEMemory::sRemoteMessage _messageUpdateScpes
         {
@@ -68,7 +68,7 @@ namespace
      *          The source of the log should be set before sending the message.
      *          Otherwise, it is ignored by the Log Collector and the message is dropped.
      **/
-    const NEMemory::sRemoteMessage & _getLogMessage(void)
+    const NEMemory::sRemoteMessage & _getLogMessage()
     {
         static constexpr NEMemory::sRemoteMessage _messageServiceLog
         {
@@ -251,7 +251,7 @@ AREG_API_IMPL void NELogging::stopLogging(bool waitComplete)
     LogManager::stopLogging(waitComplete);
 }
 
-AREG_API_IMPL void NELogging::waitLoggingEnd(void)
+AREG_API_IMPL void NELogging::waitLoggingEnd()
 {
     LogManager::waitLoggingEnd();
 }
@@ -261,12 +261,12 @@ AREG_API_IMPL void NELogging::activateScope(LogScope & logScope)
     LogManager::activateLogScope(logScope);
 }
 
-AREG_API_IMPL bool NELogging::isStarted( void )
+AREG_API_IMPL bool NELogging::isStarted()
 {
     return LogManager::isLoggingStarted();
 }
 
-AREG_API_IMPL bool NELogging::isConfigured(void)
+AREG_API_IMPL bool NELogging::isConfigured()
 {
     return LogManager::isLoggingConfigured();
 }
@@ -276,7 +276,7 @@ AREG_API_IMPL bool NELogging::initializeLogging(const char * fileConfig)
     return LogManager::readLogConfig(fileConfig);
 }
 
-AREG_API_IMPL bool NELogging::isEnabled(void)
+AREG_API_IMPL bool NELogging::isEnabled()
 {
     return LogManager::isLoggingEnabled();
 }
@@ -470,7 +470,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageSaveConfiguration(const ITEM_ID& s
     return msgRequest;
 }
 
-AREG_API_IMPL RemoteMessage NELogging::messageConfigurationSaved(void)
+AREG_API_IMPL RemoteMessage NELogging::messageConfigurationSaved()
 {
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
@@ -488,7 +488,7 @@ AREG_API_IMPL void NELogging::setLogDatabaseEngine(IELogDatabaseEngine * dbEngin
     LogManager::setLogDatabaseEngine(dbEngine);
 }
 
-AREG_API_IMPL bool NELogging::forceStartLogging(void)
+AREG_API_IMPL bool NELogging::forceStartLogging()
 {
     LogManager::setDefaultConfiguration(false);
     LogManager::forceEnableLogging();
@@ -508,7 +508,7 @@ AREG_API_IMPL bool NELogging::initAndStartLogging(const char * fileConfig /*= nu
     }
 }
 
-AREG_API_IMPL const ITEM_ID & NELogging::getCookie(void)
+AREG_API_IMPL const ITEM_ID & NELogging::getCookie()
 {
     return LogManager::getConnectionCookie();
 }
@@ -537,7 +537,7 @@ AREG_API_IMPL void NELogging::stopLogging(bool /*waitComplete*/)
 {
 }
 
-AREG_API_IMPL void NELogging::waitLoggingEnd(void)
+AREG_API_IMPL void NELogging::waitLoggingEnd()
 {
 }
 
@@ -545,12 +545,12 @@ AREG_API_IMPL void NELogging::activateScope(LogScope & /*logScope*/)
 {
 }
 
-AREG_API_IMPL bool NELogging::isStarted( void )
+AREG_API_IMPL bool NELogging::isStarted()
 {
     return true;
 }
 
-AREG_API_IMPL bool NELogging::isConfigured(void)
+AREG_API_IMPL bool NELogging::isConfigured()
 {
     return true;
 }
@@ -560,7 +560,7 @@ AREG_API_IMPL bool NELogging::initializeLogging(const char * /*fileConfig*/)
     return true;
 }
 
-AREG_API_IMPL bool NELogging::isEnabled(void)
+AREG_API_IMPL bool NELogging::isEnabled()
 {
     return true;
 }
@@ -650,7 +650,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageSaveConfiguration(const ITEM_ID & 
     return msgRequest;
 }
 
-AREG_API_IMPL RemoteMessage NELogging::messageConfigurationSaved(void)
+AREG_API_IMPL RemoteMessage NELogging::messageConfigurationSaved()
 {
     RemoteMessage msgScope;
     return msgScope;
@@ -660,7 +660,7 @@ AREG_API_IMPL void NELogging::setLogDatabaseEngine(IELogDatabaseEngine * /*dbEng
 {
 }
 
-AREG_API_IMPL bool NELogging::forceStartLogging(void)
+AREG_API_IMPL bool NELogging::forceStartLogging()
 {
     return true;
 }
@@ -670,7 +670,7 @@ AREG_API_IMPL bool NELogging::initAndStartLogging(const char * /*fileConfig*/ /*
     return true;
 }
 
-AREG_API_IMPL const ITEM_ID & NELogging::getCookie(void)
+AREG_API_IMPL const ITEM_ID & NELogging::getCookie()
 {
     return NEService::COOKIE_UNKNOWN;
 }

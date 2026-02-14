@@ -57,11 +57,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    ServiceRegistry( void ) = default;
+    ServiceRegistry() = default;
     /**
      * \brief   Destructor
      **/
-    ~ServiceRegistry( void ) = default;
+    ~ServiceRegistry() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -159,21 +159,21 @@ public:
 
     /**
      * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
-     *          specified value. In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
+     *          specified value. In output listProviders and listConsumers contain list of remote stub and proxy addresses.
      * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
-     * \param[out]  out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
-     * \param[out]  out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
+     * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
+     * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const;
+    void getServiceList(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
-     *          In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
+     *          In output listProviders and listConsumers contain list of remote stub and proxy addresses.
      * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
-     * \param[out]  stubSource      On output the list contains stub address objects that have sources of specified cookie.
-     * \param[out]  proxySources    On output the list contains proxy address objects that have sources of specified cookie.
+     * \param[out]  listProviders      On output the list contains stub address objects that have sources of specified cookie.
+     * \param[out]  listConsumers    On output the list contains proxy address objects that have sources of specified cookie.
      **/
-    void getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources);
+    void getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers);
 
     /**
      * \brief   Call to disconnect proxy service specified by proxy address.
@@ -181,7 +181,7 @@ public:
      * \param   addrProxy   The address of proxy to disconnect.
      * \return  Returns instance of valid stub service. Otherwise, the service stub is invalid.
      **/
-    const ServiceStub & disconnectProxy( const ProxyAddress & IN addrProxy );
+    const ServiceStub & disconnectProxy( const ProxyAddress & addrProxy );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -200,7 +200,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ServiceRegistry );
+    AREG_NOCOPY_NOMOVE( ServiceRegistry );
 };
 
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICEREGISTRY_HPP

@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~PatientServiceWorkerConsumer( void ) = default;
+    virtual ~PatientServiceWorkerConsumer() = default;
 
 protected:
 
@@ -72,6 +72,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PatientServiceWorkerConsumer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PatientServiceWorkerConsumer );
+    PatientServiceWorkerConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( PatientServiceWorkerConsumer );
 };

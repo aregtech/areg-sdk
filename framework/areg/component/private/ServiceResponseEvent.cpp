@@ -16,7 +16,7 @@
 #include "areg/component/ServiceResponseEvent.hpp"
 
 
-IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
 
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                           , NEService::ResultType result

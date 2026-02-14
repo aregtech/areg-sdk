@@ -117,7 +117,7 @@ protected:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void )
+    inline ServiceClient & self()
     {
         return (*this);
     }
@@ -140,6 +140,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };

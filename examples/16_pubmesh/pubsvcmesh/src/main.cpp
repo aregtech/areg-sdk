@@ -52,7 +52,7 @@ private:
     LocalHelloWorldClient   mLocServiceClient;          //!< The instance of local service client.
 
 private:
-    LocalServiceComponent & self( void )
+    LocalServiceComponent & self()
     {
         return (*this);
     }
@@ -86,7 +86,7 @@ private:
     LocalHelloWorldClient   mLocalServiceClient1;
     LocalHelloWorldClient   mLocalServiceClient2;
 
-    PublicServiceComponent & self( void )
+    PublicServiceComponent & self()
     {
         return (*this);
     }

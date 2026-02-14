@@ -319,7 +319,7 @@ public:
      * \brief   Returns the option default validation entry.
      *          If using, set as a first entry in the setup list.
      **/
-    static const OptionParser::sOptionSetup getDefaultOptionSetup( void );
+    static const OptionParser::sOptionSetup getDefaultOptionSetup();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -329,7 +329,7 @@ public:
      * \brief   Default constructor. Sets the option default validation entry,
      *          so that all entries are strings.
      **/
-    OptionParser( void );
+    OptionParser();
 
     /**
      * \brief   Copies the option validation setup from the given list.
@@ -370,7 +370,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~OptionParser( void ) = default;
+    ~OptionParser() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -397,16 +397,16 @@ public:
      *           2. the parsing completes either when reach 'count' elements or
      *              if any entry of 'cmdLine' is an empty string, assuming that
      *              command line options may end with empty string like "".
-     * \param   cmdLine The list of the strings passed as a command line in the binary
-     *                  same as 'argv' parameter in 'main' function.
-     * \param   count   The number of strings in the 'cmdLine' list.
+     * \param[in]   cmdLine The list of the strings passed as a command line in the binary
+     *                      same as 'argv' parameter in 'main' function.
+     * \param[in]   count   The number of strings in the 'cmdLine' list.
      * \return  Returns true if succeeded to parse without error.
      *          Otherwise, returns false.
      **/
     bool parseCommandLine( const char ** cmdLine, uint32_t count );
     bool parseCommandLine( const wchar_t ** cmdLine, uint32_t count );
-    bool parseCommandLine( char** IN cmdLine, uint32_t count);
-    bool parseCommandLine( wchar_t** IN cmdLine, uint32_t count);
+    bool parseCommandLine( char** cmdLine, uint32_t count);
+    bool parseCommandLine( wchar_t** cmdLine, uint32_t count);
 
     /**
      * \brief   Parses the string passed as an options separated by space ' '.
@@ -446,17 +446,17 @@ public:
      *          executed by certain priority. Here the priority is set based on command ID,
      *          so that the command with the lowest ID is listed and can be executed first.
      **/
-    void sort(void);
+    void sort();
 
     /**
      * \ brief  Returns the list of parsed options.
      **/
-    inline const InputOptionList & getOptions( void ) const;
+    inline const InputOptionList & getOptions() const;
 
     /**
      * \brief   Returns the input string, which was parsed.
      **/
-    inline const String & getInput(void) const;
+    inline const String & getInput() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -569,12 +569,12 @@ inline bool OptionParser::isString( uint32_t flags )
     return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationString)) != 0);
 }
 
-inline const OptionParser::InputOptionList & OptionParser::getOptions( void ) const
+inline const OptionParser::InputOptionList & OptionParser::getOptions() const
 {
     return mInputOptions;
 }
 
-inline const String & OptionParser::getInput(void) const
+inline const String & OptionParser::getInput() const
 {
     return mCmdLine;
 }

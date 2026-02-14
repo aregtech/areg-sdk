@@ -470,7 +470,7 @@ bool ServiceManagerEventProcessor::_terminateComponentThread( const String & thr
     bool result{ false };
 
     Thread * thread = Thread::findThreadByName( threadName );
-    ComponentThread * compThread = RUNTIME_CAST( thread, ComponentThread );
+    ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
     if ( compThread != nullptr )
     {
         LOG_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );

@@ -154,9 +154,9 @@ void PageConnections::OnEditBroadcastUpdate( CCmdUI* pCmdUI )
     }
 }
 
-void PageConnections::setHeaders( void )
+void PageConnections::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( HEADER_TITILES );
+    int count = std::size( HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;
@@ -177,7 +177,7 @@ void PageConnections::setHeaders( void )
     }
 }
 
-void PageConnections::OnKickIdle( void )
+void PageConnections::OnKickIdle()
 {
     UpdateDialogControls( this, FALSE );
 }
@@ -352,7 +352,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
     return 0L;
 }
 
-void PageConnections::OnDefaultClicked( void )
+void PageConnections::OnDefaultClicked()
 {
     CButton * btnSend   = reinterpret_cast<CButton *>( GetDlgItem( IDC_BUTTON_BROADCAST ) );
     if ( btnSend != nullptr )

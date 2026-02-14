@@ -82,12 +82,12 @@ public:
     /**
      * \brief   Creates and returns Service Manager event data with command to stop router client connection.
      **/
-    static ServiceManagerEventData stopMessageRouterClient( void );
+    static ServiceManagerEventData stopMessageRouterClient();
 
     /**
      * \brief   creates and returns service manager event with command to stop routing connection and stop service manager.
      **/
-    static ServiceManagerEventData shutdownServiceManager( void );
+    static ServiceManagerEventData shutdownServiceManager();
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register Proxy
@@ -139,7 +139,7 @@ public:
     /**
      * \brief   Creates and returns Service Manager event data with command to stop connection
      **/
-    static ServiceManagerEventData stopConnection( void );
+    static ServiceManagerEventData stopConnection();
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register connection
@@ -196,7 +196,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~ServiceManagerEventData( void ) = default;
+    ~ServiceManagerEventData() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -218,17 +218,17 @@ public:
     /**
      * \brief   Returns streaming object to read data
      **/
-    inline const IEInStream & getReadStream( void ) const;
+    inline const IEInStream & getReadStream() const;
 
     /**
      * \brief   Returns streaming object to write data
      **/
-    inline IEOutStream & getWriteStream( void );
+    inline IEOutStream & getWriteStream();
 
     /**
      * \brief   Returns Service Manager command
      **/
-    inline ServiceManagerEventData::eServiceManagerCommands getCommand( void ) const;
+    inline ServiceManagerEventData::eServiceManagerCommands getCommand() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -241,13 +241,13 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceManagerEventData( void ) = delete;
+    ServiceManagerEventData() = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Service Manager event and consumer declaration
 //////////////////////////////////////////////////////////////////////////
-DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, IEServiceManagerEventConsumer)
+AREG_DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, IEServiceManagerEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventData inline methods
@@ -287,17 +287,17 @@ inline ServiceManagerEventData & ServiceManagerEventData::operator = ( ServiceMa
     return (*this);
 }
 
-inline const IEInStream & ServiceManagerEventData::getReadStream( void ) const
+inline const IEInStream & ServiceManagerEventData::getReadStream() const
 {
     return static_cast<const IEInStream &>(mStream);
 }
 
-inline IEOutStream & ServiceManagerEventData::getWriteStream( void )
+inline IEOutStream & ServiceManagerEventData::getWriteStream()
 {
     return static_cast<IEOutStream &>(mStream);
 }
 
-inline ServiceManagerEventData::eServiceManagerCommands ServiceManagerEventData::getCommand( void ) const
+inline ServiceManagerEventData::eServiceManagerCommands ServiceManagerEventData::getCommand() const
 {
     return mCommand;
 }

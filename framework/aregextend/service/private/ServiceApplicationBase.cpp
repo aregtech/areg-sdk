@@ -108,12 +108,12 @@ bool ServiceApplicationBase::serviceInitialize(NESystemService::eServiceOption /
     return _osInitializeService();
 }
 
-void ServiceApplicationBase::serviceRelease(void)
+void ServiceApplicationBase::serviceRelease()
 {
     Application::releaseApplication();
 }
 
-bool ServiceApplicationBase::serviceInstall(void)
+bool ServiceApplicationBase::serviceInstall()
 {
     if (_osOpenService() == false)
     {
@@ -123,7 +123,7 @@ bool ServiceApplicationBase::serviceInstall(void)
     return _osIsValid();
 }
 
-void ServiceApplicationBase::serviceUninstall(void)
+void ServiceApplicationBase::serviceUninstall()
 {
     if (_osOpenService())
     {
@@ -133,17 +133,17 @@ void ServiceApplicationBase::serviceUninstall(void)
     _osFreeResources();
 }
 
-bool ServiceApplicationBase::registerService(void)
+bool ServiceApplicationBase::registerService()
 {
     return _osRegisterService();
 }
 
-bool ServiceApplicationBase::serviceOpen(void)
+bool ServiceApplicationBase::serviceOpen()
 {
     return _osOpenService();
 }
 
-bool ServiceApplicationBase::serviceStart(void)
+bool ServiceApplicationBase::serviceStart()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
     LOG_DBG("Starting [ %s ] system service", getServiceNameA());
@@ -167,7 +167,7 @@ bool ServiceApplicationBase::serviceStart(void)
     return result;
 }
 
-void ServiceApplicationBase::servicePause(void)
+void ServiceApplicationBase::servicePause()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
     LOG_DBG("Pausing [ %s ] system service", getServiceNameA());
@@ -178,7 +178,7 @@ void ServiceApplicationBase::servicePause(void)
     setState(NESystemService::eSystemServiceState::ServicePaused);
 }
 
-bool ServiceApplicationBase::serviceContinue(void)
+bool ServiceApplicationBase::serviceContinue()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
     LOG_DBG("Resume and continuing paused [ %s ] system service", getServiceNameA());
@@ -199,7 +199,7 @@ bool ServiceApplicationBase::serviceContinue(void)
     return result;
 }
 
-void ServiceApplicationBase::serviceStop(void)
+void ServiceApplicationBase::serviceStop()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
     LOG_WARN("Stopping [ %s ] system service", getServiceNameA());
@@ -209,7 +209,7 @@ void ServiceApplicationBase::serviceStop(void)
     Application::signalAppQuit();
 }
 
-void ServiceApplicationBase::serviceShutdown(void)
+void ServiceApplicationBase::serviceShutdown()
 {
     serviceStop();
 }
@@ -224,12 +224,12 @@ bool ServiceApplicationBase::setState(NESystemService::eSystemServiceState newSt
     return _osSetState(newState);
 }
 
-void ServiceApplicationBase::runService(void)
+void ServiceApplicationBase::runService()
 {
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
 }
 
-int ServiceApplicationBase::startServiceDispatcher( void )
+int ServiceApplicationBase::startServiceDispatcher()
 {
     int result{ RESULT_IGNORED };
     if (mServiceSetup == false)

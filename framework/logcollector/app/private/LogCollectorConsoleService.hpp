@@ -49,14 +49,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~LogCollectorConsoleService( void ) = default;
+    virtual ~LogCollectorConsoleService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogCollectorConsoleService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LogCollectorConsoleService );
+    LogCollectorConsoleService() = delete;
+    AREG_NOCOPY_NOMOVE( LogCollectorConsoleService );
 };
 
 #endif  // AREG_LOGCOLLECTOR_APP_LOGCOLLECTORCONSOLESERVICE_HPP

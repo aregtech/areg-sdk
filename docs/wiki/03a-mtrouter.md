@@ -90,11 +90,11 @@ The **Multitarget Message Router** (mtrouter) is a message routing service that:
 
 ### When Do You Need mtrouter?
 
-| Application Type | Requires mtrouter | Communication |
-|------------------|-------------------|---------------|
-| **Multithreading** (single process) | ❌ No | In-process |
-| **Multiprocessing** (same machine) | ✅ Yes | Inter-process (IPC) |
-| **Distributed** (network) | ✅ Yes | Network (TCP/IP) |
+| Application Type                    | Requires mtrouter | Communication       |
+| ----------------------------------- | ----------------- | ------------------- |
+| **Multithreading** (single process) | ❌ No              | In-process          |
+| **Multiprocessing** (same machine)  | ✅ Yes             | Inter-process (IPC) |
+| **Distributed** (network)           | ✅ Yes             | Network (TCP/IP)    |
 
 > [!IMPORTANT]
 > Without mtrouter, multiprocessing applications cannot communicate with each other. They will run as standalone multithreading applications where only internal (local) services work within each process, but external (public) services remain inaccessible to other processes.
@@ -278,15 +278,15 @@ Type '-q' or '--quit' to quit the application ...:
 
 While mtrouter is running, type commands starting with `-` (short) or `--` (long):
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `--help` | `-h` | Display command list |
-| `--instances` | `-n` | Show connected clients |
-| `--pause` | `-p` | Pause message routing |
-| `--restart` | `-r` | Restart all connections |
-| `--quit` | `-q` | Stop mtrouter |
-| `--silent` | `-t` | Toggle silent mode (hide data rates) |
-| `--verbose` | `-v` | Toggle verbose mode (show data rates) |
+| Command       | Alias | Description                           |
+| ------------- | ----- | ------------------------------------- |
+| `--help`      | `-h`  | Display command list                  |
+| `--instances` | `-n`  | Show connected clients                |
+| `--pause`     | `-p`  | Pause message routing                 |
+| `--restart`   | `-r`  | Restart all connections               |
+| `--quit`      | `-q`  | Stop mtrouter                         |
+| `--silent`    | `-t`  | Toggle silent mode (hide data rates)  |
+| `--verbose`   | `-v`  | Toggle verbose mode (show data rates) |
 
 **Example - Check connected clients:**
 
@@ -804,13 +804,13 @@ router::*::port::tcpip      = 8181          # Listen port
 
 **Configuration breakdown:**
 
-| Property | Default | Description |
-|----------|---------|-------------|
-| `router::*::service` | `mtrouter` | Router process name |
-| `router::*::connect` | `tcpip` | Communication protocol |
-| `router::*::enable::tcpip` | `true` | Enable/disable TCP/IP |
-| `router::*::address::tcpip` | `127.0.0.1` | IP address to bind |
-| `router::*::port::tcpip` | `8181` | Port number |
+| Property                    | Default     | Description            |
+| --------------------------- | ----------- | ---------------------- |
+| `router::*::service`        | `mtrouter`  | Router process name    |
+| `router::*::connect`        | `tcpip`     | Communication protocol |
+| `router::*::enable::tcpip`  | `true`      | Enable/disable TCP/IP  |
+| `router::*::address::tcpip` | `127.0.0.1` | IP address to bind     |
+| `router::*::port::tcpip`    | `8181`      | Port number            |
 
 ---
 
@@ -898,16 +898,16 @@ log::*::scope::*            = NOTSET
 
 Options used when starting mtrouter:
 
-| Option | Alias | Platform | Description |
-|--------|-------|----------|-------------|
-| `--console` | `-c` | All | Run as console application |
-| `--help` | `-h` | All | Display help message |
-| `--install` | `-i` | Windows | Install as Windows service |
-| `--load` | `-l` | All | Load custom configuration file |
-| `--service` | `-s` | Linux/macOS | Run as service (background daemon) |
-| `--silent` | `-t` | All | Run without showing data rates |
-| `--uninstall` | `-u` | Windows | Uninstall Windows service |
-| `--verbose` | `-v` | All | Show data transfer rates |
+| Option        | Alias | Platform    | Description                        |
+| ------------- | ----- | ----------- | ---------------------------------- |
+| `--console`   | `-c`  | All         | Run as console application         |
+| `--help`      | `-h`  | All         | Display help message               |
+| `--install`   | `-i`  | Windows     | Install as Windows service         |
+| `--load`      | `-l`  | All         | Load custom configuration file     |
+| `--service`   | `-s`  | Linux/macOS | Run as service (background daemon) |
+| `--silent`    | `-t`  | All         | Run without showing data rates     |
+| `--uninstall` | `-u`  | Windows     | Uninstall Windows service          |
+| `--verbose`   | `-v`  | All         | Show data transfer rates           |
 
 **Examples:**
 
@@ -937,15 +937,15 @@ mtrouter.exe --install
 
 Commands available while mtrouter runs in console mode (must start with `-` or `--`):
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `--help` | `-h` | Display command list |
-| `--instances` | `-n` | Show connected clients |
-| `--pause` | `-p` | Pause message routing |
-| `--restart` | `-r` | Restart all connections |
-| `--quit` | `-q` | Stop mtrouter |
-| `--silent` | `-t` | Toggle silent mode (hide data rates) |
-| `--verbose` | `-v` | Toggle verbose mode (show data rates) |
+| Command       | Alias | Description                           |
+| ------------- | ----- | ------------------------------------- |
+| `--help`      | `-h`  | Display command list                  |
+| `--instances` | `-n`  | Show connected clients                |
+| `--pause`     | `-p`  | Pause message routing                 |
+| `--restart`   | `-r`  | Restart all connections               |
+| `--quit`      | `-q`  | Stop mtrouter                         |
+| `--silent`    | `-t`  | Toggle silent mode (hide data rates)  |
+| `--verbose`   | `-v`  | Toggle verbose mode (show data rates) |
 
 **Usage:** Type the command (e.g., `-n` or `--instances`) and press Enter.
 

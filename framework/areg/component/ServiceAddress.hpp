@@ -66,7 +66,7 @@ public:
     /**
      * \brief   Default constructor. Creates empty service address.
      **/
-    ServiceAddress( void );
+    ServiceAddress();
 
     /**
      * \brief   Creates service address. Sets given service name, version, service type and role name of owner component.
@@ -120,7 +120,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServiceAddress( void ) = default;
+    virtual ~ServiceAddress() = default;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ public:
     /**
      * \brief   Converts service address to 32-bit unsigned integer value.
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -182,7 +182,7 @@ public:
     /**
      * \brief   Returns role name of service address.
      **/
-    inline const String & getRoleName( void ) const;
+    inline const String & getRoleName() const;
 
     /**
      * \brief   Sets the role name of service address
@@ -193,13 +193,13 @@ public:
     /**
      * \brief   Returns service item information, which contains service name, version and type.
      **/
-    inline const ServiceItem & getService( void ) const;
+    inline const ServiceItem & getService() const;
 
     /**
      * \brief   Creates Service address path as a string.
      * /return  Returns service address as a string.
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief   Converts given service address path as a string to service address object.
@@ -212,7 +212,7 @@ protected:
     /**
      * \brief   Returns true if service address has validated data.
      **/
-    inline bool isValidated( void ) const;
+    inline bool isValidated() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -299,12 +299,12 @@ inline bool ServiceAddress::operator != (const ServiceAddress & other) const
     return (mMagicNum != other.mMagicNum);
 }
 
-inline ServiceAddress::operator unsigned int ( void ) const
+inline ServiceAddress::operator unsigned int () const
 {
     return mMagicNum;
 }
 
-inline const String & ServiceAddress::getRoleName(void) const
+inline const String & ServiceAddress::getRoleName() const
 {
     return mRoleName;
 }
@@ -316,12 +316,12 @@ inline void ServiceAddress::setRoleName(const String & roleName)
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-inline const ServiceItem & ServiceAddress::getService( void ) const
+inline const ServiceItem & ServiceAddress::getService() const
 {
     return static_cast<const ServiceItem &>(*this);
 }
 
-inline bool ServiceAddress::isValidated(void) const
+inline bool ServiceAddress::isValidated() const
 {
     return ServiceItem::isValidated() && (mRoleName.isEmpty() == false);
 }

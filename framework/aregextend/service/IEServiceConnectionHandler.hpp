@@ -42,11 +42,11 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    IEServiceConnectionHandler( void ) = default;
+    IEServiceConnectionHandler() = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IEServiceConnectionHandler( void ) = default;
+    virtual ~IEServiceConnectionHandler() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -77,18 +77,18 @@ public:
     /**
      * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
      **/
-    virtual void connectionFailure( void ) = 0;
+    virtual void connectionFailure() = 0;
 
     /**
      * \brief   Called when need to disconnect and unregister all service providers and service consumers.
      **/
-    virtual void disconnectServices( void ) = 0;
+    virtual void disconnectServices() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEServiceConnectionHandler );
+    AREG_NOCOPY_NOMOVE( IEServiceConnectionHandler );
 };
 
 #endif  // AREG_AREGEXTEND_SERVICE_IESERVICECONNECTIONHANDLER_HPP

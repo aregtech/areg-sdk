@@ -22,13 +22,15 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/Event.hpp"
 
+#include <algorithm>
+
 SortedEventStack::SortedEventStack(uint32_t maxQueue)
     : TELockStack<Event*>( )
     , mMaxQueueSize      (SortedEventStack::_calcQueueSize(maxQueue))
 {
 }
 
-SortedEventStack::~SortedEventStack(void)
+SortedEventStack::~SortedEventStack()
 {
     for (auto evt : mValueList)
     {
@@ -38,7 +40,7 @@ SortedEventStack::~SortedEventStack(void)
     mValueList.clear();
 }
 
-void SortedEventStack::deleteAllEvents(void)
+void SortedEventStack::deleteAllEvents()
 {
     Lock lock( mSyncObject );
 
@@ -149,7 +151,7 @@ uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassI
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** OUT removedEvent)
+uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
 {
     ASSERT(newEvent != nullptr);
     Lock lock(mSyncObject);
@@ -256,7 +258,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** OUT removedEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t  SortedEventStack::popEvent(Event** OUT stackEvent)
+uint32_t  SortedEventStack::popEvent(Event** stackEvent)
 {
     ASSERT(stackEvent != nullptr);
 
@@ -325,5 +327,5 @@ inline constexpr uint32_t SortedEventStack::_calcQueueSize(uint32_t requestedSiz
     if (requestedSize == NECommon::IGNORE_VALUE)
         requestedSize = Application::getConfigManager().getDefaultMessageQueueSize();
 
-    return (requestedSize != NECommon::IGNORE_VALUE ? MACRO_MAX(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
+    return (requestedSize != NECommon::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
 }

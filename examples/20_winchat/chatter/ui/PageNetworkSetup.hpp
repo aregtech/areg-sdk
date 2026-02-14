@@ -31,10 +31,10 @@ public:
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
     void OnAddConnection( NEConnectionManager::sConnection & data );
     void OnRemoveConnection( NEConnectionManager::sConnection & data );
-    void OnUpdateConnection( void );
-    void OnDisconnectTriggered( void );
+    void OnUpdateConnection();
+    void OnDisconnectTriggered();
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
@@ -55,13 +55,13 @@ public:
     afx_msg void OnUpdateButtonRegister( CCmdUI* pCmdUI );
 
 private:
-    void cleanService( void );
+    void cleanService();
 
-    bool isServiceConnected( void ) const;
+    bool isServiceConnected() const;
 
-    bool canRegistered( void ) const;
+    bool canRegistered() const;
 
-    void setFocusNickname( void ) const;
+    void setFocusNickname() const;
 
 private:
     // IP Address of service broker

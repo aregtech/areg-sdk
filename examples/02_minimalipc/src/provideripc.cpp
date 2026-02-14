@@ -36,7 +36,7 @@ public:
 // HelloService Interface Requests
 //////////////////////////////////////////////////////////////////////////
 protected:
-    virtual void requestHelloService(void) override
+    virtual void requestHelloService() override
     {
         std::cout << "\'Hello Service!\'" << std::endl;
         responseHelloService();
@@ -45,7 +45,7 @@ protected:
 
 private:
     //!< The wrapper of this pointer.
-    inline ServiceProvider& self(void)
+    inline ServiceProvider& self()
     {   return (*this); }
 };
 
@@ -66,7 +66,7 @@ END_MODEL("ProviderModel")
 //////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
-int main(void)
+int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     Application::initApplication();

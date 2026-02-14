@@ -27,7 +27,7 @@ void IETimerConsumer::processEvent( const TimerEventData & /* data */ )
 
 void IETimerConsumer::startEventProcessing( Event& eventElem )
 {
-    TimerEvent* timerEvent = static_cast<TimerEvent *>( RUNTIME_CAST(&eventElem, TimerEvent) );
+    TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
     Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
     if (timer != nullptr )
     {

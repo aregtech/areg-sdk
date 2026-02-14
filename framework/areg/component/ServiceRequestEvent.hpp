@@ -54,7 +54,7 @@ class AREG_API ServiceRequestEvent : public StubEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime event class
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(ServiceRequestEvent)
+    AREG_DECLARE_RUNTIME_EVENT(ServiceRequestEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -83,7 +83,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServiceRequestEvent( void ) = default;
+    virtual ~ServiceRequestEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -92,7 +92,7 @@ public:
     /**
      * \brief   Return the address of Proxy of event source
      **/
-    inline const ProxyAddress & getEventSource( void ) const;
+    inline const ProxyAddress & getEventSource() const;
 
     /**
      * \brief   Sets the address of Proxy of event source
@@ -103,17 +103,17 @@ public:
     /**
      * \brief   Returns request message ID stored in service event
      **/
-    inline unsigned int getRequestId( void ) const;
+    inline unsigned int getRequestId() const;
 
     /**
      * \brief   Returns request type to process.
      **/
-    inline NEService::eRequestType getRequestType( void ) const;
+    inline NEService::eRequestType getRequestType() const;
 
     /**
      * \brief   Returns sequence number set in info.
      **/
-    inline const SequenceNumber & getSequenceNumber( void ) const;
+    inline const SequenceNumber & getSequenceNumber() const;
 
     /**
      * \brief   Sets new sequence number.
@@ -169,15 +169,15 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceRequestEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceRequestEvent );
+    ServiceRequestEvent() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceRequestEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRequestEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceRequestEvent::getEventSource( void ) const
+inline const ProxyAddress & ServiceRequestEvent::getEventSource() const
 {
     return mProxySource;
 }
@@ -187,17 +187,17 @@ inline void ServiceRequestEvent::setEventSource(const ProxyAddress& addrProxySou
     mProxySource = addrProxySource;
 }
 
-inline unsigned int ServiceRequestEvent::getRequestId( void ) const
+inline unsigned int ServiceRequestEvent::getRequestId() const
 {
     return mMessageId;
 }
 
-inline NEService::eRequestType ServiceRequestEvent::getRequestType( void ) const
+inline NEService::eRequestType ServiceRequestEvent::getRequestType() const
 {
     return mRequestType;
 }
 
-inline const SequenceNumber & ServiceRequestEvent::getSequenceNumber( void ) const
+inline const SequenceNumber & ServiceRequestEvent::getSequenceNumber() const
 {
     return mSequenceNr;
 }

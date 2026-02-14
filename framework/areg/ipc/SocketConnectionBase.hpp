@@ -42,11 +42,11 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    SocketConnectionBase( void ) = default;
+    SocketConnectionBase() = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~SocketConnectionBase( void ) = default;
+    virtual ~SocketConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -95,7 +95,7 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SocketConnectionBase );
+    AREG_NOCOPY_NOMOVE( SocketConnectionBase );
 };
 
 #endif  // AREG_IPC_PRIVATE_SOCKETCONNECTIONBASEE_HPP

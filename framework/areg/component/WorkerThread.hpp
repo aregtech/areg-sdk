@@ -72,7 +72,7 @@ class AREG_API WorkerThread    : public DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 // Runtime
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(WorkerThread)
+    AREG_DECLARE_RUNTIME(WorkerThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -106,7 +106,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~WorkerThread( void ) = default;
+    virtual ~WorkerThread() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -115,23 +115,23 @@ public:
     /**
      * \brief   Returns Binding (master) component object
      **/
-    inline Component & getBindingComponent( void ) const;
+    inline Component & getBindingComponent() const;
 
     /**
      * \brief   Returns binding component thread object
      **/
-    ComponentThread & getBindingComponentThread( void ) const;
+    ComponentThread & getBindingComponentThread() const;
 
     /**
      * \brief   Call to make emergency termination of worker thread.
      **/
-    void terminateSelf(void);
+    void terminateSelf();
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
      *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
      **/
-    inline uint32_t getWatchdogTimeout(void) const;
+    inline uint32_t getWatchdogTimeout() const;
 
 //////////////////////////////////////////////////////////////////////////
 // overrides
@@ -215,31 +215,31 @@ private:
     /**
      * \brief   Returns reference of Worker Thread
      **/
-    inline WorkerThread & self( void );
+    inline WorkerThread & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WorkerThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( WorkerThread );
+    WorkerThread() = delete;
+    AREG_NOCOPY_NOMOVE( WorkerThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Component& WorkerThread::getBindingComponent( void ) const
+inline Component& WorkerThread::getBindingComponent() const
 {
     return static_cast<Component &>(mBindingComponent);
 }
 
-inline WorkerThread& WorkerThread::self( void )
+inline WorkerThread& WorkerThread::self()
 {
     return (*this);
 }
 
-inline uint32_t WorkerThread::getWatchdogTimeout(void) const
+inline uint32_t WorkerThread::getWatchdogTimeout() const
 {
     return mWatchdog.getTimeout();
 }

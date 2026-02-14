@@ -39,7 +39,7 @@ SystemServiceBase::SystemServiceBase( ServiceCommunicatonBase & commBase )
 {
 }
 
-void SystemServiceBase::resetDefaultOptions(void)
+void SystemServiceBase::resetDefaultOptions()
 {
     mSystemServiceOption = NESystemService::DEFAULT_OPTION;
     mFileConfig = NEApplication::DEFAULT_CONFIG_FILE;

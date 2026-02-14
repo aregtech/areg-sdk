@@ -34,7 +34,7 @@ EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
 {
 }
 
-EventDispatcher::~EventDispatcher( void )
+EventDispatcher::~EventDispatcher()
 {
     mDispatcherThread   = nullptr;
 }
@@ -44,26 +44,26 @@ EventDispatcher::~EventDispatcher( void )
 //////////////////////////////////////////////////////////////////////////
 bool EventDispatcher::onThreadRegistered( Thread * threadObj )
 {
-    mDispatcherThread = RUNTIME_CAST(threadObj, DispatcherThread);
+    mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
     ASSERT(mDispatcherThread != nullptr);
 
     EventDispatcherBase::removeAllEvents( );
     return EventDispatcherBase::mEventExit.resetEvent();
 }
 
-void EventDispatcher::onThreadUnregistering( void )
+void EventDispatcher::onThreadUnregistering()
 {
     stopDispatcher();
     mDispatcherThread   = nullptr;
 }
 
-void EventDispatcher::onThreadRuns( void )
+void EventDispatcher::onThreadRuns()
 {
     ASSERT(mDispatcherThread != nullptr);
     startDispatcher();
 }
 
-int EventDispatcher::onThreadExit( void )
+int EventDispatcher::onThreadExit()
 {
     exitDispatcher( );
     mDispatcherThread   = nullptr;

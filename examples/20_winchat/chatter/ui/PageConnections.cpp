@@ -181,12 +181,12 @@ void PageConnections::OnRemoveConnection( NEConnectionManager::sConnection & dat
     removeConnection(data);
 }
 
-void PageConnections::OnUpdateConnection( void )
+void PageConnections::OnUpdateConnection()
 {
     // do nothing
 }
 
-void PageConnections::OnDisconnectTriggered( void )
+void PageConnections::OnDisconnectTriggered()
 {
     mCtrlConnections.DeleteAllItems( );
     unloadModel();
@@ -236,12 +236,12 @@ void PageConnections::OnDestroy( )
     CPropertyPage::OnDestroy( );
 }
 
-const String & PageConnections::GetRegisteredName( void ) const
+const String & PageConnections::GetRegisteredName() const
 {
     return mConnectionHandler.GetNickName( );
 }
 
-uint32_t PageConnections::GetRegisteredCookie( void ) const
+uint32_t PageConnections::GetRegisteredCookie() const
 {
     return mConnectionHandler.GetCookie( );
 }
@@ -317,9 +317,9 @@ inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiat
     return count;
 }
 
-inline void PageConnections::setHeaders( void )
+inline void PageConnections::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( PageConnections::HEADER_TITILES );
+    int count = std::size( PageConnections::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlConnections.GetClientRect( &rc );
     int width = rc.Width( ) / count;
@@ -339,12 +339,12 @@ inline void PageConnections::setHeaders( void )
     }
 }
 
-inline bool PageConnections::isServiceConnected( void ) const
+inline bool PageConnections::isServiceConnected() const
 {
     return (mClientConnections != nullptr ? mClientConnections->isConnected( ) : false);
 }
 
-inline void PageConnections::cleanService( void )
+inline void PageConnections::cleanService()
 {
     if ( mClientConnections != nullptr )
     {
@@ -386,7 +386,7 @@ inline void PageConnections::removeConnection( const NEConnectionManager::sConne
     }
 }
 
-inline void PageConnections::unloadModel( void )
+inline void PageConnections::unloadModel()
 {
     if ( mDirectConnectModel.isEmpty( ) == false )
     {
@@ -429,7 +429,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
     return result;
 }
 
-void PageConnections::OnDefaultClicked( void )
+void PageConnections::OnDefaultClicked()
 {
     CButton * btnSend = reinterpret_cast<CButton *>(GetDlgItem( IDC_BUTTON_INITIATE_CHAT ));
     if ( btnSend != nullptr )

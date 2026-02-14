@@ -55,7 +55,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ClientReceiveThread( void ) = default;
+    virtual ~ClientReceiveThread() = default;
 
 /************************************************************************/
 // Actions and attributes.
@@ -65,7 +65,7 @@ public:
      * \brief   Returns accumulative value of received data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataReceive( void ) const;
+    inline uint32_t extractDataReceive() const;
 
     /**
      * \brief   Call to enable or disable the received data calculation.
@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Returns flag, indicating whether data calculation is enabled or not.
      **/
-    inline bool isCalculateDataEnabled(void) const;
+    inline bool isCalculateDataEnabled() const;
 
 protected:
 /************************************************************************/
@@ -91,7 +91,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual bool runDispatcher() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -120,11 +120,11 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientReceiveThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ClientReceiveThread );
+    ClientReceiveThread() = delete;
+    AREG_NOCOPY_NOMOVE( ClientReceiveThread );
 };
 
-inline uint32_t ClientReceiveThread::extractDataReceive( void ) const
+inline uint32_t ClientReceiveThread::extractDataReceive() const
 {
     return static_cast<uint32_t>(mBytesReceive.exchange(0));
 }
@@ -138,7 +138,7 @@ inline void ClientReceiveThread::setEnableCalculateData(bool enable)
     }
 }
 
-inline bool ClientReceiveThread::isCalculateDataEnabled(void) const
+inline bool ClientReceiveThread::isCalculateDataEnabled() const
 {
     return mSaveDataReceive;
 }

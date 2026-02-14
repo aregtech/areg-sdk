@@ -57,7 +57,7 @@ namespace
 // TimerPosix methods
 //////////////////////////////////////////////////////////////////////////
 
-TimerPosix::TimerPosix( void )
+TimerPosix::TimerPosix()
 #ifdef __APPLE__
     : mTimerSource  ( INVALID_DISPATCH_SOURCE )
     , mTimerQueue   ( INVALID_DISPATCH_QUEUE  )
@@ -72,7 +72,7 @@ TimerPosix::TimerPosix( void )
 {
 }
 
-TimerPosix::~TimerPosix(void)
+TimerPosix::~TimerPosix()
 {
     SpinAutolockIX lock(mLock);
     _destroyTimer();
@@ -113,13 +113,13 @@ bool TimerPosix::startTimer( TimerBase & context, id_type contextId, FuncPosixTi
 #endif  // __APPLE__
 }
 
-bool TimerPosix::restartTimer( void )
+bool TimerPosix::restartTimer()
 {
 	SpinAutolockIX lock(mLock);
     return _startTimer();
 }
 
-bool TimerPosix::pauseTimer(void)
+bool TimerPosix::pauseTimer()
 {
 	SpinAutolockIX lock(mLock);
 
@@ -135,7 +135,7 @@ bool TimerPosix::pauseTimer(void)
 #endif  // __APPLE__
 }
 
-bool TimerPosix::stopTimer(void)
+bool TimerPosix::stopTimer()
 {
 	SpinAutolockIX lock(mLock);
 
@@ -151,7 +151,7 @@ bool TimerPosix::stopTimer(void)
 #endif  // __APPLE__
 }
 
-void TimerPosix::destroyTimer(void)
+void TimerPosix::destroyTimer()
 {
 	SpinAutolockIX lock(mLock);
 
@@ -161,7 +161,7 @@ void TimerPosix::destroyTimer(void)
     mContextId = 0u;
 }
 
-void TimerPosix::timerExpired(void)
+void TimerPosix::timerExpired()
 {
     SpinAutolockIX lock(mLock);
     if (mContext != nullptr)
@@ -192,11 +192,11 @@ bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     sigEvent.sigev_notify_function  = funcTimer;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    return (RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
+    return (NECommon::RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
 #endif  // __APPLE__
 }
 
-inline bool TimerPosix::_startTimer( void )
+inline bool TimerPosix::_startTimer()
 {
     bool result = false;
 
@@ -235,7 +235,7 @@ inline bool TimerPosix::_startTimer( void )
                     }
                 });
 
-                if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
+                if (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
                 {
                     NESyncTypesIX::convTimeout(mDueTime, msTimeout);
                     result = true;
@@ -273,12 +273,12 @@ inline bool TimerPosix::_startTimer( void )
                 interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
             }
 
-            if (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
+            if (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
             {
                 NESyncTypesIX::convTimeout(mDueTime, msTimeout);
                 result = true;
 
-                if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
+                if (NECommon::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
                 {
                     result          = false;
                     mDueTime.tv_sec = 0;
@@ -293,7 +293,7 @@ inline bool TimerPosix::_startTimer( void )
     return result;
 }
 
-void TimerPosix::_stopTimer(void)
+void TimerPosix::_stopTimer()
 {
 #ifdef __APPLE__
     if (mTimerSource != INVALID_DISPATCH_SOURCE)
@@ -317,7 +317,7 @@ void TimerPosix::_stopTimer(void)
 #endif  // __APPLE__
 }
 
-void TimerPosix::_destroyTimer(void)
+void TimerPosix::_destroyTimer()
 {
     if (_isStarted())
     {

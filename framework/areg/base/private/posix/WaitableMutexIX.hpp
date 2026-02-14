@@ -64,7 +64,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableMutexIX( void ) = default;
+    virtual ~WaitableMutexIX() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -82,12 +82,12 @@ public:
      *          thread context.
      * \return Returns true if operation succeeded.
      **/
-    bool releaseMutex( void );
+    bool releaseMutex();
 
     /**
      * \brief   Returns waitable mutex owner thread ID, if there is any.
      **/
-    inline pthread_t getOwningThreadId( void ) const;
+    inline pthread_t getOwningThreadId() const;
 
 /************************************************************************/
 // IEWaitableBaseIX callback overrides.
@@ -118,7 +118,7 @@ public:
      *          signals only one thread, when waitable Event can signal multiple threads.
      * \return  Waitable Mutex always returns false.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const override;
+    virtual bool checkCanSignalMultipleThreads() const override;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -148,14 +148,14 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( WaitableMutexIX );
+    AREG_NOCOPY_NOMOVE( WaitableMutexIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableMutexIX class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline pthread_t WaitableMutexIX::getOwningThreadId(void) const
+inline pthread_t WaitableMutexIX::getOwningThreadId() const
 {
     ObjectLockIX lock(*this);
     return mOwnerThread;

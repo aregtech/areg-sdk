@@ -43,7 +43,7 @@ class TimerManagerBase  : protected DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 // Runtime declaration
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME(TimerManagerBase)
+    AREG_DECLARE_RUNTIME(TimerManagerBase)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -54,7 +54,7 @@ protected:
      * \brief   protected Constructor / destructor
      **/
     TimerManagerBase( const String & threadName );
-    virtual ~TimerManagerBase( void ) = default;
+    virtual ~TimerManagerBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -79,7 +79,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual bool runDispatcher() override;
 
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
@@ -92,7 +92,7 @@ protected:
      * \brief   Starts Timer Manager Thread it is not started yet.
      * \return  Returns true if Timer Manager Thread is started and ready to process events.
      **/
-    bool startTimerManagerThread( void );
+    bool startTimerManagerThread();
 
     /**
      * \brief   Stops Timer Manager Thread. Cancels and stops all timers.
@@ -109,7 +109,7 @@ protected:
      *          complete the job and exit. This should be called if previously
      *          it was requested to stop the Timer Manager Thread without waiting for completion.
      **/
-    void waitCompletion(void);
+    void waitCompletion();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.
@@ -118,21 +118,21 @@ private:
     /**
      * \brief   Returns TimerManager object. for internal calls.
      **/
-    inline TimerManagerBase & self( void );
+    inline TimerManagerBase & self();
 
 //////////////////////////////////////////////////////////////////////////
 //  Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TimerManagerBase(void) = delete;
-    DECLARE_NOCOPY_NOMOVE( TimerManagerBase );
+    TimerManagerBase() = delete;
+    AREG_NOCOPY_NOMOVE( TimerManagerBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline TimerManagerBase& TimerManagerBase::self( void )
+inline TimerManagerBase& TimerManagerBase::self()
 {
     return (*this);
 }

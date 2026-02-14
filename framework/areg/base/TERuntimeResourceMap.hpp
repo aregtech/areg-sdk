@@ -61,11 +61,11 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    TERuntimeHashMap( void ) = default;
+    TERuntimeHashMap() = default;
     /**
      * \brief   Destructor.
      **/
-    ~TERuntimeHashMap( void ) = default;
+    ~TERuntimeHashMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -108,13 +108,13 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    ~TERuntimeResourceMap( void ) = default;
+    ~TERuntimeResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TERuntimeResourceMap( void ) = delete;
+    TERuntimeResourceMap() = delete;
     TERuntimeResourceMap(const TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
     TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
     TERuntimeResourceMap( TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
@@ -143,11 +143,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    TENolockRuntimeResourceMap( void );
+    TENolockRuntimeResourceMap();
     /**
      * \brief   Destructor.
      **/
-    ~TENolockRuntimeResourceMap( void ) = default;
+    ~TENolockRuntimeResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -190,11 +190,11 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    TELockRuntimeResourceMap( void );
+    TELockRuntimeResourceMap();
     /**
      * \brief   Destructor.
      **/
-    ~TELockRuntimeResourceMap( void ) = default;
+    ~TELockRuntimeResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -232,7 +232,7 @@ TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TERuntimeResourceMap( IEResourc
 // TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <class RUNTIME_DELEGATE, class Deleter>
-TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TENolockRuntimeResourceMap( void )
+TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TENolockRuntimeResourceMap()
     : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<IEResourceLock &>(mNoLock))
     
     , mNoLock   ( )
@@ -243,7 +243,7 @@ TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TENolockRuntimeResourceMa
 // TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <class RUNTIME_DELEGATE, class Deleter>
-TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TELockRuntimeResourceMap( void )
+TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TELockRuntimeResourceMap()
     : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<IEResourceLock &>(mLock))
     
     , mLock ( )

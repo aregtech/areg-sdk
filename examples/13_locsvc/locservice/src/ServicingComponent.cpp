@@ -50,7 +50,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     }
 }
 
-void ServicingComponent::requestShutdownService( void )
+void ServicingComponent::requestShutdownService()
 {
     LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
     LOG_DBG("The local client requests to shut down.");

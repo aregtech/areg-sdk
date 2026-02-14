@@ -57,7 +57,7 @@ void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& i
     }
 }
 
-void ServiceClient::broadcastServiceStopping(void)
+void ServiceClient::broadcastServiceStopping()
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
     LOG_DBG("Service stopped, quit application");

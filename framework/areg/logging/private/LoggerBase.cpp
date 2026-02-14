@@ -25,7 +25,7 @@ LoggerBase::LoggerBase( LogConfiguration & logConfig)
 {
 }
 
-bool LoggerBase::createLayouts(void)
+bool LoggerBase::createLayouts()
 {
     bool result = mLayoutsMessage.createLayouts(mLogConfiguration.getLayoutMessage());
     result |= mLayoutsScopeEnter.createLayouts(mLogConfiguration.getLayoutEnter());
@@ -34,7 +34,7 @@ bool LoggerBase::createLayouts(void)
     return result;
 }
 
-void LoggerBase::releaseLayouts(void)
+void LoggerBase::releaseLayouts()
 {
     mLayoutsMessage.deleteLayouts();
     mLayoutsScopeEnter.deleteLayouts();

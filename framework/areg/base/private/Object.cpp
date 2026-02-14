@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Object class implementation
 //////////////////////////////////////////////////////////////////////////
-inline const Object& Object::self( void ) const
+inline const Object& Object::self() const
 {
     return (*this);
 }
@@ -61,7 +61,7 @@ Object::Object( Object && src ) noexcept
 /**
  * \brief   Call to clone object
  **/
-IEGenericObject* Object::clone( void ) const
+IEGenericObject* Object::clone() const
 {
     return static_cast<IEGenericObject *>(DEBUG_NEW Object( self() ));
 }
@@ -69,7 +69,7 @@ IEGenericObject* Object::clone( void ) const
 /**
  * \brief   Destroys created (cloned) object
  **/
-void Object::destroy( void )
+void Object::destroy()
 {
     delete this;
 }
@@ -126,9 +126,9 @@ bool Object::operator != ( const Object & other ) const
 /**
  * \brief   Operator to get integer value of object, mainly used in map
  **/
-Object::operator unsigned int ( void ) const
+Object::operator unsigned int () const
 {
-    return MACRO_PTR2INT32(this);
+    return static_cast<unsigned int>(reinterpret_cast<uintptr_t>(this));
 }
 
 /**

@@ -38,7 +38,7 @@ ScopeMessage::ScopeMessage( const LogScope & logScope )
     }
 }
 
-ScopeMessage::~ScopeMessage( void )
+ScopeMessage::~ScopeMessage()
 {
     if ( isScopeEnabled() )
     {
@@ -131,7 +131,7 @@ ScopeMessage::ScopeMessage(const LogScope& /*logScope*/)
 {
 }
 
-ScopeMessage::~ScopeMessage(void)
+ScopeMessage::~ScopeMessage()
 {
 }
 

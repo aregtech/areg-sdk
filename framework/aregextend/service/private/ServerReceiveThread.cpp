@@ -36,7 +36,7 @@ ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHa
 {
 }
 
-bool ServerReceiveThread::runDispatcher(void)
+bool ServerReceiveThread::runDispatcher()
 {
     LOG_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
     LOG_DBG("Starting dispatcher [ %s ]", getName().getString());

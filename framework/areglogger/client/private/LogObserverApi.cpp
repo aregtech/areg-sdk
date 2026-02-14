@@ -49,7 +49,7 @@ namespace
         sObserverEvents losEvents   { };
     };
     
-    sLogObserverStruct& logObserverData(void)
+    sLogObserverStruct& logObserverData()
     {
         static sLogObserverStruct _theObserver;
         return _theObserver;

@@ -34,13 +34,13 @@ DEF_LOG_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
 // Static functions
 //////////////////////////////////////////////////////////////////////////
 
-TimerManager & TimerManager::getInstance( void )
+TimerManager & TimerManager::getInstance()
 {
     static TimerManager	_theTimerManager;
     return _theTimerManager;
 }
 
-bool TimerManager::startTimerManager( void )
+bool TimerManager::startTimerManager()
 {
     return getInstance().startTimerManagerThread( );
 }
@@ -50,12 +50,12 @@ void TimerManager::stopTimerManager(bool waitComplete)
     getInstance().stopTimerManagerThread(waitComplete);
 }
 
-void TimerManager::waitTimerManager(void)
+void TimerManager::waitTimerManager()
 {
     return getInstance().waitCompletion();
 }
 
-bool TimerManager::isTimerManagerStarted( void )
+bool TimerManager::isTimerManagerStarted()
 {
     return getInstance().isReady();
 }
@@ -103,14 +103,14 @@ void TimerManager::stopTimer( Timer &timer )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-TimerManager::TimerManager( void )
+TimerManager::TimerManager()
     : TimerManagerBase  ( TimerManager::TIMER_THREAD_NAME )
 
     , mTimerResource( )
 {
 }
 
-TimerManager::~TimerManager( void )
+TimerManager::~TimerManager()
 {
     _removeAllTimers( );
 }
@@ -147,7 +147,7 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
 bool TimerManager::_registerTimer(Timer &timer, id_type whichThreadId)
 {
     Thread * thread = Thread::findThreadById(whichThreadId);
-    DispatcherThread * disp = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    DispatcherThread * disp = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     return (disp != nullptr ? _registerTimer(timer, *disp) : false);
 }
 
@@ -161,7 +161,7 @@ void TimerManager::_unregisterTimer( Timer & timer )
     }
 }
 
-void TimerManager::_removeAllTimers( void )
+void TimerManager::_removeAllTimers()
 {
     mTimerResource.lock();
 

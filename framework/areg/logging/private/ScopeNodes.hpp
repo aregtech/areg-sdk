@@ -43,7 +43,7 @@ class ScopeLeaf : public ScopeNodeBase
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ScopeLeaf( void );
+    ScopeLeaf();
     /**
      * \brief   Copies data from the ScopeNodeBase object. Should be called explicit.
      **/
@@ -55,7 +55,7 @@ public:
     ScopeLeaf( const ScopeLeaf & src );    
     ScopeLeaf( ScopeLeaf && src ) noexcept;
 
-    virtual ~ScopeLeaf( void ) = default;
+    virtual ~ScopeLeaf() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -118,7 +118,7 @@ public:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ScopeNode( void );
+    ScopeNode();
 
     /**
      * \brief   Creates a node with empty list of child leafs and nodes
@@ -132,7 +132,7 @@ public:
     ScopeNode( const ScopeNode & src );    
     ScopeNode( ScopeNode && src ) noexcept;
     
-    virtual ~ScopeNode( void ) = default;
+    virtual ~ScopeNode() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor
@@ -168,13 +168,13 @@ public:
   *          the scope is a leaf. All others are nodes.
   *          On output, the 'scopePath' with contain the remaining path or an empty string
   *          if a leaf was created.
-  * \param   scopePath   The path of the scope to create a node. On output, this contains
-  *                      either the remaining path or empty string if a leaf was created.
-  * \param   prioStates  Bitwise logging priority set to scope.
+  * \param[in,out]  scopePath   The path of the scope to create a node. On output, this contains
+  *                             either the remaining path or empty string if a leaf was created.
+  * \param[in]     prioStates  Bitwise logging priority set to scope.
   * \return  Returns created node. It is either a node or a leaf.
   * \note    Only the root and nodes can create nodes or leafs. The leafs return invalid node.
   **/
-    virtual const ScopeNodeBase & makeChildNode( String & IN OUT scopePath, unsigned int prioStates ) const override;
+    virtual const ScopeNodeBase & makeChildNode( String & scopePath, unsigned int prioStates ) const override;
 
     /**
      * \brief   Adds a child node to the node if it does not contain a child of the same type
@@ -193,9 +193,9 @@ public:
      *          contains the remaining part of the scope after creating child node. It is empty
      *          when creates and adds a leaf.
      *          Only root or nodes can contain child. This method is ignored in case of leaf.
-     * \param   scopePath   The name of the scope to generate a node. On output, this contains
-     *                      the remaining part of the scope name.
-     * \param   prioStates  Bitwise logging priority set to scope.
+     * \param[in,out]   scopePath   The name of the scope to generate a node. On output, this contains
+     *                              the remaining part of the scope name.
+     * \param[in]     prioStates    Bitwise logging priority set to scope.
      * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
      *          it created new entry or updated the existing.
      **/
@@ -227,7 +227,7 @@ public:
      *          Only the root and nodes can group child entries.
      * \return  Returns number of nodes that where removed.
      **/
-    virtual unsigned int groupChildNodes( void ) override;
+    virtual unsigned int groupChildNodes() override;
 
     /**
      * \brief   Generates the scope setting and updates in the configuration.
@@ -246,7 +246,7 @@ public:
      *          Normally,the grouping starts from root node.
      * \return  Returns the number of nodes that it totally grouped.
      **/
-    virtual unsigned int groupRecursive( void ) override;
+    virtual unsigned int groupRecursive() override;
 
     /**
      * \brief   Removes the priority nodes of specified log priority.
@@ -259,7 +259,7 @@ public:
     /**
      * \brief   Returns true if a node has no children nodes.
      **/
-    virtual bool isEmpty( void ) const override;
+    virtual bool isEmpty() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -268,17 +268,17 @@ public:
     /**
      * \brief   Returns the list of child nodes.
      **/
-    inline const ScopeNode::NodeList & getNodes( void ) const;
+    inline const ScopeNode::NodeList & getNodes() const;
 
     /**
      * \brief   Returns the list of child leafs.
      **/
-    inline const ScopeNode::LeafList & getLeafs( void ) const;
+    inline const ScopeNode::LeafList & getLeafs() const;
 
     /**
      * \brief   Returns the total number of children.
      **/
-    inline unsigned int childNodeCount( void ) const;
+    inline unsigned int childNodeCount() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -304,9 +304,9 @@ class ScopeRoot : public ScopeNode
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ScopeRoot( void );
+    ScopeRoot();
 
-    virtual ~ScopeRoot( void ) = default;
+    virtual ~ScopeRoot() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override
@@ -349,24 +349,24 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ScopeRoot );
+    AREG_NOCOPY_NOMOVE( ScopeRoot );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeNode class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const ScopeNode::NodeList & ScopeNode::getNodes( void ) const
+inline const ScopeNode::NodeList & ScopeNode::getNodes() const
 {
     return mChildNodes;
 }
 
-inline const ScopeNode::LeafList & ScopeNode::getLeafs( void ) const
+inline const ScopeNode::LeafList & ScopeNode::getLeafs() const
 {
     return mChildLeafs;
 }
 
-inline unsigned int ScopeNode::childNodeCount( void ) const
+inline unsigned int ScopeNode::childNodeCount() const
 {
     return (mChildLeafs.getSize( ) + mChildNodes.getSize( ));
 }

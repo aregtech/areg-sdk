@@ -43,7 +43,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~PublicHelloWorldClient(void) = default;
+    virtual ~PublicHelloWorldClient() = default;
 
 protected:
 
@@ -107,7 +107,7 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline PublicHelloWorldClient & self( void )
+    inline PublicHelloWorldClient & self()
     {
         return (*this);
     }
@@ -126,8 +126,8 @@ protected:
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    PublicHelloWorldClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PublicHelloWorldClient );
+    PublicHelloWorldClient() = delete;
+    AREG_NOCOPY_NOMOVE( PublicHelloWorldClient );
 };
 
 #endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDCLIENT_HPP

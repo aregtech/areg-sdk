@@ -47,7 +47,7 @@ ModelDataCreator::ModelDataCreator( const NERegistry::Model & newModel )
 //////////////////////////////////////////////////////////////////////////
 // ComponentLoader class, static functions
 //////////////////////////////////////////////////////////////////////////
-ComponentLoader & ComponentLoader::getInstance( void )
+ComponentLoader & ComponentLoader::getInstance()
 {
     static ComponentLoader _componentLoader;
     return _componentLoader;
@@ -299,14 +299,14 @@ void ComponentLoader::removeComponentModel(const String & modelName /*= String::
 //////////////////////////////////////////////////////////////////////////
 // ComponentLoader class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentLoader::ComponentLoader( void )
+ComponentLoader::ComponentLoader()
     : mModelList    ( )
     , mDefaultModel ( NEString::EmptyStringA.data( ) )
     , mLock         ( )
 {
 }
 
-ComponentLoader::~ComponentLoader( void )
+ComponentLoader::~ComponentLoader()
 {
     mModelList.clear();
     mDefaultModel   = NEString::EmptyStringA.data( );
@@ -367,7 +367,7 @@ bool ComponentLoader::addModel( const NERegistry::Model & newModel )
     return succeed;
 }
 
-int ComponentLoader::loadAllModels( void )
+int ComponentLoader::loadAllModels()
 {
     return loadModel(String::EmptyString);
 }
@@ -465,7 +465,7 @@ void ComponentLoader::unloadModel( bool waitComplete, NERegistry::Model & whichM
             Thread * compThread = Thread::findThreadByName(modelThreads.mListThreads.getAt( i ).mThreadName);
             if (compThread != nullptr)
             {
-                ASSERT(RUNTIME_CAST(compThread, ComponentThread));
+                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
                 threadList.add(compThread);
             }
         }
@@ -512,7 +512,7 @@ void ComponentLoader::waitModelThreads(NERegistry::Model & whichModel)
             Thread * compThread = Thread::findThreadByName(modelThreads.mListThreads.getAt(i).mThreadName);
             if (compThread != nullptr)
             {
-                ASSERT(RUNTIME_CAST(compThread, ComponentThread) != nullptr);
+                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);
                 threadList.add(compThread);
             }
         }

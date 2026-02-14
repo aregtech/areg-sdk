@@ -39,7 +39,7 @@ BufferPosition::BufferPosition( IEByteBuffer & buffer )
 /**
  * \brief   Returns current position of cursor.
  **/
-unsigned int BufferPosition::getPosition( void ) const
+unsigned int BufferPosition::getPosition() const
 {
     if ( mBuffer.isValid() )
     {

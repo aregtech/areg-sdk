@@ -79,7 +79,7 @@ void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
     }
 }
 
-void PublicServiceComponent::requestSystemShutdown( void )
+void PublicServiceComponent::requestSystemShutdown()
 {
     LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );

@@ -46,7 +46,7 @@ TEST(NEStringTest, StringLength)
         , {"\n\r"   , 2}
         , {"\r\n"   , 2}
     };
-    constexpr uint32_t count{ MACRO_ARRAYLEN(params) };
+    constexpr uint32_t count{ std::size(params) };
 
     EXPECT_GT(count, 1u);
 
@@ -89,7 +89,7 @@ TEST(NEStringTest, StringLineLength)
         , {"\b12345\r67890\r"       , 0}
         , {"\f12345\r\n67890\r\n"   , 0}
     };
-    constexpr uint32_t count{ MACRO_ARRAYLEN(params) };
+    constexpr uint32_t count{ std::size(params) };
 
     EXPECT_GT(count, 1u);
 
@@ -268,9 +268,9 @@ TEST(NEStringTest, LowerUpperNumericCase)
 TEST(NEStringTest, GetPrintable)
 {
     constexpr uint8_t printLow[]{ 9, 10, 11, 13 };
-    constexpr uint32_t sizePrintLow{ MACRO_ARRAYLEN(printLow) };
+    constexpr uint32_t sizePrintLow{ std::size(printLow) };
     constexpr uint8_t nonPrintHigh[]{ 127, 129, 141, 143, 144, 157, 173 };
-    constexpr uint32_t sizeNonPrintHigh{ MACRO_ARRAYLEN(nonPrintHigh) };
+    constexpr uint32_t sizeNonPrintHigh{ std::size(nonPrintHigh) };
 
     constexpr uint32_t sizeNonPrint{ 31 - sizePrintLow + sizeNonPrintHigh + 1}; //plus one -- string zero-terminate
     constexpr uint32_t sizePrint{ 0x0100 - sizeNonPrint };  // 256 - <non-printable>

@@ -41,13 +41,13 @@ public:
     /**
      * \brief   Protected default constructor.
      **/
-    IEProxyListener( void ) = default;
+    IEProxyListener() = default;
 
 public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEProxyListener( void ) = default;
+    virtual ~IEProxyListener() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -83,7 +83,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEProxyListener );
+    AREG_NOCOPY_NOMOVE( IEProxyListener );
 };
 
 #endif  // AREG_COMPONENT_IEPROXYLISTENER_HPP

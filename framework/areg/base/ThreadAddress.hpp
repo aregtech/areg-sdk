@@ -59,23 +59,23 @@ public:
      * \brief	Parses passed path and converts passed path to the Thread Address object.
      *          The path should contain at least following format: "<process ID>::<thread name>".
      *          The first item should be integer.
-     *          If Thread Address was parsed and properly retrieved, on output, parameter 'out_nextPart' 
+     *          If Thread Address was parsed and properly retrieved, on output, parameter 'nextPart' 
      *          will contains address of string in 'threadPath' after Thread Address part.
      *          For example: if path is "<process ID>::<thread name>::<component name>::<service name>::",
-     *          on output, out_nextPart will contain "<component name>::<service name>::" it is not nullptr
-     * \param	threadPath	    The path of thread to convert.
-     * \param   out_nextPart    If successfully retrieved thread address and it is not nullptr, 
+     *          on output, nextPart will contain "<component name>::<service name>::" it is not nullptr
+     * \param[in]	threadPath  The path of thread to convert.
+     * \param[out]  nextPart    If successfully retrieved thread address and it is not nullptr, 
      *                          on output will contain address of string after retrieving Thread address.
      *                          If parsing fails, it will contain same address as 'threadPart'.
      *                          If parameter is nullptr, it will be ignored.
      * \return	Return created from path thread address object.
      **/
-    static ThreadAddress convPathToAddress( const char* const threadPath, const char** OUT out_nextPart = nullptr );
+    static ThreadAddress convPathToAddress( const char* const threadPath, const char** nextPart = nullptr );
 
     /**
      * \brief   Returns the invalid thread address object.
      **/
-    static const ThreadAddress & getInvalidThreadAddress(void);
+    static const ThreadAddress & getInvalidThreadAddress();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Default constructor. Sets current process ID and invalid thread name.
      **/
-    ThreadAddress( void );
+    ThreadAddress();
     /**
      * \brief   Initialization constructor. Sets current process ID and the thread name.
      * \param   threadName  Thread name to set.
@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ThreadAddress( void ) = default;
+    ~ThreadAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress operators
@@ -118,7 +118,7 @@ public:
     /**
      * \brief   This operator converts thread address data to unsigned int value
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
     /**
      * \brief   Assigning operator to copy data from given source. 
      **/
@@ -176,13 +176,13 @@ public:
     /**
      * \brief   Return thread name.
      **/
-    inline const String & getThreadName( void ) const;
+    inline const String & getThreadName() const;
 
     /**
      * \brief   Returns validity of thread address. 
      *          Returns true if Thread Address is not invalid.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief	Converts Thread Address object to the thread path string value.
@@ -191,15 +191,15 @@ public:
      *          <string name> is the name of string.
      * \return  Returns converted path of thread as string.
      **/
-    inline String convToString( void ) const;
+    inline String convToString() const;
 
     /**
      * \brief	Parse string and retrieves thread address data from path.
-     * \param	threadPath	    The thread path as a string.
-     * \param	out_nextPart	If not a nullptr, on output this will contain remaining
+     * \param[in]	threadPath	The thread path as a string.
+     * \param[out]	nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting thread path.
      **/
-    void convFromString(const char * threadPath, const char** OUT out_nextPart = nullptr );
+    void convFromString(const char * threadPath, const char** nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -265,7 +265,7 @@ inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexce
     return (*this);
 }
 
-inline const String & ThreadAddress::getThreadName( void ) const
+inline const String & ThreadAddress::getThreadName() const
 {
     return mThreadName;
 }
@@ -290,12 +290,12 @@ inline bool ThreadAddress::operator < (const ThreadAddress& other) const
     return (mMagicNum < other.mMagicNum);
 }
 
-inline ThreadAddress::operator unsigned int( void ) const
+inline ThreadAddress::operator unsigned int() const
 {
     return mMagicNum;
 }
 
-inline String ThreadAddress::convToString(void) const
+inline String ThreadAddress::convToString() const
 {
     return mThreadName;
 }

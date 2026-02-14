@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ServerInfo::ServerInfo( void )
+ServerInfo::ServerInfo()
     : mServerAddress( StubAddress::getInvalidStubAddress() )
     , mServerState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
@@ -128,7 +128,7 @@ bool ServerInfo::operator == ( const ProxyAddress & proxy ) const
     return mServerAddress == proxy;
 }
 
-ServerInfo::operator unsigned int ( void ) const
+ServerInfo::operator unsigned int () const
 {
     const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mServerAddress);
     return static_cast<unsigned int>( addrService );

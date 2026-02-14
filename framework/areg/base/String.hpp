@@ -61,7 +61,7 @@ public:
      * \brief   String::getEmptyString
      *          The empty string.
      **/
-    static const String & getEmptyString( void );
+    static const String & getEmptyString();
 
     /**
      * \brief   String::EmptyString
@@ -77,12 +77,12 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    String( void ) = default;
+    String() = default;
 
     /**
      * \brief   Destructor.
      **/
-    ~String(void) = default;
+    ~String() = default;
 
     /**
      * \brief   Copy constructor.
@@ -143,7 +143,7 @@ public:
     /**
      * \brief   Converting operator, converts object to unsigned int primitive
      **/
-    explicit inline operator unsigned int(void) const;
+    explicit inline operator unsigned int() const;
 
     /**
      * \brief   Assigning operator, copies data from given null-terminated wide-char string source
@@ -586,17 +586,17 @@ public:
      * \brief   Converts string of digits to 32-bit digit with floating point
      * \return  Returns the 32-bit digit with floating point
      **/
-    inline float toFloat( void ) const;
+    inline float toFloat() const;
     /**
      * \brief   Converts string of digits to 64-bit digit with floating point
      * \return  Returns the 64-bit digit with floating point
      **/
-    inline double toDouble( void ) const;
+    inline double toDouble() const;
     /**
      * \brief   Converts string to boolean value. If value is "true", it returns true. Otherwise returns false.
      * \return  Returns boolean value.
      **/
-    inline bool toBool( void ) const;
+    inline bool toBool() const;
 
     /**
      * \brief   Converts and sets 32-bit signed digit in the string based on radix bases.
@@ -760,7 +760,7 @@ inline String::String(uint32_t count)
 {
 }
 
-inline String::operator unsigned int(void) const
+inline String::operator unsigned int() const
 {
     return static_cast<unsigned int>(std::hash<std::string>{}(mData));
 }
@@ -1032,17 +1032,17 @@ inline uint64_t String::toUInt64( NEString::eRadix radix /*= NEString::RadixDeci
     return String::makeUInt64(getString(), radix, nullptr );
 }
 
-inline float String::toFloat( void ) const
+inline float String::toFloat() const
 {
     return String::makeFloat(getString(), nullptr );
 }
 
-inline double String::toDouble( void ) const
+inline double String::toDouble() const
 {
     return String::makeDouble(getString(), nullptr );
 }
 
-inline bool String::toBool( void ) const
+inline bool String::toBool() const
 {
     return (isEmpty() || NEString::compareIgnoreCase<char, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::eCompare::Equal ? false : true);
 }

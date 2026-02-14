@@ -59,7 +59,7 @@ class AREG_API ResponseEvent   : public ServiceResponseEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(ResponseEvent)
+    AREG_DECLARE_RUNTIME_EVENT(ResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -114,7 +114,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ResponseEvent( void ) = default;
+    virtual ~ResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes.
@@ -123,30 +123,30 @@ public:
     /**
      * \brief   Returns event data object.
      **/
-    inline const EventData & getData( void ) const;
+    inline const EventData & getData() const;
 
     /**
      * \brief   Returns data type of request data
      **/
-    inline NEService::eMessageDataType getDataType( void ) const;
+    inline NEService::eMessageDataType getDataType() const;
 
     /**
      * \brief   Returns reference of data input streaming object
      *          to deserialize parameters.
      **/
-    inline const IEInStream & getReadStream( void ) const;
+    inline const IEInStream & getReadStream() const;
 
     /**
      * \brief   Returns reference of data output streaming object
      *          to serialize parameters.
      **/
-    inline IEOutStream & getWriteStream( void );
+    inline IEOutStream & getWriteStream();
 
 protected:
     /**
      * \brief   Returns data object valid for modification.
      **/
-    inline EventData & getData( void );
+    inline EventData & getData();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -182,8 +182,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ResponseEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ResponseEvent );
+    ResponseEvent() = delete;
+    AREG_NOCOPY_NOMOVE( ResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ class AREG_API LocalResponseEvent : public    ResponseEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(LocalResponseEvent)
+    AREG_DECLARE_RUNTIME_EVENT(LocalResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -254,14 +254,14 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~LocalResponseEvent( void ) = default;
+    virtual ~LocalResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LocalResponseEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LocalResponseEvent );
+    LocalResponseEvent() = delete;
+    AREG_NOCOPY_NOMOVE( LocalResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ class AREG_API RemoteResponseEvent: public    ResponseEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(RemoteResponseEvent)
+    AREG_DECLARE_RUNTIME_EVENT(RemoteResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -333,7 +333,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RemoteResponseEvent( void ) = default;
+    virtual ~RemoteResponseEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////////
 // Protected operations
@@ -349,41 +349,41 @@ protected:
     /**
      * \brief   Returns the event communication channel object.
      **/
-    inline const Channel & getTargetChannel( void ) const;
+    inline const Channel & getTargetChannel() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RemoteResponseEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( RemoteResponseEvent );
+    RemoteResponseEvent() = delete;
+    AREG_NOCOPY_NOMOVE( RemoteResponseEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const EventData & ResponseEvent::getData( void ) const
+inline const EventData & ResponseEvent::getData() const
 {
     return mData;
 }
 
-inline NEService::eMessageDataType ResponseEvent::getDataType( void ) const
+inline NEService::eMessageDataType ResponseEvent::getDataType() const
 {
     return mData.getDataType();
 }
 
-inline EventData & ResponseEvent::getData( void )
+inline EventData & ResponseEvent::getData()
 {
     return mData;
 }
 
-inline const IEInStream & ResponseEvent::getReadStream( void ) const
+inline const IEInStream & ResponseEvent::getReadStream() const
 {
     return mData.getReadStream();
 }
 
-inline IEOutStream & ResponseEvent::getWriteStream( void )
+inline IEOutStream & ResponseEvent::getWriteStream()
 {
     return mData.getWriteStream();
 }
@@ -397,7 +397,7 @@ inline void RemoteResponseEvent::setTargetChannel(const Channel & channel)
     mTargetProxyAddress.setChannel(channel);
 }
 
-inline const Channel & RemoteResponseEvent::getTargetChannel( void ) const
+inline const Channel & RemoteResponseEvent::getTargetChannel() const
 {
     return mTargetProxyAddress.getChannel();
 }

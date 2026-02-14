@@ -204,7 +204,7 @@ TEST(TEFixedArrayTest, TestSortAscending)
 
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len{ std::size(_arr1) };
 
     FixedArray arr1(_arr1, _len), res1(_res1, _len);
     arr1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
@@ -223,7 +223,7 @@ TEST(TEFixedArrayTest, TestSortDescending)
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len{ std::size(_arr1) };
 
     FixedArray arr1(_arr1, _len), res1(_res1, _len);
     arr1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });

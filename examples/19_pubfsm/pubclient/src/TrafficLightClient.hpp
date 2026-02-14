@@ -101,6 +101,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficLightClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( TrafficLightClient );
+    TrafficLightClient() = delete;
+    AREG_NOCOPY_NOMOVE( TrafficLightClient );
 };

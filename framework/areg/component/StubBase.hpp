@@ -95,7 +95,7 @@ protected:
         /**
          * \brief   Creates undefined listener.
          **/
-        inline Listener( void );
+        inline Listener();
 
         /**
          * \brief   Initialize Message ID. The Proxy Address should be set. If needed, update sequence number.
@@ -215,7 +215,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~StubBase( void );
+    virtual ~StubBase();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations. Public
@@ -225,32 +225,32 @@ public:
     /**
      * \brief   Returns Component Master thread object.
      **/
-    ComponentThread & getComponentThread( void ) const;
+    ComponentThread & getComponentThread() const;
 
     /**
      * \brief   Returns the address of Stub object.
      **/
-    inline const StubAddress & getAddress( void ) const;
+    inline const StubAddress & getAddress() const;
 
     /**
      * \brief   Returns the role name of the implemented service interface.
      **/
-    inline const String & getServiceRole( void ) const;
+    inline const String & getServiceRole() const;
 
     /**
      * \brief   Returns the name of the implemented service.
      **/
-    inline const String & getServiceName( void ) const;
+    inline const String & getServiceName() const;
 
     /**
      * \brief   Sends error event to all pending responses and notification updates
      **/
-    void errorAllRequests( void );
+    void errorAllRequests();
 
     /**
      * \brief   Sends error event to all pending responses and unlocks requests.
      **/
-    void cancelAllRequests( void );
+    void cancelAllRequests();
 
     /**
      * \brief   Search stub object by given stub address and if
@@ -296,7 +296,7 @@ public:
      *          The caller of this function should save Session ID
      *          for later use to prepare response.
      **/
-    virtual SessionID unblockCurrentRequest( void );
+    virtual SessionID unblockCurrentRequest();
 
     /**
      * \brief   By given unique Session ID, prepares response to send.
@@ -432,49 +432,49 @@ protected:
     /**
      * \brief   Returns implemented version of service interface.
      **/
-    const Version & getImplVersion( void ) const;
+    const Version & getImplVersion() const;
 
     /**
      * \brief   Returns number of requests of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    unsigned int getNumberOfRequests( void ) const;
+    unsigned int getNumberOfRequests() const;
 
     /**
      * \brief   Returns number of responses of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    unsigned int getNumberOfResponses( void ) const;
+    unsigned int getNumberOfResponses() const;
 
     /**
      * \brief   Returns number of attributes of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    unsigned int getNumberOfAttributes( void ) const;
+    unsigned int getNumberOfAttributes() const;
 
     /**
      * \brief   Returns pointer of array of requests IDs of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    const unsigned int * getRequestIds( void ) const;
+    const unsigned int * getRequestIds() const;
 
     /**
      * \brief   Returns pointer of array of response IDs of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    const unsigned int * getResponseIds( void ) const;
+    const unsigned int * getResponseIds() const;
 
     /**
      * \brief   Returns pointer of array of attribute IDs of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    const unsigned int * getAttributeIds( void ) const;
+    const unsigned int * getAttributeIds() const;
 
     /**
      * \brief   Returns true if specified request is in pending list,
@@ -592,7 +592,7 @@ protected:
     /**
      * \brief   Cancel current request.
      **/
-    void cancelCurrentRequest( void );
+    void cancelCurrentRequest();
 
     /**
      * \brief   Invalidates specified attribute, which should send error notification to clients.
@@ -718,14 +718,14 @@ private:
     /**
      * \brief   Returns reference to Stub object
      **/
-    inline StubBase & self( void );
+    inline StubBase & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StubBase( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( StubBase );
+    StubBase() = delete;
+    AREG_NOCOPY_NOMOVE( StubBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -739,7 +739,7 @@ private:
 // StubBase::Listener class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline StubBase::Listener::Listener( void )
+inline StubBase::Listener::Listener()
     : mMessageId ( 0 )
     , mSequenceNr( 0 )
     , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
@@ -806,22 +806,22 @@ inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener &
 // StubBase class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline StubBase & StubBase::self( void )
+inline StubBase & StubBase::self()
 {
     return (*this);
 }
 
-inline const StubAddress& StubBase::getAddress(void) const
+inline const StubAddress& StubBase::getAddress() const
 {
     return mAddress;
 }
 
-inline const String & StubBase::getServiceRole( void ) const
+inline const String & StubBase::getServiceRole() const
 {
     return mAddress.getRoleName( );
 }
 
-inline const String& StubBase::getServiceName(void) const
+inline const String& StubBase::getServiceName() const
 {
     return mAddress.getServiceName();
 }

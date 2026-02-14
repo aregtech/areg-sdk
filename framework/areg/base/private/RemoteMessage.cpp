@@ -22,6 +22,7 @@
 #include "areg/base/NEMath.hpp"
 #include "areg/logging/GELog.h"
 
+#include <algorithm>
 #include <string.h>
 #include <cstddef>
 
@@ -88,7 +89,7 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
             unsigned char * dstBuf{ NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::sByteBuffer *>(&header.rbhBufHeader)) };
             const unsigned char* srcBuf { NEMemory::getBufferDataRead(mByteBuffer.get()) };
             unsigned int srcCount { getSizeUsed() };
-            srcCount = MACRO_MIN(srcCount, dataLength);
+            srcCount = std::min(srcCount, dataLength);
             result   = srcCount;
 
             header.rbhBufHeader.biUsed  = srcCount;
@@ -99,12 +100,12 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
     return result;
 }
 
-bool RemoteMessage::isChecksumValid(void) const
+bool RemoteMessage::isChecksumValid() const
 {
     return isValid() ? getChecksum() == RemoteMessage::_checksumCalculate( _getRemoteMessage() ) : false;
 }
 
-void RemoteMessage::bufferCompletionFix(void) const
+void RemoteMessage::bufferCompletionFix() const
 {
     if ( isValid() )
     {
@@ -116,11 +117,11 @@ void RemoteMessage::bufferCompletionFix(void) const
         unsigned int dataLen    = header.rbhBufHeader.biUsed;
         unsigned int bufSize    = header.rbhBufHeader.biOffset + dataUsed;
 
-        dataLen = MACRO_MAX(dataLen, sizeof(NEMemory::BufferData));
-        dataLen = MACRO_ALIGN_SIZE(dataLen, sizeof(int));
+        dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(NEMemory::BufferData)));
+        dataLen = NEMath::alignSize(dataLen, static_cast<uint32_t>(sizeof(int)));
 
-        bufSize = MACRO_MAX(bufSize, sizeof(NEMemory::sRemoteMessage));
-        bufSize = MACRO_ALIGN_SIZE(bufSize, sizeof(int));
+        bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(NEMemory::sRemoteMessage)));
+        bufSize = NEMath::alignSize(bufSize, static_cast<uint32_t>(sizeof(int)));
 
         ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
@@ -134,11 +135,11 @@ unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader 
 {
     invalidate();
 
-    reserve = MACRO_MAX(reserve, 1);
-    unsigned int sizeUsed   = MACRO_MAX(rmHeader.rbhBufHeader.biUsed, reserve);
+    reserve = std::max(reserve, 1u);
+    unsigned int sizeUsed   = std::max(rmHeader.rbhBufHeader.biUsed, reserve);
     unsigned int hdrSize    = getHeaderSize();
     unsigned int msgSize    = hdrSize + sizeUsed;
-    unsigned int sizeBuffer = MACRO_ALIGN_SIZE(msgSize, mBlockSize);
+    unsigned int sizeBuffer = NEMath::alignSize(msgSize, mBlockSize);
     unsigned int sizeData   = sizeBuffer - hdrSize;
     unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer];
     if ( result != nullptr )
@@ -194,12 +195,12 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
     return result;
 }
 
-unsigned int RemoteMessage::getDataOffset(void) const
+unsigned int RemoteMessage::getDataOffset() const
 {
     return offsetof(NEMemory::sRemoteMessage, rbData);
 }
 
-unsigned int RemoteMessage::getHeaderSize(void) const
+unsigned int RemoteMessage::getHeaderSize() const
 {
     return sizeof(NEMemory::sRemoteMessage);
 }

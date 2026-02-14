@@ -46,7 +46,7 @@ SyncEvent   gEvtProcess(true, true);    //!< non-signaled, auto-reset event
 std::string gData{};                    //!< A text to output
 
 //! \brief  This callback is triggered when thread runs and fully operable.
-void WorkerThread(void)
+void WorkerThread()
 {
     TIME64 start = DateTime::getNow();
     Thread::sleep(NECommon::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait

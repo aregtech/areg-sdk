@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Call to stop all components, unload models, stop services and release resources.
      **/
-    static void releaseApplication( void );
+    static void releaseApplication();
 
     /**
      * \brief   Call to load and start particular registered model in the system.
@@ -176,51 +176,51 @@ public:
     /**
      * \brief   Call to stop tracing.
      **/
-    static void stopLogging( void );
+    static void stopLogging();
 
     /**
      * \brief   Call to start Service Manager thread. This will not trigger Router Service client connection.
      * \return  Returns true if succeeded to start Router thread or it is running.
      **/
-    static bool startServiceManager( void );
+    static bool startServiceManager();
 
     /**
      * \brief   Call to stop Service Manager. When stops, it automatically stops Routing Service connection.
      **/
-    static void stopServiceManager( void );
+    static void stopServiceManager();
 
     /**
      * \brief   Call to start timer manager, so that the components can trigger timers.
      * \return  Returns true if timer manager is running.
      **/
-    static bool startTimerManager( void );
+    static bool startTimerManager();
 
     /**
      * \brief   Call to stop timer manager.
      **/
-    static void stopTimerManager( void );
+    static void stopTimerManager();
 
     /**
      * \brief   Call to start timer manager, so that the components can trigger timers.
      * \return  Returns true if timer manager is running.
      **/
-    static bool startWatchdogManager(void);
+    static bool startWatchdogManager();
 
     /**
      * \brief   Call to stop timer manager.
      **/
-    static void stopWatchdogManager(void);
+    static void stopWatchdogManager();
 
     /**
      * \brief   Returns true, if Message Router client is started.
      **/
-    static bool isServiceManagerStarted( void );
+    static bool isServiceManagerStarted();
 
     /**
      * \brief   Configure message routing service.
      * \return  Returns true if could configure the message routing.
      **/
-    static bool configMessageRouting( void );
+    static bool configMessageRouting();
 
     /**
      * \brief   Call to start Message Router client. If Service Manager is not started yet, it starts
@@ -244,39 +244,39 @@ public:
     /**
      * \brief   Stops Message Router client.
      **/
-    static void stopMessageRouting( void );
+    static void stopMessageRouting();
 
     /**
      * \brief   Returns true, if Message Router client is configured
      **/
-    static bool isMessageRoutingConfigured( void );
+    static bool isMessageRoutingConfigured();
 
     /**
      * \brief   Call to start routing service on local machine.
      *          To succeed call, the user must have appropriate access rights.
      * \return  Returns true if Message Routing Service successfully started as service.
      **/
-    static bool startRouterService( void );
+    static bool startRouterService();
 
     /**
      * \brief   Call to start routing service on local machine.
      *          To succeed call, the user must have appropriate access rights.
      * \return  Returns true if Message Routing Service successfully started as service.
      **/
-    static bool startLoggingService(void);
+    static bool startLoggingService();
 
     /**
      * \brief   Returns true if application successfully connected to Message Routing Service,
      *          and can register or request remote servicing.
      **/
-    static bool isRouterConnected( void );
+    static bool isRouterConnected();
 
 
     /**
      * \brief   Returns true if application successfully triggered connection to Message Routing Service,
      *          but the connection is not established yet and not ready to communicate.
      **/
-    static bool isRouterConnectionPending(void);
+    static bool isRouterConnectionPending();
 
     /**
      * \brief   Returns true if an element exists in the application storage
@@ -312,12 +312,12 @@ public:
      * \brief   Sets application quit signal event. So that, the waiting signal thread can be released
      *          to make further clean-ups and exit application.
      **/
-    static void signalAppQuit( void );
+    static void signalAppQuit();
 
     /**
      * \brief   Returns true if the Service Manager of application runs.
      **/
-    static bool isServicingReady( void );
+    static bool isServicingReady();
 
     /**
      * \brief   Call to query the amount of send and receive data size in bytes.
@@ -327,28 +327,28 @@ public:
      *          If need to measure the total amount of data, accumulate calls.
      *          If need to measure the data rate per second, call this method each second.
      * 
-     * \param   sizeSend    On output this parameter contains the size of data in bytes
-     *                      sent since the last call of the method.
-     * \param   sizeReceive On output this parameter contains the size of data in bytes
-     *                      received since the last call of the method.
+     * \param[out]  sizeSend    On output this parameter contains the size of data in bytes
+     *                          sent since the last call of the method.
+     * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
+     *                          received since the last call of the method.
      **/
-    static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
+    static void queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive );
 
     /**
      * \brief   Returns the name of the executable process.
      **/
-    static const String & getApplicationName(void);
+    static const String & getApplicationName();
 
     /**
      * \brief   Returns the name of system host.
      **/
-    static const String & getMachineName(void);
+    static const String & getMachineName();
 
     /**
      * \brief   Returns the instance of application configuration initializer object
      *          to read or write configuration properties
      **/
-    static ConfigManager& getConfigManager(void);
+    static ConfigManager& getConfigManager();
 
     /**
      * \brief   Loads the configuration from the given file.
@@ -388,7 +388,7 @@ public:
     /**
      * \brief   Returns true if the application is already configured.
      **/
-    static bool isConfigured(void);
+    static bool isConfigured();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -437,16 +437,16 @@ private:
     /**
      * \brief   Default constructor. Hidden. The object cannot be instantiated.
      **/
-    Application( void );
+    Application();
     /**
      * \brief   Destructor. Hidden. The object cannot be manually deleted.
      **/
-    ~Application( void ) = default;
+    ~Application() = default;
 
     /**
      * \brief   Returns instance of singleton Application object.
      **/
-    static inline Application & getInstance( void );
+    static inline Application & getInstance();
 
     /**
      * \brief   Sets new state of application. The state can be changed in following sequence:
@@ -471,25 +471,25 @@ private:
      *          In Linux it sets up signal handlers.
      *          In Windows it sets up time period.
      **/
-    static void _osSetupHandlers(void);
+    static void _osSetupHandlers();
 
     /**
      * \brief   OS specific implementation to release resources.
      **/
-    static void _osReleaseHandlers(void);
+    static void _osReleaseHandlers();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( Application );
+    AREG_NOCOPY_NOMOVE( Application );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Application class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline Application & Application::getInstance( void )
+inline Application & Application::getInstance()
 {
     return Application::_theApplication;
 }

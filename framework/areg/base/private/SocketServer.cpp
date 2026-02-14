@@ -32,7 +32,7 @@ bool SocketServer::createSocket(const char * hostName, unsigned short portNr)
     return ( mAddress.resolveAddress(hostName, portNr, true) && createSocket( ) );
 }
 
-bool SocketServer::createSocket(void)
+bool SocketServer::createSocket()
 {
     decreaseLock();
     if ( mAddress.isValid() )

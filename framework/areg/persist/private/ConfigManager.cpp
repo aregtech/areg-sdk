@@ -120,7 +120,7 @@ namespace
         return (elemPos != NECommon::INVALID_POSITION ? &list[elemPos] : nullptr);
     }
 
-    uint32_t _readConfig(const FileBase& file, NEPersistence::ListProperties& OUT listWritable, NEPersistence::ListProperties& OUT listReadonly, const String& module)
+    uint32_t _readConfig(const FileBase& file, NEPersistence::ListProperties& listWritable, NEPersistence::ListProperties& listReadonly, const String& module)
     {
         uint32_t result{ 0 };
 
@@ -232,7 +232,7 @@ namespace
     }
 } // namespace
 
-ConfigManager::ConfigManager( void )
+ConfigManager::ConfigManager()
     : mModule               (Process::getInstance().getAppName())
     , mWritableProperties   ( )
     , mReadonlyProperties   ( )
@@ -532,7 +532,7 @@ void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listRe
 }
 
 
-Version ConfigManager::getConfigVersion(void) const
+Version ConfigManager::getConfigVersion() const
 {
     Lock lock(mLock);
 
@@ -554,7 +554,7 @@ Version ConfigManager::getConfigVersion(void) const
     return result;
 }
 
-std::vector<Identifier> ConfigManager::getServiceList(void) const
+std::vector<Identifier> ConfigManager::getServiceList() const
 {
     Lock lock(mLock);
 
@@ -572,7 +572,7 @@ std::vector<Identifier> ConfigManager::getServiceList(void) const
     return result;
 }
 
-std::vector<Identifier> ConfigManager::getLogTargets(void) const
+std::vector<Identifier> ConfigManager::getLogTargets() const
 {
     Lock lock(mLock);
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogTarget;
@@ -589,7 +589,7 @@ std::vector<Identifier> ConfigManager::getLogTargets(void) const
     return result;
 }
 
-bool ConfigManager::getLoggingStatus(void) const
+bool ConfigManager::getLoggingStatus() const
 {
     Lock lock(mLock);
 
@@ -600,7 +600,7 @@ bool ConfigManager::getLoggingStatus(void) const
     return (value != nullptr ? value->getBoolean() : NEApplication::DEFAULT_LOG_ENABLED);
 }
 
-Version ConfigManager::getLogVersion(void) const
+Version ConfigManager::getLogVersion() const
 {
     Lock lock(mLock);
 
@@ -653,7 +653,7 @@ void ConfigManager::setLogEnabled(NELogging::eLogingTypes logType, bool newValue
     setLogEnabled(id, newValue, isTemporary);
 }
 
-String ConfigManager::getLogFileLocation(void) const
+String ConfigManager::getLogFileLocation() const
 {
     Lock lock(mLock);
 
@@ -674,7 +674,7 @@ String ConfigManager::getLogFileLocation(void) const
     return result;
 }
 
-bool ConfigManager::getLogFileAppend(void) const
+bool ConfigManager::getLogFileAppend() const
 {
     Lock lock(mLock);
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileAppend;
@@ -691,7 +691,7 @@ void ConfigManager::setLogFileAppend(bool newValue, bool isTemporary /*= false*/
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
 
-uint32_t ConfigManager::getLogRemoteQueueSize(void) const
+uint32_t ConfigManager::getLogRemoteQueueSize() const
 {
     Lock lock(mLock);
 
@@ -710,7 +710,7 @@ void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
 
-String ConfigManager::getLogLayoutEnter(void) const
+String ConfigManager::getLogLayoutEnter() const
 {
     Lock lock(mLock);
 
@@ -740,7 +740,7 @@ void ConfigManager::setLogLayoutEnter(const String& newValue, bool isTemporary /
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-String ConfigManager::getLogLayoutMessage(void) const
+String ConfigManager::getLogLayoutMessage() const
 {
     Lock lock(mLock);
 
@@ -770,7 +770,7 @@ void ConfigManager::setLogLayoutMessage(const String& newValue, bool isTemporary
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-String ConfigManager::getLogLayoutExit(void) const
+String ConfigManager::getLogLayoutExit() const
 {
     Lock lock(mLock);
 
@@ -800,7 +800,7 @@ void ConfigManager::setLogLayoutExit(const String& newValue, bool isTemporary /*
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& OUT scopeList) const
+uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& scopeList) const
 {
     Lock lock(mLock);
 
@@ -876,7 +876,7 @@ bool ConfigManager::removeScope(const String& scopeName)
     return (pos != NECommon::INVALID_POSITION);
 }
 
-int ConfigManager::removeModuleScopes(void)
+int ConfigManager::removeModuleScopes()
 {
     constexpr NEPersistence::eConfigKeys confKey{ NEPersistence::eConfigKeys::EntryLogScope };
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogScope();
@@ -1081,5 +1081,5 @@ uint32_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*=
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryDefaultMessageQueue;
     const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultMessageQueueSize();
     const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
-    return ( prop != nullptr ? prop->getValue().getInteger() : MAX_UINT_32 );
+    return ( prop != nullptr ? prop->getValue().getInteger() : std::numeric_limits<uint32_t>::max() );
 }

@@ -35,7 +35,7 @@ WaitableEventIX::WaitableEventIX( bool isInitSignaled, bool isAutoReset, const c
 {
 }
 
-bool WaitableEventIX::setEvent(void)
+bool WaitableEventIX::setEvent()
 {
     bool result     = false;
     bool sendSignal = false;
@@ -55,7 +55,7 @@ bool WaitableEventIX::setEvent(void)
 #ifdef DEBUG
             else
             {
-                // OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", getName());
+                // AREG_OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", getName());
             }
 #endif // DEBUG
 
@@ -70,7 +70,7 @@ bool WaitableEventIX::setEvent(void)
     return result;
 }
 
-bool WaitableEventIX::resetEvent(void)
+bool WaitableEventIX::resetEvent()
 {
     bool result = false;
     ObjectLockIX lock(*this);
@@ -81,11 +81,11 @@ bool WaitableEventIX::resetEvent(void)
         {
             if (NESyncTypesIX::eEventResetInfo::EventResetAutomatic == mEventReset)
             {
-                OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
+                AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
             }
             else
             {
-                OUTPUT_DBG("Manually reseting event [ %s ]", getName().getString());
+                AREG_OUTPUT_DBG("Manually reseting event [ %s ]", getName().getString());
             }
         }
 #endif // DEBUG
@@ -98,7 +98,7 @@ bool WaitableEventIX::resetEvent(void)
 }
 
 
-void WaitableEventIX::pulseEvent(void)
+void WaitableEventIX::pulseEvent()
 {
     do 
     {
@@ -107,7 +107,7 @@ void WaitableEventIX::pulseEvent(void)
         {
             if (mIsSignaled == false)
             {
-                OUTPUT_DBG("Pulsing event [ %s ]", getName().getString( ));
+                AREG_OUTPUT_DBG("Pulsing event [ %s ]", getName().getString( ));
 
                 mIsSignaled = true;
                 lock.unlock();
@@ -132,7 +132,7 @@ bool WaitableEventIX::notifyRequestOwnership( pthread_t /* ownerThread */ )
     return true;
 }
 
-bool WaitableEventIX::checkCanSignalMultipleThreads( void ) const
+bool WaitableEventIX::checkCanSignalMultipleThreads() const
 {
     return true;
 }
@@ -143,7 +143,7 @@ void WaitableEventIX::notifyReleasedThreads(int numThreads)
 
     if ((mEventReset == NESyncTypesIX::eEventResetInfo::EventResetAutomatic) && (numThreads > 0))
     {
-        OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
+        AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
         mIsSignaled = false;
     }
 }

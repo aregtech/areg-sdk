@@ -89,7 +89,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastServiceStopping( void ) override;
+    virtual void broadcastServiceStopping() override;
 
 /************************************************************************/
 // IEProxyListener Overrides
@@ -139,17 +139,17 @@ private:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void );
+    inline ServiceClient & self();
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };
 
-inline ServiceClient & ServiceClient::self( void )
+inline ServiceClient & ServiceClient::self()
 {
     return (*this);
 }

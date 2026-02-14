@@ -138,7 +138,7 @@ public:
     /**
      * \brief   Updates the list of scopes and log priorities in the application configuration.
      **/
-    static void updateScopeConfiguration( void );
+    static void updateScopeConfiguration();
 
     /**
      * \brief   Call to stop Logging Manager and exits the thread.
@@ -155,7 +155,7 @@ public:
      *          complete the job and exit. This should be called if previously
      *          it was requested to stop the Logging Manager without waiting for completion.
      **/
-    inline static void waitLoggingEnd(void);
+    inline static void waitLoggingEnd();
 
     /**
      * \brief   Registers instance of log scope object in log manager.
@@ -180,17 +180,17 @@ public:
     /**
      * \brief   Returns true if logging has started
      **/
-    inline static bool isLoggingStarted( void );
+    inline static bool isLoggingStarted();
 
     /**
      * \brief   Returns true if logging is configured and ready to start
      **/
-    static bool isLoggingConfigured( void );
+    static bool isLoggingConfigured();
 
     /**
      * \brief   Returns true if logging is enabled.
      **/
-    static bool isLoggingEnabled( void );
+    static bool isLoggingEnabled();
 
     /**
      * \brief   Call to force to activate logging with default settings.
@@ -198,7 +198,7 @@ public:
      *          only in debug build. For release, please use real logging configuration.
      * \return  Returns true if could activate logging. For non-debug builds, the function always returns false.
      **/
-    static bool forceActivateLogging( void );
+    static bool forceActivateLogging();
 
     /**
      * \brief   Forces to enable logging.
@@ -209,7 +209,7 @@ public:
      *          method setDefaultConfiguration()
      * \see     setDefaultConfiguration
      **/
-    static void forceEnableLogging(void);
+    static void forceEnableLogging();
 
     /**
      * \brief   Call to set the default configuration of logging if it is not
@@ -264,17 +264,17 @@ public:
      * \brief   Returns true if database and data tables are initialized and the
      *          logging database is ready to save messages.
      **/
-    static bool isLogDabaseEngineInitialized(void);
+    static bool isLogDabaseEngineInitialized();
 
     /**
      * \brief   Returns true if logging in the database is enabled. The value is read from configuration file.
      **/
-    static bool isLogDatabaseEnabled(void);
+    static bool isLogDatabaseEnabled();
 
     /**
      * \brief   Returns the Log Collector service connection cookie.
      */
-    inline static const ITEM_ID & getConnectionCookie(void);
+    inline static const ITEM_ID & getConnectionCookie();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -283,17 +283,17 @@ private:
     /**
      * \brief   Returns singleton instance of Log Manager.
      **/
-    static LogManager& getInstance(void);
+    static LogManager& getInstance();
 
     /**
      * \brief   Protected default constructor.
      **/
-    LogManager( void );
+    LogManager();
 
     /**
      * \brief   Protected destructor.
      **/
-    virtual ~LogManager( void ) = default;
+    virtual ~LogManager() = default;
 
 protected:
 //////////////////////////////////////////////////////////////////////////
@@ -349,7 +349,7 @@ private:
      *          The configuration should be already loaded.
      * \return  Returns true if started with success.
      **/
-    bool startLoggingThread( void );
+    bool startLoggingThread();
      
      /**
       * \brief   Call to stop Logging Manager and exits the thread.
@@ -366,48 +366,48 @@ private:
      *          complete the job and exit. This should be called if previously
      *          it was requested to stop the Logging Manager without waiting for completion.
      **/
-    void waitLoggingThreadEnd(void);
+    void waitLoggingThreadEnd();
 
     /**
      * \brief   Returns true, if in configuration the remote logging is enabled.
      **/
-    bool isRemoteLoggingEnabled( void ) const;
+    bool isRemoteLoggingEnabled() const;
 
     /**
      * \brief   Returns true, if in configuration the database logging is enabled.
      **/
-    bool isDatabaseLoggingEnabled( void ) const;
+    bool isDatabaseLoggingEnabled() const;
 
     /**
      * \brief   Returns true, if in configuration the logging in file is enabled.
      **/
-    bool isFileLoggingEnabled( void ) const;
+    bool isFileLoggingEnabled() const;
 
     /**
      * \brief   Returns true, if in configuration the logging in debug output window is enable.
      *          This setting is relevant only to Microsoft Visual Studio.
      **/
-    bool isDebugOutputLoggingEnabled( void ) const;
+    bool isDebugOutputLoggingEnabled() const;
 
     /**
      * \brief   Clears logging configuration data.
      **/
-    void clearConfigData( void );
+    void clearConfigData();
 
     /**
      * \brief   Resets the scopes.
      **/
-    void resetScopes(void);
+    void resetScopes();
 
     /**
      * \brief   Loads scopes and sets priorities specified in configuration.
      **/
-    void startLogs( void );
+    void startLogs();
 
     /**
      * \brief   Deactivates all scopes to stop logging.
      **/
-    void stopLogs( void );
+    void stopLogs();
 
     /**
      * \brief   Writes a log message to the existing loggers.
@@ -432,12 +432,12 @@ private:
     /**
      * \brief   Returns read-only list of registered scopes.
      **/
-    inline const TEHashMap<unsigned int, LogScope *> & getScopeList( void ) const;
+    inline const TEHashMap<unsigned int, LogScope *> & getScopeList() const;
 
     /**
      * \brief   Returns instance of log manager.
      **/
-    inline LogManager & self( void );
+    inline LogManager & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -488,7 +488,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_NOCOPY_NOMOVE( LogManager );
+    AREG_NOCOPY_NOMOVE( LogManager );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ inline void LogManager::stopLogging(bool waitComplete)
     getInstance().stopLoggingThread(waitComplete);
 }
 
-inline void LogManager::waitLoggingEnd(void)
+inline void LogManager::waitLoggingEnd()
 {
     getInstance().waitLoggingThreadEnd();
 }
@@ -520,22 +520,22 @@ inline void LogManager::activateLogScope(LogScope& scope)
     getInstance().mScopeController.activateScope(scope);
 }
 
-inline const ITEM_ID & LogManager::getConnectionCookie(void)
+inline const ITEM_ID & LogManager::getConnectionCookie()
 {
     return LogManager::getInstance().mLoggerTcp.getConnectionCookie();
 }
 
-inline const TEHashMap<unsigned int, LogScope *> & LogManager::getScopeList( void ) const
+inline const TEHashMap<unsigned int, LogScope *> & LogManager::getScopeList() const
 {
     return mScopeController.getScopeList( );
 }
 
-inline LogManager & LogManager::self( void )
+inline LogManager & LogManager::self()
 {
     return (*this);
 }
 
-inline bool LogManager::isLoggingStarted( void )
+inline bool LogManager::isLoggingStarted()
 {
     Lock lock(getInstance().mLock);
     return getInstance().mIsStarted;

@@ -128,7 +128,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~SharedBuffer( void ) = default;
+    virtual ~SharedBuffer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -196,14 +196,14 @@ public:
      *          or current position is equal to IECursorPosition::INVALID_CURSOR_POSITION.
      *          Otherwise, it returns false.
      **/
-    inline bool isBeginOfBuffer( void ) const;
+    inline bool isBeginOfBuffer() const;
 
     /**
      * \brief   Returns true the buffer is valid and the current position
      *          is equal to used size of buffer.
      *          Otherwise, it returns false.
      **/
-    inline bool isEndOfBuffer( void ) const;
+    inline bool isEndOfBuffer() const;
 
     /**
      * \brief   Returns the pointer to the data buffer at current position.
@@ -212,17 +212,17 @@ public:
      *          If it is an end of position, it will return nullptr
      *          In other cases it will return (GetBuffer() + GetCursorPosition())
      **/
-    const unsigned char* getBufferAtCurrentPosition( void ) const;
+    const unsigned char* getBufferAtCurrentPosition() const;
 
     /**
      * \brief   Returns the size of block set in the constructor.
      **/
-    inline unsigned int getBlockSize( void ) const;
+    inline unsigned int getBlockSize() const;
 
     /**
      * \brief   Clones and returns the cloned shared buffer. The existing buffer has no change.
      **/
-    SharedBuffer clone(void) const;
+    SharedBuffer clone() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -237,7 +237,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    virtual unsigned int getPosition( void ) const override;
+    virtual unsigned int getPosition() const override;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -261,20 +261,20 @@ public:
     /**
      * \brief   Returns true if buffer is shared between several byte buffer instances.
      **/
-    virtual bool isShared( void ) const final;
+    virtual bool isShared() const final;
 
     /**
      * \brief   Returns true if buffer can be shared.
      *          The Raw Buffer object should return false.
      *          The Shared Buffer object should return true.
      **/
-    virtual bool canShare( void ) const final;
+    virtual bool canShare() const final;
 
     /**
      * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
      *          invalidates writing and reading positions.
      **/
-    virtual void invalidate( void ) override;
+    virtual void invalidate() override;
 
 protected:
 /************************************************************************/
@@ -283,17 +283,17 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset( void ) const override;
+    virtual unsigned int getDataOffset() const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    virtual unsigned int getHeaderSize( void ) const override;
+    virtual unsigned int getHeaderSize() const override;
 
     /**
      * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
      **/
-    virtual unsigned int getAlignedSize( void ) const override;
+    virtual unsigned int getAlignedSize() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -302,7 +302,7 @@ protected:
     /**
      * \brief   Returns the default block size used by Shared Buffer.
      **/
-    static uint32_t getDefaultBlockSize(void);
+    static uint32_t getDefaultBlockSize();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -327,7 +327,7 @@ private:
     /**
      * \brief   Returns reference to Shared Buffer.
      **/
-    inline SharedBuffer & self( void );
+    inline SharedBuffer & self();
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -344,18 +344,18 @@ inline bool SharedBuffer::operator != ( const SharedBuffer &other ) const
     return (isEqual(other) == false);
 }
 
-inline bool SharedBuffer::isBeginOfBuffer( void ) const
+inline bool SharedBuffer::isBeginOfBuffer() const
 {
     unsigned int curPos = getPosition();
     return ((isValid() == false) || (curPos == 0) || (curPos == IECursorPosition::INVALID_CURSOR_POSITION));
 }
 
-inline bool SharedBuffer::isEndOfBuffer( void ) const
+inline bool SharedBuffer::isEndOfBuffer() const
 {
     return ( isValid() && (getPosition() == getSizeUsed()) );
 }
 
-inline unsigned int SharedBuffer::getBlockSize(void) const
+inline unsigned int SharedBuffer::getBlockSize() const
 {
     return mBlockSize;
 }

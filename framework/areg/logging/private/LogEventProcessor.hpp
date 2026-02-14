@@ -49,7 +49,7 @@ public:
      **/
     LogEventProcessor( LogManager & logManager );
 
-    ~LogEventProcessor( void ) = default;
+    ~LogEventProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -74,12 +74,12 @@ private:
     /**
      * \brief   Start the logging.
      **/
-    void _loggingStartLogs( void );
+    void _loggingStartLogs();
 
     /**
      * \brief   Stop logging
      **/
-    void _loggingStopLogs( void );
+    void _loggingStopLogs();
 
     /**
      * \brief   Enables or disables logs.
@@ -89,7 +89,7 @@ private:
     /**
      * \brief   Saves log configuration in the file.
      **/
-    void _loggingSaveScopes( void );
+    void _loggingSaveScopes();
 
     /**
      * \brief   Logs the message.
@@ -117,8 +117,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    LogEventProcessor( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LogEventProcessor );
+    LogEventProcessor() = delete;
+    AREG_NOCOPY_NOMOVE( LogEventProcessor );
 };
 
 #endif  // AREG_LOGS

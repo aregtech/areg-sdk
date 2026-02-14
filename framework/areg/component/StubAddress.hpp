@@ -75,7 +75,7 @@ public:
     /**
      * \brief   Returns predefined invalid stub address object.
      **/
-    static const StubAddress & getInvalidStubAddress(void);
+    static const StubAddress & getInvalidStubAddress();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Initially creates invalid Stub address
      **/
-    StubAddress( void );
+    StubAddress();
 
     /**
      * \brief   Initialize Stub address from given service interface name, version, type, role name and holder thread.
@@ -149,7 +149,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~StubAddress( void ) = default;
+    virtual ~StubAddress() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -204,7 +204,7 @@ public:
     /**
      * \brief   Converts the stub address to 32-bit integer.
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -231,37 +231,37 @@ public:
     /**
      * \brief   Returns true if stub address is local
      **/
-    inline bool isLocalAddress( void ) const;
+    inline bool isLocalAddress() const;
 
     /**
      * \brief   Returns true if stub address is remote
      **/
-    inline bool isRemoteAddress( void ) const;
+    inline bool isRemoteAddress() const;
 
     /**
      * \brief   Returns true if the source of communication channel is local, i.e. it is the same process.
      **/
-    inline bool isSourceLocal( void ) const;
+    inline bool isSourceLocal() const;
 
     /**
      * \brief   Returns true if the source of communication channel is public, i.e. it is external process.
      **/
-    inline bool isSourcePublic( void ) const;
+    inline bool isSourcePublic() const;
 
     /**
      * \brief   Returns true if the target of communication channel is local, i.e. it is the same process.
      **/
-    inline bool isTargetLocal( void ) const;
+    inline bool isTargetLocal() const;
 
     /**
      * \brief   Returns true if the target of communication channel is public, i.e. it is external process.
      **/
-    inline bool isTargetPublic( void ) const;
+    inline bool isTargetPublic() const;
 
     /**
      * \brief   Returns stub communication channel
      **/
-    inline const Channel & getChannel( void ) const;
+    inline const Channel & getChannel() const;
 
     /**
      * \brief   Sets stub communication channel.
@@ -271,7 +271,7 @@ public:
     /**
      * \brief   Returns stub cookies value
      **/
-    inline const ITEM_ID & getCookie( void ) const;
+    inline const ITEM_ID & getCookie() const;
 
     /**
      * \brief   Sets stub cookie value
@@ -281,7 +281,7 @@ public:
     /**
      * \brief   Returns the ID of source set in communication channel
      **/
-    inline const ITEM_ID & getSource( void ) const;
+    inline const ITEM_ID & getSource() const;
 
     /**
      * \brief   Sets the ID of source in communication channel.
@@ -291,7 +291,7 @@ public:
     /**
      * \brief   Returns the service owner thread name.
      **/
-    inline const String & getThread( void ) const;
+    inline const String & getThread() const;
 
     /**
      * \brief   Sets the service owner thread name.
@@ -303,12 +303,12 @@ public:
      * \brief   Returns validity of stub address. 
      *          Returns true if Stub Address is not invalid.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief   Invalidates communication channel
      **/
-    void invalidateChannel( void );
+    void invalidateChannel();
 
     /**
      * \brief   Checks compatibility of given proxy address.
@@ -331,7 +331,7 @@ public:
      *          path separator.
      * \return  Returns converted path of Stub as string, containing Stub address information
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief   Instantiate Stub Address from given address path.
@@ -346,13 +346,13 @@ protected:
     /**
      * \brief   Returns true if stub address data is valid.
      **/
-    bool isValidated( void ) const;
+    bool isValidated() const;
 
 private:
     /**
      * \brief   Returns own object.
      **/
-    inline StubAddress& self(void);
+    inline StubAddress& self();
     /**
      * \brief   Returns the calculated hash-key value of specified stub address object.
      **/
@@ -482,47 +482,47 @@ inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
     return isProxyCompatible(addrProxy);
 }
 
-inline StubAddress::operator unsigned int ( void ) const
+inline StubAddress::operator unsigned int () const
 {
     return mMagicNum;
 }
 
-inline bool StubAddress::isLocalAddress(void) const
+inline bool StubAddress::isLocalAddress() const
 {
     return mChannel.getCookie() == NEService::COOKIE_LOCAL;
 }
 
-inline bool StubAddress::isRemoteAddress(void) const
+inline bool StubAddress::isRemoteAddress() const
 {
     return (mChannel.getCookie() >= NEService::COOKIE_ANY);
 }
 
-inline bool StubAddress::isSourceLocal( void ) const
+inline bool StubAddress::isSourceLocal() const
 {
     return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getSource( ) != 0);
 }
 
-inline bool StubAddress::isSourcePublic( void ) const
+inline bool StubAddress::isSourcePublic() const
 {
     return (mChannel.getCookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
 }
 
-inline bool StubAddress::isTargetLocal( void ) const
+inline bool StubAddress::isTargetLocal() const
 {
     return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
-inline bool StubAddress::isTargetPublic( void ) const
+inline bool StubAddress::isTargetPublic() const
 {
     return (mChannel.getCookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
-inline const String & StubAddress::getThread( void ) const
+inline const String & StubAddress::getThread() const
 {
     return mThreadName;
 }
 
-inline const Channel & StubAddress::getChannel(void) const
+inline const Channel & StubAddress::getChannel() const
 {
     return mChannel;
 }
@@ -532,7 +532,7 @@ inline void StubAddress::setChannel(const Channel & channel)
     mChannel = channel;
 }
 
-inline const ITEM_ID & StubAddress::getCookie( void ) const
+inline const ITEM_ID & StubAddress::getCookie() const
 {
     return mChannel.getCookie();
 }
@@ -542,7 +542,7 @@ inline void StubAddress::setCookie(const ITEM_ID & cookie )
     mChannel.setCookie(cookie);
 }
 
-inline const ITEM_ID & StubAddress::getSource( void ) const
+inline const ITEM_ID & StubAddress::getSource() const
 {
     return mChannel.getSource();
 }
@@ -552,7 +552,7 @@ inline void StubAddress::setSource(const ITEM_ID & source )
     return mChannel.setSource(source);
 }
 
-inline StubAddress& StubAddress::self(void)
+inline StubAddress& StubAddress::self()
 {
     return (*this);
 }

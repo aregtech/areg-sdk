@@ -14,7 +14,9 @@
  *
  ************************************************************************/
 #include "areg/base/IEByteBuffer.hpp"
+#include "areg/base/NEMath.hpp"
 
+#include <algorithm>
 #include <utility>
 #include <string.h>
 
@@ -26,7 +28,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-IEByteBuffer::IEByteBuffer( void )
+IEByteBuffer::IEByteBuffer()
     : mByteBuffer( nullptr, ByteBufferDeleter() )
 {
 }
@@ -43,7 +45,7 @@ IEByteBuffer::IEByteBuffer( IEByteBuffer && src ) noexcept
     src.invalidate();
 }
 
-void IEByteBuffer::invalidate( void )
+void IEByteBuffer::invalidate()
 {
     mByteBuffer.reset();
 }
@@ -64,7 +66,7 @@ unsigned int IEByteBuffer::reserve(unsigned int size, bool copy)
                 unsigned int sizeAlign{ getAlignedSize() };
                 unsigned int sizeBuffer{ getHeaderSize() + size };
 
-                sizeBuffer = MACRO_ALIGN_SIZE(sizeBuffer, sizeAlign);
+                sizeBuffer = NEMath::alignSize(sizeBuffer, sizeAlign);
                 unsigned char* buffer = DEBUG_NEW unsigned char[sizeBuffer];
                 int copied = static_cast<int>(initBuffer(buffer, sizeBuffer, copy));
                 if (static_cast<unsigned int>(copied) != IECursorPosition::INVALID_CURSOR_POSITION)
@@ -108,7 +110,7 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
             unsigned char* data         = newBuffer + dataOffset;
             const unsigned char* srcBuf = NEMemory::getBufferDataRead(mByteBuffer.get());
             unsigned int srcCount       = mByteBuffer->bufHeader.biUsed;
-            srcCount                    = MACRO_MIN(srcCount, dataLength);
+            srcCount                    = std::min(srcCount, dataLength);
             result                      = srcCount;
 
             buffer->bufHeader.biUsed    = srcCount;
@@ -123,7 +125,7 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
     return result;
 }
 
-unsigned int IEByteBuffer::getAlignedSize(void) const
+unsigned int IEByteBuffer::getAlignedSize() const
 {
     return NEMemory::BLOCK_SIZE;
 }

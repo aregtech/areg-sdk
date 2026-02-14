@@ -31,7 +31,7 @@ class StubConnectEvent  : public    ServiceRequestEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime Event
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(StubConnectEvent)   //!< Runtime data to identify event.
+    AREG_DECLARE_RUNTIME_EVENT(StubConnectEvent)   //!< Runtime data to identify event.
 
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime Event
@@ -61,7 +61,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~StubConnectEvent( void ) = default;
+    virtual ~StubConnectEvent() = default;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Returns current connection status of client Proxy.
      **/
-    inline NEService::eServiceConnection getConnectionStatus( void ) const;
+    inline NEService::eServiceConnection getConnectionStatus() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -105,15 +105,15 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StubConnectEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( StubConnectEvent );
+    StubConnectEvent() = delete;
+    AREG_NOCOPY_NOMOVE( StubConnectEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // StubConnectEvent class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::eServiceConnection StubConnectEvent::getConnectionStatus( void ) const
+inline NEService::eServiceConnection StubConnectEvent::getConnectionStatus() const
 {
     return mConnectionStatus;
 }

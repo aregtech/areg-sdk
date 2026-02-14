@@ -44,7 +44,7 @@ public:
     /**
      * \brief   Default constructor. Creates empty list.
      **/
-    ClientList( void ) = default;
+    ClientList() = default;
 
     /**
      * \brief   Copy constructor.
@@ -61,7 +61,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ClientList( void ) = default;
+    ~ClientList() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators

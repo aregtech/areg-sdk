@@ -90,7 +90,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    ~TEResourceMap( void ) = default;
+    ~TEResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributed and operations
@@ -100,12 +100,12 @@ public:
     /**
      * \brief	Returns the size of Resource Map
      **/
-    inline uint32_t getSize(void) const;
+    inline uint32_t getSize() const;
 
     /**
      * \brief   Returns true if resource map is empty.
      **/
-    inline bool isEmpty(void) const;
+    inline bool isEmpty() const;
 
     /**
      * \brief	Checks whether Resource Map contains entry with specified unique Key or not.
@@ -120,13 +120,13 @@ public:
      * \brief	Locks the Resource Map, grants ownership to locking thread
      *          and blocks any other thread to access resource map data.
      **/
-    inline void lock( void ) const;
+    inline void lock() const;
 
     /**
      * \brief	Unlocks previously locked Resource Map, so that other threads
      *          can have access to resource map data.
      **/
-    inline void unlock( void ) const;
+    inline void unlock() const;
 
     /**
      * \brief	Tries to lock Resource Map. If succeeds, calling thread gets resource
@@ -137,7 +137,7 @@ public:
      * \return	Returns true if calling thread locked resource and have got the ownership.
      *          Otherwise,  returns false, but does not block thread execution.
      **/
-    inline bool tryLock( void ) const;
+    inline bool tryLock() const;
 
     /**
      * \brief	Registers resource object in the resource list of the map.
@@ -180,24 +180,24 @@ public:
      *          For every removed resource calls cleanResourceEntry() function
      *          if any additional job should be performed (for example, delete resources)
      **/
-    inline void removeAllResources( void );
+    inline void removeAllResources();
 
     /**
      * \brief   Removes first element of Resource map and returns true if successfully removed.
      *          On output firstElement contains Resource Key and Object pair.
-     * \param   firstElement [out]  On output, this will contain Key and Object pair 
+     * \param[out]  firstElement    On output, this will contain Key and Object pair 
      *                              of first element in resource map.
      * \return  Returns true if successfully removed first element.
      **/
-    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & OUT firstElement );
+    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement );
 
     /**
      * \brief   Returns resource object of first object and the associated unique key in the map.
-     * \param   firstKey [out]  On output, this parameter contains a resource valid key
+     * \param[out]  firstKey    On output, this parameter contains a resource valid key
      *                          if the resource is not empty.
      * \return  Returns pointer of stored Resource Object.
      **/
-    inline RESOURCE_OBJECT resourceFirstKey( RESOURCE_KEY & OUT firstKey ) const;
+    inline RESOURCE_OBJECT resourceFirstKey( RESOURCE_KEY & firstKey ) const;
 
     /**
      * \brief	Returns resource object of next element stored after specified unique Key.
@@ -206,17 +206,17 @@ public:
      *          To get first element key, call resourceFirstKey() method. Check return value
      *          to know whether there are more elements in the map or not.
      * 
-     * \param	nextKey [in, out]   On input, this Key should be valid and point to the valid resource. 
+     * \param[in,out]   nextKey     On input, this Key should be valid and point to the valid resource. 
      *                              On output, this parameter contain the key of the next element in the map.
      * \return	Returns valid pointer to the next registered resource object. Returns nullptr if
      *          reached end of the resource map.
      **/
-    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const;
+    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & nextKey ) const;
 
     /**
      * \brief   Returns the vector object where the data are stored.
      **/
-    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& getData(void) const;
+    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& getData() const;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -228,8 +228,8 @@ protected:
      *          This function is called from removeAllResources() for every single
      *          resource being unregistered. Override this function if any additional
      *          work should be performed after unregistering resource.
-     * \param	Key	        The Key value of resource
-     * \param	Resource	Pointer to resource object
+     * \param[in,out]   Key         The Key value of resource
+     * \param[in,out]   Resource    Pointer to resource object
      **/
     inline void cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
 
@@ -246,7 +246,7 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    TEResourceMap( void ) = delete;
+    TEResourceMap() = delete;
     TEResourceMap( const TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & /*src*/) = delete;
     TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & operator = ( const TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & /*src*/ ) = delete;
     TEResourceMap( TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> && /*src*/ ) noexcept = delete;
@@ -279,11 +279,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    TELockResourceMap( void );
+    TELockResourceMap();
     /**
      * \brief   Destructor
      **/
-    ~TELockResourceMap( void ) = default;
+    ~TELockResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -298,7 +298,7 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( TELockResourceMap );
+    AREG_NOCOPY_NOMOVE( TELockResourceMap );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -326,11 +326,11 @@ public:
     /**
      * \brief   Default constructor
      **/
-    TENolockResourceMap( void );
+    TENolockResourceMap();
     /**
      * \brief   Destructor
      **/
-    ~TENolockResourceMap( void ) = default;
+    ~TENolockResourceMap() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -345,7 +345,7 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( TENolockResourceMap );
+    AREG_NOCOPY_NOMOVE( TENolockResourceMap );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -402,32 +402,32 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::exis
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::lock( void ) const
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::lock() const
 {
     mSyncObj.lock(NECommon::WAIT_INFINITE);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unlock( void ) const
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unlock() const
 {
     mSyncObj.unlock( );
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::tryLock( void ) const
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::tryLock() const
 {
     return mSyncObj.tryLock( );
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline uint32_t TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize( void ) const
+inline uint32_t TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize() const
 {
     Lock lock(mSyncObj);
     return HashMap::getSize();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::isEmpty( void ) const
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::isEmpty() const
 {
     Lock lock(mSyncObj);
     return HashMap::isEmpty();
@@ -453,7 +453,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeAllResources( void )
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeAllResources()
 {
     Lock lock(mSyncObj);
 
@@ -469,7 +469,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & OUT firstElement )
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
 {
     Lock lock(mSyncObj);
     bool result{ false };
@@ -484,7 +484,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & OUT firstKey ) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & firstKey ) const
 {
     Lock lock(mSyncObj);
 
@@ -499,7 +499,7 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & nextKey ) const
 {
     Lock lock(mSyncObj);
 
@@ -514,7 +514,7 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
 }
 
 template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getData(void) const
+inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getData() const
 {
     return HashMap::getData();
 }
@@ -529,7 +529,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::clea
 // TENolockResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TENolockResourceMap( void )
+TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TENolockResourceMap()
     : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<IEResourceLock &>(mNoLock))
 
     , mNoLock   ()
@@ -540,7 +540,7 @@ TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TENolockRe
 // TELockResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TELockResourceMap( void )
+TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TELockResourceMap()
     : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<IEResourceLock &>(mLock))
 
     , mLock ( )

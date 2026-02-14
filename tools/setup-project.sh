@@ -117,7 +117,7 @@ public:
     { }
 
 protected:
-    virtual void requestHelloService(void) override
+    virtual void requestHelloService() override
     {
         std::cout << "'Hello Service!'" << std::endl;
         responseHelloService();
@@ -125,7 +125,7 @@ protected:
     }
 
 private:
-    inline ServiceProvider& self(void)
+    inline ServiceProvider& self()
     { return (*this); }
 };
 
@@ -137,7 +137,7 @@ BEGIN_MODEL("ProviderModel")
     END_REGISTER_THREAD("Thread1")
 END_MODEL("ProviderModel")
 
-int main(void)
+int main()
 {
     Application::initApplication();
     Application::loadModel("ProviderModel");
@@ -178,7 +178,7 @@ protected:
         return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
     }
 
-    virtual void responseHelloService(void) override
+    virtual void responseHelloService() override
     {
         std::cout << "'Good bye Service!'" << std::endl;
         Application::signalAppQuit();
@@ -193,7 +193,7 @@ BEGIN_MODEL("ConsumerModel")
     END_REGISTER_THREAD("Thread1")
 END_MODEL("ConsumerModel")
 
-int main(void)
+int main()
 {
     Application::initApplication();
     Application::loadModel("ConsumerModel");
@@ -238,14 +238,14 @@ public:
         , HelloServiceStub(static_cast<Component&>(self()))
     { }
 
-    virtual void requestHelloService(void) override
+    virtual void requestHelloService() override
     {
         std::cout << "'Hello Service!'" << std::endl;
         responseHelloService();
     }
 
 private:
-    inline ServiceProvider& self(void)
+    inline ServiceProvider& self()
     { return (*this); }
 };
 
@@ -266,7 +266,7 @@ public:
         return true;
     }
 
-    virtual void responseHelloService(void) override
+    virtual void responseHelloService() override
     {
         std::cout << "Received response, end application" << std::endl;
         Application::signalAppQuit();
@@ -287,7 +287,7 @@ BEGIN_MODEL("ServiceModel")
     END_REGISTER_THREAD( "Thread2" )
 END_MODEL("ServiceModel")
 
-int main(void)
+int main()
 {
     Application::initApplication();
     Application::loadModel("ServiceModel");

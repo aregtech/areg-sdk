@@ -60,7 +60,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~RouterClient( void ) = default;
+    virtual ~RouterClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -75,22 +75,22 @@ protected:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost( void ) override;
+    virtual bool connectServiceHost() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost( void ) override;
+    virtual void disconnectServiceHost() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit(void) override;
+    virtual void onServiceExit() override;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
      **/
-    virtual bool isServiceHostPending(void) const override;
+    virtual bool isServiceHostPending() const override;
 
 /************************************************************************/
 // IERemoteMessageHandler interface overrides
@@ -221,7 +221,7 @@ private:
     /**
      * \brief   Returns instance of client servicing object.
      **/
-    inline RouterClient & self( void );
+    inline RouterClient & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -236,15 +236,15 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RouterClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( RouterClient );
+    RouterClient() = delete;
+    AREG_NOCOPY_NOMOVE( RouterClient );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // RouterClient class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline RouterClient & RouterClient::self( void )
+inline RouterClient & RouterClient::self()
 {
     return (*this);
 }

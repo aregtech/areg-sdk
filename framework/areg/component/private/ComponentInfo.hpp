@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ComponentInfo( void ) = default;
+    ~ComponentInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -93,17 +93,17 @@ public:
     /**
      * \brief   Returns Component Thread object
      **/
-    inline ComponentThread & getMasterThread( void ) const;
+    inline ComponentThread & getMasterThread() const;
 
     /**
      * \brief   Returns the address of Component
      **/
-    inline const ComponentAddress & getAddress( void ) const;
+    inline const ComponentAddress & getAddress() const;
 
     /**
      * \brief   Returns the Role Name of Component
      **/
-    inline const String & getRoleName( void ) const;
+    inline const String & getRoleName() const;
 
     /**
      * \brief   Returns true, if specified thread address is the address of registered Worker Thread.
@@ -115,7 +115,7 @@ public:
     /**
      * \brief   Returns true, if Component Info has at least one registered Worker Thread.
      **/
-    inline bool hasWorkerThreads( void ) const;
+    inline bool hasWorkerThreads() const;
 
     /**
      * \brief   Returns true if specified Worker Thread is registered in Component Info
@@ -197,42 +197,42 @@ public:
     DispatcherThread * findEventConsumer( const RuntimeClassID & whichClass ) const;
 
     /**
-     * \brief   Returns pointer of first Worker Thread. On output, out_threadAddress
+     * \brief   Returns pointer of first Worker Thread. On output, threadAddress
      *          parameter will contain address of first valid thread, or invalid address
      *          if Component Info has no registered Worker Thread, and the function 
      *          returns nullptr.
-     * \param   out_threadAddress   On output, if Component Info has registered
+     * \param[out]  threadAddress   On output, if Component Info has registered
      *                              Worker Thread, it will contain valid address.
      *                              Otherwise, it will contain invalid address.
      * \return  If Component has Worker Threads, it will return valid pointer and the
-     *          Worker Thread object will have address specified in out_threadAddress.
+     *          Worker Thread object will have address specified in threadAddress.
      *          If Component has no Worker Thread, it will return nullptr.
      **/
-    inline WorkerThread * getFirstWorkerThread( ThreadAddress & out_threadAddress );
+    inline WorkerThread * getFirstWorkerThread( ThreadAddress & threadAddress );
 
     /**
      * \brief   Returns pointer of next Worker Thread after registered thread specified in
-     *          int_out_threadAddress. On input, int_out_threadAddress should be address
+     *          threadAddress. On input, threadAddress should be address
      *          of valid thread. On output, if there is next thread, it will contain
-     *          address of valid Worker Thread. Otherwise, on output int_out_threadAddress
+     *          address of valid Worker Thread. Otherwise, on output threadAddress
      *          is invalid address.
-     * \param   int_out_threadAddress   On input, this should be valid address of Worker Thread.
+     * \param[in,out]  threadAddress    On input, this should be valid address of Worker Thread.
      *                                  On output, if there is next thread, it will be valid address
      *                                  of next Worker Thread. Otherwise, it will be invalid address.
      * \return  If there is next worker thread, the function will return valid pointer of
      *          next Worker Thread object and the address of thread is equal to address
-     *          in int_out_threadAddress parameter on output. Otherwise, it returns nullptr.
+     *          in threadAddress parameter on output. Otherwise, it returns nullptr.
      **/
-    inline WorkerThread * getNextWorkerThread( ThreadAddress & int_out_threadAddress );
+    inline WorkerThread * getNextWorkerThread( ThreadAddress & threadAddress );
 
     /**
      * \brief   Removes first worker thread from the list of worker threads.
      * 
-     * \param   out_threadAddress   On output it contains the address of the removed worker thread.
+     * \param[out]  threadAddress   On output it contains the address of the removed worker thread.
      * \return  Returns valid pointer to the worker thread object if operation succeeded.
      *          Otherwise, returns nullptr.
      */
-    inline WorkerThread * removeFirstWorkerThread( ThreadAddress & OUT out_threadAddress );
+    inline WorkerThread * removeFirstWorkerThread( ThreadAddress & threadAddress );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -263,25 +263,25 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ComponentInfo( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ComponentInfo );
+    ComponentInfo() = delete;
+    AREG_NOCOPY_NOMOVE( ComponentInfo );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentThread& ComponentInfo::getMasterThread( void ) const
+inline ComponentThread& ComponentInfo::getMasterThread() const
 {
     return mMasterThread;
 }
 
-inline const ComponentAddress& ComponentInfo::getAddress( void ) const
+inline const ComponentAddress& ComponentInfo::getAddress() const
 {
     return mComponentAddress;
 }
 
-inline const String& ComponentInfo::getRoleName( void ) const
+inline const String& ComponentInfo::getRoleName() const
 {
     return mComponentAddress.getRoleName();
 }
@@ -308,17 +308,17 @@ inline WorkerThread* ComponentInfo::findThreadByPath( const String & componentPa
     return findWorkerThread(componentAddress.getThreadAddress());
 }
 
-inline WorkerThread* ComponentInfo::getFirstWorkerThread( ThreadAddress & out_threadAddress )
+inline WorkerThread* ComponentInfo::getFirstWorkerThread( ThreadAddress & threadAddress )
 {
-    return mWorkerThreadMap.resourceFirstKey(out_threadAddress);
+    return mWorkerThreadMap.resourceFirstKey(threadAddress);
 }
 
-inline WorkerThread* ComponentInfo::getNextWorkerThread( ThreadAddress & int_out_threadAddress )
+inline WorkerThread* ComponentInfo::getNextWorkerThread( ThreadAddress & threadAddress )
 {
-    return mWorkerThreadMap.resourceNextKey(int_out_threadAddress);
+    return mWorkerThreadMap.resourceNextKey(threadAddress);
 }
 
-inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& OUT out_threadAddress)
+inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& threadAddress)
 {
     std::pair<ThreadAddress, WorkerThread*> elem{ThreadAddress::getInvalidThreadAddress(), nullptr};
     if (mWorkerThreadMap.isEmpty() == false)
@@ -326,11 +326,11 @@ inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& OUT o
         mWorkerThreadMap.removeResourceFirstElement(elem);
     }
 
-    out_threadAddress = elem.first;
+    threadAddress = elem.first;
     return elem.second;
 }
 
-inline bool ComponentInfo::hasWorkerThreads( void ) const
+inline bool ComponentInfo::hasWorkerThreads() const
 {
     return (mWorkerThreadMap.isEmpty() == false);
 }

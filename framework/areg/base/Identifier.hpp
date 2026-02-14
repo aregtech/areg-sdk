@@ -79,7 +79,7 @@ public:
      *          By default, initial values are equal to BAD_DENTIFIER
      *          and the identifier object is invalid
      **/
-    Identifier( void );
+    Identifier();
 
     /**
      * \brief   Initialization constructor. Sets integer value and name
@@ -105,7 +105,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~Identifier( void ) = default;
+    ~Identifier() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // static methods
@@ -212,22 +212,22 @@ public:
      * \brief   Returns true if Identifier is valid. 
      *          Invalid Identifier has values of BAD_DENTIFIER.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Reset Identifier data. Set to BAD_DENTIFIER.
      **/
-    inline void invalidate( void );
+    inline void invalidate();
 
     /**
      * \brief   Returns Identifier string value
      **/
-    inline const String & getName( void ) const;
+    inline const String & getName() const;
 
     /**
      * \brief   Returns Identifier integer value
      **/
-    inline unsigned int getValue( void ) const;
+    inline unsigned int getValue() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -305,23 +305,23 @@ inline bool Identifier::operator != ( unsigned int rhs ) const
     return (mValue != rhs);
 }
 
-inline bool Identifier::isValid( void ) const
+inline bool Identifier::isValid() const
 {
     return (*this != BAD_IDENTIFIER);
 }
 
-inline void Identifier::invalidate( void )
+inline void Identifier::invalidate()
 {
     mValue  = BAD_IDENTIFIER.mValue;
     mName   = BAD_IDENTIFIER.mName;
 }
 
-inline const String & Identifier::getName( void ) const
+inline const String & Identifier::getName() const
 {
     return mName;
 }
 
-inline unsigned int Identifier::getValue( void ) const
+inline unsigned int Identifier::getValue() const
 {
     return mValue;
 }

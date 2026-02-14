@@ -34,8 +34,8 @@ TEST( OptionParserTest, CommandLineOptionSimpleNoData )
 
     const wchar_t * cmdLine[]{ L"OptionParserTest", L"-a", L"-b", L"-c" };
 
-    uint32_t setupCount = MACRO_ARRAYLEN( setup );
-    uint32_t optCount = MACRO_ARRAYLEN( cmdLine );
+    uint32_t setupCount = std::size( setup );
+    uint32_t optCount = std::size( cmdLine );
 
     OptionParser parser( setup, setupCount );
 
@@ -64,12 +64,12 @@ TEST( OptionParserTest, CommandLineOptionSimpleWithData )
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a=1", L"-b=2.3", L"-c=something" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
     ASSERT_TRUE(  OptionParser::isInteger(opts[ 0u ].inField) );
@@ -100,12 +100,12 @@ TEST( OptionParserTest, CommandLineOptionWithDataNoAssignment )
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a", L"1", L"-b", L"2.3", L"-c", L"some", L"thing" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     ASSERT_EQ( opts[ 0u ].inCommand, 1 );
     ASSERT_TRUE( OptionParser::isInteger( opts[ 0u ].inField ) );
@@ -138,8 +138,8 @@ TEST( OptionParserTest, CommandLineOptionMixedNoData )
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a", L"-bc", L"-def", L"--blah-blah"};
 
-    uint32_t setupCount = MACRO_ARRAYLEN( setup );
-    uint32_t optCount = MACRO_ARRAYLEN( cmdLine );
+    uint32_t setupCount = std::size( setup );
+    uint32_t optCount = std::size( cmdLine );
 
     OptionParser parser( setup, setupCount );
 
@@ -169,12 +169,12 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a", L"=", L"1", L"-bc", L"=", L"2.3", L"-def", L"some", L"--blah-blah", L"thing", L"and", L"somethingelse" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     do
     {
@@ -229,9 +229,9 @@ TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
     constexpr std::string_view scope {"* .areg_ * = DEBUG | SCOPE"};
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-scope", L"\" * .areg_ * = DEBUG | SCOPE\"" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize(), 1u );
@@ -256,9 +256,9 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
     constexpr std::string_view scope {"* .areg_ * = DEBUG | SCOPE"};
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"freestyle", L"-scope", L"\" * .areg_ * = DEBUG | SCOPE\"" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
-    ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
+    ASSERT_TRUE( parser.parseCommandLine( cmdLine, std::size( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize(), 2u );
@@ -297,7 +297,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     const wchar_t * optLine{ L"-a -b -c" };
 
-    uint32_t setupCount = MACRO_ARRAYLEN( setup );
+    uint32_t setupCount = std::size( setup );
 
     OptionParser parser( setup, setupCount );
 
@@ -346,12 +346,12 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     const wchar_t * optLine{ L"-a=1 -b=2.3 -c=something" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
+    ASSERT_EQ( opts.getSize( ), std::size( setup ) );
 
     do
     {
@@ -394,7 +394,7 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     const wchar_t * optLine{ L"-a 1 -b 2.3 -c some thing" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
@@ -444,7 +444,7 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     const wchar_t * optLine{ L"-a = 1  -bc=2.3   -def some --blah-blah thing and somethingelse" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
@@ -504,7 +504,7 @@ TEST( OptionParserTest, OptionLongDataInQuote )
     constexpr std::string_view scope {"*.areg_* = DEBUG | SCOPE"};
     const wchar_t * optLine{ L"-scope \"*.areg_* = DEBUG | SCOPE\"" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
@@ -532,7 +532,7 @@ TEST( OptionParserTest, OptionLongDataInQuoteWithError )
     constexpr std::string_view error {"-a = 5"};
     const wchar_t * optLine{ L"-scope \"*.areg_* = DEBUG | SCOPE -a = 5" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
     ASSERT_FALSE( parser.parseOptionLine( optLine ) );
 
@@ -559,7 +559,7 @@ TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
 
     const char * optLine{ "copy ./file.txt ./some/" };
 
-    OptionParser parser( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser( setup, std::size( setup ) );
 
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
@@ -590,11 +590,11 @@ TEST( OptionParserTest, OptionFiguresWithData )
         , { "-r", "--rect", static_cast<int>(Figure::Rectangle), OptionParser::STRING_NO_RANGE, {}, {}, {} }
     };
 
-    OptionParser parser1( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser1( setup, std::size( setup ) );
     const char * optCase1 = "-t \"{1, 1}, { 5, 10 }, { 20, 3 }\" --rect \"{1, 10}, 5, 3\"";
     ASSERT_TRUE( parser1.parseOptionLine( optCase1 ) );
 
-    OptionParser parser2( setup, MACRO_ARRAYLEN( setup ) );
+    OptionParser parser2( setup, std::size( setup ) );
     const char * optCase2 = "-t {1,1} {5,10} {20,3} --rect {1,10} 5 3";
     ASSERT_TRUE( parser2.parseOptionLine( optCase2 ) );
 

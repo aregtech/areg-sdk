@@ -84,7 +84,7 @@ public:
     /**
      * \brief   Creates empty service item.
      **/
-    ServiceItem( void );
+    ServiceItem();
 
     /**
      * \brief   Creates service item, sets service name.
@@ -121,7 +121,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServiceItem( void ) = default;
+    virtual ~ServiceItem() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -154,7 +154,7 @@ public:
     /**
      * \brief   Converts service item to 32-bit unsigned integer value.
      **/
-    inline explicit operator unsigned int ( void ) const;
+    inline explicit operator unsigned int () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -182,12 +182,12 @@ public:
     /**
      * \brief   Returns true if service item is valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns service name.
      **/
-    inline const String & getServiceName( void ) const;
+    inline const String & getServiceName() const;
 
     /**
      * \brief   Sets the service name
@@ -197,7 +197,7 @@ public:
     /**
      * \brief   Returns service version
      **/
-    inline const Version & getServiceVersion( void ) const;
+    inline const Version & getServiceVersion() const;
 
     /**
      * \brief   Sets service version
@@ -207,7 +207,7 @@ public:
     /**
      * \brief   Returns service type
      **/
-    inline NEService::eServiceType getServiceType( void ) const;
+    inline NEService::eServiceType getServiceType() const;
 
     /**
      * \brief   Sets the service type
@@ -217,7 +217,7 @@ public:
     /**
      * \brief   Returns true if service is remote
      **/
-    inline bool isServicePublic( void ) const;
+    inline bool isServicePublic() const;
 
     /**
      * \brief   Checks whether given service item is compatible.
@@ -228,7 +228,7 @@ public:
      * \brief   Creates Service Item path as a string.
      * /return  Returns service item as a string.
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief   Converts given service item path as a string to service item object.
@@ -241,7 +241,7 @@ protected:
     /**
      * \brief   Returns true if service item has valid data.
      **/
-    inline bool isValidated( void ) const;
+    inline bool isValidated() const;
    
 private:
 
@@ -300,7 +300,7 @@ namespace std
 // ServiceItem class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & ServiceItem::getServiceName( void ) const
+inline const String & ServiceItem::getServiceName() const
 {
     return mServiceName;
 }
@@ -312,7 +312,7 @@ inline void ServiceItem::setServiceName( const String & serviceName )
     mMagicNum    = ServiceItem::_magicNumber(*this);
 }
 
-inline const Version & ServiceItem::getServiceVersion( void ) const
+inline const Version & ServiceItem::getServiceVersion() const
 {
     return mServiceVersion;
 }
@@ -322,7 +322,7 @@ inline void ServiceItem::setServiceVersion( const Version & serviceVersion )
     mServiceVersion = serviceVersion;
 }
 
-inline NEService::eServiceType ServiceItem::getServiceType( void ) const
+inline NEService::eServiceType ServiceItem::getServiceType() const
 {
     return mServiceType;
 }
@@ -333,17 +333,17 @@ inline void ServiceItem::setServiceType( NEService::eServiceType serviceType )
     mMagicNum    = serviceType != NEService::eServiceType::ServiceInvalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
 }
 
-inline bool ServiceItem::isServicePublic(void) const
+inline bool ServiceItem::isServicePublic() const
 {
     return (mServiceType == NEService::eServiceType::ServicePublic);
 }
 
-inline bool ServiceItem::isValid( void ) const
+inline bool ServiceItem::isValid() const
 {
     return ( mMagicNum != NEMath::CHECKSUM_IGNORE );
 }
 
-inline bool ServiceItem::isValidated(void) const
+inline bool ServiceItem::isValidated() const
 {
     return (mServiceName.isEmpty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
@@ -387,7 +387,7 @@ inline bool ServiceItem::operator != (const ServiceItem & other ) const
     return (mMagicNum != other.mMagicNum);
 }
 
-inline ServiceItem::operator unsigned int ( void ) const
+inline ServiceItem::operator unsigned int () const
 {
     return mMagicNum;
 }

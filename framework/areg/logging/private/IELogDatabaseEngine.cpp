@@ -17,11 +17,11 @@
  ************************************************************************/
 #include "areg/logging/IELogDatabaseEngine.hpp"
 
-IELogDatabaseEngine::IELogDatabaseEngine(void)
+IELogDatabaseEngine::IELogDatabaseEngine()
     : IEDatabaseEngine  ( )
 {
 }
 
-IELogDatabaseEngine::~IELogDatabaseEngine(void)
+IELogDatabaseEngine::~IELogDatabaseEngine()
 {
 }

@@ -37,12 +37,12 @@ protected:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ConnectionService & self( void );
+    inline ConnectionService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ConnectionService( void );
+    ConnectionService();
     ConnectionService( const ConnectionService & /*src*/ );
     const ConnectionService & operator = ( const ConnectionService & /*src*/ );
 };
@@ -51,5 +51,5 @@ private:
 // ConnectionService inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline ConnectionService & ConnectionService::self( void )
+inline ConnectionService & ConnectionService::self()
 {   return (*this);         }

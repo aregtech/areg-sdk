@@ -53,7 +53,7 @@ public:
     /**
      * \brief   Creates a message with instruction to stop sending message and exit thread.
      **/
-    inline SendMessageEventData( void );
+    inline SendMessageEventData();
 
     /**
      * \brief   Sets the remote message buffer with the instruction to forward message
@@ -79,7 +79,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~SendMessageEventData( void )= default;
+    ~SendMessageEventData()= default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators and attributes
@@ -100,22 +100,22 @@ public:
     /**
      * \brief   Returns instance of remote message.
      **/
-    inline const RemoteMessage & getRemoteMessage( void ) const;
+    inline const RemoteMessage & getRemoteMessage() const;
 
     /**
      * \brief   Returns the command instruction to handle messages.
      **/
-    inline SendMessageEventData::eSendMessage getCommand( void ) const;
+    inline SendMessageEventData::eSendMessage getCommand() const;
 
     /**
      * \brief   Returns true if message is with instruction to forward the message.
      **/
-    inline bool isForwardMessage( void ) const;
+    inline bool isForwardMessage() const;
 
     /**
      * \brief   Returns true if message is with instruction to quit the thread.
      **/
-    inline bool isExitThreadMessage( void ) const;
+    inline bool isExitThreadMessage() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -136,7 +136,7 @@ private:
 // SendMessageEvent and IESendMessageEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
 //!< Declaration of SendMessageEvent event and IESendMessageEventConsumer consumer classes
-DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer)
+AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // SendMessageEventData class inline functions
@@ -148,7 +148,7 @@ inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMes
 {
 }
 
-inline SendMessageEventData::SendMessageEventData(void)
+inline SendMessageEventData::SendMessageEventData()
     : mRemoteMessage    ( )
     , mCmdSendMessage   ( SendMessageEventData::eSendMessage::ExitThread )
 {
@@ -180,22 +180,22 @@ inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventD
     return (*this);
 }
 
-inline const RemoteMessage & SendMessageEventData::getRemoteMessage( void ) const
+inline const RemoteMessage & SendMessageEventData::getRemoteMessage() const
 {
     return mRemoteMessage;
 }
 
-inline SendMessageEventData::eSendMessage SendMessageEventData::getCommand( void ) const
+inline SendMessageEventData::eSendMessage SendMessageEventData::getCommand() const
 {
     return mCmdSendMessage;
 }
 
-inline bool SendMessageEventData::isForwardMessage( void ) const
+inline bool SendMessageEventData::isForwardMessage() const
 {
     return (mCmdSendMessage == eSendMessage::MessageForward);
 }
 
-inline bool SendMessageEventData::isExitThreadMessage( void ) const
+inline bool SendMessageEventData::isExitThreadMessage() const
 {
     return (mCmdSendMessage == eSendMessage::ExitThread);
 }

@@ -71,6 +71,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionList( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ConnectionList );
+    ConnectionList() = delete;
+    AREG_NOCOPY_NOMOVE( ConnectionList );
 };

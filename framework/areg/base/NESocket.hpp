@@ -61,7 +61,7 @@ namespace NESocket
         /**
          * \brief   Default constructor creates empty IP-address and invalid port number.
          **/
-        SocketAddress( void );
+        SocketAddress();
 
         /**
          * \brief   Creates an object and sets directly the resolved IP-address and the port number.
@@ -170,27 +170,27 @@ namespace NESocket
         /**
          * \brief   Returns IP address of host as readable string.
          **/
-        inline const String & getHostAddress( void ) const;
+        inline const String & getHostAddress() const;
 
         /**
          * \brief   Returns the name of the host as a readable string.
          **/
-        inline const String & getHostName( void ) const;
+        inline const String & getHostName() const;
 
         /**
          * \brief   Returns port number of host.
          **/
-        inline unsigned short getHostPort( void ) const;
+        inline unsigned short getHostPort() const;
 
         /**
          * \brief   Resets the IP-address and port number of address
          **/
-        inline void resetAddress( void );
+        inline void resetAddress();
 
         /**
          * \brief   Returns true if IP-address is not empty and port number is valid.
          **/
-        inline bool isValid( void ) const;
+        inline bool isValid() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -225,7 +225,7 @@ namespace NESocket
         /**
          * \brief   Creates empty user name and password.
          **/
-        UserData(void);
+        UserData();
 
         /**
          * \brief   Sets the user name and the password pair.
@@ -263,7 +263,7 @@ namespace NESocket
         /**
          * \brief   Returns user name.
          **/
-        const String& getUser(void) const;
+        const String& getUser() const;
 
         /**
          * \brief   Sets user name.
@@ -273,7 +273,7 @@ namespace NESocket
         /**
          * \brief   Returns password.
          **/
-        const String& getPassword(void) const;
+        const String& getPassword() const;
 
         /**
          * \brief   Sets the password.
@@ -284,7 +284,7 @@ namespace NESocket
          * \brief   Returns true if the entry is valid.
          *          The entry is valid if at least the user name is not empty.
          **/
-        bool isValid(void) const;
+        bool isValid() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -390,7 +390,7 @@ namespace NESocket
      * \return  Returns true if socket is initialized and socket function might be called
      *          in the current process.
      **/
-    AREG_API bool socketInitialize( void );
+    AREG_API bool socketInitialize();
 
     /**
      * \brief   NESocket::socketRelease
@@ -398,7 +398,7 @@ namespace NESocket
      *          The call is not releasing socket until number of SocketRelease() calls
      *          is not equal to number of SocketInitialize() calls.
      **/
-    AREG_API void socketRelease( void );
+    AREG_API void socketRelease();
 
     /**
      * \brief   NESocket::socketCreate
@@ -406,7 +406,7 @@ namespace NESocket
      * \return  If function succeeds, returns valid socket descriptor not equal to
      *          NESocket::InvalidSocketHandle.
      **/
-    AREG_API SOCKETHANDLE socketCreate( void );
+    AREG_API SOCKETHANDLE socketCreate();
 
     /**
      * \brief   NESocket::socketClose
@@ -597,7 +597,7 @@ namespace NESocket
      *          Returns the host name of the local machine.
      *          Or returns empty string if failed.
      **/
-    AREG_API const String & getHostname(void);
+    AREG_API const String & getHostname();
 
     /**
      * \brief   NESocket::isLocalAddress
@@ -647,27 +647,27 @@ namespace NESocket
 // NESocket::SocketAddress class inline function
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NESocket::SocketAddress::isValid( void ) const
+inline bool NESocket::SocketAddress::isValid() const
 {
     return ((mIpAddr.isEmpty() == false) && (mPortNr != NESocket::InvalidPort));
 }
 
-inline const String & NESocket::SocketAddress::getHostAddress( void ) const
+inline const String & NESocket::SocketAddress::getHostAddress() const
 {
     return mIpAddr;
 }
 
-inline const String& NESocket::SocketAddress::getHostName(void) const
+inline const String& NESocket::SocketAddress::getHostName() const
 {
     return mHostName;
 }
 
-inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
+inline unsigned short NESocket::SocketAddress::getHostPort() const
 {
     return mPortNr;
 }
 
-inline void NESocket::SocketAddress::resetAddress( void )
+inline void NESocket::SocketAddress::resetAddress()
 {
     mIpAddr.clear();
     mHostName.clear();

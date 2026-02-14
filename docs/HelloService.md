@@ -16,18 +16,18 @@ This tutorial demonstrates how to build multithreaded and multiprocess applicati
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [What You Will Learn](#what-you-will-learn)
-- [Key Concepts](#key-concepts)
-- [Project Structure](#project-structure)
-- [Service Interface Definition](#service-interface-definition)
-- [Code Generation](#code-generation)
-- [Understanding Models](#understanding-models)
-- [Example Projects](#example-projects)
-  - [onethread](#onethread)
-  - [twothreads](#twothreads)
-  - [multiprocess](#multiprocess)
-- [Running the Multiprocess Example](#running-the-multiprocess-example)
+  - [Introduction](#introduction)
+  - [What You Will Learn](#what-you-will-learn)
+  - [Key Concepts](#key-concepts)
+  - [Project Structure](#project-structure)
+  - [Service Interface Definition](#service-interface-definition)
+  - [Code Generation](#code-generation)
+  - [Understanding Models](#understanding-models)
+  - [Example Projects](#example-projects)
+    - [onethread](#onethread)
+    - [twothreads](#twothreads)
+    - [multiprocess](#multiprocess)
+  - [Running the Multiprocess Example](#running-the-multiprocess-example)
 
 ---
 
@@ -35,10 +35,10 @@ This tutorial demonstrates how to build multithreaded and multiprocess applicati
 
 This example contains three projects under `examples/03_helloservice`. All three reuse the same **ServiceComponent** and **ClientComponent** implementations but demonstrate different execution models:
 
-| Project | Description |
-|---------|-------------|
-| [onethread](../examples/03_helloservice/onethread/) | Service and client run in one thread |
-| [twothreads](../examples/03_helloservice/twothreads/) | Service and client run in separate threads |
+| Project                                                   | Description                                  |
+| --------------------------------------------------------- | -------------------------------------------- |
+| [onethread](../examples/03_helloservice/onethread/)       | Service and client run in one thread         |
+| [twothreads](../examples/03_helloservice/twothreads/)     | Service and client run in separate threads   |
 | [multiprocess](../examples/03_helloservice/multiprocess/) | Service and client run in separate processes |
 
 ---
@@ -62,10 +62,10 @@ This example contains three projects under `examples/03_helloservice`. All three
 
 ### Role Name Rules
 
-| Service Type | Role Name Scope |
-|--------------|-----------------|
-| Local | Unique within the process |
-| Public | Unique across the network |
+| Service Type | Role Name Scope           |
+| ------------ | ------------------------- |
+| Local        | Unique within the process |
+| Public       | Unique across the network |
 
 ### Connection Callbacks
 
@@ -163,11 +163,11 @@ java -jar <areg-sdk>/tools/codegen.jar \
 
 ### Generated Classes
 
-| Class | Purpose |
-|-------|---------|
-| `HelloServiceStub` | Base class for service provider implementation |
+| Class                    | Purpose                                        |
+| ------------------------ | ---------------------------------------------- |
+| `HelloServiceStub`       | Base class for service provider implementation |
 | `HelloServiceClientBase` | Base class for service consumer implementation |
-| `NEHelloService` | Namespace with service constants and types |
+| `NEHelloService`         | Namespace with service constants and types     |
 
 ---
 
@@ -186,13 +186,13 @@ A **model** defines how threads, components, and services are organized. Models 
 
 ### Static Model Macros
 
-| Macro | Purpose |
-|-------|---------|
-| `BEGIN_MODEL` / `END_MODEL` | Define a model |
-| `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD` | Define a thread |
-| `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT` | Define a component |
-| `REGISTER_IMPLEMENT_SERVICE` | Declare a service the component provides |
-| `REGISTER_DEPENDENCY` | Declare a service the component consumes |
+| Macro                                                 | Purpose                                  |
+| ----------------------------------------------------- | ---------------------------------------- |
+| `BEGIN_MODEL` / `END_MODEL`                           | Define a model                           |
+| `BEGIN_REGISTER_THREAD` / `END_REGISTER_THREAD`       | Define a thread                          |
+| `BEGIN_REGISTER_COMPONENT` / `END_REGISTER_COMPONENT` | Define a component                       |
+| `REGISTER_IMPLEMENT_SERVICE`                          | Declare a service the component provides |
+| `REGISTER_DEPENDENCY`                                 | Declare a service the component consumes |
 
 ---
 

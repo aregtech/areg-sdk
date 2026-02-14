@@ -26,6 +26,9 @@
 #include "areg/base/Thread.hpp"
 
 #ifdef WINDOWS
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif // !NOMINMAX
     #include <Windows.h>
 #endif  // WINDOWS
 
@@ -33,7 +36,7 @@ namespace
 {
 #ifdef WINDOWS
     //!< Converts Win system time to the areg specific time structure.
-    inline void _convWinSysTime2AregSysTime( const SYSTEMTIME & IN winTime, NEUtilities::sSystemTime & OUT aregTime )
+    inline void _convWinSysTime2AregSysTime( const SYSTEMTIME & winTime, NEUtilities::sSystemTime & aregTime )
     {
         aregTime.stYear = static_cast<int>(winTime.wYear);
         aregTime.stMonth = static_cast<int>(winTime.wMonth);
@@ -47,7 +50,7 @@ namespace
     }
 
     //!< Converts areg specific time structure to Windows system time.
-    inline void _convAregSysTime2WinSysTime( const NEUtilities::sSystemTime & IN aregTime, SYSTEMTIME & OUT winTime )
+    inline void _convAregSysTime2WinSysTime( const NEUtilities::sSystemTime & aregTime, SYSTEMTIME & winTime )
     {
         winTime.wYear = static_cast<WORD>(aregTime.stYear);
         winTime.wMonth = static_cast<WORD>(aregTime.stMonth);

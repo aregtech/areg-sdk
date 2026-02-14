@@ -24,14 +24,14 @@
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Process & Process::getInstance( void )
+Process & Process::getInstance()
 {
     static Process _theProcess;
     return _theProcess;
 }
 
 
-Process::Process( void )
+Process::Process()
     : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
     , mProcessId        ( Process::UNKNOWN_PROCESS )
     , mProcessHandle    ( nullptr )
@@ -60,7 +60,7 @@ void Process::_initPaths( const char * fullPath )
     }
 }
 
-unsigned int Process::getBitness(void) const
+unsigned int Process::getBitness() const
 {
     if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::eProcEnv::ProcEnv32Bits)) != 0)
     {

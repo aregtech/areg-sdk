@@ -33,6 +33,9 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <tchar.h>
 
@@ -49,7 +52,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     int result{ ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
     MultitargetRouter& router = MultitargetRouter::getInstance();
-    router.parseOptions(static_cast<int>(argc), argvTemp, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
+    router.parseOptions(static_cast<int>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
     result = router.serviceMain(router.getCurrentOption(), nullptr);
     NESystemService::deleteArguments(argvTemp, argc);
 
@@ -59,7 +62,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 int main(int argc, char* argv[], char* envp[])
 {
     MultitargetRouter& router = MultitargetRouter::getInstance();
-    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup));
+    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }
 #endif  // _MINGW

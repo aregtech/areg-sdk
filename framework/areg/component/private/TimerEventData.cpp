@@ -24,7 +24,7 @@
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, implement Runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(TimerEvent, TimerEventBase)
+AREG_IMPLEMENT_RUNTIME(TimerEvent, TimerEventBase)
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, constructor / destructor
@@ -54,7 +54,7 @@ TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
     timer._queueTimer();
 }
 
-TimerEvent::~TimerEvent( void )
+TimerEvent::~TimerEvent()
 {
     if (mData.mTimer != nullptr)
     {

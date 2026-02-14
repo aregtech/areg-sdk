@@ -48,7 +48,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    Property( void );
+    Property();
 
     /**
      * \brief   Initializes property key and value by parsing passed string.
@@ -133,7 +133,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~Property( void ) = default;
+    ~Property() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -168,7 +168,7 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of Property object.
      **/
-    operator unsigned int ( void ) const;
+    operator unsigned int () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -196,19 +196,19 @@ public:
     /**
      * \brief   Returns Key value of the property
      **/
-    const PropertyKey & getKey( void ) const;
+    const PropertyKey & getKey() const;
 
     /**
      * \brief   Returns the property key type value.
      **/
-    NEPersistence::eConfigKeys getPropertyType(void) const;
+    NEPersistence::eConfigKeys getPropertyType() const;
 
     /**
      * \brief   Returns string value of the Key. 
      *          If Key consists of several sections, they are concatenated 
      *          and separated by key-separators symbol
      **/
-    String getKeyString( void ) const;
+    String getKeyString() const;
 
     /**
      * \brief   Sets and parses the value of property.
@@ -229,14 +229,14 @@ public:
     /**
      * \brief   Returns Value of the property
      **/
-    const PropertyValue & getValue( void ) const;
-    PropertyValue& getValue(void);
+    const PropertyValue & getValue() const;
+    PropertyValue& getValue();
 
     /**
      * \brief   Returns Value of Property as a string.
      *          If Value consists of several perts, all parts are concatenated by value-separator symbol.
      **/
-    String getValueString( void ) const;
+    String getValueString() const;
 
     /**
      * \brief   Sets property comment, which is optional.
@@ -251,7 +251,7 @@ public:
     /**
      * \brief   Returns comment of the property
      **/
-    const String & getComment( void ) const;
+    const String & getComment() const;
 
     /**
      * \brief   Sets the Key-Value pair of the property.
@@ -268,13 +268,13 @@ public:
     /**
      * \brief   Returns Key-Value pair of the property.
      **/
-    const Property::Entry & getPropertyPair( void ) const;
+    const Property::Entry & getPropertyPair() const;
 
     /**
      * \brief   Returns true if Property is valid.
      *          Valid property does not have empty Key.
      **/
-    bool isValid( void ) const;
+    bool isValid() const;
 
     /**
      * \brief   Parses given string, extracts Key and Value parts
@@ -287,12 +287,12 @@ public:
     /**
      * \brief   Converts Key-Value pair data to the string.
      **/
-    String convToString( void ) const;
+    String convToString() const;
 
     /**
      * \brief   Resets and invalidates Property
      **/
-    void resetData( void );
+    void resetData();
 
     /**
      * \brief   Returns true if the property is applicable to the specified module (process),
@@ -315,7 +315,7 @@ public:
     /**
      * \brief   Returns true if the property is temporary.
      **/
-    bool isTemporary(void) const;
+    bool isTemporary() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

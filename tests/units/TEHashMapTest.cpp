@@ -19,6 +19,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/base/NEMath.hpp"
 
 /**
  * \brief   Test TEHashMap constructors.
@@ -65,7 +66,7 @@ TEST(TEHashMapTest, TestConstructors)
     // Step 3: initialize from array
     constexpr int _keys[]  {  1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     constexpr int _values[]{ 10, 9, 8, 7, 6, 5, 4, 3, 2,  1 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_keys) };
+    constexpr uint32_t _len{ std::size(_keys) };
     HashMap hashMap5(_keys, _values, _len);
 
     EXPECT_EQ(hashMap5.getSize(), _len);
@@ -220,8 +221,8 @@ TEST(TEHashMapTest, TestPositionOperations)
         EXPECT_EQ(nextValue, Value);
         if (hashMap.isValidPosition(pos))
         {
-            EXPECT_EQ(MACRO_DELTA(hashMap.keyAtPosition(pos), nextKey), 1);
-            EXPECT_EQ(MACRO_DELTA(hashMap.valueAtPosition(pos), nextValue), coef);
+            EXPECT_EQ(NEMath::delta(hashMap.keyAtPosition(pos), nextKey), 1);
+            EXPECT_EQ(NEMath::delta(hashMap.valueAtPosition(pos), nextValue), coef);
         }
 
         pos = hashMap.nextPosition(cur);
@@ -371,8 +372,8 @@ TEST(TEHashMapTest, TestMerging)
     //  - create and initialize 2 hash-maps, which keys and values are odd and even integers from 1 to 42 and totally have 21 entries each.
     constexpr int32_t odds []   { 1, 3, 5, 7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41 };
     constexpr int32_t evens[]   { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
-    constexpr uint32_t lenOdd   { MACRO_ARRAYLEN(odds) };
-    constexpr uint32_t lenEven  { MACRO_ARRAYLEN(odds) };
+    constexpr uint32_t lenOdd   { std::size(odds) };
+    constexpr uint32_t lenEven  { std::size(odds) };
     HashMap mapOdd, mapEven;
     for (uint32_t i = 0u; i < lenOdd; ++i)
     {

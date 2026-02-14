@@ -125,27 +125,27 @@ bool PropertyValue::operator != ( const PropertyValue & other ) const
     return (mValue != other.mValue);
 }
 
-PropertyValue::operator unsigned int(void) const
+PropertyValue::operator unsigned int() const
 {
     return getInteger(NEString::eRadix::RadixDecimal);
 }
 
-PropertyValue::operator const String& (void) const
+PropertyValue::operator const String& () const
 {
     return getString();
 }
 
-PropertyValue::operator double(void) const
+PropertyValue::operator double() const
 {
     return getDouble();
 }
 
-PropertyValue::operator bool(void) const
+PropertyValue::operator bool() const
 {
     return getBoolean();
 }
 
-const String & PropertyValue::getValue(void) const
+const String & PropertyValue::getValue() const
 {
     return mValue;
 }
@@ -165,7 +165,7 @@ void PropertyValue::setValue( String && value )
     parseValue( std::move(value) );
 }
 
-const String & PropertyValue::getString(void) const
+const String & PropertyValue::getString() const
 {
     return mValue;
 }
@@ -175,7 +175,7 @@ unsigned int PropertyValue::getInteger( NEString::eRadix radix /*= NEString::Rad
     return mValue.toUInt32( static_cast<NEString::eRadix>(radix) );
 }
 
-double PropertyValue::getDouble(void) const
+double PropertyValue::getDouble() const
 {
     return mValue.toDouble( );
 }
@@ -215,7 +215,7 @@ void PropertyValue::setString(const char * value)
     parseValue( value );
 }
 
-bool PropertyValue::getBoolean(void) const
+bool PropertyValue::getBoolean() const
 {
     return mValue.toBool();
 }
@@ -351,12 +351,12 @@ void PropertyValue::parseValue( String && value )
     _parseValue();
 }
 
-void PropertyValue::resetValue(void)
+void PropertyValue::resetValue()
 {
     mValue.clear();
 }
 
-String PropertyValue::convToString(void) const
+String PropertyValue::convToString() const
 {
     String result (mValue);
     if (mValue.isEmpty() == false)
@@ -367,7 +367,7 @@ String PropertyValue::convToString(void) const
     return result;
 }
 
-inline void PropertyValue::_parseValue(void)
+inline void PropertyValue::_parseValue()
 {
     mValue.trimAll();
     int32_t len = mValue.getLength();

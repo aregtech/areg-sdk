@@ -78,7 +78,7 @@ private:
     /**
      * \brief   Returns instance of TrafficLightClient.
      **/
-    inline TrafficLightClient & self( void )
+    inline TrafficLightClient & self()
     {
         return (*this);
     }

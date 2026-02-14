@@ -98,7 +98,7 @@ namespace NECommon
 	    /**
 	     * \brief   Every field of structure should have default constructor.
 	     **/
-	    inline sConnection( void );
+	    inline sConnection();
         /**
          * \brief   Initialize sConnection data by setting parameters.
          **/
@@ -111,7 +111,7 @@ namespace NECommon
 	    /**
 	     * \brief   Destructor. No extra function is called, every field of structure should be able to be cleaned.
 	     **/
-	    inline ~sConnection( void );
+	    inline ~sConnection();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Basic operators
@@ -141,7 +141,7 @@ namespace NECommon
 	     * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
-	     inline operator size_t ( void ) const;
+	     inline operator size_t () const;
 
 	//////////////////////////////////////////////////////////////////////////
 	// sConnection fields
@@ -196,7 +196,7 @@ namespace NECommon
 	    /**
 	     * \brief   Every field of structure should have default constructor.
 	     **/
-	    inline sParticipant( void );
+	    inline sParticipant();
 	    /**
 	     * \brief   Copies data from given source. Every filed of structure should have copy constructor.
 	     * \param   src     The source of sParticipant structure to copy data
@@ -205,7 +205,7 @@ namespace NECommon
 	    /**
 	     * \brief   Destructor. No extra function is called, every field of structure should be able to be cleaned.
 	     **/
-	    inline ~sParticipant( void );
+	    inline ~sParticipant();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Basic operators
@@ -235,7 +235,7 @@ namespace NECommon
 	     * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
-	     inline operator size_t ( void ) const;
+	     inline operator size_t () const;
 
 	//////////////////////////////////////////////////////////////////////////
 	// sParticipant fields
@@ -289,7 +289,7 @@ inline void NECommon::getWidths( int widthTotal, int columns, int & width1, int 
 /**
  * Every field of structure should have default constructor.
  **/
-inline NECommon::sConnection::sConnection( void )
+inline NECommon::sConnection::sConnection()
     : cookie          ( InvalidCookie )
     , nickName        (  )
     , connectTime     (  )
@@ -319,7 +319,7 @@ inline NECommon::sConnection::sConnection( const NECommon::sConnection & src )
 /**
  * No extra function is called, every field of structure should be able to be cleaned.
  **/
-inline NECommon::sConnection::~sConnection( void )
+inline NECommon::sConnection::~sConnection()
 {
 }
 /**
@@ -354,7 +354,7 @@ inline bool NECommon::sConnection::operator != ( const NECommon::sConnection & o
  * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline NECommon::sConnection::operator size_t ( void ) const
+ inline NECommon::sConnection::operator size_t () const
  {
     return  ( static_cast<size_t>( cookie ) + static_cast<unsigned int>( nickName ) );
  }
@@ -413,7 +413,7 @@ namespace std
 /**
  * Every field of structure should have default constructor.
  **/
-inline NECommon::sParticipant::sParticipant( void )
+inline NECommon::sParticipant::sParticipant()
     : sessionId   ( InvalidSession )
     , cookie      ( InvalidCookie )
     , nickName    (  )
@@ -429,7 +429,7 @@ inline NECommon::sParticipant::sParticipant( const NECommon::sParticipant & src 
 /**
  * No extra function is called, every field of structure should be able to be cleaned.
  **/
-inline NECommon::sParticipant::~sParticipant( void )
+inline NECommon::sParticipant::~sParticipant()
 {      }
 /**
  * Copies data from given source.
@@ -470,7 +470,7 @@ inline bool NECommon::sParticipant::operator != ( const NECommon::sParticipant &
  * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline NECommon::sParticipant::operator size_t ( void ) const
+ inline NECommon::sParticipant::operator size_t () const
  {
     return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<unsigned int>( nickName ) );
  }

@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}"
 	ProjectSection(SolutionItems) = preProject
+		docs\AREG_CODING_STYLE.md = docs\AREG_CODING_STYLE.md
 		docs\DEVELOP.md = docs\DEVELOP.md
 		docs\HelloService.md = docs\HelloService.md
 		docs\HelloService.siml = docs\HelloService.siml

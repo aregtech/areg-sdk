@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
@@ -48,12 +48,12 @@ ProxyEvent::ProxyEvent( const IEInStream & stream )
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
-void ProxyEvent::deliverEvent( void )
+void ProxyEvent::deliverEvent()
 {
     if ( mTargetThread == nullptr )
     {
         Thread * thread = Thread::findThreadByName(mTargetProxyAddress.getThread());
-        registerForThread( thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr );
+        registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
     }
 
     if ( mTargetThread != nullptr )
@@ -133,27 +133,27 @@ inline void IEProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent &
 
 void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
 {
-    ProxyEvent * proxyEvent = RUNTIME_CAST(&eventElem, ProxyEvent);
+    ProxyEvent * proxyEvent = AREG_RUNTIME_CAST(&eventElem, ProxyEvent);
     if ( proxyEvent != nullptr )
     {
         const ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
         if ( static_cast<const ServiceAddress &>(addrProxy) == static_cast<const ServiceAddress &>(mProxyAddress) )
         {
-            ProxyConnectEvent * eventConnect  = RUNTIME_CAST(&eventElem, ProxyConnectEvent);
+            ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, ProxyConnectEvent);
             if ( eventConnect != nullptr )
             {
                 _localProcessConnectEvent(*eventConnect);
             }
             else if ( addrProxy.getChannel() == mProxyAddress.getChannel() )
             {
-                ResponseEvent * eventResponse = RUNTIME_CAST(&eventElem, ResponseEvent);
+                ResponseEvent * eventResponse = AREG_RUNTIME_CAST(&eventElem, ResponseEvent);
                 if ( eventResponse != nullptr )
                 {
                     _localProcessResponseEvent(*eventResponse);
                 }
                 else
                 {
-                    ServiceResponseEvent* eventServiceResponse = RUNTIME_CAST(&eventElem, ServiceResponseEvent);
+                    ServiceResponseEvent* eventServiceResponse = AREG_RUNTIME_CAST(&eventElem, ServiceResponseEvent);
                     if ( eventServiceResponse != nullptr )
                     {
                         processResponseEvent(*eventServiceResponse);

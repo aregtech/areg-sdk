@@ -36,7 +36,7 @@ ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, cons
     return result;
 }
 
-ServiceAddress::ServiceAddress( void )
+ServiceAddress::ServiceAddress()
     : ServiceItem   ( )
     , mRoleName     ( String::getEmptyString(), 0 )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
@@ -102,7 +102,7 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 {
 }
 
-String ServiceAddress::convToString(void) const
+String ServiceAddress::convToString() const
 {
     String result( ServiceItem::convToString() );
     result.append(NECommon::COMPONENT_PATH_SEPARATOR).append(mRoleName);

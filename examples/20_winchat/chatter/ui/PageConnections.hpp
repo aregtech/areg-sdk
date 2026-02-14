@@ -35,16 +35,16 @@ public:
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
     void OnAddConnection( NEConnectionManager::sConnection & data );
     void OnRemoveConnection( NEConnectionManager::sConnection & data );
-    void OnUpdateConnection( void );
-    void OnDisconnectTriggered( void );
+    void OnUpdateConnection();
+    void OnDisconnectTriggered();
 
-    void OnDefaultClicked( void );
+    void OnDefaultClicked();
 
 public:
 
-    const String & GetRegisteredName( void ) const;
+    const String & GetRegisteredName() const;
 
-    uint32_t GetRegisteredCookie( void ) const;
+    uint32_t GetRegisteredCookie() const;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
@@ -58,11 +58,11 @@ protected:
     afx_msg void OnDestroy( );
 
 private:
-    inline void cleanService( void );
+    inline void cleanService();
 
-    inline bool isServiceConnected( void ) const;
+    inline bool isServiceConnected() const;
 
-    inline void setHeaders( void );
+    inline void setHeaders();
 
     inline int getSelectedConnections( NEDirectConnection::sInitiator & outParticipant, NEDirectConnection::ListParticipants & outListParticipants );
 
@@ -72,7 +72,7 @@ private:
 
     inline void removeConnection( const NEConnectionManager::sConnection & connection );
 
-    inline void unloadModel( void );
+    inline void unloadModel();
 
     inline bool loadModel( const String & nickName, const uint32_t cookie );
 

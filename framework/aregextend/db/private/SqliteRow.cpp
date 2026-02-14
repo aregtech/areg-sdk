@@ -29,7 +29,7 @@ namespace
     }
 }
 
-SqliteRow::SqliteRow(void)
+SqliteRow::SqliteRow()
     : mStatement(nullptr)
 {
 }
@@ -136,7 +136,7 @@ bool SqliteRow::isDouble(int column) const
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_FLOAT);
 }
 
-int SqliteRow::getColumnCount(void) const
+int SqliteRow::getColumnCount() const
 {
     ASSERT(isValid());
     return sqlite3_column_count(_sqlite_stmt(mStatement));

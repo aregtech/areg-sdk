@@ -47,7 +47,7 @@ constexpr std::string_view   STORAGE_THREAD_CONSUMER { "ThreadConsumer" };
 /************************************************************************/
 // Implement runtime
 /************************************************************************/
-IMPLEMENT_RUNTIME(Thread, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
 
 /************************************************************************/
 // Define internal static mapping objects
@@ -157,7 +157,7 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName, uint
     mWaitForExit.setEvent();
 }
 
-Thread::~Thread( void )
+Thread::~Thread()
 {
     _cleanResources(false);
 }
@@ -165,7 +165,7 @@ Thread::~Thread( void )
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-ThreadLocalStorage & Thread::getCurrentThreadStorage( void )
+ThreadLocalStorage & Thread::getCurrentThreadStorage()
 {
     ThreadLocalStorage* localStorage = Thread::_getThreadLocalStorage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
     return (*localStorage);
@@ -196,7 +196,7 @@ bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT
     return result;
 }
 
-void Thread::triggerExit( void )
+void Thread::triggerExit()
 {
 }
 
@@ -213,7 +213,7 @@ Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* 
     return result;
 }
 
-Thread::eCompletionStatus Thread::terminateThread( void )
+Thread::eCompletionStatus Thread::terminateThread()
 {
     return shutdownThread( NECommon::WAIT_10_MILLISECONDS );
 }
@@ -238,12 +238,12 @@ bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_I
     return result;
 }
 
-bool Thread::onPreRunThread( void )
+bool Thread::onPreRunThread()
 {
     return mWaitForRun.setEvent();
 }
 
-void Thread::onPostExitThread( void )
+void Thread::onPostExitThread()
 {
 }
 
@@ -259,13 +259,13 @@ const ThreadAddress & Thread::getThreadAddress( id_type threadId )
     return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
-const size_t Thread::getCurrentStackSize(void)
+const size_t Thread::getCurrentStackSize()
 {
     Thread* threadObj = Thread::getCurrentThread();
     return (threadObj != nullptr ? _osGetCurrentStackSize(threadObj->mThreadHandle) : 0);
 }
 
-int Thread::_threadEntry( void )
+int Thread::_threadEntry()
 {
     IEThreadConsumer::eExitCodes result = IEThreadConsumer::eExitCodes::ExitTerminated;
 
@@ -311,7 +311,7 @@ void Thread::_cleanResources(bool unregister)
     Thread::_osCloseHandle(handle);
 }
 
-bool Thread::_registerThread( void )
+bool Thread::_registerThread()
 {
     Thread::_getMapThreadhHandle().registerResourceObject(mThreadHandle, this);
     Thread::_getMapThreadName().registerResourceObject(mThreadAddress.getThreadName(), this);
@@ -321,7 +321,7 @@ bool Thread::_registerThread( void )
     return mThreadConsumer.onThreadRegistered(this);
 }
 
-void Thread::_unregisterThread( void )
+void Thread::_unregisterThread()
 {
     if (_isValidNoLock())
     {
@@ -352,7 +352,7 @@ void Thread::_unregisterThread( void )
     }
 }
 
-IEThreadConsumer& Thread::getCurrentThreadConsumer( void )
+IEThreadConsumer& Thread::getCurrentThreadConsumer()
 {
     ASSERT(getCurrentThread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
@@ -361,12 +361,12 @@ IEThreadConsumer& Thread::getCurrentThreadConsumer( void )
     return (*consumer);
 }
 
-Thread * Thread::getFirstThread( id_type & OUT threadId )
+Thread * Thread::getFirstThread( id_type & threadId )
 {
     return _getMapThreadId().resourceFirstKey( threadId );
 }
 
-Thread * Thread::getNextThread( id_type & IN OUT threadId )
+Thread * Thread::getNextThread( id_type & threadId )
 {
     return _getMapThreadId().resourceNextKey( threadId );
 }
@@ -375,7 +375,7 @@ Thread * Thread::getNextThread( id_type & IN OUT threadId )
 /************************************************************************/
 // Thread debugging function
 /************************************************************************/
-void Thread::dumpThreads( void )
+void Thread::dumpThreads()
 {
     Thread::MapThreadNameResource& mapNames{ Thread::_getMapThreadName() };
     mapNames.lock();

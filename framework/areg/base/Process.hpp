@@ -75,7 +75,7 @@ public:
     /**
      * \brief   Returns the instance of process object
      **/
-    static Process & getInstance( void );
+    static Process & getInstance();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor, protected
@@ -86,12 +86,12 @@ private:
      *          To get instance of object, call static method GetProcess()
      *          The object is singleton.
      **/
-    Process( void );
+    Process();
 
     /**
      * \brief   Destructor.
      **/
-    ~Process( void ) = default;
+    ~Process() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -102,42 +102,42 @@ public:
      * \brief   Return application name of current process.
      *          The name does not contain files extension.
      **/
-    inline const String & getAppName( void ) const;
+    inline const String & getAppName() const;
     /**
      * \brief   Returns the name of current process. 
      *          The name may contain file extension as well.
      **/
-    inline const String & getName( void ) const;
+    inline const String & getName() const;
 
     /**
      * \brief   Returns the extension of current process.
      **/
-    inline const String & getExtension( void ) const;
+    inline const String & getExtension() const;
 
     /**
      * \brief   Returns the path of current process.
      *          The path does not contain path-separation
      *          character '\\' at the end.
      **/
-    inline const String & getPath( void ) const;
+    inline const String & getPath() const;
 
     /**
      * \brief   Returns the full path of current process,
      *          including file name and file extension.
      **/
-    inline const String & getFullPath( void ) const;
+    inline const String & getFullPath() const;
 
     /**
      * \brief   Return the ID of current process.
      **/
-    inline id_type getId( void ) const;
+    inline id_type getId() const;
 
     /**
      * \brief   Returns process environment. It is either 32- or 64-bits.
      **/
-    inline Process::eProcEnv getEnvironment( void ) const;
+    inline Process::eProcEnv getEnvironment() const;
 
-    unsigned int getBitness(void) const;
+    unsigned int getBitness() const;
 
     /**
      * \brief   returns the value of the environment variable var, 
@@ -160,7 +160,7 @@ private:
     /**
      * \brief	OS specific initialization of process internal data.
      */
-    void _osInitilize( void );
+    void _osInitilize();
 
     /**
      * \brief   Returns the value of environment variable or empty strig.
@@ -213,44 +213,44 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( Process );
+    AREG_NOCOPY_NOMOVE( Process );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Process class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & Process::getAppName( void ) const
+inline const String & Process::getAppName() const
 {
     return mAppName;
 }
 
-inline const String & Process::getName(void) const
+inline const String & Process::getName() const
 {
     return mProcessName;
 }
 
-inline const String & Process::getExtension(void) const
+inline const String & Process::getExtension() const
 {
     return mProcessExt;
 }
 
-inline const String & Process::getPath(void) const
+inline const String & Process::getPath() const
 {
     return mProcessPath;
 }
 
-inline const String & Process::getFullPath(void) const
+inline const String & Process::getFullPath() const
 {
     return mProcessFullPath;
 }
 
-inline id_type Process::getId(void) const
+inline id_type Process::getId() const
 {
     return mProcessId;
 }
 
-inline Process::eProcEnv Process::getEnvironment( void ) const
+inline Process::eProcEnv Process::getEnvironment() const
 {
     return mProcEnv;
 }

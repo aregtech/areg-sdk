@@ -53,7 +53,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServerSendThread( void ) = default;
+    virtual ~ServerSendThread() = default;
 
 /************************************************************************/
 // Actions and attributes.
@@ -63,7 +63,7 @@ public:
      * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataSend( void ) const;
+    inline uint32_t extractDataSend() const;
 
     /**
      * \brief   Call to enable or disable the received data calculation.
@@ -75,7 +75,7 @@ public:
     /**
      * \brief   Returns flag, indicating whether data calculation is enabled or not.
      **/
-    inline bool isCalculateDataEnabled(void) const;
+    inline bool isCalculateDataEnabled() const;
 
 protected:
 /************************************************************************/
@@ -142,15 +142,15 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerSendThread( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServerSendThread );
+    ServerSendThread() = delete;
+    AREG_NOCOPY_NOMOVE( ServerSendThread );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServerSendThread class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerSendThread::extractDataSend(void) const
+inline uint32_t ServerSendThread::extractDataSend() const
 {
     return static_cast<uint32_t>(mBytesSend.exchange(0));
 }
@@ -164,7 +164,7 @@ inline void ServerSendThread::setEnableCalculateData(bool enable)
     }
 }
 
-inline bool ServerSendThread::isCalculateDataEnabled(void) const
+inline bool ServerSendThread::isCalculateDataEnabled() const
 {
     return mSaveDataSend;
 }

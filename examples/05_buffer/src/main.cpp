@@ -8,6 +8,10 @@
 //               multithreading environment.
 //============================================================================
 
+#ifndef _USE_MATH_DEFINES
+    #define _USE_MATH_DEFINES
+#endif // _USE_MATH_DEFINES
+
 #include "areg/base/GEGlobal.h"
 #include "areg/base/GEMacros.h"
 #include "areg/base/Thread.hpp"

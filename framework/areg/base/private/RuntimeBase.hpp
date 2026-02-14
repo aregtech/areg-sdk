@@ -46,7 +46,7 @@ private:
     /**
      * \brief   Returns the ClassID object of RuntimeBase class.
      **/
-    static const RuntimeClassID & _getClassId( void );
+    static const RuntimeClassID & _getClassId();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -55,12 +55,12 @@ protected:
     /**
      * \brief   Default constructor, initializes runtime object.
      **/
-    RuntimeBase( void ) = default;
+    RuntimeBase() = default;
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~RuntimeBase( void ) = default;
+    virtual ~RuntimeBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override attributes
@@ -70,17 +70,17 @@ public:
     /**
      * \brief   Returns the Class Identifier object
      **/
-    virtual const RuntimeClassID & getRuntimeClassId( void ) const;
+    virtual const RuntimeClassID & getRuntimeClassId() const;
 
     /**
      * \brief   Returns the class name, i.e. the name of Class Identifier
      **/
-    virtual const String& getRuntimeClassName( void ) const;
+    virtual const String& getRuntimeClassName() const;
 
     /**
      * \brief   Returns the calculated number of runtime class.
      **/
-    virtual unsigned int getRuntimeClassNumber( void ) const;
+    virtual unsigned int getRuntimeClassNumber() const;
 
     /**
      * \brief   Checks class instance by name.
@@ -105,7 +105,7 @@ public:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( RuntimeBase );
+    AREG_NOCOPY_NOMOVE( RuntimeBase );
     bool operator == ( const RuntimeBase & /*other*/ ) const = delete;
     bool operator != ( const RuntimeBase & /*other*/ ) const = delete;
 };

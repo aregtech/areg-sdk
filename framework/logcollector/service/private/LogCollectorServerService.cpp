@@ -24,7 +24,7 @@ DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSen
 // LogCollectorServerService class implementation
 //////////////////////////////////////////////////////////////////////////
 
-LogCollectorServerService::LogCollectorServerService( void )
+LogCollectorServerService::LogCollectorServerService()
     : ServiceCommunicatonBase   ( NEService::COOKIE_LOGGER
                                 , NERemoteService::eRemoteServices::ServiceLogger
                                 , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
@@ -94,7 +94,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
     }
 }
 
-void LogCollectorServerService::removeAllInstances(void)
+void LogCollectorServerService::removeAllInstances()
 {
     Lock lock(mLock);
     
@@ -303,14 +303,14 @@ void LogCollectorServerService::failedProcessMessage(const RemoteMessage & /* ms
 {
 }
 
-void LogCollectorServerService::onServiceConnectionStarted( void )
+void LogCollectorServerService::onServiceConnectionStarted()
 {
 }
 
-void LogCollectorServerService::onServiceConnectionStopped( void )
+void LogCollectorServerService::onServiceConnectionStopped()
 {
 }
 
-void LogCollectorServerService::onServiceConnectionLost( void )
+void LogCollectorServerService::onServiceConnectionLost()
 {
 }

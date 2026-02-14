@@ -37,7 +37,7 @@ void DataRateHelper::setVerbose(bool verbose)
     mReceiveThread.setEnableCalculateData(verbose);
 }
 
-bool DataRateHelper::isVerbose(void) const
+bool DataRateHelper::isVerbose() const
 {
     return mSendThread.isCalculateDataEnabled() && mReceiveThread.isCalculateDataEnabled();
 }

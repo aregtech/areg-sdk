@@ -65,7 +65,7 @@ class AREG_API ProxyEvent  : public StreamableEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare as a Runtime event class
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(ProxyEvent)
+    AREG_DECLARE_RUNTIME_EVENT(ProxyEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -88,7 +88,7 @@ protected:
      * \brief   Destructor. Protected.
      * \remark  Call Destroy() method to delete object.
      **/
-    virtual ~ProxyEvent( void ) = default;
+    virtual ~ProxyEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -101,7 +101,7 @@ public:
      * \brief   Sends the event to target thread. If target thread
      *          is nullptr, it searches target thread, registered in system.
      **/
-    virtual void deliverEvent( void ) override;
+    virtual void deliverEvent() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Returns target Proxy Address object.
      **/
-    inline const ProxyAddress & getTargetProxy( void ) const;
+    inline const ProxyAddress & getTargetProxy() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -145,8 +145,8 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ProxyEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ProxyEvent );
+    ProxyEvent() = delete;
+    AREG_NOCOPY_NOMOVE( ProxyEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -174,7 +174,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEProxyEventConsumer( void ) = default;
+    virtual ~IEProxyEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Should be implemented
@@ -263,8 +263,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEProxyEventConsumer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IEProxyEventConsumer );
+    IEProxyEventConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( IEProxyEventConsumer );
 };
 
 /************************************************************************
@@ -274,7 +274,7 @@ private:
 // ProxyEvent class inline functions implementations
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ProxyEvent::getTargetProxy( void ) const
+inline const ProxyAddress & ProxyEvent::getTargetProxy() const
 {
     return mTargetProxyAddress;
 }

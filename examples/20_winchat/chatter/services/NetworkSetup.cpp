@@ -64,7 +64,7 @@ bool NetworkSetup::serviceConnected( NEService::eServiceConnection status, Proxy
     return result;
 }
 
-void NetworkSetup::DisconnectServicing(void)
+void NetworkSetup::DisconnectServicing()
 {
     if (mConnectionHandler.GetRegistered())
     {

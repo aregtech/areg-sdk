@@ -16,7 +16,7 @@
  ************************************************************************/
 
 #include "areg/base/NEMath.hpp"
-#include <math.h>
+#include <cmath>
 
 namespace
 {
@@ -192,8 +192,8 @@ AREG_API_IMPL unsigned int NEMath::crc32Calculate( const wchar_t * strData )
             }
             else
             {
-                unsigned char low    = static_cast<unsigned char>( MACRO_16_LO_BYTE8(data) );
-                unsigned char high   = static_cast<unsigned char>( MACRO_16_HI_BYTE8(data) );
+                unsigned char low    = NEMath::loByte(static_cast<uint16_t>(data));
+                unsigned char high   = NEMath::hiByte(static_cast<uint16_t>(data));
                 result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(low ) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate low bits
                 result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(high) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate hight bits
             }
@@ -202,7 +202,7 @@ AREG_API_IMPL unsigned int NEMath::crc32Calculate( const wchar_t * strData )
     return (~result);   // return result
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Init( void )
+AREG_API_IMPL unsigned int NEMath::crc32Init()
 {
     return static_cast<unsigned int>(~0);
 }
@@ -267,5 +267,5 @@ AREG_API_IMPL unsigned int NEMath::crc32Finish( unsigned int crc )
 
 AREG_API_IMPL double NEMath::round(double val)
 {
-    return ( (val) < 0.0 ? ::ceil( val - 0.5 ) : ::floor( val + 0.5 ) );
+    return ( (val) < 0.0 ? std::ceil( val - 0.5 ) : std::floor( val + 0.5 ) );
 }

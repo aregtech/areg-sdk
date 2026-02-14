@@ -12,51 +12,51 @@
 class ConnectionHandler
 {
 public:
-    ConnectionHandler( void );
-    virtual ~ConnectionHandler( void );
+    ConnectionHandler();
+    virtual ~ConnectionHandler();
 
 public:
     inline void SetNickName( const String & nickName );
 
-    inline const String & GetNickName( void ) const;
+    inline const String & GetNickName() const;
 
     void SetCookie( uint32_t cookie );
 
-    uint32_t GetCookie( void ) const;
+    uint32_t GetCookie() const;
 
     void SetConnectCookie( uint32_t cookie );
 
-    uint32_t GetConnectCookie( void ) const;
+    uint32_t GetConnectCookie() const;
 
-    uint32_t GetCookieDirect( void ) const;
+    uint32_t GetCookieDirect() const;
 
     inline void SetConnected( bool isConnected );
 
-    inline bool GetConnected( void ) const;
+    inline bool GetConnected() const;
 
     inline void SetRegistered( bool isRegistered );
 
-    inline bool GetRegistered( void ) const;
+    inline bool GetRegistered() const;
 
     inline void SetTimeConnect( const DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnect( void ) const;
+    inline const DateTime & GetTimeConnect() const;
 
     inline void SetTimeConnected( const DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnected( void ) const;
+    inline const DateTime & GetTimeConnected() const;
 
-    inline bool HasName( void ) const;
+    inline bool HasName() const;
 
-    inline bool CanRegister( void ) const;
+    inline bool CanRegister() const;
 
-    inline bool CanConnect( void ) const;
+    inline bool CanConnect() const;
 
-    inline void RemoveConnections( void );
+    inline void RemoveConnections();
 
-    inline const NECommon::ListConnections & GetConnectionList( void ) const;
+    inline const NECommon::ListConnections & GetConnectionList() const;
 
-    bool IsValid( void ) const;
+    bool IsValid() const;
 
     bool AddConnection( const NECommon::sConnection & newConnection );
 
@@ -66,7 +66,7 @@ public:
 
     bool ConnectionExist( const NECommon::sConnection & connection );
 
-    void ResetConnectionList( void );
+    void ResetConnectionList();
 
 private:
 
@@ -96,7 +96,7 @@ inline void ConnectionHandler::SetNickName(const String & nickName)
     mNickName   = nickName;
 }
 
-inline const String & ConnectionHandler::GetNickName(void) const
+inline const String & ConnectionHandler::GetNickName() const
 {
     Lock lock(mLock);
     return mNickName;
@@ -109,7 +109,7 @@ inline void ConnectionHandler::SetConnected(bool isConnected)
     mIsRegistered   = mIsConnected ? mIsRegistered : false;
 }
 
-inline bool ConnectionHandler::GetConnected(void) const
+inline bool ConnectionHandler::GetConnected() const
 {
     Lock lock(mLock);
     return mIsConnected;
@@ -121,7 +121,7 @@ inline void ConnectionHandler::SetRegistered(bool isRegistered)
     mIsRegistered   = isRegistered;
 }
 
-inline bool ConnectionHandler::GetRegistered(void) const
+inline bool ConnectionHandler::GetRegistered() const
 {
     Lock lock(mLock);
     return mIsRegistered;
@@ -133,7 +133,7 @@ inline void ConnectionHandler::SetTimeConnect(const DateTime & dateTime)
     mTimeConnect    = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnect(void) const
+inline const DateTime & ConnectionHandler::GetTimeConnect() const
 {
     Lock lock(mLock);
     return mTimeConnect;
@@ -145,37 +145,37 @@ inline void ConnectionHandler::SetTimeConnected(const DateTime & dateTime)
     mTimeConnected  = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnected(void) const
+inline const DateTime & ConnectionHandler::GetTimeConnected() const
 {
     Lock lock(mLock);
     return mTimeConnected;
 }
 
-inline bool ConnectionHandler::HasName(void) const
+inline bool ConnectionHandler::HasName() const
 {
     Lock lock(mLock);
     return (mNickName.isEmpty() == false);
 }
 
-inline bool ConnectionHandler::CanRegister(void) const
+inline bool ConnectionHandler::CanRegister() const
 {
     Lock lock(mLock);
     return (mNickName.isEmpty() == false) && (mCookie != NECommon::InvalidCookie) && (mIsRegistered == false);
 }
 
-inline bool ConnectionHandler::CanConnect(void) const
+inline bool ConnectionHandler::CanConnect() const
 {
     Lock lock(mLock);
     return (mNickName.isEmpty( ) == false) && (mCookie == NECommon::InvalidCookie);
 }
 
-inline void ConnectionHandler::RemoveConnections(void)
+inline void ConnectionHandler::RemoveConnections()
 {
     Lock lock(mLock);
     mListConnections.clear();
 }
 
-inline const NECommon::ListConnections & ConnectionHandler::GetConnectionList(void) const
+inline const NECommon::ListConnections & ConnectionHandler::GetConnectionList() const
 {
     return mListConnections;
 }

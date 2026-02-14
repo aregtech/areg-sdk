@@ -65,52 +65,45 @@ class IEByteBuffer;
  * \brief   Declaration of streaming operator. Fine for object with primitives.
  *          Might be not proper for objects with multiple instance.
  **/
-#define DECLARE_STREAMABLE(data_type)                                                                           \
-    /* \brief   Reading from stream operators. It reads data from stream and                            */      \
-    /*          initializes input object.                                                               */      \
+/**
+ * \brief   Declares friend stream operators for a data type (use inside a class).
+ **/
+#define AREG_DECLARE_STREAMABLE(data_type)                                                                      \
     friend inline const IEInStream & operator >> (const IEInStream & stream, data_type & input);                \
-    /* \brief   Writing to stream operator. It reads data from output instance                          */      \
-    /*          and writes data to stream object.                                                       */      \
-    friend inline IEOutStream & operator << (IEOutStream & stream, const data_type & output)                    \
-
-#define GLOBAL_DECLARE_STREAMABLE(data_type)                                                                    \
-    /* \brief   Reading from stream operators. It reads data from stream and                            */      \
-    /*          initializes input object.                                                               */      \
-    const IEInStream & operator >> (const IEInStream & stream, data_type & input);                              \
-    /* \brief   Writing to stream operator. It reads data from output instance                          */      \
-    /*          and writes data to stream object.                                                       */      \
-    IEOutStream & operator << (IEOutStream & stream, const data_type & output)                                  \
-
+    friend inline IEOutStream & operator << (IEOutStream & stream, const data_type & output)
 
 /**
- * \brief   Implementation of streaming operators. Fine for object with primitives.
- *          Might be not proper for objects with multiple instance.
+ * \brief   Declares global (non-friend) stream operators for a data type.
  **/
-#define IMPLEMENT_STREAMABLE(data_type)                                                                         \
-    /* \brief   Read data from stream and initialize input object.                                      */      \
+#define AREG_GLOBAL_DECLARE_STREAMABLE(data_type)                                                               \
+    const IEInStream & operator >> (const IEInStream & stream, data_type & input);                              \
+    IEOutStream & operator << (IEOutStream & stream, const data_type & output)
+
+/**
+ * \brief   Implements stream operators for trivially-copyable types via raw memory read/write.
+ *          Includes a static_assert to catch misuse with non-trivial types.
+ **/
+#define AREG_IMPLEMENT_STREAMABLE(data_type)                                                                    \
     inline const IEInStream& operator >> (const IEInStream& stream, data_type & input)                          \
     {   stream.read( reinterpret_cast<unsigned char *>(&input), sizeof(data_type) ); return stream; }           \
-                                                                                                                \
-    /* \brief   Write output data object to stream instance.                                            */      \
     inline IEOutStream& operator << (IEOutStream& stream, const data_type& output)                              \
-    {   stream.write( reinterpret_cast<const unsigned char *>(&output), sizeof(data_type) ); return stream; }   \
-
+    {   stream.write( reinterpret_cast<const unsigned char *>(&output), sizeof(data_type) ); return stream; }
 
 /**
- * \brief   Declare operator with library compiler switches.
+ * \brief   Declares friend stream operators with DLL export/import specifier.
  **/
-#define DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                                         \
+#define AREG_DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                                    \
     friend ExportDef const IEInStream & operator >> (const IEInStream & stream, data_type & input);             \
-    friend ExportDef IEOutStream & operator << (IEOutStream & stream, const data_type & output);                \
+    friend ExportDef IEOutStream & operator << (IEOutStream & stream, const data_type & output);
 
-#define GLOBAL_DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                                  \
+#define AREG_GLOBAL_DECLARE_STREAMABLE_EXPORT(data_type, ExportDef)                                             \
     ExportDef const IEInStream & operator >> (const IEInStream & stream, data_type & input);                    \
-    ExportDef IEOutStream & operator << (IEOutStream & stream, const data_type & output);                       \
+    ExportDef IEOutStream & operator << (IEOutStream & stream, const data_type & output);
 
-#define IMPLEMENT_READABLE_EXPORT(data_type, ExportDef)                                                         \
-    ExportDef const IEInStream & operator >> (const IEInStream & stream, data_type & input)                     \
+#define AREG_IMPLEMENT_READABLE_EXPORT(data_type, ExportDef)                                                    \
+    ExportDef const IEInStream & operator >> (const IEInStream & stream, data_type & input)
 
-#define IMPLEMENT_WRITABLE_EXPORT(data_type, ExportDef)                                                         \
+#define AREG_IMPLEMENT_WRITABLE_EXPORT(data_type, ExportDef)                                                    \
     ExportDef IEOutStream & operator << (IEOutStream & stream, const data_type & output)                        \
 
 
@@ -130,12 +123,12 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEInStream( void ) = default;
+    IEInStream() = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEInStream( void ) = default;
+    virtual ~IEInStream() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -147,22 +140,22 @@ public:
     /**
      * \brief   Reads and returns 8-bit value from buffer
      **/
-    virtual uint8_t read8Bits( void ) const;
+    virtual uint8_t read8Bits() const;
 
     /**
      * \brief   Reads and returns 16-bit value from buffer
      **/
-    virtual uint16_t read16Bits( void ) const;
+    virtual uint16_t read16Bits() const;
 
     /**
      * \brief   Reads and returns 32-bit value from buffer
      **/
-    virtual uint32_t read32Bits( void ) const;
+    virtual uint32_t read32Bits() const;
 
     /**
      * \brief   Reads and returns 64-bit value from buffer
      **/
-    virtual uint64_t read64Bits( void ) const;
+    virtual uint64_t read64Bits() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -208,7 +201,7 @@ public:
     /**
      * \brief   Resets cursor position and moves to the begin of data.
      **/
-    virtual void resetCursor( void ) const = 0;
+    virtual void resetCursor() const = 0;
 
 protected:
     /**
@@ -216,13 +209,13 @@ protected:
      *          i.e. remaining readable size. The returns value is less or equal to
      *          the size of streamable buffer.
      **/
-    virtual unsigned int getSizeReadable( void ) const = 0;
+    virtual unsigned int getSizeReadable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEInStream );
+    AREG_NOCOPY_NOMOVE( IEInStream );
 }; 
 
 
@@ -242,12 +235,12 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEOutStream( void ) = default;
+    IEOutStream() = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEOutStream( void ) = default;
+    virtual ~IEOutStream() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -328,20 +321,20 @@ public:
     /**
      * \brief	Flushes cached data to output stream object.
      **/
-    virtual void flush( void ) = 0;
+    virtual void flush() = 0;
 
 protected:
     /**
      * \brief	Returns the size in bytes of available space in the stream to write data, 
      *          i.e. remaining writable size.
      **/
-    virtual unsigned int getSizeWritable( void ) const = 0;
+    virtual unsigned int getSizeWritable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEOutStream );
+    AREG_NOCOPY_NOMOVE( IEOutStream );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -357,30 +350,30 @@ protected:
     /**
      * \brief   Protected constructor
      **/
-    IEIOStream( void ) = default;
+    IEIOStream() = default;
 
 public:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEIOStream( void ) = default;
+    virtual ~IEIOStream() = default;
 
 public:
 /************************************************************************
  * \brief   Support streaming of primitives
  ************************************************************************/
-    DECLARE_STREAMABLE(bool);           //!< Declare primitive type bool as streamable
-    DECLARE_STREAMABLE(char);           //!< Declare primitive type char as streamable
-    DECLARE_STREAMABLE(wchar_t);        //!< Declare primitive type wchar_t as streamable
-    DECLARE_STREAMABLE(unsigned char);  //!< Declare primitive type unsigned char as streamable
-    DECLARE_STREAMABLE(short);          //!< Declare primitive type short as streamable
-    DECLARE_STREAMABLE(unsigned short); //!< Declare primitive type unsigned short as streamable
-    DECLARE_STREAMABLE(int);            //!< Declare primitive type int as streamable
-    DECLARE_STREAMABLE(unsigned int);   //!< Declare primitive type unsigned int as streamable
-    DECLARE_STREAMABLE(int64_t);        //!< Declare primitive type int64_t as streamable
-    DECLARE_STREAMABLE(uint64_t);       //!< Declare primitive type uint64_t as streamable
-    DECLARE_STREAMABLE(float);          //!< Declare primitive type float as streamable
-    DECLARE_STREAMABLE(double);         //!< Declare primitive type double as streamable
+    AREG_DECLARE_STREAMABLE(bool);           //!< Declare primitive type bool as streamable
+    AREG_DECLARE_STREAMABLE(char);           //!< Declare primitive type char as streamable
+    AREG_DECLARE_STREAMABLE(wchar_t);        //!< Declare primitive type wchar_t as streamable
+    AREG_DECLARE_STREAMABLE(unsigned char);  //!< Declare primitive type unsigned char as streamable
+    AREG_DECLARE_STREAMABLE(short);          //!< Declare primitive type short as streamable
+    AREG_DECLARE_STREAMABLE(unsigned short); //!< Declare primitive type unsigned short as streamable
+    AREG_DECLARE_STREAMABLE(int);            //!< Declare primitive type int as streamable
+    AREG_DECLARE_STREAMABLE(unsigned int);   //!< Declare primitive type unsigned int as streamable
+    AREG_DECLARE_STREAMABLE(int64_t);        //!< Declare primitive type int64_t as streamable
+    AREG_DECLARE_STREAMABLE(uint64_t);       //!< Declare primitive type uint64_t as streamable
+    AREG_DECLARE_STREAMABLE(float);          //!< Declare primitive type float as streamable
+    AREG_DECLARE_STREAMABLE(double);         //!< Declare primitive type double as streamable
 
     /**
      * \brief   Writes an ASCII string to the stream
@@ -465,7 +458,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEIOStream );
+    AREG_NOCOPY_NOMOVE( IEIOStream );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -475,18 +468,18 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // MACRO make primitives streamable
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE(bool)
-IMPLEMENT_STREAMABLE(char)
-IMPLEMENT_STREAMABLE(wchar_t)
-IMPLEMENT_STREAMABLE(unsigned char)
-IMPLEMENT_STREAMABLE(int16_t)
-IMPLEMENT_STREAMABLE(uint16_t)
-IMPLEMENT_STREAMABLE(int32_t)
-IMPLEMENT_STREAMABLE(uint32_t)
-IMPLEMENT_STREAMABLE(int64_t)
-IMPLEMENT_STREAMABLE(uint64_t)
-IMPLEMENT_STREAMABLE(float)
-IMPLEMENT_STREAMABLE(double)
+AREG_IMPLEMENT_STREAMABLE(bool)
+AREG_IMPLEMENT_STREAMABLE(char)
+AREG_IMPLEMENT_STREAMABLE(wchar_t)
+AREG_IMPLEMENT_STREAMABLE(unsigned char)
+AREG_IMPLEMENT_STREAMABLE(int16_t)
+AREG_IMPLEMENT_STREAMABLE(uint16_t)
+AREG_IMPLEMENT_STREAMABLE(int32_t)
+AREG_IMPLEMENT_STREAMABLE(uint32_t)
+AREG_IMPLEMENT_STREAMABLE(int64_t)
+AREG_IMPLEMENT_STREAMABLE(uint64_t)
+AREG_IMPLEMENT_STREAMABLE(float)
+AREG_IMPLEMENT_STREAMABLE(double)
 
 inline IEOutStream & operator << (IEOutStream & stream, const char * output)
 {

@@ -85,38 +85,38 @@ namespace NERemoteService
     /**
      * \brief   Returns fixed predefined message to start server connection
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageHelloServer( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageHelloServer();
 
     /**
      * \brief   Returns fixed predefined message to stop server connection
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageByeServer( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageByeServer();
 
     /**
      * \brief   Returns fixed message to notify client connection statuses such as
      *          connection accepted, connection rejected and connection is closed.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyClientConnection( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyClientConnection();
 
     /**
      * \brief   Returns fixed message to start service registration
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterService( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterService();
 
     /**
      * \brief   Returns fixed message to query service the connected instances. Only log observers can query.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageQueryInstances( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageQueryInstances();
 
     /**
      * \brief   Returns fixed message to notify log observers the connected instances. Only log observers receive the message.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyInstances(void);
+    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyInstances();
 
     /**
      * \brief   Returns fixed message to register notification
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterNotify( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterNotify();
 
     /**
      * \brief   NERemoteService::CreateConnectRequest
@@ -279,8 +279,8 @@ namespace NERemoteService
 //////////////////////////////////////////////////////////////////////////
 // Make eRemoteServices and eConnectionTypes streamable
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE(NERemoteService::eRemoteServices);
-IMPLEMENT_STREAMABLE(NERemoteService::eConnectionTypes);
-IMPLEMENT_STREAMABLE(NERemoteService::eRemoteConnection);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteServices);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::eConnectionTypes);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteConnection);
 
 #endif  // AREG_IPC_NEREMOTESERVICE_HPP

@@ -56,7 +56,7 @@ SqliteStatement::SqliteStatement(SqliteDatabase& db)
 {
 }
 
-SqliteStatement::~SqliteStatement(void)
+SqliteStatement::~SqliteStatement()
 {
     finalize();
 }
@@ -150,7 +150,7 @@ bool SqliteStatement::bindNull(int index)
     return ((index >= 0) && isValid() && (sqlite3_bind_null(_sqlite_stmt(mStatement), index + 1) == SQLITE_OK));
 }
 
-void SqliteStatement::clearBindings(void)
+void SqliteStatement::clearBindings()
 {
     ASSERT(isValid());
     sqlite3_clear_bindings(_sqlite_stmt(mStatement));
@@ -248,7 +248,7 @@ bool SqliteStatement::isDouble(int index) const
     return (sqlite3_column_type(_sqlite_stmt(mStatement), index) == SQLITE_FLOAT);
 }
 
-int SqliteStatement::getColumnCount(void) const
+int SqliteStatement::getColumnCount() const
 {
     ASSERT(isValid());
     return sqlite3_column_count(_sqlite_stmt(mStatement));

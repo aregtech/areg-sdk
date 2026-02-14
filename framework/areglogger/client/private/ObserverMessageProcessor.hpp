@@ -42,7 +42,7 @@ class ObserverMessageProcessor
 //////////////////////////////////////////////////////////////////////////
 public:
     ObserverMessageProcessor(LoggerClient& loggerClient);
-    ~ObserverMessageProcessor(void) = default;
+    ~ObserverMessageProcessor() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -105,8 +105,8 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ObserverMessageProcessor(void) = delete;
-    DECLARE_NOCOPY_NOMOVE(ObserverMessageProcessor);
+    ObserverMessageProcessor() = delete;
+    AREG_NOCOPY_NOMOVE(ObserverMessageProcessor);
 };
 
 #endif  // AREG_AREGLOGGER_CLIENT_PRIVATE_OBSERVERMESSAGEPROCESSOR_HPP

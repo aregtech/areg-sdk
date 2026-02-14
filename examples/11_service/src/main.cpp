@@ -21,6 +21,8 @@
 #include "areg/logging/GELog.h"
 #include "src/ServicingComponent.hpp"
 
+#include <algorithm>
+
 #ifdef  _MSC_VER
     // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg")
@@ -69,7 +71,7 @@ int main()
         Application::unloadModel(_modelName);   // stop and unload components
         
         unsigned int duration = static_cast<unsigned int>(Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI);
-        timeout = MACRO_MIN( timeout, duration );
+        timeout = std::min( timeout, duration );
         std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
         Application::releaseApplication();      // release and cleanup resources of application.
 

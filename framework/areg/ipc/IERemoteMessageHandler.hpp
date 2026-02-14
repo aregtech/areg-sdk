@@ -43,9 +43,9 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    IERemoteMessageHandler( void ) = default;
+    IERemoteMessageHandler() = default;
 
-    virtual ~IERemoteMessageHandler( void ) = default;
+    virtual ~IERemoteMessageHandler() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -86,7 +86,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IERemoteMessageHandler );
+    AREG_NOCOPY_NOMOVE( IERemoteMessageHandler );
 };
 
 #endif  // AREG_IPC_IEREMOTEMESSAGEHANDLER_HPP

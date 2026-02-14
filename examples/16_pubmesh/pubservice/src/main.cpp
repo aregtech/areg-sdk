@@ -44,7 +44,7 @@ private:
     LocalHelloWorldService  mLocalService;
     PublicHelloWorldClient  mControllerClient;
 
-    LocalServiceComponent & self( void )
+    LocalServiceComponent & self()
     {
         return (*this);
     }

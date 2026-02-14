@@ -70,7 +70,7 @@ namespace NELogging
         /**
          * \brief   Default constructor
          **/
-        inline sScopeInfo(void);
+        inline sScopeInfo();
 
         /**
          * \brief   Constructor that initializes the scope name, scope ID and the scope priority.
@@ -163,7 +163,7 @@ namespace NELogging
     /**
      * \brief   Returns the cookie of the log collector (logger).
      **/
-    AREG_API const ITEM_ID & getCookie(void);
+    AREG_API const ITEM_ID & getCookie();
 
     /**
      * \brief   NELogging::HAS_MESSAGE_PRIORITY
@@ -354,7 +354,7 @@ namespace NELogging
      * \brief   Sets default configuration values and forces to start logging.
      * \return  Returns true if succeeded to start logging.
      **/
-    AREG_API bool forceStartLogging( void );
+    AREG_API bool forceStartLogging();
 
     /**
      * \brief   Loads configuration values from specified configuration file and force to start logging, i.e. enables logging.
@@ -383,7 +383,7 @@ namespace NELogging
      *          complete the job and exit. This should be called if previously
      *          it was requested to stop the logging without waiting for completion.
      **/
-    AREG_API void waitLoggingEnd(void);
+    AREG_API void waitLoggingEnd();
 
     /**
      * \brief   Activates the specified log scope, enabling logging for messages within that scope.
@@ -403,17 +403,17 @@ namespace NELogging
     /**
      * \brief   Returns true if logging has been started.
      **/
-    AREG_API bool isStarted( void );
+    AREG_API bool isStarted();
 
     /**
      * \brief   Returns true if logging has been configured.
      **/
-    AREG_API bool isConfigured( void );
+    AREG_API bool isConfigured();
 
     /**
      * \brief   Returns true if logging is enabled.
      **/
-    AREG_API bool isEnabled( void );
+    AREG_API bool isEnabled();
 
     /**
      * \brief   Initializes the logging by reading and configuration instructions
@@ -579,7 +579,7 @@ namespace NELogging
      * \return  Returns generate remote message to notify the log collector that the configuration file has been saved.
      * \see     messageSaveConfiguration
      **/
-    AREG_API RemoteMessage messageConfigurationSaved(void);
+    AREG_API RemoteMessage messageConfigurationSaved();
 
     /**
      * \brief   Call to set external logging database engine.
@@ -590,8 +590,8 @@ namespace NELogging
 //////////////////////////////////////////////////////////////////////////////
 // NELogging namespace streamable types
 //////////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE(NELogging::eLogPriority)
-IMPLEMENT_STREAMABLE(NELogging::eLogMessageType)
+AREG_IMPLEMENT_STREAMABLE(NELogging::eLogPriority)
+AREG_IMPLEMENT_STREAMABLE(NELogging::eLogMessageType)
 
 //////////////////////////////////////////////////////////////////////////////
 // NELogging namespace objects
@@ -699,7 +699,7 @@ inline const char* NELogging::getString(NELogging::eLogPriority prio)
     }
 }
 
-inline NELogging::sScopeInfo::sScopeInfo(void)
+inline NELogging::sScopeInfo::sScopeInfo()
     : scopeId   ( 0u )
     , scopePrio ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
     , scopeName (String::EmptyString)

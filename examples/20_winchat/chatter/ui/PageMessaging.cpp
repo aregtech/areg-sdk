@@ -113,19 +113,19 @@ void PageMessaging::OnRemoveConnection( NEConnectionManager::sConnection & data 
     outputMessage( data.nickName, "Is unregistered and disconnected", data.connectTime, data.connectedTime, data.cookie );
 }
 
-void PageMessaging::OnUpdateConnection( void )
+void PageMessaging::OnUpdateConnection()
 {
     // do nothing
 }
 
-void PageMessaging::OnDisconnectTriggered( void )
+void PageMessaging::OnDisconnectTriggered()
 {
     outputMessage( mConnectionHandler.GetNickName( ), "Disconnects system", mConnectionHandler.GetTimeConnect( ), mConnectionHandler.GetTimeConnected( ), mConnectionHandler.GetCookie( ) );
 }
 
-void PageMessaging::setHeaders( void )
+void PageMessaging::setHeaders()
 {
-    int count = MACRO_ARRAYLEN( PageMessaging::HEADER_TITILES );
+    int count = std::size( PageMessaging::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;
@@ -146,13 +146,13 @@ void PageMessaging::setHeaders( void )
     }
 }
 
-bool PageMessaging::isServiceConnected(void) const
+bool PageMessaging::isServiceConnected() const
 {
     return ( (mCentralMessage                           != nullptr ) && 
              (mCentralMessage->isConnected()            == true ) );
 }
 
-void PageMessaging::cleanService(void)
+void PageMessaging::cleanService()
 {
     if (mCentralMessage != nullptr)
     {
@@ -432,7 +432,7 @@ void PageMessaging::OnDestroy( )
     CPropertyPage::OnDestroy( );
 }
 
-void PageMessaging::OnDefaultClicked( void )
+void PageMessaging::OnDefaultClicked()
 {
     UpdateData(TRUE);
     if ( (mSendEnabled == TRUE) && (mTextMsg.IsEmpty() == FALSE) )

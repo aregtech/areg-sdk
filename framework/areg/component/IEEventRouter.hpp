@@ -46,8 +46,8 @@ protected:
     /**
      * \brief   Protected constructor and destructor.
      **/
-    IEEventRouter( void ) = default;
-    virtual ~IEEventRouter( void ) = default;
+    IEEventRouter() = default;
+    virtual ~IEEventRouter() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -65,7 +65,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEEventRouter );
+    AREG_NOCOPY_NOMOVE( IEEventRouter );
 };
 
 #endif  // AREG_COMPONENT_IEEVENTROUTER_HPP

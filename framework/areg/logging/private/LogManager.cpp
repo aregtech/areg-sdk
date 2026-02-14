@@ -32,7 +32,7 @@
 // LogManager static methods
 //////////////////////////////////////////////////////////////////////////
 
-LogManager & LogManager::getInstance( void )
+LogManager & LogManager::getInstance()
 {
     static LogManager	_theLogManager;
     return _theLogManager;
@@ -85,7 +85,7 @@ bool LogManager::saveLogConfig(const char* configFile /*= nullptr*/ )
     return Application::saveConfiguration(configFile);
 }
 
-void LogManager::updateScopeConfiguration(void)
+void LogManager::updateScopeConfiguration()
 {
     LogManager& logManager = LogManager::getInstance();
     Lock lock(logManager.mLock);
@@ -94,17 +94,17 @@ void LogManager::updateScopeConfiguration(void)
     config.updateScopeConfiguration(logManager.mScopeController);
 }
 
-bool LogManager::isLoggingEnabled(void)
+bool LogManager::isLoggingEnabled()
 {
     return LogManager::getInstance().mLogConfig.isLoggingEnabled();
 }
 
-bool LogManager::isLoggingConfigured(void)
+bool LogManager::isLoggingConfigured()
 {
     return Application::isConfigured();
 }
 
-bool LogManager::forceActivateLogging(void)
+bool LogManager::forceActivateLogging()
 {
     bool result = false;
     LogManager & logManager = LogManager::getInstance();
@@ -162,17 +162,17 @@ void LogManager::setLogDatabaseEngine(IELogDatabaseEngine * dbEngine)
     LogManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
 }
 
-bool LogManager::isLogDabaseEngineInitialized(void)
+bool LogManager::isLogDabaseEngineInitialized()
 {
     return LogManager::getInstance().mLoggerDatabase.isValid();
 }
 
-bool LogManager::isLogDatabaseEnabled(void)
+bool LogManager::isLogDatabaseEnabled()
 {
     return LogManager::getInstance().mLogConfig.getDatabaseEnable();
 }
 
-void LogManager::forceEnableLogging(void)
+void LogManager::forceEnableLogging()
 {
     LogManager& logManager = LogManager::getInstance();
     logManager.mLogConfig.setStatus(true);
@@ -182,7 +182,7 @@ void LogManager::forceEnableLogging(void)
 //////////////////////////////////////////////////////////////////////////
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-LogManager::LogManager(void)
+LogManager::LogManager()
     : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
     , IELoggingEventConsumer  ( )
 
@@ -204,39 +204,39 @@ LogManager::LogManager(void)
 //////////////////////////////////////////////////////////////////////////
 // LogManager class methods
 //////////////////////////////////////////////////////////////////////////
-void LogManager::clearConfigData( void )
+void LogManager::clearConfigData()
 {
     Lock lock(mLock);
     mScopeController.clearConfigScopes( );
 }
 
-void LogManager::resetScopes(void)
+void LogManager::resetScopes()
 {
     Lock lock(mLock);
     mScopeController.resetScopes();
 }
 
-bool LogManager::isRemoteLoggingEnabled(void) const
+bool LogManager::isRemoteLoggingEnabled() const
 {
     return mLogConfig.isRemoteLoggingEnabled();
 }
 
-bool LogManager::isDatabaseLoggingEnabled(void) const
+bool LogManager::isDatabaseLoggingEnabled() const
 {
     return mLogConfig.isDatabaseLoggingEnabled();
 }
 
-bool LogManager::isFileLoggingEnabled(void) const
+bool LogManager::isFileLoggingEnabled() const
 {
     return mLogConfig.isFileLoggingEnabled();
 }
 
-bool LogManager::isDebugOutputLoggingEnabled(void) const
+bool LogManager::isDebugOutputLoggingEnabled() const
 {
     return mLogConfig.isDebugOutputLoggingEnabled();
 }
 
-bool LogManager::startLoggingThread( void )
+bool LogManager::startLoggingThread()
 {
     ASSERT((isRunning() == false) && (isReady() == false));
     mLogStarted.resetEvent( );
@@ -270,7 +270,7 @@ void LogManager::stopLoggingThread(bool waitComplete)
     }
 }
 
-void LogManager::waitLoggingThreadEnd(void)
+void LogManager::waitLoggingThreadEnd()
 {
     mIsStarted = false;
     completionWait(NECommon::WAIT_INFINITE);
@@ -302,7 +302,7 @@ void LogManager::processEvent( const LoggingEventData & data )
     mEventProcessor.processLogEvent( data.getLoggingAction( ), data.getReadableStream( ) );
 }
 
-void LogManager::startLogs( void )
+void LogManager::startLogs()
 {
     if ( mLogConfig.isLoggingEnabled() )
     {
@@ -335,7 +335,7 @@ void LogManager::startLogs( void )
     mLogStarted.setEvent( );
 }
 
-void LogManager::stopLogs(void)
+void LogManager::stopLogs()
 {
     mScopeController.changeScopeActivityStatus( false );
     mLogStarted.resetEvent( );

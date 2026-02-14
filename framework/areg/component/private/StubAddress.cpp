@@ -55,7 +55,7 @@ StubAddress StubAddress::convPathToAddress( const char* pathStub, const char** o
     return result;
 }
 
-const StubAddress & StubAddress::getInvalidStubAddress( void )
+const StubAddress & StubAddress::getInvalidStubAddress()
 {
     static const StubAddress _invalidStubAddress;
     return _invalidStubAddress;
@@ -64,7 +64,7 @@ const StubAddress & StubAddress::getInvalidStubAddress( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-StubAddress::StubAddress( void )
+StubAddress::StubAddress()
     : ServiceAddress( )
     , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
@@ -184,7 +184,7 @@ bool StubAddress::isProxyCompatible(const ProxyAddress & proxyAddress) const
 void StubAddress::setThread(const String & threadName)
 {
     Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
-    DispatcherThread * dispatcher = RUNTIME_CAST( thread, DispatcherThread);
+    DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->isValid())
     {
         mThreadName = dispatcher->getAddress().getThreadName();
@@ -204,7 +204,7 @@ bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) cons
 
     const ITEM_ID & target{ mChannel.getSource() };
     Thread* thread = target != NEService::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
-    DispatcherThread* dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     if (dispatcher != nullptr)
     {
         result = serviceEvent.registerForThread(dispatcher);
@@ -218,17 +218,17 @@ bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) cons
     return result;
 }
 
-void StubAddress::invalidateChannel( void )
+void StubAddress::invalidateChannel()
 {
     mChannel.invalidate();
 }
 
-bool StubAddress::isValid( void ) const
+bool StubAddress::isValid() const
 {
     return mChannel.isValid();
 }
 
-String StubAddress::convToString(void) const
+String StubAddress::convToString() const
 {
     String result(static_cast<uint32_t>(0xFF));
 
@@ -276,7 +276,7 @@ unsigned int StubAddress::_magicNumber(const StubAddress & addrStub)
     return result;
 }
 
-bool StubAddress::isValidated(void) const
+bool StubAddress::isValidated() const
 {
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
 }

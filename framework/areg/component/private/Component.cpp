@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(Component, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME(Component, RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Static variables
@@ -109,9 +109,9 @@ bool Component::existComponent( const String & roleName )
     return _mapComponentResource.existResource(NEMath::crc32Calculate(roleName.getString()));
 }
 
-ComponentThread& Component::_getCurrentComponentThread( void )
+ComponentThread& Component::_getCurrentComponentThread()
 {
-    ComponentThread* result = RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
+    ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
     ASSERT(result != nullptr);
     return *result;
 }
@@ -150,7 +150,7 @@ Component::Component( const String & roleName )
 }
 
 
-Component::~Component( void )
+Component::~Component()
 {
     _mapComponentResource.unregisterResourceObject(mMagicNum);
 }
@@ -232,7 +232,7 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
     }
 }
 
-void Component::terminateSelf(void)
+void Component::terminateSelf()
 {
     _shutdownServices();
 
@@ -301,7 +301,7 @@ unsigned int Component::_magicNumber(Component & comp)
     return result;
 }
 
-inline void Component::_shutdownServices(void)
+inline void Component::_shutdownServices()
 {
     for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {

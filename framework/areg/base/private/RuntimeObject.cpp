@@ -22,4 +22,4 @@
 /************************************************************************/
 // Implement runtime standard functions and initialize variables
 /************************************************************************/
-IMPLEMENT_RUNTIME(RuntimeObject, RuntimeBase)
+AREG_IMPLEMENT_RUNTIME(RuntimeObject, RuntimeBase)

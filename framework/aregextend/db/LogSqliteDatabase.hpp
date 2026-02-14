@@ -57,24 +57,24 @@ public:
      * \brief   Returns the SQL query to read instance dependent log scopes from the database.
      *          The ID of the instance can be specified (bound) to read scopes.
      **/
-    static String getReadScopesQuery(void);
+    static String getReadScopesQuery();
 
     /**
      * \brief   Returns the SQL query to read all instances from the database.
      **/
-    static String getReadInstancesQuery(void);
+    static String getReadInstancesQuery();
 
     /**
      * \brief   Returns the SQL query to read all log messages from the database.
      **/
-    static String getReadAllLogMessagesQuery(void);
+    static String getReadAllLogMessagesQuery();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    LogSqliteDatabase(void);
-    virtual ~LogSqliteDatabase(void);
+    LogSqliteDatabase();
+    virtual ~LogSqliteDatabase();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -84,7 +84,7 @@ public:
      * \brief   Returns true if logging in the database is enabled.
      *          If logging is disabled, no database operation is performed.
      **/
-    inline bool isDabataseLoggingEnabled(void) const;
+    inline bool isDabataseLoggingEnabled() const;
 
     /**
      * \brief   Enables or disables the database logging.
@@ -97,23 +97,23 @@ public:
     /**
      * \brief   Returns database file path.
      **/
-    inline const String& getDatabasePath(void) const;
+    inline const String& getDatabasePath() const;
 
     /**
      * \brief   Returns the initial database file path. The initial file path may contain mask like timestamp,
      *          so that each time database is disconnected and connected again with the empty file path,
      *          it creates new file.
      **/
-    inline const String& getInitialDatabasePath(void) const;
+    inline const String& getInitialDatabasePath() const;
 
     /**
      * \brief   Return SQLite database object
      **/
-    inline SqliteDatabase& getDatabase(void);
-    inline const SqliteDatabase& getDatabase(void) const;
+    inline SqliteDatabase& getDatabase();
+    inline const SqliteDatabase& getDatabase() const;
 
-    inline SqliteStatement& getStatement(void);
-    inline const SqliteStatement& getStatement(void) const;
+    inline SqliteStatement& getStatement();
+    inline const SqliteStatement& getStatement() const;
 
     /**
      * \brief   Checks whether the specified table exists or not.
@@ -141,7 +141,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    virtual bool isOperable(void) const override;
+    virtual bool isOperable() const override;
 
     /**
      * \brief   Connects to the specified database.
@@ -158,7 +158,7 @@ public:
     /**
      * \brief   Disconnects connected SqliteDatabase.
      **/
-    virtual void disconnect(void) override;
+    virtual void disconnect() override;
 
     /**
      * \brief   Execute the SQL script.
@@ -171,7 +171,7 @@ public:
      * \brief   Call if need to make multiple operation. This call starts the transaction,
      *          that is required either commit or rollback call to complete the transaction.
      **/
-    virtual bool begin(void) override;
+    virtual bool begin() override;
 
     /**
      * \brief   Commits or rolls back the SqliteDatabase changes and returns true if succeeded.
@@ -189,7 +189,7 @@ public:
      * \brief   Returns true if the database and the log tables are initialized,
      *          and ready to log messages.
      **/
-    virtual bool areTablesInitialized(void) const override;
+    virtual bool areTablesInitialized() const override;
 
     /**
      * \brief   Called when logging message should be saved in the database.
@@ -264,7 +264,7 @@ public:
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
      **/
-    virtual bool rollback(void) override;
+    virtual bool rollback() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -272,133 +272,133 @@ public:
 
     /**
      * \brief   Call to query and get list of names of connected instances from log database.
-     * \param   names   On output, the vector contains names of connected instances.
+     * \param[out]  names   On output, the vector contains names of connected instances.
      **/
-    void getLogInstanceNames(std::vector<String>& OUT names);
-    std::vector<String> getLogInstanceNames(void);
+    void getLogInstanceNames(std::vector<String>& names);
+    std::vector<String> getLogInstanceNames();
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database.
-     * \param   ids     On output, the vector contains IDs of connected instances.
+     * \param[out]  ids     On output, the vector contains IDs of connected instances.
      **/
-    void getLogInstances(std::vector<ITEM_ID>& OUT ids);
-    std::vector<ITEM_ID> getLogInstances(void);
+    void getLogInstances(std::vector<ITEM_ID>& ids);
+    std::vector<ITEM_ID> getLogInstances();
 
     /**
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
-     * \param   names   On output, the vector contains names of threads of connected instances.
+     * \param[out]  names   On output, the vector contains names of threads of connected instances.
      **/
-    void getLogThreadNames(std::vector<String>& OUT names);
-    std::vector<String> getLogThreadNames(void);
+    void getLogThreadNames(std::vector<String>& names);
+    std::vector<String> getLogThreadNames();
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
-     * \param   ids     On output, the vector contains IDs of threads of connected instances.
+     * \param[out]  ids     On output, the vector contains IDs of threads of connected instances.
      **/
-    void getLogThreads(std::vector<ITEM_ID>& OUT ids);
-    std::vector<ITEM_ID> getLogThreads(void);
+    void getLogThreads(std::vector<ITEM_ID>& ids);
+    std::vector<ITEM_ID> getLogThreads();
 
     /**
      * \brief   Call to get the list of log priorities.
      * \param   names   On output, the vector contains names of log priorities.
      **/
-    void getPriorityNames(std::vector<String>& OUT names);
-    std::vector<String> getPriorityNames(void);
+    void getPriorityNames(std::vector<String>& names);
+    std::vector<String> getPriorityNames();
 
     /**
      * \brief   Call to query and get information of connected instances from log database.
      *          This query will receive list of all registered instances.
-     * \param   infos   On output, the vector contains information of connected instances.
+     * \param[out]  infos   On output, the vector contains information of connected instances.
      **/
-    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& OUT infos);
-    std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos(void);
+    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
+    std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos();
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
      *          This query will receive list of all registered scopes.
-     * \param   scopes  On output, the vector contains information of log scopes.
-     * \param   instID  The ID of the instance.
+     * \param[out]  scopes  On output, the vector contains information of log scopes.
+     * \param[in]   instID  The ID of the instance.
      **/
-    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, ITEM_ID IN instId);
-    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID IN instId);
+    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
+    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
-     * \param   messages    On output, the vector contains all log messages.
+     * \param[out]  messages    On output, the vector contains all log messages.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& OUT messages);
-    std::vector<SharedBuffer> getLogMessages(void);
+    void getLogMessages(std::vector<SharedBuffer>& messages);
+    std::vector<SharedBuffer> getLogMessages();
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
      *          If `instId` is `NEService::COOKIE_ANY` it receives the list of all instances
      *          similar to the call to `getLogMessages()`.
-     * \param   messages    On output, the vector contains log messages of the specified instance.
-     * \param   instId      The ID of the instance to get log messages.
-     *                      If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     * \param[out]  messages    On output, the vector contains log messages of the specified instance.
+     * \param[in]   instId      The ID of the instance to get log messages.
+     *                          If `NEService::COOKIE_ANY` it receives log messages of all instances.
      **/
-    void getLogInstMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID IN instId = NEService::COOKIE_ANY);
-    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID IN instId = NEService::COOKIE_ANY);
+    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
+    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = NEService::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
      *          If `scopeId` is `0` it receives the list of all scopes
      *          similar to the call to `getLogMessages()`.
-     * \param   messages    On output, the vector contains log messages of the specified scope.
-     * \param   scopeId     The ID of the scope to get log messages.
-     *                      If `0` it receives log messages of all scopes.
+     * \param[out]  messages    On output, the vector contains log messages of the specified scope.
+     * \param[in]   scopeId     The ID of the scope to get log messages.
+     *                          If `0` it receives log messages of all scopes.
      **/
-    void getLogScopeMessages(std::vector<SharedBuffer>& OUT messages, uint32_t IN scopeId = 0);
-    std::vector<SharedBuffer> getLogScopeMessages(uint32_t IN scopeId = 0);
+    void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
+    std::vector<SharedBuffer> getLogScopeMessages(uint32_t scopeId = 0);
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
      *          If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
      *          similar to the call to `getLogMessages()`.
-     * \param   messages    On output, the vector contains log messages of the specified instance and scope.
-     * \param   instId      The ID of the instance to get log messages.
-     *                      If `NEService::COOKIE_ANY` it receives log messages of all instances.
-     * \param   scopeId     The ID of the scope to get log messages.
-     *                      If `0` it receives log messages of all scopes.
+     * \param[out]  messages    On output, the vector contains log messages of the specified instance and scope.
+     * \param[in]   instId      The ID of the instance to get log messages.
+     *                          If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     * \param[in]   scopeId     The ID of the scope to get log messages.
+     *                          If `0` it receives log messages of all scopes.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& OUT messages, ITEM_ID IN instId, uint32_t IN scopeId);
-    std::vector<SharedBuffer> getLogMessages(ITEM_ID IN instId, uint32_t IN scopeId);
+    void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
+    std::vector<SharedBuffer> getLogMessages(ITEM_ID instId, uint32_t scopeId);
 
     /**
      * \brief   Call to get log scopes using SQLite Statement object. The SQLite Statement should be already initialized
      *          and the parameters should be bound, if there is any. The method will extract the log scopes from the statement
      *          up to the specified maximum number of entries or all if the `maxEntries` is `-1`.
-     * \param   scopes      [out]   The vector to fill with log scopes. The extracted scopes will be added to the existing vector.
-     * \param   stmt        [in]    The SQLite Statement object to extract log scopes. The Statement should be already initialized
-     *                              and the parameters should be bound, if there is any.
-     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \param[out]  scopes      The vector to fill with log scopes. The extracted scopes will be added to the existing vector.
+     * \param[in]   stmt        The SQLite Statement object to extract log scopes. The Statement should be already initialized
+     *                          and the parameters should be bound, if there is any.
+     * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int getLogInstScopes(std::vector<NELogging::sScopeInfo>& OUT scopes, SqliteStatement& IN stmt, int IN maxEntries = -1);
+    static int getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, int maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
      *          and the parameters should be bound, if there is any. The method will extract the log messages from the statement
      *          up to the specified maximum number of entries or all if the `maxEntries` is `-1`.
-     * \param   logs        [out]   The vector to fill with log messages. The extracted messages will be added to the existing vector.
-     * \param   stmt        [in]    The SQLite Statement object to extract log messages. The Statement should be already initialized
-     *                              and the parameters should be bound, if there is any.
-     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \param[out]   logs        The vector to fill with log messages. The extracted messages will be added to the existing vector.
+     * \param[in]   stmt        The SQLite Statement object to extract log messages. The Statement should be already initialized
+     *                          and the parameters should be bound, if there is any.
+     * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int getLogMessages(std::vector<SharedBuffer>& OUT logs, SqliteStatement& IN stmt, int IN maxEntries = -1);
+    static int getLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int maxEntries = -1);
 
     /**
      * \brief   Fills log instances in the specified array. The array should be initialized and it should have enough space to set data.
      *          The method does not append instance to the array. Use `countLogInstances()` method to know the initialized size of array to re-size.
      *          On output, the `infos` array will not change the size and will contain instance information extracted from database.
-     * \param   infos   [in, out]   The array to set instance information from database. It should have enough space to set data.
+     * \param[in,out]   infos       The array to set instance information from database. It should have enough space to set data.
      *                              On output, this array will not change the size.
-     * \param   stmt    [in]        The SQLite Statement object to extract instance information. The Statement should be already initialized
+     * \param[in]       stmt        The SQLite Statement object to extract instance information. The Statement should be already initialized
      *                              and prepared to extract instance information.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& IN OUT infos, SqliteStatement& IN stmt);
+    static int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& infos, SqliteStatement& stmt);
 
     /**
      * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -406,16 +406,16 @@ public:
      *          On output, the `scopes` array will not change the size and it will contain scope information starting at position `startAt`
      *          and maximum `maxEntries`, if this number is positive.
      *          This method can be called in the loop until the returns number is equal to `maxEntries`.
-     * \param   scopes  [in, out]   The array to set scope information from database. It should have enough space to set data.
+     * \param[in,out]   scopes      The array to set scope information from database. It should have enough space to set data.
      *                              On output, this array will not change the size and will contain scope information starting
      *                              from position `startAt` with maximum `maxEntries` number of entries, if it is positive number.
-     * \param   stmt    [in]        The SQLite Statement object to extract scope information. The Statement should be already initialized
+     * \param[in]   stmt            The SQLite Statement object to extract scope information. The Statement should be already initialized
      *                              and prepared to extract scope information.
-     * \param   startAt [in]        The zero-based position to start to fill scope data. The first call in the loop should have position 0.
-     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \param[in]   startAt         The zero-based position to start to fill scope data. The first call in the loop should have position 0.
+     * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillInstScopes(std::vector<NELogging::sScopeInfo>& IN OUT scopes, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
+    static int fillInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
 
     /**
      * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -423,38 +423,38 @@ public:
      *          On output, the `logs` array will not change the size and it will contain log messages starting at position `startAt`
      *          and maximum `maxEntries`, if this number is positive.
      *          This method can be called in the loop until the returns number is equal to `maxEntries`.
-     * \param   logs    [in, out]   The array to set log message information from database. It should have enough space to set data.
+     * \param[in,out]   logs        The array to set log message information from database. It should have enough space to set data.
      *                              On output, this array will not change the size and will contain log messages starting
      *                              from position `startAt` with maximum `maxEntries` number of entries, if it is positive number.
-     * \param   stmt    [in]        The SQLite Statement object to extract log messages. The Statement should be already initialized
+     * \param[in]   stmt            The SQLite Statement object to extract log messages. The Statement should be already initialized
      *                              and prepared to extract log messages.
-     * \param   startAt [in]        The zero-based position to start to fill log messages. The first call in the loop should have position 0.
-     * \param   maxEntries  [in]    The maximum number of entries to extract. If `-1`, it extracts all entries.
+     * \param[in]   startAt         The zero-based position to start to fill log messages. The first call in the loop should have position 0.
+     * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillLogMessages(std::vector<SharedBuffer>& IN OUT logs, SqliteStatement& IN stmt, uint32_t IN startAt, int IN maxEntries = -1);
+    static int fillLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database.
      *          The statement will fetch all scopes if `instId` is `NEService::TARGET_ALL`.
      *          The statement object should be already initialized and bind with the log database.
      *          The logging database should be opened for reading data.
-     * \param   stmt    The SQLite statement object bound with SQLite logging database.
-     * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
+     * \param[out]  stmt    The SQLite statement object bound with SQLite logging database.
+     * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
      * @return  Returns number of scopes of specified instance.
      **/
-    uint32_t setupStatementReadScopes(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadScopes(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Call to setup statement to read the list of logs from logging database.
      *          The statement will fetch all logs if `instId` is `NEService::TARGET_ALL`.
      *          The statement object should be already initialized and bind with the log database.
      *          The logging database should be opened for reading data.
-     * \param   stmt    The SQLite statement object bound with SQLite logging database.
-     * \param   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
+     * \param[out]  stmt    The SQLite statement object bound with SQLite logging database.
+     * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
      * @return  Returns number of log messages of specified instance ID.
      **/
-    uint32_t setupStatementReadLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadLogs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Sets up the log filters
@@ -462,15 +462,15 @@ public:
      * \param   filter  The scope prio filters to setup
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupFilterLogs(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+    uint32_t setupFilterLogs(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter);
 
     /**
      * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
-     * \param   stmt    The statement object to use to extract logs from database.
-     * \param   instId  The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
+     * \param[out]  stmt    The statement object to use to extract logs from database.
+     * \param[in]   instId  The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupStatementReadFilterLogs(SqliteStatement& IN OUT stmt, ITEM_ID IN instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadFilterLogs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
@@ -489,7 +489,7 @@ public:
     /**
      * \brief   Returns number of log instances.
      **/
-    uint32_t countLogInstances(void);
+    uint32_t countLogInstances();
 
     /**
      * \brief   Returns number of filtered log messages of specified instance ID.
@@ -525,17 +525,17 @@ private:
     /**
      * \brief   In the opened database file, creates the tables required to save logs.
      **/
-    inline void _createTables(void);
+    inline void _createTables();
 
     /**
      * \brief   In the opened database file, creates the indexes required by optimize operations.
      **/
-    inline void _createIndexes(void);
+    inline void _createIndexes();
 
     /**
      * \brief   Logs the initial information in the database like logging version and application name.
      **/
-    inline void _initialize(void);
+    inline void _initialize();
 
     /**
      * \brief   Extracts the log message from the SqliteStatement and copies it to the SharedBuffer.
@@ -564,7 +564,7 @@ private:
      * \param   filter  The list of scopes and filter mask to apply
      * \return  Returns true if operation succeeded.
      **/
-    inline uint32_t _updaeFilterLogScopes(ITEM_ID IN instId, const TEArrayList<sScopeFilter>& IN filter);
+    inline uint32_t _updaeFilterLogScopes(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -592,14 +592,14 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(LogSqliteDatabase);
+    AREG_NOCOPY_NOMOVE(LogSqliteDatabase);
 };
 
 //////////////////////////////////////////////////////////////////////////
 // LogSqliteDatabase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-bool LogSqliteDatabase::isDabataseLoggingEnabled(void) const
+bool LogSqliteDatabase::isDabataseLoggingEnabled() const
 {
     return mDbLogEnabled;
 }
@@ -609,32 +609,32 @@ inline void LogSqliteDatabase::setDatabaseLoggingEnabled(bool enable)
     mDbLogEnabled = enable;
 }
 
-inline const String& LogSqliteDatabase::getDatabasePath(void) const
+inline const String& LogSqliteDatabase::getDatabasePath() const
 {
     return mDatabase.getPath();
 }
 
-inline const String& LogSqliteDatabase::getInitialDatabasePath(void) const
+inline const String& LogSqliteDatabase::getInitialDatabasePath() const
 {
     return mDbInitPath;
 }
 
-inline SqliteDatabase& LogSqliteDatabase::getDatabase(void)
+inline SqliteDatabase& LogSqliteDatabase::getDatabase()
 {
     return mDatabase;
 }
 
-inline const SqliteDatabase& LogSqliteDatabase::getDatabase(void) const
+inline const SqliteDatabase& LogSqliteDatabase::getDatabase() const
 {
     return mDatabase;
 }
 
-inline SqliteStatement& LogSqliteDatabase::getStatement(void)
+inline SqliteStatement& LogSqliteDatabase::getStatement()
 {
     return mStmtLogs;
 }
 
-inline const SqliteStatement& LogSqliteDatabase::getStatement(void) const
+inline const SqliteStatement& LogSqliteDatabase::getStatement() const
 {
     return mStmtLogs;
 }

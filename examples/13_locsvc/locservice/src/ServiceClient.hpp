@@ -39,7 +39,7 @@ protected:
     /**
      * \brief   The response to hello world request.
      **/
-    virtual void responseHelloWorld( void ) override;
+    virtual void responseHelloWorld() override;
 
     /**
      * \brief   Server broadcast.
@@ -79,7 +79,7 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void )
+    inline ServiceClient & self()
     {
         return (*this);
     }
@@ -93,6 +93,6 @@ private:
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };

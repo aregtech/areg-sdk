@@ -53,7 +53,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~EventDispatcher( void );
+    virtual ~EventDispatcher();
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -78,18 +78,18 @@ public:
     /**
      * \brief   Function is triggered from thread object when it is going to be destroyed.
      **/
-    virtual void onThreadUnregistering( void ) override;
+    virtual void onThreadUnregistering() override;
 
     /**
      * \brief   Function is called from Thread object, when it is running and fully operable.
      **/
-    virtual void onThreadRuns( void ) override;
+    virtual void onThreadRuns() override;
 
     /**
      * \brief   Function is called from Thread object when it is going to exit.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit( void ) override;
+    virtual int onThreadExit() override;
 
 /************************************************************************/
 // IEEventRouter interface overrides
@@ -111,7 +111,7 @@ public:
      * \brief   Return pointer to Dispatcher Thread where current dispatcher
      *          is registered.
      **/
-    inline DispatcherThread * getDispatcherThread( void ) const;
+    inline DispatcherThread * getDispatcherThread() const;
 
 protected:
     /**
@@ -119,7 +119,7 @@ protected:
      *          Here, only external events are counted, since
      *          internal events are proceed immediately after external event.
      **/
-    inline bool hasMoreEvents( void ) const;
+    inline bool hasMoreEvents() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -136,19 +136,19 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    EventDispatcher( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( EventDispatcher );
+    EventDispatcher() = delete;
+    AREG_NOCOPY_NOMOVE( EventDispatcher );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline DispatcherThread * EventDispatcher::getDispatcherThread( void ) const
+inline DispatcherThread * EventDispatcher::getDispatcherThread() const
 {
     return mDispatcherThread;
 }
 
-inline bool EventDispatcher::hasMoreEvents( void ) const
+inline bool EventDispatcher::hasMoreEvents() const
 {
     return (mExternalEvents.isEmpty() == false);
 }

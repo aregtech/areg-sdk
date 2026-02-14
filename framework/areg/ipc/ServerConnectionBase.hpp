@@ -83,7 +83,7 @@ public:
      *          Before sending or receiving data, the socket should be created
      *          and bound to socket address.
      **/
-    ServerConnectionBase( void );
+    ServerConnectionBase();
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -110,7 +110,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServerConnectionBase( void ) = default;
+    virtual ~ServerConnectionBase() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -120,7 +120,7 @@ public:
     /**
      * \brief   Return Socket Address object.
      **/
-    inline const NESocket::SocketAddress & getAddress( void ) const;
+    inline const NESocket::SocketAddress & getAddress() const;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will
@@ -146,12 +146,12 @@ public:
      * \brief   Returns true if existing socket descriptor is valid.
      *          The function is not checking socket descriptor validation.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Returns handle of socket.
      **/
-    inline SOCKETHANDLE getSocketHandle( void ) const;
+    inline SOCKETHANDLE getSocketHandle() const;
 
     /**
      * \brief   Returns true if connection with specified socket is accepted.
@@ -216,13 +216,13 @@ public:
      *          Both, socket IP-address and port number should be already set.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( void );
+    bool createSocket();
 
     /**
      * \brief   Closes existing socket.
      *          The call will disconnect all accepted connections.
      **/
-    void closeSocket( void );
+    void closeSocket();
 
     /**
      * \brief   Call to place server socket in a state in which it is listening for an incoming connection.
@@ -289,12 +289,12 @@ public:
     /**
      * \brief   Sets all sockets in the read-only mode, i.e. no send message is possible anymore.
      **/
-    inline void disableSend( void );
+    inline void disableSend();
 
     /**
      * \brief   Sets all sockets in the write-only more, i.e. no receive message is possible anymore.
      **/
-    inline void disableReceive( void );
+    inline void disableReceive();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -340,7 +340,7 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ServerConnectionBase );
+    AREG_NOCOPY_NOMOVE( ServerConnectionBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -359,19 +359,19 @@ inline void ServerConnectionBase::setAddress( const NESocket::SocketAddress & ne
     mServerSocket.setAddress(newAddress);
 }
 
-inline const NESocket::SocketAddress & ServerConnectionBase::getAddress( void ) const
+inline const NESocket::SocketAddress & ServerConnectionBase::getAddress() const
 {
     Lock lock(mLock);
     return mServerSocket.getAddress();
 }
 
-inline bool ServerConnectionBase::isValid( void ) const
+inline bool ServerConnectionBase::isValid() const
 {
     Lock lock(mLock);
     return mServerSocket.isValid();
 }
 
-inline SOCKETHANDLE ServerConnectionBase::getSocketHandle( void ) const
+inline SOCKETHANDLE ServerConnectionBase::getSocketHandle() const
 {
     Lock lock(mLock);
     return mServerSocket.getHandle();
@@ -420,7 +420,7 @@ inline bool ServerConnectionBase::disableReceive( const SocketAccepted & clientC
     return clientConnection.disableReceive();
 }
 
-inline void ServerConnectionBase::disableSend( void )
+inline void ServerConnectionBase::disableSend()
 {
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
     {
@@ -428,7 +428,7 @@ inline void ServerConnectionBase::disableSend( void )
     }
 }
 
-inline void ServerConnectionBase::disableReceive( void )
+inline void ServerConnectionBase::disableReceive()
 {
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
     {

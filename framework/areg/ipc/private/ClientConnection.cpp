@@ -19,7 +19,7 @@
 
 #include "areg/logging/GELog.h"
 
-ClientConnection::ClientConnection( void )
+ClientConnection::ClientConnection()
     : SocketConnectionBase    ( )
     , mClientSocket ( )
     , mCookie       ( NEService::COOKIE_UNKNOWN )
@@ -47,13 +47,13 @@ bool ClientConnection::createSocket(const String & hostName, unsigned short port
     return mClientSocket.isValid();
 }
 
-bool ClientConnection::createSocket(void)
+bool ClientConnection::createSocket()
 {
     setCookie( mClientSocket.createSocket() ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
     return mClientSocket.isValid();
 }
 
-void ClientConnection::closeSocket(void)
+void ClientConnection::closeSocket()
 {
     setCookie(NEService::COOKIE_UNKNOWN);
     mClientSocket.closeSocket();

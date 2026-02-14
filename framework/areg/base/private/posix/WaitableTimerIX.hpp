@@ -65,7 +65,7 @@ public:
     /**
      * \brief   Destructor.
      */
-    virtual ~WaitableTimerIX( void );
+    virtual ~WaitableTimerIX();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -85,13 +85,13 @@ public:
      * \brief   Stops the running timer.
      * \return  Returns true if succeeded to stop timer.
      **/
-    bool stopTimer( void );
+    bool stopTimer();
 
     /**
      * \brief   Cancel and release running timer.
      * \return  Returns true if succeeded to stop timer.
      **/
-    bool cancelTimer( void );
+    bool cancelTimer();
 
 /************************************************************************/
 // IESyncObjectBaseIX overrides.
@@ -99,7 +99,7 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid( void ) const override;
+    virtual bool isValid() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -128,7 +128,7 @@ protected:
      *          multiple threads can get waitable signaled state. For example, waitable Mutex 
      *          signals only one thread, when waitable Event can signal multiple threads.
      **/
-    virtual bool checkCanSignalMultipleThreads( void ) const override;
+    virtual bool checkCanSignalMultipleThreads() const override;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -190,21 +190,21 @@ private:
     /**
      * \brief   Stops and deletes timer
      **/
-    inline void _resetTimer( void );
+    inline void _resetTimer();
     /**
      * \brief   Called when timer has expired.
      **/
-    inline void _timerExpired( void );
+    inline void _timerExpired();
     /**
      * \brief   Called to stop running timer.
      **/
-    inline void _stopTimer( void );
+    inline void _stopTimer();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( WaitableTimerIX );
+    AREG_NOCOPY_NOMOVE( WaitableTimerIX );
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)

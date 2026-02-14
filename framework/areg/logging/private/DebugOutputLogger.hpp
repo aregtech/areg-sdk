@@ -54,7 +54,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~DebugOutputLogger( void ) = default;
+    virtual ~DebugOutputLogger() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -73,12 +73,12 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger(void) override;
+    virtual bool openLogger() override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger( void ) override;
+    virtual void closeLogger() override;
 
     /**
      * \brief   Called when message should be logged.
@@ -89,7 +89,7 @@ public:
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened( void ) const override;
+    virtual bool isLoggerOpened() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -138,7 +138,7 @@ protected:
      * \brief	Flushes cached data to output stream object.
      *          Implement the function is device has caching mechanism
      **/
-    virtual void flush( void ) override;
+    virtual void flush() override;
 
 protected:
     /**
@@ -148,7 +148,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable( void ) const override;
+    virtual unsigned int getSizeWritable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -167,8 +167,8 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DebugOutputLogger( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( DebugOutputLogger );
+    DebugOutputLogger() = delete;
+    AREG_NOCOPY_NOMOVE( DebugOutputLogger );
 };
 
 #endif // AREG_LOGS

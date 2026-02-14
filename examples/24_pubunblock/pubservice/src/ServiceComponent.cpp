@@ -43,7 +43,7 @@ void ServiceComponent::startupServiceInterface( Component & holder )
     LOG_DBG( "The service [ %s ] is up and running", getRoleName( ).getString( ) );
 }
 
-void ServiceComponent::requestIdentifier( void )
+void ServiceComponent::requestIdentifier()
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
     uint32_t clientId = NEUtilities::generateUniqueId( );

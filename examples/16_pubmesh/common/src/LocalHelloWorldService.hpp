@@ -34,7 +34,7 @@ public:
      **/
     LocalHelloWorldService( Component & masterComp );
 
-    virtual ~LocalHelloWorldService(void) = default;
+    virtual ~LocalHelloWorldService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -59,8 +59,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    LocalHelloWorldService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( LocalHelloWorldService );
+    LocalHelloWorldService() = delete;
+    AREG_NOCOPY_NOMOVE( LocalHelloWorldService );
 };
 
 #endif  // PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP

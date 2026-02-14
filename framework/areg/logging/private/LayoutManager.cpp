@@ -20,7 +20,7 @@
 
 #if AREG_LOGS
 
-LayoutManager::~LayoutManager(void)
+LayoutManager::~LayoutManager()
 {
     deleteLayouts();
 }
@@ -57,7 +57,7 @@ bool LayoutManager::createLayouts(const String& layoutFormat)
     return (mLayoutList.isEmpty() == false);
 }
 
-void LayoutManager::deleteLayouts(void)
+void LayoutManager::deleteLayouts()
 {
     const std::vector<IELayout*>& list{ mLayoutList.getData() };
     for (IELayout* layout : list)

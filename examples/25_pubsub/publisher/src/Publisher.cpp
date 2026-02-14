@@ -126,7 +126,7 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::eService
     return result;
 }
 
-void Publisher::start(void)
+void Publisher::start()
 {
     LOG_SCOPE(examples_25_publisher_Publisher_start);
 
@@ -154,7 +154,7 @@ void Publisher::start(void)
     mTimerOnChange.startTimer(NEPubSub::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
 }
 
-void Publisher::stop(void)
+void Publisher::stop()
 {
     LOG_SCOPE(examples_25_publisher_Publisher_stop);
 
@@ -167,7 +167,7 @@ void Publisher::stop(void)
     setServiceProviderState(NEPubSub::eServiceState::Stopped);
 }
 
-void Publisher::invalidate(void)
+void Publisher::invalidate()
 {
     LOG_SCOPE(examples_25_publisher_Publisher_invalidate);
 
@@ -185,7 +185,7 @@ void Publisher::invalidate(void)
     invalidateStringOnChange();
 }
 
-void Publisher::quit(void)
+void Publisher::quit()
 {
     LOG_SCOPE(examples_25_publisher_Publisher_quit);
 
@@ -234,10 +234,10 @@ void Publisher::processTimer(Timer & timer)
     }
 }
 
-void Publisher::onThreadRuns(void)
+void Publisher::onThreadRuns()
 {
     Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, MACRO_ARRAYLEN(ValidOptions));
+    OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
     printMessage(String::EmptyString, eCommands::CMD_Undefined);
@@ -321,7 +321,7 @@ inline void Publisher::printMessage(const String & message, eCommands cmd)
    console.outputStr(_coordUserInput, _userInput);
 }
 
-inline Publisher & Publisher::self(void)
+inline Publisher & Publisher::self()
 {
     return (*this);
 }

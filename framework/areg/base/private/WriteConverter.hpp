@@ -54,7 +54,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~WriteConverter( void ) = default;
+    ~WriteConverter() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -206,8 +206,8 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    WriteConverter( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( WriteConverter );
+    WriteConverter() = delete;
+    AREG_NOCOPY_NOMOVE( WriteConverter );
 };
 
 //////////////////////////////////////////////////////////////////////////

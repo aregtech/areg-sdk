@@ -71,7 +71,7 @@ private:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServicingComponent & self( void )
+    inline ServicingComponent & self()
     {
         return (*this);
     }
@@ -79,6 +79,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ServicingComponent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServicingComponent );
+    ServicingComponent() = delete;
+    AREG_NOCOPY_NOMOVE( ServicingComponent );
 };

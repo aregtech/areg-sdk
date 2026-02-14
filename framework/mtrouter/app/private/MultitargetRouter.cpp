@@ -108,7 +108,7 @@ const OptionParser::sOptionSetup MultitargetRouter::ValidOptions[ ]
     , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
-MultitargetRouter & MultitargetRouter::getInstance(void)
+MultitargetRouter & MultitargetRouter::getInstance()
 {
     static MultitargetRouter _messageRouter;
     return _messageRouter;
@@ -132,18 +132,18 @@ void MultitargetRouter::printStatus(const String& /* status */)
 }
 #endif  // AREG_EXTENDED
 
-MultitargetRouter::MultitargetRouter( void )
+MultitargetRouter::MultitargetRouter()
     : ServiceApplicationBase( mServiceServer )
     , mServiceServer        ( )
 {
 }
 
-Console::CallBack MultitargetRouter::getOptionCheckCallback( void ) const
+Console::CallBack MultitargetRouter::getOptionCheckCallback() const
 {
     return Console::CallBack( MultitargetRouter::_checkCommand );
 }
 
-void MultitargetRouter::runConsoleInputExtended( void )
+void MultitargetRouter::runConsoleInputExtended()
 {
 #if AREG_EXTENDED
 
@@ -175,7 +175,7 @@ void MultitargetRouter::runConsoleInputExtended( void )
 #endif   // !AREG_EXTENDED
 }
 
-void MultitargetRouter::runConsoleInputSimple( void )
+void MultitargetRouter::runConsoleInputSimple()
 {
     constexpr uint32_t bufSize{ 512 };
     char cmd[bufSize]{ 0 };
@@ -194,48 +194,48 @@ void MultitargetRouter::runConsoleInputSimple( void )
     } while ( quit == false );
 }
 
-std::pair<const OptionParser::sOptionSetup*, int> MultitargetRouter::getAppOptions(void) const
+std::pair<const OptionParser::sOptionSetup*, int> MultitargetRouter::getAppOptions() const
 {
-    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MultitargetRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN(MultitargetRouter::ValidOptions))));
+    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MultitargetRouter::ValidOptions, static_cast<int>(std::size(MultitargetRouter::ValidOptions))));
     return _opts;
 }
 
-wchar_t* MultitargetRouter::getServiceNameW(void) const
+wchar_t* MultitargetRouter::getServiceNameW() const
 {
     return NEMultitargetRouterSettings::SERVICE_NAME_WIDE;
 }
 
-char* MultitargetRouter::getServiceNameA(void) const
+char* MultitargetRouter::getServiceNameA() const
 {
     return NEMultitargetRouterSettings::SERVICE_NAME_ASCII;
 }
 
-wchar_t* MultitargetRouter::getServiceDisplayNameW(void) const
+wchar_t* MultitargetRouter::getServiceDisplayNameW() const
 {
     return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE;
 }
 
-char* MultitargetRouter::getServiceDisplayNameA(void) const
+char* MultitargetRouter::getServiceDisplayNameA() const
 {
     return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII;
 }
 
-wchar_t* MultitargetRouter::getServiceDescriptionW(void) const
+wchar_t* MultitargetRouter::getServiceDescriptionW() const
 {
     return NEMultitargetRouterSettings::SERVICE_DESCRIBE_WIDE;
 }
 
-char* MultitargetRouter::getServiceDescriptionA(void) const
+char* MultitargetRouter::getServiceDescriptionA() const
 {
     return NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII;
 }
 
-NERemoteService::eRemoteServices MultitargetRouter::getServiceType(void) const
+NERemoteService::eRemoteServices MultitargetRouter::getServiceType() const
 {
     return NERemoteService::eRemoteServices::ServiceRouter;
 }
 
-NERemoteService::eConnectionTypes MultitargetRouter::getConnectionType(void) const
+NERemoteService::eConnectionTypes MultitargetRouter::getConnectionType() const
 {
     return NERemoteService::eConnectionTypes::ConnectTcpip;
 }
@@ -267,19 +267,19 @@ void MultitargetRouter::printHelp( bool /* isCmdLine */ )
 #endif  // AREG_EXTENDED
 }
 
-void MultitargetRouter::startConsoleService( void )
+void MultitargetRouter::startConsoleService()
 {
     Application::loadModel( _modelName );
 }
 
-void MultitargetRouter::stopConsoleService( void )
+void MultitargetRouter::stopConsoleService()
 {
     Application::unloadModel( _modelName );
 }
 
 bool MultitargetRouter::_checkCommand(const String& cmd)
 {
-    OptionParser parser( MultitargetRouter::ValidOptions, MACRO_ARRAYLEN( MultitargetRouter::ValidOptions) );
+    OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
     bool quit{ false };
     bool hasError{ false };
 
@@ -389,7 +389,7 @@ bool MultitargetRouter::_checkCommand(const String& cmd)
     return quit;
 }
 
-void MultitargetRouter::_outputTitle( void )
+void MultitargetRouter::_outputTitle()
 {
 #if AREG_EXTENDED
 
@@ -543,7 +543,7 @@ void MultitargetRouter::_setVerboseMode( bool /* makeVerbose */ )
 
 #endif  // AREG_EXTENDED
 
-void MultitargetRouter::_cleanHelp(void)
+void MultitargetRouter::_cleanHelp()
 {
 #if     AREG_EXTENDED
 
@@ -552,7 +552,7 @@ void MultitargetRouter::_cleanHelp(void)
     console.lockConsole();
 
     console.clearLine(NESystemService::COORD_USER_INPUT);
-    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
         console.clearLine(line);

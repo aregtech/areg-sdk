@@ -35,7 +35,7 @@ WaitableSemaphoreIX::WaitableSemaphoreIX(int maxCount, int initCount /*= 0*/, co
 {
 }
 
-bool WaitableSemaphoreIX::releaseSemaphore(void)
+bool WaitableSemaphoreIX::releaseSemaphore()
 {
     bool sendSignal = false;
 
@@ -73,7 +73,7 @@ bool WaitableSemaphoreIX::notifyRequestOwnership(pthread_t ownerThread)
         -- mCurCount;
         result = true;
 
-        OUTPUT_DBG("Waitable Semaphore [ %s ] has given ownership to thread [ %p ], there are still [ %d ] locks available"
+        AREG_OUTPUT_DBG("Waitable Semaphore [ %s ] has given ownership to thread [ %p ], there are still [ %d ] locks available"
                         , getName().getString( )
                         , reinterpret_cast<id_type>(ownerThread), mCurCount);
     }
@@ -81,7 +81,7 @@ bool WaitableSemaphoreIX::notifyRequestOwnership(pthread_t ownerThread)
     return result;
 }
 
-bool WaitableSemaphoreIX::checkCanSignalMultipleThreads(void) const
+bool WaitableSemaphoreIX::checkCanSignalMultipleThreads() const
 {
     return true;
 }

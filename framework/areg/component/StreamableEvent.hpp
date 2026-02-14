@@ -42,7 +42,7 @@ class AREG_API StreamableEvent : public Event
 //////////////////////////////////////////////////////////////////////////
 // Runtime declare
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(StreamableEvent)
+    AREG_DECLARE_RUNTIME_EVENT(StreamableEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -63,7 +63,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~StreamableEvent( void ) = default;
+    virtual ~StreamableEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -90,8 +90,8 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    StreamableEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( StreamableEvent );
+    StreamableEvent() = delete;
+    AREG_NOCOPY_NOMOVE( StreamableEvent );
 };
 
 #endif  // AREG_COMPONENT_STREAMABLEEVENT_HPP

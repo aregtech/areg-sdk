@@ -87,18 +87,18 @@ const OptionParser::sOptionSetup LogObserver::ValidOptions[ ]
     , { "-x", "--stop"      , static_cast<int>(eLoggerOptions::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
-LogObserver & LogObserver::getInstance(void)
+LogObserver & LogObserver::getInstance()
 {
     static LogObserver _instance;
     return _instance;
 }
 
-Console::CallBack LogObserver::getOptionCheckCallback( void ) const
+Console::CallBack LogObserver::getOptionCheckCallback() const
 {
     return Console::CallBack( LogObserver::_checkCommand );
 }
 
-void LogObserver::_runConsoleInputExtended( void )
+void LogObserver::_runConsoleInputExtended()
 {
     Console & console = Console::getInstance( );
     LogObserver::_outputTitle( );
@@ -144,7 +144,7 @@ void LogObserver::callbackLogDbCreated(const char* /* dbLocation */)
 {
 }
 
-void LogObserver::callbackMessagingFailed(void)
+void LogObserver::callbackMessagingFailed()
 {
 }
 
@@ -326,7 +326,7 @@ void LogObserver::logMain( int argc, char ** argv )
 
     Application::setWorkingDirectory(nullptr);
     String fileConfig(NEApplication::DEFAULT_CONFIG_FILE);
-    OptionParser parser(LogObserver::ValidOptions, MACRO_ARRAYLEN(LogObserver::ValidOptions));
+    OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
     {
         uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::eLoggerOptions::CMD_LogLoad));
@@ -351,7 +351,7 @@ void LogObserver::logMain( int argc, char ** argv )
 
 bool LogObserver::_checkCommand(const String& cmd)
 {
-    OptionParser parser( LogObserver::ValidOptions, MACRO_ARRAYLEN(LogObserver::ValidOptions) );
+    OptionParser parser( LogObserver::ValidOptions, std::size(LogObserver::ValidOptions) );
     bool quit{ false };
     bool hasError {false};
 
@@ -469,7 +469,7 @@ bool LogObserver::_checkCommand(const String& cmd)
     return quit;
 }
 
-void LogObserver::_outputTitle( void )
+void LogObserver::_outputTitle()
 {
     Console & console = Console::getInstance( );
     console.lockConsole();
@@ -491,14 +491,14 @@ void LogObserver::_outputInfo( const String & info )
     console.unlockConsole( );
 }
 
-void LogObserver::_cleanHelp(void)
+void LogObserver::_cleanHelp()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::getInstance();
     console.lockConsole();
 
     console.clearLine(NESystemService::COORD_USER_INPUT);
-    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
         console.clearLine(line);
@@ -541,7 +541,7 @@ bool LogObserver::_processSaveConfig(const OptionParser::sOption& optSave)
     return result;
 }
 
-bool LogObserver::_processPrintHelp(void)
+bool LogObserver::_processPrintHelp()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::getInstance();
@@ -556,7 +556,7 @@ bool LogObserver::_processPrintHelp(void)
     return true;
 }
 
-bool LogObserver::_processInfoInstances(void)
+bool LogObserver::_processInfoInstances()
 {
     static constexpr std::string_view _table{ "   Nr. |  Inst. ID  |  Bits |  Scopes  |  Name " };
     static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  |  %s " };
@@ -627,7 +627,7 @@ bool LogObserver::_processUpdateScopes(const OptionParser::sOption& optScope)
     return result;
 }
 
-bool LogObserver::_processPauseLogging(void)
+bool LogObserver::_processPauseLogging()
 {
     return ::logObserverPauseLogging(true);
 }

@@ -57,11 +57,11 @@ public:
     /**
      * \brief   Creates empty Server List.
      **/
-    ServerList( void ) = default;
+    ServerList() = default;
     /**
      * \brief   Destructor
      **/
-    ~ServerList( void ) = default;
+    ~ServerList() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -180,7 +180,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( ServerList );
+    AREG_NOCOPY_NOMOVE( ServerList );
 };
 
 #endif  // AREG_COMPONENT_PRIVATE_SERVERLIST_HPP

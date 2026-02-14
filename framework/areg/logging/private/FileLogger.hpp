@@ -50,7 +50,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~FileLogger( void )= default;
+    virtual ~FileLogger()= default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -69,12 +69,12 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger(void) override;
+    virtual bool openLogger() override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger( void ) override;
+    virtual void closeLogger() override;
 
     /**
      * \brief   Called when message should be logged.
@@ -85,13 +85,13 @@ public:
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened( void ) const override;
+    virtual bool isLoggerOpened() const override;
 
 public:
     /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
      **/
-    void flushLogs(void);
+    void flushLogs();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -106,8 +106,8 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    FileLogger( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( FileLogger );
+    FileLogger() = delete;
+    AREG_NOCOPY_NOMOVE( FileLogger );
 };
 
 #endif  // AREG_LOGS

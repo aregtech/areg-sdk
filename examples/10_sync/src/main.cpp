@@ -76,7 +76,7 @@ protected:
 
         // Multi-lock with multiple objects
         IESyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
-        MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), false);
+        MultiLock multiLock(objects, std::size(objects), false);
 
         constexpr unsigned int waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
 
@@ -136,7 +136,7 @@ protected:
 
         // Multi-lock with exit event + dummy mutex
         IESyncObject* objects[] = { &gEventExit, &gMutexDummy };
-        MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), false);
+        MultiLock multiLock(objects, std::size(objects), false);
 
         int waitResult = multiLock.lock(NECommon::WAIT_INFINITE, false, false);
         LOG_DBG("GoodbyeThread finished lock with result [%d]", waitResult);
@@ -190,7 +190,7 @@ int main()
         gEventExit.setEvent();
         gEventRun.setEvent();
 
-        MultiLock multiLock(objects, MACRO_ARRAYLEN(objects), true);
+        MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;
 
         helloThread.shutdownThread(NECommon::WAIT_INFINITE);

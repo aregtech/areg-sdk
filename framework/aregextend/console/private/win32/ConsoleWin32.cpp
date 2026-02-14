@@ -26,6 +26,9 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif // !NOMINMAX
 #include <Windows.h>
 #include <stdio.h>
 
@@ -53,7 +56,7 @@ namespace
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup(void)
+bool Console::_osSetup()
 {
     if (mIsReady == false)
     {
@@ -86,7 +89,7 @@ bool Console::_osSetup(void)
     return mIsReady;
 }
 
-void Console::_osRelease(void)
+void Console::_osRelease()
 {
     if (mIsReady)
     {
@@ -143,7 +146,7 @@ void Console::_osOutputText(const std::string_view& text) const
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-Console::Coord Console::_osGetCursorPosition(void) const
+Console::Coord Console::_osGetCursorPosition() const
 {
     Lock lock(mLock);
 
@@ -178,7 +181,7 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
 #endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 }
 
-void Console::_osRefreshScreen(void) const
+void Console::_osRefreshScreen() const
 {
     Lock lock(mLock);
 
@@ -186,7 +189,7 @@ void Console::_osRefreshScreen(void) const
     FlushConsoleInputBuffer(hStdOut);
 }
 
-void Console::_osClearLine( void ) const
+void Console::_osClearLine() const
 {
     Lock lock(mLock);
 
@@ -195,7 +198,7 @@ void Console::_osClearLine( void ) const
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
 }
 
-void Console::_osClearScreen( void ) const
+void Console::_osClearScreen() const
 {
     Lock lock(mLock);
 
@@ -212,7 +215,7 @@ bool Console::_osReadInputList(const char* format, va_list varList) const
     return (vscanf(format, varList) > 0);
 }
 
-void Console::_osSaveCursorPosition(void) const
+void Console::_osSaveCursorPosition() const
 {
     Lock lock(mLock);
     DWORD written = 0;
@@ -220,7 +223,7 @@ void Console::_osSaveCursorPosition(void) const
     WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, nullptr);
 }
 
-void Console::_osRestoreCursorPosition(void) const
+void Console::_osRestoreCursorPosition() const
 {
     Lock lock(mLock);
     DWORD written = 0;
@@ -228,7 +231,7 @@ void Console::_osRestoreCursorPosition(void) const
     WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, nullptr);
 }
 
-void Console::_osMoveCursorOneLineUp(void) const
+void Console::_osMoveCursorOneLineUp() const
 {
     Lock lock(mLock);
     DWORD written = 0;
@@ -236,7 +239,7 @@ void Console::_osMoveCursorOneLineUp(void) const
     WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, nullptr);
 }
 
-void Console::_osMoveCursorOneLineDown(void) const
+void Console::_osMoveCursorOneLineDown() const
 {
     Lock lock(mLock);
     DWORD written = 0;

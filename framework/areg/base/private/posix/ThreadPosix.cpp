@@ -25,12 +25,19 @@
     #define _POSIX_PRIORITY_SCHEDULING
 #endif  // _POSIX_PRIORITY_SCHEDULING
 
-#include <limits.h>
 #include <pthread.h>
 #include <sched.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/types.h>
+
+#ifdef min
+    #undef min
+#endif // min
+#ifdef max
+    #undef max
+#endif // max
+#include <limits>
 
 #if __has_include(<sys/unistd.h>)
     #include <sys/signal.h>
@@ -125,7 +132,7 @@ void Thread::_osSleep(unsigned int timeout)
     nanosleep(&ts, nullptr);
 }
 
-id_type Thread::_osGetCurrentThreadId( void )
+id_type Thread::_osGetCurrentThreadId()
 {
     return NEUtilities::convToNum<id_type, pthread_t>(pthread_self());
 }
@@ -153,7 +160,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     {
         // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
-        OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
+        AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadTerminated;
         pthread_cancel(threadId);
         mWaitForRun.resetEvent();
@@ -162,7 +169,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     else
     {
         // The thread completed job normally
-        OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
+        AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadCompleted;
         ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
     }
@@ -170,7 +177,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     return result;
 }
 
-bool Thread::_osCreateSystemThread( void )
+bool Thread::_osCreateSystemThread()
 {
     bool result { false };
 
@@ -181,7 +188,7 @@ bool Thread::_osCreateSystemThread( void )
         {
             mWaitForRun.resetEvent();
             mWaitForExit.resetEvent( );
-            if (RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
+            if (NECommon::RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
             {
                 if (mStackSizeKB != NECommon::STACK_SIZE_DEFAULT)
                 {
@@ -189,8 +196,8 @@ bool Thread::_osCreateSystemThread( void )
                     ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSizeBytes);
                 }
                 
-                if ((RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
-                    (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
+                if ((NECommon::RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
+                    (NECommon::RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
                 {
                     result          = true;
                     mThreadHandle   = static_cast<THREADHANDLE>(handle);
@@ -234,7 +241,7 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     Thread::eThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
-        int schedPrio       { MIN_INT_32 };
+        int schedPrio       { std::numeric_limits<int32_t>::min() };
         pthread_t threadId  { NEUtilities::convToPtr<pthread_t, id_type>(mThreadId) };
         switch (newPriority)
         {
@@ -265,14 +272,14 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
         struct sched_param schedParam;
         schedParam.sched_priority   = schedPrio;
 
-        if ((MIN_INT_32 != schedPrio) && (RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
+        if ((std::numeric_limits<int32_t>::min() != schedPrio) && (NECommon::RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
         {
             mThreadPriority = newPriority;
         }
 #ifdef DEBUG
         else
         {
-            OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
+            AREG_OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
                 , Thread::getString(newPriority)
                 , schedParam.sched_priority
                 , static_cast<id_type>(mThreadId)
@@ -288,7 +295,7 @@ size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
 {
     size_t size{ 0u };
     sPosixThread* thread = reinterpret_cast<sPosixThread*>(handle);
-    return ((thread != nullptr) && (RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
+    return ((thread != nullptr) && (NECommon::RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

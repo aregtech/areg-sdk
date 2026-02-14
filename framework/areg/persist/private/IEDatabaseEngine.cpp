@@ -17,10 +17,10 @@
  ************************************************************************/
 #include "areg/persist/IEDatabaseEngine.hpp"
 
-IEDatabaseEngine::IEDatabaseEngine(void)
+IEDatabaseEngine::IEDatabaseEngine()
 {
 }
 
-IEDatabaseEngine::~IEDatabaseEngine(void)
+IEDatabaseEngine::~IEDatabaseEngine()
 {
 }

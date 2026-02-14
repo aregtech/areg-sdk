@@ -117,7 +117,7 @@ const OptionParser::sOptionSetup LogCollector::ValidOptions[ ]
     , { "-v", "--verbose"   , static_cast<int>(eLoggerOptions::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
-LogCollector & LogCollector::getInstance(void)
+LogCollector & LogCollector::getInstance()
 {
     static LogCollector _logger;
     return _logger;
@@ -142,18 +142,18 @@ void LogCollector::printStatus(const String& /* status */)
 }
 #endif  // AREG_EXTENDED
 
-LogCollector::LogCollector( void )
+LogCollector::LogCollector()
     : ServiceApplicationBase( mServiceServer )
     , mServiceServer        ( )
 {
 }
 
-Console::CallBack LogCollector::getOptionCheckCallback( void ) const
+Console::CallBack LogCollector::getOptionCheckCallback() const
 {
     return Console::CallBack( LogCollector::_checkCommand );
 }
 
-void LogCollector::runConsoleInputExtended( void )
+void LogCollector::runConsoleInputExtended()
 {
 #if AREG_EXTENDED
 
@@ -185,7 +185,7 @@ void LogCollector::runConsoleInputExtended( void )
 #endif   // !AREG_EXTENDED
 }
 
-void LogCollector::runConsoleInputSimple( void )
+void LogCollector::runConsoleInputSimple()
 {
     constexpr uint32_t bufSize{ 512 };
     char cmd[bufSize]{ 0 };
@@ -204,55 +204,55 @@ void LogCollector::runConsoleInputSimple( void )
     } while ( quit == false );
 }
 
-void LogCollector::runService(void)
+void LogCollector::runService()
 {
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
 }
 
-std::pair<const OptionParser::sOptionSetup*, int> LogCollector::getAppOptions(void) const
+std::pair<const OptionParser::sOptionSetup*, int> LogCollector::getAppOptions() const
 {
     static  std::pair< const OptionParser::sOptionSetup*, int> _opts( std::pair< const OptionParser::sOptionSetup*
                                                                     , int>(LogCollector::ValidOptions
-                                                                    , static_cast<int>(MACRO_ARRAYLEN(LogCollector::ValidOptions))));
+                                                                    , static_cast<int>(std::size(LogCollector::ValidOptions))));
     return _opts;
 }
 
-wchar_t* LogCollector::getServiceNameW(void) const
+wchar_t* LogCollector::getServiceNameW() const
 {
     return NELogCollectorSettings::SERVICE_NAME_WIDE;
 }
 
-char* LogCollector::getServiceNameA(void) const
+char* LogCollector::getServiceNameA() const
 {
     return NELogCollectorSettings::SERVICE_NAME_ASCII;
 }
 
-wchar_t* LogCollector::getServiceDisplayNameW(void) const
+wchar_t* LogCollector::getServiceDisplayNameW() const
 {
     return NELogCollectorSettings::SERVICE_DISPLAY_NAME_WIDE;
 }
 
-char* LogCollector::getServiceDisplayNameA(void) const
+char* LogCollector::getServiceDisplayNameA() const
 {
     return NELogCollectorSettings::SERVICE_DISPLAY_NAME_ASCII;
 }
 
-wchar_t* LogCollector::getServiceDescriptionW(void) const
+wchar_t* LogCollector::getServiceDescriptionW() const
 {
     return NELogCollectorSettings::SERVICE_DESCRIBE_WIDE;
 }
 
-char* LogCollector::getServiceDescriptionA(void) const
+char* LogCollector::getServiceDescriptionA() const
 {
     return NELogCollectorSettings::SERVICE_DESCRIBE_ASCII;
 }
 
-NERemoteService::eRemoteServices LogCollector::getServiceType(void) const
+NERemoteService::eRemoteServices LogCollector::getServiceType() const
 {
     return NERemoteService::eRemoteServices::ServiceLogger;
 }
 
-NERemoteService::eConnectionTypes LogCollector::getConnectionType(void) const
+NERemoteService::eConnectionTypes LogCollector::getConnectionType() const
 {
     return NERemoteService::eConnectionTypes::ConnectTcpip;
 }
@@ -294,19 +294,19 @@ void LogCollector::printHelp( bool /* isCmdLine */ )
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::startConsoleService( void )
+void LogCollector::startConsoleService()
 {
     Application::loadModel( _modelName );
 }
 
-void LogCollector::stopConsoleService( void )
+void LogCollector::stopConsoleService()
 {
     Application::unloadModel( _modelName );
 }
 
 bool LogCollector::_checkCommand(const String& cmd)
 {
-    OptionParser parser( LogCollector::ValidOptions, MACRO_ARRAYLEN( LogCollector::ValidOptions ) );
+    OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
     bool quit{ false };
     bool hasError {false};
 
@@ -430,7 +430,7 @@ bool LogCollector::_checkCommand(const String& cmd)
     return quit;
 }
 
-void LogCollector::_outputTitle( void )
+void LogCollector::_outputTitle()
 {
 #if AREG_EXTENDED
 
@@ -586,7 +586,7 @@ void LogCollector::_setVerboseMode( bool /* makeVerbose */ )
 
 #endif  // AREG_EXTENDED
 
-void LogCollector::_cleanHelp(void)
+void LogCollector::_cleanHelp()
 {
 #if     AREG_EXTENDED
 
@@ -595,7 +595,7 @@ void LogCollector::_cleanHelp(void)
     console.lockConsole();
 
     console.clearLine(NESystemService::COORD_USER_INPUT);
-    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {
         console.clearLine(line);
@@ -649,7 +649,7 @@ void LogCollector::_processQueryScopes(const OptionParser::sOption& optScope)
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& OUT msgList)
+void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int>(eLoggerOptions::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);

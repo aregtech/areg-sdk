@@ -76,10 +76,10 @@ void PubSubController::shutdownComponent(ComponentThread & comThread)
     Component::shutdownComponent(comThread);
 }
 
-void PubSubController::onThreadRuns(void)
+void PubSubController::onThreadRuns()
 {
     Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, MACRO_ARRAYLEN(ValidOptions));
+    OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.lockConsole();
     console.enableConsoleInput(true);
     printMessage(String::EmptyString, eCommands::CMD_Undefined);
@@ -164,7 +164,7 @@ inline void PubSubController::printMessage(const String & message, eCommands cmd
     console.refreshScreen();
 }
 
-inline PubSubController & PubSubController::self(void)
+inline PubSubController & PubSubController::self()
 {
     return (*this);
 }

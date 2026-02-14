@@ -39,12 +39,12 @@
 namespace NESocket
 {
 
-    bool _osInitSocket(void)
+    bool _osInitSocket()
     {
         return true;
     }
 
-    void _osReleaseSocket(void)
+    void _osReleaseSocket()
     {
     }
 
@@ -128,14 +128,14 @@ namespace NESocket
     bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long& arg)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
-        return (RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
+        return (NECommon::RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
     }
 
     bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long& value)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         socklen_t len{ sizeof(unsigned long) };
-        return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+        return (NECommon::RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
     }
 
 } // namespace NESocket

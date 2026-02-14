@@ -37,7 +37,7 @@
 //////////////////////////////////////////////////////////////////////////
 Application Application::_theApplication;
 
-Application::Application(void)
+Application::Application()
     : mAppState     ( NEApplication::eApplicationState::AppStateStopped )
     , mSetup        ( false )
     , mConfigManager( )
@@ -95,7 +95,7 @@ void Application::initApplication(  bool startTracing   /*= true */
     Application::getInstance().mAppQuit.resetEvent();
 }
 
-void Application::releaseApplication(void)
+void Application::releaseApplication()
 {
     Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
 
@@ -146,12 +146,12 @@ bool Application::startLogging(bool force /*= false*/ )
     return NELogging::isStarted() || NELogging::startLogging() || (force && NELogging::forceStartLogging());
 }
 
-void Application::stopLogging(void)
+void Application::stopLogging()
 {
     NELogging::stopLogging(true);
 }
 
-void Application::stopServiceManager( void )
+void Application::stopServiceManager()
 {
     Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
     
@@ -163,7 +163,7 @@ void Application::stopServiceManager( void )
     Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
 }
 
-bool Application::startServiceManager( void )
+bool Application::startServiceManager()
 {
     Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
 
@@ -192,24 +192,24 @@ bool Application::startServiceManager( void )
     return result;
 }
 
-bool Application::startTimerManager( void )
+bool Application::startTimerManager()
 {
     Application::_osSetupHandlers();
     return (TimerManager::isTimerManagerStarted() == false ? TimerManager::startTimerManager() : true);
 }
 
-void Application::stopTimerManager(void)
+void Application::stopTimerManager()
 {
     Application::_osReleaseHandlers();
     TimerManager::stopTimerManager(true);
 }
 
-bool Application::startWatchdogManager(void)
+bool Application::startWatchdogManager()
 {
     return (WatchdogManager::isWatchdogManagerStarted() == false ? WatchdogManager::startWatchdogManager() : true);
 }
 
-void Application::stopWatchdogManager(void)
+void Application::stopWatchdogManager()
 {
     WatchdogManager::stopWatchdogManager(true);
 }
@@ -226,7 +226,7 @@ bool Application::startMessageRouting(unsigned int connectTypes)
     return result;
 }
 
-bool Application::configMessageRouting( void )
+bool Application::configMessageRouting()
 {
     return (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceConfigure());
 }
@@ -243,37 +243,37 @@ bool Application::startMessageRouting( const char * ipAddress, unsigned short po
     return result;
 }
 
-void Application::stopMessageRouting( void )
+void Application::stopMessageRouting()
 {
     ServiceManager::_routingServiceStop();
 }
 
-bool Application::isServiceManagerStarted(void)
+bool Application::isServiceManagerStarted()
 {
     return ServiceManager::isServiceManagerStarted();
 }
 
-bool Application::isRouterConnected( void )
+bool Application::isRouterConnected()
 {
     return ServiceManager::_isRoutingServiceStarted();
 }
 
-bool Application::isRouterConnectionPending(void)
+bool Application::isRouterConnectionPending()
 {
     return ServiceManager::_isRoutingServicePending();
 }
 
-bool Application::isMessageRoutingConfigured(void)
+bool Application::isMessageRoutingConfigured()
 {
     return ServiceManager::_isRoutingServiceConfigured();
 }
 
-bool Application::startRouterService(void)
+bool Application::startRouterService()
 {
     return Application::_osStartLocalService(NEApplication::ROUTER_SERVICE_NAME_WIDE, NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE);
 }
 
-bool Application::startLoggingService(void)
+bool Application::startLoggingService()
 {
     return Application::_osStartLocalService(NEApplication::LOGGER_SERVICE_NAME_WIDE, NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE);
 }
@@ -317,34 +317,34 @@ bool Application::waitAppQuit(unsigned int waitTimeout /*= NECommon::WAIT_INFINI
     return theApp.mAppQuit.lock(waitTimeout);
 }
 
-void Application::signalAppQuit(void)
+void Application::signalAppQuit()
 {
     Application & theApp = Application::getInstance( );
     theApp.mAppQuit.setEvent();
 }
 
-bool Application::isServicingReady(void)
+bool Application::isServicingReady()
 {
     Application & theApp = Application::getInstance();
     return (theApp.mAppState == NEApplication::eApplicationState::AppStateReady);
 }
 
-void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
+void Application::queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive )
 {
     ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
 }
 
-const String & Application::getApplicationName(void)
+const String & Application::getApplicationName()
 {
     return Process::getInstance().getAppName();
 }
 
-const String & Application::getMachineName(void)
+const String & Application::getMachineName()
 {
     return NESocket::getHostname();
 }
 
-ConfigManager& Application::getConfigManager(void)
+ConfigManager& Application::getConfigManager()
 {
     return Application::getInstance().mConfigManager;
 }
@@ -373,7 +373,7 @@ void Application::setupDefaultConfiguration(IEConfigurationListener * listener /
     Application& theApp = Application::getInstance();
     const String& module = Process::getInstance().getAppName();
 
-    const uint32_t countReadonly{ MACRO_ARRAYLEN(NEApplication::DefaultReadonlyProperties) };
+    const uint32_t countReadonly{ std::size(NEApplication::DefaultReadonlyProperties) };
     NEPersistence::ListProperties defReadonly(countReadonly);
     for (const auto & entry : NEApplication::DefaultReadonlyProperties)
     {
@@ -392,7 +392,7 @@ void Application::setupDefaultConfiguration(IEConfigurationListener * listener /
     theApp.mConfigManager.setConfiguration(defReadonly, defWritable, listener);
 }
 
-bool Application::isConfigured(void)
+bool Application::isConfigured()
 {
     return Application::getInstance().mConfigManager.isConfigured();
 }

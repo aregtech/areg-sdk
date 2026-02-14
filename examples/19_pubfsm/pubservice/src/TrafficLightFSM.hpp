@@ -69,7 +69,7 @@ private:
          **/
         TrafficLightEventConsumer( TrafficLightFSM & fsm );
 
-        virtual ~TrafficLightEventConsumer( void ) = default;
+        virtual ~TrafficLightEventConsumer() = default;
 
     private:
     /************************************************************************/
@@ -95,8 +95,8 @@ private:
     /************************************************************************/
     // Forbidden calls
     /************************************************************************/
-        TrafficLightEventConsumer( void ) = delete;
-        DECLARE_NOCOPY_NOMOVE( TrafficLightEventConsumer );
+        TrafficLightEventConsumer() = delete;
+        AREG_NOCOPY_NOMOVE( TrafficLightEventConsumer );
     };
 
 private:
@@ -117,7 +117,7 @@ private:
          **/
         TrafficLightTimerConsumer( TrafficLightFSM & fsm );
 
-        virtual ~TrafficLightTimerConsumer( void ) = default;
+        virtual ~TrafficLightTimerConsumer() = default;
 
     /************************************************************************/
     // Timer Consumer override
@@ -141,8 +141,8 @@ private:
     /************************************************************************/
     // Forbidden calls
     /************************************************************************/
-        TrafficLightTimerConsumer( void ) = delete;
-        DECLARE_NOCOPY_NOMOVE( TrafficLightTimerConsumer );
+        TrafficLightTimerConsumer() = delete;
+        AREG_NOCOPY_NOMOVE( TrafficLightTimerConsumer );
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ public:
     /**
      * \brief   TrafficLightFSM class destructor
      **/
-    ~TrafficLightFSM( void );
+    ~TrafficLightFSM();
 
 private:
     /**
@@ -212,7 +212,7 @@ public:
     /**
      * \brief   Release State Machine. Call when complete working with FSM.
      **/
-    void releaseFSM( void );
+    void releaseFSM();
 
     /**
      * \brief   Call to send and event.
@@ -231,7 +231,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool powerOff( void );
+    bool powerOff();
 
     /**
      * \brief   Triggered to power on the traffic light.
@@ -239,7 +239,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool powerOn( void );
+    bool powerOn();
 
     /**
      * \brief   Triggered to start controlling the traffic light.
@@ -247,7 +247,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool startTrafficControl( void );
+    bool startTrafficControl();
 
     /**
      * \brief   Triggered to stop the traffic light controller.
@@ -255,7 +255,7 @@ public:
      * \return  Returns true if trigger was processed in the current state, otherwise it returns false.
      * \remark  The method is not thread safe.
      **/
-    bool stopTrafficControl( void );
+    bool stopTrafficControl();
 
 //////////////////////////////////////////////////////////////////////////
 // Get / Set attributes
@@ -288,7 +288,7 @@ private:
      * \brief   Timer Red trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerRed( void );
+    bool onTimerRed();
     
     /**
      * \brief   Timer YellowRed object
@@ -298,7 +298,7 @@ private:
      * \brief   Timer YellowRed trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerYellowRed( void );
+    bool onTimerYellowRed();
     
     /**
      * \brief   Timer Green object
@@ -308,7 +308,7 @@ private:
      * \brief   Timer Green trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerGreen( void );
+    bool onTimerGreen();
     
     /**
      * \brief   Timer YellowGreen object
@@ -318,7 +318,7 @@ private:
      * \brief   Timer YellowGreen trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerYellowGreen( void );
+    bool onTimerYellowGreen();
     
     /**
      * \brief   Timer PedestrianWalk object
@@ -328,7 +328,7 @@ private:
      * \brief   Timer PedestrianWalk trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerPedestrianWalk( void );
+    bool onTimerPedestrianWalk();
     
     /**
      * \brief   Timer VehicleWait object
@@ -338,7 +338,7 @@ private:
      * \brief   Timer VehicleWait trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
      **/
-    bool onTimerVehicleWait( void );
+    bool onTimerVehicleWait();
     
 private:
 /************************************************************************/
@@ -349,7 +349,7 @@ private:
      * \brief   Event StartTrafficLight trigger
      * \return  Returns true if event was processed in the current state. Otherwise it returns false.
      **/
-    bool onEventStartTrafficLight( void );
+    bool onEventStartTrafficLight();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden internal processing methods and attributes
@@ -364,7 +364,7 @@ private:
     /**
      * \brief   Called when complete processing trigger
      **/
-    void endProcessing( void );
+    void endProcessing();
 
     /**
      * \brief   Called when entering next state
@@ -399,12 +399,12 @@ private:
     /**
      * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
      **/
-    inline bool isOperable( void ) const;
+    inline bool isOperable() const;
 
     /**
      * \brief   Returns the state machine object
      **/
-    inline TrafficLightFSM & self( void );
+    inline TrafficLightFSM & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Standard internal member variables
@@ -506,7 +506,7 @@ private:
 // Forbidden functions / methods call
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficLightFSM( void );
+    TrafficLightFSM();
     TrafficLightFSM(const TrafficLightFSM & );
     const TrafficLightFSM& operator = (const TrafficLightFSM & );
 };
@@ -525,7 +525,7 @@ private:
 /**
  * \brief   Returns true if state machine is in operable state, i.e. it is not UNDEFINED
  **/
-inline bool TrafficLightFSM::isOperable( void ) const
+inline bool TrafficLightFSM::isOperable() const
 {
     return (mState != TrafficLightFSM::eState::UNDEFINED);
 }
@@ -533,7 +533,7 @@ inline bool TrafficLightFSM::isOperable( void ) const
 /**
  * \brief   Returns the state machine object
  **/
-inline TrafficLightFSM& TrafficLightFSM::self( void )
+inline TrafficLightFSM& TrafficLightFSM::self()
 {
     return (*this);
 }

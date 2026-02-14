@@ -82,7 +82,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ServerConnection( void ) = default;
+    virtual ~ServerConnection() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -92,7 +92,7 @@ public:
     /**
      * \brief   Returns the unique service connectivity channel ID in the system.
      **/
-    inline const ITEM_ID & getChannelId(void) const;
+    inline const ITEM_ID & getChannelId() const;
 
     /**
      * \brief   Call to reject connection. When rejected, the socket connection will be closed and
@@ -104,7 +104,7 @@ public:
     /**
      * \brief   Call to close all existing accepted connections
      **/
-    void closeAllConnections( void );
+    void closeAllConnections();
 
     /**
      * \brief   If socket is valid, sends data using existing socket connection and returns length in bytes
@@ -197,15 +197,15 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServerConnection(void) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServerConnection );
+    ServerConnection() = delete;
+    AREG_NOCOPY_NOMOVE( ServerConnection );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & ServerConnection::getChannelId(void) const
+inline const ITEM_ID & ServerConnection::getChannelId() const
 {
     return mChannelId;
 }

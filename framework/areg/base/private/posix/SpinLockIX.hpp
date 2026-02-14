@@ -48,12 +48,12 @@ public:
      * \brief   Sets the instance of CriticalSectionIX object, which is the 
      *          real POSIX spin-lock wrapper class.
      **/
-    SpinLockIX( void );
+    SpinLockIX();
 
     /**
      * \brief   Destructor.
      **/
-    ~SpinLockIX( void );
+    ~SpinLockIX();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -70,14 +70,14 @@ public:
      *          In contrast, when a mutex object is used for mutual exclusion,
      *          the lock() function accept a specified time-out interval.
      **/
-    bool lock( void );
+    bool lock();
 
     /**
      * \brief   Releases ownership of the spin-lock object.
      * \return  Returns true if spin-lock owning thread called unlock.
      *          Otherwise, it returns false.
      **/
-    bool unlock( void );
+    bool unlock();
 
     /**
      * \brief   Attempts to take the spin-lock ownership without blocking thread.
@@ -88,17 +88,17 @@ public:
      *          If another thread already owns the critical section,
      *          the return value is false.
      **/
-    bool tryLock( void );
+    bool tryLock();
 
     /**
      * \brief   Returns true if spin lock is valid.
      **/
-    inline bool isValid( void ) const;
+    inline bool isValid() const;
 
     /**
      * \brief   Free the spin-lock resources. Cannot run anymore
      **/
-    void freeResources( void );
+    void freeResources();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -108,19 +108,19 @@ private:
      * \brief   Takes the ownership of critical section spin lock.
      * \return  Returns true if operation succeeded.
      */
-    inline bool _lockSpin( void );
+    inline bool _lockSpin();
     /**
      * \brief   Releases the ownership of critical section spin lock.
      */
-    inline void _unlockSpin( void );
+    inline void _unlockSpin();
     /**
      * \brief   Takes the ownership of spin lock to access resources of critical section.
      */
-    inline void _lockIntern( void );
+    inline void _lockIntern();
     /**
      * \brief   Releases the ownership of spin lock to access resources of critical section.
      */
-    inline void _unlockIntern( void );
+    inline void _unlockIntern();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -137,7 +137,7 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SpinLockIX );
+    AREG_NOCOPY_NOMOVE( SpinLockIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ public:
     /**
      * \brief   Automatically unlocks the spin lock
      **/
-    inline ~SpinAutolockIX( void )
+    inline ~SpinAutolockIX()
     {
         mSpinLock.unlock();
     }
@@ -183,7 +183,7 @@ public:
      * \brief   Manually locks the spin lock and returns the result.
      * \return  Returns true if operation succeeded.
      **/
-    inline bool lock( void )
+    inline bool lock()
     {
         return mSpinLock.lock();
     }
@@ -192,7 +192,7 @@ public:
      * \brief   Manually unlocks the spin lock and returns the result.
      * \return  Returns true if operation succeeded.
      **/
-    inline bool unlock( void )
+    inline bool unlock()
     {
         return mSpinLock.unlock();
     }
@@ -208,15 +208,15 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SpinAutolockIX( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( SpinAutolockIX );
+    SpinAutolockIX() = delete;
+    AREG_NOCOPY_NOMOVE( SpinAutolockIX );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // SpinLockIX inline  methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SpinLockIX::isValid( void ) const
+inline bool SpinLockIX::isValid() const
 {
     return mIsValid.load();
 }

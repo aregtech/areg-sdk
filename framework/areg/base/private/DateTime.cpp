@@ -27,7 +27,7 @@ namespace
 }
 
 
-DateTime::DateTime( void )
+DateTime::DateTime()
     : mDateTime ( INVALID_TIME )
 {
 }
@@ -57,12 +57,12 @@ DateTime::DateTime( const IEInStream & stream )
 {
 }
 
-uint64_t DateTime::getProcessTickCount(void)
+uint64_t DateTime::getProcessTickCount()
 {
     return NEUtilities::getTickCount();
 }
 
-void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const std::string_view& formatName /*= NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT*/)
+void DateTime::formatTime(const DateTime& dateTime, String& result, const std::string_view& formatName /*= NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT*/)
 {
     char buffer[128] = { 0 };
 
@@ -93,7 +93,7 @@ void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const st
     }
 }
 
-uint64_t DateTime::getSystemTickCount( void )
+uint64_t DateTime::getSystemTickCount()
 {
     return NEUtilities::getTickCount();
 }
@@ -128,12 +128,12 @@ bool DateTime::operator <= (const DateTime & other) const
     return (mDateTime <= other.mDateTime);
 }
 
-DateTime DateTime::getNow( void )
+DateTime DateTime::getNow()
 {
     return DateTime( NEUtilities::systemTimeNow() );
 }
 
-void DateTime::getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime )
+void DateTime::getNow( NEUtilities::sSystemTime & timeData, bool localTime )
 {
     NEUtilities::systemTimeNow(timeData, localTime);
 }
@@ -145,7 +145,7 @@ String DateTime::formatTime( const std::string_view & formatName /*= NEUtilities
     return result;
 }
 
-unsigned int DateTime::getYear(void) const
+unsigned int DateTime::getYear() const
 {
     constexpr double   _secsInYear{ 60.0 * 60.0 * 24.0 * 365.25 };
     constexpr uint32_t _unixEpoch{ 1970 };
@@ -154,7 +154,7 @@ unsigned int DateTime::getYear(void) const
     return static_cast<unsigned int>(static_cast<double>(secs) / _secsInYear) + _unixEpoch;
 }
 
-unsigned int DateTime::getMonth(void) const
+unsigned int DateTime::getMonth() const
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -182,7 +182,7 @@ unsigned int DateTime::getMonth(void) const
     return month;
 }
 
-unsigned int DateTime::getDay(void) const
+unsigned int DateTime::getDay() const
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -210,14 +210,14 @@ unsigned int DateTime::getDay(void) const
     return (remainDays + 1); // Days are 1-based
 }
 
-unsigned int DateTime::getHours(void) const
+unsigned int DateTime::getHours() const
 {
     uint64_t secs{ mDateTime / NEUtilities::SEC_TO_MICROSECS };
     uint32_t remainSecs{ static_cast<uint32_t>(secs % NEUtilities::DAY_TO_SECS) };
     return (remainSecs / NEUtilities::HOUR_TO_SECS);
 }
 
-unsigned int DateTime::getMinutex(void) const
+unsigned int DateTime::getMinutex() const
 {
     uint64_t secs{ mDateTime / NEUtilities::SEC_TO_MICROSECS };
     uint32_t remainSecs{ static_cast<uint32_t>(secs % NEUtilities::DAY_TO_SECS) };
@@ -225,7 +225,7 @@ unsigned int DateTime::getMinutex(void) const
     return mins;
 }
 
-unsigned int DateTime::getSecons(void) const
+unsigned int DateTime::getSecons() const
 {
     uint64_t secs{ mDateTime / NEUtilities::SEC_TO_MICROSECS };
     uint32_t remainSecs{ static_cast<uint32_t>(secs % NEUtilities::DAY_TO_SECS) };
@@ -233,17 +233,17 @@ unsigned int DateTime::getSecons(void) const
     return result;
 }
 
-unsigned int DateTime::getMilliscones(void) const
+unsigned int DateTime::getMilliscones() const
 {
     return static_cast<uint32_t>( (mDateTime / NEUtilities::MILLISEC_TO_MICROSECS) % NEUtilities::MILLISEC_TO_MICROSECS );
 }
 
-unsigned int DateTime::getMicroseconds(void) const
+unsigned int DateTime::getMicroseconds() const
 {
     return static_cast<uint32_t>(mDateTime % NEUtilities::SEC_TO_MICROSECS);
 }
 
-unsigned int DateTime::getDayOfTheYear(void) const
+unsigned int DateTime::getDayOfTheYear() const
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -282,7 +282,7 @@ unsigned int DateTime::getDayOfTheYear(void) const
     return dayOfYear;
 }
 
-unsigned int DateTime::getDayOfTheWeek(void) const
+unsigned int DateTime::getDayOfTheWeek() const
 {
     // Define the number of days in each month
     constexpr uint32_t _DAYS_IN_MONTH[]{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -317,22 +317,22 @@ unsigned int DateTime::getDayOfTheWeek(void) const
     return ((dayOfWeek + 6) % 7);
 }
 
-void DateTime::getDateTime(NEUtilities::sSystemTime& OUT sysTime)
+void DateTime::getDateTime(NEUtilities::sSystemTime& sysTime)
 {
     NEUtilities::convToSystemTime(mDateTime, sysTime);
 }
 
-void DateTime::setDateTime(const NEUtilities::sSystemTime& IN sysTime)
+void DateTime::setDateTime(const NEUtilities::sSystemTime& sysTime)
 {
     mDateTime = NEUtilities::convToTime(sysTime);
 }
 
-void DateTime::getDateTime(tm& OUT time)
+void DateTime::getDateTime(tm& time)
 {
     NEUtilities::convToTm(mDateTime, time);
 }
 
-void DateTime::setDateTime(const tm& IN time)
+void DateTime::setDateTime(const tm& time)
 {
     mDateTime = NEUtilities::convToTime(time);
 }

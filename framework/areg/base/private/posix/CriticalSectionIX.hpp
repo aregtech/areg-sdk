@@ -52,7 +52,7 @@ public:
     /**
      * \brief   Destroy the object, free resources.
      **/
-    virtual ~CriticalSectionIX( void ) = default;
+    virtual ~CriticalSectionIX() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -65,13 +65,13 @@ public:
      *          the critical section.
      * \return  Returns true if operation succeeded.
      **/
-    bool lock( void ) const;
+    bool lock() const;
 
     /**
      * \brief   Unlocks critical section so that, one of waiting threads is released
      *          to own critical section.
      **/
-    void unlock( void ) const;
+    void unlock() const;
 
     /**
      * \brief   Tests whether the critical section can be locked or not.
@@ -79,7 +79,7 @@ public:
      * \return  Returns true if calling thread have got the ownership.
      *          Returns false if calling thread could not get the ownership.
      **/
-    bool tryLock( void ) const;
+    bool tryLock() const;
 
 protected:
 /************************************************************************/
@@ -89,13 +89,13 @@ protected:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid( void ) const override;
+    virtual bool isValid() const override;
 
     /**
      * \brief   Triggered when synchronization object is going to be deleted.
      *          This should free all resources.
      **/
-    virtual void freeResources( void ) override;
+    virtual void freeResources() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -110,7 +110,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( CriticalSectionIX );
+    AREG_NOCOPY_NOMOVE( CriticalSectionIX );
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -47,7 +47,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
 {
 }
 
-bool NetTcpLogger::openLogger(void)
+bool NetTcpLogger::openLogger()
 {
     Lock lock( mLock );
     bool result{ false };
@@ -80,7 +80,7 @@ bool NetTcpLogger::openLogger(void)
     return result;
 }
 
-void NetTcpLogger::closeLogger(void)
+void NetTcpLogger::closeLogger()
 {
     mRingStack.release();
     onServiceExit();
@@ -102,7 +102,7 @@ void NetTcpLogger::logMessage(const NELogging::sLogMessage& logMessage)
     }
 }
 
-bool NetTcpLogger::isLoggerOpened(void) const
+bool NetTcpLogger::isLoggerOpened() const
 {
     Lock lock( mLock );
     return isConnectedState();

@@ -47,7 +47,7 @@ PageNetworkSetup::~PageNetworkSetup()
     cleanService();
 }
 
-void PageNetworkSetup::cleanService(void)
+void PageNetworkSetup::cleanService()
 {
     mConnectionHandler.SetConnected(false);
     mConnectionHandler.SetRegistered(false);
@@ -61,7 +61,7 @@ void PageNetworkSetup::cleanService(void)
     }
 }
 
-bool PageNetworkSetup::isServiceConnected(void) const
+bool PageNetworkSetup::isServiceConnected() const
 {
     return (mNetworkSetup != nullptr ? mNetworkSetup->isConnected() : false);
 }
@@ -133,12 +133,12 @@ void PageNetworkSetup::OnRemoveConnection( NEConnectionManager::sConnection & /*
     // do nothing
 }
 
-void PageNetworkSetup::OnUpdateConnection( void )
+void PageNetworkSetup::OnUpdateConnection()
 {
     // do nothing
 }
 
-void PageNetworkSetup::OnDisconnectTriggered( void )
+void PageNetworkSetup::OnDisconnectTriggered()
 {
     if ( mNetworkSetup != nullptr )
     {
@@ -359,12 +359,12 @@ void PageNetworkSetup::OnUpdateButtonRegister( CCmdUI* pCmdUI )
     }
 }
 
-bool PageNetworkSetup::canRegistered( void ) const
+bool PageNetworkSetup::canRegistered() const
 {
     return (Application::isRouterConnected( ) ? mConnectionHandler.GetRegistered() == false : false);
 }
 
-void PageNetworkSetup::setFocusNickname( void ) const
+void PageNetworkSetup::setFocusNickname() const
 {
     CEdit * nick = reinterpret_cast<CEdit *>(GetDlgItem( IDC_EDIT_NICKNAME ));
     if ( nick != nullptr )
@@ -409,7 +409,7 @@ void PageNetworkSetup::OnDestroy( )
     }
 }
 
-void PageNetworkSetup::OnDefaultClicked( void )
+void PageNetworkSetup::OnDefaultClicked()
 {
     CButton * btnConnect    = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_CONNECT ));
     CButton * btnDisconnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_DISCONNECT ));

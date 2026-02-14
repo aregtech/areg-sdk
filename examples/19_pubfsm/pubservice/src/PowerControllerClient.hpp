@@ -54,7 +54,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    inline PowerControllerEventData( void );
+    inline PowerControllerEventData();
     /**
      * \brief   Set the initial value of event data.
      **/
@@ -78,7 +78,7 @@ public:
     /**
      * \brief   Returns the event data value.
      **/
-    inline PowerControllerEventData::eAction getAction( void ) const;
+    inline PowerControllerEventData::eAction getAction() const;
 
 private:
     PowerControllerEventData::eAction     mAction;  //!< The power controller event data value.
@@ -87,7 +87,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Declare the Power Controller Event and the event consumer objects.
 //////////////////////////////////////////////////////////////////////////
-DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerEventConsumer);
+AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerControllerEventConsumer);
 
 /**
  * \brief   The actual power controller service client.
@@ -125,7 +125,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~PowerControllerClient( void ) = default;
+    virtual ~PowerControllerClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -173,7 +173,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns( void ) override;
+    virtual void onThreadRuns() override;
 
 /************************************************************************/
 // IEPowerControllerEventConsumer overrides
@@ -205,7 +205,7 @@ protected:
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline PowerControllerClient & self( void );    //!< The wrapper of this pointer
+    inline PowerControllerClient & self();    //!< The wrapper of this pointer
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -220,20 +220,20 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    PowerControllerClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( PowerControllerClient );
+    PowerControllerClient() = delete;
+    AREG_NOCOPY_NOMOVE( PowerControllerClient );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // inline members
 //////////////////////////////////////////////////////////////////////////
 
-inline PowerControllerClient & PowerControllerClient::self( void )
+inline PowerControllerClient & PowerControllerClient::self()
 {
     return (*this);
 }
 
-inline PowerControllerEventData::PowerControllerEventData(void)
+inline PowerControllerEventData::PowerControllerEventData()
     : mAction   (PowerControllerEventData::eAction::NoAction)
 {
 }
@@ -253,7 +253,7 @@ inline void PowerControllerEventData::operator = (const PowerControllerEventData
     mAction = src.mAction;
 }
 
-inline PowerControllerEventData::eAction PowerControllerEventData::getAction(void) const
+inline PowerControllerEventData::eAction PowerControllerEventData::getAction() const
 {
     return mAction;
 }

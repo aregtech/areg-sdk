@@ -20,6 +20,8 @@
 #include "areg/base/TEArrayList.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
+#include <algorithm>
+
 /**
  * \brief   Test TEArrayList constructors.
  **/
@@ -28,7 +30,7 @@ TEST(TEArrayListTest, TestConstructors)
     using Array = TEArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
-    constexpr int _len{ MACRO_ARRAYLEN(_arr) };
+    constexpr int _len{ std::size(_arr) };
     constexpr int _capacity{ 5 };
     std::vector vec{ 1, 2, 3, 4, 5 };
 
@@ -44,11 +46,11 @@ TEST(TEArrayListTest, TestConstructors)
 
     Array arr3(_capacity, 3u);
     EXPECT_EQ(arr3.getSize(), 3u);
-    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(MACRO_MAX(3, _capacity)));
+    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(std::max(3, _capacity)));
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), static_cast<uint32_t>(_len));
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(static_cast<uint32_t>(_len), NECommon::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), static_cast<uint32_t>(_len));
@@ -76,7 +78,7 @@ TEST(TEArrayListTest, TestIndexValidity)
     using Array = TEArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
-    constexpr int _len{ MACRO_ARRAYLEN(_arr) };
+    constexpr int _len{ std::size(_arr) };
 
     constexpr int _capacity{ 5 };
 
@@ -109,17 +111,17 @@ TEST(TEArrayListTest, TestArrayContent)
     using Array = TEArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr) };
+    constexpr uint32_t _len{ std::size(_arr) };
 
     constexpr int _capacity{ 5 };
 
     Array arr3(_capacity, 3);
     EXPECT_EQ(arr3.getSize(), 3u);
-    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(MACRO_MAX(3, _capacity)));
+    EXPECT_EQ(arr3.getCapacity(), static_cast<uint32_t>(std::max(3, _capacity)));
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), _len);
@@ -157,11 +159,11 @@ TEST(TEArrayListTest, TestGetSetAndContent)
     using Array = TEArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3, 4, 5 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr) };
+    constexpr uint32_t _len{ std::size(_arr) };
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), std::max(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
     const int* values = arr4.getValues();
     ASSERT_TRUE(::memcmp(values, _arr, sizeof(int) * _len) == 0);
 
@@ -190,8 +192,8 @@ TEST(TEArrayListTest, TestAdd)
     constexpr int _unique[]{ 1, 2, 3, 4, 5 };
     constexpr int _mixed[] { 1, 2, 3, 4, 5, 5, 4, 3, 2, 1 };
 
-    constexpr uint32_t _lenUnique{ MACRO_ARRAYLEN(_unique) };
-    constexpr uint32_t _lenMixed{ MACRO_ARRAYLEN(_mixed) };
+    constexpr uint32_t _lenUnique{ std::size(_unique) };
+    constexpr uint32_t _lenMixed{ std::size(_mixed) };
 
     Array arrUnique;
     for (uint32_t i = 0; i < _lenUnique; ++i)
@@ -252,9 +254,9 @@ TEST(TEArrayListTest, TestAppend)
     constexpr int _arr2[]{ 6, 7, 8, 9, 0 };
     constexpr int _arr3[]{ 1, 3, 5, 7, 9 };
 
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
-    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
-    constexpr uint32_t _len3{ MACRO_ARRAYLEN(_arr3) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
+    constexpr uint32_t _len2{ std::size(_arr2) };
+    constexpr uint32_t _len3{ std::size(_arr3) };
 
     Array arr1;
     arr1.append(Array(_arr1, _len1)).append(Array(_arr2, _len2));
@@ -302,15 +304,15 @@ TEST(TEArrayListTest, TestCopyMove)
     constexpr int _arr1[]{ 1, 2, 3, 4, 5 };
     constexpr int _arr2[]{ 6, 7, 8, 9, 0, 1, 2, 3, 4, 5 };
 
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
-    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
+    constexpr uint32_t _len2{ std::size(_arr2) };
 
     Array arr1(_arr1, _len1), arr2(_arr2, _len2);
     const int* data1 = arr1.getValues();
     const int* data2 = arr2.getValues();
     ASSERT_TRUE(arr1 != arr2);
     ASSERT_TRUE(arr1.getSize() != arr2.getSize());
-    ASSERT_TRUE(memcmp(data1, data2, MACRO_MIN(_len1, _len2) * sizeof(int)) != 0);
+    ASSERT_TRUE(memcmp(data1, data2, std::min(_len1, _len2) * sizeof(int)) != 0);
 
     arr2.copy(arr1);
     data1 = arr1.getValues();
@@ -337,9 +339,9 @@ TEST(TEArrayListTest, TestInsert)
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _arr3[]{ 5, 6, 7, 8, 9 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
-    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
-    constexpr uint32_t _len3{ MACRO_ARRAYLEN(_arr3) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
+    constexpr uint32_t _len2{ std::size(_arr2) };
+    constexpr uint32_t _len3{ std::size(_arr3) };
 
     Array arr1(_arr1, _len1);
     Array arr2;
@@ -377,7 +379,7 @@ TEST(TEArrayListTest, TestRemoveAt)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr(_arr1, _len1);
     arr.removeAt(2, 1);
@@ -397,7 +399,7 @@ TEST(TEArrayListTest, TestRemovePosition)
     using Array = TEArrayList<int>;
 
     constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
+    constexpr uint32_t _len2{ std::size(_arr2) };
 
     Array arr(_arr2, _len2);
 
@@ -420,7 +422,7 @@ TEST(TEArrayListTest, TestRemoveElement)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr(_arr1, _len1);
     for (int i = static_cast<int>(_len1 - 1u); i >= 0; --i)
@@ -439,7 +441,7 @@ TEST(TEArrayListTest, TestFind)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr(_arr1, _len1);
     for (int i = 10; i >= 0; --i)
@@ -477,7 +479,7 @@ TEST(TEArrayListTest, TestResize)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr;
     ASSERT_TRUE(arr.isEmpty());
@@ -512,7 +514,7 @@ TEST(TEArrayListTest, TestReserve)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr;
     ASSERT_TRUE(arr.isEmpty());
@@ -542,7 +544,7 @@ TEST(TEArrayListTest, TestShift)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr;
     ASSERT_TRUE(arr.isEmpty());
@@ -594,7 +596,7 @@ TEST(TEArrayListTest, TestEntries)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array arr, temp(_arr1, _len1);
     ASSERT_TRUE(arr.isEmpty());
@@ -631,7 +633,7 @@ TEST(TEArrayListTest, TestStream)
     using Array = TEArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
-    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len1{ std::size(_arr1) };
 
     Array dst, src(_arr1, _len1);
     ASSERT_TRUE(dst.isEmpty());
@@ -655,7 +657,7 @@ TEST(TEArrayListTest, TestSortAscending)
 
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len{ std::size(_arr1) };
 
     Array arr1(_arr1, _len), res1(_res1, _len);
     arr1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
@@ -674,7 +676,7 @@ TEST(TEArrayListTest, TestSortDescending)
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len{ std::size(_arr1) };
 
     Array arr1(_arr1, _len), res1(_res1, _len);
     arr1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });

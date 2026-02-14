@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Hidden static calls.
 //////////////////////////////////////////////////////////////////////////
-inline const RuntimeClassID & RuntimeBase::_getClassId( void )
+inline const RuntimeClassID & RuntimeBase::_getClassId()
 {
     static const RuntimeClassID _classId("RuntimeBase");
     return _classId;
@@ -36,12 +36,12 @@ inline const RuntimeClassID & RuntimeBase::_getClassId( void )
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-const RuntimeClassID & RuntimeBase::getRuntimeClassId( void ) const
+const RuntimeClassID & RuntimeBase::getRuntimeClassId() const
 {
     return _getClassId();
 }
 
-const String & RuntimeBase::getRuntimeClassName( void ) const
+const String & RuntimeBase::getRuntimeClassName() const
 {
     return RuntimeBase::_getClassId().getName();
 }
@@ -66,7 +66,7 @@ bool RuntimeBase::isInstanceOfRuntimeClass(unsigned int classMagic) const
     return (RuntimeBase::_getClassId().getMagic() == classMagic);
 }
 
-unsigned int RuntimeBase::getRuntimeClassNumber(void) const
+unsigned int RuntimeBase::getRuntimeClassNumber() const
 {
     return RuntimeBase::_getClassId().getMagic();
 }

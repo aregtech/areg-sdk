@@ -44,7 +44,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~TrafficLightService( void );
+    virtual ~TrafficLightService();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -59,28 +59,28 @@ protected:
      *          Called to power ON the traffic lights.
      * \note    Has no response
      **/
-    virtual void requestPowerOn( void ) override;
+    virtual void requestPowerOn() override;
 
     /**
      * \brief   Request call.
      *          Called to power OFF the traffic lights.
      * \note    Has no response
      **/
-    virtual void requestPowerOff( void ) override;
+    virtual void requestPowerOff() override;
 
     /**
      * \brief   Request call.
      *          Triggered to start the traffic light
      * \see     responseStartTrafficLight
      **/
-    virtual void requestStartTrafficLight( void ) override;
+    virtual void requestStartTrafficLight() override;
 
     /**
      * \brief   Request call.
      *          Call to stop the traffic lights and put them in initialization state.
      * \see     responseStopTrafficLight
      **/
-    virtual void requestStopTrafficLight( void ) override;
+    virtual void requestStopTrafficLight() override;
 
 /************************************************************************/
 // IETrafficLightActionHandler action overrides
@@ -89,27 +89,27 @@ protected:
    /**
     * \brief   Action to perform when traffic light is off.
     **/
-   virtual void actionPowerOff( void ) override;
+   virtual void actionPowerOff() override;
 
    /**
     * \brief   Acton to perform when power on the traffic light.
     **/
-   virtual void actionPowerOn( void ) override;
+   virtual void actionPowerOn() override;
 
    /**
     * \brief   Action to perform when vehicle light is yellow.
     **/
-   virtual void actionVehicleYellow( void ) override;
+   virtual void actionVehicleYellow() override;
 
    /**
     * \brief   Action to perform when vehicle light is red.
     **/
-   virtual void actionVehicleRed( void ) override;
+   virtual void actionVehicleRed() override;
 
    /**
     * \brief   Action to perform when pedestrian light is red.
     **/
-   virtual void actionPedestrianRed( void ) override;
+   virtual void actionPedestrianRed() override;
 
    /**
     * \brief   Action to perform when vehicle light is green.
@@ -149,7 +149,7 @@ private:
     /**
      * \brief   Wrapper of this pointer.
      **/
-    inline TrafficLightService & self( void );
+    inline TrafficLightService & self();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -163,15 +163,15 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    TrafficLightService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( TrafficLightService );
+    TrafficLightService() = delete;
+    AREG_NOCOPY_NOMOVE( TrafficLightService );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // inline members
 //////////////////////////////////////////////////////////////////////////
 
-inline TrafficLightService & TrafficLightService::self( void )
+inline TrafficLightService & TrafficLightService::self()
 {
     return (*this);
 }

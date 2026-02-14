@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Event class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Event class, static members
@@ -70,7 +70,7 @@ bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & ev
 // Event class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Event::Event( void )
+Event::Event()
     : RuntimeObject ( )
     , mEventType    ( Event::eEventType::EventUnknown )
     , mEventPrio    ( DefaultPriority )
@@ -88,13 +88,13 @@ Event::Event( Event::eEventType eventType )
 {
 }
 
-Event::~Event( void )
+Event::~Event()
 {
     mConsumer       = nullptr;
     mTargetThread   = nullptr;
 }
 
-inline Event & Event::self( void )
+inline Event & Event::self()
 {
     return (*this);
 }
@@ -103,17 +103,17 @@ inline Event & Event::self( void )
 // Event class, methods
 //////////////////////////////////////////////////////////////////////////
 
-void Event::destroy( void )
+void Event::destroy()
 {
     delete this;
 }
 
-EventDispatcher& Event::getDispatcher( void ) const
+EventDispatcher& Event::getDispatcher() const
 {
     return (mTargetThread != nullptr ? mTargetThread->getEventDispatcher() : DispatcherThread::getCurrentDispatcher());
 }
 
-void Event::deliverEvent( void )
+void Event::deliverEvent()
 {
     EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
     if ((dispatcher == nullptr) || (dispatcher->postEvent(*this) == false))
@@ -124,13 +124,13 @@ void Event::deliverEvent( void )
 
 bool Event::registerForThread( id_type whichThread /*= 0*/ )
 {
-    return registerForThread(whichThread != 0 ? RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread)
-                                              : RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
+    return registerForThread(whichThread != 0 ? AREG_RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread)
+                                              : AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
 }
 
 bool Event::registerForThread( const char* whichThread )
 {
-    return registerForThread(whichThread != nullptr ? RUNTIME_CAST(Thread::findThreadByName(whichThread), DispatcherThread) : nullptr);
+    return registerForThread(whichThread != nullptr ? AREG_RUNTIME_CAST(Thread::findThreadByName(whichThread), DispatcherThread) : nullptr);
 }
 
 bool Event::registerForThread( DispatcherThread * dispatchThread )
@@ -143,7 +143,7 @@ bool Event::registerForThread( DispatcherThread * dispatchThread )
     return (mTargetThread != nullptr);
 }
 
-bool Event::isEventRegistered( void ) const
+bool Event::isEventRegistered() const
 {
     return getDispatcher().hasRegisteredConsumer(getRuntimeClassId());
 }

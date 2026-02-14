@@ -20,7 +20,7 @@ PatientService::PatientService( const NERegistry::ComponentEntry & entry, Compon
 {
 }
 
-inline PatientService & PatientService::self( void )
+inline PatientService & PatientService::self()
 {
     return (*this);
 }

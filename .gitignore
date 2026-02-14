@@ -14,6 +14,9 @@
 .metadata
 .vs
 .vscode
+.cache
+.claude
+.idea
 
 build/*
 out/*

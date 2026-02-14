@@ -30,7 +30,7 @@ namespace
     constexpr const uint32_t _logLocalMessage{ _logMessageSize - _logNamesSize };
 }
 
-LoggingEventData::LoggingEventData( void )
+LoggingEventData::LoggingEventData()
     : mAction       ( LoggingEventData::eLoggingAction::LoggingUndefined )
     , mDataBuffer   ( )
 {

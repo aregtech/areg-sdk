@@ -48,14 +48,14 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~RouterConsoleService( void ) = default;
+    virtual ~RouterConsoleService() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    RouterConsoleService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( RouterConsoleService );
+    RouterConsoleService() = delete;
+    AREG_NOCOPY_NOMOVE( RouterConsoleService );
 };
 
 #endif  // AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP

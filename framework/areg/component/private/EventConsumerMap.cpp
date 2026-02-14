@@ -25,7 +25,7 @@
 // EventConsumerList class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-EventConsumerList::~EventConsumerList( void )
+EventConsumerList::~EventConsumerList()
 {
     removeAllConsumers();
 }
@@ -57,7 +57,7 @@ bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
     return result;
 }
 
-void EventConsumerList::removeAllConsumers( void )
+void EventConsumerList::removeAllConsumers()
 {
     EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
     for (; isValidPosition(pos); pos = nextPosition(pos))
@@ -80,7 +80,7 @@ void EventConsumerList::removeAllConsumers( void )
 
 void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
 {
-    OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
+    AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
     ASSERT(Resource != nullptr);
     Resource->removeAllConsumers();
     delete Resource;

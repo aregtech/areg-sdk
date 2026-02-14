@@ -126,7 +126,7 @@ public:
     /**
      * \brief   Returns singleton instance of the LogObserver.
      **/
-    static LogObserver& getInstance( void );
+    static LogObserver& getInstance();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -135,8 +135,8 @@ private:
     /**
      * \brief   Default constructor and destructor.
      **/
-    LogObserver( void ) = default;
-    ~LogObserver(void) = default;
+    LogObserver() = default;
+    ~LogObserver() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -153,7 +153,7 @@ public:
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    Console::CallBack getOptionCheckCallback( void ) const;
+    Console::CallBack getOptionCheckCallback() const;
 
 private:
 
@@ -204,7 +204,7 @@ private:
     /**
      * \brief   The callback of the event triggered when fails to send or receive message.
      **/
-    static void callbackMessagingFailed(void);
+    static void callbackMessagingFailed();
 
     /**
      * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
@@ -258,7 +258,7 @@ private:
      * \brief   Triggered if need to run console with extended features.
      *          In extended feature, the console can output message at any position on the screen.
      **/
-    void _runConsoleInputExtended(void);
+    void _runConsoleInputExtended();
 
     /**
      * \brief   Enables or disables local log messages of the current process.
@@ -280,7 +280,7 @@ private:
     /**
      * \brief   Output on console the title.
      **/
-    static void _outputTitle( void );
+    static void _outputTitle();
 
     /**
      * \brief   Prints info on console.
@@ -291,7 +291,7 @@ private:
      * \brief   Call to clean all message outputs like help, prompt, etc.
      *          Normally, help is the largest message.
      **/
-    static void _cleanHelp(void);
+    static void _cleanHelp();
 
     /**
      * \brief   Triggered when requested to save the configuration of the client(s).
@@ -305,13 +305,13 @@ private:
      * \brief   Triggered to print the help message on console.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processPrintHelp(void);
+    static bool _processPrintHelp();
 
     /**
      * \brief   Triggered to print the information of instances, such as ID, number of registered scope, name, etc.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processInfoInstances(void);
+    static bool _processInfoInstances();
 
     /**
      * \brief   Triggered to process update scope priority command.
@@ -326,7 +326,7 @@ private:
      *          But the log observer may remain connected.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processPauseLogging(void);
+    static bool _processPauseLogging();
 
     /**
      * \brief   Triggered to stop, resume or start logging. When starts it may create new log file.
@@ -363,7 +363,7 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( LogObserver );
+    AREG_NOCOPY_NOMOVE( LogObserver );
 };
 
 #endif  // AREG_LOGOBSERVER_APP_LOGOBSERVER_HPP

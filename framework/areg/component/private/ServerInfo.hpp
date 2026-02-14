@@ -48,7 +48,7 @@ public:
      * \brief   Default Constructor.
      *          Creates Server Info with invalid Stub address and sets state Undefined.
      **/
-    ServerInfo( void );
+    ServerInfo();
 
     /**
      * \brief   Initialization constructor.
@@ -88,7 +88,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    ~ServerInfo( void ) = default;
+    ~ServerInfo() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -157,7 +157,7 @@ public:
      * \brief   Converts Server Info object to unsigned integer.
      *          The conversion is done based on Service Info conversion mechanism.
      **/
-    explicit operator unsigned int ( void ) const;
+    explicit operator unsigned int () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -166,14 +166,14 @@ public:
     /**
      * \brief   Returns Stub server address
      **/
-    inline const StubAddress & getAddress( void ) const;
+    inline const StubAddress & getAddress() const;
 
     /**
      * \brief   Returns the state of Server Info.
      *          The Server Info state is updated only when Stub address is set.
      *          No separate Set-method presented
      **/
-    inline NEService::eServiceConnection getConnectionStatus( void ) const;
+    inline NEService::eServiceConnection getConnectionStatus() const;
 
     /**
      * \brief   Changes the network connection status.
@@ -184,12 +184,12 @@ public:
     /**
      * \brief   Returns true if server status is Connected
      **/
-    inline bool isConnected( void ) const;
+    inline bool isConnected() const;
 
     /**
      * \brief   Returns true if server status is Pending
      **/
-    inline bool isWaiting( void ) const;
+    inline bool isWaiting() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -238,22 +238,22 @@ namespace std
 // ServerInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress& ServerInfo::getAddress( void ) const
+inline const StubAddress& ServerInfo::getAddress() const
 {
     return mServerAddress;
 }
 
-inline NEService::eServiceConnection ServerInfo::getConnectionStatus( void ) const
+inline NEService::eServiceConnection ServerInfo::getConnectionStatus() const
 {
     return mServerState;
 }
 
-inline bool ServerInfo::isConnected( void ) const
+inline bool ServerInfo::isConnected() const
 {
     return mServerState == NEService::eServiceConnection::ServiceConnected;
 }
 
-inline bool ServerInfo::isWaiting( void ) const
+inline bool ServerInfo::isWaiting() const
 {
     return mServerState == NEService::eServiceConnection::ServicePending;
 }

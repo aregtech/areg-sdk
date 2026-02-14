@@ -87,7 +87,7 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void );
+    inline ServiceClient & self();
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
@@ -99,11 +99,11 @@ private:
 // forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClient( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClient );
+    ServiceClient() = delete;
+    AREG_NOCOPY_NOMOVE( ServiceClient );
 };
 
-inline ServiceClient & ServiceClient::self( void )
+inline ServiceClient & ServiceClient::self()
 {
     return (*this);
 }

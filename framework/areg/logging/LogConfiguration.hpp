@@ -50,8 +50,8 @@ public:
     /**
      * \brief  Constructor / Destructor.
      **/
-    LogConfiguration( void ) = default;
-    ~LogConfiguration( void ) = default;
+    LogConfiguration() = default;
+    ~LogConfiguration() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -61,28 +61,28 @@ public:
     /**
      * \brief   Returns true if logging is enabled.
      **/
-    bool isLoggingEnabled( void ) const;
+    bool isLoggingEnabled() const;
 
     /**
      * \brief   Returns true if logging via network is enabled.
      **/
-    bool isRemoteLoggingEnabled( void ) const;
+    bool isRemoteLoggingEnabled() const;
 
     /**
      * \brief   Returns true if logging in the file is enabled.
      **/
-    bool isFileLoggingEnabled( void ) const;
+    bool isFileLoggingEnabled() const;
 
     /**
      * \brief   Returns true if logging in database is enabled.
      *          NOTE: The database logging is not implemented yet.
      **/
-    bool isDatabaseLoggingEnabled( void ) const;
+    bool isDatabaseLoggingEnabled() const;
 
     /**
      * \brief   Returns true if logging on debug output window (or console) is enabled.
      **/
-    bool isDebugOutputLoggingEnabled( void ) const;
+    bool isDebugOutputLoggingEnabled() const;
 
     /**
      * \brief   Sets logging enable flag for the specified log type.
@@ -96,72 +96,72 @@ public:
     /**
      * \brief   Gets and sets the property value of logging version.
      **/
-    Version getVersion( void ) const;
+    Version getVersion() const;
 
     /**
      * \brief   Gets and sets property value of layout format of scope enter.
      **/
-    String getLayoutEnter( void ) const;
+    String getLayoutEnter() const;
     void setLayoutEnter( const String & prop );
 
     /**
      * \brief   Gets and sets property value of layout format form message text output.
      **/
-    String getLayoutMessage( void ) const;
+    String getLayoutMessage() const;
     void setLayoutMessage( const String & prop );
 
     /**
      * \brief   Gets and sets property value of layout format of scope exit.
      **/
-    String getLayoutExit( void ) const;
+    String getLayoutExit() const;
     void setLayoutExit( const String & prop );
 
     /**
      * \brief   Gets and sets property value of stack size.
      **/
-    uint32_t getStackSize( void ) const;
+    uint32_t getStackSize() const;
     void setStackSize( uint32_t prop );
 
     /**
      * \brief   Gets and sets property value of logging status (enabled / disabled).
      **/
-    bool getStatus( void ) const;
+    bool getStatus() const;
     void setStatus( bool prop );
 
     /**
      * \brief   Gets and sets property value of append data status.
      **/
-    bool getAppendData( void ) const;
+    bool getAppendData() const;
     void setAppendData( bool prop );
 
     /**
      * \brief   Gets and sets property value of file logging setting.
      **/
-    String getLogFile( void ) const;
+    String getLogFile() const;
     void setLogFile( const String & prop );
 
     /**
      * \brief   Gets and sets property value of remote logging enable setting.
      **/
-    bool getRemoteTcpEnable( void ) const;
+    bool getRemoteTcpEnable() const;
     void setRemoteTcpEnable( bool prop, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets property value of remote host name logging setting.
      **/
-    String getRemoteTcpAddress( void ) const;
+    String getRemoteTcpAddress() const;
     void setRemoteTcpAddress( const String & prop, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets property value of remote host port logging setting.
      **/
-    uint16_t getRemoteTcpPort( void ) const;
+    uint16_t getRemoteTcpPort() const;
     void setRemoteTcpPort( uint16_t prop, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets property value of database logging enable / disable setting.
      **/
-    bool getDatabaseEnable( void ) const;
+    bool getDatabaseEnable() const;
     void setDatabaseEnable( bool prop, bool isTemporary = false);
 
     /**
@@ -173,7 +173,7 @@ public:
     /**
      * \brief   Gets and sets the name of database engine such as `sqlite`.
      **/
-    String getDatabaseEngine(void) const;
+    String getDatabaseEngine() const;
     void setDatabaseEngine(const String & dbEngine, bool isTemporary = false);
 
     /**
@@ -181,45 +181,45 @@ public:
      *          When gets, it adds database file name to the location.
      *          Wehn sets, it splits file path to 2 parts: database name and database location.
      **/
-    String getDatabaseFullPath(void) const;
+    String getDatabaseFullPath() const;
     void setDatabaseFullPath(const String & dbFullPath, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database name like "SQLite" or "MySQL", etc.
      **/
-    String getDatabaseName(void) const;
+    String getDatabaseName() const;
     void setDatabaseName(const String & dbName, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database location. The location can be full or relative file path, or an URI.
      **/
-    String getDatabaseLocation(void) const;
+    String getDatabaseLocation() const;
     void setDatabaseLocation(const String& dbLocation, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database driver, if needed.
      **/
-    String getDatabaseDriver(void) const;
+    String getDatabaseDriver() const;
     void setDatabaseDriver(const String& dbDriver, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database service address that contains IP-address and port number.
      **/
-    NESocket::SocketAddress getDatabaseAddress(void) const;
+    NESocket::SocketAddress getDatabaseAddress() const;
     void setDatabaseAddress(const NESocket::SocketAddress& dbAddress, bool isTemporary = false);
     void setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database user name and user password.
      **/
-    NESocket::UserData getDatabaseUser(void) const;
+    NESocket::UserData getDatabaseUser() const;
     void setDatabaseUser(const NESocket::UserData& dbUser, bool isTemporary = false);
     void setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
 
     /**
      * \brief   Saves the configuration in the current config file.
      **/
-    void saveConfiguration(void);
+    void saveConfiguration();
 
     /**
      * \brief   Updates the list of scopes in the application configuration by setting the current state of scopes in configuration.
@@ -231,7 +231,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( LogConfiguration );
+    AREG_NOCOPY_NOMOVE( LogConfiguration );
 };
 
 //////////////////////////////////////////////////////////////////////////

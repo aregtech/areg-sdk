@@ -22,13 +22,13 @@
 // Console class implementations.
 //////////////////////////////////////////////////////////////////////////
 
-Console& Console::getInstance(void)
+Console& Console::getInstance()
 {
     static Console _instance;   // singleton instance.
     return _instance;
 }
 
-Console::Console(void)
+Console::Console()
     : mIsReady  ( false )
     , mContext  ( 0 )
     , mEnable   (true, false)
@@ -37,7 +37,7 @@ Console::Console(void)
     _osSetup();
 }
 
-Console::~Console(void)
+Console::~Console()
 {
     _osRelease();
 }
@@ -84,7 +84,7 @@ bool Console::readInputList(const char* format, va_list varList) const
     return _osReadInputList(format, varList);
 }
 
-String Console::readString(void) const
+String Console::readString() const
 {
     char buffer[512] { 0 };
     return String(readInputs("%510s", buffer) ? buffer : String::getEmptyString());

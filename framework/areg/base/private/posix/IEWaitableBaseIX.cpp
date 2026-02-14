@@ -32,12 +32,12 @@ IEWaitableBaseIX::IEWaitableBaseIX( NESyncTypesIX::eSyncObject syncType, bool is
 {
 }
 
-IEWaitableBaseIX::~IEWaitableBaseIX( void )
+IEWaitableBaseIX::~IEWaitableBaseIX()
 {
     ASSERT(SyncLockAndWaitIX::isWaitableRegistered(*this) == false);
 }
 
-void IEWaitableBaseIX::freeResources(void)
+void IEWaitableBaseIX::freeResources()
 {
     SyncLockAndWaitIX::eventRemove(*this);
 }

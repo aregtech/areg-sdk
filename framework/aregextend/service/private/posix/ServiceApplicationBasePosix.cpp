@@ -24,38 +24,38 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
-bool ServiceApplicationBase::_osIsValid(void) const
+bool ServiceApplicationBase::_osIsValid() const
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osRegisterService(void)
+bool ServiceApplicationBase::_osRegisterService()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osFreeResources(void)
+void ServiceApplicationBase::_osFreeResources()
 {
     mSvcHandle = nullptr;
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService(void)
+bool ServiceApplicationBase::_osInitializeService()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService(void)
+bool ServiceApplicationBase::_osOpenService()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osCreateService(void)
+bool ServiceApplicationBase::_osCreateService()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osDeleteService(void)
+void ServiceApplicationBase::_osDeleteService()
 {
 }
 
@@ -98,7 +98,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
     return result;
 }
 
-int ServiceApplicationBase::_osStartServiceDispatcher(void)
+int ServiceApplicationBase::_osStartServiceDispatcher()
 {
     return RESULT_IGNORED;
 }

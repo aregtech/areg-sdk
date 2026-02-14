@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Default constructor.
      **/
-    inline PatientInfoEventData( void );
+    inline PatientInfoEventData();
 
     /**
      * \brief   Initializes the patient information 
@@ -72,12 +72,12 @@ public:
     /**
      * \brief   Gets buffer that contains patient information.
      **/
-    inline const SharedBuffer & getData( void ) const;
+    inline const SharedBuffer & getData() const;
 
     /**
      * \brief   Declare PatientInfoEventData::eUpdateCommands as streamable.
      **/
-    DECLARE_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+    AREG_DECLARE_STREAMABLE( PatientInfoEventData::eUpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -90,12 +90,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Implement PatientInfoEventData::eUpdateCommands streamable.
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+AREG_IMPLEMENT_STREAMABLE( PatientInfoEventData::eUpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Define custom event and the event consumer.
 //////////////////////////////////////////////////////////////////////////
-DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsumer );
+AREG_DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsumer );
 
 //////////////////////////////////////////////////////////////////////////
 // inline methods
@@ -104,7 +104,7 @@ DECLARE_EVENT( PatientInfoEventData, PatientInfoEvent, IEPatientInfoEventConsume
 //////////////////////////////////////////////////////////////////////////
 // PatientInfoEventData class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline PatientInfoEventData::PatientInfoEventData( void )
+inline PatientInfoEventData::PatientInfoEventData()
     : mData ( )
 {
 }
@@ -131,7 +131,7 @@ inline PatientInfoEventData::PatientInfoEventData( PatientInfoEventData && src )
 {
 }
 
-inline const SharedBuffer & PatientInfoEventData::getData( void ) const
+inline const SharedBuffer & PatientInfoEventData::getData() const
 {
     return mData;
 }

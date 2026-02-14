@@ -38,12 +38,12 @@ EventQueue::EventQueue( IEQueueListener & eventListener, SortedEventStack & even
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, methods
 //////////////////////////////////////////////////////////////////////////
-void EventQueue::pushEvent( Event& evendElem, Event** OUT removedEvent )
+void EventQueue::pushEvent( Event& evendElem, Event** removedEvent )
 {
     mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
 }
 
-Event* EventQueue::popEvent( void )
+Event* EventQueue::popEvent()
 {
     Event* result{ nullptr };
     uint32_t size = mEventQueue.popEvent(&result);
@@ -55,7 +55,7 @@ Event* EventQueue::popEvent( void )
     return result;
 }
 
-void EventQueue::removeAllEvents(void)
+void EventQueue::removeAllEvents()
 {
     mEventQueue.deleteAllEvents();
     mEventListener.signalEvent(0);
@@ -83,7 +83,7 @@ ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener, uint32_
 {
 }
 
-ExternalEventQueue::~ExternalEventQueue(void)
+ExternalEventQueue::~ExternalEventQueue()
 {
     mStack.deleteAllEvents();
 }
@@ -98,7 +98,7 @@ InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
 {
 }
 
-InternalEventQueue::~InternalEventQueue(void)
+InternalEventQueue::~InternalEventQueue()
 {
     mStack.deleteAllEvents();
 }
@@ -107,7 +107,7 @@ void InternalEventQueue::signalEvent(uint32_t /* eventCount */)
 {
 }
 
-inline InternalEventQueue & InternalEventQueue::self( void )
+inline InternalEventQueue & InternalEventQueue::self()
 {
     return (*this);
 }

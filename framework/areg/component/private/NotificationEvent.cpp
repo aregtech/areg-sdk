@@ -84,7 +84,7 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
@@ -113,7 +113,7 @@ NotificationEvent::NotificationEvent( const NotificationEventData& data )
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::setTargetThread( void )
+void NotificationEvent::setTargetThread()
 {
     const ProxyBase * proxy = mData.getProxy();
     DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();
@@ -130,7 +130,7 @@ void NotificationEvent::setTargetThread( void )
 //////////////////////////////////////////////////////////////////////////
 void IENotificationEventConsumer::startEventProcessing( Event& eventElem )
 {
-    NotificationEvent* eventNotify = RUNTIME_CAST(&eventElem, NotificationEvent);
+    NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
     if (eventNotify != nullptr)
     {
         processNotificationEvent(*eventNotify);

@@ -46,7 +46,7 @@ void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
     closeConnection(clientConnection);
 }
 
-void ServerConnection::closeAllConnections(void)
+void ServerConnection::closeAllConnections()
 {
     Lock lock( mLock );
     RemoteMessage msgByeClient;

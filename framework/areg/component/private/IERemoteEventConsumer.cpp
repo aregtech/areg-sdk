@@ -21,21 +21,21 @@ void IERemoteEventConsumer::startEventProcessing(Event & eventElem)
 {
     if ( Event::isRemote(eventElem.getEventType()) )
     {
-        RemoteRequestEvent * requestEvent = RUNTIME_CAST(&eventElem, RemoteRequestEvent);
+        RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
         if ( requestEvent != nullptr )
         {
             processRemoteRequestEvent(*requestEvent);
         }
         else
         {
-            RemoteResponseEvent * responseEvent = RUNTIME_CAST(&eventElem, RemoteResponseEvent);
+            RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
             if ( responseEvent != nullptr )
             {
                 processRemoteResponseEvent(*responseEvent);
             }
             else
             {
-                RemoteNotifyRequestEvent * requestNotifyEvent = RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
+                RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
                 if (requestNotifyEvent != nullptr)
                 {
                     processRemoteNotifyRequestEvent(*requestNotifyEvent);

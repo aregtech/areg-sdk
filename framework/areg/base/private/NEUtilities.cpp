@@ -34,26 +34,26 @@ namespace NEUtilities
     /**
      * \brief   Returns value as milliseconds that have elapsed since the system was started.
      **/
-    extern uint64_t _osGetTickCount( void );
+    extern uint64_t _osGetTickCount();
 
     /**
      * \brief   Returns value of the current date and time in microseconds passed since Unix epoch (1 January 1970).
      *          The time is in UTC.
      **/
-    extern TIME64 _osSystemTimeNow(void);
+    extern TIME64 _osSystemTimeNow();
 
     /**
      * \brief   Set the current date and time in the struct pointed to by the `sysTime` argument.
      * \param[out]  sysTime     The structure to break the current date and time.
      * \param[in]   localTime   The flag, indicating whether the time should be local or in UTC.
      **/
-    extern void _osSystemTimeNow( sSystemTime & OUT sysTime, bool localTime );
+    extern void _osSystemTimeNow( sSystemTime & sysTime, bool localTime );
 
     /**
      * \brief   Converts the UTC time broken in the structure of `tm` to the local time.
      * \param[in,out]   utcTime     The broken time in UTC to convert to the local time.
      **/
-    extern void _osMakeTmLocal(struct tm& IN OUT utcTime);
+    extern void _osMakeTmLocal(struct tm& utcTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
@@ -62,7 +62,7 @@ namespace NEUtilities
      * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
-    extern bool _osConvToLocalTime(const TIME64& IN utcTime, sSystemTime& OUT localTime);
+    extern bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& localTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
@@ -72,7 +72,7 @@ namespace NEUtilities
      *                          milliseconds and microseconds.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
-    extern bool _osConvToLocalTm(const TIME64& IN utcTime, struct tm& OUT localTm);
+    extern bool _osConvToLocalTm(const TIME64& utcTime, struct tm& localTm);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
@@ -81,7 +81,7 @@ namespace NEUtilities
      * \param[out]  sysTime     The broken time structure. On output this contains structured calendar structure,
      *                          including milliseconds and microseconds.
      **/
-    extern void _osConvToSystemTime(const TIME64& IN timeValue, NEUtilities::sSystemTime& OUT sysTime);
+    extern void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
@@ -90,7 +90,7 @@ namespace NEUtilities
      * \param[out]  time        The broken time structure. On output this contains structured calendar structure
      *                          without milliseconds and microseconds.
      **/
-    extern void _osConvToTm(const TIME64& IN timeValue, struct tm& OUT time);
+    extern void _osConvToTm(const TIME64& timeValue, struct tm& time);
 
 /************************************************************************/
 // Local static methods.
@@ -138,7 +138,7 @@ AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lhs, co
     return NEUtilities::_compareLargeIntegers(lhsLi, rshLi);
 }
 
-AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& IN time, time_t& OUT secs, unsigned short& OUT milli, unsigned short& OUT micro)
+AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& time, time_t& secs, unsigned short& milli, unsigned short& micro)
 {
     secs = static_cast<time_t>(time / NEUtilities::SEC_TO_MICROSECS);
     TIME64 rest = time % NEUtilities::SEC_TO_MICROSECS;
@@ -146,7 +146,7 @@ AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& IN time, time_t& OUT
     micro = static_cast<unsigned short>(rest % NEUtilities::MILLISEC_TO_MICROSECS);
 }
 
-AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & IN sysTime, struct tm & OUT time)
+AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & sysTime, struct tm & time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -167,17 +167,17 @@ AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & IN sysTime, struct 
     }
 }
 
-AREG_API_IMPL void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
+AREG_API_IMPL void NEUtilities::makeTmLocal( struct tm & utcTime )
 {
     _osMakeTmLocal(utcTime);
 }
 
-AREG_API_IMPL void NEUtilities::convToTm(const TIME64& IN timeMicro, tm& OUT time)
+AREG_API_IMPL void NEUtilities::convToTm(const TIME64& timeMicro, tm& time)
 {
     _osConvToTm(timeMicro, time);
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & IN time, sSystemTime & OUT sysTime)
+AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, sSystemTime & sysTime)
 {
     sysTime.stSecond    = static_cast<int>(time.tm_sec);
     sysTime.stMinute    = static_cast<int>(time.tm_min);
@@ -235,12 +235,12 @@ AREG_API_IMPL String NEUtilities::generateName( const char* prefix )
     return String(buffer);
 }
 
-AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
 {
     return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
 }
 
-AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length, const char * specChar)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
 {
     constexpr char const strFormat[]{ "%s%s%08x%s%08x" };
 
@@ -263,44 +263,44 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
     return out_buffer;
 }
 
-AREG_API_IMPL unsigned int NEUtilities::generateUniqueId( void )
+AREG_API_IMPL unsigned int NEUtilities::generateUniqueId()
 {
     static std::atomic_uint _id(0u);
     return ++ _id;
 }
 
-AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
+AREG_API_IMPL uint64_t NEUtilities::getTickCount()
 {
     return _osGetTickCount();
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime & IN utcTime, sSystemTime & OUT localTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime & utcTime, sSystemTime & localTime )
 {
     TIME64 quad = NEUtilities::convToTime(utcTime);
     return NEUtilities::convToLocalTime(quad, localTime);
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & utcTime, sSystemTime & localTime )
 {
     return _osConvToLocalTime(utcTime, localTime);
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTm(const TIME64 & IN utcTime, tm& OUT localTm)
+AREG_API_IMPL bool NEUtilities::convToLocalTm(const TIME64 & utcTime, tm& localTm)
 {
     return _osConvToLocalTm(utcTime, localTm);
 }
 
-AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & sysTime, bool localTime )
 {
     _osSystemTimeNow( sysTime, localTime );
 }
 
-AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
+AREG_API_IMPL TIME64 NEUtilities::systemTimeNow()
 {
     return _osSystemTimeNow();
 }
 
-AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & IN sysTime )
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
 {
     const int year{ sysTime.stYear - 1900 };
 
@@ -316,7 +316,7 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & I
             + static_cast<TIME64>((year + 299) / 400     ) * NEUtilities::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL TIME64 NEUtilities::convToTime(const tm& IN time)
+AREG_API_IMPL TIME64 NEUtilities::convToTime(const tm& time)
 {
     return    static_cast<TIME64>(time.tm_sec               ) * NEUtilities::SEC_TO_MICROSECS
             + static_cast<TIME64>(time.tm_min               ) * NEUtilities::MIN_TO_MICROSECS
@@ -328,7 +328,7 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime(const tm& IN time)
             + static_cast<TIME64>((time.tm_year + 299) / 400) * NEUtilities::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime )
+AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & timeValue, NEUtilities::sSystemTime & sysTime )
 {
     _osConvToSystemTime(timeValue, sysTime);
 }

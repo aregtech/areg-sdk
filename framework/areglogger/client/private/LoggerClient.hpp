@@ -86,14 +86,14 @@ public:
     /**
      * \brief   Returns the singleton instance of the LoggerClient
      **/
-    static LoggerClient& getInstance(void);
+    static LoggerClient& getInstance();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor and destructor.
 //////////////////////////////////////////////////////////////////////////
 private:
-    LoggerClient(void);
-    virtual ~LoggerClient(void) = default;
+    LoggerClient();
+    virtual ~LoggerClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Public actions.
@@ -118,7 +118,7 @@ public:
      * \brief   Call to stop threads and disconnect log collector service.
      *          The observer will not send and receive messages.
      **/
-    void stopLoggerClient(void);
+    void stopLoggerClient();
 
     /**
      * \brief   Sets the pointer to the callbacks to trigger on messaging events.
@@ -141,27 +141,27 @@ public:
      * \brief   Returns the socket address (IP address and port number) to connect to the log collector service.
      *          The connection might be not established yet.
      **/
-    const NESocket::SocketAddress& getAddress(void) const;
+    const NESocket::SocketAddress& getAddress() const;
 
     /**
      * \brief   Returns true if the logging database engine is SQLite. Otherwise, returns false.
      **/
-    bool isSqliteEngine(void) const;
+    bool isSqliteEngine() const;
 
     /**
      * \brief   Returns true if the observer is configured and the log collector service connection is enabled.
      **/
-    bool isConfigLoggerConnectEnabled(void) const;
+    bool isConfigLoggerConnectEnabled() const;
 
     /**
      * \brief   Returns the IP address of log collector service written in the configuration file.
      **/
-    String getConfigLoggerAddress(void) const;
+    String getConfigLoggerAddress() const;
 
     /**
      * \brief   Returns the IP port number of log collector service written in the configuration file.
      **/
-    uint16_t getConfigLoggerPort(void) const;
+    uint16_t getConfigLoggerPort() const;
 
     /**
      * \brief   Sets the IP address and port number of the log collector service to connect.
@@ -175,7 +175,7 @@ public:
      * \brief   Generates and sends the message to query list of connected clients.
      * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    bool requestConnectedInstances(void);
+    bool requestConnectedInstances();
 
     /**
      * \brief   Generates and sends the message to query list of scopes.
@@ -224,22 +224,22 @@ public:
     /**
      * \brief   Closes previously opened logging database.
      **/
-    void closeLoggingDatabase(void);
+    void closeLoggingDatabase();
 
     /**
      * \brief   Returns the path to the active logging database.
      **/
-    String getActiveDatabasePath(void) const;
+    String getActiveDatabasePath() const;
 
     /**
      * \brief   Returns the path to the initial logging database.
      **/
-    String getInitialDatabasePath(void) const;
+    String getInitialDatabasePath() const;
 
     /**
      * \brief   Returns the path specified in configuration file.
      **/
-    String getConfigDatabasePath(void) const;
+    String getConfigDatabasePath() const;
 
     /**
      * \brief   Sets the path to the database file. The path can contain mask.
@@ -254,7 +254,7 @@ public:
     /**
      * \brief   Returns the logging database location path set in configuration file.
      **/
-    String getConfigDatabaseLocation(void) const;
+    String getConfigDatabaseLocation() const;
 
     /**
      * \brief   Sets the logging database location path.
@@ -266,7 +266,7 @@ public:
     /**
      * \brief   Returns the logging database name set in configuration file.
      **/
-    String getConfigDatabaseName(void) const;
+    String getConfigDatabaseName() const;
 
     /**
      * \brief   Sets the logging database name in the configuration file.
@@ -283,7 +283,7 @@ public:
     /**
      * \brief   Save current configuration of the log observer to the configuration file.
      **/
-    void saveConfiguration(void);
+    void saveConfiguration();
 
     /**
      * \brief   Call to query and get list of names of connected instances from log database.
@@ -439,17 +439,17 @@ protected:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost( void ) override;
+    virtual bool connectServiceHost() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost( void ) override;
+    virtual void disconnectServiceHost() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit(void) override;
+    virtual void onServiceExit() override;
 
 /************************************************************************/
 // IEServiceConnectionConsumer overrides
@@ -510,7 +510,7 @@ protected:
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline LoggerClient& self(void);
+    inline LoggerClient& self();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -547,7 +547,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(LoggerClient);
+    AREG_NOCOPY_NOMOVE(LoggerClient);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -609,7 +609,7 @@ inline void LoggerClient::getLogMessages(std::vector<SharedBuffer>& messages, IT
     mLogDatabase.getLogMessages(messages, instId, scopeId);
 }
 
-inline LoggerClient& LoggerClient::self(void)
+inline LoggerClient& LoggerClient::self()
 {
     return (*this);
 }

@@ -52,7 +52,7 @@ public:
      *          or receiving data, the socket should be created
      *          and bound to socket address.
      **/
-    SocketServer( void ) = default;
+    SocketServer() = default;
 
     /**
      * \brief   Initialization constructor. Creates instance of object
@@ -82,7 +82,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~SocketServer( void ) = default;
+    virtual ~SocketServer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -109,7 +109,7 @@ public:
      *          Both, socket IP-address and port number should be already set.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( void ) override;
+    virtual bool createSocket() override;
 
     /**
      * \brief   Call to place server socket in a state in which it is listening for an incoming connection.
@@ -146,7 +146,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( SocketServer );
+    AREG_NOCOPY_NOMOVE( SocketServer );
 };
 
 #endif  // AREG_BASE_SOCKETSERVER_HPP

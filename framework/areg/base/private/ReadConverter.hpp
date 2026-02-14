@@ -56,7 +56,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~ReadConverter( void ) = default;
+    ~ReadConverter() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -65,127 +65,127 @@ public:
 
     /**
      * \brief   Reads data from streaming object and converts to boolean.
-     *          On output, the out_value contains boolean value.
+     *          On output, the Value contains boolean value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted boolean value.
+     * \param[out]  Value   On output, this parameter contains converted boolean value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getBool( bool & OUT out_value ) const;
+    bool getBool( bool & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to character.
-     *          On output, the out_value contains character value.
+     *          On output, the Value contains character value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted character value.
+     * \param[out]  Value   On output, this parameter contains converted character value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getChar( char & OUT out_value ) const;
+    bool getChar( char & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to wide-character.
-     *          On output, the out_value contains wide-character value.
+     *          On output, the Value contains wide-character value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted wide-character value.
+     * \param[out]  Value   On output, this parameter contains converted wide-character value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getChar( wchar_t & OUT out_value ) const;
+    bool getChar( wchar_t & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to short integer.
-     *          On output, the out_value contains short integer value.
+     *          On output, the Value contains short integer value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted short integer value.
+     * \param[out]  Value   On output, this parameter contains converted short integer value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getShort(short & OUT out_value) const;
+    bool getShort(short & Value) const;
 
     /**
      * \brief   Reads data from streaming object and converts to integer.
-     *          On output, the out_value contains integer value.
+     *          On output, the Value contains integer value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted integer value.
+     * \param[out]  Value   On output, this parameter contains converted integer value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getInt( int & OUT out_value ) const;
+    bool getInt( int & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to 64-bit integer.
-     *          On output, the out_value contains 64-bit integer value.
+     *          On output, the Value contains 64-bit integer value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted 64-bit integer value.
+     * \param[out]  Value   On output, this parameter contains converted 64-bit integer value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getInt64( int64_t & OUT out_value ) const;
+    bool getInt64( int64_t & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to number with floating point.
-     *          On output, the out_value contains number with floating point value.
+     *          On output, the Value contains number with floating point value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted number with floating point value.
+     * \param[out]  Value   On output, this parameter contains converted number with floating point value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getFloat( float & OUT out_value ) const;
+    bool getFloat( float & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to number with floating point.
-     *          On output, the out_value contains number with floating point value.
+     *          On output, the Value contains number with floating point value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted number with floating point value.
+     * \param[out]  Value   On output, this parameter contains converted number with floating point value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getDouble( double & OUT out_value ) const;
+    bool getDouble( double & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to null-terminated ASCII string.
-     *          On output, the out_value contains null-terminated ASCII string value.
+     *          On output, the Value contains null-terminated ASCII string value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted null-terminated ASCII string value.
+     * \param[out]  Value   On output, this parameter contains converted null-terminated ASCII string value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getString(String & OUT out_value) const;
+    bool getString(String & Value) const;
 
     /**
      * \brief   Reads data from streaming object and converts to null-terminated wide-char string.
-     *          On output, the out_value contains null-terminated wide-char string value.
+     *          On output, the Value contains null-terminated wide-char string value.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out]  On output, this parameter contains converted null-terminated wide-char string value.
+     * \param[out]  Value   On output, this parameter contains converted null-terminated wide-char string value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getString(WideString & OUT out_value) const;
+    bool getString(WideString & Value) const;
 
     /**
      * \brief   Reads from streaming object single line of null-terminated ASCII string.
-     *          On output, the out_value contains single line of null-terminated ASCII string value.
+     *          On output, the Value contains single line of null-terminated ASCII string value.
      *          The new line indicator character is not included in the string.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out] On output, this parameter contains single line of converted null-terminated ASCII string value.
-     *                          The new line indicator character is not included in the string.
+     * \param[out]  Value   On output, this parameter contains single line of converted null-terminated ASCII string value.
+     *                      The new line indicator character is not included in the string.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool readLine(String & OUT out_value) const;
+    bool readLine(String & Value) const;
 
     /**
      * \brief   Reads from streaming object single line of null-terminated wide-char string.
-     *          On output, the out_value contains single line of null-terminated wide-char string value.
+     *          On output, the Value contains single line of null-terminated wide-char string value.
      *          The new line indicator character is not included in the string.
      *          Function returns true if reading succeeded.
-     * \param   out_value [out] On output, this parameter contains single line of converted null-terminated wide-char string value.
+     * \param[out]  Value   On output, this parameter contains single line of converted null-terminated wide-char string value.
      *                          The new line indicator character is not included in the string.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool readLine(WideString & OUT out_value) const;
+    bool readLine(WideString & Value) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -204,8 +204,8 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    ReadConverter( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ReadConverter );
+    ReadConverter() = delete;
+    AREG_NOCOPY_NOMOVE( ReadConverter );
 };
 
 #endif  // AREG_BASE_PRIVATE_READCONVERTER_HPP

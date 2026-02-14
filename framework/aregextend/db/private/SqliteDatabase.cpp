@@ -40,7 +40,7 @@ namespace
     }
 }
 
-SqliteDatabase::SqliteDatabase(void)
+SqliteDatabase::SqliteDatabase()
     : IEDatabaseEngine  ( )
     , mDbPath           ( )
     , mDbObject         ( nullptr )
@@ -62,7 +62,7 @@ SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
     }
 }
 
-SqliteDatabase::~SqliteDatabase(void)
+SqliteDatabase::~SqliteDatabase()
 {
     _close();
 }
@@ -93,7 +93,7 @@ inline bool SqliteDatabase::_open(const String& dbPath)
     return result;
 }
 
-inline void SqliteDatabase::_close(void)
+inline void SqliteDatabase::_close()
 {
     if (mDbObject != nullptr)
     {
@@ -102,7 +102,7 @@ inline void SqliteDatabase::_close(void)
     }
 }
 
-bool SqliteDatabase::isOperable(void) const
+bool SqliteDatabase::isOperable() const
 {
     return (mDbObject != nullptr);
 }
@@ -112,7 +112,7 @@ bool SqliteDatabase::connect(const String& dbPath, bool /*readOnly*/)
     return _open(dbPath);
 }
 
-void SqliteDatabase::disconnect(void)
+void SqliteDatabase::disconnect()
 {
     _close();
 }
@@ -128,7 +128,7 @@ bool SqliteDatabase::execute(const String& sql)
     return result;
 }
 
-bool SqliteDatabase::begin(void)
+bool SqliteDatabase::begin()
 {
     constexpr std::string_view  sqlBegin{ "BEGIN TRANSACTION;" };
 
@@ -143,7 +143,7 @@ bool SqliteDatabase::commit(bool doCommit)
     return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRollback.data(), nullptr, nullptr, nullptr) : false);
 }
 
-bool SqliteDatabase::rollback(void)
+bool SqliteDatabase::rollback()
 {
     return commit(false);
 }

@@ -85,9 +85,9 @@ namespace NELargeData
 // Constructors / destructor.
 //////////////////////////////////////////////////////////////////////////
     public:
-        inline ImageBlock(void);
+        inline ImageBlock();
         inline ImageBlock(ImageBlock&& src) noexcept;
-        inline ~ImageBlock(void);
+        inline ~ImageBlock();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes, operations and operators.
@@ -122,7 +122,7 @@ namespace NELargeData
         /**
          * \brief   Return pointer to the image block structure.
          */
-        inline const sImageBlock* getBlock(void) const;
+        inline const sImageBlock* getBlock() const;
 
         /**
          * \brief   Sets the image block data.
@@ -132,17 +132,17 @@ namespace NELargeData
         /**
          * \brief   Releases the image block.
          */
-        inline void release(void);
+        inline void release();
 
         /**
          * \brief   Return the total size of the image block.
          */
-        inline uint32_t getSize(void) const;
+        inline uint32_t getSize() const;
 
         /**
          * \brief   Returns true if the image block is empty.
          */
-        inline bool isEmpty(void) const;
+        inline bool isEmpty() const;
 
         /**
          * \brief   Sets the channel ID and the frame ID of the image block.
@@ -189,7 +189,7 @@ namespace NELargeData
 //////////////////////////////////////////////////////////////////////////
 // NELargeData specific inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline NELargeData::ImageBlock::ImageBlock(void)
+inline NELargeData::ImageBlock::ImageBlock()
     : mBlock    (nullptr)
 {
 }
@@ -200,7 +200,7 @@ inline NELargeData::ImageBlock::ImageBlock(NELargeData::ImageBlock&& src) noexce
     src.mBlock = nullptr;
 }
 
-inline NELargeData::ImageBlock::~ImageBlock(void)
+inline NELargeData::ImageBlock::~ImageBlock()
 {
     release();
 }
@@ -242,7 +242,7 @@ inline const NELargeData::sImageBlock* NELargeData::ImageBlock::getBlock(uint32_
     return mBlock;
 }
 
-inline const NELargeData::sImageBlock* NELargeData::ImageBlock::getBlock(void) const
+inline const NELargeData::sImageBlock* NELargeData::ImageBlock::getBlock() const
 {
     return mBlock;
 }
@@ -253,7 +253,7 @@ inline void NELargeData::ImageBlock::setBlock(sImageBlock* block)
     mBlock = block;
 }
 
-inline void NELargeData::ImageBlock::release(void)
+inline void NELargeData::ImageBlock::release()
 {
     if (mBlock != nullptr)
     {
@@ -262,12 +262,12 @@ inline void NELargeData::ImageBlock::release(void)
     }
 }
 
-inline uint32_t NELargeData::ImageBlock::getSize(void) const
+inline uint32_t NELargeData::ImageBlock::getSize() const
 {
     return (mBlock != nullptr ? mBlock->blockSize : 0);
 }
 
-inline bool NELargeData::ImageBlock::isEmpty(void) const
+inline bool NELargeData::ImageBlock::isEmpty() const
 {
     return (mBlock != nullptr) && (mBlock->blockSize != 0);
 }

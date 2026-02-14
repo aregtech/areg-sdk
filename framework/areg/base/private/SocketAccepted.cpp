@@ -25,7 +25,7 @@ bool SocketAccepted::createSocket(const char * /*hostName*/, unsigned short /*po
     return true;
 }
 
-bool SocketAccepted::createSocket(void)
+bool SocketAccepted::createSocket()
 {
     return true;
 }

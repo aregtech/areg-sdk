@@ -23,7 +23,7 @@ class CentralDialog : public CPropertySheet
 {
     // Construction
 public:
-    CentralDialog( void );	// standard constructor
+    CentralDialog();	// standard constructor
 
                                             // Dialog Data
     enum { TITLE = IDS_APPLICATION_TITLE };
@@ -43,7 +43,7 @@ protected:
     afx_msg void OnPaint();
     afx_msg HCURSOR OnQueryDragIcon();
     afx_msg LRESULT OnCmdServiceConnection(WPARAM wParam, LPARAM lParam);
-    afx_msg void OnRedirectOK( void );
+    afx_msg void OnRedirectOK();
     DECLARE_MESSAGE_MAP()
 
 private:

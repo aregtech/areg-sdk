@@ -41,9 +41,9 @@ protected:
     /**
      * \brief   Default destructor
      **/
-    IEServiceConnectionConsumer(void) = default;
+    IEServiceConnectionConsumer() = default;
 
-    virtual ~IEServiceConnectionConsumer(void) = default;
+    virtual ~IEServiceConnectionConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -77,7 +77,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(IEServiceConnectionConsumer);
+    AREG_NOCOPY_NOMOVE(IEServiceConnectionConsumer);
 };
 
 #endif  // AREG_IPC_IESERVICECONNECTIONCONSUMER_HPP

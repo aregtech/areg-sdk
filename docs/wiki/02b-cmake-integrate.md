@@ -80,8 +80,8 @@ Hello from Areg SDK!
 ### Supported Platforms
 
 - **Linux** - GCC, Clang
-- **Windows** - MSVC, MinGW, Clang
-- **macOS** - Clang, GCC
+- **Windows** - MSVC, MinGW, Clang, Cygwin GCC
+- **macOS** - Clang
 
 **Verify installation:**
 
@@ -263,9 +263,11 @@ vcpkg install areg
 
 **Platform-specific:**
 ```bash
-vcpkg install areg:x64-linux      # 64-bit Linux
-vcpkg install areg:x64-windows    # 64-bit Windows
-vcpkg install areg:x86-windows    # 32-bit Windows
+vcpkg install areg:x64-linux    # 64-bit Linux
+vcpkg install areg:x86-linux    # 32-bit Linux
+vcpkg install areg:x64-osx      # 64-bit macOS
+vcpkg install areg:x64-windows  # 64-bit Windows
+vcpkg install areg:x86-windows  # 32-bit Windows
 ```
 
 #### Step 3: Integrate vcpkg

@@ -80,7 +80,7 @@ class AREG_API StubEvent  : public StreamableEvent
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime event object
 //////////////////////////////////////////////////////////////////////////
-    DECLARE_RUNTIME_EVENT(StubEvent)
+    AREG_DECLARE_RUNTIME_EVENT(StubEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -105,7 +105,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    virtual ~StubEvent( void ) = default;
+    virtual ~StubEvent() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -118,7 +118,7 @@ public:
      * \brief   Sends the event to target thread. If target thread
      *          is nullptr, it searches event target thread, registered in system.
      **/
-    virtual void deliverEvent( void ) override;
+    virtual void deliverEvent() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -126,7 +126,7 @@ public:
     /**
      * \brief   Returns the address of Stub of event target.
      **/
-    inline const StubAddress & getTargetStub( void ) const;
+    inline const StubAddress & getTargetStub() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -161,8 +161,8 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    StubEvent( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( StubEvent );
+    StubEvent() = delete;
+    AREG_NOCOPY_NOMOVE( StubEvent );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -190,12 +190,12 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~IEStubEventConsumer( void ) = default;
+    virtual ~IEStubEventConsumer() = default;
 
     /**
      * \brief   Returns the pointer to the currently processing event object.
      **/
-    inline const Event* getCurrentEvent(void) const;
+    inline const Event* getCurrentEvent() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides, event processing functions.
@@ -298,8 +298,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEStubEventConsumer( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( IEStubEventConsumer );
+    IEStubEventConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( IEStubEventConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -310,12 +310,12 @@ private:
 // StubEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & StubEvent::getTargetStub( void ) const
+inline const StubAddress & StubEvent::getTargetStub() const
 {
     return mTargetStubAddress;
 }
 
-inline const Event* IEStubEventConsumer::getCurrentEvent(void) const
+inline const Event* IEStubEventConsumer::getCurrentEvent() const
 {
     return mCurEvent;
 }
