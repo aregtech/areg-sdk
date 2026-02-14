@@ -56,7 +56,7 @@ void ClientComponent::responseHelloService( bool success )
     Application::signalAppQuit();
 }
 
-void ClientComponent::requestHelloServiceFailed(NEService::eResultType /* FailureReason */)
+void ClientComponent::requestHelloServiceFailed(NEService::ResultType /* FailureReason */)
 {
     // make error handling here.
     std::cerr << "Failed to execute request, retry again." << std::endl;

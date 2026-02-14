@@ -29,7 +29,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ResponseEvent, ServiceResponseEvent)
 // ResponseEvent class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
-                            , NEService::eResultType result
+                            , NEService::ResultType result
                             , unsigned int respId
                             , Event::eEventType eventType
                             , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/ )
@@ -40,7 +40,7 @@ ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
 
 ResponseEvent::ResponseEvent( const EventDataStream & args
                             , const ProxyAddress & proxyTarget
-                            , NEService::eResultType result
+                            , NEService::ResultType result
                             , unsigned int respId
                             , Event::eEventType eventType
                             , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
@@ -89,7 +89,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(LocalResponseEvent, ResponseEvent)
 // LocalResponseEvent class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
-                                      , NEService::eResultType result
+                                      , NEService::ResultType result
                                       , unsigned int respId
                                       , const SequenceNumber & seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ResponseEvent(proxyTarget, result, respId, Event::eEventType::EventLocalServiceResponse, seqNr)
@@ -98,7 +98,7 @@ LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
 
 LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
                                       , const ProxyAddress & proxyTarget
-                                      , NEService::eResultType result
+                                      , NEService::ResultType result
                                       , unsigned int respId
                                       , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
                                       , const String & name /*= String::getEmptyString()*/ )
@@ -129,7 +129,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(RemoteResponseEvent, ResponseEvent)
 // RemoteResponseEvent class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
-                                        , NEService::eResultType result
+                                        , NEService::ResultType result
                                         , unsigned int respId
                                         , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ResponseEvent(proxyTarget, result, respId, Event::eEventType::EventRemoteServiceResponse, seqNr)
@@ -139,7 +139,7 @@ RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
 
 RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
                                         , const ProxyAddress & proxyTarget
-                                        , NEService::eResultType result
+                                        , NEService::ResultType result
                                         , unsigned int respId
                                         , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
                                         , const String & name /*= String::getEmptyString()*/ )

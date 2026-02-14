@@ -31,7 +31,7 @@ protected:
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloServiceFailed( NEService::eResultType FailureReason ) override;
+    virtual void requestHelloServiceFailed( NEService::ResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides

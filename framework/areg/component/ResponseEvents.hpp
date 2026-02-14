@@ -75,7 +75,7 @@ protected:
      * \param   seqNr       The call sequence number.
      **/
     ResponseEvent( const ProxyAddress & proxyTarget
-                 , const NEService::eResultType result
+                 , const NEService::ResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
@@ -92,7 +92,7 @@ protected:
      **/
     ResponseEvent( const EventDataStream & args
                  , const ProxyAddress & proxyTarget
-                 , NEService::eResultType result
+                 , NEService::ResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
@@ -217,7 +217,7 @@ protected:
      * \param   seqNr       The call sequence number.
      **/
     LocalResponseEvent( const ProxyAddress & proxyTarget
-                      , NEService::eResultType result
+                      , NEService::ResultType result
                       , unsigned int respId
                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
 
@@ -233,7 +233,7 @@ protected:
      **/
     LocalResponseEvent( const EventDataStream & args
                       , const ProxyAddress & proxyTarget
-                      , NEService::eResultType result
+                      , NEService::ResultType result
                       , unsigned int respId
                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                       , const String & name = String::getEmptyString() );
@@ -296,7 +296,7 @@ protected:
      * \param   seqNr       The call sequence number.
      **/
     RemoteResponseEvent( const ProxyAddress & proxyTarget
-                       , NEService::eResultType result
+                       , NEService::ResultType result
                        , unsigned int respId
                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
@@ -312,7 +312,7 @@ protected:
      **/
     RemoteResponseEvent( const EventDataStream & args
                        , const ProxyAddress & proxyTarget
-                       , NEService::eResultType result
+                       , NEService::ResultType result
                        , unsigned int respId
                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                        , const String & name = String::getEmptyString() );

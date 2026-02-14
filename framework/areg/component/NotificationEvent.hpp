@@ -76,12 +76,12 @@ public:
      * \param	proxy	    The pointer of Proxy object which triggered
      *                      notification message
      * \param	notifyType	The result flag of notification event. 
-     *                      See details in NEService::eResultType
+     *                      See details in NEService::ResultType
      * \param	notifyId	The call ID, usually response ID or attribute ID.
      *                      If request fails, also request ID.
      * \param	seqNr	    The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, const SequenceNumber & seqNr );
+    NotificationEventData( const ProxyBase & proxy, NEService::ResultType notifyType, unsigned int notifyId, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -128,11 +128,12 @@ public:
     /**
      * \brief   Returns the result of notification type.
      **/
-    inline NEService::eResultType getNotifyType() const;
+    inline NEService::ResultType getNotifyType() const;
+
     /**
      * \brief   Sets the result of notification
      **/
-    inline void setNotifyType(NEService::eResultType notifyType);
+    inline void setNotifyType(NEService::ResultType notifyType);
 
     /**
      * \brief   Returns notification message ID.
@@ -163,7 +164,7 @@ private:
     /**
      * \brief   Notification type (or notification result)
      **/
-    NEService::eResultType mNotifyType;
+    NEService::ResultType mNotifyType;
     /**
      * \brief   Notification message ID
      **/
@@ -361,12 +362,12 @@ inline void NotificationEventData::setProxy( const ProxyBase & proxy )
     mProxy = &proxy;
 }
 
-inline NEService::eResultType NotificationEventData::getNotifyType() const
+inline NEService::ResultType NotificationEventData::getNotifyType() const
 {
     return mNotifyType;
 }
 
-inline void NotificationEventData::setNotifyType( NEService::eResultType notifyType )
+inline void NotificationEventData::setNotifyType( NEService::ResultType notifyType )
 {
     mNotifyType = notifyType;
 }

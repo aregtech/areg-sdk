@@ -77,7 +77,7 @@ protected:
      * \param   seqNr       The sequence number of call.
      **/
     ServiceResponseEvent( const ProxyAddress & target
-                        , NEService::eResultType result
+                        , NEService::ResultType result
                         , unsigned int responseId
                         , Event::eEventType eventType
                         , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
@@ -115,7 +115,7 @@ public:
     /**
      * \brief   Returns response call result
      **/
-    inline NEService::eResultType getResult() const;
+    inline NEService::ResultType getResult() const;
 
     /**
      * \brief   Returns sequence number of call.
@@ -175,7 +175,7 @@ protected:
     /**
      * \brief   The response result
      **/
-    NEService::eResultType mResult;
+    NEService::ResultType mResult;
 
     /**
      * \brief   The sequence number.
@@ -199,7 +199,7 @@ inline unsigned int ServiceResponseEvent::getResponseId() const
     return mResponseId;
 }
 
-inline NEService::eResultType ServiceResponseEvent::getResult() const
+inline NEService::ResultType ServiceResponseEvent::getResult() const
 {
     return mResult;
 }
