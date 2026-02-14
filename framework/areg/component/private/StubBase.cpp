@@ -367,7 +367,7 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
     StubBase::StubListenerList listeners;
     if (findListeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, NEService::ResultType::RequestOk, data);
+        ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, NEService::ResultType::RequestOK, data);
         if (eventElem != nullptr)
         {
             sendResponseNotification(listeners, *eventElem);

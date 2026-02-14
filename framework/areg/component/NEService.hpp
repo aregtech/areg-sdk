@@ -67,18 +67,18 @@ namespace NEService
         , MessageUndelivered =  4129 /*0x1021*/  //!< request failed to reach target.        Bits: 0001 0000 0010 0001
 
         /* request calls result */
-        , RequestOk          =  8320 /*0x2080*/  //!< indicates success of request call.     Bits: 0010 0000 1000 0000
+        , RequestOK          =  8320 /*0x2080*/  //!< indicates success of request call.     Bits: 0010 0000 1000 0000
         , RequestInvalid     =  8257 /*0x2041*/  //!< indicates failure of request call.     Bits: 0010 0000 0100 0001
         , RequestError       =  8321 /*0x2081*/  //!< indicates request execution failure.   Bits: 0010 0000 1000 0001
         , RequestBusy        =  8323 /*0x2083*/  //!< request cannot execute, it is busy.    Bits: 0010 0000 1000 0011
         , RequestCanceled    =  8325 /*0x2085*/  //!< request is canceled and not executed.  Bits: 0010 0000 1000 0101
 
         /* data update result */
-        , DataOk             = 16512 /*0x4080*/  //!< indicates data validation.             Bits: 0100 0000 1000 0000
+        , DataOK             = 16512 /*0x4080*/  //!< indicates data validation.             Bits: 0100 0000 1000 0000
         , DataInvalid        = 16449 /*0x4041*/  //!< indicates data invalid.                Bits: 0100 0000 0100 0001
 
         /* service call result */
-        , ServiceOk          = 32896 /*0x8080*/  //!< service call processed.                Bits: 1000 0000 1000 0000
+        , ServiceOK          = 32896 /*0x8080*/  //!< service call processed.                Bits: 1000 0000 1000 0000
         , ServiceUnavailable = 32833 /*0x8041*/  //!< service is unavailable.                Bits: 1000 0000 0100 0001
         , ServiceInvalid     = 32897 /*0x8081*/  //!< service invalid (check cookie).        Bits: 1000 0000 1000 0001
         , ServiceRejected    = 32899 /*0x8083*/  //!< service rejected (unsupported).        Bits: 1000 0000 1000 0011
@@ -1386,8 +1386,8 @@ inline const char* NEService::getString(NEService::ResultType resultType)
     case NEService::ResultType::MessageUndelivered:
         return "NEService::ResultType::MessageUndelivered";
 
-    case    NEService::ResultType::RequestOk:
-        return "NEService::ResultType::RequestOk";
+    case    NEService::ResultType::RequestOK:
+        return "NEService::ResultType::RequestOK";
     case    NEService::ResultType::RequestInvalid:
         return "NEService::ResultType::RequestInvalid";
     case    NEService::ResultType::RequestError:
@@ -1397,13 +1397,13 @@ inline const char* NEService::getString(NEService::ResultType resultType)
     case    NEService::ResultType::RequestCanceled:
         return "NEService::ResultType::RequestCanceled";
 
-    case    NEService::ResultType::DataOk:
-        return "NEService::ResultType::DataOk";
+    case    NEService::ResultType::DataOK:
+        return "NEService::ResultType::DataOK";
     case    NEService::ResultType::DataInvalid:
         return "NEService::ResultType::DataInvalid";
 
-    case    NEService::ResultType::ServiceOk:
-        return "NEService::ResultType::ServiceOk";
+    case    NEService::ResultType::ServiceOK:
+        return "NEService::ResultType::ServiceOK";
     case    NEService::ResultType::ServiceUnavailable:
         return "NEService::ResultType::ServiceUnavailable";
     case    NEService::ResultType::ServiceInvalid:

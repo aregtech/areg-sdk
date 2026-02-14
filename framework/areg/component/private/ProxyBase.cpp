@@ -430,7 +430,7 @@ void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer
             if (NEService::isAttributeId(msgId))
             {
                 sendNotificationEvent( msgId
-                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOk : NEService::ResultType::DataInvalid
+                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOK : NEService::ResultType::DataInvalid
                                      , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
 
@@ -446,12 +446,12 @@ void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer
             if ( NEService::isAttributeId(msgId) )
             {
                 sendNotificationEvent( msgId
-                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOk : NEService::ResultType::DataInvalid
+                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOK : NEService::ResultType::DataInvalid
                                      , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
             else if ( NEService::isResponseId(msgId) && (mProxyData.getParamState(msgId) == NEService::eDataStateType::DataIsOK) )
             {
-                sendNotificationEvent(  msgId, NEService::ResultType::RequestOk, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
+                sendNotificationEvent(  msgId, NEService::ResultType::RequestOK, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
             else
             {
