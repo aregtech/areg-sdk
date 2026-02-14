@@ -1,7 +1,7 @@
 # Areg SDK Coding Style Guide
 
-**Version:** 2.0  
-**Date:** February 2026  
+**Version:** 2.1
+**Date:** February 2026
 **Target:** Cross-platform IPC middleware (Linux, macOS, Windows, Embedded Linux, HPC)
 
 ---
@@ -22,7 +22,9 @@ Areg SDK follows modern C++ conventions optimized for cross-platform development
 4. Accessors = `count()` (NOT `get_count()` or `getCount()`)
 5. Header guards = traditional (NOT `#pragma once`)
 6. NO `IN`/`OUT`/`INOUT` empty macros
-7. Avoid using global variables. Exceptions are global variables with internal linkage -- declared in anonymous namespace and log scopes declared as `static`.
+7. Avoid global variables. Exceptions: internal-linkage variables in anonymous namespaces and log scopes declared as `static`.
+
+**Companion document:** `./docs/AREG_AI_CODING_RULES.md` (compact rule reference for AI agents)
 
 ---
 
@@ -37,12 +39,13 @@ Areg SDK follows modern C++ conventions optimized for cross-platform development
 | Functions/Methods         | snake_case                    | `start_service()`                         |
 | Local Variables           | snake_case OR camelCase       | `connection_count` OR `connectionCount`   |
 | Class Member Variables    | `m` + PascalCase              | `mSocketFd`                               |
-| Struct Member Variables   | camelCase                     | `maxRetries`, `timeoutMs`                 |
+| Struct Public Fields      | snake_case                    | `max_retries`, `timeout_ms`               |
 | Static Members            | `s_` + snake_case             | `s_instance_count`                        |
-| Global Variables          | internal linkage, snake_case  | `_max_connections` (avoid if possible)    |
+| Static Local Variables    | `_` + snake_case              | `_instance`                               |
+| Global Variables          | internal linkage, `_` + snake_case | `_max_connections` (avoid if possible)|
 | Constants                 | constexpr UPPER_SNAKE         | `MAX_BUFFER_SIZE`                         |
 | Enum Classes              | PascalCase                    | `ConnectionState`                         |
-| Enum Values               | snake_case                    | `ConnectionState::connected`              |
+| Enum Values               | PascalCase                    | `ConnectionState::Connected`              |
 | Macros                    | `AREG_` + UPPER_SNAKE         | `AREG_ASSERT`                             |
 | Template Parameters       | PascalCase                    | `template<typename MessageType>`          |
 | Namespaces                | snake_case                    | `areg::ipc`                               |
@@ -65,34 +68,35 @@ class service_manager { };  // No snake_case for types
 class serviceManager { };   // No camelCase for types
 ```
 
-**RULE:** Struct members use camelCase (no `m` prefix).
+**RULE:** Struct public fields use snake_case (no `m` prefix).
 
 ```cpp
-// ✅ CORRECT - struct members are camelCase
+// ✅ CORRECT - struct fields are snake_case
 struct ConnectionConfig
 {
-    int maxRetries{3};
-    int timeoutMs{5000};
-    bool autoReconnect{true};
-    std::string serverAddress{"localhost"};
+    int         max_retries     { 3 };
+    int         timeout_ms      { 5000 };
+    bool        auto_reconnect  { true };
+    std::string server_address  { "localhost" };
 };
 
 // Usage
 ConnectionConfig config;
-config.maxRetries = 5;
+config.max_retries = 5;
 
-// ❌ WRONG - don't use m prefix for struct members
+// ❌ WRONG - don't use m prefix or camelCase for struct fields
 struct ConnectionConfig
 {
     int mMaxRetries{3};        // NO - structs don't use m prefix
+    int maxRetries{3};         // NO - use snake_case, not camelCase
     int m_timeout_ms{5000};    // NO - wrong style
 };
 ```
 
-**Rationale:** 
+**Rationale:**
 - Structs are simple data holders (POD-like)
 - No `m` prefix needed (no private/public distinction)
-- camelCase keeps them lightweight and distinct from class members
+- snake_case keeps them lightweight and consistent with function naming
 
 ---
 
@@ -107,16 +111,16 @@ class ServiceManager
 public:
     void start_service();
     void stop_service();
-    
+
     // Simple accessors - NO "get_" prefix
-    [[nodiscard]] int connection_count() const;      // NOT get_connection_count()
-    [[nodiscard]] int active_services() const;       // NOT get_active_services()
-    [[nodiscard]] State state() const;               // NOT get_state()
-    
+    int connection_count() const;          // NOT get_connection_count()
+    int active_services() const;           // NOT get_active_services()
+    State state() const;                   // NOT get_state()
+
     // Booleans - KEEP "is_" or "has_" prefix
-    [[nodiscard]] bool is_connected() const;
-    [[nodiscard]] bool has_pending_requests() const;
-    
+    bool is_connected() const;
+    bool has_pending_requests() const;
+
     // Mutators - ALWAYS use "set_"
     void set_timeout(int ms);
     void set_max_connections(int count);
@@ -142,13 +146,19 @@ int get_connection_count();    // Drop "get_" prefix
 **Virtual methods:**
 
 ```cpp
-// RULE: Child classes use both 'virtual' and 'override' for clarity
+// RULE: Derived classes use both 'virtual' and 'override' in the declaration
 class DerivedService : public ServiceBase
 {
 public:
     virtual void start_service() override;
     virtual void stop_service() override;
 };
+
+// In source (definition) - no override keyword
+void DerivedService::start_service()
+{
+    // Implementation
+}
 ```
 
 ---
@@ -176,9 +186,9 @@ class Connection
 {
 public:
     Connection(int fd, std::string addr)
-        : mSocketFd(fd)
+        : mSocketFd (fd)
         , mIpAddress(std::move(addr))
-        , mState(ConnectionState::disconnected)
+        , mState    (ConnectionState::Disconnected)
     {
     }
 
@@ -199,14 +209,14 @@ class ServiceManager
 {
     // Constants can be declared at the top
     static constexpr int MAX_SERVICES { 100 };
-    
+
 public:
-    static ServiceManager& get_instance()
+    static ServiceManager& instance()
     {
         static ServiceManager _instance;
         return _instance;
     }
-    
+
 private:
     static int s_instance_count;
 };
@@ -215,9 +225,9 @@ private:
 #### Global Variables: snake_case (avoid if possible)
 
 Only global variables with internal linkage are allowed.
-These are variables declared in anonymous namespace or variables declared as `static` within a source code.
-These variables can be declared with `_` prefix. Typical case are log scopes declared via macro `DEF_LOG_SCOPE()`.
-Avoid if possible such variable.
+These are variables declared in anonymous namespace or variables declared as `static` within a source file.
+These variables can be declared with `_` prefix. Typical case: log scopes declared via macro `DEF_LOG_SCOPE()`.
+Avoid such variables if possible.
 
 ```cpp
 namespace
@@ -238,7 +248,7 @@ namespace
 constexpr int       MAX_BUFFER_SIZE     { 4096 };
 constexpr size_t    DEFAULT_TIMEOUT_MS  { 5000 };
 
-// ❌ AVOID macros
+// ❌ AVOID macros like this
 #define MAX_BUFFER_SIZE 4096  // Use constexpr instead
 ```
 
@@ -254,10 +264,10 @@ class Connection
     // Built-in types declared first
     enum class ConnectionState
     {
-          disconnected
-        , connecting
-        , connected
-        , error
+          Disconnected
+        , Connecting
+        , Connected
+        , Error
     };
 
     // Constants declared at the top
@@ -269,20 +279,32 @@ class Connection
 
 ### 1.6 Enumerations
 
-**RULE:** Use leading comma style for better alignment.
+**RULE:** Use PascalCase for enum values. Use leading comma style for better alignment.
 
 ```cpp
 // ✅ CORRECT
 enum class ConnectionState
 {
-      disconnected
-    , connecting
-    , connected
-    , error
+      Disconnected
+    , Connecting
+    , Connected
+    , Error
 };
 
 // Usage
-ConnectionState state = ConnectionState::connected;
+ConnectionState state = ConnectionState::Connected;
+```
+
+**With explicit values — align for readability:**
+
+```cpp
+enum class Priority
+{
+      Low       = 0
+    , Normal    = 1
+    , High      = 2
+    , Critical  = 3
+};
 ```
 
 ---
@@ -308,20 +330,24 @@ class Container { };
 
 ```cpp
 // ✅ CORRECT
-namespace areg::ipc::internal
+NAMESPACE_AREG_BEGIN
+namespace ipc::internal
 {
     // Implementation
-}
+}   // ipc::internal
+NAMESPACE_AREG_END
 
-// Or pre-C++17 style
-namespace areg
-{
-namespace ipc
+NAMESPACE_AREG_BEGIN
+namespace logging
 {
     // declarations
 }
-}
+NAMESPACE_AREG_END
+
 ```
+
+Include in `.hpp` header files `AREG_NAMESPACE_BEGIN` and `AREG_NAMESPACE_END` macros to ensure proper namespace handling across different build configurations.  
+Include in `.cpp` source file `AREG_NAMESPACE_USE` macro to ensure proper namespace usage.
 
 ---
 
@@ -332,7 +358,7 @@ namespace ipc
 ```cpp
 // ✅ GOOD - Function provides context
 void load_config(std::string_view file);        // NOT config_file
-void connect(std::string_view address);         // NOT server_address  
+void connect(std::string_view address);         // NOT server_address
 void set_timeout(int ms);                       // NOT timeout_milliseconds
 
 // ✅ GOOD - Ambiguous context needs full name
@@ -408,7 +434,7 @@ void set_maximum_connection_timeout_value(int timeout_value);
                 } while (false);            \
               end_processing();             \
             }                               \
-            return is_processed;                         
+            return is_processed;
      ```
 
 ```cpp
@@ -453,9 +479,6 @@ ProcessResult process(const char* input, const State& current_state);
 
 **RULE:** Use 4 spaces per level. NO tabs.
 
-- **4 spaces** per level
-- **NO tabs**
-
 ### 3.2 Braces - Allman Style
 
 **RULE:** Opening braces on new line.
@@ -488,8 +511,9 @@ void process_message() {
 
 ### 3.3 Line Length
 
-- **Soft limit:** 120 characters
-- **Hard limit:** 180 characters
+- **Preferred limit:** 120 characters — lines up to 120 need no breaking.
+- **Hard limit:** 180 characters — lines between 120 and 180 are acceptable when breaking hurts readability.
+- Lines exceeding 180 characters must be broken.
 
 ```cpp
 // ✅ CORRECT - Break long lines
@@ -497,8 +521,8 @@ void configure_service_manager( std::string_view service_name
                               , uint16_t port
                               , int max_connections);
 
-// ❌ WRONG - Too long
-void configure_service_manager(std::string_view service_name, uint16_t port, int max_connections, bool enable_ssl);
+// ❌ WRONG - Too long (exceeds 180)
+void configure_service_manager(std::string_view service_name, uint16_t port, int max_connections, bool enable_ssl, int timeout);
 ```
 
 ### 3.4 Leading Comma Style
@@ -509,15 +533,15 @@ void configure_service_manager(std::string_view service_name, uint16_t port, int
 // ✅ CORRECT - Leading comma
 enum class State
 {
-      stopped
-    , starting
-    , running
+      Stopped
+    , Starting
+    , Running
 };
 
 Connection(int fd, std::string addr)
-    : mSocketFd(fd)
-    , mAddress(std::move(addr))
-    , mState(State::stopped)
+    : mSocketFd (fd)
+    , mAddress  (std::move(addr))
+    , mState    (State::Stopped)
 {
 }
 ```
@@ -525,7 +549,7 @@ Connection(int fd, std::string addr)
 ### 3.5 Parameter Alignment - Use When Function Name is Long
 
 **RULE:** Align parameters on new lines ONLY when:
-- Function name + all params exceed 100 characters
+- Function name + all parameters exceed 120 characters
 - Parameters are numerous and need grouping for clarity
 
 ```cpp
@@ -533,7 +557,7 @@ Connection(int fd, std::string addr)
 void connect(std::string_view addr, uint16_t port, bool ssl);
 
 // ✅ Long function name - align parameters vertically
-void configure_service_manager_with_options(  
+void configure_service_manager_with_options(
               std::string_view service_name
             , uint16_t         port
             , int              max_connections
@@ -556,7 +580,7 @@ void configure_service_manager_with_options(
 );
 ```
 
-### 3.6 Member Variable Alignment (Optional but Recommended)
+### 3.6 Member Variable Alignment (Recommended)
 
 **RULE:** Align types and names in one column for better readability.
 
@@ -576,7 +600,7 @@ private:
     uint64_t mTimestamp;
 ```
 
-### 3.7 Constant Alignment (Optional but Recommended)
+### 3.7 Constant Alignment (Recommended)
 
 **RULE:** Align constant values for better readability.
 
@@ -593,7 +617,8 @@ constexpr bool   ENABLE_DEBUG       { true };
 
 ### 4.1 Header Comments
 
-Align comments for better readability.
+Use Doxygen-style comments. Align for readability.
+
 ```cpp
 /**
  * \brief   Manages IPC service lifecycle and connections.
@@ -671,8 +696,8 @@ int *ptr;
 
 ```cpp
 // ✅ CORRECT
-int count = 0;
-std::string name;  // Default-initialized
+int count           { 0 };
+std::string name    { };
 auto ptr = std::make_unique<Connection>();
 
 // ❌ WRONG
@@ -696,11 +721,11 @@ auto ptr = std::make_unique<Connection>();
 
 // ✅ CORRECT - Explicit return types
 int count() const { return mCount; }
-bool is_valid() const { return mState != State::error; }
+bool is_valid() const { return mState != State::Error; }
 
 // ❌ WRONG - Don't use auto for return types
 auto count() const { return mCount; }        // Hard to read API
-auto is_valid() const { return mState != State::error; }
+auto is_valid() const { return mState != State::Error; }
 ```
 
 ### 6.2 nullptr
@@ -740,6 +765,7 @@ std::optional<Connection> find_connection(int id)
 ### 6.4 String Parameters - Use std::string_view
 
 **RULE:** Always use `std::string_view` for read-only string parameters.
+Use `const char*` only at C API boundaries (`extern "C"`).
 
 ```cpp
 // ✅ CORRECT - Modern C++17
@@ -815,8 +841,6 @@ for (int i = 0; i < 10; ++i)
 // ✅ CORRECT
 ServiceManager.hpp      // For ServiceManager class
 ServiceManager.cpp
-
-string_utils.hpp        // For utilities
 ```
 
 ### 7.2 Header Guards
@@ -828,11 +852,12 @@ string_utils.hpp        // For utilities
 #ifndef AREG_IPC_SERVICE_MANAGER_HPP
 #define AREG_IPC_SERVICE_MANAGER_HPP
 
-namespace areg::ipc
+AREG_NAMESPACE_BEGIN
+namespace ipc
 {
     class ServiceManager { };
 }
-
+AREG_NAMESPACE_END
 #endif  // AREG_IPC_SERVICE_MANAGER_HPP
 
 // ❌ WRONG - Do not use #pragma once
@@ -886,25 +911,30 @@ build/cache/include/areg/base/String.hpp   (copied)
 **RULE:** Follow this exact order, with blank lines between groups.
 
 ```cpp
-// 1. Corresponding header (for .cpp files)
+// 1. Global header (if not already included transitively)
+#include "areg/base/GEGlobal.h"
+
+// 2. Corresponding header (for .cpp files)
 #include "areg/ipc/ServiceManager.hpp"
 
-// 2. Areg SDK headers
+// 3. Areg SDK headers
 #include "areg/base/String.hpp"
 #include "areg/ipc/Connection.hpp"
 
-// 3. C++ standard library
+// 4. C++ standard library
 #include <memory>
 #include <string>
 #include <vector>
 
-// 4. C system headers
+// 5. C system headers
 #include <sys/socket.h>
 #include <unistd.h>
 
-// 5. Third-party libraries
+// 6. Third-party libraries
 #include <boost/algorithm/string.hpp>
 ```
+
+**Note:** In headers, `GEGlobal.h` should come first. In `.cpp` files, the corresponding header comes first (which typically includes `GEGlobal.h` transitively).
 
 ---
 
@@ -917,61 +947,87 @@ build/cache/include/areg/base/String.hpp   (copied)
 ```cpp
 class ServiceManager
 {
-// 1. Public types and constants
+//////////////////////////////////////////////////////////////////////////
+// Types and constants
+//////////////////////////////////////////////////////////////////////////
 public:
     enum class State
     {
-          stopped
-        , running
+          Stopped
+        , Running
     };
-    
-    static constexpr int MAX_CONNECTIONS = 100;
 
-// 2. Static methods
+    static constexpr int MAX_CONNECTIONS { 100 };
+
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
 public:
-    static ServiceManager& get_instance();
+    static ServiceManager& instance();
 
-// 3. Constructors and destructor
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
 public:
     ServiceManager();
     virtual ~ServiceManager();
-    
-// 4. Public methods
+
+//////////////////////////////////////////////////////////////////////////
+// Public methods
+//////////////////////////////////////////////////////////////////////////
 public:
     void start();
     void stop();
-    
-    State state() const;
-    int connection_count() const;
 
-// 5. Protected methods
+    inline State state() const;
+    inline int connection_count() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Protected methods
+//////////////////////////////////////////////////////////////////////////
 protected:
     virtual void on_start();
 
-// 6. Private methods
+//////////////////////////////////////////////////////////////////////////
+// Private methods
+//////////////////////////////////////////////////////////////////////////
 private:
-    void initialize_subsystems();
-    void cleanup_connections();
+    void initialize();
+    void cleanup();
 
-// 7. Member variables
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
 protected:
     String      mIpAddress;
     uint16_t    mPort;
-private:
-    State mState;
-    int mConnectionCount;
-    std::vector<std::unique_ptr<Connection>> mConnections;
 
-// 8. Deleted constructors and operators
 private:
-    ServiceManager(const ServiceManager&) = delete;
-    ServiceManager& operator=(const ServiceManager&) = delete;
+    State                                       mState;
+    std::vector<std::unique_ptr<Connection>>    mConnections;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE(ServiceManager);
 };
 ```
 
+**Section order:**
+1. Public types and constants
+2. Static methods
+3. Constructors and destructor
+4. Public methods
+5. Protected methods
+6. Private methods
+7. Protected member variables
+8. Private member variables
+9. Deleted constructors / operators
+
 ### 8.2 Constructor Initialization
 
-**RULE:** Use initializer list with leading comma style.
+**RULE:** Use initializer list with leading comma style. Do not use in-class member initializers for classes.
 
 ```cpp
 // ✅ CORRECT - use initializer list
@@ -979,12 +1035,12 @@ class Connection
 {
 public:
     Connection(int fd, std::string addr)
-        : mSocketFd(fd)
-        , mAddress(std::move(addr))
-        , mState(ConnectionState::disconnected)
+        : mSocketFd (fd)
+        , mAddress  (std::move(addr))
+        , mState    (ConnectionState::Disconnected)
     {
     }
-    
+
 private:
     int             mSocketFd;
     std::string     mAddress;
@@ -1002,6 +1058,33 @@ private:
 
 **Note:** In-class initializers are OK for structs only.
 
+### 8.3 Inline Methods
+
+- Use `inline` for simple getters/setters: declare in class, implement outside the class body in the same header.
+- Never use `inline` with `virtual` methods.
+- Avoid `inline` for static methods that instantiate static members.
+
+```cpp
+// In header - declare inline in class
+class Connection
+{
+public:
+    inline int32_t count() const;
+    inline void set_count(int32_t value);
+};
+
+// In header - implement after class
+inline int32_t Connection::count() const
+{
+    return mCount;
+}
+
+inline void Connection::set_count(int32_t value)
+{
+    mCount = value;
+}
+```
+
 ---
 
 ## 9. Complete Example
@@ -1011,61 +1094,116 @@ private:
 #ifndef AREG_IPC_SERVICE_MANAGER_HPP
 #define AREG_IPC_SERVICE_MANAGER_HPP
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <optional>
+#include "areg/base/GEGlobal.h"
+#include "areg/base/String.hpp"
 
-namespace areg::ipc
+#include <cstdint>
+#include <memory>
+#include <vector>
+
+AREG_NAMESPACE_BEGIN
+namespace ipc
 {
 
 class Connection;
 
 enum class ServiceState
 {
-      stopped
-    , starting
-    , running
-    , stopping
+      Stopped     = 0
+    , Starting    = 1
+    , Running     = 2
+    , Stopping    = 3
+};
+
+struct ServiceConfig
+{
+    uint16_t    port            { 8080 };
+    int         max_connections { 100 };
+    std::string bind_address    { "0.0.0.0" };
 };
 
 /**
  * \brief   Manages lifecycle of IPC services.
- */
+ **/
 class ServiceManager
 {
+//////////////////////////////////////////////////////////////////////////
+// Types and constants
+//////////////////////////////////////////////////////////////////////////
+public:
+    static constexpr int MAX_SERVICES { 64 };
+
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+public:
+    static ServiceManager& instance();
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
 public:
     ServiceManager();
-    ~ServiceManager();
-    
+    virtual ~ServiceManager();
+
+//////////////////////////////////////////////////////////////////////////
+// Public methods
+//////////////////////////////////////////////////////////////////////////
 public:
-    int start_service(std::string_view config_path);
-    void stop_all_services();
-    
-    std::optional<Connection> create_connection(std::string_view address);
-    void remove_connection(int connection_id);
-    
-    ServiceState state() const { return mState; }
-    size_t connection_count() const { return mConnections.size(); }
-    bool is_running() const { return mState == ServiceState::running; }
-    
-private:
-    void initialize_subsystems();
-    void cleanup_connections();
-    
+    int start(std::string_view config_path);
+    void stop();
+
+    inline ServiceState state() const;
+    inline bool is_running() const;
+    size_t connection_count() const;
+
+//////////////////////////////////////////////////////////////////////////
+// Protected overrides
+//////////////////////////////////////////////////////////////////////////
 protected:
-    String      mIpAddress;
-    uint16_t    mPort;
+    virtual void on_start();
+
+//////////////////////////////////////////////////////////////////////////
+// Private methods
+//////////////////////////////////////////////////////////////////////////
 private:
-    ServiceState mState;
-    std::vector<std::shared_ptr<Connection>> mConnections;
+    void initialize();
+    void cleanup();
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+protected:
+    String      mAddress;
+    uint16_t    mPort;
 
 private:
-    ServiceManager(const ServiceManager&) = delete;
-    ServiceManager& operator=(const ServiceManager&) = delete;    
+    ServiceState                                mState;
+    std::vector<std::unique_ptr<Connection>>    mConnections;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    AREG_NOCOPY_NOMOVE(ServiceManager);
 };
 
-}  // namespace areg::ipc
+//////////////////////////////////////////////////////////////////////////
+// Inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline ServiceState ServiceManager::state() const
+{
+    return mState;
+}
+
+inline bool ServiceManager::is_running() const
+{
+    return mState == ServiceState::Running;
+}
+
+}  // namespace ipc
+AREG_NAMESPACE_END
 
 #endif  // AREG_IPC_SERVICE_MANAGER_HPP
 ```
@@ -1074,76 +1212,72 @@ private:
 // areg/ipc/ServiceManager.cpp
 #include "areg/ipc/ServiceManager.hpp"
 
-#include <errno.h>
+#include "areg/ipc/Connection.hpp"
 
 #include <algorithm>
 
-#include "areg/ipc/Connection.hpp"
-
-namespace areg::ipc
+AREG_NAMESPACE_USE
+namespace ipc
 {
 
 ServiceManager::ServiceManager()
-    : mState(ServiceState::stopped)
-    , mConnections()
+    : mAddress      ()
+    , mPort         (0)
+    , mState        (ServiceState::Stopped)
+    , mConnections  ()
 {
-    initialize_subsystems();
+    initialize();
 }
 
 ServiceManager::~ServiceManager()
 {
     if (is_running())
     {
-        stop_all_services();
+        stop();
     }
 }
 
-int ServiceManager::start_service(std::string_view config_path)
+int ServiceManager::start(std::string_view config_path)
 {
     if (config_path.empty())
     {
-        return -EINVAL;
+        return -1;
     }
-    
-    mState = ServiceState::starting;
-    
-    // Implementation...
-    
-    mState = ServiceState::running;
+
+    mState = ServiceState::Starting;
+    on_start();
+    mState = ServiceState::Running;
     return 0;
 }
 
-void ServiceManager::stop_all_services()
+void ServiceManager::stop()
 {
-    mState = ServiceState::stopping;
-    cleanup_connections();
-    mState = ServiceState::stopped;
+    mState = ServiceState::Stopping;
+    cleanup();
+    mState = ServiceState::Stopped;
 }
 
-std::optional<Connection> ServiceManager::create_connection(std::string_view address)
+size_t ServiceManager::connection_count() const
 {
-    if (!is_running())
-    {
-        return std::nullopt;
-    }
-    
-    auto connection = std::make_shared<Connection>(address);
-    mConnections.push_back(connection);
-    
-    return *connection;
+    return mConnections.size();
 }
 
-void ServiceManager::cleanup_connections()
+void ServiceManager::on_start()
+{
+    // Override in derived classes
+}
+
+void ServiceManager::initialize()
+{
+    // Implementation
+}
+
+void ServiceManager::cleanup()
 {
     mConnections.clear();
 }
 
-void ServiceManager::initialize_subsystems()
-{
-    // Implementation...
-}
-
-}  // namespace areg::ipc
+}  // namespace ipc
 ```
 
 ---
@@ -1151,10 +1285,10 @@ void ServiceManager::initialize_subsystems()
 ## 10. Quick Reference
 
 ### ✅ DO:
-- Use PascalCase for types (classes, structs, enums)
+- Use PascalCase for types (classes, structs, enums, enum values)
 - Use snake_case for functions and methods
 - Use `mVariable` (mPascalCase) for class members
-- Use `camelCase` for struct members (no prefix)
+- Use `snake_case` for struct public fields (no prefix)
 - Use `s_variable` for static class members
 - Use `constexpr UPPER_CASE` for constants
 - Use `std::string_view` for read-only string parameters
@@ -1174,11 +1308,12 @@ void ServiceManager::initialize_subsystems()
 - Use `get_` prefix for accessors (use `count()` not `get_count()`)
 - Use `IN`/`OUT`/`INOUT` empty macros
 - Use in-class initializers for classes
-- Use exceptions
+- Use exceptions for error handling
 - Use macros when alternatives exist (prefer `constexpr`, `inline`)
 - Mix tabs and spaces
 - Use `auto` for return types
 - Use `NULL` or `0` for pointers (use `nullptr`)
+- Use global variables with external linkage
 
 ---
 
