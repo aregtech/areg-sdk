@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}"
 	ProjectSection(SolutionItems) = preProject
+		docs\AREG_AI_CODING_RULES.md = docs\AREG_AI_CODING_RULES.md
 		docs\AREG_CODING_STYLE.md = docs\AREG_CODING_STYLE.md
 		docs\DEVELOP.md = docs\DEVELOP.md
 		docs\HelloService.md = docs\HelloService.md
@@ -694,9 +695,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "examples\dummy\dum
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-workflows", "{85EF9AE6-92A6-4DD9-833C-455EEAEA186D}"
 	ProjectSection(SolutionItems) = preProject
+		.github\instructions\.instructions.md = .github\instructions\.instructions.md
 		.github\workflows\accessibility-bot.yml = .github\workflows\accessibility-bot.yml
 		.github\workflows\cmake.yml = .github\workflows\cmake.yml
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\copilot-instructions.md = .github\copilot-instructions.md
 		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml
 		.github\workflows\validate-pr.yml = .github\workflows\validate-pr.yml
 	EndProjectSection
