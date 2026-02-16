@@ -30,15 +30,15 @@
    ************************************************************************/
 class TimerManagerEventData;
 // class TimerManagerEvent
-// class IETimerManagerEventConsumer
+// class TimerManagerEventConsumer
 
 /************************************************************************
  * \brief   In this file following classes are declared:
  *              1. TimerManagerEventData
  *              2. TimerManagerEvent
- *              3. IETimerManagerEventConsumer
+ *              3. TimerManagerEventConsumer
  *          The Timer Managing Event is used to send events to Timer Manager.
- *          The Timer Manager derives IETimerManagerEventConsumer and
+ *          The Timer Manager derives TimerManagerEventConsumer and
  *          processes Event Data.
  *          For mode details, see descriptions bellow and see
  *          class TimerManager
@@ -122,14 +122,14 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TimerManagerEvent and IETimerManagerEventConsumer declaration
+// TimerManagerEvent and TimerManagerEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Declaration of TimerManagerEvent and IETimerManagerEventConsumer.
+ * \brief   Declaration of TimerManagerEvent and TimerManagerEventConsumer.
  *          The TimerManagerEvent is used to send Event Data
- *          The IETimerManagerEventConsumer is used to process data.
+ *          The TimerManagerEventConsumer is used to process data.
  **/
-AREG_DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, IETimerManagerEventConsumer)
+AREG_DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, TimerManagerEventConsumer)
 
 /************************************************************************
  * Inline functions

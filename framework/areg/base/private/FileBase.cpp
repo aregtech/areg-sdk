@@ -17,7 +17,7 @@
 #include "areg/base/FileBase.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/WideString.hpp"
-#include "areg/base/IEByteBuffer.hpp"
+#include "areg/base/ByteBuffer.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
 
@@ -60,7 +60,7 @@ inline int _readString(const FileBase & file, ClassType & outValue)
             outValue    += str;
             result      += length;
             int newPos   = static_cast<int>(result * sizeof(CharType)) + static_cast<int>(oldPos);
-            file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
+            file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -103,7 +103,7 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
             outValue+= str;
             result  += length;
             int newPos  = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-            file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
+            file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -136,7 +136,7 @@ inline int _readString(const FileBase & file, CharType * buffer, int charCount)
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
+                file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
             }
         }
     }
@@ -165,7 +165,7 @@ inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
+                file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
             }
         }
     }
@@ -219,10 +219,10 @@ NEMath::eCompare _compareData( const DataType * memBuffer1, const DataType * mem
 template<typename CharType>
 unsigned int _searchText( const FileBase & file, unsigned int startPos, const CharType * text, uint32_t length, bool sensitive )
 {
-    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
-    if ( file.canRead( ) && (startPos != IECursorPosition::INVALID_CURSOR_POSITION) )
+    unsigned int result{ Cursor::INVALID_CURSOR_POSITION };
+    if ( file.canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION) )
     {
-        unsigned int posSearch = file.setPosition( static_cast<int>(startPos), IECursorPosition::eCursorPosition::PositionBegin );
+        unsigned int posSearch = file.setPosition( static_cast<int>(startPos), Cursor::eCursorPosition::PositionBegin );
         if ( (NEString::isEmpty<CharType>(text) == false) && (length != 0) )
         {
             unsigned int dataLen = length * 2;
@@ -230,7 +230,7 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
             unsigned int readLen = 0;
             CharType * fileData = new CharType[ bufLen ];
 
-            while ( result == IECursorPosition::INVALID_CURSOR_POSITION )
+            while ( result == Cursor::INVALID_CURSOR_POSITION )
             {
                 if ( readLen != 0 )
                 {
@@ -282,13 +282,13 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 FileBase::FileBase()
-    : IEIOStream        ( )
-    , IECursorPosition  ( )
+    : IOStream        ( )
+    , Cursor  ( )
 
     , mFileName         (String::getEmptyString())
     , mFileMode         (static_cast<unsigned int>(FO_MODE_INVALID))
-    , mReadConvert      (static_cast<IEInStream &>(self()), static_cast<IECursorPosition &>(self()) )
-    , mWriteConvert     (static_cast<IEOutStream &>(self()), static_cast<IECursorPosition &>(self()) )
+    , mReadConvert      (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
+    , mWriteConvert     (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
 {
 }
 
@@ -512,9 +512,9 @@ unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillVal
     if (newSize > 0)
     {
         unsigned int newPos = reserve(newSize);
-        if ((newPos != IECursorPosition::INVALID_CURSOR_POSITION) && (newPos > curPos))
+        if ((newPos != Cursor::INVALID_CURSOR_POSITION) && (newPos > curPos))
         {
-            setPosition(static_cast<int>(curPos), IECursorPosition::eCursorPosition::PositionBegin);
+            setPosition(static_cast<int>(curPos), Cursor::eCursorPosition::PositionBegin);
             for (unsigned int i = 0; i < newPos; ++ i)
             {
                 write( &fillValue, sizeof( unsigned char ) );
@@ -530,10 +530,10 @@ unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillVal
 
 void FileBase::resetCursor() const
 {
-    setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+    setPosition(0, Cursor::eCursorPosition::PositionBegin);
 }
 
-unsigned int FileBase::read(IEByteBuffer & buffer) const
+unsigned int FileBase::read(ByteBuffer & buffer) const
 {
     unsigned int result = 0;
     buffer.invalidate();
@@ -567,7 +567,7 @@ unsigned int FileBase::read(WideString & wide) const
     return static_cast<unsigned int>(readString(wide));
 }
 
-unsigned int FileBase::write(const IEByteBuffer & buffer)
+unsigned int FileBase::write(const ByteBuffer & buffer)
 {
     unsigned int result = 0;
 
@@ -613,17 +613,17 @@ bool FileBase::write(const wchar_t * wide)
 
 unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * buffer, uint32_t length ) const
 {
-    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
-    if ( canRead( ) && (startPos != IECursorPosition::INVALID_CURSOR_POSITION))
+    unsigned int result{ Cursor::INVALID_CURSOR_POSITION };
+    if ( canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION))
     {
-        unsigned int posSearch = setPosition( static_cast<int>(startPos), IECursorPosition::eCursorPosition::PositionBegin );
+        unsigned int posSearch = setPosition( static_cast<int>(startPos), Cursor::eCursorPosition::PositionBegin );
         if ( (buffer != nullptr) && (length != 0) )
         {
             unsigned int dataLen = length * 2;
             unsigned int readLen = 0;
             unsigned char * fileData = new unsigned char[ dataLen ];
 
-            while ((result == IECursorPosition::INVALID_CURSOR_POSITION) && (posSearch != IECursorPosition::INVALID_CURSOR_POSITION))
+            while ((result == Cursor::INVALID_CURSOR_POSITION) && (posSearch != Cursor::INVALID_CURSOR_POSITION))
             {
                 if ( readLen != 0 )
                 {
@@ -663,7 +663,7 @@ unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * 
     return result;
 }
 
-unsigned int FileBase::searchData( unsigned int startPos, const IEByteBuffer & buffer ) const
+unsigned int FileBase::searchData( unsigned int startPos, const ByteBuffer & buffer ) const
 {
     return searchData(startPos, buffer.getBuffer(), buffer.getSizeUsed());
 }

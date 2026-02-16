@@ -18,7 +18,7 @@
 #include "areg/logging/LogConfiguration.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/IEByteBuffer.hpp"
+#include "areg/base/ByteBuffer.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
@@ -29,7 +29,7 @@
 
 DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
     : LoggerBase        ( logConfig )
-    , IEOutStream       ( )
+    , OutStream       ( )
 
     , mIsOpened         ( false )
     , mOutputMessageA   ( )
@@ -95,15 +95,15 @@ void DebugOutputLogger::logMessage(const NELogging::sLogMessage & logMessage)
         switch (logMessage.logMsgType)
         {
         case NELogging::eLogMessageType::LogMessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream&>(*this));
+            getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(*this));
             break;
 
         case NELogging::eLogMessageType::LogMessageScopeEnter:
-            getLayoutEnterScope().logMessage(logMessage, static_cast<IEOutStream&>(*this));
+            getLayoutEnterScope().logMessage(logMessage, static_cast<OutStream&>(*this));
             break;
 
         case NELogging::eLogMessageType::LogMessageScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
+            getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(*this) );
             break;
 
         default:
@@ -142,7 +142,7 @@ unsigned int DebugOutputLogger::write(const unsigned char * /* buffer */, unsign
 }
 #endif  // defined(OUTPUT_DEBUG)
 
-unsigned int DebugOutputLogger::write(const IEByteBuffer & buffer)
+unsigned int DebugOutputLogger::write(const ByteBuffer & buffer)
 {
     return write(buffer.getBuffer(), buffer.getSizeUsed());
 }

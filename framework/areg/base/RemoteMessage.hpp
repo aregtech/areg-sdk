@@ -115,7 +115,7 @@ public:
      * \param	input	The Remote Buffer object to write data
      * \return	Reference to Streaming object.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, RemoteMessage & input );
+    friend inline const InStream & operator >> ( const InStream & stream, RemoteMessage & input );
 
     /**
      * \brief	Friend operator to make Remote Message streamable.
@@ -124,7 +124,7 @@ public:
      * \param	output	The Remote Message object to read data
      * \return	Reference to Streaming object.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const RemoteMessage & output );
+    friend inline OutStream & operator << ( OutStream & stream, const RemoteMessage & output );
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -237,7 +237,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEByteBuffer Attributes and operations
+// ByteBuffer Attributes and operations
 /************************************************************************/
     /**
      * \brief	Initialize passed buffer making it as byte buffer and
@@ -391,9 +391,9 @@ inline void RemoteMessage::setSequenceNr(const SequenceNumber & newSequenceNr )
 // Friend streamable operators
 /************************************************************************/
 
-inline const IEInStream & operator >> (const IEInStream & stream, RemoteMessage & input)
+inline const InStream & operator >> (const InStream & stream, RemoteMessage & input)
 {
-    if ( static_cast<const IEInStream *>(&stream) != static_cast<const IEInStream *>(&input) )
+    if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
     {
         stream.read(input);
         input.moveToBegin();
@@ -402,9 +402,9 @@ inline const IEInStream & operator >> (const IEInStream & stream, RemoteMessage 
     return stream;
 }
 
-inline IEOutStream & operator << (IEOutStream & stream, const RemoteMessage & output)
+inline OutStream & operator << (OutStream & stream, const RemoteMessage & output)
 {
-    if ( (static_cast<const IEOutStream *>(&stream)) != (static_cast<const IEOutStream *>(&output)) )
+    if ( (static_cast<const OutStream *>(&stream)) != (static_cast<const OutStream *>(&output)) )
     {
         stream.write( output );
     }

@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IEWaitableBaseIX.hpp"
+#include "areg/base/private/posix/WaitablePosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableSemaphoreIX class declaration.
@@ -40,7 +40,7 @@
  *          The semaphore cannot have owning thread, because several threads
  *          can get released until the count reaches zero.
  **/
-class WaitableSemaphoreIX : public IEWaitableBaseIX
+class WaitableSemaphoreIX : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -87,7 +87,7 @@ public:
     inline int getCurrentCount() const;
 
 /************************************************************************/
-// IEWaitableBaseIX callback overrides.
+// WaitablePosix callback overrides.
 /************************************************************************/
 
     /**

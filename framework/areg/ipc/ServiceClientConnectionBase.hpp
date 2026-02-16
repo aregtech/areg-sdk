@@ -19,8 +19,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/ipc/IEServiceConnectionProvider.hpp"
-#include "areg/ipc/ServiceEventConsumerBase.hpp"
+#include "areg/ipc/ConnectionProvider.hpp"
+#include "areg/ipc/ServiceEventConsumer.hpp"
 
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/private/ClientReceiveThread.hpp"
@@ -33,8 +33,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServiceConnectionConsumer;
-class IERemoteMessageHandler;
+class ConnectionConsumer;
+class RemoteMessageHandler;
 //////////////////////////////////////////////////////////////////////////
 // ServiceClientConnectionBase class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -43,8 +43,8 @@ class IERemoteMessageHandler;
  *          to read and send message, to dispatch messages and
  *          communicate with service manager.
  **/
-class AREG_API ServiceClientConnectionBase  : public    IEServiceConnectionProvider
-                                            , public    IEServiceEventConsumerBase
+class AREG_API ServiceClientConnectionBase  : public    ConnectionProvider
+                                            , public    ServiceEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -88,8 +88,8 @@ public:
                                 , NERemoteService::eRemoteServices service
                                 , unsigned int connectTypes
                                 , NEService::eMessageSource msgSource
-                                , IEServiceConnectionConsumer& connectionConsumer
-                                , IERemoteMessageHandler & messageHandler
+                                , ConnectionConsumer& connectionConsumer
+                                , RemoteMessageHandler & messageHandler
                                 , DispatcherThread & messageDispatcher
                                 , const String & prefixName);
     /**
@@ -173,7 +173,7 @@ protected:
     virtual void serviceConnectionEvent(const RemoteMessage& msgReceived);
 
 /************************************************************************/
-// IEServiceConnectionProvider interface overrides
+// ConnectionProvider interface overrides
 /************************************************************************/
 
     /**
@@ -253,7 +253,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEServiceEventConsumerBase interface overrides
+// ServiceEventConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -405,7 +405,7 @@ protected:
     /**
      * \brief   Instance of remote servicing consumer to handle message.
      **/
-    IEServiceConnectionConsumer &           mConnectionConsumer;
+    ConnectionConsumer &                    mConnectionConsumer;
 
     /**
      * \brief   The thread that makes message dispatching.
@@ -425,7 +425,7 @@ protected:
     /**
      * \brief   The Client Service event consumer
      **/
-    ServiceClientEventConsumer              mEventConsumer;
+    ServiceClientConsumer                   mEventConsumer;
 
     /**
      * \brief   Data access synchronization object
@@ -521,12 +521,12 @@ inline bool ServiceClientConnectionBase::isDisconnectState() const
 
 inline void ServiceClientConnectionBase::registerForServiceClientCommands()
 {
-    ServiceClientEvent::addListener(static_cast<IEServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+    ServiceClientEvent::addListener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
 inline void ServiceClientConnectionBase::unregisterForServiceClientCommands()
 {
-    ServiceClientEvent::removeListener(static_cast<IEServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+    ServiceClientEvent::removeListener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
 inline const char * ServiceClientConnectionBase::getString(ServiceClientConnectionBase::eConnectionState val)
@@ -570,7 +570,7 @@ inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::eService
                                                     , Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     ServiceClientEvent::sendEvent( ServiceEventData( cmd )
-                                 , static_cast<IEServiceClientEventConsumer &>(mEventConsumer)
+                                 , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
                                  , mMessageDispatcher
                                  , eventPrio );
 }
@@ -578,7 +578,7 @@ inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::eService
 inline bool ServiceClientConnectionBase::sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData(data)
-                                      , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                      , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                       , static_cast<DispatcherThread &>(mThreadSend)
                                       , eventPrio);
 }
@@ -586,7 +586,7 @@ inline bool ServiceClientConnectionBase::sendMessage(const RemoteMessage & data,
 inline void ServiceClientConnectionBase::disconnectService( Event::eEventPriority eventPrio )
 {
     SendMessageEvent::sendEvent( SendMessageEventData()
-                               , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                               , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                , static_cast<DispatcherThread &>(mThreadSend)
                                , eventPrio );
 }

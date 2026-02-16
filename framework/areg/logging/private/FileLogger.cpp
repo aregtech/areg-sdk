@@ -92,15 +92,15 @@ void FileLogger::logMessage( const NELogging::sLogMessage & logMessage )
         switch (logMessage.logMsgType)
         {
         case NELogging::eLogMessageType::LogMessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream&>(mLogFile));
+            getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(mLogFile));
             break;
 
         case NELogging::eLogMessageType::LogMessageScopeEnter:
-            getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutEnterScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
         case NELogging::eLogMessageType::LogMessageScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
         case NELogging::eLogMessageType::LogMessageUndefined: // fall through

@@ -12,7 +12,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "examples/24_pubunblock/services/HelloUnblockStub.hpp"
 
 #include "areg/base/TEStack.hpp"
@@ -30,7 +30,7 @@
  **/
 class ServiceComponent  : public  Component
                         , private HelloUnblockStub
-                        , private IETimerConsumer
+                        , private TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal structure

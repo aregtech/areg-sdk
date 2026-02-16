@@ -15,7 +15,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/GEMacros.h"
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
 
@@ -27,7 +27,7 @@
 #endif // _MSC_VER
 
 //! \brief Thread to read buffer and output message
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread : public Thread, protected ThreadConsumer
 {
 public:
     explicit HelloThread(SharedBuffer& buffer)
@@ -38,7 +38,7 @@ public:
 
 protected:
 /************************************************************************/
-// IEThreadConsumer interface
+// ThreadConsumer interface
 /************************************************************************/
     void onThreadRuns() override
     {

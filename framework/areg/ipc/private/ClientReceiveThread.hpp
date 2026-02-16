@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteMessageHandler;
+class RemoteMessageHandler;
 class ClientConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ public:
      * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD
      *                          to have unique thread names.
      **/
-    ClientReceiveThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);
+    ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);
 
     /**
      * \brief   Destructor.
@@ -100,7 +100,7 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteMessageHandler&     mRemoteService;
+    RemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of connection to receive messages from remote routing service.
      **/

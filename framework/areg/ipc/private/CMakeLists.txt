@@ -3,11 +3,11 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/ipc/private/ClientReceiveThread.cpp
 	areg/ipc/private/ClientSendThread.cpp
 	areg/ipc/private/ConnectionConfiguration.cpp
-	areg/ipc/private/IERemoteMessageHandler.cpp
-	areg/ipc/private/IEServiceConnectionConsumer.cpp
-	areg/ipc/private/IEServiceConnectionProvider.cpp
-	areg/ipc/private/IEServiceRegisterConsumer.cpp
-	areg/ipc/private/IEServiceRegisterProvider.cpp
+	areg/ipc/private/RemoteMessageHandler.cpp
+	areg/ipc/private/ConnectionConsumer.cpp
+	areg/ipc/private/ConnectionProvider.cpp
+	areg/ipc/private/RegistrationConsumer.cpp
+	areg/ipc/private/RegistrationProvider.cpp
 	areg/ipc/private/NEConnection.cpp
 	areg/ipc/private/NERemoteService.cpp
 	areg/ipc/private/RouterClient.cpp
@@ -15,6 +15,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/ipc/private/ServerConnectionBase.cpp
 	areg/ipc/private/ServiceClientConnectionBase.cpp
 	areg/ipc/private/ServiceEvent.cpp
-	areg/ipc/private/ServiceEventConsumerBase.cpp
+	areg/ipc/private/ServiceEventConsumer.cpp
 	areg/ipc/private/SocketConnectionBase.cpp
 )

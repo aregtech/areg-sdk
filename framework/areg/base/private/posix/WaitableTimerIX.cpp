@@ -46,7 +46,7 @@ void WaitableTimerIX::_posixTimerRoutine(union sigval si)
 
 
 WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
-    : IEWaitableBaseIX  ( NESyncTypesIX::eSyncObject::SoWaitTimer, false, name )
+    : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitTimer, false, name )
 
     , mResetInfo        ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
 #ifdef __APPLE__

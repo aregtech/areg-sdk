@@ -38,7 +38,7 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const Se
 {
 }
 
-ServiceResponseEvent::ServiceResponseEvent(const IEInStream & stream)
+ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
     : ProxyEvent    ( stream )
     , mResponseId   ( NEService::INVALID_MESSAGE_ID )
     , mResult       ( NEService::ResultType::Undefined )
@@ -55,7 +55,7 @@ ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const ProxyAddress &
     return DEBUG_NEW ServiceResponseEvent(target, *this);
 }
 
-const IEInStream & ServiceResponseEvent::readStream( const IEInStream & stream )
+const InStream & ServiceResponseEvent::readStream( const InStream & stream )
 {
     ProxyEvent::readStream(stream);
     stream >> mResponseId;
@@ -64,7 +64,7 @@ const IEInStream & ServiceResponseEvent::readStream( const IEInStream & stream )
     return stream;
 }
 
-IEOutStream & ServiceResponseEvent::writeStream( IEOutStream & stream ) const
+OutStream & ServiceResponseEvent::writeStream( OutStream & stream ) const
 {
     ProxyEvent::writeStream(stream);
     stream << mResponseId;

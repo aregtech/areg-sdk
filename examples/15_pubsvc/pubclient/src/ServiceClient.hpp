@@ -15,7 +15,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "examples/15_pubsvc/services/HelloWorldClientBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
@@ -23,7 +23,7 @@
 //!         The requests are triggered on each timer timeout.
 class ServiceClient : public    Component
                     , protected HelloWorldClientBase
-                    , private   IETimerConsumer
+                    , private   TimerConsumer
 {
 private:
     static constexpr unsigned int   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request
@@ -58,7 +58,7 @@ protected:
     virtual void broadcastReachedMaximum( int maxNumber ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -74,7 +74,7 @@ protected:
     virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
     /**
      * \brief   Triggered when Timer is expired.

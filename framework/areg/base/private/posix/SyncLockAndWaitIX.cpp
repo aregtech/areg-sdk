@@ -18,7 +18,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IEWaitableBaseIX.hpp"
+#include "areg/base/private/posix/WaitablePosix.hpp"
 #include "areg/base/SyncObjects.hpp"
 #include "areg/base/Thread.hpp"
 #include <algorithm>
@@ -40,13 +40,13 @@ SyncLockAndWaitIX::SyncResourceMapIX & SyncLockAndWaitIX::_mapSyncResources()
     return _theSyncResourceMapIX;
 }
 
-int SyncLockAndWaitIX::waitForSingleObject( IEWaitableBaseIX & syncWait, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
+int SyncLockAndWaitIX::waitForSingleObject( WaitablePosix & syncWait, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
 {
-    IEWaitableBaseIX * list[] = { &syncWait };
+    WaitablePosix * list[] = { &syncWait };
     return waitForMultipleObjects(list, 1, true, msTimeout);
 }
 
-int SyncLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll /* = false */, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
+int SyncLockAndWaitIX::waitForMultipleObjects( WaitablePosix ** listWaitables, int count, bool waitAll /* = false */, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
 {
     int result = static_cast<int>(NESyncTypesIX::SyncObjectInvalid);
     if ( (listWaitables != nullptr) && (count > 0) )
@@ -87,7 +87,7 @@ int SyncLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitables
     return result;
 }
 
-int SyncLockAndWaitIX::eventSignaled( IEWaitableBaseIX & syncWaitable )
+int SyncLockAndWaitIX::eventSignaled( WaitablePosix & syncWaitable )
 {
     int result = 0;
 
@@ -152,7 +152,7 @@ int SyncLockAndWaitIX::eventSignaled( IEWaitableBaseIX & syncWaitable )
     return result;
 }
 
-void SyncLockAndWaitIX::eventRemove( IEWaitableBaseIX & syncWaitable )
+void SyncLockAndWaitIX::eventRemove( WaitablePosix & syncWaitable )
 {
     SyncResourceMapIX & mapResource { SyncLockAndWaitIX::_mapSyncResources() };
     mapResource.lock( );
@@ -185,7 +185,7 @@ void SyncLockAndWaitIX::eventRemove( IEWaitableBaseIX & syncWaitable )
     mapResource.unlock( );
 }
 
-void SyncLockAndWaitIX::eventFailed( IEWaitableBaseIX & syncWaitable )
+void SyncLockAndWaitIX::eventFailed( WaitablePosix & syncWaitable )
 {
     SyncResourceMapIX & mapResource { SyncLockAndWaitIX::_mapSyncResources() };
     mapResource.lock( );
@@ -214,7 +214,7 @@ void SyncLockAndWaitIX::eventFailed( IEWaitableBaseIX & syncWaitable )
     mapResource.unlock( );
 }
 
-bool SyncLockAndWaitIX::isWaitableRegistered( IEWaitableBaseIX & syncWaitable )
+bool SyncLockAndWaitIX::isWaitableRegistered( WaitablePosix & syncWaitable )
 {
     bool result = false;
 
@@ -253,7 +253,7 @@ bool SyncLockAndWaitIX::notifyAsyncSignal( id_type threadId )
     return result;
 }
 
-SyncLockAndWaitIX::SyncLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
+SyncLockAndWaitIX::SyncLockAndWaitIX(   WaitablePosix ** listWaitables
                                             , int count
                                             , NESyncTypesIX::eMatchCondition matchCondition
                                             , unsigned int msTimeout )
@@ -284,7 +284,7 @@ SyncLockAndWaitIX::SyncLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
         {
             for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
-                IEWaitableBaseIX * syncWaitable = *listWaitables;
+                WaitablePosix * syncWaitable = *listWaitables;
                 if (syncWaitable != nullptr)
                 {
                     ASSERT( (static_cast<unsigned int>(syncWaitable->getSyncType()) & static_cast<unsigned int>(NESyncTypesIX::eSyncObject::SoWaitable)) != 0);
@@ -322,7 +322,7 @@ SyncLockAndWaitIX::SyncLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
 
             for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
-                IEWaitableBaseIX * syncWaitable = *listWaitables;
+                WaitablePosix * syncWaitable = *listWaitables;
                 if ( syncWaitable != nullptr )
                 {
                     mapResources.registerResourceObject(syncWaitable, this);
@@ -473,7 +473,7 @@ inline int SyncLockAndWaitIX::_waitCondition()
     }
 }
 
-inline int SyncLockAndWaitIX::_getWaitableIndex( const IEWaitableBaseIX & syncWaitable ) const
+inline int SyncLockAndWaitIX::_getWaitableIndex( const WaitablePosix & syncWaitable ) const
 {
     int result = NECommon::INVALID_INDEX;
     for ( uint32_t i = 0; i < mWaitingList.getSize(); ++ i )
@@ -488,7 +488,7 @@ inline int SyncLockAndWaitIX::_getWaitableIndex( const IEWaitableBaseIX & syncWa
     return result;
 }
 
-NESyncTypesIX::eSyncObjectFired SyncLockAndWaitIX::SyncLockAndWaitIX::_checkEventFired( IEWaitableBaseIX & syncObject )
+NESyncTypesIX::eSyncObjectFired SyncLockAndWaitIX::SyncLockAndWaitIX::_checkEventFired( WaitablePosix & syncObject )
 {
     NESyncTypesIX::eSyncObjectFired result = NESyncTypesIX::SyncObjectInvalid;
 
@@ -508,7 +508,7 @@ NESyncTypesIX::eSyncObjectFired SyncLockAndWaitIX::SyncLockAndWaitIX::_checkEven
 #ifdef _DEBUG
             for ( ; i < mWaitingList.getSize(); ++ i)
             {
-                IEWaitableBaseIX *waitable = mWaitingList[i];
+                WaitablePosix *waitable = mWaitingList[i];
                 ASSERT(waitable != nullptr);
                 if (waitable->checkSignaled(mContext) == false)
                 {
@@ -549,7 +549,7 @@ bool SyncLockAndWaitIX::_requestOwnership( const NESyncTypesIX::eSyncObjectFired
     if ( firedEvent != NESyncTypesIX::SyncObjectAll )
     {
         ASSERT(mWaitingList.getSize() > static_cast<uint32_t>(firedEvent));
-        IEWaitableBaseIX *waitable = mWaitingList[static_cast<uint32_t>(firedEvent)];
+        WaitablePosix *waitable = mWaitingList[static_cast<uint32_t>(firedEvent)];
         
 #ifdef DEBUG
         if (waitable == nullptr)
@@ -579,7 +579,7 @@ bool SyncLockAndWaitIX::_requestOwnership( const NESyncTypesIX::eSyncObjectFired
         result = true;
         for (uint32_t i = 0; (i < mWaitingList.getSize()) && result; ++ i)
         {
-            IEWaitableBaseIX *waitable = mWaitingList[i];
+            WaitablePosix *waitable = mWaitingList[i];
             ASSERT(waitable != nullptr);
             result = waitable->notifyRequestOwnership(mContext);
 

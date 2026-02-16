@@ -17,16 +17,16 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/logging/GELog.h"
 
-#include "aregextend/service/IEServiceConnectionHandler.hpp"
+#include "aregextend/service/ConnectionHandler.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
-ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler & remoteService, ServerConnection & connection )
+ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
     : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
@@ -45,7 +45,7 @@ bool ServerReceiveThread::runDispatcher()
     int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
     if ( mConnection.serverListen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
-        IESyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
+        SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
 
         RemoteMessage msgReceived;

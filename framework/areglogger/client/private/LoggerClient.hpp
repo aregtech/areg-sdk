@@ -23,9 +23,9 @@
 #include "areg/component/NEService.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
-#include "areg/ipc/IEServiceConnectionConsumer.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/persist/IEConfigurationListener.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/persist/ConfigListener.hpp"
 
 #include "areg/logging/NELogging.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
@@ -47,10 +47,10 @@ struct sObserverEvents;
  *          structure of callbacks to trigger when an event happens.
  **/
 class LoggerClient  : public    ServiceClientConnectionBase
-                    , public    IEConfigurationListener
+                    , public    ConfigListener
                     , protected DispatcherThread
-                    , protected IEServiceConnectionConsumer
-                    , protected IERemoteMessageHandler
+                    , protected ConnectionConsumer
+                    , protected RemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend class
@@ -373,7 +373,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEConfigurationListener interface overrides
+// ConfigListener interface overrides
 /************************************************************************/
 
     /**
@@ -452,7 +452,7 @@ protected:
     virtual void onServiceExit() override;
 
 /************************************************************************/
-// IEServiceConnectionConsumer overrides
+// ConnectionConsumer overrides
 /************************************************************************/
 
     /**
@@ -476,7 +476,7 @@ protected:
     virtual void lostRemoteServiceChannel(const Channel& channel) override;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**

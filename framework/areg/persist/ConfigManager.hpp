@@ -34,7 +34,7 @@
  * Dependencies.
  ************************************************************************/
 class FileBase;
-class IEConfigurationListener;
+class ConfigListener;
 
 //////////////////////////////////////////////////////////////////////////
 // ConfigManager class declaration
@@ -334,7 +334,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to read and initialize configuration.
      **/
-    bool readConfig(const String& filePath = String::EmptyString, IEConfigurationListener * listener = nullptr);
+    bool readConfig(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Reads the configuration from the specified configuration file.
@@ -347,7 +347,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to read and initialize configuration.
      **/
-    bool readConfig(const FileBase& file, IEConfigurationListener * listener = nullptr);
+    bool readConfig(const FileBase& file, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Saves the current configuration in the specified file.
@@ -362,7 +362,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to save configuration.
      **/
-    bool saveConfig(const String& filePath = String::EmptyString, IEConfigurationListener * listener = nullptr);
+    bool saveConfig(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Saves the current configuration in the specified file object opened with write access.
@@ -375,7 +375,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to save configuration.
      **/
-    bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, IEConfigurationListener * listener = nullptr);
+    bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Sets the read-only and writable configuration entries.
@@ -384,7 +384,7 @@ public:
      * \param   listener        The pointer to the configuration listener to notify configuration data set/
      *                          If nullptr, no notification is triggered.
      **/
-    void setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, IEConfigurationListener * listener = nullptr);
+    void setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Releases all module specific entries.

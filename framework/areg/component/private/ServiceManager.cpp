@@ -97,7 +97,7 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
 
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerStub(whichServer)
-                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -113,7 +113,7 @@ void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, c
     
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterStub(whichServer, reason)
-                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -129,7 +129,7 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
     
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerProxy(whichClient)
-                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -144,7 +144,7 @@ void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, 
     
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterProxy(whichClient, reason)
-                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -155,7 +155,7 @@ void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
 
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent(ServiceManagerEventData::terminateComponentThread(whichThread.getName())
-                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -165,7 +165,7 @@ bool ServiceManager::_routingServiceConfigure()
     ServiceManagerEventData data(ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices::ServiceRouter, static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)));
 
     return ServiceManagerEvent::sendEvent( data
-                                         , static_cast<IEServiceManagerEventConsumer &>(serviceManager) 
+                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager) 
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -174,7 +174,7 @@ bool ServiceManager::_routingServiceStart( unsigned int connectTypes )
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEventData data(ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices::ServiceRouter, connectTypes));
     return ServiceManagerEvent::sendEvent( data
-                                         , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                         , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -185,7 +185,7 @@ bool ServiceManager::_routingServiceStart( const String & ipAddress, unsigned sh
     {
         ServiceManager & serviceManager = ServiceManager::getInstance( );
         result =ServiceManagerEvent::sendEvent( ServiceManagerEventData::startNetConnection( ipAddress, portNr )
-                                              , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                              , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                               , static_cast<DispatcherThread &>(serviceManager) );
     }
     return result;
@@ -195,7 +195,7 @@ void ServiceManager::_routingServiceStop()
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::stopConnection()
-                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
+                                  , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
@@ -218,7 +218,7 @@ void ServiceManager::_requestCreateThread(const String& componentThread)
 {
     ServiceManager& serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::createComponentThread(componentThread)
-                                  , static_cast<IEServiceManagerEventConsumer&>(serviceManager)
+                                  , static_cast<ServiceManagerEventConsumer&>(serviceManager)
                                   , static_cast<DispatcherThread&>(serviceManager) );
 }
 
@@ -226,13 +226,13 @@ void ServiceManager::_requestCreateThread(const String& componentThread)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager()
-    : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
-    , IEServiceManagerEventConsumer ( )
-    , IEServiceConnectionConsumer   ( )
-    , IEServiceRegisterConsumer     ( )
+    : DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
+    , ServiceManagerEventConsumer( )
+    , ConnectionConsumer         ( )
+    , RegistrationConsumer       ( )
 
     , mEventProcessor   ( self() )
-    , mServiceClient    ( static_cast<IEServiceConnectionConsumer&>(self()), static_cast<IEServiceRegisterConsumer&>(self()) )
+    , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<RegistrationConsumer&>(self()) )
     , mLock             (  )
 {
 }
@@ -259,11 +259,11 @@ void ServiceManager::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        ServiceManagerEvent::addListener( static_cast<IEServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        ServiceManagerEvent::addListener( static_cast<ServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
     }
     else
     {
-        ServiceManagerEvent::removeListener( static_cast<IEServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        ServiceManagerEvent::removeListener( static_cast<ServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
     }
 
     DispatcherThread::readyForEvents( isReady );
@@ -279,7 +279,7 @@ bool ServiceManager::_startServiceManagerThread()
 void ServiceManager::_stopServiceManagerThread(bool waitComplete)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::shutdownServiceManager()
-                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<ServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
 
     if (waitComplete)
@@ -353,20 +353,20 @@ void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & prox
 void ServiceManager::connectedRemoteServiceChannel(const Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerConnection(channel)
-                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<ServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
 }
 
 void ServiceManager::disconnectedRemoteServiceChannel(const Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterConnection(channel)
-                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<ServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
 }
 
 void ServiceManager::lostRemoteServiceChannel(const Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::lostConnection(channel)
-                                  , static_cast<IEServiceManagerEventConsumer &>(self())
+                                  , static_cast<ServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
 }

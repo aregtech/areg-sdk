@@ -16,7 +16,7 @@
 #include "areg/component/private/EventDispatcherBase.hpp"
 
 #include "areg/component/Event.hpp"
-#include "areg/component/IEEventConsumer.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/private/ExitEvent.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,11 +27,10 @@
 // EventDispatcherBase class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue)
-    : IEEventDispatcher( )
-    , IEQueueListener  ( )
+    : QueueListener  ( )
 
     , mDispatcherName   ( name )
-    , mExternalEvents    ( static_cast<IEQueueListener &>(self()), maxQeueue)
+    , mExternalEvents    ( static_cast<QueueListener &>(self()), maxQeueue)
     , mInternalEvents   ( maxQeueue )
     , mConsumerMap      ( )
     , mEventExit        ( false, false )
@@ -120,7 +119,7 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
     return result;
 }
 
-bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClass, IEEventConsumer& whichConsumer )
+bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClass, EventConsumer& whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -142,7 +141,7 @@ bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClas
     return result;
 }
 
-bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer )
+bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -171,7 +170,7 @@ bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichC
 }
 
 
-int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
+int EventDispatcherBase::removeConsumer( EventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -209,7 +208,7 @@ bool EventDispatcherBase::runDispatcher()
 {
     readyForEvents( true );
 
-    IESyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
+    SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
     int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
@@ -293,7 +292,7 @@ void EventDispatcherBase::postDispatchEvent( Event* eventElem )
 bool EventDispatcherBase::dispatchEvent( Event& eventElem )
 {
     EventConsumerList processingList;
-    IEEventConsumer* consumer = eventElem.getEventConsumer();
+    EventConsumer* consumer = eventElem.getEventConsumer();
     if ( consumer != nullptr)
     {
         processingList.pushFirst(consumer);

@@ -21,7 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
@@ -37,7 +37,7 @@
  *              contains at least information of function parameters,
  *              attributes and states.
  **/
-class AREG_API EventDataStream : public IEIOStream
+class AREG_API EventDataStream : public IOStream
 {
     //! The list of shared buffer list (stack).
     using SharedList    = TENolockStack<SharedBuffer>;
@@ -105,7 +105,7 @@ public:
      *          Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    EventDataStream( const IEInStream & stream );
+    EventDataStream( const InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -138,13 +138,13 @@ public:
      * \param	stream	The data streaming object to read data
      * \param	input	The Event Data Stream Buffer object to write data
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input );
+    friend inline const InStream & operator >> ( const InStream & stream, EventDataStream & input );
     /**
      * \brief	Friend global operator declaration to write data to streaming object
      * \param	stream	The data streaming object to write data
      * \param	output	The Event Data Stream Buffer object containing data
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output );
+    friend inline OutStream & operator << ( OutStream & stream, const EventDataStream & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -163,15 +163,15 @@ public:
     /**
      * \brief   Returns reference to the streaming object to read data
      **/
-    inline const IEInStream & getStreamForRead() const;
+    inline const InStream & getStreamForRead() const;
 
     /**
      * \brief   Returns reference to the streaming object to write data
      **/
-    inline IEOutStream & getStreamForWrite();
+    inline OutStream & getStreamForWrite();
 
 /************************************************************************/
-// IEInStream interface overrides
+// InStream interface overrides
 /************************************************************************/
 
     /**
@@ -185,7 +185,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEInStream interface overrides
+// InStream interface overrides
 /************************************************************************/
 
     /**
@@ -205,7 +205,7 @@ protected:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const override;
+    virtual unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -224,7 +224,7 @@ protected:
     virtual unsigned int read( WideString & wide ) const override;
 
 /************************************************************************/
-// IEOutStream interface overrides
+// OutStream interface overrides
 /************************************************************************/
 
     /**
@@ -244,7 +244,7 @@ protected:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer ) override;
+    virtual unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
     * \brief   Writes string data from given ASCII String object to output stream object.
@@ -338,17 +338,17 @@ inline bool EventDataStream::isExternalDataStream() const
     return (mEventDataType != EventDataStream::eEventData::EventDataInternal);
 }
 
-inline const IEInStream & EventDataStream::getStreamForRead() const
+inline const InStream & EventDataStream::getStreamForRead() const
 {
-    return static_cast<const IEInStream &>(*this);
+    return static_cast<const InStream &>(*this);
 }
 
-inline IEOutStream & EventDataStream::getStreamForWrite()
+inline OutStream & EventDataStream::getStreamForWrite()
 {
-    return static_cast<IEOutStream &>(*this);
+    return static_cast<OutStream &>(*this);
 }
 
-inline const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input )
+inline const InStream & operator >> ( const InStream & stream, EventDataStream & input )
 {
     stream >> input.mEventDataType;
     stream >> input.mBufferName;
@@ -356,7 +356,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, EventDataStre
     return stream;
 }
 
-inline IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output )
+inline OutStream & operator << ( OutStream & stream, const EventDataStream & output )
 {
     ASSERT(output.mEventDataType != EventDataStream::eEventData::EventDataInternal);
     stream << EventDataStream::eEventData::EventDataExternal;

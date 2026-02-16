@@ -13,7 +13,7 @@
  * \brief       Areg Platform, Thread Address class
  ************************************************************************/
 #include "areg/base/ThreadAddress.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/NEMath.hpp"
@@ -80,7 +80,7 @@ ThreadAddress::ThreadAddress( ThreadAddress && src ) noexcept
     src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
 }
 
-ThreadAddress::ThreadAddress( const IEInStream & stream )
+ThreadAddress::ThreadAddress( const InStream & stream )
     : mThreadName   ( stream )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {

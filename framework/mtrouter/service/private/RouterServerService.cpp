@@ -38,8 +38,8 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 
 RouterServerService::RouterServerService()
     : ServiceCommunicatonBase   ( NEService::COOKIE_ROUTER, NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
-    , IEServiceRegisterConsumer ( )
-    , IEServiceRegisterProvider ( )
+    , RegistrationConsumer ( )
+    , RegistrationProvider ( )
 
     , mServiceRegistry          ( )
 {

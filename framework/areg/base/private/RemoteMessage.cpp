@@ -57,7 +57,7 @@ RemoteMessage::RemoteMessage(const unsigned char * buffer, unsigned int size, un
 
 unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bufLength, bool makeCopy) const
 {
-    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
+    unsigned int result{ Cursor::INVALID_CURSOR_POSITION };
 
     if (newBuffer != nullptr)
     {

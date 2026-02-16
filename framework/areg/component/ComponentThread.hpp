@@ -167,7 +167,7 @@ public:
     virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
@@ -209,7 +209,7 @@ protected:
     virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -258,7 +258,7 @@ protected:
     virtual void destroyComponents();
 
 /************************************************************************/
-// IEEventDispatcher overrides
+// EventDispatcherBase overrides
 /************************************************************************/
 
     /**

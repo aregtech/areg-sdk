@@ -30,9 +30,6 @@
     <ClCompile Include="aregextend\service\private\DataRateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\service\private\IEServiceConnectionHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="aregextend\service\private\NESystemService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -78,6 +75,9 @@
     <ClCompile Include="aregextend\db\private\SqliteRow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aregextend\service\private\ConnectionHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="aregextend\CMakeLists.txt">
@@ -98,9 +98,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\DataRateHelper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aregextend\service\IEServiceConnectionHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\NESystemService.hpp">
@@ -143,6 +140,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\db\SqliteStatement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\service\ConnectionHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

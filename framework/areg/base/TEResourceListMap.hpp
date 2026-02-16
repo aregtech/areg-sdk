@@ -90,7 +90,7 @@ protected:
     /**
      * \brief   Initializes the locking object.
      **/
-    explicit TEResourceListMap( IEResourceLock & syncObject );
+    explicit TEResourceListMap( Lockable & syncObject );
 
     /**
      * \brief   Destructor.
@@ -254,7 +254,7 @@ private:
     /**
      * \brief   Synchronization object to synchronize access to resource data
      **/
-    IEResourceLock &     mSyncObj;
+    Lockable &     mSyncObj;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
@@ -385,7 +385,7 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
          , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TEResourceListMap( IEResourceLock & syncObject )
+TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TEResourceListMap( Lockable & syncObject )
     : HashMap   ( )
     , Tracker   ( )
 
@@ -675,7 +675,7 @@ template < typename RESOURCE_KEY
          , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 TENolockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TENolockResourceListMap()
-    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<IEResourceLock &>(mNoLock) )
+    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<Lockable &>(mNoLock) )
 
     , mNoLock   ( )
 {
@@ -690,7 +690,7 @@ template < typename RESOURCE_KEY
          , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 TELockResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::TELockResourceListMap()
-    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<IEResourceLock &>(mLock) )
+    : TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<Lockable &>(mLock) )
 
     , mLock ( )
 {

@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class implementation
@@ -49,7 +49,7 @@ TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
 {
     ASSERT(target.isRunning());
 
-    setEventConsumer(static_cast<IEEventConsumer *>(&timer.getConsumer()));
+    setEventConsumer(static_cast<EventConsumer *>(&timer.getConsumer()));
     registerForThread(&target);
     timer._queueTimer();
 }

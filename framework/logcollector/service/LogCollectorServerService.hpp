@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 #include "areg/logging/NELogging.hpp"
@@ -34,7 +34,7 @@
  *          accept service connections.
  **/
 class LogCollectorServerService : public    ServiceCommunicatonBase
-                                , private   IETimerConsumer
+                                , private   TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes to access internals
@@ -126,7 +126,7 @@ protected:
     virtual void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -137,7 +137,7 @@ protected:
     virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
-// IEServiceEventConsumerBase overrides
+// ServiceEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -168,7 +168,7 @@ protected:
     virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**

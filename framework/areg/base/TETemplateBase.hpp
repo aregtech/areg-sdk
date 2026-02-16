@@ -23,7 +23,7 @@
 #include "areg/base/NECommon.hpp"
 #include "areg/base/NEMath.hpp"
 #include "areg/base/NEString.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // TEResourceMapImpl class template declaration

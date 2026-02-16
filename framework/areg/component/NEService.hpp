@@ -21,7 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/TEMap.hpp"
 #include "areg/base/NECommon.hpp"
 #include "areg/base/String.hpp"
@@ -1346,7 +1346,7 @@ inline NEService::eDataStateType NEService::ProxyData::getParamState( unsigned i
  * \param   stream  The streaming object to serialize.
  * \param   output  The single structure of instance to serialize.
  **/
-inline IEOutStream& operator << (IEOutStream& stream, const NEService::sServiceConnectedInstance & output)
+inline OutStream& operator << (OutStream& stream, const NEService::sServiceConnectedInstance & output)
 {
     stream << output.ciSource << output.ciBitness << output.ciCookie << output.ciTimestamp << output.ciInstance << output.ciLocation;
     return stream;
@@ -1357,7 +1357,7 @@ inline IEOutStream& operator << (IEOutStream& stream, const NEService::sServiceC
  * \param   stream  The streaming object that contains the information of the connected instance.
  * \param   input  The single structure of instance to initialize.
  **/
-inline const IEInStream& operator >> (const IEInStream& stream, NEService::sServiceConnectedInstance & input)
+inline const InStream& operator >> (const InStream& stream, NEService::sServiceConnectedInstance & input)
 {
     stream >> input.ciSource >> input.ciBitness >> input.ciCookie >> input.ciTimestamp >> input.ciInstance >> input.ciLocation;
     return stream;

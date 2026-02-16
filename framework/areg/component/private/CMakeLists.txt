@@ -16,14 +16,13 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/EventDispatcherBase.cpp
 	areg/component/private/EventQueue.cpp
 	areg/component/private/ExitEvent.cpp
-	areg/component/private/IEEventConsumer.cpp
-	areg/component/private/IEEventDispatcher.cpp
-	areg/component/private/IEEventRouter.cpp
-	areg/component/private/IEProxyListener.cpp
-	areg/component/private/IEQueueListener.cpp
-	areg/component/private/IERemoteEventConsumer.cpp
-	areg/component/private/IETimerConsumer.cpp
-	areg/component/private/IEWorkerThreadConsumer.cpp
+	areg/component/private/EventConsumer.cpp
+	areg/component/private/EventRouter.cpp
+	areg/component/private/ProxyListener.cpp
+	areg/component/private/QueueListener.cpp
+	areg/component/private/RemoteEventConsumer.cpp
+	areg/component/private/TimerConsumer.cpp
+	areg/component/private/WorkerThreadConsumer.cpp
 	areg/component/private/NERegistry.cpp
 	areg/component/private/NEService.cpp
 	areg/component/private/NotificationEvent.cpp

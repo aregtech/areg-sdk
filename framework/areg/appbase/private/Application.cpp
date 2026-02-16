@@ -53,7 +53,7 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , bool startTimer     /*= true */
                                   , bool startWatchdog  /*= true */
                                   , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
-                                  , IEConfigurationListener* configListener /*= nullptr*/)
+                                  , ConfigListener* configListener /*= nullptr*/)
 {
     Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
     Application::_osSetupHandlers();
@@ -349,7 +349,7 @@ ConfigManager& Application::getConfigManager()
     return Application::getInstance().mConfigManager;
 }
 
-bool Application::loadConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * listener /*= nullptr*/)
+bool Application::loadConfiguration(const char* fileName /*= nullptr*/, ConfigListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     bool result{ true };
@@ -362,13 +362,13 @@ bool Application::loadConfiguration(const char* fileName /*= nullptr*/, IEConfig
     return result;
 }
 
-bool Application::saveConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * /*listener*/ /*= nullptr*/)
+bool Application::saveConfiguration(const char* fileName /*= nullptr*/, ConfigListener * /*listener*/ /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     return theApp.mConfigManager.saveConfig(fileName);
 }
 
-void Application::setupDefaultConfiguration(IEConfigurationListener * listener /*= nullptr*/)
+void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     const String& module = Process::getInstance().getAppName();

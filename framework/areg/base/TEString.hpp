@@ -31,8 +31,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEInStream;
-class IEOutStream;
+class InStream;
+class OutStream;
 
 //////////////////////////////////////////////////////////////////////////
 // TEString class template declaration
@@ -249,7 +249,7 @@ public:
      * \return  Reference to stream object.
      **/
     template<typename CT>
-    friend inline const IEInStream & operator >> (const IEInStream & stream, TEString<CT> & input);
+    friend inline const InStream & operator >> (const InStream & stream, TEString<CT> & input);
 
     /**
      * \brief   Streams from output object, i.e. write data from string to streaming object.
@@ -259,7 +259,7 @@ public:
      * \return  Reference to stream object.
      **/
     template<typename CT>
-    friend inline IEOutStream & operator << (IEOutStream & stream, const TEString<CT> & output);
+    friend inline OutStream & operator << (OutStream & stream, const TEString<CT> & output);
 
     /**
      * \brief   Prints string message to the standard output stream.
@@ -3310,13 +3310,13 @@ inline TEString<CT> operator + (const CT lhs, const TEString<CT>& rhs)
 }
 
 template<typename CT>
-inline const IEInStream& operator >> (const IEInStream& stream, TEString<CT>& input)
+inline const InStream& operator >> (const InStream& stream, TEString<CT>& input)
 {
     return (stream >> input.mData);
 }
 
 template<typename CT>
-inline IEOutStream& operator << (IEOutStream& stream, const TEString<CT>& output)
+inline OutStream& operator << (OutStream& stream, const TEString<CT>& output)
 {
     return (stream << output.mData);
 }

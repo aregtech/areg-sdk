@@ -136,12 +136,12 @@ private:
 // ServiceEvent and IEServiceEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
 //!< Declaration event and consumer for the service connected client.
-//!< Declare ServiceClientEvent and IEServiceClientEventConsumer
-AREG_DECLARE_EVENT(ServiceEventData, ServiceClientEvent, IEServiceClientEventConsumer)
+//!< Declare ServiceClientEvent and ServiceClientEventConsumer
+AREG_DECLARE_EVENT(ServiceEventData, ServiceClientEvent, ServiceClientEventConsumer)
 
 //!< Declaration event and consumer for the service connection server.
-//!< Declare ServiceServerEvent and IEServiceServerEventConsumer
-AREG_DECLARE_EVENT(ServiceEventData, ServiceServerEvent, IEServiceServerEventConsumer)
+//!< Declare ServiceServerEvent and ServiceServerEventConsumer
+AREG_DECLARE_EVENT(ServiceEventData, ServiceServerEvent, ServiceServerEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////////
 // ServiceEventData class inline methods

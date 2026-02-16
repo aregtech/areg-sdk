@@ -29,7 +29,7 @@
 class LogManager;
 class LogConfiguration;
 class LoggerBase;
-class IEInStream;
+class InStream;
 
 //////////////////////////////////////////////////////////////////////////
 // LogEventProcessor class declaration

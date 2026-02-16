@@ -56,20 +56,20 @@ ResponseEvent::ResponseEvent( const ProxyAddress& proxyTarget, const ResponseEve
 {
 }
 
-ResponseEvent::ResponseEvent(const IEInStream & stream)
+ResponseEvent::ResponseEvent(const InStream & stream)
     : ServiceResponseEvent(stream)
     , mData (stream)
 {
 }
 
-const IEInStream & ResponseEvent::readStream(const IEInStream & stream)
+const InStream & ResponseEvent::readStream(const InStream & stream)
 {
     ServiceResponseEvent::readStream(stream);
     stream >> mData;
     return stream;
 }
 
-IEOutStream & ResponseEvent::writeStream(IEOutStream & stream) const
+OutStream & ResponseEvent::writeStream(OutStream & stream) const
 {
     ServiceResponseEvent::writeStream(stream);
     stream << mData;
@@ -111,7 +111,7 @@ LocalResponseEvent::LocalResponseEvent( const ProxyAddress& proxyTarget, const L
 {
 }
 
-LocalResponseEvent::LocalResponseEvent( const IEInStream & stream )
+LocalResponseEvent::LocalResponseEvent( const InStream & stream )
     : ResponseEvent(stream)
 {
 }
@@ -154,7 +154,7 @@ RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress& proxyTarget, const
     ASSERT(getData().getDataStream().isExternalDataStream());
 }
 
-RemoteResponseEvent::RemoteResponseEvent( const IEInStream & stream )
+RemoteResponseEvent::RemoteResponseEvent( const InStream & stream )
     : ResponseEvent(stream)
 {
     ASSERT(getData().getDataStream().isExternalDataStream());

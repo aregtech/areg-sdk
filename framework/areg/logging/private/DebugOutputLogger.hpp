@@ -21,7 +21,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/logging/private/LoggerBase.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include "areg/base/String.hpp"
 
@@ -36,7 +36,7 @@
  *          and any Unicode character might output wrong.
  **/
 class DebugOutputLogger : public    LoggerBase
-                        , private   IEOutStream
+                        , private   OutStream
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -96,7 +96,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEOutStream interface overrides
+// OutStream interface overrides
 /************************************************************************/
 
     /**
@@ -116,7 +116,7 @@ protected:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer ) override;
+    virtual unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.

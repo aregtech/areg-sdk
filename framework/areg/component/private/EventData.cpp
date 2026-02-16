@@ -50,7 +50,7 @@ EventData::EventData( EventData && src ) noexcept
 {
 }
 
-EventData::EventData(const IEInStream & stream)
+EventData::EventData(const InStream & stream)
     : mDataType ( NEService::eMessageDataType::UndefinedDataType )
     , mData     ( EventDataStream::eEventData::EventDataExternal )
 {

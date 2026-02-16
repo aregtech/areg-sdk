@@ -68,7 +68,7 @@ bool WatchdogManager::startTimer(Watchdog& watchdog)
     {
         watchdogManager._registerWatchdog(watchdog);
         result = TimerManagerEvent::sendEvent( TimerManagerEventData(&watchdog)
-                                             , static_cast<IETimerManagerEventConsumer&>(watchdogManager)
+                                             , static_cast<TimerManagerEventConsumer&>(watchdogManager)
                                              , static_cast<DispatcherThread&>(watchdogManager));
     }
 

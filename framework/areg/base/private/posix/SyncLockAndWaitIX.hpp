@@ -25,7 +25,7 @@
 
 #include "areg/base/NECommon.hpp"
 #include "areg/base/private/posix/NESyncTypesIX.hpp"
-#include "areg/base/IESyncObject.hpp"
+#include "areg/base/SyncObject.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/TELinkedList.hpp"
 #include "areg/base/TEFixedArray.hpp"
@@ -37,7 +37,7 @@
  /************************************************************************
   * dependencies.
   ************************************************************************/
-class IEWaitableBaseIX;
+class WaitablePosix;
 class SyncLockAndWaitIX;
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ class SyncLockAndWaitIX
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
-    using MapLockAndWait        = TEMap<IEWaitableBaseIX *, ListLockAndWait>;
+    using MapLockAndWait        = TEMap<WaitablePosix *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
 // ImplResourceListMap class declaration
@@ -67,7 +67,7 @@ class SyncLockAndWaitIX
     /**
      * \brief   The helper class of resource list map that contains helper functions implementation.
      **/
-    class ImplResourceListMap : public TEResourceListMapImpl<IEWaitableBaseIX *, SyncLockAndWaitIX, ListLockAndWait>
+    class ImplResourceListMap : public TEResourceListMapImpl<WaitablePosix *, SyncLockAndWaitIX, ListLockAndWait>
     {
     public:
         /**
@@ -77,7 +77,7 @@ class SyncLockAndWaitIX
          * \param   Key     The Key value of resource.
          * \param   List    The list of resource objects.
          **/
-        inline void implCleanResourceList( IEWaitableBaseIX * & /* Key */, ListLockAndWait & List )
+        inline void implCleanResourceList( WaitablePosix * & /* Key */, ListLockAndWait & List )
         {
         	List.clear();
         }
@@ -108,7 +108,7 @@ class SyncLockAndWaitIX
      *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
      *          objects in the entire map are not unique, but should be unique in the list.
      **/
-    using SyncResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SyncLockAndWaitIX *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
+    using SyncResourceMapIX = TELockResourceListMap<WaitablePosix *, SyncLockAndWaitIX *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // The resource map for timer.
@@ -162,7 +162,7 @@ private:
     /**
      * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
      **/
-    using WaitingList   = TEFixedArray<IEWaitableBaseIX *>;
+    using WaitingList   = TEFixedArray<WaitablePosix *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Public static methods.
@@ -185,7 +185,7 @@ public:
      *              - NESyncTypesIX::SyncWaitInterrupted if waiting was interrupted by such event like timer;
      *              - NESyncTypesIX::SyncObject0Error if error happened. For example, the waitable is invalidated.
      **/
-    static int waitForSingleObject( IEWaitableBaseIX & syncWait, unsigned int msTimeout = NECommon::WAIT_INFINITE );
+    static int waitForSingleObject( WaitablePosix & syncWait, unsigned int msTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Call to lock and wait the list of synchronization objects until one or all objects are signaled.
@@ -211,7 +211,7 @@ public:
      *              - NESyncTypesIX::SyncWaitInterrupted if waiting was interrupted by such event like timer;
      *              - NESyncTypesIX::SyncObject0Error + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
      **/
-    static int waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
+    static int waitForMultipleObjects( WaitablePosix ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
 
     /**
      * \brief   Called by waitable object to indicate that it is in signaled state.
@@ -220,27 +220,27 @@ public:
      *          In case of Mutex this should be one. In case of Synchronization Event there can be multiple threads.
      *          For more details see description of each waitable object
      **/
-    static int eventSignaled( IEWaitableBaseIX & syncWaitable );
+    static int eventSignaled( WaitablePosix & syncWaitable );
 
     /**
      * \brief   Called by waitable object to indicate wait failure. For example, when waitable object is invalidated.
      *          This call unlocks all threads that wait for event and the waiting return indicates error.
      * \param   syncWaitable    The waitable object that should indicate error.
      **/
-    static void eventFailed( IEWaitableBaseIX & syncWaitable );
+    static void eventFailed( WaitablePosix & syncWaitable );
 
     /**
      * \brief   Call to remove waitable object from the waiting list.
      * \param   syncWaitable    The waitable object to remove from the list.
      **/
-    static void eventRemove( IEWaitableBaseIX & syncWaitable );
+    static void eventRemove( WaitablePosix & syncWaitable );
 
     /**
      * \brief   Checks whether the waitable is registered or not.
      * \param   syncWaitable    Waitable to check the registration.
      * \return  Returns true if waitable is registered.
      **/
-    static bool isWaitableRegistered( IEWaitableBaseIX & syncWaitable );
+    static bool isWaitableRegistered( WaitablePosix & syncWaitable );
 
     /**
      * \brief   Notifies the asynchronous execution within a locked thread. This call breaks waiting process of thread
@@ -262,7 +262,7 @@ private:
      *                          or it should wait for any event to be in signaled state.
      * \param   msTimeout       Initializes the timeout in milliseconds to wait.
      **/
-    SyncLockAndWaitIX( IEWaitableBaseIX ** listWaitables, int count, NESyncTypesIX::eMatchCondition matchCondition, unsigned int msTimeout );
+    SyncLockAndWaitIX( WaitablePosix ** listWaitables, int count, NESyncTypesIX::eMatchCondition matchCondition, unsigned int msTimeout );
 
     /**
      * \brief   Destructor.
@@ -326,7 +326,7 @@ private:
      * \brief   Returns the index of registered waitable in the list.
      * \param   syncWaitable   The instance of waitable object to lookup in the list.
      **/
-    inline int _getWaitableIndex( const IEWaitableBaseIX & syncWaitable ) const;
+    inline int _getWaitableIndex( const WaitablePosix & syncWaitable ) const;
 
     /**
      * \brief   Called to notify the event has been fired.
@@ -344,7 +344,7 @@ private:
      * \param   syncObject The waitable object to check.
      * \return  Returns one of event fired state.
      **/
-    NESyncTypesIX::eSyncObjectFired _checkEventFired( IEWaitableBaseIX & syncObject );
+    NESyncTypesIX::eSyncObjectFired _checkEventFired( WaitablePosix & syncObject );
 
     /**
      * \brief   Called to notify threads to take fired event ownership.

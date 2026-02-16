@@ -14,7 +14,7 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, Synchronization objects
  *              Declared following synchronization objects:
- *              IEResourceLock      - blocking synchronization object interface.
+ *              Lockable      - blocking synchronization object interface.
  *              Mutex               - Mutex synchronization object.
  *              SyncEvent           - Event synchronization object.
  *              Semaphore           - Semaphore synchronization object.
@@ -31,7 +31,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IESyncObject.hpp"
+#include "areg/base/SyncObject.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -39,12 +39,12 @@
 /**
  * \brief   This file contains synchronization objects used to synchronize data access
  *          in multi-threading environment. All Synchronization objects are instances of 
- *          IESyncObject interface. The instance of IEResourceLock can be 
+ *          SyncObject interface. The instance of Lockable can be 
  *          used in auto-locking objects to synchronize data access.
  *
  *          A special NolockSyncObject is defined to support synchronization functionalities, 
  *          but the object does not block any thread and must not be used in multi-locking operations. 
- *          The purpose of this class to support unified IESyncObject interface and use in containers
+ *          The purpose of this class to support unified SyncObject interface and use in containers
  *          that do not require synchronization operations.
  *
  *          Lock and MultiLock classes are supporting auto-locking
@@ -55,8 +55,8 @@
 /************************************************************************
  * List of declared classes and hierarchy
  ************************************************************************/
-/* class IESyncObject; */
-    class IEResourceLock;
+/* class SyncObject; */
+    class Lockable;
         class Mutex;
         class Semaphore;
         class CriticalSection;
@@ -71,9 +71,9 @@ class MultiLock;
 class Wait;
 
 //////////////////////////////////////////////////////////////////////////
-// IEResourceLock class declaration
+// Lockable class declaration
 //////////////////////////////////////////////////////////////////////////
-class AREG_API IEResourceLock   : public IESyncObject
+class AREG_API Lockable : public SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -83,13 +83,13 @@ protected:
      * \brief   Protected constructor. Should not be accessed directly.
      *          Only via derived classes
      **/
-    IEResourceLock( IESyncObject::eSyncObject syncObjectType );
+    Lockable( SyncObject::eSyncObject syncObjectType );
 
 public:
     /**
      * \brief   
      **/
-    virtual ~IEResourceLock() = default;
+    virtual ~Lockable() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -109,8 +109,8 @@ public:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEResourceLock() = delete;
-    AREG_NOCOPY_NOMOVE( IEResourceLock );
+    Lockable() = delete;
+    AREG_NOCOPY_NOMOVE( Lockable );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ private:
  *          the thread releases / unlocks the mutex object to let other thread to access same
  *          memory for writing or reading.
  **/
-class AREG_API Mutex   : public IEResourceLock
+class AREG_API Mutex   : public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects
@@ -150,7 +150,7 @@ public:
     virtual ~Mutex();
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -266,7 +266,7 @@ private:
  *          state of event object to be signaled. The creating thread specifies the initial state 
  *          of the object in Constructor and whether it is a manual-reset or auto-reset event object.
  **/
-class AREG_API SyncEvent  : public IESyncObject
+class AREG_API SyncEvent  : public SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -294,7 +294,7 @@ public:
     virtual ~SyncEvent();
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -418,7 +418,7 @@ private:
  *          to a specified maximum number.
  *          Mutex is a Semaphore with limited number of access set to one.
  **/
-class AREG_API Semaphore: public IEResourceLock
+class AREG_API Semaphore: public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects
@@ -456,7 +456,7 @@ public:
     virtual ~Semaphore();
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -569,7 +569,7 @@ private:
  *          Unlike a mutex object, there is no way to tell whether a 
  *          critical section has been abandoned.
  **/
-class AREG_API CriticalSection  : public IEResourceLock
+class AREG_API CriticalSection  : public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -586,7 +586,7 @@ public:
     virtual ~CriticalSection();
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
 
@@ -681,7 +681,7 @@ private:
  *          Unlike a mutex object, there is no way to tell whether a
  *          critical section has been abandoned.
  **/
-class AREG_API SpinLock: public IEResourceLock
+class AREG_API SpinLock: public Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -698,7 +698,7 @@ public:
     virtual ~SpinLock() = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -770,7 +770,7 @@ private:
  *          thread context, it is not locked / blocked. This helps to
  *          avoid deadlocks.
  **/
-class AREG_API ResourceLock : public    IEResourceLock
+class AREG_API ResourceLock : public    Lockable
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -790,7 +790,7 @@ public:
     virtual ~ResourceLock();
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
 
@@ -867,7 +867,7 @@ private:
  *          doing no synchronization action, but having implementation
  *          of overrides. Some classes might need having synchronization
  *          of data access and some other might not need.
- *          For this reason, the reference to IESyncObject might be
+ *          For this reason, the reference to SyncObject might be
  *          passed as a main synchronization object and by calling
  *          lock() / unlock() either data access would be really
  *          synchronized or synchronization is imitated / ignored.
@@ -876,7 +876,7 @@ private:
  *          The locking might be imitated only by using Lock object
  *          or calling lock() / unlock() directly.
  **/
-class AREG_API NolockSyncObject   : public IEResourceLock
+class AREG_API NolockSyncObject   : public Lockable
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -894,7 +894,7 @@ public:
     virtual ~NolockSyncObject() = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -947,7 +947,7 @@ private:
  *              or canceled. A periodic timer is either a periodic manual-reset
  *              timer or a periodic synchronization timer.
  **/
-class AREG_API SyncTimer: public IESyncObject
+class AREG_API SyncTimer: public SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -968,7 +968,7 @@ public:
     virtual ~SyncTimer();
 
 //////////////////////////////////////////////////////////////////////////
-// Override operations, IESyncObject interface
+// Override operations, SyncObject interface
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
@@ -1090,7 +1090,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Class to use auto-locking for a single locking object.
- *          This class can be used for all instances of IESyncObject.
+ *          This class can be used for all instances of SyncObject.
  *          The purpose of using this object is to lock synchronization
  *          object in a certain code scope.
  *
@@ -1155,7 +1155,7 @@ public:
      *                      synchronization will not be automatically
      *                      unlocked in destructor
      **/
-    explicit Lock( IESyncObject &syncObj, bool autoLock = true );
+    explicit Lock( SyncObject &syncObj, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-locking was enabled, it will call
@@ -1190,7 +1190,7 @@ private:
     /**
      * \brief   Reference to Synchronization object passed in constructor
      **/
-    IESyncObject &  mSyncObject;
+    SyncObject &  mSyncObject;
     /**
      * \brief   Auto-locking flag. Indicates whether synchronization
      *          object is locked / unlocked automatically or manually
@@ -1280,7 +1280,7 @@ public:
      *                      synchronization objects and wait for all objects
      *                      to be signaled.
      **/
-    MultiLock( IESyncObject* pObjects[], int count, bool autoLock = true );
+    MultiLock( SyncObject* pObjects[], int count, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-lock is enabled, unlocks all synchronization
@@ -1355,7 +1355,7 @@ private:
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
-    IESyncObject * const *  mSyncObjArray;
+    SyncObject * const *  mSyncObjArray;
     /**
      * \brief   Size of synchronization object. 
      *          Cannot be more than MAX_SIZE_OF_ARRAY (64)

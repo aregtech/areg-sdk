@@ -38,8 +38,8 @@
  * Dependencies
  ************************************************************************/
 class ThreadLocalStorage;
-class IEThreadConsumer;
-class IEInStream;
+class ThreadConsumer;
+class InStream;
 class String;
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,14 +51,14 @@ class String;
  *          Use this or derived classes to keep tracking of instantiated and running thread
  *          that can be accessed by ID, unique names or handles. The class creates (starts) 
  *          and destroys (stops) thread. To implement the cyclic runs, the object requires
- *          instance of thread consumer (IEThreadConsumer). It as well provides the possibility
+ *          instance of thread consumer (ThreadConsumer). It as well provides the possibility
  *          to save thread specific storage to store objects that are not accessible outside
  *          of the thread context.
  * 
  *          The derived objects are Dispatcher, Worker and Component threads that are able
  *          to receive and process thread specific events.
  *
- * \see     IEThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
+ * \see     ThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
  **/
 class AREG_API Thread  : public RuntimeObject
 {
@@ -148,7 +148,7 @@ public:
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
      *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
-    Thread( IEThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -376,7 +376,7 @@ public:
     /**
      * \brief   Returns the current Thread Consumer, saved in local storage.
      **/
-    static IEThreadConsumer & getCurrentThreadConsumer();
+    static ThreadConsumer & getCurrentThreadConsumer();
 
     /**
      * \brief   Returns the Local Storage Object of the Thread.
@@ -458,7 +458,7 @@ protected:
     /**
      * \brief   Reference to Thread Consumer interface
      **/
-    IEThreadConsumer &      mThreadConsumer;
+    ThreadConsumer &      mThreadConsumer;
     /**
      * \brief   Thread handle
      **/

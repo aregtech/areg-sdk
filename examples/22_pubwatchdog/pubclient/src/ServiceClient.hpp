@@ -85,7 +85,7 @@ protected:
 #endif  // AREG_LOGS
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

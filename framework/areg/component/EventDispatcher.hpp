@@ -22,8 +22,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
-#include "areg/component/IEEventRouter.hpp"
+#include "areg/base/ThreadConsumer.hpp"
+#include "areg/component/EventRouter.hpp"
 #include "areg/component/private/EventDispatcherBase.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,8 +37,8 @@
  *          because this will delay event processing.
  **/
 class AREG_API EventDispatcher  : public    EventDispatcherBase
-                                , public    IEThreadConsumer
-                                , public    IEEventRouter
+                                , public    ThreadConsumer
+                                , public    EventRouter
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -60,7 +60,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -92,7 +92,7 @@ public:
     virtual int onThreadExit() override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**

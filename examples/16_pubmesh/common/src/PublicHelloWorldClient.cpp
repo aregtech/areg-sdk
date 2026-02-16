@@ -29,10 +29,10 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
 PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout)
     : PublicHelloWorldClientBase( dependency, owner )
     , SystemShutdownClientBase  ( NECommon::PublicControllerService, owner )
-    , IETimerConsumer           ( )
+    , TimerConsumer           ( )
 
     , mMsTimeout                ( timeout )
-    , mTimer                    ( static_cast<IETimerConsumer &>(self()), timerName(owner) )
+    , mTimer                    ( static_cast<TimerConsumer &>(self()), timerName(owner) )
     , mClient                   ( )
 {
 }

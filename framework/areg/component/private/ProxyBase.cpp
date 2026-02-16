@@ -22,7 +22,7 @@
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/ServiceRequestEvent.hpp"
 #include "areg/component/NotificationEvent.hpp"
-#include "areg/component/IEProxyListener.hpp"
+#include "areg/component/ProxyListener.hpp"
 
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/ComponentInfo.hpp"
@@ -96,7 +96,7 @@ ProxyBase::Listener::Listener( unsigned int msgId, const SequenceNumber & seqNr 
 {
 }
 
-ProxyBase::Listener::Listener( unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer* caller )
+ProxyBase::Listener::Listener( unsigned int msgId, const SequenceNumber & seqNr, NotificationConsumer* caller )
     : mMessageId    (msgId)
     , mSequenceNr   (seqNr)
     , mListener     (caller)
@@ -151,7 +151,7 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 
 AREG_IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
 
-ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
+ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & consumer )
     : Event             ( Event::eEventType::EventExternal )
     , mNotifyConsumer   ( consumer )
     , mDelayConnectEvent( 0 )
@@ -168,7 +168,7 @@ ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventCons
 //////////////////////////////////////////////////////////////////////////
 std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
                                                        , const NEService::SInterfaceData & serviceIfData
-                                                       , IEProxyListener & connect
+                                                       , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , const String & ownerThread /*= String::getEmptyString()*/)
 {
@@ -177,7 +177,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 
 std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
                                                        , const NEService::SInterfaceData & serviceIfData
-                                                       , IEProxyListener & connect
+                                                       , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , DispatcherThread & ownerThread )
 {
@@ -208,7 +208,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 
                 static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                                                     , NEService::SEQUENCE_NUMBER_NOTIFY
-                                                    , static_cast<IENotificationEventConsumer *>(&connect), true ));
+                                                    , static_cast<NotificationConsumer *>(&connect), true ));
                 ++ proxy->mProxyInstCount;
                 proxy->mIsStopped = false;
 
@@ -265,7 +265,7 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
 //////////////////////////////////////////////////////////////////////////
 ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
 
-    : IEProxyEventConsumer  ( mProxyAddress )
+    : ProxyEventConsumer  ( mProxyAddress )
 
     , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : String::getEmptyString() )
     , mStubAddress      ( StubAddress::getInvalidStubAddress() )
@@ -291,16 +291,16 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
 
 void ProxyBase::registerServiceListeners()
 {
-    ProxyConnectEvent::addListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
+    ProxyConnectEvent::addListener( static_cast<EventConsumer &>(self( )), mDispatcherThread );
 }
 
 void ProxyBase::unregisterServiceListeners()
 {
-    ProxyConnectEvent::removeListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
-    ProxyBase::ServiceAvailableEvent::removeListener( static_cast<IEEventConsumer &>(self( )), mDispatcherThread );
+    ProxyConnectEvent::removeListener( static_cast<EventConsumer &>(self( )), mDispatcherThread );
+    ProxyBase::ServiceAvailableEvent::removeListener( static_cast<EventConsumer &>(self( )), mDispatcherThread );
 }
 
-void ProxyBase::freeProxy( IEProxyListener & connect )
+void ProxyBase::freeProxy( ProxyListener & connect )
 {
     int exists = mListConnect.find(&connect, 0);
     if ( exists >= 0 )
@@ -311,7 +311,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
 
     removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                   , NEService::SEQUENCE_NUMBER_NOTIFY
-                  , static_cast<IENotificationEventConsumer *>(&connect));
+                  , static_cast<NotificationConsumer *>(&connect));
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress( mProxyAddress );
 
@@ -403,7 +403,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
         for (index = 0 ; index < conListeners.getSize(); ++ index)
         {
             const ProxyBase::Listener& listener = conListeners[index];
-            IEProxyListener * connect = static_cast<IEProxyListener *>(listener.mListener);
+            ProxyListener * connect = static_cast<ProxyListener *>(listener.mListener);
             if ( proxyConnected )
             {
                 mListConnect.addIfUnique(connect);
@@ -419,7 +419,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
     }
 }
 
-void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer* caller, bool alwaysNotify /*= false*/ )
+void ProxyBase::setNotification( unsigned int msgId, NotificationConsumer* caller, bool alwaysNotify /*= false*/ )
 {
     if (isConnected())
     {
@@ -465,7 +465,7 @@ void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer
     }
 }
 
-void ProxyBase::clearNotification( unsigned int msgId, IENotificationEventConsumer* caller )
+void ProxyBase::clearNotification( unsigned int msgId, NotificationConsumer* caller )
 {
     removeListener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
     if (hasNotificationListener(msgId) == false)
@@ -475,7 +475,7 @@ void ProxyBase::clearNotification( unsigned int msgId, IENotificationEventConsum
     }
 }
 
-void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
+void ProxyBase::unregisterListener( NotificationConsumer *consumer )
 {
     LOG_SCOPE(areg_component_ProxyBase_unregisterListener);
     LOG_DBG("Unregisters proxy client [ %p ]", consumer);
@@ -540,7 +540,7 @@ void ProxyBase::notifyListeners( unsigned int respId, NEService::ResultType resu
     }
 }
 
-void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::ResultType resType, const SequenceNumber & seqNr, IENotificationEventConsumer* caller )
+void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer* caller )
 {
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent* eventElem = createNotificationEvent(data);
@@ -548,7 +548,7 @@ void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::ResultType
     {
         if (caller != nullptr)
         {
-            eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
+            eventElem->setEventConsumer(static_cast<EventConsumer *>(caller));
         }
 
         static_cast<Event *>(eventElem)->deliverEvent();
@@ -580,7 +580,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& pr
     return _mapRegisteredProxies.findResourceObject(proxyAddress);
 }
 
-void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& args, IENotificationEventConsumer *caller )
+void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& args, NotificationConsumer *caller )
 {
     ServiceRequestEvent* evenElem = createRequestEvent(args, reqId);
     if ( evenElem != nullptr )
@@ -618,7 +618,7 @@ void ProxyBase::sendServiceAvailableEvent( ProxyBase::ServiceAvailableEvent * ev
     }
 }
 
-bool ProxyBase::isServiceListenerRegistered( IENotificationEventConsumer & caller ) const
+bool ProxyBase::isServiceListenerRegistered( NotificationConsumer & caller ) const
 {
     bool result = false;
     for (uint32_t i = 0; i < mListenerList.getSize(); ++i)
@@ -634,7 +634,7 @@ bool ProxyBase::isServiceListenerRegistered( IENotificationEventConsumer & calle
     return result;
 }
 
-void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & consumer, unsigned int delayEvent)
+void ProxyBase::processServiceAvailableEvent( NotificationConsumer & consumer, unsigned int delayEvent)
 {
     if (isConnected() && isServiceListenerRegistered( consumer ) )
     {
@@ -643,11 +643,11 @@ void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & cons
             Thread::sleep(delayEvent);
         }
 
-        static_cast<IEProxyListener&>(consumer).serviceConnected(getConnectionStatus(), self());
+        static_cast<ProxyListener&>(consumer).serviceConnected(getConnectionStatus(), self());
     }
 }
 
-RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const IEInStream & /* stream */) const
+RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const InStream & /* stream */) const
 {
     return nullptr;
 }
@@ -670,7 +670,7 @@ void ProxyBase::stopProxy()
 
         for (uint32_t i = 0 ; i < mListConnect.getSize(); ++ i)
         {
-            IEProxyListener * listener = mListConnect.getAt(i);
+            ProxyListener * listener = mListConnect.getAt(i);
             ASSERT(listener != nullptr);
             listener->serviceConnected( NEService::eServiceConnection::ServiceDisconnected, *this);
         }

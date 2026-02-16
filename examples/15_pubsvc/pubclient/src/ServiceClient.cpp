@@ -21,9 +21,9 @@ DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( NEUtilities::generateName(entry.mRoleName), owner )
     , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , IETimerConsumer       ( )
+    , TimerConsumer       ( )
 
-    , mTimer                (static_cast<IETimerConsumer &>(self()), entry.mRoleName)
+    , mTimer                (static_cast<TimerConsumer &>(self()), entry.mRoleName)
     , mID                   ( 0 )
 {
 }

@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class IELogDatabaseEngine;
+class LogDatabaseEngine;
 
 //////////////////////////////////////////////////////////////////////////
 // DatabaseLogger class declaration
@@ -63,8 +63,8 @@ public:
      * \brief   Returns the pointer to the database engine handler object,
      *          which is responsible to handle the database.
      **/
-    inline const IELogDatabaseEngine * getDatabaseEngine() const;
-    inline IELogDatabaseEngine * getDatabaseEngine();
+    inline const LogDatabaseEngine * getDatabaseEngine() const;
+    inline LogDatabaseEngine * getDatabaseEngine();
 
     /**
      * \brief   Call to set the logging database engine object.
@@ -74,7 +74,7 @@ public:
      * \param   dbEngine    The pointer to the log database engine to save log messages.
      *                      If nullptr, no message is forwarded to the database engine.
      **/
-    inline void setDatabaseEngine(IELogDatabaseEngine * dbEngine);
+    inline void setDatabaseEngine(LogDatabaseEngine * dbEngine);
 
     /**
      * \brief   Returns true if the logging database engine is nut null.
@@ -142,7 +142,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The pointer to the database engine.
-    IELogDatabaseEngine *   mDatabase;
+    LogDatabaseEngine *   mDatabase;
 
     //!< Locking object.
     mutable Mutex           mLock;
@@ -159,19 +159,19 @@ private:
 // DatabaseLogger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
+inline const LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
+inline LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline void DatabaseLogger::setDatabaseEngine(IELogDatabaseEngine * dbEngine)
+inline void DatabaseLogger::setDatabaseEngine(LogDatabaseEngine * dbEngine)
 {
     Lock lock(mLock);
     mDatabase = dbEngine;

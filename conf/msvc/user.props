@@ -33,10 +33,6 @@
         <!-- ****************************************************************************************************************************** -->
         <AregExtended Condition="'$(AregExtended)'==''">0</AregExtended>
         <!-- ****************************************************************************************************************************** -->
-        <!-- Check AregNamespace settings. Set 0 to compile without areg namespace                                                          -->
-        <!-- ****************************************************************************************************************************** -->
-        <AregNamespace Condition="'$(AregNamespace)'==''">1</AregNamespace>
-        <!-- ****************************************************************************************************************************** -->
         <!-- Check AregLogs settings. If missed, set 1 (enable compilation with logs)                                                       -->
         <!-- ****************************************************************************************************************************** -->
         <AregLogs Condition="'$(AregLogs)'==''">1</AregLogs>
@@ -59,7 +55,7 @@
         <!-- ****************************************************************************************************************************** -->
         <!-- AREG_LOGS 	        : enable compilation with logging; remove if no logging required.                                           -->
         <!-- AREG_EXTENDED      : enable or disable extensions in Areg extended static library, which contain additional features.          -->
-        <AregCommonDefines>AREG_LOGS=$(AregLogs);AREG_EXTENDED=$(AregExtended);AREG_NAMESPACE=$(AregNamespace);$(AregCommonDefines)</AregCommonDefines>
+        <AregCommonDefines>AREG_LOGS=$(AregLogs);AREG_EXTENDED=$(AregExtended);$(AregCommonDefines)</AregCommonDefines>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Advanced settings do not change or modify.                                                                                     -->

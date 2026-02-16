@@ -19,7 +19,7 @@
 #include "areg/logging/private/LogEventProcessor.hpp"
 
 #include "areg/base/FileBuffer.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogManager.hpp"
 #include "areg/logging/private/ScopeNodes.hpp"

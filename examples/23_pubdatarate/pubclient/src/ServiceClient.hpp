@@ -15,7 +15,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "examples/23_pubdatarate/services/LargeDataClientBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 #include "aregextend/console/Console.hpp"
@@ -33,7 +33,7 @@
  **/
 class ServiceClient : public    Component
                     , protected LargeDataClientBase
-                    , protected IETimerConsumer
+                    , protected TimerConsumer
 {
 private:
 
@@ -92,7 +92,7 @@ protected:
     virtual void broadcastServiceStopping() override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -108,7 +108,7 @@ protected:
     virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**

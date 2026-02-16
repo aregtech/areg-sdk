@@ -26,13 +26,13 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
 ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component             ( entry, owner )
     , HelloUnblockClientBase( entry.mDependencyServices[0], static_cast<Component &>(self()) )
-    , IETimerConsumer       ( )
+    , TimerConsumer       ( )
 
     , mClientId             ( NEHelloUnblock::InvalidId )
     , mSequenceId           ( 0 )
     , mRespReceived         ( 0 )
     , mSequenceList         ( )
-    , mTimer                ( static_cast<IETimerConsumer &>(self()), getRoleName() )
+    , mTimer                ( static_cast<TimerConsumer &>(self()), getRoleName() )
 #ifdef DEBUG
     , mReqCount             ( 0 )
 #endif // DEBUG

@@ -21,7 +21,7 @@
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/persist/IEConfigurationListener.hpp"
+#include "areg/persist/ConfigListener.hpp"
 
 namespace
 {
@@ -389,7 +389,7 @@ void ConfigManager::removeSectionProperties(const String& section)
     }
 }
 
-bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (mIsConfigured == false)
@@ -416,7 +416,7 @@ bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/,
     return mIsConfigured;
 }
 
-bool ConfigManager::readConfig(const FileBase& file, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::readConfig(const FileBase& file, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (mIsConfigured == false)
@@ -439,7 +439,7 @@ bool ConfigManager::readConfig(const FileBase& file, IEConfigurationListener * l
     return mIsConfigured;
 }
 
-bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::saveConfig(const String& filePath, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     bool result{ false };
@@ -499,7 +499,7 @@ bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener *
     return result;
 }
 
-bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (listener != nullptr)
@@ -517,7 +517,7 @@ bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool 
     return result;
 }
 
-void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, IEConfigurationListener* listener /*= nullptr*/)
+void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigListener* listener /*= nullptr*/)
 {
     Lock lock(mLock);
 

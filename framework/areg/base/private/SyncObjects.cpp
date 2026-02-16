@@ -21,21 +21,21 @@
 #include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////
-// IEResourceLock class implementation
+// Lockable class implementation
 //////////////////////////////////////////////////////////////////////////
 
-IEResourceLock::IEResourceLock( IESyncObject::eSyncObject syncObjectType )
-    : IESyncObject   (syncObjectType)
+Lockable::Lockable( SyncObject::eSyncObject syncObjectType )
+    : SyncObject   (syncObjectType)
 {
-    ASSERT( syncObjectType == IESyncObject::eSyncObject::SoMutex      ||
-            syncObjectType == IESyncObject::eSyncObject::SoSemaphore  ||
-            syncObjectType == IESyncObject::eSyncObject::SoCritical   ||
-            syncObjectType == IESyncObject::eSyncObject::SoSpinlock   ||
-            syncObjectType == IESyncObject::eSyncObject::SoReslock    ||
-            syncObjectType == IESyncObject::eSyncObject::SoNolock     );
+    ASSERT( syncObjectType == SyncObject::eSyncObject::SoMutex      ||
+            syncObjectType == SyncObject::eSyncObject::SoSemaphore  ||
+            syncObjectType == SyncObject::eSyncObject::SoCritical   ||
+            syncObjectType == SyncObject::eSyncObject::SoSpinlock   ||
+            syncObjectType == SyncObject::eSyncObject::SoReslock    ||
+            syncObjectType == SyncObject::eSyncObject::SoNolock     );
 }
 
-bool IEResourceLock::tryLock()
+bool Lockable::tryLock()
 {
     return false;
 }
@@ -48,7 +48,7 @@ bool IEResourceLock::tryLock()
 // Mutex class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Mutex::Mutex( bool initLock /* = true */ )
-    : IEResourceLock( IESyncObject::eSyncObject::SoMutex )
+    : Lockable( SyncObject::eSyncObject::SoMutex )
     , mOwnerThreadId( 0 )
 {
     _osCreateMutex( initLock );
@@ -67,7 +67,7 @@ Mutex::~Mutex()
 // SyncEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
-    : IESyncObject( IESyncObject::eSyncObject::SoEvent )
+    : SyncObject( SyncObject::eSyncObject::SoEvent )
 
     , mAutoReset( autoReset )
 {
@@ -88,7 +88,7 @@ SyncEvent::~SyncEvent()
 // Semaphore class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Semaphore::Semaphore( int maxCount, int initCount /* = 0 */ )
-    : IEResourceLock( IESyncObject::eSyncObject::SoSemaphore )
+    : Lockable( SyncObject::eSyncObject::SoSemaphore )
 
     , mMaxCount( std::max( maxCount, 1 ) )
     , mCurrCount( NEMath::isInRange<int>(initCount, 0, mMaxCount) ? initCount : 0 )
@@ -141,7 +141,7 @@ bool Semaphore::tryLock()
 // CriticalSection class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 CriticalSection::CriticalSection()
-    : IEResourceLock( IESyncObject::eSyncObject::SoCritical )
+    : Lockable( SyncObject::eSyncObject::SoCritical )
 {
     _osCreateCriticalSection( );
 }
@@ -157,7 +157,7 @@ CriticalSection::~CriticalSection()
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock()
-    : IEResourceLock( IESyncObject::eSyncObject::SoSpinlock )
+    : Lockable( SyncObject::eSyncObject::SoSpinlock )
     , mLock         ( false )
 {
 }
@@ -181,7 +181,7 @@ bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
 //////////////////////////////////////////////////////////////////////////
 
 ResourceLock::ResourceLock( bool initLock /*= false*/ )
-    : IEResourceLock( IESyncObject::eSyncObject::SoReslock )
+    : Lockable( SyncObject::eSyncObject::SoReslock )
 {
     _osCreateResourceLock( initLock );
 }
@@ -197,7 +197,7 @@ ResourceLock::~ResourceLock()
 //////////////////////////////////////////////////////////////////////////
 
 NolockSyncObject::NolockSyncObject()
-    : IEResourceLock( IESyncObject::eSyncObject::SoNolock )
+    : Lockable( SyncObject::eSyncObject::SoNolock )
 {
 }
 
@@ -209,7 +209,7 @@ NolockSyncObject::NolockSyncObject()
 // SyncTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 SyncTimer::SyncTimer( unsigned int msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
-    : IESyncObject  ( IESyncObject::eSyncObject::SoTimer )
+    : SyncObject  ( SyncObject::eSyncObject::SoTimer )
 
     , mTimeout      ( msTimeout )
     , mIsPeriodic   ( isPeriodic )
@@ -232,7 +232,7 @@ SyncTimer::~SyncTimer()
 //////////////////////////////////////////////////////////////////////////
 // Lock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Lock::Lock(IESyncObject &syncObj, bool autoLock /* = true */)
+Lock::Lock(SyncObject &syncObj, bool autoLock /* = true */)
     : mSyncObject(syncObj)
     , mAutoLock  (autoLock)
 {
@@ -257,7 +257,7 @@ Lock::~Lock()
 //////////////////////////////////////////////////////////////////////////
 // MultiLock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-MultiLock::MultiLock(IESyncObject* pObjects[], int count, bool autoLock /* = true */)
+MultiLock::MultiLock(SyncObject* pObjects[], int count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
     , mSizeCount    (std::min(count, NECommon::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)

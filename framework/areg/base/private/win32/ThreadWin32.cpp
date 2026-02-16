@@ -15,7 +15,7 @@
  *
  ************************************************************************/
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 
 #ifdef  _WIN32
 
@@ -137,7 +137,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
             result = Thread::eCompletionStatus::ThreadTerminated;
-            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::eExitCodes::ExitTerminated));
+            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::eExitCodes::ExitTerminated));
             this->mWaitForRun.resetEvent();
             this->mWaitForExit.setEvent();
 #ifdef _MSC_VER

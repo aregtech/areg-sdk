@@ -73,7 +73,7 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 //////////////////////////////////////////////////////////////////////////
 
 StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & siData )
-    : IEStubEventConsumer   ( mAddress )
+    : StubEventConsumer   ( mAddress )
 
     , mComponent            (masterComp)
     , mInterface            (siData)
@@ -275,14 +275,14 @@ void StubBase::startupServiceInterface( Component&  holder )
     LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
     LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", getServiceRole( ).getString( ), getServiceName( ).getString( ) );
 
-    StubConnectEvent::addListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
+    StubConnectEvent::addListener( static_cast<StubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
 void StubBase::shutdownServiceInterface( Component & holder )
 {
     LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
     LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );
-    StubConnectEvent::removeListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
+    StubConnectEvent::removeListener( static_cast<StubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
 void StubBase::errorAllRequests()
@@ -565,12 +565,12 @@ ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy
     return nullptr;
 }
 
-RemoteRequestEvent * StubBase::createRemoteRequestEvent( const IEInStream & /* stream */ ) const
+RemoteRequestEvent * StubBase::createRemoteRequestEvent( const InStream & /* stream */ ) const
 {
     return nullptr;
 }
 
-RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const IEInStream & /* stream */ ) const
+RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const InStream & /* stream */ ) const
 {
     return nullptr;
 }

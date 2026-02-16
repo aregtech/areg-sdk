@@ -20,7 +20,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/Thread.hpp"
 
 #include "areg/component/DispatcherThread.hpp"
@@ -50,11 +50,11 @@ static Mutex        gMutexDummy(false);         //!< Initially unlocked
 DEF_LOG_SCOPE(sync_main_HelloThread_HelloThread);
 DEF_LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
 
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread : public Thread, protected ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(static_cast<IEThreadConsumer &>(*this), "HelloThread"), IEThreadConsumer(), mQuit(true, true)
+        : Thread(static_cast<ThreadConsumer &>(*this), "HelloThread"), ThreadConsumer(), mQuit(true, true)
     {
         LOG_SCOPE(sync_main_HelloThread_HelloThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
@@ -75,7 +75,7 @@ protected:
         LOG_INFO("Auto-reset event 'gEventRun' is signaled");
 
         // Multi-lock with multiple objects
-        IESyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
+        SyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
         MultiLock multiLock(objects, std::size(objects), false);
 
         constexpr unsigned int waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
@@ -114,11 +114,11 @@ protected:
 DEF_LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
 DEF_LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
 
-class GoodbyeThread : public Thread, protected IEThreadConsumer
+class GoodbyeThread : public Thread, protected ThreadConsumer
 {
 public:
     GoodbyeThread()
-        : Thread(static_cast<IEThreadConsumer &>(*this), "GoodbyeThread"), IEThreadConsumer(), mQuit(false, true)
+        : Thread(static_cast<ThreadConsumer &>(*this), "GoodbyeThread"), ThreadConsumer(), mQuit(false, true)
     {
         LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
@@ -135,7 +135,7 @@ protected:
         mQuit.resetEvent();
 
         // Multi-lock with exit event + dummy mutex
-        IESyncObject* objects[] = { &gEventExit, &gMutexDummy };
+        SyncObject* objects[] = { &gEventExit, &gMutexDummy };
         MultiLock multiLock(objects, std::size(objects), false);
 
         int waitResult = multiLock.lock(NECommon::WAIT_INFINITE, false, false);
@@ -186,7 +186,7 @@ int main()
 
         Thread::sleep(NECommon::WAIT_1_SECOND);
 
-        IESyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
+        SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
         gEventExit.setEvent();
         gEventRun.setEvent();
 

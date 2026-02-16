@@ -21,7 +21,7 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/IESyncObject.hpp"
+#include "areg/base/SyncObject.hpp"
 #include "areg/base/private/posix/WaitableEventIX.hpp"
 #include "areg/base/private/posix/WaitableMutexIX.hpp"
 #include "areg/base/private/posix/WaitableSemaphoreIX.hpp"
@@ -34,18 +34,18 @@
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
-// IESyncObject class implementation
+// SyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IESyncObject class methods
+// SyncObject class methods
 //////////////////////////////////////////////////////////////////////////
 
-void IESyncObject::_osDestroySyncObject()
+void SyncObject::_osDestroySyncObject()
 {
     if (mSyncObject != nullptr)
     {
-        IESyncObjectBaseIX * syncObject = reinterpret_cast<IESyncObjectBaseIX *>(mSyncObject);
+        SyncObjectPosix * syncObject = reinterpret_cast<SyncObjectPosix *>(mSyncObject);
         mSyncObject = nullptr;
 
         syncObject->freeResources();
@@ -187,7 +187,7 @@ bool CriticalSection::_osTryLock()
 #if 0 // TODO: Probably don't need anymore and should be removed
 
 SpinLock::SpinLock()
-    : IEResourceLock( IESyncObject::eSyncObject::SoSpinlock )
+    : Lockable( SyncObject::eSyncObject::SoSpinlock )
 {
     mSyncObject    = DEBUG_NEW SpinLockIX( );
 }
@@ -260,7 +260,7 @@ void SyncTimer::_osReleaseTime()
 
 bool SyncTimer::_osLock( unsigned int timeout )
 {
-    return (SyncLockAndWaitIX::waitForSingleObject( *reinterpret_cast<IEWaitableBaseIX *>(mSyncObject), timeout ) == NESyncTypesIX::SyncObject0);
+    return (SyncLockAndWaitIX::waitForSingleObject( *reinterpret_cast<WaitablePosix *>(mSyncObject), timeout ) == NESyncTypesIX::SyncObject0);
 }
 
 bool SyncTimer::_osSetTimer()
@@ -279,10 +279,10 @@ bool SyncTimer::_osCancelTimer()
 
 int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
 {
-    IEWaitableBaseIX * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
+    WaitablePosix * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i )
     {
-        syncHandles[i] = reinterpret_cast<IEWaitableBaseIX *>(mSyncObjArray[i]->getHandle( ));
+        syncHandles[i] = reinterpret_cast<WaitablePosix *>(mSyncObjArray[i]->getHandle( ));
     }
 
     int index = MultiLock::LOCK_INDEX_INVALID;

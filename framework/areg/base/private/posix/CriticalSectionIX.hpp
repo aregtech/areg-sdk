@@ -23,7 +23,7 @@
 
 #if  defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IESyncObjectBaseIX.hpp"
+#include "areg/base/private/posix/SyncObjectPosix.hpp"
 #include "areg/base/private/posix/SpinLockIX.hpp"
 #include <pthread.h>
 
@@ -36,7 +36,7 @@
  *          The Critical Section can be used only for the communication between threads.
  *          The Critical Section can be owned only by one thread at a time.
  **/
-class CriticalSectionIX   : protected IESyncObjectBaseIX
+class CriticalSectionIX   : protected SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -83,7 +83,7 @@ public:
 
 protected:
 /************************************************************************/
-// IESyncObjectBaseIX overrides.
+// SyncObjectPosix overrides.
 /************************************************************************/
     
     /**

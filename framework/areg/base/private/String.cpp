@@ -16,7 +16,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -179,7 +179,7 @@ String::String(const WideString & source)
     assign(source.getString(), source.getLength());
 }
 
-String::String( const IEInStream & stream )
+String::String( const InStream & stream )
     : TEString<char>( )
 {
     readStream(stream);
@@ -624,12 +624,12 @@ String& String::append(const wchar_t* source, NEString::CharCount count /*= NESt
     return (*this);
 }
 
-void String::readStream(const IEInStream& stream)
+void String::readStream(const InStream& stream)
 {
     stream.read(*this);
 }
 
-void String::writeStream(IEOutStream& stream) const
+void String::writeStream(OutStream& stream) const
 {
     stream.write(*this);
 }

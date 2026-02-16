@@ -20,7 +20,7 @@
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
-#include "areg/logging/IELogDatabaseEngine.hpp"
+#include "areg/logging/LogDatabaseEngine.hpp"
 #include "areg/logging/LogConfiguration.hpp"
 
 #include <string_view>

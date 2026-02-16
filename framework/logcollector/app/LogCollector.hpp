@@ -214,7 +214,7 @@ protected:
     virtual NERemoteService::eConnectionTypes getConnectionType() const override;
 
 /************************************************************************/
-// IEConfigurationListener protected overrides
+// ConfigListener protected overrides
 /************************************************************************/
 
     /**

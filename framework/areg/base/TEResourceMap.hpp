@@ -85,7 +85,7 @@ protected:
     /**
      * \brief   Default Constructor
      **/
-    explicit TEResourceMap( IEResourceLock & syncObject );
+    explicit TEResourceMap( Lockable & syncObject );
 
     /**
      * \brief   Destructor
@@ -240,7 +240,7 @@ private:
     /**
      * \brief   Synchronization object to synchronize access to resource data
      **/
-    IEResourceLock &    mSyncObj;
+    Lockable &    mSyncObj;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
@@ -357,7 +357,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TEResourceMap( IEResourceLock & syncObject )
+TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TEResourceMap( Lockable & syncObject )
     : HashMap   ( )
     , Deleter   ( )
     , mSyncObj  (syncObject)
@@ -530,7 +530,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::clea
 //////////////////////////////////////////////////////////////////////////
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TENolockResourceMap()
-    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<IEResourceLock &>(mNoLock))
+    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<Lockable &>(mNoLock))
 
     , mNoLock   ()
 {
@@ -541,7 +541,7 @@ TENolockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TENolockRe
 //////////////////////////////////////////////////////////////////////////
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 TELockResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TELockResourceMap()
-    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<IEResourceLock &>(mLock))
+    : TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<Lockable &>(mLock))
 
     , mLock ( )
 {

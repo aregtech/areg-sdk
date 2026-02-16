@@ -20,13 +20,13 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEByteBuffer.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/ByteBuffer.hpp"
+#include "areg/base/IOStream.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IECursorPosition;
+class Cursor;
 
 //////////////////////////////////////////////////////////////////////////
 // BufferStreamBase class declaration
@@ -40,8 +40,8 @@ class IECursorPosition;
  *              beginning of buffer.
  *
  **/
-class AREG_API BufferStreamBase : public    IEByteBuffer
-                                , public    IEIOStream
+class AREG_API BufferStreamBase : public    ByteBuffer
+                                , public    IOStream
 {
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor / destructor. Do not call directly to instantiate object
@@ -52,7 +52,7 @@ protected:
      * \param	readPosition	Read position object.
      * \param	writePosition	Write position object.
      **/
-    BufferStreamBase( IECursorPosition & readPosition, IECursorPosition & writePosition );
+    BufferStreamBase( Cursor & readPosition, Cursor & writePosition );
     /**
      * \brief	Destructor
      **/
@@ -85,7 +85,7 @@ public:
     virtual bool isEqual(const BufferStreamBase &other) const;
 
 /************************************************************************/
-// IEOutStream interface overrides
+// OutStream interface overrides
 /************************************************************************/
     /**
      * \brief	Write data to output stream object from given buffer
@@ -106,7 +106,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer ) override;
+    virtual unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -125,7 +125,7 @@ public:
     virtual unsigned int write( const WideString & wide ) override;
 
 /************************************************************************/
-// IEInStream interface overrides
+// InStream interface overrides
 /************************************************************************/
 
     /**
@@ -146,7 +146,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const override;
+    virtual unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -165,15 +165,15 @@ public:
     virtual unsigned int read( WideString & wide ) const override;
 
 /************************************************************************/
-// IEByteBuffer overrides
+// ByteBuffer overrides
 /************************************************************************/
     /**
      * \brief	Reserves space for byte buffer structure, if needed, 
      *          copies existing data and the size of buffer available to write.
      *          1.  If requested reserved space is more than the length of data buffer, 
      *              the size of data buffer is increased.
-     *          2.  If total data buffer spaces is more than IEByteBuffer::MAX_BUF_LENGTH,
-     *              reserves the maximum IEByteBuffer::MAX_BUF_LENGTH.
+     *          2.  If total data buffer spaces is more than ByteBuffer::MAX_BUF_LENGTH,
+     *              reserves the maximum ByteBuffer::MAX_BUF_LENGTH.
      *          3.  If size is zero, calls removeReference() to free all space.
      *          4.  If buffer is shared (i.e. reference count is more than 1)
      *              the operation is ignored and function returns total remaining space
@@ -188,7 +188,7 @@ public:
 
 protected:
 /************************************************************************/
-// IEIOStream interface overrides
+// IOStream interface overrides
 /************************************************************************/
     /**
      * \brief	Returns size in bytes of available data that can be read, 
@@ -259,11 +259,11 @@ private:
     /**
      * \brief   Read position object
      **/
-    IECursorPosition &  mReadPosition;
+    Cursor &  mReadPosition;
     /**
      * \brief   Write position object
      **/
-    IECursorPosition &  mWritePosition;
+    Cursor &  mWritePosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls

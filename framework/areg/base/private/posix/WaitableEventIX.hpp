@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IEWaitableBaseIX.hpp"
+#include "areg/base/private/posix/WaitablePosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableEventIX class declaration.
@@ -48,7 +48,7 @@
  *
  * \see     SyncLockAndWaitIX
  **/
-class WaitableEventIX : public IEWaitableBaseIX
+class WaitableEventIX : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -120,7 +120,7 @@ public:
     void pulseEvent();
 
 /************************************************************************/
-// IEWaitableBaseIX callback overrides.
+// WaitablePosix callback overrides.
 /************************************************************************/
 
     /**

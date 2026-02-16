@@ -34,12 +34,12 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
                                     , NERemoteService::eRemoteServices::ServiceLogger
                                     , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
                                     , NEService::eMessageSource::MessageSourceClient
-                                    , static_cast<IEServiceConnectionConsumer &>(self())
-                                    , static_cast<IERemoteMessageHandler &>(self())
+                                    , static_cast<ConnectionConsumer &>(self())
+                                    , static_cast<RemoteMessageHandler &>(self())
                                     , dispatchThread
                                     , NetTcpLogger::PREFIX_THREAD)
-    , IEServiceConnectionConsumer   ( )
-    , IERemoteMessageHandler        ( )
+    , ConnectionConsumer   ( )
+    , RemoteMessageHandler        ( )
 
     , mScopeController  ( scopeController )
     , mIsEnabled        ( false )

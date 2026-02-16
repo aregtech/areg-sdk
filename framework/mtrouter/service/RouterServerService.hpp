@@ -20,8 +20,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/ipc/IEServiceRegisterConsumer.hpp"
-#include "areg/ipc/IEServiceRegisterProvider.hpp"
+#include "areg/ipc/RegistrationConsumer.hpp"
+#include "areg/ipc/RegistrationProvider.hpp"
 #include "aregextend/service/ServiceCommunicatonBase.hpp"
 
 #include "mtrouter/service/private/ServiceRegistry.hpp"
@@ -34,8 +34,8 @@
  *          accept service connections.
  **/
 class RouterServerService   : public    ServiceCommunicatonBase
-                            , private   IEServiceRegisterConsumer
-                            , private   IEServiceRegisterProvider
+                            , private   RegistrationConsumer
+                            , private   RegistrationProvider
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -56,7 +56,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEServiceRegisterProvider interface overrides
+// RegistrationProvider interface overrides
 /************************************************************************/
 
     /**
@@ -94,7 +94,7 @@ protected:
     virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
 
 /************************************************************************/
-// IEServiceRegisterConsumer interface overrides
+// RegistrationConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -158,7 +158,7 @@ protected:
     virtual void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -169,7 +169,7 @@ protected:
     virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
-// IEServiceEventConsumerBase overrides
+// ServiceEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -200,7 +200,7 @@ protected:
     virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
 /************************************************************************/
-// IEServiceConnectionHandler overrides
+// ConnectionHandler overrides
 /************************************************************************/
 
     /**

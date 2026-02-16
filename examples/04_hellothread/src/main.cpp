@@ -9,7 +9,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 
 #include <iostream>
 
@@ -18,16 +18,16 @@
 #endif // _MSC_VER
 
 //! \brief   A thread to run and output message.
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread : public Thread, protected ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread( static_cast<IEThreadConsumer &>(*this), "HelloThread") // set consumer and the name
-        , IEThreadConsumer( )
+        : Thread( static_cast<ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
+        , ThreadConsumer( )
     {  }
 protected:
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     //! \brief  This callback is triggered when thread runs and fully operable.

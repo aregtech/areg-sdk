@@ -49,7 +49,7 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
         for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++ i)
         {
             const NERegistry::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
-            IEWorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
+            WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
             if (consumer != nullptr)
             {
                 WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
@@ -159,7 +159,7 @@ Component::~Component()
 // Methods
 //////////////////////////////////////////////////////////////////////////
 WorkerThread* Component::createWorkerThread(  const String & threadName
-                                            , IEWorkerThreadConsumer& consumer
+                                            , WorkerThreadConsumer& consumer
                                             , ComponentThread & /* ownerThread */
                                             , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE */
                                             , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT */
@@ -281,12 +281,12 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
     }
 }
 
-IEWorkerThreadConsumer* Component::workerThreadConsumer( const String & /* consumerName */, const String & /* workerThreadName */)
+WorkerThreadConsumer* Component::workerThreadConsumer( const String & /* consumerName */, const String & /* workerThreadName */)
 {
     return nullptr;
 }
 
-void Component::notifyWorkerThreadStarted(IEWorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
+void Component::notifyWorkerThreadStarted(WorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
 {
 }
 

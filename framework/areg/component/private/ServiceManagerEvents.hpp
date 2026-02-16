@@ -218,12 +218,12 @@ public:
     /**
      * \brief   Returns streaming object to read data
      **/
-    inline const IEInStream & getReadStream() const;
+    inline const InStream & getReadStream() const;
 
     /**
      * \brief   Returns streaming object to write data
      **/
-    inline IEOutStream & getWriteStream();
+    inline OutStream & getWriteStream();
 
     /**
      * \brief   Returns Service Manager command
@@ -247,7 +247,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Service Manager event and consumer declaration
 //////////////////////////////////////////////////////////////////////////
-AREG_DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, IEServiceManagerEventConsumer)
+AREG_DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, ServiceManagerEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventData inline methods
@@ -287,14 +287,14 @@ inline ServiceManagerEventData & ServiceManagerEventData::operator = ( ServiceMa
     return (*this);
 }
 
-inline const IEInStream & ServiceManagerEventData::getReadStream() const
+inline const InStream & ServiceManagerEventData::getReadStream() const
 {
-    return static_cast<const IEInStream &>(mStream);
+    return static_cast<const InStream &>(mStream);
 }
 
-inline IEOutStream & ServiceManagerEventData::getWriteStream()
+inline OutStream & ServiceManagerEventData::getWriteStream()
 {
-    return static_cast<IEOutStream &>(mStream);
+    return static_cast<OutStream &>(mStream);
 }
 
 inline ServiceManagerEventData::eServiceManagerCommands ServiceManagerEventData::getCommand() const

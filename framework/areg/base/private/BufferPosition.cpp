@@ -14,7 +14,7 @@
  *
  ************************************************************************/
 #include "areg/base/private/BufferPosition.hpp"
-#include "areg/base/IEByteBuffer.hpp"
+#include "areg/base/ByteBuffer.hpp"
 
 #include <algorithm>
 
@@ -26,9 +26,9 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-BufferPosition::BufferPosition( IEByteBuffer & buffer )
+BufferPosition::BufferPosition( ByteBuffer & buffer )
     : mBuffer           ( buffer )
-    , mPosition         ( IECursorPosition::INVALID_CURSOR_POSITION )
+    , mPosition         ( Cursor::INVALID_CURSOR_POSITION )
 {
 }
 
@@ -43,39 +43,39 @@ unsigned int BufferPosition::getPosition() const
 {
     if ( mBuffer.isValid() )
     {
-        return (mPosition == IECursorPosition::INVALID_CURSOR_POSITION ? 0 : mPosition);
+        return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
     }
     else
     {
-        return IECursorPosition::INVALID_CURSOR_POSITION;
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 }
 
 /**
  * \brief   Sets the current position of cursor
  **/
-unsigned int BufferPosition::setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const
+unsigned int BufferPosition::setPosition( int offset, Cursor::eCursorPosition startAt ) const
 {
     if (mBuffer.isValid() == false)
     {
-        return IECursorPosition::INVALID_CURSOR_POSITION;
+        return Cursor::INVALID_CURSOR_POSITION;
     }
 
     int size{ static_cast<int>(mBuffer.getSizeUsed()) };
-    int curPos{ static_cast<int>(mPosition == IECursorPosition::INVALID_CURSOR_POSITION ? 0 : mPosition) };
+    int curPos{ static_cast<int>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
 
     switch (startAt)
     {
-    case IECursorPosition::eCursorPosition::PositionBegin:
+    case Cursor::eCursorPosition::PositionBegin:
         curPos = 0;
         offset = offset < 0 ? 0 : std::min(offset, size);
         break;
 
-    case IECursorPosition::eCursorPosition::PositionCurrent:
+    case Cursor::eCursorPosition::PositionCurrent:
         offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
         break;
 
-    case IECursorPosition::eCursorPosition::PositionEnd:
+    case Cursor::eCursorPosition::PositionEnd:
         curPos = size;
         offset = offset < 0 ? std::max(offset, -1 * size) : 0;
         break;

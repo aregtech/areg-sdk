@@ -27,7 +27,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TETemplateBase.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <algorithm>
 
@@ -169,7 +169,7 @@ public:
      * \param   input   The linked list object to save initialized values.
      **/
     template<typename V>
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<V> & input );
+    friend inline const InStream & operator >> ( const InStream & stream, TELinkedList<V> & input );
 
     /**
      * \brief   Writes to the stream the values of linked list.
@@ -180,7 +180,7 @@ public:
      * \param   output  The linked list object containing value to stream.
      **/
     template<typename V>
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V> & output );
+    friend inline OutStream & operator << ( OutStream & stream, const TELinkedList<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1311,7 +1311,7 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::_citer2pos(typ
 //////////////////////////////////////////////////////////////////////////
 
 template <typename V>
-inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<V> & input )
+inline const InStream & operator >> ( const InStream & stream, TELinkedList<V> & input )
 {
     input.clear();
 
@@ -1327,7 +1327,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, TELinkedList<
 }
 
 template <typename V>
-inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V> & output )
+inline OutStream & operator << ( OutStream & stream, const TELinkedList<V> & output )
 {
     uint32_t size = output.getSize();
     stream << size;

@@ -133,10 +133,10 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// SendMessageEvent and IESendMessageEventConsumer declaration
+// SendMessageEvent and SendMessageEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
-//!< Declaration of SendMessageEvent event and IESendMessageEventConsumer consumer classes
-AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer)
+//!< Declaration of SendMessageEvent event and SendMessageEventConsumer consumer classes
+AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // SendMessageEventData class inline functions

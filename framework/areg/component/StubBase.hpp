@@ -54,7 +54,7 @@ class Component;
  *          main basic logic of asynchronous communication. It keeps 
  *          track of requests and contains list of listeners
  **/
-class AREG_API StubBase    : public IEStubEventConsumer
+class AREG_API StubBase    : public StubEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // friend classes
@@ -368,7 +368,7 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const;
+    virtual RemoteRequestEvent * createRemoteRequestEvent( const InStream & stream ) const;
 
     /**
      * \brief   Overwrite method to create remote notify request event from streaming object for 
@@ -377,10 +377,10 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const IEInStream & stream ) const;
+    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const InStream & stream ) const;
 
 /************************************************************************/
-// IEStubEventConsumer interface overrides.
+// StubEventConsumer interface overrides.
 /************************************************************************/
 
     /**

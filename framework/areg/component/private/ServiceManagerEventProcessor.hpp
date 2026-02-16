@@ -27,12 +27,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServiceConnectionProvider;
-class IEServiceRegisterProvider;
+class ConnectionProvider;
+class RegistrationProvider;
 class ServiceManager;
 class ProxyAddress;
 class StubAddress;
-class IEInStream;
+class InStream;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventProcessor class declaration
@@ -66,9 +66,9 @@ public:
      * \param   registerProvider    The instance of service register provider to forward register requests
      **/
     void processServiceEvent( ServiceManagerEventData::eServiceManagerCommands cmdService
-                            , const IEInStream & stream
-                            , IEServiceConnectionProvider& connectProvider
-                            , IEServiceRegisterProvider & registerProvider );
+                            , const InStream & stream
+                            , ConnectionProvider& connectProvider
+                            , RegistrationProvider & registerProvider );
 
     /**
      * \brief   Returns the list of registered service providers that contain the list of service consumers.
@@ -88,7 +88,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
      *                              about public service connection status.
      **/
-    void _registerServer( const StubAddress & whichServer, IEServiceRegisterProvider& registerProvider );
+    void _registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider );
 
     /**
       * \brief   The function is called when it is requested to unregister the service provider.
@@ -99,7 +99,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
       *                             about public service connection status.
      **/
-    void _unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider);
+    void _unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider);
 
      /**
       * \brief   The function is called when it is requested to register the service consumer.
@@ -109,7 +109,7 @@ private:
       * \param   registerProvider   The service connection object to notify remote application
       *                             about public service connection status.
       **/
-    void _registerClient( const ProxyAddress & whichClient, IEServiceRegisterProvider& registerProvider);
+    void _registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider);
 
     /**
      * \brief   The function is called when it is requested to unregister the service consumer.
@@ -120,7 +120,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
      *                              about public service connection status.
      **/
-    void _unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider);
+    void _unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Creates and sends predefined service consumer connected notification.

@@ -29,7 +29,7 @@
 SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
-    , IETimerConsumer   ( )
+    , TimerConsumer   ( )
 
     , mDataRateHelper   ( dataRate )
     , mTimer            ( self( ), "ConsoleServiceTimer" )

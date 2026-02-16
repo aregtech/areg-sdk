@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEInStream;
+class InStream;
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress class declaration
@@ -105,7 +105,7 @@ public:
      * \brief   Initialization constructor. Initialize variables from given stream
      * \param   stream  Input Streaming object that contains Thread Address data.
      **/
-    ThreadAddress( const IEInStream & stream );
+    ThreadAddress( const InStream & stream );
     /**
      * \brief   Destructor
      **/
@@ -159,7 +159,7 @@ public:
      * \param	input	The reference to Thread Address object to initialize data.
      * \return	Reference to streaming object.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, ThreadAddress & input );
+    friend inline const InStream & operator >> ( const InStream & stream, ThreadAddress & input );
 
     /**
      * \brief	Write data to streaming object and copies Thread Address object.
@@ -167,7 +167,7 @@ public:
      * \param	output	The reference to Thread Address object to get data
      * \return	Reference to streaming object.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const ThreadAddress & output);
+    friend inline OutStream & operator << ( OutStream & stream, const ThreadAddress & output);
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress operations and attributes
@@ -303,12 +303,12 @@ inline String ThreadAddress::convToString() const
 //////////////////////////////////////////////////////////////////////////
 // Global operators for ThreadAddress class
 //////////////////////////////////////////////////////////////////////////
-inline const IEInStream & operator >> (const IEInStream & stream, ThreadAddress & input)
+inline const InStream & operator >> (const InStream & stream, ThreadAddress & input)
 {
     return ( stream >> input.mThreadName );
 }
 
-inline IEOutStream & operator << (IEOutStream & stream, const ThreadAddress & output)
+inline OutStream & operator << (OutStream & stream, const ThreadAddress & output)
 {
     return ( stream << output.mThreadName );
 }

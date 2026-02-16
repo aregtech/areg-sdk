@@ -365,7 +365,7 @@ inline bool NECommon::sConnection::operator != ( const NECommon::sConnection & o
  * \param   input       The instance of NECommon::sConnection structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const IEInStream & operator >> ( const IEInStream & stream, NECommon::sConnection & input )
+inline const InStream & operator >> ( const InStream & stream, NECommon::sConnection & input )
 {
     stream  >> input.cookie;
     stream  >> input.nickName;
@@ -379,7 +379,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, NECommon::sCo
  * \param   output      The instance of NECommon::sConnection structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline IEOutStream & operator << ( IEOutStream & stream, const NECommon::sConnection & output )
+inline OutStream & operator << ( OutStream & stream, const NECommon::sConnection & output )
 {
     stream  << output.cookie;
     stream  << output.nickName;
@@ -480,7 +480,7 @@ inline bool NECommon::sParticipant::operator != ( const NECommon::sParticipant &
  * \param   input       The instance of NECommon::sParticipant structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const IEInStream & operator >> ( const IEInStream & stream, NECommon::sParticipant & input )
+inline const InStream & operator >> ( const InStream & stream, NECommon::sParticipant & input )
 {
     stream  >> input.sessionId;
     stream  >> input.cookie;
@@ -493,7 +493,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, NECommon::sPa
  * \param   output      The instance of NECommon::sParticipant structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline IEOutStream & operator << ( IEOutStream & stream, const NECommon::sParticipant & output )
+inline OutStream & operator << ( OutStream & stream, const NECommon::sParticipant & output )
 {
     stream  << output.sessionId;
     stream  << output.cookie;

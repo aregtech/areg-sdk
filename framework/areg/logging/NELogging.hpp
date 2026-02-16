@@ -19,7 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
@@ -31,7 +31,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IELogDatabaseEngine;
+class LogDatabaseEngine;
 class LogScope;
 
 //////////////////////////////////////////////////////////////////////////
@@ -584,7 +584,7 @@ namespace NELogging
     /**
      * \brief   Call to set external logging database engine.
      **/
-    AREG_API void setLogDatabaseEngine(IELogDatabaseEngine* dbEngine);
+    AREG_API void setLogDatabaseEngine(LogDatabaseEngine* dbEngine);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -606,7 +606,7 @@ AREG_IMPLEMENT_STREAMABLE(NELogging::eLogMessageType)
  * \param   stream  The source of log message data.
  * \param   input   On output this contains structured logging message.
  **/
-inline const IEInStream & operator >> (const IEInStream& stream, NELogging::sLogMessage& input)
+inline const InStream & operator >> (const InStream& stream, NELogging::sLogMessage& input)
 {
     stream.read(reinterpret_cast<unsigned char *>(&input), offsetof(NELogging::sLogMessage, logMessage));
     stream.read(reinterpret_cast<unsigned char *>(input.logMessage), input.logMessageLen + 1);
@@ -618,7 +618,7 @@ inline const IEInStream & operator >> (const IEInStream& stream, NELogging::sLog
  * \param   stream  The streaming object to save log message.
  * \param   output  The source of log message to serialize message.
  **/
-inline IEOutStream& operator << (IEOutStream& stream, const NELogging::sLogMessage& output)
+inline OutStream& operator << (OutStream& stream, const NELogging::sLogMessage& output)
 {
     stream.write(reinterpret_cast<const unsigned char *>(&output), offsetof(NELogging::sLogMessage, logMessage));
     stream.write(reinterpret_cast<const unsigned char *>(output.logMessage), output.logMessageLen + 1);
@@ -630,7 +630,7 @@ inline IEOutStream& operator << (IEOutStream& stream, const NELogging::sLogMessa
  * \param   stream  The source of data that contains scope update structure information.
  * \param   input   On output this contains structured scope update data.
  **/
-inline const IEInStream& operator >> (const IEInStream& stream, NELogging::sScopeInfo & input)
+inline const InStream& operator >> (const InStream& stream, NELogging::sScopeInfo & input)
 {
     stream >> input.scopeId >> input.scopePrio >> input.scopeName;
     return stream;
@@ -641,7 +641,7 @@ inline const IEInStream& operator >> (const IEInStream& stream, NELogging::sScop
  * \param   stream  The streaming object to save scope update information.
  * \param   output  The source of scope update structure to serialize message.
  **/
-inline IEOutStream& operator << (IEOutStream& stream, const NELogging::sScopeInfo & output)
+inline OutStream& operator << (OutStream& stream, const NELogging::sScopeInfo & output)
 {
     stream << output.scopeId << output.scopePrio << output.scopeName;
     return stream;

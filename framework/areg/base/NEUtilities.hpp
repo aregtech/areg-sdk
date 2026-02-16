@@ -30,8 +30,8 @@
  * Dependencies
  ************************************************************************/
 class String;
-class IEInStream;
-class IEOutStream;
+class InStream;
+class OutStream;
 
 struct tm;
 

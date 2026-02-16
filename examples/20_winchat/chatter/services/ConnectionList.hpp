@@ -46,7 +46,7 @@ protected:
     virtual void broadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

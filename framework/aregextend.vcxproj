@@ -54,7 +54,7 @@
     <ClCompile Include="aregextend\service\private\posix\ServiceApplicationBasePosix.cpp" />
     <ClCompile Include="aregextend\service\private\ServiceApplicationBase.cpp" />
     <ClCompile Include="aregextend\service\private\SystemServiceBase.cpp" />
-    <ClCompile Include="aregextend\service\private\IEServiceConnectionHandler.cpp" />
+    <ClCompile Include="aregextend\service\private\ConnectionHandler.cpp" />
     <ClCompile Include="aregextend\service\private\ServerConnection.cpp" />
     <ClCompile Include="aregextend\service\private\ServerReceiveThread.cpp" />
     <ClCompile Include="aregextend\service\private\ServerSendThread.cpp" />
@@ -79,7 +79,7 @@
     <ClInclude Include="aregextend\console\SystemServiceConsole.hpp" />
     <ClInclude Include="aregextend\service\ServiceApplicationBase.hpp" />
     <ClInclude Include="aregextend\service\SystemServiceBase.hpp" />
-    <ClInclude Include="aregextend\service\IEServiceConnectionHandler.hpp" />
+    <ClInclude Include="aregextend\service\ConnectionHandler.hpp" />
     <ClInclude Include="aregextend\service\ServerConnection.hpp" />
     <ClInclude Include="aregextend\service\private\ServerReceiveThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp" />

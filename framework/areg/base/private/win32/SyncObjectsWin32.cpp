@@ -25,14 +25,14 @@
 #include <Windows.h>
 
 //////////////////////////////////////////////////////////////////////////
-// IESyncObject class implementation
+// SyncObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IESyncObject class methods
+// SyncObject class methods
 //////////////////////////////////////////////////////////////////////////
 
-void IESyncObject::_osDestroySyncObject()
+void SyncObject::_osDestroySyncObject()
 {
     if ( mSyncObject != nullptr )
     {
@@ -180,7 +180,7 @@ bool CriticalSection::_osTryLock()
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock()
-    : IEResourceLock( IESyncObject::eSyncObject::SoSpinlock )
+    : Lockable( SyncObject::eSyncObject::SoSpinlock )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
     mSyncObject    = DEBUG_NEW SpinLockWin32( );
@@ -244,7 +244,7 @@ void ResourceLock::_osCreateResourceLock( bool initLock )
     mSyncObject = new CriticalSection( );
     if ( initLock )
     {
-        reinterpret_cast<IEResourceLock *>(mSyncObject)->lock( NECommon::WAIT_INFINITE );
+        reinterpret_cast<Lockable *>(mSyncObject)->lock( NECommon::WAIT_INFINITE );
     }
 
 #endif
@@ -253,24 +253,24 @@ void ResourceLock::_osCreateResourceLock( bool initLock )
 
 void ResourceLock::_osReleaseResourceLock()
 {
-    reinterpret_cast<IEResourceLock *>(mSyncObject)->unlock( );
-    delete reinterpret_cast<IEResourceLock *>(mSyncObject);
+    reinterpret_cast<Lockable *>(mSyncObject)->unlock( );
+    delete reinterpret_cast<Lockable *>(mSyncObject);
     mSyncObject = nullptr;
 }
 
 bool ResourceLock::_osLock(unsigned int timeout)
 {
-    return reinterpret_cast<IEResourceLock *>(mSyncObject)->lock(timeout);
+    return reinterpret_cast<Lockable *>(mSyncObject)->lock(timeout);
 }
 
 bool ResourceLock::_osUnlock()
 {
-    return reinterpret_cast<IEResourceLock *>(mSyncObject)->unlock( );
+    return reinterpret_cast<Lockable *>(mSyncObject)->unlock( );
 }
 
 bool ResourceLock::_osTryLock()
 {
-    return reinterpret_cast<IEResourceLock *>(mSyncObject)->tryLock();
+    return reinterpret_cast<Lockable *>(mSyncObject)->tryLock();
 }
 
 //////////////////////////////////////////////////////////////////////////

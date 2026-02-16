@@ -28,8 +28,8 @@
  ************************************************************************/
 class String;
 class WideString;
-class IEInStream;
-class IECursorPosition;
+class InStream;
+class Cursor;
 
 //////////////////////////////////////////////////////////////////////////
 // ReadConverter class declaration
@@ -51,7 +51,7 @@ public:
      * \param   readStream      The readable streaming object
      * \param   readPosition    The position object of readable stream.
      **/
-    ReadConverter( IEInStream & readStream, IECursorPosition & readPosition );
+    ReadConverter( InStream & readStream, Cursor & readPosition );
 
     /**
      * \brief   Destructor.
@@ -194,11 +194,11 @@ private:
     /**
      * \brief   Reference of readable streaming object
      **/
-    IEInStream  &      mReadStream;
+    InStream  &      mReadStream;
     /**
      * \brief   Reference of cursor position object in readable stream.
      **/
-    IECursorPosition & mReadPosition;
+    Cursor & mReadPosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods

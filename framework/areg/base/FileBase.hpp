@@ -19,8 +19,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/IECursorPosition.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/Cursor.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/base/private/ReadConverter.hpp"
@@ -30,7 +30,7 @@
 
 class String;
 class WideString;
-class IEByteBuffer;
+class ByteBuffer;
 
 //////////////////////////////////////////////////////////////////////////
 // FileBase class declaration.
@@ -87,8 +87,8 @@ class IEByteBuffer;
  *         13. FO_MODE_FOR_DELETE - Will force to delete on close even if buffer is attached or marked as detached.
  *
  **/
-class AREG_API FileBase : public IEIOStream
-                        , public IECursorPosition
+class AREG_API FileBase : public IOStream
+                        , public Cursor
 {
 //////////////////////////////////////////////////////////////////////////
 // Defined types
@@ -254,12 +254,12 @@ public:
     /**
      * \brief   Returns instance of streaming object to read data.
      **/
-    inline const IEInStream & getReadStream() const;
+    inline const InStream & getReadStream() const;
 
     /**
      * \brief   Returns instance of streaming object to write data.
      **/
-    inline IEOutStream & getWriteStream();
+    inline OutStream & getWriteStream();
 
     /**
      * \brief   Returns the name of file object set by user. This can be either short name
@@ -411,7 +411,7 @@ public:
      * 
      * \param	newSize     New Size is bytes to reserve or set.
      * \param   fillValue   The value to fill reserved space
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
     unsigned int resizeAndFill(unsigned int newSize, unsigned char fillValue);
 
@@ -619,7 +619,7 @@ public:
      * \param   buffer      The binary data buffer to search.
      * \param   length      The length of the data to search.
      * \return  If found, returns the valid position in the file where the binary data starts.
-     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      **/
     unsigned int searchData( unsigned int startPos, const unsigned char * buffer, uint32_t length ) const;
     /**
@@ -627,9 +627,9 @@ public:
      * \param   startPos    The position in the file to start to search.
      * \param   buffer      The buffer of byte-binary data to search.
      * \return  If found, returns the valid position in the file where the binary data starts.
-     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      **/
-    unsigned int searchData( unsigned int startPos, const IEByteBuffer & buffer ) const;
+    unsigned int searchData( unsigned int startPos, const ByteBuffer & buffer ) const;
 
     /**
      * \brief   Searches the given null-terminated text in the file and returns the position where the data starts.
@@ -637,7 +637,7 @@ public:
      * \param   text            The null-terminated text to search.
      * \param   caseSensitive   If true, the searching of text is case sensitive.
      * \return  If found, returns the valid position in the file where the binary data starts.
-     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      **/
     unsigned int searchText( unsigned int startPos, const char * text, bool caseSensitive ) const;
     unsigned int searchText( unsigned int startPos, const wchar_t * text, bool caseSensitive ) const;
@@ -723,7 +723,7 @@ public:
      *
      * \param	newSize     New Size is bytes to set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
     virtual unsigned int reserve(unsigned int newSize) = 0;
 
@@ -733,7 +733,7 @@ public:
     virtual bool truncate() = 0;
 
 /************************************************************************/
-// IEIOStream pure virtual
+// IOStream pure virtual
 /************************************************************************/
 
     /**
@@ -757,7 +757,7 @@ public:
     virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override = 0;
 
 /************************************************************************/
-// IEInStream interface overrides
+// InStream interface overrides
 /************************************************************************/
 
     /**
@@ -768,7 +768,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const override;
+    virtual unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -787,7 +787,7 @@ public:
     virtual unsigned int read( WideString & wide ) const override;
 
 /************************************************************************/
-// IEOutStream interface overrides
+// OutStream interface overrides
 /************************************************************************/
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -796,7 +796,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer ) override;
+    virtual unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -830,7 +830,7 @@ protected:
     virtual unsigned int normalizeMode(unsigned int mode) const;
 
 /************************************************************************/
-// IEOutStream overrides
+// OutStream overrides
 /************************************************************************/
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
@@ -978,35 +978,35 @@ inline bool FileBase::canRead() const
 inline bool FileBase::moveToBegin() const
 {
     ASSERT(isOpened());
-    return IECursorPosition::moveToBegin();
+    return Cursor::moveToBegin();
 }
 
 inline bool FileBase::moveToEnd() const
 {
     ASSERT(isOpened());
-    return IECursorPosition::moveToEnd();
+    return Cursor::moveToEnd();
 }
 
 inline unsigned int FileBase::getStartPosition()
 {
-    return IECursorPosition::START_CURSOR_POSITION;
+    return Cursor::START_CURSOR_POSITION;
 }
 
 inline unsigned int FileBase::getInvalidPosition()
 {
-    return IECursorPosition::INVALID_CURSOR_POSITION;
+    return Cursor::INVALID_CURSOR_POSITION;
 }
 
-inline const IEInStream& FileBase::getReadStream() const
+inline const InStream& FileBase::getReadStream() const
 {
     ASSERT(isOpened());
-    return static_cast<const IEInStream &>(*this);
+    return static_cast<const InStream &>(*this);
 }
 
-inline IEOutStream& FileBase::getWriteStream()
+inline OutStream& FileBase::getWriteStream()
 {
     ASSERT(isOpened());
-    return static_cast<IEOutStream &>(*this);
+    return static_cast<OutStream &>(*this);
 }
 
 inline bool FileBase::readBool(bool & Value) const

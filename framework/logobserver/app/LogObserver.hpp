@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "logobserver/app/NELogObserverSettings.hpp"
-#include "areg/persist/IEConfigurationListener.hpp"
+#include "areg/persist/ConfigListener.hpp"
 
 #include "areg/base/SyncObjects.hpp"
 #include "aregextend/console/Console.hpp"

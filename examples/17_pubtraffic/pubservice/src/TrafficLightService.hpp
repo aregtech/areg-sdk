@@ -15,7 +15,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "examples/17_pubtraffic/services/SimpleTrafficLightStub.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/TEEvent.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -50,7 +50,7 @@ class TrafficLightService   : public    Component
                             , protected SimpleTrafficLightStub
 {
     friend class TrafficSwitchConsumer;
-    friend class TimerConsumer;
+    friend class TrafficLightTimerConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal classes.
@@ -94,19 +94,19 @@ private:
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // TrafficLightService::TimerConsumer class declaration
+    // TrafficLightService::TrafficLightTimerConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
     //!< Traffic Light timer consumer object
-    class TimerConsumer : public    IETimerConsumer
+    class TrafficLightTimerConsumer : public    TimerConsumer
     {
     public:
-        TimerConsumer( TrafficLightService & service )
-            : IETimerConsumer   ( )
+        TrafficLightTimerConsumer( TrafficLightService & service )
+            : TimerConsumer   ( )
             , mService          ( service )
             {
             }
 
-        virtual ~TimerConsumer() = default;
+        virtual ~TrafficLightTimerConsumer() = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods.
@@ -126,8 +126,8 @@ private:
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
     //////////////////////////////////////////////////////////////////////////
-        TimerConsumer() = delete;
-        AREG_NOCOPY_NOMOVE(TimerConsumer);
+        TrafficLightTimerConsumer() = delete;
+        AREG_NOCOPY_NOMOVE(TrafficLightTimerConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ private:
 
     TrafficSwitchConsumer               mEventConsumer; //!< The event consumer object.
 
-    TimerConsumer                       mTimerConsumer; //!< The timer consumer object.
+    TrafficLightTimerConsumer           mTimerConsumer; //!< The timer consumer object.
     
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

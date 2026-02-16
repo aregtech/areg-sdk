@@ -72,7 +72,7 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::Map
 
         if (count != 0)
         {
-            msgInstances.setPosition(static_cast<int>(pos), IECursorPosition::eCursorPosition::PositionBegin);
+            msgInstances.setPosition(static_cast<int>(pos), Cursor::eCursorPosition::PositionBegin);
             msgInstances << count;
             msgInstances.moveToEnd();
         }

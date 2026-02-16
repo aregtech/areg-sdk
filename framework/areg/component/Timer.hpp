@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IETimerConsumer;
+class TimerConsumer;
 class DispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ public:
      *                          fired once or less than maxQueued timer, this parameter will be ignored
      *                          and play no role.
      **/
-    explicit Timer( IETimerConsumer & timerConsumer
+    explicit Timer( TimerConsumer & timerConsumer
                   , const String & timerName = String::getEmptyString()
                   , uint32_t timeoutMs       = NECommon::INVALID_TIMEOUT
                   , int maxQueued            = Timer::IGNORE_TIMER_QUEUE );
@@ -159,7 +159,7 @@ public:
     /**
      * \brief   Returns Timer Consumer object.
      **/
-    inline IETimerConsumer & getConsumer() const;
+    inline TimerConsumer & getConsumer() const;
 
     /**
      * \brief   Returns true if timer is stopped. The timer is stopped if timeout value is zero.
@@ -204,7 +204,7 @@ protected:
     /**
      * \brief   Timer consumer object
      **/
-    IETimerConsumer &   mConsumer;
+    TimerConsumer &   mConsumer;
 private:
     /**
      * \brief   Number of timer events, currently queued dispatcher.
@@ -289,7 +289,7 @@ inline Timer & Timer::self()
     return (*this);
 }
 
-inline IETimerConsumer& Timer::getConsumer() const
+inline TimerConsumer& Timer::getConsumer() const
 {
     return mConsumer;
 }

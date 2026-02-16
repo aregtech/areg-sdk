@@ -13,7 +13,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "examples/19_pubfsm/services/PowerManagerClientBase.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 
 #include "areg/base/Thread.hpp"
 #include "areg/component/TEEvent.hpp"
@@ -99,7 +99,7 @@ AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerContro
  *          lights start automatically to run.
  **/
 class PowerControllerClient : public    PowerManagerClientBase
-                            , protected IEThreadConsumer
+                            , protected ThreadConsumer
                             , protected IEPowerControllerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ protected:
     virtual void responseStopTrafficLight( bool Success ) override;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -186,7 +186,7 @@ protected:
     virtual void processEvent( const PowerControllerEventData & data ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

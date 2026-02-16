@@ -79,11 +79,11 @@ const OptionParser::sOptionSetup Publisher::ValidOptions[]
 Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , PubSubStub        ( static_cast<Component &>(self()) )
-    , IETimerConsumer   ( )
-    , IEThreadConsumer  ( )
+    , TimerConsumer   ( )
+    , ThreadConsumer  ( )
 
-    , mTimerOnChange    (static_cast<IETimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
-    , mTimerAlways      (static_cast<IETimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
+    , mTimerOnChange    (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
+    , mTimerAlways      (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
     , mClientCount      (0)
 
     , mSeqString        (0)
@@ -92,7 +92,7 @@ Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread 
     , mSeqInteger       (0)
     , mCountInteger     (0)
 
-    , mConsoleThread    (static_cast<IEThreadConsumer &>(self()), entry.mRoleName + "_Thread")
+    , mConsoleThread    (static_cast<ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
     , mLock             (false)
 {
 }

@@ -9,12 +9,11 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/FileBuffer.cpp
 	areg/base/private/GEGlobal.cpp
 	areg/base/private/Identifier.cpp
-	areg/base/private/IEByteBuffer.cpp
-	areg/base/private/IECursorPosition.cpp
-	areg/base/private/IEGenericObject.cpp
-	areg/base/private/IEIOStream.cpp
-	areg/base/private/IESyncObject.cpp
-	areg/base/private/IEThreadConsumer.cpp
+	areg/base/private/ByteBuffer.cpp
+	areg/base/private/Cursor.cpp
+	areg/base/private/IOStream.cpp
+	areg/base/private/SyncObject.cpp
+	areg/base/private/ThreadConsumer.cpp
 	areg/base/private/NECommon.cpp
 	areg/base/private/NEDebug.cpp
 	areg/base/private/NEMath.cpp
@@ -22,7 +21,6 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/NESocket.cpp
 	areg/base/private/NEString.cpp
 	areg/base/private/NEUtilities.cpp
-	areg/base/private/Object.cpp
 	areg/base/private/Process.cpp
 	areg/base/private/ReadConverter.cpp
 	areg/base/private/RemoteMessage.cpp

@@ -19,7 +19,7 @@
 #include "areg/logging/private/LogMessage.hpp"
 
 #include "areg/logging/LogScope.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/Thread.hpp"
 
 #include <string.h>

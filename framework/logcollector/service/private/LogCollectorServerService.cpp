@@ -30,11 +30,11 @@ LogCollectorServerService::LogCollectorServerService()
                                 , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
                                 , NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
                                 , ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
-    , IETimerConsumer           ( )
+    , TimerConsumer           ( )
 
     , mLoggerProcessor          ( self() )
     , mObservers                ( )
-    , mSaveTimer                ( static_cast<IETimerConsumer &>(self()), "ConfigSaveTimer", LogCollectorServerService::TIMEOUT_SAVE_CONFIG)
+    , mSaveTimer                ( static_cast<TimerConsumer &>(self()), "ConfigSaveTimer", LogCollectorServerService::TIMEOUT_SAVE_CONFIG)
 {
 }
 

@@ -27,7 +27,7 @@
 // CriticalSectionIX class implementation.
 //////////////////////////////////////////////////////////////////////////
 CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
-    : IESyncObjectBaseIX   ( NESyncTypesIX::eSyncObject::SoSpinLock, "CriticalSection" )
+    : SyncObjectPosix   ( NESyncTypesIX::eSyncObject::SoSpinLock, "CriticalSection" )
 
     , mSpinLock             ( )
 {

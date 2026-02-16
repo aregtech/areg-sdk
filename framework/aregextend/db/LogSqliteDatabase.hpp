@@ -23,7 +23,7 @@
 #include "aregextend/db/SqliteStatement.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/logging/NELogging.hpp"
-#include "areg/logging/IELogDatabaseEngine.hpp"
+#include "areg/logging/LogDatabaseEngine.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncObjects.hpp"
 
@@ -35,7 +35,7 @@
 /**
  * \brief   The logging database engine, responsible to log messages in the database.
  **/
-class LogSqliteDatabase : public IELogDatabaseEngine
+class LogSqliteDatabase : public LogDatabaseEngine
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
@@ -134,7 +134,7 @@ public:
 public:
 
 /************************************************************************/
-// IEDatabaseEngine interface overrides.
+// DatabaseEngine class overrides.
 /************************************************************************/
 
     /**
@@ -182,7 +182,7 @@ public:
     virtual bool commit(bool doCommit) override;
 
 /************************************************************************/
-// IELogDatabaseEngine interface overrides.
+// LogDatabaseEngine class overrides.
 /************************************************************************/
 
     /**

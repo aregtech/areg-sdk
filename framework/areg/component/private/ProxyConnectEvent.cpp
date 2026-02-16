@@ -44,7 +44,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyCo
 {
 }
 
-ProxyConnectEvent::ProxyConnectEvent(const IEInStream & stream)
+ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
     : ServiceResponseEvent  ( stream )
     , mStubAddress          ( stream )
     , mConnectionStatus     ( NEService::eServiceConnection::ServiceConnectionUnknown )
@@ -52,7 +52,7 @@ ProxyConnectEvent::ProxyConnectEvent(const IEInStream & stream)
      stream >> mConnectionStatus;
 }
 
-const IEInStream & ProxyConnectEvent::readStream(const IEInStream & stream)
+const InStream & ProxyConnectEvent::readStream(const InStream & stream)
 {
     ServiceResponseEvent::readStream(stream);
     stream >> mStubAddress;
@@ -60,7 +60,7 @@ const IEInStream & ProxyConnectEvent::readStream(const IEInStream & stream)
     return stream;
 }
 
-IEOutStream & ProxyConnectEvent::writeStream(IEOutStream & stream) const
+OutStream & ProxyConnectEvent::writeStream(OutStream & stream) const
 {
     ServiceResponseEvent::writeStream(stream);
     stream << mStubAddress;

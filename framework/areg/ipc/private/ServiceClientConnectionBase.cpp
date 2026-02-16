@@ -16,7 +16,7 @@
 
 #include "areg/component/NEService.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/ipc/IEServiceConnectionConsumer.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
@@ -42,12 +42,12 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , NERemoteService::eRemoteServices service
                                                         , unsigned int connectTypes
                                                         , NEService::eMessageSource msgSource
-                                                        , IEServiceConnectionConsumer& connectionConsumer
-                                                        , IERemoteMessageHandler & messageHandler
+                                                        , ConnectionConsumer& connectionConsumer
+                                                        , RemoteMessageHandler & messageHandler
                                                         , DispatcherThread & messageDispatcher
                                                         , const String & prefixName)
-    : IEServiceConnectionProvider   ( )
-    , IEServiceEventConsumerBase    ( )
+    : ConnectionProvider   ( )
+    , ServiceEventConsumer    ( )
 
     , mTarget               (target)
     , mService              (service)
@@ -58,13 +58,13 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mMessageDispatcher    (messageDispatcher)
     , mChannel              ( )
     , mConnectionState      ( eConnectionState::ConnectionStopped )
-    , mEventConsumer        ( static_cast<IEServiceEventConsumerBase &>(self()) )
+    , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
     , mLock                 ( )
 
-    , mTimerConnect         ( static_cast<IETimerConsumer &>(mTimerConsumer), prefixName + NEConnection::CLIENT_CONNECT_TIMER_NAME )
+    , mTimerConnect         ( static_cast<TimerConsumer &>(mTimerConsumer), prefixName + NEConnection::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive        (messageHandler, mClientConnection, prefixName)
     , mThreadSend           (messageHandler, mClientConnection, prefixName)
-    , mTimerConsumer        ( static_cast<IEServiceEventConsumerBase &>(self()) )
+    , mTimerConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
 {
     ASSERT((target > NEService::TARGET_LOCAL) && (target < NEService::COOKIE_REMOTE_SERVICE));
 }

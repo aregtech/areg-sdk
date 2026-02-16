@@ -13,7 +13,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/NECommon.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <memory>
 #include <string_view>
@@ -152,12 +152,12 @@ namespace NELargeData
         /**
          * \brief   The streaming operators to serialize image block into the streaming buffer.
          */
-        friend inline IEOutStream& operator << (IEOutStream& stream, const NELargeData::ImageBlock& output);
+        friend inline OutStream& operator << (OutStream& stream, const NELargeData::ImageBlock& output);
 
         /**
          * \brief   Initializes image block from the streaming buffer.
          */
-        friend inline const IEInStream& operator >> (const IEInStream& stream, NELargeData::ImageBlock& input);
+        friend inline const InStream& operator >> (const InStream& stream, NELargeData::ImageBlock& input);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -177,12 +177,12 @@ namespace NELargeData
     /**
      * \brief   The streaming operators to serialize image block into the streaming buffer.
      */
-    inline IEOutStream& operator << (IEOutStream& stream, const NELargeData::ImageBlock& output);
+    inline OutStream& operator << (OutStream& stream, const NELargeData::ImageBlock& output);
 
     /**
      * \brief   Initializes image block from the streaming buffer.
      */
-    inline const IEInStream& operator >> (const IEInStream& stream, NELargeData::ImageBlock& input);
+    inline const InStream& operator >> (const InStream& stream, NELargeData::ImageBlock& input);
 
 }
 
@@ -281,7 +281,7 @@ inline void NELargeData::ImageBlock::setIds(uint32_t channelId, uint32_t frameId
     }
 }
 
-inline IEOutStream& NELargeData::operator << (IEOutStream& stream, const NELargeData::ImageBlock& output)
+inline OutStream& NELargeData::operator << (OutStream& stream, const NELargeData::ImageBlock& output)
 {
     uint32_t size{ output.getSize() };
     if (size != 0)
@@ -297,7 +297,7 @@ inline IEOutStream& NELargeData::operator << (IEOutStream& stream, const NELarge
     return stream;
 }
 
-inline const IEInStream& NELargeData::operator >> (const IEInStream& stream, NELargeData::ImageBlock& input)
+inline const InStream& NELargeData::operator >> (const InStream& stream, NELargeData::ImageBlock& input)
 {
     uint32_t size{ 0 };
     stream >> size;

@@ -25,7 +25,7 @@
 #include "areg/base/TETemplateBase.hpp"
 
 #include "areg/base/NEMemory.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <algorithm>
 
@@ -174,7 +174,7 @@ public:
      * \param   input   The fixed array object to save initialized values.
      **/
     template<typename V>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<V> & input );
+    friend const InStream & operator >> ( const InStream & stream, TEFixedArray<V> & input );
     /**
      * \brief   Writes to the stream the values of fixed array.
      *          The values will be written to the stream starting from firs entry.
@@ -184,7 +184,7 @@ public:
      * \param   output  The fixed array object containing value to stream.
      **/
     template<typename V>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<V> & output );
+    friend OutStream & operator << ( OutStream & stream, const TEFixedArray<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -622,7 +622,7 @@ inline uint32_t TEFixedArray<VALUE>::getElements(VALUE* list, uint32_t elemCount
 //////////////////////////////////////////////////////////////////////////
 
 template<typename V>
-const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<V> & input )
+const InStream & operator >> ( const InStream & stream, TEFixedArray<V> & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -638,7 +638,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEFixedArray<V> & in
 }
 
 template<typename V>
-IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<V> & output )
+OutStream & operator << ( OutStream & stream, const TEFixedArray<V> & output )
 {
     stream << output.mElemCount;
     for (uint32_t i = 0; i < output.mElemCount; ++ i )

@@ -26,7 +26,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Event.hpp"
-#include "areg/component/IEEventConsumer.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/WorkerThread.hpp"
 
 /************************************************************************
@@ -129,7 +129,7 @@ template <class DATA_CLASS> class AregImpl_##ConsumerClass##Extended;           
 /** Does nothing, needed for Runtime Object information and declare processEvent() function                                 **/             \
 /*****************************************************************************************************************************/             \
 template <class DATA_CLASS>                                                                                                                 \
-class AregImpl_##ConsumerClass : public    IEEventConsumer                                                                                         \
+class AregImpl_##ConsumerClass : public    EventConsumer                                                                                         \
 {                                                                                                                                           \
 protected:                                                                                                                                  \
     /**                                                                                                                     **/             \
@@ -151,7 +151,7 @@ protected:                                                                      
     virtual void processEvent(const DATA_CLASS & data) = 0;                                                                                 \
 private:                                                                                                                                    \
     /**                                                                                                                     **/             \
-    /** \brief  The method is derived from IEEventConsumer to receive event, extract data and pass for further processing.  **/             \
+    /** \brief  The method is derived from EventConsumer to receive event, extract data and pass for further processing.  **/             \
     /** \param	eventElem	The Event object to process.                                                                    **/             \
     /**                                                                                                                     **/             \
     virtual void startEventProcessing( Event & eventElem ) override;                                                                        \
@@ -405,7 +405,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( const DATA_CLASS & dat
                                           , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
     : Event (EventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
-    this->setEventConsumer(static_cast<IEEventConsumer *>(&listener));                                                                      \
+    this->setEventConsumer(static_cast<EventConsumer *>(&listener));                                                                      \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
 /** Constructor implementation, pass DataClass object and event type. By default, the event is external                     **/             \
@@ -425,7 +425,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( Event::eEventType even
                                           , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
     : Event (eventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
-    this->setEventConsumer(static_cast<IEEventConsumer *>(&listener));                                                                      \
+    this->setEventConsumer(static_cast<EventConsumer *>(&listener));                                                                      \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
 /** Constructor implementation, pass DataClass object to Event                                                              **/             \
@@ -581,7 +581,7 @@ bool AregImpl_##EventClass<DATA_CLASS>::_send(DispatcherThread & dispThread, Are
 /** Event consumer class implementation                                                                                     **/             \
 /*****************************************************************************************************************************/             \
 /**                                                                                                                         **/             \
-/** \brief  The method is derived from IEEventConsumer to receive event, extract data and pass for further processing.      **/             \
+/** \brief  The method is derived from EventConsumer to receive event, extract data and pass for further processing.      **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
 void AregImpl_##ConsumerClass<DATA_CLASS>::startEventProcessing( Event & eventElem )                                                               \

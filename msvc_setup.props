@@ -75,11 +75,6 @@
         <!-- ********************************************************************************************************************************** -->
         <AregExtended>1</AregExtended>
         <!-- ********************************************************************************************************************************** -->
-        <!-- Property to compile Areg SDK with areg namespace. By default, it is compiled with namespace.                                       -->
-        <!-- Set 1 to compile with namespace. Set 0 or ignore setting to compile without namespace.                                             -->
-        <!-- ********************************************************************************************************************************** -->
-        <AregNamespace>1</AregNamespace>
-        <!-- ********************************************************************************************************************************** -->
         <!-- Property to compile the source codes with logging. By default, the sources are compiled with logs.                                 -->
         <!-- Set 0 to compile sources codes without logs. Set 1 or ignore setting to compile with logs.                                         -->
         <!-- ********************************************************************************************************************************** -->
@@ -133,9 +128,6 @@
         </BuildMacro>
         <BuildMacro Include="AregExtended">
             <Value>$(AregExtended)</Value>
-        </BuildMacro>
-        <BuildMacro Include="AregNamespace">
-            <Value>$(AregNamespace)</Value>
         </BuildMacro>
         <BuildMacro Include="AregLogs">
             <Value>$(AregLogs)</Value>

@@ -13,9 +13,9 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/TEEvent.hpp"
 #include "examples/23_pubdatarate/services/LargeDataStub.hpp"
 
@@ -48,10 +48,10 @@ AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  **/
 class ServicingComponent    : public    Component
                             , protected LargeDataStub
-                            , protected IEThreadConsumer
+                            , protected ThreadConsumer
 {
     friend class OptionConsumer;
-    friend class TimerConsumer;
+    friend class ServicingTimerConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal classes
@@ -93,23 +93,23 @@ class ServicingComponent    : public    Component
     };
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent::TimerConsumer class declaration
+// ServicingComponent::ServicingTimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
     //!< The timer consumer object
-    class TimerConsumer : public    IETimerConsumer
+    class ServicingTimerConsumer : public    TimerConsumer
     {
     public:
-        TimerConsumer( ServicingComponent & service )
-            : IETimerConsumer   ( )
-            , mService          ( service )
+        ServicingTimerConsumer( ServicingComponent & service )
+            : TimerConsumer ( )
+            , mService      ( service )
             {
             }
 
-        virtual ~TimerConsumer() = default;
+        virtual ~ServicingTimerConsumer() = default;
 
     private:
     /************************************************************************/
-    // IETimerConsumer interface overrides.
+    // TimerConsumer interface overrides.
     /************************************************************************/
 
         /**
@@ -124,8 +124,8 @@ class ServicingComponent    : public    Component
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
-        TimerConsumer() = delete;
-        AREG_NOCOPY_NOMOVE(TimerConsumer);
+        ServicingTimerConsumer() = delete;
+        AREG_NOCOPY_NOMOVE(ServicingTimerConsumer);
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -228,7 +228,7 @@ protected:
     virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -291,7 +291,7 @@ private:
     //!< The object to receive option data change event
     OptionConsumer              mOptionConsumer;
     //!< The object to receive timer expired event
-    TimerConsumer               mTimerConsumer;    
+    ServicingTimerConsumer      mTimerConsumer;
     //!< The synchronization item.
     CriticalSection             mLock;
 

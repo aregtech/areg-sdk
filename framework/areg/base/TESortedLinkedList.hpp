@@ -26,7 +26,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TETemplateBase.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <algorithm>
 
@@ -153,7 +153,7 @@ public:
      * \param   input   The Linked List object to save initialized values.
      **/
     template<typename V>
-    friend const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<V>& input);
+    friend const InStream& operator >> (const InStream& stream, TESortedLinkedList<V>& input);
     /**
      * \brief   Writes to the stream Linked List values.
      *          The values will be written to the stream starting from head position.
@@ -163,7 +163,7 @@ public:
      * \param   output  The Linked List object to read out values.
      **/
     template<typename V>
-    friend IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<V>& output);
+    friend OutStream& operator << (OutStream& stream, const TESortedLinkedList<V>& output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1214,7 +1214,7 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::_c
 //////////////////////////////////////////////////////////////////////////
 
 template <typename V>
-const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<V>& input)
+const InStream& operator >> (const InStream& stream, TESortedLinkedList<V>& input)
 {
     input.clear();
 
@@ -1234,7 +1234,7 @@ const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<V>& 
 }
 
 template <typename V>
-IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<V>& output)
+OutStream& operator << (OutStream& stream, const TESortedLinkedList<V>& output)
 {
     uint32_t size = output.getSize();
     uint8_t sort = static_cast<uint8_t>(output.mSorting);

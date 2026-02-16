@@ -123,7 +123,7 @@ LOGGER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, co
         theObserver.losState = eObserverStates::ObserverDisconnected;
         _setCallbacks(theObserver.losEvents, callbacks);
         client.setCallbacks(&theObserver.losEvents);
-        Application::initApplication(false, false, false, true, false, configFilePath, static_cast<IEConfigurationListener *>(&client));
+        Application::initApplication(false, false, false, true, false, configFilePath, static_cast<ConfigListener *>(&client));
     }
 
     return _isInitialized(theObserver.losState);

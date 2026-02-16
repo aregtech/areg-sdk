@@ -20,12 +20,12 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/ipc/IEServiceConnectionConsumer.hpp"
-#include "areg/ipc/IEServiceConnectionProvider.hpp"
-#include "areg/ipc/ServiceEventConsumerBase.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
+#include "areg/ipc/ConnectionProvider.hpp"
+#include "areg/ipc/ServiceEventConsumer.hpp"
 #include "aregextend/service/DataRateHelper.hpp"
-#include "aregextend/service/IEServiceConnectionHandler.hpp"
+#include "aregextend/service/ConnectionHandler.hpp"
 
 #include "areg/base/TEMap.hpp"
 #include "areg/base/SyncObjects.hpp"
@@ -47,12 +47,12 @@ class IERemoteServiceConsumer;
  * \brief   The server side base connection service. Used by message router to
  *          accept service connections.
  **/
-class ServiceCommunicatonBase   : public    IERemoteMessageHandler
-                                , public    IEServiceConnectionConsumer
-                                , public    IEServiceConnectionProvider
+class ServiceCommunicatonBase   : public    RemoteMessageHandler
+                                , public    ConnectionConsumer
+                                , public    ConnectionProvider
                                 , protected DispatcherThread
-                                , protected IEServiceEventConsumerBase
-                                , protected IEServiceConnectionHandler
+                                , protected ServiceEventConsumer
+                                , protected ConnectionHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // The internal types and constants
@@ -207,7 +207,7 @@ public:
     virtual void removeAllInstances();
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -231,7 +231,7 @@ public:
     virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
-// IEServiceConnectionConsumer
+// ConnectionConsumer
 /************************************************************************/
 
     /**
@@ -255,7 +255,7 @@ public:
     virtual void lostRemoteServiceChannel(const Channel& channel) override = 0;
 
 /************************************************************************/
-// IEServiceConnectionProvider interface overrides
+// ConnectionProvider interface overrides
 /************************************************************************/
     /**
      * \brief   Call to configure remote service. The passed file name
@@ -330,7 +330,7 @@ public:
     virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
-// IEServiceEventConsumerBase overrides
+// ServiceEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -365,7 +365,7 @@ public:
     virtual void onChannelConnected(const ITEM_ID & cookie) override;
 
 /************************************************************************/
-// IEServiceConnectionHandler interface overrides
+// ConnectionHandler interface overrides
 /************************************************************************/
 
     /**
@@ -460,7 +460,7 @@ public:
     virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
@@ -498,7 +498,7 @@ protected:
     DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
     StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
-    ServiceServerEventConsumer              mEventConsumer;     //!< The custom event consumer object
+    ServiceServerConsumer                   mEventConsumer;     //!< The custom event consumer object
     ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
     NEService::MapInstances                 mInstanceMap;       //!< The map of connected instance.
     SyncEvent                               mEventSendStop;     //!< The event set when cannot send and receive data anymore.
@@ -567,7 +567,7 @@ inline void ServiceCommunicatonBase::waitToComplete( )
 inline bool ServiceCommunicatonBase::sendCommand( ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd )
-                                          , static_cast<IEServiceServerEventConsumer &>(mEventConsumer)
+                                          , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<DispatcherThread &>(self( ))
                                           , eventPrio );
 }
@@ -577,7 +577,7 @@ inline bool ServiceCommunicatonBase::sendCommunicationMessage( ServiceEventData:
                                                                 , Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
-                                          , static_cast<IEServiceServerEventConsumer &>(mEventConsumer)
+                                          , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<DispatcherThread &>(self( ))
                                           , eventPrio );
 }
@@ -585,7 +585,7 @@ inline bool ServiceCommunicatonBase::sendCommunicationMessage( ServiceEventData:
 inline bool ServiceCommunicatonBase::sendMessage( const RemoteMessage & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData( data )
-                                        , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                        , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                         , static_cast<DispatcherThread &>(mThreadSend)
                                         , eventPrio );
 }
@@ -618,7 +618,7 @@ inline bool ServiceCommunicatonBase::isCalculateDataRateEnabled() const
 inline void ServiceCommunicatonBase::disconnectService( Event::eEventPriority eventPrio )
 {
     SendMessageEvent::sendEvent( SendMessageEventData( )
-                                 , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                 , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                  , static_cast<DispatcherThread &>(mThreadSend)
                                  , eventPrio );
 }

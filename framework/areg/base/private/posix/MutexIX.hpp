@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IESyncObjectBaseIX.hpp"
+#include "areg/base/private/posix/SyncObjectPosix.hpp"
 #include <pthread.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@
  *          waitable synchronization objects that can trigger event to
  *          a waiting thread.
  **/
-class MutexIX   : public IESyncObjectBaseIX
+class MutexIX   : public SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -122,7 +122,7 @@ public:
     void unlock() const;
 
 /************************************************************************/
-// IESyncObjectBaseIX overrides.
+// SyncObjectPosix overrides.
 /************************************************************************/
     /**
      * \brief   Returns true if synchronization object is valid.

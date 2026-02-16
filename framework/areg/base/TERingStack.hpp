@@ -25,7 +25,7 @@
 #include "areg/base/TETemplateBase.hpp"
 #include "areg/base/SyncObjects.hpp"
 
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
 
@@ -81,7 +81,7 @@ protected:
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          it is required to insert new element.
      **/
-    explicit TERingStack( IEResourceLock & syncObject, uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    explicit TERingStack( Lockable & syncObject, uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
 
     /**
      * \brief   Destructor. Public
@@ -94,14 +94,14 @@ protected:
      * \param   syncObject  Reference to synchronization object.
      * \param   source      The source of Ring Stack elements.
      **/
-    explicit TERingStack(IEResourceLock& syncObject, const TERingStack<VALUE>& source);
+    explicit TERingStack(Lockable& syncObject, const TERingStack<VALUE>& source);
 
     /**
      * \brief   Creates a Ring Stack object and moves elements from the given source.
      * \param   syncObject  Reference to synchronization object.
      * \param   source      The source of Ring Stack elements.
      **/
-    explicit TERingStack(IEResourceLock& syncObject, TERingStack<VALUE> && source) noexcept;
+    explicit TERingStack(Lockable& syncObject, TERingStack<VALUE> && source) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -159,7 +159,7 @@ public:
      * \param   input   The Ring Stack object to save initialized values.
      **/
     template<typename V>
-    friend const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & input );
+    friend const InStream & operator >> ( const InStream & stream, TERingStack<V> & input );
     /**
      * \brief   Writes to the stream Ring Stack values. The values are written into the stream
      *          starting from head position.
@@ -170,7 +170,7 @@ public:
      * \param   output  The Stack object to read out values.
      **/
     template<typename V>
-    friend IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V> & output );
+    friend OutStream & operator << ( OutStream & stream, const TERingStack<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and Attributes
@@ -350,7 +350,7 @@ protected:
     /**
      * \brief   The instance of synchronization object to be used to make object thread-safe.
      **/
-    IEResourceLock &                mSyncObj;
+    Lockable &                mSyncObj;
 
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
@@ -639,7 +639,7 @@ private:
 // TERingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-TERingStack<VALUE>::TERingStack( IEResourceLock & syncObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+TERingStack<VALUE>::TERingStack( Lockable & syncObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
     : mSyncObj  ( syncObject )
     , mOnOverlap( onOverlap )
     , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
@@ -651,7 +651,7 @@ TERingStack<VALUE>::TERingStack( IEResourceLock & syncObject, uint32_t initCapac
 }
 
 template <typename VALUE>
-TERingStack<VALUE>::TERingStack(IEResourceLock& syncObject, const TERingStack<VALUE> & source)
+TERingStack<VALUE>::TERingStack(Lockable& syncObject, const TERingStack<VALUE> & source)
     : mSyncObj  ( syncObject )
     , mOnOverlap( source.mOnOverlap )
     , mStackList( nullptr )
@@ -665,7 +665,7 @@ TERingStack<VALUE>::TERingStack(IEResourceLock& syncObject, const TERingStack<VA
 }
 
 template <typename VALUE>
-TERingStack<VALUE>::TERingStack(IEResourceLock& syncObject, TERingStack<VALUE> && source) noexcept
+TERingStack<VALUE>::TERingStack(Lockable& syncObject, TERingStack<VALUE> && source) noexcept
     : mSyncObj  ( syncObject )
     , mOnOverlap( source.mOnOverlap )
     , mStackList( source.mStackList )
@@ -1356,7 +1356,7 @@ bool TENolockRingStack<VALUE>::operator != (const TERingStack<VALUE>& other) con
 //////////////////////////////////////////////////////////////////////////
 
 template <typename V>
-const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & input )
+const InStream & operator >> ( const InStream & stream, TERingStack<V> & input )
 {
     Lock lock(input.mSyncObj);
 
@@ -1381,7 +1381,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & inp
 }
 
 template <typename V>
-IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V> & output )
+OutStream & operator << ( OutStream & stream, const TERingStack<V> & output )
 {
     Lock lock(output.mSyncObj);
 

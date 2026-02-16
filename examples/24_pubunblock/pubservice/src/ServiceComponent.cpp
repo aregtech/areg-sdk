@@ -26,10 +26,10 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 ServiceComponent::ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , HelloUnblockStub  ( static_cast<Component &>(self()) )
-    , IETimerConsumer   ( )
+    , TimerConsumer   ( )
 
     , mSessionList      ( )
-    , mTimer            ( static_cast<IETimerConsumer &>(self()), entry.mRoleName )
+    , mTimer            ( static_cast<TimerConsumer &>(self()), entry.mRoleName )
 {
     setHelloServiceState( NEHelloUnblock::eServiceState::ServiceUndefined );
 }

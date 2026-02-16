@@ -183,7 +183,7 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     return static_cast<unsigned int>(sizeWrite);
 }
 
-unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosition startAt) const
+unsigned int File::_osSetPositionFile(int offset, Cursor::eCursorPosition startAt) const
 {
     ASSERT(mFileHandle != nullptr);
 
@@ -191,15 +191,15 @@ unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosit
     unsigned long moveOffset = static_cast<unsigned long>(offset);
     switch (startAt)
     {
-    case    IECursorPosition::eCursorPosition::PositionBegin:
+    case    Cursor::eCursorPosition::PositionBegin:
         moveMethod = FILE_BEGIN;
         break;
 
-    case    IECursorPosition::eCursorPosition::PositionCurrent:
+    case    Cursor::eCursorPosition::PositionCurrent:
         moveMethod = FILE_CURRENT;
         break;
 
-    case    IECursorPosition::eCursorPosition::PositionEnd:
+    case    Cursor::eCursorPosition::PositionEnd:
         moveMethod = FILE_END;
         break;
 
@@ -221,7 +221,7 @@ unsigned int File::_osGetPositionFile() const
 bool File::_osTruncateFile()
 {
     bool result{ false };
-    if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
+    if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != Cursor::INVALID_CURSOR_POSITION)
     {
         result = SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? true : false;
     }

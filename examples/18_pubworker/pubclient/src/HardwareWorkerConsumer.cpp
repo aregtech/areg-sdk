@@ -12,7 +12,7 @@
 
 
 HardwareWorkerConsumer::HardwareWorkerConsumer(const char * consumerName)
-    : IEWorkerThreadConsumer    ( consumerName )
+    : WorkerThreadConsumer    ( consumerName )
     , IEPatientInfoEventConsumer( )
 {
 }

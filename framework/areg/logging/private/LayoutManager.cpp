@@ -59,8 +59,8 @@ bool LayoutManager::createLayouts(const String& layoutFormat)
 
 void LayoutManager::deleteLayouts()
 {
-    const std::vector<IELayout*>& list{ mLayoutList.getData() };
-    for (IELayout* layout : list)
+    const std::vector<LogLayout*>& list{ mLayoutList.getData() };
+    for (LogLayout* layout : list)
     {
         delete layout;
     }
@@ -68,7 +68,7 @@ void LayoutManager::deleteLayouts()
     mLayoutList.clear();
 }
 
-void LayoutManager::logMessage(const NELogging::sLogMessage & logMsg, IEOutStream & stream) const
+void LayoutManager::logMessage(const NELogging::sLogMessage & logMsg, OutStream & stream) const
 {
     if (logMsg.logMessagePrio == NELogging::PrioIgnoreLayout)
     {
@@ -76,8 +76,8 @@ void LayoutManager::logMessage(const NELogging::sLogMessage & logMsg, IEOutStrea
     }
     else
     {
-        const std::vector<IELayout*>& list{ mLayoutList.getData() };
-        for (const IELayout* layout : list)
+        const std::vector<LogLayout*>& list{ mLayoutList.getData() };
+        for (const LogLayout* layout : list)
         {
             layout->logMessage(logMsg, stream);
         }
@@ -91,14 +91,14 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
     bool hasExclusive{ false };
     char* pos = layoutFormat;
     const char* pos1 = pos;
-    IELayout* anyText{ nullptr };
+    LogLayout* anyText{ nullptr };
 
     while (*pos != String::EmptyChar)
     {
         if (*pos == NELogOptions::SYNTAX_SPECIAL_FORMAT)
         {
             char ch = *(pos + 1);
-            IELayout* newLayout{ nullptr };
+            LogLayout* newLayout{ nullptr };
             switch (static_cast<NELogOptions::eLayouts>(ch))
             {
             case NELogOptions::eLayouts::LayoutTickCount:

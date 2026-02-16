@@ -31,8 +31,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEInStream;
-class IEOutStream;
+class InStream;
+class OutStream;
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentAddress class declaration
@@ -146,7 +146,7 @@ public:
      * \brief   Initialization constructor.
      *          De-serialize component address information stored in stream.
      **/
-    ComponentAddress( const IEInStream & stream );
+    ComponentAddress( const InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -193,12 +193,12 @@ public:
     /**
      * \brief   Streaming operator. Read from stream and initialize component address.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, ComponentAddress & input );
+    friend inline const InStream & operator >> ( const InStream & stream, ComponentAddress & input );
 
     /**
      * \brief   Streaming operator. Writes to stream component address.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const ComponentAddress & output );
+    friend inline OutStream & operator << ( OutStream & stream, const ComponentAddress & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -342,13 +342,13 @@ inline const String& ComponentAddress::getRoleName() const
 //////////////////////////////////////////////////////////////////////////
 // Friend global operators to support streaming
 //////////////////////////////////////////////////////////////////////////
-inline const IEInStream & operator >> (const IEInStream & stream, ComponentAddress & input)
+inline const InStream & operator >> (const InStream & stream, ComponentAddress & input)
 {
     stream >> input.mRoleName;
     stream >> input.mThreadAddress; 
     return stream;                                   }
 
-inline IEOutStream & operator << (IEOutStream & stream, const ComponentAddress & output)
+inline OutStream & operator << (OutStream & stream, const ComponentAddress & output)
 {
     stream << output.mRoleName;
     stream << output.mThreadAddress;

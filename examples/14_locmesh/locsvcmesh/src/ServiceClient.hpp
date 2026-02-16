@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "examples/14_locmesh/services/HelloWorldClientBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
@@ -22,7 +22,7 @@
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 class ServiceClient : protected HelloWorldClientBase
-                    , private   IETimerConsumer
+                    , private   TimerConsumer
 {
     //!< Timeout to wait before sending message
     static constexpr unsigned int   TIMEOUT_VALUE   { 100 };
@@ -61,7 +61,7 @@ protected:
 
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -77,7 +77,7 @@ protected:
     virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**

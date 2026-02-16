@@ -136,7 +136,7 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
 ////////////////////////////////////////////////////////////////////////////////
 
 TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLightFSM & fsm )
-    : IETimerConsumer   ( )
+    : TimerConsumer   ( )
     , mFsm              ( fsm )
 {
 }
@@ -208,12 +208,12 @@ void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
 TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, const std::string_view & instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
     : mActionHandler  ( actionHandler )
     
-    , mTimerRed( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
-    , mTimerYellowRed( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowRed" )
-    , mTimerGreen( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Green" )
-    , mTimerYellowGreen( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowGreen" )
-    , mTimerPedestrianWalk( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::PedestrianWalk" )
-    , mTimerVehicleWait( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
+    , mTimerRed( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
+    , mTimerYellowRed( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowRed" )
+    , mTimerGreen( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Green" )
+    , mTimerYellowGreen( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowGreen" )
+    , mTimerPedestrianWalk( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::PedestrianWalk" )
+    , mTimerVehicleWait( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
     
 
     , mFsmName      ( String("TrafficLightFSM:") + instanceName )

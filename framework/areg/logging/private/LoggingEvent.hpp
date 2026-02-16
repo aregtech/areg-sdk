@@ -166,9 +166,9 @@ private:
 
 /**
  * \brief   Declare LoggingEvent class, derived from TEEvent object,
- *          and IELoggingEventConsumer class, derived from TEEventConsumer object
+ *          and LoggingEventConsumer class, derived from TEEventConsumer object
  **/
-AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, IELoggingEventConsumer)
+AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // LoggingEventData class inline functions

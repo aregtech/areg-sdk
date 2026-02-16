@@ -49,20 +49,20 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( const ITEM_ID & serviceId
                                                 , unsigned int connectTypes
                                                 , const String & dispatcher
                                                 , ServiceCommunicatonBase::eConnectionBehavior behavior /*= ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept*/ )
-    : IERemoteMessageHandler        ( )
-    , IEServiceConnectionConsumer   ( )
-    , IEServiceConnectionProvider   ( )
+    : RemoteMessageHandler        ( )
+    , ConnectionConsumer   ( )
+    , ConnectionProvider   ( )
     , DispatcherThread              ( dispatcher, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
-    , IEServiceEventConsumerBase    ( )
-    , IEServiceConnectionHandler    ( )
+    , ServiceEventConsumer    ( )
+    , ConnectionHandler    ( )
 
     , mConnectBehavior  ( behavior )
     , mService          ( service )
     , mConnectTypes     ( connectTypes )
     , mServerConnection ( serviceId )
-    , mTimerConnect     ( static_cast<IETimerConsumer &>(mTimerConsumer), NEConnection::SERVER_CONNECT_TIMER_NAME.data( ) )
-    , mThreadSend       ( static_cast<IERemoteMessageHandler&>(self()), mServerConnection )
-    , mThreadReceive    ( static_cast<IEServiceConnectionHandler&>(self()), static_cast<IERemoteMessageHandler&>(self()), mServerConnection )
+    , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), NEConnection::SERVER_CONNECT_TIMER_NAME.data( ) )
+    , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
+    , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mDataRateHelper   ( mThreadSend, mThreadReceive, NESystemService::DEFAULT_VERBOSE )
     , mWhiteList        ( )
     , mBlackList        ( )
@@ -488,13 +488,13 @@ void ServiceCommunicatonBase::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        ServiceServerEvent::addListener( static_cast<IEServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        ServiceServerEvent::addListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
         DispatcherThread::readyForEvents( true );
     }
     else
     {
         DispatcherThread::readyForEvents( false );
-        ServiceServerEvent::removeListener( static_cast<IEServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        ServiceServerEvent::removeListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
     }
 }
 

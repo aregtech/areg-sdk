@@ -19,7 +19,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/logging/GELog.h"
 
@@ -40,7 +40,7 @@ DEF_LOG_SCOPE(timer_main_main);
 //!         they all are processed in the context of binding thread.
 //!         The timer should have unique names.
 class TimerDispatcher   : public DispatcherThread
-                        , private IETimerConsumer
+                        , private TimerConsumer
 {
     static constexpr unsigned int TIMEOUT_ONE_TIME{ NECommon::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
     static constexpr unsigned int TIMEOUT_PERIODIC_TIME{ NECommon::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
@@ -49,7 +49,7 @@ class TimerDispatcher   : public DispatcherThread
 public:
     explicit TimerDispatcher(const String & name)
         : DispatcherThread( name, NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
-        , IETimerConsumer()
+        , TimerConsumer()
         , mOneTime(*this, name + "_one_time")
         , mPeriodic(*this, name + "_periodic")
         , mContinuous(*this, name + "_continuous")

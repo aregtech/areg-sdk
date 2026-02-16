@@ -40,7 +40,7 @@ const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::Ev
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::getEmptyString()*/ )
-    : IEIOStream    ( )
+    : IOStream    ( )
 
     , mEventDataType(evetDataType)
     , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
@@ -50,7 +50,7 @@ EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, cons
 }
 
 EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
-    : IEIOStream    ( )
+    : IOStream    ( )
 
     , mEventDataType(buffer.mEventDataType)
     , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
@@ -61,7 +61,7 @@ EventDataStream::EventDataStream( const EventDataStream & buffer, const String &
 }
 
 EventDataStream::EventDataStream( const EventDataStream & src )
-    : IEIOStream    ( )
+    : IOStream    ( )
 
     , mEventDataType(src.mEventDataType)
     , mBufferName   (src.mBufferName)
@@ -71,7 +71,7 @@ EventDataStream::EventDataStream( const EventDataStream & src )
 }
 
 EventDataStream::EventDataStream( EventDataStream && src ) noexcept
-    : IEIOStream    ( )
+    : IOStream    ( )
 
     , mEventDataType( src.mEventDataType )
     , mBufferName   ( std::move(src.mBufferName) )
@@ -80,8 +80,8 @@ EventDataStream::EventDataStream( EventDataStream && src ) noexcept
 {
 }
 
-EventDataStream::EventDataStream(const IEInStream & stream)
-    : IEIOStream    ( )
+EventDataStream::EventDataStream(const InStream & stream)
+    : IOStream    ( )
 
     , mEventDataType( EventDataStream::eEventData::EventDataExternal)
     , mBufferName   ( DefaultStreamName)
@@ -132,7 +132,7 @@ unsigned int EventDataStream::read( unsigned char* buffer, unsigned int size ) c
     return mDataBuffer.read(buffer, size);
 }
 
-unsigned int EventDataStream::read( IEByteBuffer & buffer ) const
+unsigned int EventDataStream::read( ByteBuffer & buffer ) const
 {
     unsigned int result = 0;
     if (mEventDataType == EventDataStream::eEventData::EventDataInternal && mSharedList.isEmpty() == false)
@@ -168,7 +168,7 @@ unsigned int EventDataStream::write( const unsigned char* buffer, unsigned int s
     return mDataBuffer.write(buffer, size);
 }
 
-unsigned int EventDataStream::write( const IEByteBuffer & buffer )
+unsigned int EventDataStream::write( const ByteBuffer & buffer )
 {
     unsigned int result = 0;
     if (mEventDataType == EventDataStream::eEventData::EventDataInternal)

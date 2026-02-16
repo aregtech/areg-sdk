@@ -425,7 +425,7 @@ String LogSqliteDatabase::getReadAllLogMessagesQuery()
 }
 
 LogSqliteDatabase::LogSqliteDatabase()
-    : IELogDatabaseEngine   ( )
+    : LogDatabaseEngine   ( )
 
     , mDatabase             ( )
     , mStmtLogs             (mDatabase)

@@ -27,7 +27,7 @@
 #include <deque>
 
 #include "areg/base/SyncObjects.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -74,21 +74,21 @@ protected:
      *          Use TENolockStack or TELockStack objects instead.
      * \param   syncObject  Reference to synchronization object.
      **/
-    explicit TEStack( IEResourceLock & syncObject );
+    explicit TEStack( Lockable & syncObject );
 
     /**
      * \brief   Initializes the resource lock object and copies elements from given source.
      * \param   syncObject  The instance of synchronization object
      * \param   source      The Stack source, which contains elements to copy.
      **/
-    TEStack( IEResourceLock & syncObject, const TEStack<VALUE> & source );
+    TEStack( Lockable & syncObject, const TEStack<VALUE> & source );
 
     /**
      * \brief   Initializes the resource lock object and move elements from given source.
      * \param   syncObject  The instance of synchronization object
      * \param   source      The Stack source, which contains elements to move.
      **/
-    TEStack( IEResourceLock & syncObject, TEStack<VALUE> && source ) noexcept;
+    TEStack( Lockable & syncObject, TEStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Compiles entries from the given array of objects.
@@ -96,7 +96,7 @@ protected:
      * \param   list        The list of entries to copy.
      * \param   count       The number of entries in the array.
      **/
-    TEStack(IEResourceLock& syncObject, const VALUE* list, uint32_t count);
+    TEStack(Lockable& syncObject, const VALUE* list, uint32_t count);
 
     /**
      * \brief   Destructor. Public
@@ -161,7 +161,7 @@ public:
      * \param   input   The Stack object to save initialized values.
      **/
     template<typename V>
-    friend const IEInStream & operator >> (const IEInStream & stream, TEStack<V> & input);
+    friend const InStream & operator >> (const InStream & stream, TEStack<V> & input);
     /**
      * \brief   Writes to the stream Stack values.
      *          The values will be written to the stream starting from head position.
@@ -171,7 +171,7 @@ public:
      * \param   output  The Stack object to read out values.
      **/
     template<typename V>
-    friend IEOutStream & operator << (IEOutStream & stream, const TEStack<V> & output);
+    friend OutStream & operator << (OutStream & stream, const TEStack<V> & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and Attributes
@@ -427,7 +427,7 @@ protected:
     std::deque<VALUE>   mValueList;
 
      //! The instance of synchronization object to be used to make object thread-safe.
-    IEResourceLock &    mSyncObject;
+    Lockable &    mSyncObject;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -652,7 +652,7 @@ private:
 // TEStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-TEStack<VALUE>::TEStack( IEResourceLock & syncObject )
+TEStack<VALUE>::TEStack( Lockable & syncObject )
     : Constless<std::deque<VALUE>>( )
     , mValueList    ( )
     , mSyncObject   ( syncObject )
@@ -660,7 +660,7 @@ TEStack<VALUE>::TEStack( IEResourceLock & syncObject )
 }
 
 template <typename VALUE>
-TEStack<VALUE>::TEStack( IEResourceLock & syncObject, const TEStack<VALUE> & source )
+TEStack<VALUE>::TEStack( Lockable & syncObject, const TEStack<VALUE> & source )
     : Constless<std::deque<VALUE>>( )
     , mValueList    ( )
     , mSyncObject   ( syncObject )
@@ -670,7 +670,7 @@ TEStack<VALUE>::TEStack( IEResourceLock & syncObject, const TEStack<VALUE> & sou
 }
 
 template <typename VALUE>
-TEStack<VALUE>::TEStack( IEResourceLock & syncObject, TEStack<VALUE> && source ) noexcept
+TEStack<VALUE>::TEStack( Lockable & syncObject, TEStack<VALUE> && source ) noexcept
     : Constless<std::deque<VALUE>>( )
     , mValueList    ( )
     , mSyncObject   ( syncObject )
@@ -680,7 +680,7 @@ TEStack<VALUE>::TEStack( IEResourceLock & syncObject, TEStack<VALUE> && source )
 }
 
 template<typename VALUE>
-TEStack<VALUE>::TEStack(IEResourceLock& syncObject, const VALUE* list, uint32_t count)
+TEStack<VALUE>::TEStack(Lockable& syncObject, const VALUE* list, uint32_t count)
     : Constless<std::deque<VALUE>>()
     , mValueList ()
     , mSyncObject(syncObject)
@@ -1186,7 +1186,7 @@ inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TEStack<VALUE> 
 // TEStack<VALUE> friend operators implementation
 //////////////////////////////////////////////////////////////////////////
 template<typename V>
-const IEInStream & operator >> ( const IEInStream & stream, TEStack<V> & input )
+const InStream & operator >> ( const InStream & stream, TEStack<V> & input )
 {
     Lock lock(input.mSyncObject);
 
@@ -1203,7 +1203,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEStack<V> & input )
 }
 
 template<typename V>
-IEOutStream & operator << ( IEOutStream & stream, const TEStack<V> & output )
+OutStream & operator << ( OutStream & stream, const TEStack<V> & output )
 {
     Lock lock(output.mSyncObject);
 

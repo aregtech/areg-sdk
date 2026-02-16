@@ -20,15 +20,15 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/component/IERemoteEventConsumer.hpp"
-#include "areg/ipc/IEServiceRegisterProvider.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
+#include "areg/component/RemoteEventConsumer.hpp"
+#include "areg/ipc/RegistrationProvider.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServiceRegisterConsumer;
+class RegistrationConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // RouterClient class declaration
@@ -39,10 +39,10 @@ class IEServiceRegisterConsumer;
  *          communicate with service manager.
  **/
 class RouterClient  : public    ServiceClientConnectionBase
-                    , public    IEServiceRegisterProvider
+                    , public    RegistrationProvider
                     , protected DispatcherThread
-                    , private   IERemoteMessageHandler
-                    , private   IERemoteEventConsumer
+                    , private   RemoteMessageHandler
+                    , private   RemoteEventConsumer
 {
 private:
     //! The prefix to add to the send and receive message threads.
@@ -56,7 +56,7 @@ public:
      * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
      * \param   registerConsumer    The instance of remote service registration consumer to handle service register notification.
      **/
-    RouterClient(IEServiceConnectionConsumer& connectionConsumer, IEServiceRegisterConsumer & registerConsumer);
+    RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
     /**
      * \brief   Destructor
      **/
@@ -93,7 +93,7 @@ protected:
     virtual bool isServiceHostPending() const override;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -124,7 +124,7 @@ protected:
     virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
-// IEServiceRegisterProvider interface overrides
+// RegistrationProvider interface overrides
 /************************************************************************/
 
     /**
@@ -162,7 +162,7 @@ protected:
     virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
@@ -177,7 +177,7 @@ protected:
     virtual bool postEvent( Event & eventElem ) override;
 
 /************************************************************************/
-// IERemoteEventConsumer interface overrides
+// RemoteEventConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -230,7 +230,7 @@ private:
     /**
      * \brief   The instance of service register consumer.
      **/
-    IEServiceRegisterConsumer &     mRegisterConsumer;
+    RegistrationConsumer &     mRegisterConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

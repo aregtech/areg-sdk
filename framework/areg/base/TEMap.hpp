@@ -22,7 +22,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/TETemplateBase.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/NEMemory.hpp"
 
 #include <map>
@@ -189,7 +189,7 @@ public:
      * \param   input   The sorted map object to save initialized values.
      **/
     template < typename K, typename V >
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, TEMap<K, V> & input);
+    friend inline const InStream & operator >> ( const InStream & stream, TEMap<K, V> & input);
 
     /**
      * \brief   Writes to the stream the key and value pairs of the map.
@@ -200,7 +200,7 @@ public:
      * \param   output  The sorted map object containing value to stream.
      **/
     template < typename K, typename V >
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const TEMap<K, V> & output );
+    friend inline OutStream & operator << ( OutStream & stream, const TEMap<K, V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -989,7 +989,7 @@ inline uint32_t TEMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint32_
 //////////////////////////////////////////////////////////////////////////
 
 template < typename K, typename V >
-inline const IEInStream & operator >> ( const IEInStream & stream, TEMap<K, V> & input )
+inline const InStream & operator >> ( const InStream & stream, TEMap<K, V> & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -1007,7 +1007,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, TEMap<K, V> &
 }
 
 template < typename K, typename V >
-inline IEOutStream & operator << ( IEOutStream & stream, const TEMap<K, V> & output )
+inline OutStream & operator << ( OutStream & stream, const TEMap<K, V> & output )
 {
     uint32_t size = output.getSize();
     stream << size;

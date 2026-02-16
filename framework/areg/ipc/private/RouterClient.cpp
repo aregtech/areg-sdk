@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "areg/ipc/private/RouterClient.hpp"
 
-#include "areg/ipc/IEServiceRegisterConsumer.hpp"
+#include "areg/ipc/RegistrationConsumer.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
 
 #include "areg/component/RemoteEventFactory.hpp"
@@ -44,18 +44,18 @@ DEF_LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 // RouterClient class implementation
 //////////////////////////////////////////////////////////////////////////
 
-RouterClient::RouterClient(IEServiceConnectionConsumer& connectionConsumer, IEServiceRegisterConsumer& registerConsumer)
+RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer& registerConsumer)
     : ServiceClientConnectionBase   ( NEService::COOKIE_ROUTER
                                     , NERemoteService::eRemoteServices::ServiceRouter
                                     , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
                                     , NEService::eMessageSource::MessageSourceClient
                                     , connectionConsumer
-                                    , static_cast<IERemoteMessageHandler &>(self())
+                                    , static_cast<RemoteMessageHandler &>(self())
                                     , static_cast<DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
-    , IEServiceRegisterProvider     ( )
+    , RegistrationProvider     ( )
     , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
-    , IERemoteEventConsumer         ( )
+    , RemoteEventConsumer         ( )
 
     , mRegisterConsumer (registerConsumer)
 {
@@ -509,7 +509,7 @@ bool RouterClient::postEvent(Event & eventElem)
 {
     if ( eventElem.isRemote() )
     {
-        eventElem.setEventConsumer( static_cast<IERemoteEventConsumer *>(this) );
+        eventElem.setEventConsumer( static_cast<RemoteEventConsumer *>(this) );
     }
 
     return EventDispatcher::postEvent(eventElem);

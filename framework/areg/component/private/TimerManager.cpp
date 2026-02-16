@@ -78,7 +78,7 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
         {
             LOG_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
             result = TimerManagerEvent::sendEvent( TimerManagerEventData(&timer)
-                                                 , static_cast<IETimerManagerEventConsumer &>(timerManager)
+                                                 , static_cast<TimerManagerEventConsumer &>(timerManager)
                                                  , static_cast<DispatcherThread &>(timerManager) );
         }
         else

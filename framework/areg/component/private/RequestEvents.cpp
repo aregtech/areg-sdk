@@ -50,20 +50,20 @@ RequestEvent::RequestEvent( const EventDataStream & args
 {
 }
 
-RequestEvent::RequestEvent( const IEInStream & stream )
+RequestEvent::RequestEvent( const InStream & stream )
     : ServiceRequestEvent( stream )
     , mData( stream )
 {
 }
 
-const IEInStream & RequestEvent::readStream(const IEInStream & stream)
+const InStream & RequestEvent::readStream(const InStream & stream)
 {
     ServiceRequestEvent::readStream(stream);
     stream >> mData;
     return stream;
 }
 
-IEOutStream & RequestEvent::writeStream(IEOutStream & stream) const
+OutStream & RequestEvent::writeStream(OutStream & stream) const
 {
     ServiceRequestEvent::writeStream(stream);
     stream << mData;
@@ -96,7 +96,7 @@ LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
 {
 }
 
-LocalRequestEvent::LocalRequestEvent( const IEInStream & stream )
+LocalRequestEvent::LocalRequestEvent( const InStream & stream )
     : RequestEvent ( stream)
 {
 }
@@ -127,7 +127,7 @@ RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
 {
 }
 
-RemoteRequestEvent::RemoteRequestEvent( const IEInStream & stream )
+RemoteRequestEvent::RemoteRequestEvent( const InStream & stream )
     : RequestEvent ( stream)
 {
     ASSERT(getData().getDataStream().isExternalDataStream());
@@ -154,7 +154,7 @@ NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
 {
 }
 
-NotifyRequestEvent::NotifyRequestEvent(const IEInStream & stream)
+NotifyRequestEvent::NotifyRequestEvent(const InStream & stream)
     : ServiceRequestEvent ( stream )
 {
 }
@@ -179,7 +179,7 @@ LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress & fromProxy
 {
 }
 
-LocalNotifyRequestEvent::LocalNotifyRequestEvent( const IEInStream & stream )
+LocalNotifyRequestEvent::LocalNotifyRequestEvent( const InStream & stream )
     : NotifyRequestEvent ( stream )
 {
 }
@@ -204,7 +204,7 @@ RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress & fromPro
 {
 }
 
-RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const IEInStream & stream )
+RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const InStream & stream )
     : NotifyRequestEvent ( stream )
 {
 }

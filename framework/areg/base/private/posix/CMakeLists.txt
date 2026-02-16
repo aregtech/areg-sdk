@@ -1,8 +1,8 @@
 macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/posix/CriticalSectionIX.cpp
 	areg/base/private/posix/FilePosix.cpp
-	areg/base/private/posix/IESyncObjectBaseIX.cpp
-	areg/base/private/posix/IEWaitableBaseIX.cpp
+	areg/base/private/posix/SyncObjectPosix.cpp
+	areg/base/private/posix/WaitablePosix.cpp
 	areg/base/private/posix/MutexIX.cpp
 	areg/base/private/posix/NEDebugPosix.cpp
 	areg/base/private/posix/NESocketPosix.cpp

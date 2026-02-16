@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IEWaitableBaseIX.hpp"
+#include "areg/base/private/posix/WaitablePosix.hpp"
 #include <time.h>
 
 #ifdef __APPLE__
@@ -38,7 +38,7 @@
  *          set to signaled when the specified timeout is expired. There are two 
  *          types of waitable timers: manual- or auto-reset.
  **/
-class WaitableTimerIX : public IEWaitableBaseIX
+class WaitableTimerIX : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -94,7 +94,7 @@ public:
     bool cancelTimer();
 
 /************************************************************************/
-// IESyncObjectBaseIX overrides.
+// SyncObjectPosix overrides.
 /************************************************************************/
     /**
      * \brief   Returns true if synchronization object is valid.
@@ -106,7 +106,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEWaitableBaseIX callback overrides.
+// WaitablePosix callback overrides.
 /************************************************************************/
 
     /**

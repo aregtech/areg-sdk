@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/IEWaitableBaseIX.hpp"
+#include "areg/base/private/posix/WaitablePosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WaitableMutexIX class declaration.
@@ -38,7 +38,7 @@
  *          state. The released state of Mute is considered as signaled and the thread
  *          owning state is non-signaled if it has mutex owning thread.
  **/
-class WaitableMutexIX : public IEWaitableBaseIX
+class WaitableMutexIX : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -90,7 +90,7 @@ public:
     inline pthread_t getOwningThreadId() const;
 
 /************************************************************************/
-// IEWaitableBaseIX callback overrides.
+// WaitablePosix callback overrides.
 /************************************************************************/
 
     /**

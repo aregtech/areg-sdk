@@ -58,7 +58,7 @@ protected:
      * \brief   Creates streamable event and initialize data
      * \param   stream  The streaming object to read data
      **/
-    StreamableEvent( const IEInStream & stream );
+    StreamableEvent( const InStream & stream );
 
     /**
      * \brief   Destructor
@@ -77,14 +77,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream );
+    virtual const InStream & readStream( const InStream & stream );
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const;
+    virtual OutStream & writeStream( OutStream & stream ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -103,7 +103,7 @@ protected:
      *          Requires instance of synchronization object.
      * \param   syncObject Reference to synchronization object.
      **/
-    TERuntimeResourceMap( IEResourceLock & syncObject );
+    TERuntimeResourceMap( Lockable & syncObject );
 
     /**
      * \brief   Destructor.
@@ -223,7 +223,7 @@ private:
 // TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <class RUNTIME_DELEGATE, class Deleter>
-TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TERuntimeResourceMap( IEResourceLock& syncObject )
+TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TERuntimeResourceMap( Lockable& syncObject )
     : TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
 {
 }
@@ -233,7 +233,7 @@ TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TERuntimeResourceMap( IEResourc
 //////////////////////////////////////////////////////////////////////////
 template <class RUNTIME_DELEGATE, class Deleter>
 TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TENolockRuntimeResourceMap()
-    : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<IEResourceLock &>(mNoLock))
+    : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<Lockable &>(mNoLock))
     
     , mNoLock   ( )
 {
@@ -244,7 +244,7 @@ TENolockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TENolockRuntimeResourceMa
 //////////////////////////////////////////////////////////////////////////
 template <class RUNTIME_DELEGATE, class Deleter>
 TELockRuntimeResourceMap<RUNTIME_DELEGATE, Deleter>::TELockRuntimeResourceMap()
-    : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<IEResourceLock &>(mLock))
+    : TERuntimeResourceMap<RUNTIME_DELEGATE, Deleter>   (static_cast<Lockable &>(mLock))
     
     , mLock ( )
 {

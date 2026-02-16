@@ -25,7 +25,7 @@
 
 
 PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
-    : IEWorkerThreadConsumer( NEUtilities::createComponentItemName( NECommon::ServiceNamePatientInfo, consumerName) )
+    : WorkerThreadConsumer( NEUtilities::createComponentItemName( NECommon::ServiceNamePatientInfo, consumerName) )
 
     , mStubPatienInfo       ( infoPatient )
 {

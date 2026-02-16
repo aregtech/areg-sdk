@@ -483,7 +483,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageConfigurationSaved()
     return msgScope;
 }
 
-AREG_API_IMPL void NELogging::setLogDatabaseEngine(IELogDatabaseEngine * dbEngine)
+AREG_API_IMPL void NELogging::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
 {
     LogManager::setLogDatabaseEngine(dbEngine);
 }
@@ -656,7 +656,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageConfigurationSaved()
     return msgScope;
 }
 
-AREG_API_IMPL void NELogging::setLogDatabaseEngine(IELogDatabaseEngine * /*dbEngine*/)
+AREG_API_IMPL void NELogging::setLogDatabaseEngine(LogDatabaseEngine * /*dbEngine*/)
 {
 }
 

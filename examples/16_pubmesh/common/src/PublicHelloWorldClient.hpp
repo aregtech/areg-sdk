@@ -16,7 +16,7 @@
 #include "areg/base/GEGlobal.h"
 #include "examples/16_pubmesh/services/PublicHelloWorldClientBase.hpp"
 #include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 class PublicHelloWorldClient    : private   PublicHelloWorldClientBase
                                 , private   SystemShutdownClientBase
-                                , private   IETimerConsumer
+                                , private   TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -79,7 +79,7 @@ protected:
     virtual void onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -95,7 +95,7 @@ protected:
     virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
     /**
      * \brief   Triggered when Timer is expired.

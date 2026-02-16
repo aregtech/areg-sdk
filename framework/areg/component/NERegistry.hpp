@@ -73,7 +73,7 @@ namespace NERegistry
 class Component;
 class WorkerThread;
 class ComponentThread;
-class IEWorkerThreadConsumer;
+class WorkerThreadConsumer;
 
 /************************************************************************
  * Global types

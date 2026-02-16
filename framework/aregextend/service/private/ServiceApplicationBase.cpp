@@ -104,7 +104,7 @@ bool ServiceApplicationBase::serviceInitialize(NESystemService::eServiceOption /
                                 , true
                                 , false
                                 , fileConfig
-                                , static_cast<IEConfigurationListener*>(this));
+                                , static_cast<ConfigListener*>(this));
     return _osInitializeService();
 }
 

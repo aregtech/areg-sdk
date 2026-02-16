@@ -60,7 +60,7 @@ Version::Version( Version && src ) noexcept
 {
 }
 
-Version::Version(const IEInStream & stream)
+Version::Version(const InStream & stream)
     : mMajor    ( 0 )
     , mMinor    ( 0 )
     , mPatch    ( 0 )

@@ -30,9 +30,9 @@ void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitc
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TrafficLightService::TimerConsumer class implementation
+// TrafficLightService::TrafficLightTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
-void TrafficLightService::TimerConsumer::processTimer( Timer & timer )
+void TrafficLightService::TrafficLightTimerConsumer::processTimer( Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -48,7 +48,7 @@ TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entr
     : Component                 ( entry, owner )
     , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )
 
-    , mTimer                    ( static_cast<IETimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
+    , mTimer                    ( static_cast<TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
     , mPrevState                ( NESimpleTrafficLight::eTrafficLight::LightOff )
     , mEventConsumer            ( self() )
     , mTimerConsumer            ( self() )

@@ -2,7 +2,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/logging/private/DatabaseLogger.cpp
 	areg/logging/private/DebugOutputLogger.cpp
 	areg/logging/private/FileLogger.cpp
-	areg/logging/private/IELogDatabaseEngine.cpp
+	areg/logging/private/LogDatabaseEngine.cpp
 	areg/logging/private/LayoutManager.cpp
 	areg/logging/private/LogConfiguration.cpp
 	areg/logging/private/LogMessage.cpp

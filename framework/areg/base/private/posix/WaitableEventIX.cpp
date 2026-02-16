@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 WaitableEventIX::WaitableEventIX( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
-    : IEWaitableBaseIX  ( NESyncTypesIX::eSyncObject::SoWaitEvent, true, asciiName )
+    : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitEvent, true, asciiName )
 
     , mEventReset       ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
     , mIsSignaled       ( isInitSignaled )

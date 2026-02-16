@@ -16,16 +16,16 @@
 
 #include "areg/component/NEService.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/logging/GELog.h"
 #include "aregextend/service/ServerConnection.hpp"
 
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
-ServerSendThread::ServerSendThread(IERemoteMessageHandler& remoteService, ServerConnection & connection)
+ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
     : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
-    , IESendMessageEventConsumer( )
+    , SendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
     , mBytesSend                ( 0 )
@@ -37,13 +37,13 @@ void ServerSendThread::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         DispatcherThread::readyForEvents( true );
     }
     else
     {
         DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         mConnection.closeAllConnections( );
         mConnection.disableSend( );
     }

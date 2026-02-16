@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 /**
  * \brief   The TEProperty class template is an implementation of a pair of data,
@@ -88,7 +88,7 @@ public:
      * \param   input   The property object to save initialized values.
      **/
     template < typename K, typename V >
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, TEProperty<K, V> & input);
+    friend inline const InStream & operator >> ( const InStream & stream, TEProperty<K, V> & input);
 
     /**
      * \brief   Writes to the stream the key and value pairs of the property.
@@ -99,7 +99,7 @@ public:
      * \param   output  The property object containing value to stream.
      **/
     template < typename K, typename V >
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const TEProperty<K, V> & output );
+    friend inline OutStream & operator << ( OutStream & stream, const TEProperty<K, V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -270,7 +270,7 @@ inline VALUE& TEProperty<KEY, VALUE>::getValue()
 //////////////////////////////////////////////////////////////////////////
 
 template < typename K, typename V >
-inline const IEInStream& operator >> (const IEInStream& stream, TEProperty<K, V>& input)
+inline const InStream& operator >> (const InStream& stream, TEProperty<K, V>& input)
 {
     K key;
     V value;
@@ -280,7 +280,7 @@ inline const IEInStream& operator >> (const IEInStream& stream, TEProperty<K, V>
 }
 
 template < typename K, typename V >
-inline IEOutStream& operator << (IEOutStream& stream, const TEProperty<K, V>& output)
+inline OutStream& operator << (OutStream& stream, const TEProperty<K, V>& output)
 {
     stream << output.mValue.first;
     stream << output.mValue.second;

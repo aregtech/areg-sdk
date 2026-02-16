@@ -13,7 +13,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "examples/24_pubunblock/services/HelloUnblockClientBase.hpp"
 
 #include "areg/base/TEStack.hpp"
@@ -30,7 +30,7 @@
  **/
 class ServiceClient : public    Component
                     , private   HelloUnblockClientBase
-                    , private   IETimerConsumer
+                    , private   TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
     using SequenceList = TENolockStack<uint32_t>;
@@ -46,7 +46,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

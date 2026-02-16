@@ -29,7 +29,7 @@
 
 #include "areg/base/NECommon.hpp"
 #include "areg/base/NEMemory.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <algorithm>
 
@@ -173,7 +173,7 @@ public:
      * \param   input   The array object to save initialized values.
      **/
     template <typename V>
-    friend const IEInStream & operator >> (const IEInStream & stream, TEArrayList< V > & input);
+    friend const InStream & operator >> (const InStream & stream, TEArrayList< V > & input);
 
     /**
      * \brief   Writes to the stream the values of array.
@@ -184,7 +184,7 @@ public:
      * \param   output   The array object containing value to stream.
      **/
     template <typename V>
-    friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList< V > & output);
+    friend OutStream & operator << (OutStream & stream, const TEArrayList< V > & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -1130,7 +1130,7 @@ inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::_citer2pos(
 //////////////////////////////////////////////////////////////////////////
 
 template<typename V>
-const IEInStream & operator >> ( const IEInStream & stream, TEArrayList< V > & input )
+const InStream & operator >> ( const InStream & stream, TEArrayList< V > & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -1145,7 +1145,7 @@ const IEInStream & operator >> ( const IEInStream & stream, TEArrayList< V > & i
 }
 
 template<typename V>
-IEOutStream & operator << ( IEOutStream& stream, const TEArrayList< V >& output )
+OutStream & operator << ( OutStream& stream, const TEArrayList< V >& output )
 {
     stream << output.getSize();
     for (const auto & elem : output.mValueList)

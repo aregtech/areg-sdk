@@ -20,7 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/NEMath.hpp"
 
 #include <algorithm>
@@ -676,7 +676,7 @@ namespace NEMemory
 /************************************************************************
  * Include for streaming
  ************************************************************************/
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 /************************************************************************
  * \brief   Streaming of NEMemory::uAlign
@@ -690,7 +690,7 @@ namespace NEMemory
  * \param   input   The NEMemory::uAlign item to initialize from stream
  * \return  Reading streaming object
  **/
-inline const IEInStream & operator >> (const IEInStream & stream, NEMemory::uAlign & input)
+inline const InStream & operator >> (const InStream & stream, NEMemory::uAlign & input)
 {
     stream.read( reinterpret_cast<unsigned char *>(&input), sizeof(NEMemory::uAlign) );
     return stream;
@@ -703,7 +703,7 @@ inline const IEInStream & operator >> (const IEInStream & stream, NEMemory::uAli
  * \param   output  The NEMemory::uAlign item to write to stream
  * \return  Writing streaming object
  **/
-inline IEOutStream & operator << (IEOutStream & stream, const NEMemory::uAlign & output)
+inline OutStream & operator << (OutStream & stream, const NEMemory::uAlign & output)
 {
     stream.write( reinterpret_cast<const unsigned char *>(&output), sizeof(NEMemory::uAlign) );
     return stream;
