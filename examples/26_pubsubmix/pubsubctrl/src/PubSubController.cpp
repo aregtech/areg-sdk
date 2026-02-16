@@ -67,12 +67,12 @@ PubSubController::PubSubController( const NERegistry::ComponentEntry & entry, Co
 void PubSubController::startupComponent(ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.createThread(areg::common::WAIT_INFINITE);
 }
 
 void PubSubController::shutdownComponent(ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.shutdownThread(areg::common::WAIT_INFINITE);
     Component::shutdownComponent(comThread);
 }
 

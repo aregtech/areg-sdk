@@ -114,7 +114,7 @@ int main()
     Application::loadModel( nullptr );
         
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::common::WAIT_INFINITE);
 
     // By passing nullptr, stop and unload all models.
     Application::unloadModel( nullptr );

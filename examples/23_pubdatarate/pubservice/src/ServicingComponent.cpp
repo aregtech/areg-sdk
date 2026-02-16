@@ -107,8 +107,8 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     _printInfo();
 
     _initBlockList();
-    mInputThread.createThread(NECommon::WAIT_INFINITE);
-    mImageThread.createThread(NECommon::WAIT_INFINITE);
+    mInputThread.createThread(areg::common::WAIT_INFINITE);
+    mImageThread.createThread(areg::common::WAIT_INFINITE);
 
     console.enableConsoleInput(true);
 
@@ -125,8 +125,8 @@ void ServicingComponent::shutdownServiceInterface(Component& holder)
     mPauseEvent.setEvent();
 
     mBitmap.release();
-    mInputThread.shutdownThread(NECommon::WAIT_INFINITE);
-    mImageThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mInputThread.shutdownThread(areg::common::WAIT_INFINITE);
+    mImageThread.shutdownThread(areg::common::WAIT_INFINITE);
 
     LargeDataStub::shutdownServiceInterface(holder);
 }
@@ -142,7 +142,7 @@ bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::
 
 void ServicingComponent::onTimerExpired()
 {
-    mLock.lock(NECommon::WAIT_INFINITE);
+    mLock.lock(areg::common::WAIT_INFINITE);
 
     uint32_t rateItem   = mItemRate;
     uint32_t didSleep   = mDidSleep;
@@ -249,7 +249,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         mOptionChanged = true;
 
-        mLock.lock(NECommon::WAIT_INFINITE);
+        mLock.lock(areg::common::WAIT_INFINITE);
         _initBlockList();
         mLock.unlock();
         
@@ -377,7 +377,7 @@ void ServicingComponent::_printInfo() const
     uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
-    double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
+    double blockRate = (static_cast<double>(areg::common::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
     NEUtilities::DataLiteral blockSize= NEUtilities::convDataSize(bytesPerBlock);
     NEUtilities::DataLiteral timeRate = NEUtilities::convDuration(timePerBlock);

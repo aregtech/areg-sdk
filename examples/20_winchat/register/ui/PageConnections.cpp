@@ -219,7 +219,7 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 
 int PageConnections::findInTyping( unsigned int cookie )
 {
-    int result = NECommon::INVALID_INDEX;
+    int result = areg::common::INVALID_INDEX;
     for (uint32_t i = 0; i < mTypingList.getSize( ); ++i )
     {
         if (cookie == mTypingList[i]->dataSave)
@@ -267,7 +267,7 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
     if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
-        if ( rmIndex != NECommon::INVALID_INDEX )
+        if ( rmIndex != areg::common::INVALID_INDEX )
         {
             NECommon::sMessageData *temp = mTypingList.getAt(rmIndex);
             mTypingList.removeAt( rmIndex, 1 );
@@ -302,7 +302,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
     if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
-        if ( rmIndex != NECommon::INVALID_INDEX )
+        if ( rmIndex != areg::common::INVALID_INDEX )
         {
             NECommon::sMessageData *temp = mTypingList.getAt( rmIndex );
             if ( isEmpty )

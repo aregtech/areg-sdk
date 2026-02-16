@@ -78,7 +78,7 @@ int main()
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::common::WAIT_INFINITE);
 
         // stop and unload components
         Application::unloadModel(_modelName);

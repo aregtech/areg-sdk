@@ -360,7 +360,7 @@ inline void PageConnections::cleanService()
 
 inline int PageConnections::findConnection( const NEConnectionManager::sConnection & connection ) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int result = areg::common::INVALID_INDEX;
     for ( int i = 0; i < mCtrlConnections.GetItemCount(); ++ i )
     {
         if ( mCtrlConnections.GetItemData(i) == connection.cookie )
@@ -379,7 +379,7 @@ inline int PageConnections::findConnection( const NEConnectionManager::sConnecti
 inline void PageConnections::removeConnection( const NEConnectionManager::sConnection & connection )
 {
     int pos = findConnection(connection);
-    if ( pos != NECommon::INVALID_INDEX )
+    if ( pos != areg::common::INVALID_INDEX )
     {
         mCtrlConnections.EnsureVisible( pos, FALSE );
         mCtrlConnections.DeleteItem( pos );

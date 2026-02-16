@@ -100,12 +100,12 @@ Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread 
 void Publisher::startupComponent(ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.createThread(areg::common::WAIT_INFINITE);
 }
 
 void Publisher::shutdownComponent(ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.shutdownThread(areg::common::WAIT_INFINITE);
     Component::shutdownComponent(comThread);
 }
 

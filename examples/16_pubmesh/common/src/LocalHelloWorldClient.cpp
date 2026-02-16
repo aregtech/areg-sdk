@@ -78,7 +78,7 @@ inline String LocalHelloWorldClient::timerName( Component & owner ) const
     String result;
     result.append("Local_")
           .append(owner.getRoleName())
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::common::DEFAULT_SPECIAL_CHAR)
           .append(LocalHelloWorldClientBase::getServiceName());
 
     return result;

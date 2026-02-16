@@ -201,7 +201,7 @@ inline String PublicHelloWorldClient::timerName( Component & owner ) const
     String result;
     result.append("Public_")
           .append( owner.getRoleName( ) )
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::common::DEFAULT_SPECIAL_CHAR)
           .append(PublicHelloWorldClientBase::getServiceName());
 
     return result;

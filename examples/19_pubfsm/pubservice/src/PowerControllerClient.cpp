@@ -152,12 +152,12 @@ bool PowerControllerClient::serviceConnected( NEService::eServiceConnection stat
     {
         LOG_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
         PowerControllerEvent::addListener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.getProxyDispatcherThread( ) );
-        mConsole.createThread( NECommon::WAIT_INFINITE );
+        mConsole.createThread( areg::common::WAIT_INFINITE );
     }
     else
     {
         LOG_DBG( "Remove listener and stop worker thread" );
-        mConsole.shutdownThread( NECommon::WAIT_INFINITE );
+        mConsole.shutdownThread( areg::common::WAIT_INFINITE );
         PowerControllerEvent::removeListener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }
 

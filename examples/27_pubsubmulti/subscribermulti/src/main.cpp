@@ -80,7 +80,7 @@ int main()
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::common::WAIT_INFINITE);
 
         // release and cleanup resources of application.
         Application::releaseApplication();

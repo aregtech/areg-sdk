@@ -120,10 +120,10 @@ int main()
         LOG_DBG("Servicing model is loaded");
         
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::common::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (Application::findModel( _modelName ).getAliveDuration( ) / areg::common::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
