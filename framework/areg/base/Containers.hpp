@@ -19,13 +19,13 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TEHashMap.hpp"
-#include "areg/base/TELinkedList.hpp"
-#include "areg/base/TEMap.hpp"
-#include "areg/base/TERingStack.hpp"
-#include "areg/base/TEStack.hpp"
-#include "areg/base/TESortedLinkedList.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "areg/base/HashMap.hpp"
+#include "areg/base/LinkedList.hpp"
+#include "areg/base/OrderedMap.hpp"
+#include "areg/base/RingStack.hpp"
+#include "areg/base/Stack.hpp"
+#include "areg/base/SortedLinkedList.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/base/NEMath.hpp"
@@ -40,28 +40,28 @@
 // Hierarchy of classes.
 //////////////////////////////////////////////////////////////////////////
 
-/* class TEArrayList */
+/* class ArrayList */
     /* StringArray;*/
         class Tokenizer;
 
-/* class TEHashMap */
+/* class HashMap */
     template <typename VALUE>
-    class TEIntegerHashMap;
+    class IntegerHashMap;
     template <typename VALUE>
-    class TEStringHashMap;
+    class StringHashMap;
     template <typename VALUE>
-    class TEPointerHashMap;
+    class PtrHashMap;
 
-/* class TEMap */
+/* class OrderedMap */
     template <typename VALUE>
-    class TEIntegerMap;
+    class IntegerMap;
     template <typename VALUE>
-    class TEStringMap;
+    class StringMap;
     template <typename VALUE>
-    class TEPointerMap;
+    class PtrMap;
 
 //////////////////////////////////////////////////////////////////////////
-// TEIntegerHashMap class template declaration
+// IntegerHashMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -69,7 +69,7 @@
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class TEIntegerHashMap  : public TEHashMap<unsigned int, VALUE>
+class IntegerHashMap  : public HashMap<unsigned int, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -79,35 +79,35 @@ public:
      * \brief   Creates an empty Hash Map object where the keys are integers and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE
      **/
-    TEIntegerHashMap() = default;
+    IntegerHashMap() = default;
 
     /**
      * \brief	Creates Hash Map object where the keys are integers.
      * \param	hashSize	The size of blocks in hash map to create at once.
      *                      It cannot be more than MAP_MAX_BLOCK_SIZE
      **/
-    TEIntegerHashMap( uint32_t hashSize );
+    IntegerHashMap( uint32_t hashSize );
 
     /**
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerHashMap( const TEIntegerHashMap<VALUE> & src ) = default;
+    IntegerHashMap( const IntegerHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerHashMap( TEIntegerHashMap<VALUE> && src ) noexcept = default;
+    IntegerHashMap( IntegerHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEIntegerHashMap() = default;
+    ~IntegerHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TEIdHashMap class template declaration
+// IdHashMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -117,7 +117,7 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class TEIdHashMap: public TEHashMap<id_type, VALUE>
+class IdHashMap: public HashMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -128,41 +128,41 @@ public:
      * \param	hashSize	The size of has map table.
      *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
      **/
-    TEIdHashMap(uint32_t hashSize);
+    IdHashMap(uint32_t hashSize);
 
     /**
      * \brief   Creates an empty Hash Map object where the keys are Item IDs and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE
      **/
-    TEIdHashMap() = default;
+    IdHashMap() = default;
 
     /**
      * \brief   Copies hash map data from given source.
      * \param   src     The source to copy data.
      **/
-    TEIdHashMap( const TEIdHashMap<VALUE> & src ) = default;
+    IdHashMap( const IdHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Moves hash map data from given source.
      * \param   src     The source to move data.
      **/
-    TEIdHashMap( TEIdHashMap<VALUE> && src ) noexcept = default;
+    IdHashMap( IdHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEIdHashMap() = default;
+    ~IdHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TEStringHashMap class template declaration
+// StringHashMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Hash Map class template where key are strings.
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
-class TEStringHashMap: public TEHashMap<String, VALUE>
+class StringHashMap: public HashMap<String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -173,34 +173,34 @@ public:
      * \param	hashSize	The size of has map table.
      *                      It cannot be more than MAP_MAX_TABLE_SIZE.
      **/
-    TEStringHashMap(uint32_t hashSize);
+    StringHashMap(uint32_t hashSize);
 
     /**
      * \brief   Creates an empty Hash Map where keys are strings and
      *          Hash Table size is MAP_DEFAULT_HASH_SIZE.
      **/
-    TEStringHashMap() = default;
+    StringHashMap() = default;
 
     /**
      * \brief   Copies hash-map values from given source.
      * \param   src     The source to copy data.
      **/
-    TEStringHashMap( const TEStringHashMap<VALUE> & src ) = default;
+    StringHashMap( const StringHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Moves hash-map values from given source.
      * \param   src     The source to move data.
      **/
-    TEStringHashMap( TEStringHashMap<VALUE> && src ) noexcept = default;
+    StringHashMap( StringHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEStringHashMap() = default;
+    ~StringHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TEPointerHashMap class template declaration
+// PtrHashMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -208,7 +208,7 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class TEPointerHashMap: public TEHashMap<void *, VALUE>
+class PtrHashMap: public HashMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -219,33 +219,33 @@ public:
      * \param	hashSize	The size of has map table.
      *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
      **/
-    TEPointerHashMap(uint32_t hashSize);
+    PtrHashMap(uint32_t hashSize);
 
     /**
      * \brief   Creates Hash Map where keys are pointers.
      **/
-    TEPointerHashMap() = default;
+    PtrHashMap() = default;
 
     /**
      * \brief   Copies hash map entries from given source.
      * \param   src     The source to copy data.
      **/
-    TEPointerHashMap( const TEPointerHashMap<VALUE> & src ) = default;
+    PtrHashMap( const PtrHashMap<VALUE> & src ) = default;
 
     /**
      * \brief   Moves hash map entries from given source.
      * \param   src     The source to move data.
      **/
-    TEPointerHashMap( TEPointerHashMap<VALUE> && src ) noexcept = default;
+    PtrHashMap( PtrHashMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEPointerHashMap() = default;
+    ~PtrHashMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TEIntegerHashMap class template declaration
+// IntegerHashMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -253,7 +253,7 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class TEIntegerMap : public TEMap<unsigned int, VALUE>
+class IntegerMap : public OrderedMap<unsigned int, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -262,28 +262,28 @@ public:
     /**
      * \brief   Creates an empty.
      **/
-    TEIntegerMap() = default;
+    IntegerMap() = default;
 
     /**
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerMap(const TEIntegerMap<VALUE>& src) = default;
+    IntegerMap(const IntegerMap<VALUE>& src) = default;
 
     /**
      * \brief   Copies hash-map data from given sources.
      * \param   src     The source to copy data.
      **/
-    TEIntegerMap(TEIntegerMap<VALUE>&& src) noexcept = default;
+    IntegerMap(IntegerMap<VALUE>&& src) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEIntegerMap() = default;
+    ~IntegerMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TEIdMap class template declaration
+// IdMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -293,7 +293,7 @@ public:
   * \tparam  VALUE       The type of value to store in map
 **/
 template <typename VALUE>
-class TEIdMap : public TEMap<id_type, VALUE>
+class IdMap : public OrderedMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -302,35 +302,35 @@ public:
     /**
      * \brief   Creates an empty sorted map where the keys are Item IDs.
      **/
-    TEIdMap() = default;
+    IdMap() = default;
 
     /**
      * \brief   Copies hash map data from given source.
      * \param   src     The source to copy data.
      **/
-    TEIdMap(const TEIdMap<VALUE>& src) = default;
+    IdMap(const IdMap<VALUE>& src) = default;
 
     /**
      * \brief   Moves hash map data from given source.
      * \param   src     The source to move data.
      **/
-    TEIdMap(TEIdMap<VALUE>&& src) noexcept = default;
+    IdMap(IdMap<VALUE>&& src) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEIdMap() = default;
+    ~IdMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// TEStringMap class template declaration
+// StringMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Sorted Map class template where key are strings.
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
-class TEStringMap : public TEMap<String, VALUE>
+class StringMap : public OrderedMap<String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -339,24 +339,24 @@ public:
     /**
      * \brief   Creates an empty sorted map where keys are strings.
      **/
-    TEStringMap() = default;
+    StringMap() = default;
 
     /**
      * \brief   Copies map values from given source.
      * \param   src     The source to copy data.
      **/
-    TEStringMap(const TEStringMap<VALUE>& src) = default;
+    StringMap(const StringMap<VALUE>& src) = default;
 
     /**
      * \brief   Moves map values from given source.
      * \param   src     The source to move data.
      **/
-    TEStringMap(TEStringMap<VALUE>&& src) noexcept = default;
+    StringMap(StringMap<VALUE>&& src) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEStringMap() = default;
+    ~StringMap() = default;
 };
 
 /**
@@ -364,7 +364,7 @@ public:
  * \tparam  VALUE       The type of value to store in map.
  **/
 template <typename VALUE>
-class TEPointerMap: public TEMap<void *, VALUE>
+class PtrMap: public OrderedMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -373,24 +373,24 @@ public:
     /**
      * \brief	Creates an empty Sorted Map where keys are pointers.
      **/
-    TEPointerMap() = default;
+    PtrMap() = default;
 
     /**
      * \brief   Copies map entries from given source.
      * \param   src     The source to copy data.
      **/
-    TEPointerMap( const TEPointerMap<VALUE> & src ) = default;
+    PtrMap( const PtrMap<VALUE> & src ) = default;
 
     /**
      * \brief   Moves map entries from given source.
      * \param   src     The source to move data.
      **/
-    TEPointerMap( TEPointerMap<VALUE> && src ) noexcept = default;
+    PtrMap( PtrMap<VALUE> && src ) noexcept = default;
 
     /**
      * \brief   Destructor
      **/
-    ~TEPointerMap() = default;
+    ~PtrMap() = default;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -400,122 +400,122 @@ public:
 /**
   * \brief   Array of integer elements
  **/
-using IntegerArray  = TEArrayList<unsigned int>;
+using IntegerArray  = ArrayList<unsigned int>;
 
 /**
  * \brief   Array of string elements
  **/
-using StringArray   = TEArrayList<String>;
+using StringArray   = ArrayList<String>;
 
 /**
  * \brief   Array of pointer elements
  **/
-using PointerArray  = TEArrayList<void *>;
+using PointerArray  = ArrayList<void *>;
 
 /**
  * \brief   Hash Map where keys are values are integers.
  **/
-using IntegerToIntegerHashMap   = TEIntegerHashMap<unsigned int>;
+using IntegerToIntegerHashMap   = IntegerHashMap<unsigned int>;
 
 /**
  * \brief   Hash Map where keys are integers and values are strings
  **/
-using IntegerToStringHashMap    = TEIntegerHashMap<String>;
+using IntegerToStringHashMap    = IntegerHashMap<String>;
 
 /**
  * \brief   Hash Map where keys are integers and values are pointers.
  **/
-using IntegerToPointergHashMap  = TEIntegerHashMap<void *>;
+using IntegerToPointergHashMap  = IntegerHashMap<void *>;
 
 /**
  * \brief   Hash Map where keys are strings and values are integers.
  **/
-using StringToIntegerHashMap    = TEStringHashMap<unsigned int>;
+using StringToIntegerHashMap    = StringHashMap<unsigned int>;
 
 /**
  * \brief   Hash Map where keys are strings and values are strings.
  **/
-using StringToStringHashMap     = TEStringHashMap<String>;
+using StringToStringHashMap     = StringHashMap<String>;
 
 /**
  * \brief   Hash Map where keys are strings and values are pointers.
  **/
-using StringToPointergHashMap   = TEStringHashMap<void *>;
+using StringToPointergHashMap   = StringHashMap<void *>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are integers.
  **/
-using PointerToIntegerHashMap   = TEPointerHashMap<unsigned int>;
+using PointerToIntegerHashMap   = PtrHashMap<unsigned int>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are strings.
  **/
-using PointerToStringHashMap    = TEPointerHashMap<String>;
+using PointerToStringHashMap    = PtrHashMap<String>;
 
 /**
  * \brief   Sorted Map where keys are values are integers.
  **/
-using IntegerToIntegerMap = TEIntegerMap<unsigned int>;
+using IntegerToIntegerMap = IntegerMap<unsigned int>;
 
 /**
  * \brief   Sorted Map where keys are integers and values are strings
  **/
-using IntegerToStringMap = TEIntegerMap<String>;
+using IntegerToStringMap = IntegerMap<String>;
 
 /**
  * \brief   Sorted Map where keys are integers and values are pointers.
  **/
-using IntegerToPointergMap = TEIntegerMap<void*>;
+using IntegerToPointergMap = IntegerMap<void*>;
 
 /**
  * \brief   Sorted Map where keys are strings and values are integers.
  **/
-using StringToIntegerMap = TEStringMap<unsigned int>;
+using StringToIntegerMap = StringMap<unsigned int>;
 
 /**
  * \brief   Sorted Map where keys are strings and values are strings.
  **/
-using StringToStringMap = TEStringMap<String>;
+using StringToStringMap = StringMap<String>;
 
 /**
  * \brief   Sorted Map where keys are strings and values are pointers.
  **/
-using StringToPointergMap = TEStringMap<void*>;
+using StringToPointergMap = StringMap<void*>;
 
 /**
  * \brief   Sorted Map where keys are pointers and values are integers.
  **/
-using PointerToIntegerMap = TEPointerMap<unsigned int>;
+using PointerToIntegerMap = PtrMap<unsigned int>;
 
 /**
  * \brief   Sorted Map where keys are pointers and values are strings.
  **/
-using PointerToStringMap = TEPointerMap<String>;
+using PointerToStringMap = PtrMap<String>;
 
 /**
  * \brief   Linked List where values are integers.
  **/
-using IntegerList   = TELinkedList<unsigned int>;
+using IntegerList   = LinkedList<unsigned int>;
 
 /**
  * \brief   Linked List where values are strings.
  **/
-using StringList    = TELinkedList<String>;
+using StringList    = LinkedList<String>;
 
 /**
  * \brief   Linked List where values are pointers
  **/
-using PointerList   = TELinkedList<void *>;
+using PointerList   = LinkedList<void *>;
 
 /**
 * \brief   Sorted List class where values are integers.
  **/
-using SortedIntegerList = TESortedLinkedList<unsigned int>;
+using SortedIntegerList = SortedLinkedList<unsigned int>;
 
 /**
  * \brief   Sorted List class where values are strings.
  **/
-using SortedStringList  = TESortedLinkedList<String>;
+using SortedStringList  = SortedLinkedList<String>;
 
 //////////////////////////////////////////////////////////////////////////
 // Tokenizer class declaration
@@ -596,42 +596,42 @@ private:
  ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
-// TEIntegerHashMap<VALUE, VALUE_TYPE> class implementation
+// IntegerHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
 template <typename VALUE>
-TEIntegerHashMap<VALUE>::TEIntegerHashMap(uint32_t hashSize)
-    : TEHashMap<unsigned int, VALUE> (hashSize)
+IntegerHashMap<VALUE>::IntegerHashMap(uint32_t hashSize)
+    : HashMap<unsigned int, VALUE> (hashSize)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEIdHashMap<VALUE, VALUE_TYPE> class implementation
+// IdHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
 template <typename VALUE>
-TEIdHashMap<VALUE>::TEIdHashMap(uint32_t hashSize)
-    : TEHashMap<id_type, VALUE> (hashSize)
+IdHashMap<VALUE>::IdHashMap(uint32_t hashSize)
+    : HashMap<id_type, VALUE> (hashSize)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEStringHashMap<VALUE, VALUE_TYPE> class implementation
+// StringHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
 template <typename VALUE>
-TEStringHashMap<VALUE>::TEStringHashMap( uint32_t hashSize )
-    : TEHashMap<String, VALUE>   (hashSize)
+StringHashMap<VALUE>::StringHashMap( uint32_t hashSize )
+    : HashMap<String, VALUE>   (hashSize)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TEPointerHashMap<VALUE, VALUE_TYPE> class implementation
+// PtrHashMap<VALUE, VALUE_TYPE> class implementation
 //////////////////////////////////////////////////////////////////////////
 
 template <typename VALUE>
-TEPointerHashMap<VALUE>::TEPointerHashMap( uint32_t hashSize )
-    : TEHashMap<void *, VALUE>(hashSize)
+PtrHashMap<VALUE>::PtrHashMap( uint32_t hashSize )
+    : HashMap<void *, VALUE>(hashSize)
 {
 }
 

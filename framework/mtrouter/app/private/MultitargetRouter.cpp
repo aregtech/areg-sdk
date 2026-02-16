@@ -17,7 +17,7 @@
 #include "mtrouter/app/private/RouterConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"

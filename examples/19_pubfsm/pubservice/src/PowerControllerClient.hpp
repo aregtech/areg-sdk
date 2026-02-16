@@ -16,7 +16,7 @@
 #include "areg/base/ThreadConsumer.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 
 #include <string_view>
 

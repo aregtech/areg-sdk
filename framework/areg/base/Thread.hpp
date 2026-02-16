@@ -25,10 +25,10 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/RuntimeObject.hpp"
 
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/ThreadAddress.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 #include "areg/base/String.hpp"
 
 #include <string_view>
@@ -653,23 +653,23 @@ private:
      * \brief   Thread resource mapping by thread ID.
      *          The unique thread ID is set when thread is created
      **/
-    using   MapThreadID             = TEIdMap<Thread *>;
-    using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread *>;
-    using   MapThreadIDResource     = TELockResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
+    using   MapThreadID             = IdMap<Thread *>;
+    using   ImplThreadIDResource    = ResourceMapImpl<id_type, Thread *>;
+    using   MapThreadIDResource     = ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   MapThreadPoiters        = TEPointerMap<Thread *>;
-    using   ImplThreadHandleResource= TEResourceMapImpl< void *, Thread *>;
-    using   MapThreadHandleResource = TELockResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
+    using   MapThreadPoiters        = PtrMap<Thread *>;
+    using   ImplThreadHandleResource= ResourceMapImpl< void *, Thread *>;
+    using   MapThreadHandleResource = ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   MapThreadName           = TEStringMap<Thread *>;
-    using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread *>;
-    using   MapThreadNameResource   = TELockResourceMap<String, Thread *, MapThreadName, ImplThreadNameResource>;
+    using   MapThreadName           = StringMap<Thread *>;
+    using   ImplThreadNameResource  = ResourceMapImpl<String, Thread *>;
+    using   MapThreadNameResource   = ConcurrentResourceMap<String, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables

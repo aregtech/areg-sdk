@@ -9,20 +9,20 @@
 #include "areg/component/NERegistry.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-BEGIN_MODEL(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT)
+BEGIN_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
     BEGIN_REGISTER_THREAD( NEDistributedApp::THREAD_DISTRIBUTED )
-        BEGIN_REGISTER_COMPONENT( NECommon::COMP_NAME_DISTRIBUTED_CLIENT, ConnectionService )
-            REGISTER_DEPENDENCY( NECommon::COMP_NAME_CENTRAL_SERVER )
-        END_REGISTER_COMPONENT( NECommon::COMP_NAME_DISTRIBUTED_CLIENT )
+        BEGIN_REGISTER_COMPONENT( chat::COMP_NAME_DISTRIBUTED_CLIENT, ConnectionService )
+            REGISTER_DEPENDENCY( chat::COMP_NAME_CENTRAL_SERVER )
+        END_REGISTER_COMPONENT( chat::COMP_NAME_DISTRIBUTED_CLIENT )
     END_REGISTER_THREAD( NEDistributedApp::THREAD_DISTRIBUTED )
 
-END_MODEL(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT)
+END_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 
 DEF_LOG_SCOPE( chatter_ConnectionService_CreateComponent );
 DEF_LOG_SCOPE( chatter_ConnectionService_DeleteComponent );

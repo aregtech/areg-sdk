@@ -44,7 +44,7 @@ struct _EXCEPTION_POINTERS;
 namespace NEDebug
 {
     /**
-     * \brief   NEDebug::eDegubPrio
+     * \brief   NEDebug::DebugPriority
      *          Defines message priority in debug output window.
      *          There is no filter of messages in priority, but
      *          by using these constants, user makes appropriate 
@@ -58,7 +58,7 @@ namespace NEDebug
         , PrioInfo  = OUTPUT_DEBUG_LEVEL_INFO   //!< Priority Information, outputs "INF:" string in front of message
         , PrioDbg   = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
 
-    } eDegubPrio;
+    } DebugPriority;
 
     /**
      * \brief   NEDebug::MAX_DEBUG_BUFFER_SIZE
@@ -82,7 +82,7 @@ namespace NEDebug
      * \return  Returns one of defined prefixes, depending of priority.
      *          By default, the priority is  NEDebug::PrioDbg
      **/
-    inline const char * getPrioPrefix( NEDebug::eDegubPrio priority );
+    inline const char * getPrioPrefix( NEDebug::DebugPriority priority );
 
     /**
      * \brief   NEDebug::outputConsole()
@@ -90,7 +90,7 @@ namespace NEDebug
      * \param   priority    The priority of message
      * \param   msg         The message to output. Before output, the message is formated.
      **/
-    void AREG_API outputConsole(NEDebug::eDegubPrio priority, const char* msg, ...);
+    void AREG_API outputConsole(NEDebug::DebugPriority priority, const char* msg, ...);
 
     /**
      * \brief   NEDebug::outputConsole()
@@ -128,7 +128,7 @@ namespace NEDebug
 //////////////////////////////////////////////////////////////////////////
 // NEDebug namespace inline function implementation.
 //////////////////////////////////////////////////////////////////////////
-inline const char* NEDebug::getPrioPrefix( NEDebug::eDegubPrio priority )
+inline const char* NEDebug::getPrioPrefix( NEDebug::DebugPriority priority )
 {
     return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int>(priority) ].data();
 }

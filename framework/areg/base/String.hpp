@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEString.hpp"
+#include "areg/base/StringBase.hpp"
 
 #include <functional>
 #include <stdarg.h>
@@ -47,11 +47,11 @@ class WideString;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-class AREG_API String : public TEString<char>
+class AREG_API String : public StringBase<char>
  {
     friend class BufferStreamBase;
 
-    using Base = TEString<char>;
+    using Base = StringBase<char>;
 
 //////////////////////////////////////////////////////////////////////////
 // defined constants
@@ -708,55 +708,55 @@ namespace std
 //////////////////////////////////////////////////////////////////////////
 
 inline String::String(const char* source)
-    : TEString<char>(source)
+    : StringBase<char>(source)
 {
 }
 
 inline String::String(const std::string& source)
-    : TEString<char>(source)
+    : StringBase<char>(source)
 {
 }
 
 inline String::String(const std::string_view& source)
-    : TEString<char>(source)
+    : StringBase<char>(source)
 {
 }
 
 inline String::String(std::string&& source) noexcept
-    : TEString<char>(std::move(source))
+    : StringBase<char>(std::move(source))
 {
 }
 
 inline String::String(const std::wstring& source)
-    : TEString<char>()
+    : StringBase<char>()
 {
     assign(source.c_str(), static_cast<NEString::CharCount>(source.length()));
 }
 
 inline String::String(const wchar_t* source)
-    : TEString<char>()
+    : StringBase<char>()
 {
     assign(source, NEString::COUNT_ALL);
 }
 
 inline String::String(const char* source, uint32_t charCount)
-    : TEString<char>(source, static_cast<NEString::CharCount>(charCount))
+    : StringBase<char>(source, static_cast<NEString::CharCount>(charCount))
 {
 }
 
 inline String::String(const wchar_t* source, uint32_t charCount)
-    : TEString<char>()
+    : StringBase<char>()
 {
     assign(source, static_cast<NEString::CharCount>(charCount));
 }
 
 inline String::String( char ch )
-    : TEString<char>( ch )
+    : StringBase<char>( ch )
 {
 }
 
 inline String::String(uint32_t count)
-    : TEString<char>( static_cast<uint32_t>(count) )
+    : StringBase<char>( static_cast<uint32_t>(count) )
 {
 }
 

@@ -120,7 +120,7 @@ bool ServiceApplicationBase::_osCreateService()
         TCHAR szPath[MAX_PATH];
         if (::GetModuleFileName(nullptr, szPath, MAX_PATH))
         {
-            TEString<TCHAR> modulePath{ _T('\"') };
+            StringBase<TCHAR> modulePath{ _T('\"') };
             modulePath += szPath;
             modulePath += _T("\" --service");
 

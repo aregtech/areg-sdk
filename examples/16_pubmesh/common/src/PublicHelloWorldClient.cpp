@@ -11,7 +11,7 @@
  ************************************************************************/
 #include "common/src/PublicHelloWorldClient.hpp"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/MeshDefs.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/Component.hpp"
@@ -28,8 +28,8 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
 
 PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout)
     : PublicHelloWorldClientBase( dependency, owner )
-    , SystemShutdownClientBase  ( NECommon::PublicControllerService, owner )
-    , TimerConsumer           ( )
+    , SystemShutdownClientBase  ( mesh::PublicControllerService, owner )
+    , TimerConsumer             ( )
 
     , mMsTimeout                ( timeout )
     , mTimer                    ( static_cast<TimerConsumer &>(self()), timerName(owner) )

@@ -29,7 +29,7 @@ bool ConnectionHandler::IsValid() const
     return (GetCookie() != NEConnectionManager::InvalidCookie) && (mNickName.isEmpty() == false);
 }
 
-bool ConnectionHandler::AddConnection(const NECommon::sConnection & newConnection)
+bool ConnectionHandler::AddConnection(const chat::sConnection & newConnection)
 {
     Lock lock(mLock);
     int pos = NECommon::INVALID_INDEX;
@@ -43,13 +43,13 @@ bool ConnectionHandler::AddConnection(const NECommon::sConnection & newConnectio
     return (pos == NECommon::INVALID_INDEX);
 }
 
-int ConnectionHandler::AddConnections(const NECommon::ListConnections & listConnections)
+int ConnectionHandler::AddConnections(const chat::ListConnections & listConnections)
 {
     Lock lock(mLock);
     int result = 0;
     for (uint32_t i = 0; i < listConnections.getSize(); ++i)
     {
-        const NECommon::sConnection & entry = listConnections.getAt(i);
+        const chat::sConnection & entry = listConnections.getAt(i);
         if (entry.nickName != mNickName)
         {
             if (findConnection(entry) == NECommon::INVALID_INDEX)
@@ -63,7 +63,7 @@ int ConnectionHandler::AddConnections(const NECommon::ListConnections & listConn
     return result;
 }
 
-bool ConnectionHandler::RemoveConnection(const NECommon::sConnection & connection)
+bool ConnectionHandler::RemoveConnection(const chat::sConnection & connection)
 {
     Lock lock(mLock);
     int pos = findConnection(connection);
@@ -75,18 +75,18 @@ bool ConnectionHandler::RemoveConnection(const NECommon::sConnection & connectio
     return (pos != NECommon::INVALID_INDEX);
 }
 
-bool ConnectionHandler::ConnectionExist(const NECommon::sConnection & connection)
+bool ConnectionHandler::ConnectionExist(const chat::sConnection & connection)
 {
     Lock lock(mLock);
     return ( findConnection(connection) != NECommon::INVALID_INDEX);
 }
 
-int ConnectionHandler::findConnection(const NECommon::sConnection & connection) const
+int ConnectionHandler::findConnection(const chat::sConnection & connection) const
 {
     int result = NECommon::INVALID_INDEX;
     for (uint32_t i = 0; i < mListConnections.getSize(); ++i)
     {
-        const NECommon::sConnection & entry = mListConnections.getAt(i);
+        const chat::sConnection & entry = mListConnections.getAt(i);
         if (entry.nickName == connection.nickName)
         {
             result = static_cast<int>(i);
@@ -134,7 +134,7 @@ void ConnectionHandler::SetCookie( uint32_t cookie )
 uint32_t ConnectionHandler::GetCookie() const
 {
     Lock lock( mLock );
-    return (mCookie != NECommon::InvalidCookie ? mCookie : mConnectCookie);
+    return (mCookie != chat::InvalidCookie ? mCookie : mConnectCookie);
 }
 
 uint32_t ConnectionHandler::GetCookieDirect() const

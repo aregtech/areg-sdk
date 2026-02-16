@@ -1,8 +1,8 @@
 #pragma once
 
 #include "areg/base/String.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "common/NECommon.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "common/ChatDefs.hpp"
 #include "chatter/res/resource.h"
 #include "examples/20_winchat/services/NEConnectionManager.hpp"
 
@@ -38,8 +38,8 @@ public:
     void OnRemoveConnection( NEConnectionManager::sConnection & data );
     void OnUpdateConnection();
     void OnDisconnectTriggered();
-    void OnTypeMessage( uint32_t cookie, NECommon::sMessageData & data );
-    void OnSendMessage( uint32_t cookie, NECommon::sMessageData & data );
+    void OnTypeMessage( uint32_t cookie, chat::sMessageData & data );
+    void OnSendMessage( uint32_t cookie, chat::sMessageData & data );
 
     void OnDefaultClicked();
 

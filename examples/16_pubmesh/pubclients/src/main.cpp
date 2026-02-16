@@ -19,7 +19,7 @@
 #include "common/src/LocalHelloWorldClient.hpp"
 #include "common/src/LocalHelloWorldService.hpp"
 #include "common/src/PublicHelloWorldClient.hpp"
-#include "common/src/NECommon.hpp"
+#include "common/src/MeshDefs.hpp"
 
 #ifdef _MSC_VER
     #pragma comment(lib, "areg")
@@ -92,13 +92,13 @@ BEGIN_MODEL( _modelName )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::LocalService, ServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::LocalService, ServiceComponent )
             // register LocalHelloWorld service implementation and the dependencies.
             REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::PublicControllerService)
-            REGISTER_DEPENDENCY(NECommon::PublicSecondService)
-            REGISTER_DEPENDENCY(NECommon::PublicThirdService)
-            REGISTER_DEPENDENCY(NECommon::LocalService)
+            REGISTER_DEPENDENCY(mesh::PublicControllerService)
+            REGISTER_DEPENDENCY(mesh::PublicSecondService)
+            REGISTER_DEPENDENCY(mesh::PublicThirdService)
+            REGISTER_DEPENDENCY(mesh::LocalService)
         // end of component description
         END_REGISTER_COMPONENT( NECommon::LocalService )
 

@@ -18,7 +18,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/IOStream.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/NEMath.hpp"
 
 #include <string_view>

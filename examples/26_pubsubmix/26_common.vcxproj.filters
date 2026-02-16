@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\src\NECommon.hpp">
+    <ClInclude Include="common\src\PubSubDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common\src\Publisher.hpp">
@@ -35,10 +35,10 @@
     <ClCompile Include="common\src\Subscriber.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="common\src\NECommon.cpp">
+    <ClCompile Include="common\src\PubSubMixed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="common\src\PubSubMixed.cpp">
+    <ClCompile Include="common\src\PubSubDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

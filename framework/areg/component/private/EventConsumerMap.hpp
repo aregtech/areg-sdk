@@ -20,9 +20,9 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/TERuntimeResourceMap.hpp"
+#include "areg/base/RuntimeResourceMap.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 
 /************************************************************************
  * Declared classes
@@ -45,7 +45,7 @@ class EventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using EventConsumerListBase	= TELinkedList<EventConsumer *>;
+using EventConsumerListBase	= LinkedList<EventConsumer *>;
 
 /**
  * \brief   Event Consumer List is a helper class containing 
@@ -136,7 +136,7 @@ public:
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class ImplEventConsumerMap	: public TEResourceMapImpl<RuntimeClassID, EventConsumerList *>
+class ImplEventConsumerMap	: public ResourceMapImpl<RuntimeClassID, EventConsumerList *>
 {
 public:
     /**
@@ -154,7 +154,7 @@ public:
  *          It is used in Dispatcher, when a Consumer is registered for Event.
  *          For use, see implementation of EventDispatcherBase class
  **/
-using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
+using EventConsumerMap  = ConcurrentRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation

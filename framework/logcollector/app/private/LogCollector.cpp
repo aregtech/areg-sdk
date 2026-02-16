@@ -17,7 +17,7 @@
 #include "logcollector/app/private/LogCollectorConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
@@ -610,7 +610,7 @@ void LogCollector::_cleanHelp()
 void LogCollector::_processUpdateScopes(const OptionParser::sOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
-    TEArrayList<RemoteMessage> msgList;
+    ArrayList<RemoteMessage> msgList;
     _createScopeMessage(optScope, msgList);
     for (uint32_t i = 0; i < msgList.getSize(); ++ i)
     {
@@ -621,7 +621,7 @@ void LogCollector::_processUpdateScopes(const OptionParser::sOption& optScope)
 void LogCollector::_processQueryScopes(const OptionParser::sOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
-    TEArrayList<ITEM_ID> listTargets;
+    ArrayList<ITEM_ID> listTargets;
     if (optScope.inString.empty() || (optScope.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
     {
         listTargets.add(NEService::COOKIE_ANY);
@@ -649,7 +649,7 @@ void LogCollector::_processQueryScopes(const OptionParser::sOption& optScope)
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& msgList)
+void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, ArrayList<RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int>(eLoggerOptions::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
@@ -769,5 +769,5 @@ inline void LogCollector::_enableLocalLogs(ConfigManager& config, bool enable)
     const String prio{ NELogging::makePrioString(prios) };
 
     config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::LoggingType::LogTypeRemote, false, true);
 }

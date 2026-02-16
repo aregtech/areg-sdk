@@ -15,7 +15,7 @@
  *              process or in the remote PC.
  ************************************************************************/
 #include "areg/component/Channel.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 
 const Channel & Channel::getInvalidChannel()
 {

@@ -20,7 +20,7 @@
   * Include files
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 
 #include "areg/component/TimerBase.hpp"
 

@@ -21,7 +21,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "aregextend/service/NESystemService.hpp"
-#include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 
 /************************************************************************
  * Dependencies
@@ -97,7 +97,7 @@ protected:
     /**
      * \brief   Initializes instance of message router service.
      **/
-    SystemServiceBase( ServiceCommunicatonBase & commBase );
+    SystemServiceBase( ServiceCommunicationBase & commBase );
     /**
      * \brief   Destructor.
      **/
@@ -276,7 +276,7 @@ public:
     /**
      * \brief   Return the instance of the communication controller object.
      **/
-    inline ServiceCommunicatonBase& getCommunicationController() const;
+    inline ServiceCommunicationBase& getCommunicationController() const;
 
     /**
      * \brief   Resets default options.
@@ -337,7 +337,7 @@ protected:
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 protected:
-    ServiceCommunicatonBase &               mCommunication;
+    ServiceCommunicationBase &               mCommunication;
     /**
      * \brief   The message router service state.
      **/
@@ -380,9 +380,9 @@ inline DataRateHelper& SystemServiceBase::getDataRateHelper() const
     return  mCommunication.getDataRateHelper();
 }
 
-inline ServiceCommunicatonBase& SystemServiceBase::getCommunicationController() const
+inline ServiceCommunicationBase& SystemServiceBase::getCommunicationController() const
 {
-    return const_cast<ServiceCommunicatonBase&>(mCommunication);
+    return const_cast<ServiceCommunicationBase&>(mCommunication);
 }
 
 inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption() const

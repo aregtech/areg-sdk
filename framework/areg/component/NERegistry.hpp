@@ -21,8 +21,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/Version.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TELinkedList.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "areg/base/LinkedList.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -243,7 +243,7 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The list of service entries.
-        using ServiceListBase = TEArrayList<NERegistry::ServiceEntry>;
+        using ServiceListBase = ArrayList<NERegistry::ServiceEntry>;
 
         /**
          * \brief   Default constructor.
@@ -475,7 +475,7 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The list of worker threads.
-        using WorkerThreadListBase = TEArrayList<NERegistry::WorkerThreadEntry>;
+        using WorkerThreadListBase = ArrayList<NERegistry::WorkerThreadEntry>;
 
         /**
          * \brief   Default constructor.
@@ -690,7 +690,7 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of dependency list
-        using DependencyListBase = TEArrayList<NERegistry::DependencyEntry>;
+        using DependencyListBase = ArrayList<NERegistry::DependencyEntry>;
 
         /**
          * \brief   Creates empty list of dependent services.
@@ -1208,7 +1208,7 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of component list.
-        using ComponentListBase = TEArrayList<NERegistry::ComponentEntry>;
+        using ComponentListBase = ArrayList<NERegistry::ComponentEntry>;
 
         /**
          * \brief   Creates empty list.
@@ -1583,7 +1583,7 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of component thread list.
-        using ComponentThreadListBase = TEArrayList< NERegistry::ComponentThreadEntry>;
+        using ComponentThreadListBase = ArrayList< NERegistry::ComponentThreadEntry>;
 
         /**
          * \brief   Default constructor.

@@ -13,7 +13,7 @@
  * \brief       Areg Platform, Multitarget routing settings.
  ************************************************************************/
 #include "mtrouter/app/NEMultitargetRouterSettings.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 char *      NEMultitargetRouterSettings::SERVICE_NAME_ASCII    { NEApplication::ROUTER_SERVICE_NAME_ASCII };
 

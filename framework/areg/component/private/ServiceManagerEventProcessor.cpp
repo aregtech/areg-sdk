@@ -213,8 +213,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             // Create service provider and service consumer list
             // to be able to unregister entries, because they are removing
             // elements from the existing list and it may invalidate position object.
-            TEArrayList<StubAddress> stubList;
-            TEArrayList<ProxyAddress> proxyList;
+            ArrayList<StubAddress> stubList;
+            ArrayList<ProxyAddress> proxyList;
             for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
             {
                 const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );

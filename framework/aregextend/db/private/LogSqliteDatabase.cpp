@@ -1218,7 +1218,7 @@ uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& stmt, ITEM_I
     }
 }
 
-uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter)
+uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID instId, const ArrayList<sScopeFilter>& filter)
 {
     Lock lock(mLock);
     if (mDatabase.isOperable() == false)
@@ -1283,7 +1283,7 @@ uint32_t LogSqliteDatabase::setupStatementReadFilterLogs(SqliteStatement& stmt, 
     return result;
 }
 
-uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter)
+uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID instId, const ArrayList<sScopeFilter>& filter)
 {
     if (filter.isEmpty() == false)
     {

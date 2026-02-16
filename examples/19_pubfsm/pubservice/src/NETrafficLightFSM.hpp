@@ -21,7 +21,7 @@
  * Include files
  ************************************************************************/
 
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 #include <string_view>
 
 //////////////////////////////////////////////////////////////////////////

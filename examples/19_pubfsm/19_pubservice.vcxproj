@@ -39,7 +39,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="common\NECommon.hpp" />
+    <ClInclude Include="common\FsmDefs.hpp" />
     <ClInclude Include="pubservice\src\IETrafficLightActionHandler.hpp" />
     <ClInclude Include="pubservice\src\NETrafficLightFSM.hpp" />
     <ClInclude Include="pubservice\src\TrafficLightFSM.hpp" />

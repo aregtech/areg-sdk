@@ -15,7 +15,7 @@
 #include "areg/component/Component.hpp"
 #include "examples/17_pubtraffic/services/SimpleTrafficLightClientBase.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/TrafficDefs.hpp"
 
 //! The simple service client, which receives data update notifications.
 class TrafficLightClient    : public    Component
@@ -92,5 +92,5 @@ private:
     /**
      * \brief   The symbolic traffic direction that is South-North or East-West.
      **/
-    NECommon::eTrafficDirection  mTrafficDirection;
+    traffic::eTrafficDirection  mTrafficDirection;
 };

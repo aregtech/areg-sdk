@@ -14,7 +14,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/base/private/IOStream.cpp
 	areg/base/private/SyncObject.cpp
 	areg/base/private/ThreadConsumer.cpp
-	areg/base/private/NECommon.cpp
+	areg/base/private/CommonDefs.cpp
 	areg/base/private/NEDebug.cpp
 	areg/base/private/NEMath.cpp
 	areg/base/private/NEMemory.cpp

@@ -13,7 +13,7 @@
 #include "areg/logging/GELog.h"
 
 #include "examples/22_pubwatchdog/services/NEHelloWatchdog.hpp"
-#include "common/NECommon.hpp"
+#include "common/WatchdogDefs.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
 #ifdef _MSC_VER
@@ -37,11 +37,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD_EX( "TestServiceThread", NEHelloWatchdog::TimeoutWatchdog)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceRoleName, ServicingComponent )
+        BEGIN_REGISTER_COMPONENT( watchdog::ServiceRoleName, ServicingComponent )
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWatchdog::ServiceName, NEHelloWatchdog::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::ServiceRoleName )
+        END_REGISTER_COMPONENT( watchdog::ServiceRoleName )
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 

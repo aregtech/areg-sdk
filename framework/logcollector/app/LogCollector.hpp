@@ -315,7 +315,7 @@ private:
      * \param[out]  msgList     On output it contains a list a messages to send to the targets.
      *                          If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
      **/
-    static void _createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage> & msgList);
+    static void _createScopeMessage(const OptionParser::sOption& optScope, ArrayList<RemoteMessage> & msgList);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.

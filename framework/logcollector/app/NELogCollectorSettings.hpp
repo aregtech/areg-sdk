@@ -20,7 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/logging/GELog.h"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 /**
  * \brief   Basic constants of the Log Collector service

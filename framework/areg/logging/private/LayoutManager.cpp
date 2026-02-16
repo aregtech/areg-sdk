@@ -106,7 +106,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 break;
 
             case NELogOptions::eLayouts::LayoutDayTime:
-                newLayout = DEBUG_NEW DayTimeLaytout();
+                newLayout = DEBUG_NEW DayTimeLayout();
                 break;
 
             case NELogOptions::eLayouts::LayoutExecutableId:

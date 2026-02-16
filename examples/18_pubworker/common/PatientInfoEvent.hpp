@@ -10,7 +10,7 @@
   * Include files
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "examples/18_pubworker/services/NEPatientInformation.hpp"
 

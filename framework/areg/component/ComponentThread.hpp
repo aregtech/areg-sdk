@@ -25,7 +25,7 @@
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 
 /************************************************************************
  * Dependencies
@@ -52,7 +52,7 @@ private:
      * \brief   ComponentThread::ListComponent;
      *          Linked List of instantiated components in the Component Thread.
      **/
-    using ListComponent     = TELinkedList<Component*>;
+    using ListComponent     = LinkedList<Component*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance

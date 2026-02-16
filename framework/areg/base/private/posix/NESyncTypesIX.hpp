@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include <unistd.h>
 #include <time.h>

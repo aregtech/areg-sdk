@@ -25,7 +25,7 @@
 #include <algorithm>
 
 SortedEventStack::SortedEventStack(uint32_t maxQueue)
-    : TELockStack<Event*>( )
+    : ConcurrentStack<Event*>( )
     , mMaxQueueSize      (SortedEventStack::_calcQueueSize(maxQueue))
 {
 }

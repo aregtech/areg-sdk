@@ -11,7 +11,7 @@
   ************************************************************************/
 #include "pubservice/src/TrafficLightService.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/FsmDefs.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/logging/GELog.h"
 
@@ -156,8 +156,8 @@ void TrafficLightService::actionVehicleYellow()
     broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
     broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(sn.lightVehicle), fsm::getName(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(ew.lightVehicle), fsm::getName(ew.lightPedestrian));
 }
 
 void TrafficLightService::actionVehicleRed()
@@ -174,8 +174,8 @@ void TrafficLightService::actionVehicleRed()
     setTrafficSouthNorth(sn);
     broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(sn.lightVehicle), fsm::getName(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(ew.lightVehicle), fsm::getName(ew.lightPedestrian));
 }
 
 void TrafficLightService::actionPedestrianRed()
@@ -195,8 +195,8 @@ void TrafficLightService::actionPedestrianRed()
     broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
     broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(sn.lightVehicle), fsm::getName(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(ew.lightVehicle), fsm::getName(ew.lightPedestrian));
 }
 
 void TrafficLightService::actionVehicleGreen( bool isEastWest )
@@ -223,8 +223,8 @@ void TrafficLightService::actionVehicleGreen( bool isEastWest )
         broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
     }
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(sn.lightVehicle), fsm::getName(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(ew.lightVehicle), fsm::getName(ew.lightPedestrian));
 }
 
 void TrafficLightService::actionPedestrianGreen(bool isEastWest)
@@ -260,8 +260,8 @@ void TrafficLightService::actionPedestrianGreen(bool isEastWest)
         broadcastEastWest( ew.lightVehicle, ew.lightPedestrian );
     }
 
-    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(sn.lightVehicle), NECommon::getName(sn.lightPedestrian));
-    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", NECommon::getName(ew.lightVehicle), NECommon::getName(ew.lightPedestrian));
+    LOG_INFO("SOUTH-NORTH : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(sn.lightVehicle), fsm::getName(sn.lightPedestrian));
+    LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(ew.lightVehicle), fsm::getName(ew.lightPedestrian));
 }
 
 void TrafficLightService::startupComponent(ComponentThread & comThread)

@@ -203,7 +203,7 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
             unsigned int len = static_cast<unsigned int>(NEString::getStringLineLength<CharType>(buffer));
             len *= sizeof(CharType);
             if ( file.write(reinterpret_cast<const unsigned char *>(buffer), len) == len )
-                result = file.writeChar( TEString<CharType>::NewLine );
+                result = file.writeChar( StringBase<CharType>::NewLine );
         }
     }
 

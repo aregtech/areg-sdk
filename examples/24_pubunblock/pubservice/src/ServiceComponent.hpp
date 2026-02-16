@@ -15,7 +15,7 @@
 #include "areg/component/TimerConsumer.hpp"
 #include "examples/24_pubunblock/services/HelloUnblockStub.hpp"
 
-#include "areg/base/TEStack.hpp"
+#include "areg/base/Stack.hpp"
 #include "areg/component/Timer.hpp"
 
 /**
@@ -44,7 +44,7 @@ class ServiceComponent  : public  Component
     };
 
     //!< The stack of session entries
-    using SessionList = TENolockStack<SessionEtnry>;
+    using SessionList = Stack<SessionEtnry>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

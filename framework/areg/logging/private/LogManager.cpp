@@ -112,7 +112,7 @@ bool LogManager::forceActivateLogging()
     {
         Lock lock( logManager.mLock );
         logManager.mLogConfig.setStatus(true);
-        logManager.mLogConfig.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true);
+        logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
         logManager.mScopeController.activateDefaults( );
         result = logManager.startLoggingThread( );
     }
@@ -176,7 +176,7 @@ void LogManager::forceEnableLogging()
 {
     LogManager& logManager = LogManager::getInstance();
     logManager.mLogConfig.setStatus(true);
-    logManager.mLogConfig.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true);
+    logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
 }
 
 //////////////////////////////////////////////////////////////////////////

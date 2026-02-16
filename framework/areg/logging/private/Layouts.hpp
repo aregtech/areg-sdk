@@ -41,7 +41,7 @@ class OutStream;
  ************************************************************************/
 class LogLayout;
     class TickCountLayout;
-    class DayTimeLaytout;
+    class DayTimeLayout;
     class ModuleIdLayout;
     class MessageLayout;
     class EndOfLineLayout;
@@ -186,12 +186,12 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// DayTimeLaytout class declaration
+// DayTimeLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout formats and outputs day-time data in streaming object
  **/
-class DayTimeLaytout    : public    LogLayout
+class DayTimeLayout    : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -200,24 +200,24 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    DayTimeLaytout();
+    DayTimeLayout();
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    DayTimeLaytout( const DayTimeLaytout & src );
+    DayTimeLayout( const DayTimeLayout & src );
 
     /**
      * \brief   Moves data from given source.
      * \param   src     The source of data to move.
      **/
-    DayTimeLaytout( DayTimeLaytout && src ) noexcept;
+    DayTimeLayout( DayTimeLayout && src ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~DayTimeLaytout() = default;
+    virtual ~DayTimeLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -227,13 +227,13 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline DayTimeLaytout & operator = ( const DayTimeLaytout & src );
+    inline DayTimeLayout & operator = ( const DayTimeLayout & src );
 
     /**
      * \brief   Moves data from given source.
      * \param   src     The source of data to move.
      **/
-    inline DayTimeLaytout & operator = ( DayTimeLaytout && src ) noexcept;
+    inline DayTimeLayout & operator = ( DayTimeLayout && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1028,16 +1028,16 @@ inline TickCountLayout & TickCountLayout::operator = ( TickCountLayout && /*src*
 }
 
 //////////////////////////////////////////////////////////////////////////
-// DayTimeLaytout class inline methods
+// DayTimeLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline DayTimeLaytout & DayTimeLaytout::operator = ( const DayTimeLaytout & /*src*/ )
+inline DayTimeLayout & DayTimeLayout::operator = ( const DayTimeLayout & /*src*/ )
 {
     /* Fixed layout type, do nothing */
     return (*this);
 }
 
-inline DayTimeLaytout & DayTimeLaytout::operator = ( DayTimeLaytout && /*src*/ ) noexcept
+inline DayTimeLayout & DayTimeLayout::operator = ( DayTimeLayout && /*src*/ ) noexcept
 {
     /* Fixed layout type, do nothing */
     return (*this);

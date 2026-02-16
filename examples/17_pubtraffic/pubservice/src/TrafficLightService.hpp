@@ -16,7 +16,7 @@
 #include "areg/component/Component.hpp"
 #include "examples/17_pubtraffic/services/SimpleTrafficLightStub.hpp"
 #include "areg/component/TimerConsumer.hpp"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 
 #include "areg/component/Timer.hpp"
 
@@ -63,7 +63,7 @@ private:
     class TrafficSwitchConsumer : public IETrafficSwitchConsumer
     {
     public:
-        inline TrafficSwitchConsumer( TrafficLightService & service )
+        inline TrafficSwitchConsumer    ( TrafficLightService & service )
             : IETrafficSwitchConsumer   ( )
             , mService                  ( service )
             {

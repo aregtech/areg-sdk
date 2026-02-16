@@ -5,20 +5,20 @@
     </Overview>
     <DataTypeList>
         <DataType ID="3" Name="sConnection" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>sConnection</ImportedObject>
             <Description>Imported sConnection structure.</Description>
         </DataType>
         <DataType ID="4" Name="ListConnections" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>ListConnections</ImportedObject>
             <Description>Imported list of connected clients object.</Description>
         </DataType>
         <DataType ID="5" Name="MapConnections" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>MapConnections</ImportedObject>
             <Description>Connection map</Description>
         </DataType>
@@ -150,16 +150,16 @@
     </MethodList>
     <ConstantList>
         <Constant ID="46" Name="InvalidCookie" DataType="uint32">
-            <Value>NECommon::InvalidCookie</Value>
+            <Value>chat::InvalidCookie</Value>
             <Description>Indicates invalid cookie value</Description>
         </Constant>
         <Constant ID="47" Name="NicknameMaxLen" DataType="uint32">
-            <Value>NECommon::MaxlenNickname</Value>
+            <Value>chat::MaxlenNickname</Value>
             <Description>The maximum length of nick name to register.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="59" Name="common/NECommon.hpp">
+        <Location ID="59" Name="common/ChatDefs.hpp">
             <Description>Shared data.</Description>
         </Location>
     </IncludeList>

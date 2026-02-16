@@ -16,7 +16,7 @@
 #include "areg/component/TimerConsumer.hpp"
 #include "examples/24_pubunblock/services/HelloUnblockClientBase.hpp"
 
-#include "areg/base/TEStack.hpp"
+#include "areg/base/Stack.hpp"
 #include "areg/component/Timer.hpp"
 
 /**
@@ -33,7 +33,7 @@ class ServiceClient : public    Component
                     , private   TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
-    using SequenceList = TENolockStack<uint32_t>;
+    using SequenceList = Stack<uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

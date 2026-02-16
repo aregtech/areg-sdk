@@ -25,7 +25,7 @@
 
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/TEStack.hpp"
+#include "areg/base/Stack.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class declaration
@@ -40,7 +40,7 @@
 class AREG_API EventDataStream : public IOStream
 {
     //! The list of shared buffer list (stack).
-    using SharedList    = TENolockStack<SharedBuffer>;
+    using SharedList    = Stack<SharedBuffer>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and types public

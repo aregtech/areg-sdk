@@ -58,7 +58,7 @@
     <ClCompile Include="aregextend\service\private\ServerConnection.cpp" />
     <ClCompile Include="aregextend\service\private\ServerReceiveThread.cpp" />
     <ClCompile Include="aregextend\service\private\ServerSendThread.cpp" />
-    <ClCompile Include="aregextend\service\private\ServiceCommunicatonBase.cpp" />
+    <ClCompile Include="aregextend\service\private\ServiceCommunicationBase.cpp" />
     <ClCompile Include="aregextend\service\private\win32\ServiceApplicationBaseWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -83,7 +83,7 @@
     <ClInclude Include="aregextend\service\ServerConnection.hpp" />
     <ClInclude Include="aregextend\service\private\ServerReceiveThread.hpp" />
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp" />
-    <ClInclude Include="aregextend\service\ServiceCommunicatonBase.hpp" />
+    <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp" />
     <ClInclude Include="aregextend\resources\resource.h" />
   </ItemGroup>
   <ItemGroup>

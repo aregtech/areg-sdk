@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/logging/NELogging.hpp"
 
 #include <string_view>

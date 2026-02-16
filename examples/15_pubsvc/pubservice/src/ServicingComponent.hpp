@@ -30,7 +30,7 @@ class ServicingComponent    : public    Component
                             , protected HelloWorldStub
 {
     //!< The type of list of connected clients.
-    using ClientList = TELinkedList<NEHelloWorld::sConnectedClient>;
+    using ClientList = LinkedList<NEHelloWorld::sConnectedClient>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

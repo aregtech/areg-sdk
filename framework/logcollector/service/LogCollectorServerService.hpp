@@ -23,7 +23,7 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/logging/NELogging.hpp"
-#include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "logcollector/service/private/LogCollectorMessageProcessor.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class LogCollectorServerService : public    ServiceCommunicatonBase
+class LogCollectorServerService : public    ServiceCommunicationBase
                                 , private   TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ public:
 
 public:
 /************************************************************************/
-// ServiceCommunicatonBase overrides
+// ServiceCommunicationBase overrides
 /************************************************************************/
     /**
      * \brief   Adds an entry into the list of connected instances.

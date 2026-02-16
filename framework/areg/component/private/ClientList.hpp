@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TELinkedList.hpp"
+#include "areg/base/LinkedList.hpp"
 #include "areg/component/private/ClientInfo.hpp"
 
 /************************************************************************
@@ -28,7 +28,7 @@
 class ProxyAddress;
 class ServerInfo;
 
-using ClientListBase = TELinkedList<ClientInfo>;
+using ClientListBase = LinkedList<ClientInfo>;
 
 /**
  * \brief   ClientList is a linked list object containing the list

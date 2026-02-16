@@ -366,7 +366,7 @@ private:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumer ) const override;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumer ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.

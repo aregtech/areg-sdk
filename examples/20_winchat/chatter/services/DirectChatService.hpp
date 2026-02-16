@@ -10,9 +10,9 @@
 #include "chatter/services/DirectMessagingClient.hpp"
 
 #include "areg/component/NERegistry.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 #include "examples/20_winchat/services/NEDirectConnection.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 #include "chatter/NEDistributedApp.hpp"
 
 class DirectConnectionClient;
@@ -22,9 +22,9 @@ class DirectChatService : public Component
                         , public DirectMessagerStub
                           
 {
-    using HashMapDirectConnections      = TEMap<String, DirectChatService *>;
-    using MapDirectConnections          = TELockResourceMap<String, DirectChatService *, HashMapDirectConnections>;
-    using ListDirectConnectionClients   = TEArrayList<DirectConnectionClient *>;
+    using HashMapDirectConnections      = OrderedMap<String, DirectChatService *>;
+    using MapDirectConnections          = ConcurrentResourceMap<String, DirectChatService *, HashMapDirectConnections>;
+    using ListDirectConnectionClients   = ArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component

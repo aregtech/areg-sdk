@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\src\LocalHelloWorldService.hpp" />
-    <ClInclude Include="common\src\NECommon.hpp" />
+    <ClInclude Include="common\src\MeshDefs.hpp" />
     <ClInclude Include="common\src\PublicHelloWorldService.hpp" />
     <ClInclude Include="common\src\LocalHelloWorldClient.hpp" />
     <ClInclude Include="common\src\PublicHelloWorldClient.hpp" />

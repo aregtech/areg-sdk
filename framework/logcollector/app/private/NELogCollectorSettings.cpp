@@ -13,7 +13,7 @@
  * \brief       Areg Platform, Log Collector settings.
  ************************************************************************/
 #include "logcollector/app/NELogCollectorSettings.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 char *      NELogCollectorSettings::SERVICE_NAME_ASCII    { NEApplication::LOGGER_SERVICE_NAME_ASCII };
 

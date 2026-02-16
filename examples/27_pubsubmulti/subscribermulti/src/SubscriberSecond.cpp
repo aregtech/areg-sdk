@@ -10,14 +10,14 @@
   ************************************************************************/
 #include "subscribermulti/src/SubscriberSecond.hpp"
 
-#include "subscribermulti/src/NECommon.hpp"
+#include "subscribermulti/src/PubSubDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
 
 SubscriberSecond::SubscriberSecond( const NERegistry::DependencyEntry & entry, Component & owner )
-    : SubscriberBase    ( entry, owner, NECommon::Coord2Integer, NECommon::Coord2String )
+    : SubscriberBase    ( entry, owner, pubsub::Coord2Integer, pubsub::Coord2String )
 {
 }
 

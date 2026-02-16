@@ -16,7 +16,7 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
     : Component                     ( entry, owner )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
 
-    , mTrafficDirection             ( std::any_cast<NECommon::eTrafficDirection>(entry.getData()) )
+    , mTrafficDirection             ( std::any_cast<traffic::eTrafficDirection>(entry.getData()) )
 {
 }
 
@@ -24,7 +24,7 @@ bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status,
 {
     bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
 
-    if ( mTrafficDirection == NECommon::eTrafficDirection::DirectionSouthNorth )
+    if ( mTrafficDirection == traffic::eTrafficDirection::DirectionSouthNorth )
     {
         notifyOnSouthNorthUpdate( isConnected( ) );
     }

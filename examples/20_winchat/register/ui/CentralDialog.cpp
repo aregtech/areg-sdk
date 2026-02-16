@@ -15,7 +15,7 @@
 #include "register/res/stdafx.h"
 #include "register/ui/CentralDialog.hpp"
 #include "register/CentralApp.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
@@ -86,13 +86,13 @@ bool CentralDialog::StartConnection( const String & ipAddress, unsigned short po
     {
         if ( Application::startMessageRouting(ipAddress, portNr) )
         {
-            CString nickName    = NECommon::SERVER_NAME;
+            CString nickName    = chat::SERVER_NAME;
             CString dateStart( DateTime::getNow().formatTime().getString() );
             CString message;
 
             std::any data = std::make_any<HWND>(dlg->mPageConnections.GetSafeHwnd());
-            ComponentLoader::setComponentData( NECommon::COMP_NAME_CENTRAL_SERVER, data );
-            if ( Application::loadModel( NECommon::MODEL_NAME_CENTRAL_SERVER ) )
+            ComponentLoader::setComponentData( chat::COMP_NAME_CENTRAL_SERVER, data );
+            if ( Application::loadModel( chat::MODEL_NAME_CENTRAL_SERVER ) )
             {
                 message     = _T("Successfully started servicing ...");
                 result = true;

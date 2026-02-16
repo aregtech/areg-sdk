@@ -23,12 +23,12 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NECommon.hpp"
-#include "areg/base/TEHashMap.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TELinkedList.hpp"
-#include "areg/base/TEResourceMap.hpp"
-#include "areg/base/TEResourceListMap.hpp"
+#include "areg/base/CommonDefs.hpp"
+#include "areg/base/HashMap.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "areg/base/LinkedList.hpp"
+#include "areg/base/ResourceMap.hpp"
+#include "areg/base/ResourceListMap.hpp"
 #include "areg/component/ProxyEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
@@ -203,7 +203,7 @@ private:
      * \brief   Proxy Listener List class to save list of listener objects.
      *          Every Proxy class has list of listeners.
      ************************************************************************/
-    using ProxyListenerList = TEArrayList<ProxyBase::Listener>;
+    using ProxyListenerList = ArrayList<ProxyBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyConnectList definition
@@ -212,7 +212,7 @@ private:
      * \brief   Proxy Connected client List class to handle connect and 
      *          disconnect service.
      ************************************************************************/
-    using ProxyConnectList  = TEArrayList<ProxyListener *>;
+    using ProxyConnectList  = ArrayList<ProxyListener *>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyMap class declaration.
@@ -226,11 +226,11 @@ private:
     /**
      * \brief   Proxy hash map
      **/
-    using MapProxy          = TEHashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using MapProxy          = HashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
     /**
      * \brief   Proxy resource map helper.
      **/
-    using ImplProxyResource = TEResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using ImplProxyResource = ResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
 
     /**
      * \brief   ProxyBase::MapProxyResource
@@ -239,7 +239,7 @@ private:
      *          ProxyBase     The Values are pointers of Proxy object.
      *          ProxyMap      The type of Hash Mapping object used as container
      **/
-    using MapProxyResource  = TELockResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
+    using MapProxyResource  = ConcurrentResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ThreadProxyList internal class declaration
@@ -247,7 +247,7 @@ private:
     /************************************************************************
      * \brief   The list of proxies. Used to save in Map List.
      ************************************************************************/
-    using ThreadProxyList   = TEArrayList<std::shared_ptr<ProxyBase>>;
+    using ThreadProxyList   = ArrayList<std::shared_ptr<ProxyBase>>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ImplThreadProxyMap internal class declaration
@@ -255,7 +255,7 @@ private:
     /**
      * \brief   The helper class used in the map of lists..
      **/
-    class ImplThreadProxyMap    : public TEResourceListMapImpl<String, std::shared_ptr<ProxyBase>, ThreadProxyList>
+    class ImplThreadProxyMap    : public ResourceListMapImpl<String, std::shared_ptr<ProxyBase>, ThreadProxyList>
     {
     public:
         /**
@@ -297,13 +297,13 @@ private:
      * \brief   ProxyBase::MapThreadProxy
      *          The string hash map which values are list of proxies.
      **/
-    using MapThreadProxy    = TEStringHashMap<ThreadProxyList>;
+    using MapThreadProxy    = StringHashMap<ThreadProxyList>;
 
     /**
      * \brief   ProxyBase::MapThreadProxyList
      *          The Map of the lits, where the key is a string and values are list of proxies.
      **/
-    using MapThreadProxyList= TELockResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
+    using MapThreadProxyList= ConcurrentResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -479,7 +479,7 @@ public:
      * \param[out]  threadProxyList On output, which contains list of proxies created in specified thread.
      * \return  Returns number of proxies added to the list.
      **/
-    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
+    static int findThreadProxies( DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
 
     /**
      * \brief   Creates the request failure event to send to remote proxy. This may happen when either the request of client

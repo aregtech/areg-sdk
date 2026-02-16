@@ -45,7 +45,7 @@
     <ClCompile Include="aregextend\service\private\ServerSendThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\service\private\ServiceCommunicatonBase.cpp">
+    <ClCompile Include="aregextend\service\private\ServiceCommunicationBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\service\private\SystemServiceBase.cpp">
@@ -115,7 +115,7 @@
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aregextend\service\ServiceCommunicatonBase.hpp">
+    <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\SystemServiceBase.hpp">

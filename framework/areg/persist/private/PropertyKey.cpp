@@ -360,7 +360,7 @@ void PropertyKey::resetKey()
 
 inline void PropertyKey::_parseKey(const String& key)
 {
-    std::vector<TEString<char>> list = key.split(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
+    std::vector<StringBase<char>> list = key.split(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
     resetKey();
 
     if (list.size() != 0)

@@ -23,14 +23,14 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/private/posix/NESyncTypesIX.hpp"
 #include "areg/base/SyncObject.hpp"
-#include "areg/base/TEHashMap.hpp"
-#include "areg/base/TELinkedList.hpp"
-#include "areg/base/TEFixedArray.hpp"
-#include "areg/base/TEResourceMap.hpp"
-#include "areg/base/TEResourceListMap.hpp"
+#include "areg/base/HashMap.hpp"
+#include "areg/base/LinkedList.hpp"
+#include "areg/base/FixedArray.hpp"
+#include "areg/base/ResourceMap.hpp"
+#include "areg/base/ResourceListMap.hpp"
 
 #include <pthread.h>
 
@@ -55,11 +55,11 @@ class SyncLockAndWaitPosix
     /**
      * \brief   The list of LockAndWait objects.
      **/
-    using ListLockAndWait       = TELinkedList<SyncLockAndWaitPosix *>;
+    using ListLockAndWait       = LinkedList<SyncLockAndWaitPosix *>;
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
-    using MapLockAndWait        = TEMap<WaitablePosix *, ListLockAndWait>;
+    using MapLockAndWait        = OrderedMap<WaitablePosix *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
 // ImplResourceListMap class declaration
@@ -67,7 +67,7 @@ class SyncLockAndWaitPosix
     /**
      * \brief   The helper class of resource list map that contains helper functions implementation.
      **/
-    class ImplResourceListMap : public TEResourceListMapImpl<WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
+    class ImplResourceListMap : public ResourceListMapImpl<WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
     {
     public:
         /**
@@ -108,7 +108,7 @@ class SyncLockAndWaitPosix
      *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
      *          objects in the entire map are not unique, but should be unique in the list.
      **/
-    using SyncResourceMapIX = TELockResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
+    using SyncResourceMapIX = ConcurrentResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // The resource map for timer.
@@ -116,16 +116,16 @@ class SyncLockAndWaitPosix
     /**
      * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
      **/
-    using MapWaitID         = TEIdHashMap<SyncLockAndWaitPosix *>;
+    using MapWaitID         = IdHashMap<SyncLockAndWaitPosix *>;
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
-    using ImplWaitIDResource= TEResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
+    using ImplWaitIDResource= ResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
     /**
      * \brief   Resource map of waitable where the keys are pthread_t (thread ID) and the values are
      *          LockAndWait objects. It is used in the timer.
      **/
-    using MapWaitIDResource = TELockResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
+    using MapWaitIDResource = ConcurrentResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
@@ -162,7 +162,7 @@ private:
     /**
      * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
      **/
-    using WaitingList   = TEFixedArray<WaitablePosix *>;
+    using WaitingList   = FixedArray<WaitablePosix *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Public static methods.

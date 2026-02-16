@@ -21,7 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/persist/PropertyKey.hpp"
 #include "areg/persist/PropertyValue.hpp"
-#include "areg/base/TEProperty.hpp"
+#include "areg/base/KeyValuePair.hpp"
 #include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ public:
     /**
      * \brief   The definition of type Property, which is a pair of Key and Value
      **/
-    using Entry = TEProperty<PropertyKey, PropertyValue>;
+    using Entry = KeyValuePair<PropertyKey, PropertyValue>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -370,7 +370,7 @@ namespace std
 namespace NEPersistence
 {
     //!< The type to initialize list of properties.
-    using ListProperties = TEArrayList<Property>;
+    using ListProperties = ArrayList<Property>;
 }
 
 #endif  // AREG_PERSIST_PROPERTY_HPP

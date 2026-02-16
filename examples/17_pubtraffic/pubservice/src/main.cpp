@@ -21,7 +21,7 @@
 #include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/TrafficDefs.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef _MSC_VER
@@ -39,11 +39,11 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( _threadName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::SimpleLightControllerName, TrafficLightService )
+        BEGIN_REGISTER_COMPONENT( traffic::SimpleLightControllerName, TrafficLightService )
             // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
             REGISTER_IMPLEMENT_SERVICE( NESimpleTrafficLight::ServiceName, NESimpleTrafficLight::InterfaceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
+        END_REGISTER_COMPONENT( traffic::SimpleLightControllerName )
     // end of thread description
     END_REGISTER_THREAD( _threadName )
 

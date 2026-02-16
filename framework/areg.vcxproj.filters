@@ -30,7 +30,7 @@
     <ClCompile Include="areg\base\private\ThreadConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NECommon.cpp">
+    <ClCompile Include="areg\base\private\CommonDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\NEDebug.cpp">
@@ -69,7 +69,7 @@
     <ClCompile Include="areg\component\private\NEService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\TEEvent.cpp">
+    <ClCompile Include="areg\component\private\EventTemplate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\ConnectionProvider.cpp">
@@ -459,7 +459,7 @@
     <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\appbase\private\NEApplication.cpp">
+    <ClCompile Include="areg\appbase\private\AppDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\WideString.cpp">
@@ -569,7 +569,7 @@
     <ClInclude Include="areg\appbase\private\configure.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\appbase\NEApplication.hpp">
+    <ClInclude Include="areg\appbase\AppDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\NEDebug.hpp">
@@ -602,7 +602,7 @@
     <ClInclude Include="areg\base\ThreadConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NECommon.hpp">
+    <ClInclude Include="areg\base\CommonDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\NEMath.hpp">
@@ -620,37 +620,37 @@
     <ClInclude Include="areg\base\NEUtilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEArrayList.hpp">
+    <ClInclude Include="areg\base\ArrayList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEFixedArray.hpp">
+    <ClInclude Include="areg\base\FixedArray.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEHashMap.hpp">
+    <ClInclude Include="areg\base\HashMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TELinkedList.hpp">
+    <ClInclude Include="areg\base\LinkedList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEProperty.hpp">
+    <ClInclude Include="areg\base\KeyValuePair.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEResourceMap.hpp">
+    <ClInclude Include="areg\base\ResourceMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TERingStack.hpp">
+    <ClInclude Include="areg\base\RingStack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TERuntimeResourceMap.hpp">
+    <ClInclude Include="areg\base\RuntimeResourceMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TESortedLinkedList.hpp">
+    <ClInclude Include="areg\base\SortedLinkedList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEStack.hpp">
+    <ClInclude Include="areg\base\Stack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEString.hpp">
+    <ClInclude Include="areg\base\StringBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\QueueListener.hpp">
@@ -674,7 +674,7 @@
     <ClInclude Include="areg\component\NEService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\TEEvent.hpp">
+    <ClInclude Include="areg\component\EventTemplate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ConnectionProvider.hpp">
@@ -704,13 +704,13 @@
     <ClInclude Include="areg\system\posix\GEPosix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEResourceListMap.hpp">
+    <ClInclude Include="areg\base\ResourceListMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\SyncObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TETemplateBase.hpp">
+    <ClInclude Include="areg\base\TemplateBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\posix\WaitablePosix.hpp">
@@ -1040,7 +1040,7 @@
     <ClInclude Include="areg\component\private\TimerManagerEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\TEMap.hpp">
+    <ClInclude Include="areg\base\OrderedMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\NetTcpLogger.hpp">

@@ -154,10 +154,10 @@ namespace
      **/
     inline bool _isEqual(const wchar_t* str, const char* wstr)
     {
-        while ((*str != TEString<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
+        while ((*str != StringBase<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
 
-        return (*str == TEString<wchar_t>::EmptyChar);
+        return (*str == StringBase<wchar_t>::EmptyChar);
     }
 
 } // namespace
@@ -174,13 +174,13 @@ const WideString & WideString::getEmptyString()
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 WideString::WideString(const String & source)
-    : TEString<wchar_t>( )
+    : StringBase<wchar_t>( )
 {
     assign(source.getString(), source.getLength());
 }
 
 WideString::WideString( const InStream & stream )
-    : TEString<wchar_t>( )
+    : StringBase<wchar_t>( )
 {
     readStream(stream);
 }

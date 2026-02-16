@@ -18,7 +18,7 @@
 #include "areg/base/SyncObjects.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 
 #include <chrono>
 #include <string>

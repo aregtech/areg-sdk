@@ -22,7 +22,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/TEHashMap.hpp"
+#include "areg/base/HashMap.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/ComponentAddress.hpp"
 
@@ -57,7 +57,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = TEMap<ThreadAddress, WorkerThread *>;
+    using _WorkerThreadMap  = OrderedMap<ThreadAddress, WorkerThread *>;
 
     /**
      * \brief   Resource mapping object type. 
@@ -65,7 +65,7 @@ private:
      *          As a value, it saves pointers of Worker Thread object
      *          As a Hash Map used ComponentInfo::_WorkerThreadMap object
      **/
-    using MapWorkerThread   = TELockResourceMap<ThreadAddress, WorkerThread *, _WorkerThreadMap, TEResourceMapImpl<ThreadAddress, WorkerThread>>;
+    using MapWorkerThread   = ConcurrentResourceMap<ThreadAddress, WorkerThread *, _WorkerThreadMap, ResourceMapImpl<ThreadAddress, WorkerThread>>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

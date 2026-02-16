@@ -19,9 +19,9 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/base/ArrayList.hpp"
 
 #include <vector>
 #include <string_view>
@@ -264,9 +264,9 @@ public:
     };
 
     //!< The list of option validity setup.
-    using OptionSetupList   = TEArrayList<sOptionSetup>;
+    using OptionSetupList   = ArrayList<sOptionSetup>;
     //!< The list of input options.
-    using InputOptionList   = TEArrayList<sOption>;
+    using InputOptionList   = ArrayList<sOption>;
 
 private:
     //!< Delimiter for "equal"

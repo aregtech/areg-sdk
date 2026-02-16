@@ -6,7 +6,7 @@
 #include "register/ui/PageBrokerSetup.hpp"
 #include "register/ui/CentralDialog.hpp"
 #include "register/NECentralApp.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/base/NESocket.hpp"
@@ -87,7 +87,7 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
             ::PostMessage(sheet->m_hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection), static_cast<WPARAM>(false), 0 );
         }
 
-        Application::unloadModel( NECommon::MODEL_NAME_CENTRAL_SERVER );
+        Application::unloadModel( chat::MODEL_NAME_CENTRAL_SERVER );
         Application::stopMessageRouting();
         mIsConnected = false;
     }

@@ -223,7 +223,7 @@ bool SharedBuffer::canShare() const
 
 unsigned int SharedBuffer::getDataOffset() const
 {
-    return sizeof(NEMemory::sBuferHeader);
+    return sizeof(NEMemory::BufferHeader);
 }
 
 unsigned int SharedBuffer::getHeaderSize() const

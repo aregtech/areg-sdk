@@ -8,7 +8,7 @@
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/ui/PageNetworkSetup.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/String.hpp"
@@ -73,7 +73,7 @@ void PageNetworkSetup::OnServiceStartup( bool isStarted, Component * owner )
     if ( isStarted )
     {
         if ( (mNetworkSetup == nullptr) && (owner != nullptr) )
-            mNetworkSetup = DEBUG_NEW NetworkSetup( NECommon::COMP_NAME_CENTRAL_SERVER, *owner, mConnectionHandler );
+            mNetworkSetup = DEBUG_NEW NetworkSetup( chat::COMP_NAME_CENTRAL_SERVER, *owner, mConnectionHandler );
     }
     else
     {
@@ -88,7 +88,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * /*
     mConnectionHandler.SetConnected( isConnected );
     if ( mRegisterPending )
     {
-        if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == NECommon::InvalidCookie) )
+        if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == chat::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
             mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), DateTime::getNow() );
@@ -194,7 +194,7 @@ void PageNetworkSetup::OnClickedBrokerConnect()
             ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
             if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
             {
-                Application::loadModel( NECommon::MODEL_NAME_DISTRIBUTED_CLIENT );
+                Application::loadModel( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
                 CWnd *wnd = GetDlgItem(IDC_EDIT_NICKNAME);
                 wnd->EnableWindow(TRUE);
                 wnd->SetFocus();
@@ -212,7 +212,7 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
         ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdDisconnectTriggered), 0, 0);
         mConnectionHandler.ResetConnectionList();
 
-        Application::unloadModel(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT);
+        Application::unloadModel(chat::MODEL_NAME_DISTRIBUTED_CLIENT);
         Application::stopMessageRouting();
         mConnectPending = false;
         mRegisterPending= false;

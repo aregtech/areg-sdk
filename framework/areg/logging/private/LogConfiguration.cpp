@@ -36,28 +36,28 @@ bool LogConfiguration::isLoggingEnabled() const
 bool LogConfiguration::isRemoteLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::eLogingTypes::LogTypeRemote);
+    return config.getLogEnabled(NELogging::LoggingType::LogTypeRemote);
 }
 
 bool LogConfiguration::isFileLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::eLogingTypes::LogTypeFile);
+    return config.getLogEnabled(NELogging::LoggingType::LogTypeFile);
 }
 
 bool LogConfiguration::isDatabaseLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase);
+    return config.getLogEnabled(NELogging::LoggingType::LogTypeDatabase);
 }
 
 bool LogConfiguration::isDebugOutputLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::eLogingTypes::LogTypeDebug);
+    return config.getLogEnabled(NELogging::LoggingType::LogTypeDebug);
 }
 
-void LogConfiguration::setLogEnabled(NELogging::eLogingTypes logType, bool isEnabled)
+void LogConfiguration::setLogEnabled(NELogging::LoggingType logType, bool isEnabled)
 {
     ConfigManager& config = Application::getConfigManager();
     if (isEnabled && config.getLoggingStatus() == false)
@@ -148,7 +148,7 @@ void LogConfiguration::setLogFile(const String& prop)
 
 bool LogConfiguration::getRemoteTcpEnable() const
 {
-    return (Application::getConfigManager().getLogEnabled(NELogging::eLogingTypes::LogTypeRemote) &&
+    return (Application::getConfigManager().getLogEnabled(NELogging::LoggingType::LogTypeRemote) &&
             Application::getConfigManager().getRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip));
 }
 
@@ -179,12 +179,12 @@ void LogConfiguration::setRemoteTcpPort(uint16_t prop, bool isTemporary /*= fals
 
 bool LogConfiguration::getDatabaseEnable() const
 {
-    return Application::getConfigManager().getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase);
+    return Application::getConfigManager().getLogEnabled(NELogging::LoggingType::LogTypeDatabase);
 }
 
 void LogConfiguration::setDatabaseEnable(bool prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setLogEnabled(NELogging::eLogingTypes::LogTypeDatabase, prop, isTemporary);
+    Application::getConfigManager().setLogEnabled(NELogging::LoggingType::LogTypeDatabase, prop, isTemporary);
 }
 
 uint32_t LogConfiguration::getModuleScopes(std::vector<Property>& scopeList)

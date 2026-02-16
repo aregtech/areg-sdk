@@ -16,7 +16,7 @@
 #include "areg/component/NERegistry.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/base/NEUtilities.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 
 #include <utility>
 

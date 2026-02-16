@@ -18,7 +18,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/private/ServiceManager.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ModelDataCreator class implementation

@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/base/Containers.hpp"
@@ -57,7 +57,7 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign>;
+    using MapAppStorage     = StringHashMap<NEMemory::uAlign>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics

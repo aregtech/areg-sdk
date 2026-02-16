@@ -67,7 +67,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
     {
         if ( (mCentralMessage == nullptr) && (dispThread != nullptr) )
         {
-            mCentralMessage = DEBUG_NEW CentralMessaging( NECommon::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler);
+            mCentralMessage = DEBUG_NEW CentralMessaging( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler);
             if ( mCentralMessage != nullptr )
             {
                 UpdateData( TRUE );
@@ -80,7 +80,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
 
         uint32_t cookie = mConnectionHandler.GetCookie();
         const String & nickName = mConnectionHandler.GetNickName();
-        const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
+        const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
         if ( listConnections.getSize() > 0 )
         {
             outputMessage( "<Info>", String::makeString(listConnections.getSize()) + " participants...", 0, 0, 0 );
@@ -88,7 +88,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
 
         for (uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
-            const NECommon::sConnection & connection = listConnections.getAt(i);
+            const chat::sConnection & connection = listConnections.getAt(i);
             if ( (connection.cookie != cookie) && (connection.nickName != nickName) )
             {
                 ASSERT(connection.nickName.isEmpty() == false);
@@ -129,7 +129,7 @@ void PageMessaging::setHeaders()
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;
-    NECommon::getWidths( rc.Width(), count, width1, width2 );
+    chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
     {
@@ -308,19 +308,19 @@ void PageMessaging::OnChangeEditMessageAll( )
     }
 }
 
-void PageMessaging::OnTypeMessage( uint32_t /*cookie*/, NECommon::sMessageData& data)
+void PageMessaging::OnTypeMessage( uint32_t /*cookie*/, chat::sMessageData& data)
 {
     outputTyping( CString( data.nickName ), CString( data.message ), static_cast<uint32_t>(data.dataSave) );
 }
 
-void PageMessaging::OnSendMessage( uint32_t /*cookie*/, NECommon::sMessageData& data)
+void PageMessaging::OnSendMessage( uint32_t /*cookie*/, chat::sMessageData& data)
 {
     outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
 }
 
 LRESULT PageMessaging::OnOutputMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr)
     {
         outputMessage( data->nickName, data->message, data->timeSend, data->timeReceived, static_cast<uint32_t>(data->dataSave) );
@@ -342,13 +342,13 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
     lv.iSubItem = 0;
     lv.pszText  = nickName.GetBuffer( );
     lv.lParam   = cookie;
-    lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+    lv.cchTextMax = chat::MAXLEN_NICKNAME;
     mCtrlList.InsertItem( &lv );
 
-    if ( dateStart.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateStart = dateStart.Mid( NECommon::DAY_FORMAT_LEN );
-    if ( dateEnd.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateEnd = dateEnd.Mid( NECommon::DAY_FORMAT_LEN );
+    if ( dateStart.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateStart = dateStart.Mid( chat::DAY_FORMAT_LEN );
+    if ( dateEnd.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateEnd = dateEnd.Mid( chat::DAY_FORMAT_LEN );
 
     mCtrlList.SetItemText( mLastItem, 1, message.IsEmpty( )     == false ? message.GetBuffer( )     : _T( "..." ) );
     mCtrlList.SetItemText( mLastItem, 2, dateStart.IsEmpty( )   == false ? dateStart.GetBuffer( )   : _T( "..." ) );
@@ -395,7 +395,7 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
             lv.iSubItem = 0;
             lv.pszText  = nickName.GetBuffer( );
             lv.lParam   = cookie;
-            lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+            lv.cchTextMax = chat::MAXLEN_NICKNAME;
             mCtrlList.InsertItem( &lv );
         }
 

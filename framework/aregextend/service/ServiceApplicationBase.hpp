@@ -50,7 +50,7 @@ protected:
      *                      that provides the connection implementation, sends and receives messages.
      *                      The object is required by base class of the System Service.
      **/
-    ServiceApplicationBase(ServiceCommunicatonBase& commBase);
+    ServiceApplicationBase(ServiceCommunicationBase& commBase);
 
     virtual ~ServiceApplicationBase() = default;
 

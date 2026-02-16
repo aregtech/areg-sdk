@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/base/ArrayList.hpp"
 #include "areg/logging/NELogging.hpp"
 
 #if AREG_LOGS
@@ -46,7 +46,7 @@ class LayoutManager
 // Local types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
-    using ListLayouts   = TEArrayList<LogLayout *>;
+    using ListLayouts   = ArrayList<LogLayout *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

@@ -44,11 +44,10 @@
     <ClCompile Include="pubclient\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\NECommon.hpp" />
+    <ClInclude Include="common\WorkerDefs.hpp" />
     <ClInclude Include="common\PatientInfoEvent.hpp" />
     <ClInclude Include="pubclient\src\HardwareWorkerConsumer.hpp" />
     <ClInclude Include="pubclient\src\PatientClient.hpp" />
-    <ClInclude Include="services\NECommon.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

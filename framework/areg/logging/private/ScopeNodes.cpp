@@ -202,7 +202,7 @@ unsigned int ScopeNode::groupChildNodes()
     unsigned int sameNodes{ mChildNodes.getSize() };
     unsigned int prioNode{ mPrioStates };
 
-    mGroupping = static_cast<unsigned int>(ScopeNodeBase::eGroupping::NoGroupping);
+    mGrouping = static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping);
 
     if ( sameNodes > 0 )
     {
@@ -218,7 +218,7 @@ unsigned int ScopeNode::groupChildNodes()
 
         if ( sameNodes == mChildNodes.getSize( ) )
         {
-            mGroupping |= static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingNodes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingNodes);
             result += mChildNodes.getSize( );
             mChildNodes.clear( );
 
@@ -245,7 +245,7 @@ unsigned int ScopeNode::groupChildNodes()
 
         if (sameLeafs == mChildLeafs.getSize( ))
         {
-            mGroupping |= static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingLeafes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingLeafes);
             result += mChildLeafs.getSize( );
             mChildLeafs.clear( );
             result += removePriorityNodesRecursive( prioNode );
@@ -259,7 +259,7 @@ unsigned int ScopeNode::updateConfigNode( ConfigManager & config, const String &
 {
     unsigned int result{ 0 };
     String thisScope = makeScopePath( parentPath );
-    if ( (mGroupping & static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingAll)) != 0 )
+    if ( (mGrouping & static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingAll)) != 0 )
     {
         config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
         result = 1;
@@ -328,7 +328,7 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
 
         if ( mChildLeafs.isEmpty( ) )
         {
-            mGroupping |= static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingLeafes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingLeafes);
         }
     }
 
@@ -356,7 +356,7 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
 
         if ( mChildNodes.isEmpty( ) )
         {
-            mGroupping |= static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingNodes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingNodes);
         }
     }
 

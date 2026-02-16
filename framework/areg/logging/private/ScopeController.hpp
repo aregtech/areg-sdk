@@ -18,7 +18,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 
 #include "areg/logging/NELogging.hpp"
 
@@ -37,7 +37,7 @@ class Property;
 //!< Scope hash map
 using MapLogScope   = NELogging::ScopeList;
 //!< Scope resource map helper
-using ImplLogScope  = TEResourceMapImpl<unsigned int, LogScope *>;
+using ImplLogScope  = ResourceMapImpl<unsigned int, LogScope *>;
 //!< The log scope key-value pair.
 using LogScopePair  = std::pair<unsigned int, LogScope *>;
 //!< The map of scopes to configure
@@ -46,7 +46,7 @@ using ListScopes    = StringToIntegerHashMap;
 /**
  * \brief   Resource map, container of all logging scopes
  **/
-class LogScopeMap   : public TELockResourceMap<unsigned int, LogScope *, MapLogScope, ImplLogScope>
+class LogScopeMap   : public ConcurrentResourceMap<unsigned int, LogScope *, MapLogScope, ImplLogScope>
 {
     friend class NetTcpLogger;
     friend class ScopeController;

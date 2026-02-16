@@ -23,7 +23,7 @@
 
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/TELinkedList.hpp"
+#include "areg/base/LinkedList.hpp"
 
 /************************************************************************
  * Dependencies
@@ -60,7 +60,7 @@ private:
     //!< Definition of storage item to store.
     using StorageItem       = std::pair<String, NEMemory::uAlign>;
     //!< Definition of storage list object to store items.
-    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem>;
+    using StorageList       = LinkedList<ThreadLocalStorage::StorageItem>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

@@ -19,14 +19,14 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TELinkedList.hpp"
+#include "areg/base/LinkedList.hpp"
 #include "mtrouter/service/private/ServiceProxy.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
 class ServiceStub;
-using ListServiceProxiesBase = TELinkedList<ServiceProxy>;
+using ListServiceProxiesBase = LinkedList<ServiceProxy>;
 
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class declaration

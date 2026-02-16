@@ -23,13 +23,13 @@
 #include "areg/base/Containers.hpp"
 
 class PageChat;
-typedef TEStringHashMap<PageChat *>   MapChatPages;
+typedef StringHashMap<PageChat *>   MapChatPages;
 
 class DistributedDialog : public CPropertySheet
                         , public ConnectionHandler
 {
 public:
-    static bool OutputMessage( NEDistributedApp::eWndCommands cmd, void * sender, NECommon::sMessageData * data );
+    static bool OutputMessage( NEDistributedApp::eWndCommands cmd, void * sender, chat::sMessageData * data );
 
     static DistributedDialog * GetDialog();
 

@@ -18,10 +18,10 @@
  ************************************************************************/
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
-#include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "aregextend/console/Console.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
@@ -30,7 +30,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
 
-ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicatonBase& commBase)
+ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBase)
     : SystemServiceBase ( commBase )
     , mServiceSetup     (false)
 {

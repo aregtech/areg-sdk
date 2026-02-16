@@ -13,7 +13,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/GELog.h"
 
-#include "common/NECommon.hpp"
+#include "common/WorkerDefs.hpp"
 #include "pubclient/src/PatientClient.hpp"
 
 #ifdef _MSC_VER
@@ -31,13 +31,13 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( "TestPatientMonitoring" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceNameHwManager, PatientClient )
+        BEGIN_REGISTER_COMPONENT( worker::ServiceNameHwManager, PatientClient )
             // register service dependencies
-            REGISTER_DEPENDENCY( NECommon::ServiceNamePatientInfo )
+            REGISTER_DEPENDENCY( worker::ServiceNamePatientInfo )
             // register HW worker thread
             REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data() )
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::ServiceNameHwManager )
+        END_REGISTER_COMPONENT( worker::ServiceNameHwManager )
     // end of thread description
     END_REGISTER_THREAD( "TestPatientMonitoring" )
 

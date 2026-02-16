@@ -16,7 +16,7 @@
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/TimerConsumer.hpp"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 #include "examples/23_pubdatarate/services/LargeDataStub.hpp"
 
 #include "areg/base/SyncObjects.hpp"

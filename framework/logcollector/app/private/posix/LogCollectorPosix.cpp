@@ -22,7 +22,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/NEString.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin

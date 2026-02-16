@@ -17,7 +17,7 @@
 #include "areg/base/Version.hpp"
 
 #include "areg/base/NEUtilities.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Version class implementation

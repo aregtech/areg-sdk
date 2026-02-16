@@ -26,7 +26,7 @@
 #include "areg/ipc/RemoteMessageHandler.hpp"
 
 #include "areg/base/IOStream.hpp"
-#include "areg/base/TERingStack.hpp"
+#include "areg/base/RingStack.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncObjects.hpp"
@@ -62,7 +62,7 @@ class NetTcpLogger  : public    LoggerBase
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
-    using RingStack = TENolockRingStack<RemoteMessage>;
+    using RingStack = RingStack<RemoteMessage>;
 
     //!< A prefix to add in front of thread and timer names.
     static constexpr std::string_view   PREFIX_THREAD{ "logger_" };

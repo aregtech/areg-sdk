@@ -8,7 +8,7 @@
 #include "register/ui/CentralDialog.hpp"
 #include "register/NECentralApp.hpp"
 #include "register/CentralApp.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 #include "areg/component/NERegistry.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
@@ -24,16 +24,16 @@ DEF_LOG_SCOPE( centralapp_ConnectionManager_requestDisconnect );
 DEF_LOG_SCOPE( centralapp_ConnectionManager_requestSendMessage );
 DEF_LOG_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
 
-BEGIN_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
+BEGIN_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
     BEGIN_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
-        BEGIN_REGISTER_COMPONENT( NECommon::COMP_NAME_CENTRAL_SERVER, ConnectionManager )
+        BEGIN_REGISTER_COMPONENT( chat::COMP_NAME_CENTRAL_SERVER, ConnectionManager )
             REGISTER_IMPLEMENT_SERVICE( NEConnectionManager::ServiceName, NEConnectionManager::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( NECentralMessager::ServiceName, NECentralMessager::InterfaceVersion )
-        END_REGISTER_COMPONENT( NECommon::COMP_NAME_CENTRAL_SERVER )
+        END_REGISTER_COMPONENT( chat::COMP_NAME_CENTRAL_SERVER )
     END_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
 
-END_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
+END_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
 ConnectionManager *   ConnectionManager::sService   = nullptr;
 
@@ -155,7 +155,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 HWND hWnd = mWnd;
                 if ( ::IsWindow( hWnd ) )
                 {
-                    NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+                    chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
                     if ( data != nullptr )
                     {
                         NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -210,7 +210,7 @@ void ConnectionManager::requestDisconnect( const String & nickName, unsigned int
             notifyConnectionListUpdated( );
 
             HWND hWnd = mWnd;
-            NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+            chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
             if ( data != nullptr )
             {
                 NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -253,7 +253,7 @@ void ConnectionManager::requestSendMessage( const String & nickName, unsigned in
         broadcastKeyTyping( connection.nickName, cookie, String::getEmptyString() );
 
         HWND hWnd = mWnd;
-        NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+        chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -285,7 +285,7 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
         broadcastKeyTyping( connection.nickName, cookie, newMessage );
 
         HWND hWnd = mWnd;
-        NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;
+        chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, NEConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -323,11 +323,11 @@ bool ConnectionManager::FindConnection( const String & nickName, NEConnectionMan
 
 bool ConnectionManager::IsReservedNickname( const String & nickName ) const
 {
-    if ( nickName == NECommon::SERVER_NAME )
+    if ( nickName == chat::SERVER_NAME )
         return true;
-    else if ( nickName == NECommon::COMP_NAME_CENTRAL_SERVER )
+    else if ( nickName == chat::COMP_NAME_CENTRAL_SERVER )
         return true;
-    else if ( nickName == NECommon::COMP_NAME_DISTRIBUTED_CLIENT )
+    else if ( nickName == chat::COMP_NAME_DISTRIBUTED_CLIENT )
         return true;
     else
         return false;

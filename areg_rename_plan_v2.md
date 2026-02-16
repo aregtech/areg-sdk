@@ -81,42 +81,41 @@ Drop `TE`. Resolve collisions with meaningful qualifiers (not `Base`).
 
 | Old Name                          | New Name                        | Old File Path                                                    | New File Path                                                    | Notes                                      |
 |-----------------------------------|---------------------------------|------------------------------------------------------------------|------------------------------------------------------------------|--------------------------------------------|
-| `TEArrayList`                     | `ArrayList`                     | `framework/areg/base/TEArrayList.hpp`                            | `framework/areg/base/ArrayList.hpp`                              |                                            |
-| `TEFixedArray`                    | `FixedArray`                    | `framework/areg/base/TEFixedArray.hpp`                           | `framework/areg/base/FixedArray.hpp`                             |                                            |
-| `TEHashMap`                       | `HashMap`                       | `framework/areg/base/TEHashMap.hpp`                              | `framework/areg/base/HashMap.hpp`                                |                                            |
-| `TEIdHashMap`                     | `IdHashMap`                     | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TEIdMap`                         | `IdMap`                         | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TEIntegerHashMap`                | `IntHashMap`                    | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TEIntegerMap`                    | `IntMap`                        | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TELinkedList`                    | `LinkedList`                    | `framework/areg/base/TELinkedList.hpp`                           | `framework/areg/base/LinkedList.hpp`                             |                                            |
-| `TELockResourceListMap`           | `LockResourceListMap`           | `framework/areg/base/TEResourceListMap.hpp`                      | (same file)                                                      |                                            |
-| `TELockResourceMap`               | `LockResourceMap`               | `framework/areg/base/TEResourceMap.hpp`                          | (same file)                                                      |                                            |
-| `TELockRingStack`                 | `LockRingStack`                 | `framework/areg/base/TERingStack.hpp`                            | (same file)                                                      |                                            |
-| `TELockRuntimeResourceMap`        | `LockRuntimeResourceMap`        | `framework/areg/base/TERuntimeResourceMap.hpp`                   | (same file)                                                      |                                            |
-| `TELockStack`                     | `LockStack`                     | `framework/areg/base/TEStack.hpp`                                | (same file)                                                      |                                            |
-| `TEMap`                           | `OrderedMap`                    | `framework/areg/base/TEMap.hpp`                                  | `framework/areg/base/OrderedMap.hpp`                             | Wraps `std::map` (ordered). More idiomatic |
-| `TENolockResourceListMap`         | `NolockResourceListMap`         | `framework/areg/base/TEResourceListMap.hpp`                      | (same file)                                                      |                                            |
-| `TENolockResourceMap`             | `NolockResourceMap`             | `framework/areg/base/TEResourceMap.hpp`                          | (same file)                                                      |                                            |
-| `TENolockRingStack`               | `NolockRingStack`               | `framework/areg/base/TERingStack.hpp`                            | (same file)                                                      |                                            |
-| `TENolockRuntimeResourceMap`      | `NolockRuntimeResourceMap`      | `framework/areg/base/TERuntimeResourceMap.hpp`                   | (same file)                                                      |                                            |
-| `TENolockStack`                   | `NolockStack`                   | `framework/areg/base/TEStack.hpp`                                | (same file)                                                      |                                            |
-| `TEObjectFactory`                 | `ObjectFactory`                 | `framework/areg/base/ObjectBase.hpp`                        | (same file, moves with GenericObject)                            |                                            |
-| `TEPointerHashMap`                | `PtrHashMap`                    | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TEPointerMap`                    | `PtrMap`                        | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TEProperty`                      | `KeyValuePair`                  | `framework/areg/base/TEProperty.hpp`                             | `framework/areg/base/KeyValuePair.hpp`                           | Generic template, clear purpose            |
-| `TEResourceListMap`               | `ResourceListMap`               | `framework/areg/base/TEResourceListMap.hpp`                      | `framework/areg/base/ResourceListMap.hpp`                        |                                            |
-| `TEResourceListMapImpl`           | `ResourceListMapImpl`           | `framework/areg/base/TETemplateBase.hpp`                         | (same file)                                                      |                                            |
-| `TEResourceMap`                   | `ResourceMap`                   | `framework/areg/base/TEResourceMap.hpp`                          | `framework/areg/base/ResourceMap.hpp`                            |                                            |
-| `TEResourceMapImpl`               | `ResourceMapImpl`               | `framework/areg/base/TETemplateBase.hpp`                         | (same file)                                                      |                                            |
-| `TERingStack`                     | `RingStack`                     | `framework/areg/base/TERingStack.hpp`                            | `framework/areg/base/RingStack.hpp`                              |                                            |
-| `TERuntimeHashMap`                | `RuntimeHashMap`                | `framework/areg/base/TERuntimeResourceMap.hpp`                   | (same file)                                                      |                                            |
-| `TERuntimeResourceMap`            | `RuntimeResourceMap`            | `framework/areg/base/TERuntimeResourceMap.hpp`                   | `framework/areg/base/RuntimeResourceMap.hpp`                     |                                            |
-| `TESortedLinkedList`              | `SortedLinkedList`              | `framework/areg/base/TESortedLinkedList.hpp`                     | `framework/areg/base/SortedLinkedList.hpp`                       |                                            |
-| `TEStack`                         | `Stack`                         | `framework/areg/base/TEStack.hpp`                                | `framework/areg/base/Stack.hpp`                                  |                                            |
-| `TEString`                        | `StringTemplate`                | `framework/areg/base/TEString.hpp`                               | `framework/areg/base/StringTemplate.hpp`                         | `String`/`WideString` inherit from this    |
-| `TEStringHashMap`                 | `StringHashMap`                 | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TEStringMap`                     | `StringMap`                     | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
-| `TEAlign`                         | `Align`                         | `framework/areg/base/NEMemory.hpp`                               | (same file, struct in namespace)                                 |                                            |
+| `ArrayList`                     | `ArrayList`                     | `framework/areg/base/ArrayList.hpp`                            | `framework/areg/base/ArrayList.hpp`                              |                                            |
+| `FixedArray`                    | `FixedArray`                    | `framework/areg/base/FixedArray.hpp`                           | `framework/areg/base/FixedArray.hpp`                             |                                            |
+| `HashMap`                       | `HashMap`                       | `framework/areg/base/HashMap.hpp`                              | `framework/areg/base/HashMap.hpp`                                |                                            |
+| `IdHashMap`                     | `IdHashMap`                     | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `IdMap`                         | `IdMap`                         | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `IntegerHashMap`                | `IntHashMap`                    | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `IntegerMap`                    | `IntMap`                        | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `LinkedList`                    | `LinkedList`                    | `framework/areg/base/LinkedList.hpp`                           | `framework/areg/base/LinkedList.hpp`                             |                                            |
+| `ConcurrentResourceListMap`           | `LockResourceListMap`           | `framework/areg/base/ResourceListMap.hpp`                      | (same file)                                                      |                                            |
+| `ConcurrentResourceMap`               | `LockResourceMap`               | `framework/areg/base/ResourceMap.hpp`                          | (same file)                                                      |                                            |
+| `ConcurrentRingStack`                 | `LockRingStack`                 | `framework/areg/base/RingStack.hpp`                            | (same file)                                                      |                                            |
+| `ConcurrentRuntimeResourceMap`        | `LockRuntimeResourceMap`        | `framework/areg/base/RuntimeResourceMap.hpp`                   | (same file)                                                      |                                            |
+| `ConcurrentStack`                     | `LockStack`                     | `framework/areg/base/Stack.hpp`                                | (same file)                                                      |                                            |
+| `OrderedMap`                           | `OrderedMap`                    | `framework/areg/base/OrderedMap.hpp`                                  | `framework/areg/base/OrderedMap.hpp`                             | Wraps `std::map` (ordered). More idiomatic |
+| `ResourceListMap`         | `NolockResourceListMap`         | `framework/areg/base/ResourceListMap.hpp`                      | (same file)                                                      |                                            |
+| `ResourceMap`             | `NolockResourceMap`             | `framework/areg/base/ResourceMap.hpp`                          | (same file)                                                      |                                            |
+| `RingStack`               | `NolockRingStack`               | `framework/areg/base/RingStack.hpp`                            | (same file)                                                      |                                            |
+| `RuntimeResourceMap`      | `NolockRuntimeResourceMap`      | `framework/areg/base/RuntimeResourceMap.hpp`                   | (same file)                                                      |                                            |
+| `Stack`                   | `NolockStack`                   | `framework/areg/base/Stack.hpp`                                | (same file)                                                      |                                            |
+| `PtrHashMap`                | `PtrHashMap`                    | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `PtrMap`                    | `PtrMap`                        | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `KeyValuePair`                      | `KeyValuePair`                  | `framework/areg/base/KeyValuePair.hpp`                             | `framework/areg/base/KeyValuePair.hpp`                           | Generic template, clear purpose            |
+| `ResourceListMapBase`               | `ResourceListMap`               | `framework/areg/base/ResourceListMap.hpp`                      | `framework/areg/base/ResourceListMap.hpp`                        |                                            |
+| `ResourceListMapImpl`           | `ResourceListMapImpl`           | `framework/areg/base/TemplateBase.hpp`                         | (same file)                                                      |                                            |
+| `ResourceMapBase`                   | `ResourceMap`                   | `framework/areg/base/ResourceMap.hpp`                          | `framework/areg/base/ResourceMap.hpp`                            |                                            |
+| `ResourceMapImpl`               | `ResourceMapImpl`               | `framework/areg/base/TemplateBase.hpp`                         | (same file)                                                      |                                            |
+| `RingStack`                     | `RingStack`                     | `framework/areg/base/RingStack.hpp`                            | `framework/areg/base/RingStack.hpp`                              |                                            |
+| `RuntimeHashMap`                | `RuntimeHashMap`                | `framework/areg/base/RuntimeResourceMap.hpp`                   | (same file)                                                      |                                            |
+| `RuntimeResourceMapBase`            | `RuntimeResourceMap`            | `framework/areg/base/RuntimeResourceMap.hpp`                   | `framework/areg/base/RuntimeResourceMap.hpp`                     |                                            |
+| `SortedLinkedList`              | `SortedLinkedList`              | `framework/areg/base/SortedLinkedList.hpp`                     | `framework/areg/base/SortedLinkedList.hpp`                       |                                            |
+| `StackBase`                         | `Stack`                         | `framework/areg/base/Stack.hpp`                                | `framework/areg/base/Stack.hpp`                                  |                                            |
+| `StringBase`                        | `StringTemplate`                | `framework/areg/base/StringBase.hpp`                               | `framework/areg/base/StringTemplate.hpp`                         | `String`/`WideString` inherit from this    |
+| `StringHashMap`                 | `StringHashMap`                 | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `StringMap`                     | `StringMap`                     | `framework/areg/base/Containers.hpp`                             | (same file)                                                      |                                            |
+| `Align`                         | `Align`                         | `framework/areg/base/NEMemory.hpp`                               | (same file, struct in namespace)                                 |                                            |
 
 ---
 
@@ -126,7 +125,7 @@ Drop prefixes. Use domain-specific qualifiers for collisions — no `Data` suffi
 
 | Old Name (inner / alias)                         | New Name                   | File                                                             | Notes                                      |
 |--------------------------------------------------|----------------------------|------------------------------------------------------------------|--------------------------------------------|
-| `S_BuferHeaderInfo` / `sBuferHeader`             | `BufferHeader`             | `framework/areg/base/NEMemory.hpp`                               | Fix typo Bufer->Buffer                     |
+| `BufferHeader` / `BufferHeader`             | `BufferHeader`             | `framework/areg/base/NEMemory.hpp`                               | Fix typo Bufer->Buffer                     |
 | `S_ByteBuffer` / `sByteBuffer`                   | `RawByteBuffer`            | `framework/areg/base/NEMemory.hpp`                               | `ByteBuffer` taken by interface rename     |
 | `S_RemoteMessage` / `sRemoteMessage`             | `RemoteMessageFrame`       | `framework/areg/base/NEMemory.hpp`                               | Wire format = "frame"                      |
 | `S_RemoteMessageHeader` / `sRemoteMessageHeader` | `RemoteMessageHeader`      | `framework/areg/base/NEMemory.hpp`                               | No collision                               |
@@ -137,7 +136,7 @@ Drop prefixes. Use domain-specific qualifiers for collisions — no `Data` suffi
 | `S_SystemTime` / `sSystemTime`                   | `SystemTime`               | `framework/areg/base/NEUtilities.hpp`                            |                                            |
 | `S_InterfaceData` / `SInterfaceData`             | `InterfaceDescriptor`      | `framework/areg/component/NEService.hpp`                         | Describes a service interface               |
 | `sLargeInteger`                                  | `LargeInteger`             | `framework/areg/base/NEMath.hpp`                                 |                                            |
-| `sEntryTypesEnabling`                            | `EntryTypesEnabling`       | `framework/areg/appbase/NEApplication.hpp`                       |                                            |
+| `sEntryTypesEnabling`                            | `EntryTypesEnabling`       | `framework/areg/appbase/AppDefs.hpp`                       |                                            |
 | `sLogInstance`                                   | `LogInstance`              | `framework/areglogger/client/LogObserverApi.h`                   |                                            |
 | `sLogMessage`                                    | `LogRecord`                | `framework/areg/logging/NELogging.hpp`                           | Wire format; `LogMessage` is the class     |
 | `sLogScope`                                      | `LogScopeEntry`            | `framework/areglogger/client/LogObserverApi.h`                   | `LogScope` is the class; entry = one item  |
@@ -163,16 +162,16 @@ Merge typedef inner/alias pairs into one name.
 
 | Old Name (inner / alias)                         | New Name                   | File                                                             | Notes                                      |
 |--------------------------------------------------|----------------------------|------------------------------------------------------------------|--------------------------------------------|
-| `E_AppState` / `eApplicationState`               | `AppState`                 | `framework/areg/appbase/NEApplication.hpp`                       |                                            |
+| `E_AppState` / `eApplicationState`               | `AppState`                 | `framework/areg/appbase/AppDefs.hpp`                       |                                            |
 | `E_CharDefs` / `eCharDefs`                       | `CharDefs`                 | `framework/areg/base/NEString.hpp`                               |                                            |
 | `E_CompareResult` / `eCompare`                   | `CompareResult`            | `framework/areg/base/NEMath.hpp`                                 |                                            |
 | `E_CompletionStatus` / `eCompletionStatus`       | `CompletionStatus`         | `framework/areg/base/Thread.hpp`                                 |                                            |
 | `E_ConfigKey` / `eConfigKey`                     | `ConfigKey`                | `framework/areg/logging/private/NELogOptions.hpp`                |                                            |
-| `E_ConnectionBehavior` / `eConnectionBehavior`   | `ConnectionBehavior`       | `framework/aregextend/service/ServiceCommunicatonBase.hpp`       |                                            |
+| `E_ConnectionBehavior` / `eConnectionBehavior`   | `ConnectionBehavior`       | `framework/aregextend/service/ServiceCommunicationBase.hpp`       |                                            |
 | `E_Cookies` / `eCookies`                         | `CookieId`                 | `framework/areg/base/NECommon.hpp`                               | Descriptive                                |
 | `E_CursorPosition` / `eCursorPosition`           | `SeekOrigin`               | `framework/areg/base/Cursor.hpp`                       | Matches POSIX/C# convention                |
 | `E_DataStateType` / `eDataStateType`             | `DataState`                | `framework/areg/component/NEService.hpp`                         |                                            |
-| `E_DegubPrio` / `eDegubPrio`                     | `DebugPriority`            | `framework/areg/base/private/NEDebug.hpp`                        | Fix typo                                   |
+| `E_DegubPrio` / `DebugPriority`                     | `DebugPriority`            | `framework/areg/base/private/NEDebug.hpp`                        | Fix typo                                   |
 | `E_DigitSign` / `eDigitSign`                     | `DigitSign`                | `framework/areg/base/NEMath.hpp`                                 |                                            |
 | `E_DisconnectReason` / `eDisconnectReason`       | `DisconnectReason`         | `framework/areg/component/NEService.hpp`                         |                                            |
 | `E_EventData` / `eEventData`                     | `EventPayload`             | `framework/areg/component/EventDataStream.hpp`                   | `EventData` is a class; payload = content  |
@@ -212,7 +211,7 @@ Merge typedef inner/alias pairs into one name.
 | `eConfigKeys`                                    | `ConfigKeys`               | `framework/areg/persist/NEPersistence.hpp`                       |                                            |
 | `eConnectionState`                               | `ConnectionState`          | `framework/areg/ipc/ServiceClientConnectionBase.hpp`             |                                            |
 | `eConnectionTypes`                               | `ConnectionType`           | `framework/areg/ipc/NERemoteService.hpp`                         | Singular                                   |
-| `eGroupping`                                     | `Grouping`                 | `framework/areg/logging/private/ScopeNodeBase.hpp`               | Fix typo                                   |
+| `Grouping`                                     | `Grouping`                 | `framework/areg/logging/private/ScopeNodeBase.hpp`               | Fix typo                                   |
 | `eIndex`                                         | `IndexPosition`            | `framework/areg/base/NECommon.hpp`                               |                                            |
 | `eLockedState`                                   | `LockedState`              | `framework/areg/base/SyncObjects.hpp`                            |                                            |
 | `eLogDataType`                                   | `LogDataType`              | `framework/areg/logging/NELogging.hpp`                           |                                            |
@@ -220,7 +219,7 @@ Merge typedef inner/alias pairs into one name.
 | `eLogPriority`                                   | `LogPriority`              | `framework/areg/logging/NELogging.hpp`                           |                                            |
 | `eLogType`                                       | `LogType`                  | `framework/areglogger/client/LogObserverApi.h`                   |                                            |
 | `eLoggerOptions`                                 | `LoggerOption`             | `framework/logcollector/app/LogCollector.hpp`                    | Singular                                   |
-| `eLogingTypes`                                   | `LoggingType`              | `framework/areg/logging/NELogging.hpp`                           | Fix typo, singular                         |
+| `LoggingType`                                   | `LoggingType`              | `framework/areg/logging/NELogging.hpp`                           | Fix typo, singular                         |
 | `eMessageResult`                                 | `MessageResult`            | `framework/areg/base/NEMemory.hpp`                               |                                            |
 | `eModelState`                                    | `ModelState`               | `framework/areg/component/NERegistry.hpp`                        |                                            |
 | `eNode`                                          | `NodeType`                 | `framework/areg/logging/private/ScopeNodeBase.hpp`               |                                            |
@@ -248,7 +247,7 @@ All live under `areg::` when compiled with `AREG_NAMESPACE=1`.
 
 | Old Name                          | New Name           | Primary File                                                     | What it contains                                    |
 |-----------------------------------|--------------------|------------------------------------------------------------------|-----------------------------------------------------|
-| `NEApplication`                   | `application`      | `framework/areg/appbase/NEApplication.hpp`                       | App lifecycle, entry types                          |
+| `NEApplication`                   | `application`      | `framework/areg/appbase/AppDefs.hpp`                       | App lifecycle, entry types                          |
 | `NECommon`                        | `common`           | `framework/areg/base/NECommon.hpp`                               | Shared types/constants (SortOrder, CookieId, etc.)  |
 | `NEMath`                          | `math`             | `framework/areg/base/NEMath.hpp`                                 | Rect, Point, Size, Coord, LargeInteger              |
 | `NEMemory`                        | `memory`           | `framework/areg/base/NEMemory.hpp`                               | Buffer types, alignment, message frames             |
@@ -276,13 +275,13 @@ All live under `areg::` when compiled with `AREG_NAMESPACE=1`.
 
 | Old (typo)                  | Fixed                          | File                                                             |
 |-----------------------------|--------------------------------|------------------------------------------------------------------|
-| `sBuferHeader`              | `BufferHeader`                 | `framework/areg/base/NEMemory.hpp`                               |
-| `S_BuferHeaderInfo`         | `BufferHeader`                 | `framework/areg/base/NEMemory.hpp`                               |
-| `DayTimeLaytout`            | `DayTimeLayout`                | `framework/areg/logging/private/Layouts.hpp`                     |
-| `eGroupping`                | `Grouping`                     | `framework/areg/logging/private/ScopeNodeBase.hpp`               |
-| `eLogingTypes`              | `LoggingType`                  | `framework/areg/logging/NELogging.hpp`                           |
-| `eDegubPrio`                | `DebugPriority`                | `framework/areg/base/private/NEDebug.hpp`                        |
-| `ServiceCommunicatonBase`   | `ServiceCommunicationBase`     | `framework/aregextend/service/ServiceCommunicatonBase.hpp`       |
+| `BufferHeader`              | `BufferHeader`                 | `framework/areg/base/NEMemory.hpp`                               |
+| `BufferHeader`         | `BufferHeader`                 | `framework/areg/base/NEMemory.hpp`                               |
+| `DayTimeLayout`            | `DayTimeLayout`                | `framework/areg/logging/private/Layouts.hpp`                     |
+| `Grouping`                | `Grouping`                     | `framework/areg/logging/private/ScopeNodeBase.hpp`               |
+| `LoggingType`              | `LoggingType`                  | `framework/areg/logging/NELogging.hpp`                           |
+| `DebugPriority`                | `DebugPriority`                | `framework/areg/base/private/NEDebug.hpp`                        |
+| `ServiceCommunicationBase`   | `ServiceCommunicationBase`     | `framework/aregextend/service/ServiceCommunicationBase.hpp`       |
 
 ---
 
@@ -306,7 +305,7 @@ All live under `areg::` when compiled with `AREG_NAMESPACE=1`.
 // BEFORE
 NEMemory::sByteBuffer buf;
 Lockable& lock = getLock();
-TEHashMap<String, NEService::eServiceType> map;
+HashMap<String, NEService::eServiceType> map;
 if (state == NELogging::eLogPriority::LogPrioDebug) { ... }
 
 // AFTER (with AREG_NAMESPACE=1)

@@ -52,22 +52,22 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using MapSocketToObject 	= TEMap<SOCKETHANDLE, SocketAccepted>;
+    using MapSocketToObject 	= OrderedMap<SOCKETHANDLE, SocketAccepted>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
-    using MapCookieToSocket		= TEMap<ITEM_ID, SOCKETHANDLE>;
+    using MapCookieToSocket		= OrderedMap<ITEM_ID, SOCKETHANDLE>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
-    using MapSocketToCookie		= TEMap<SOCKETHANDLE, ITEM_ID>;
+    using MapSocketToCookie		= OrderedMap<SOCKETHANDLE, ITEM_ID>;
 
     /**
      * \brief   The list of accepted sockets.
      **/
-    using ListSockets			= TEArrayList<SOCKETHANDLE>;
+    using ListSockets			= ArrayList<SOCKETHANDLE>;
 
     /**
      * \brief   The size of master list to listen sockets for incoming messages.

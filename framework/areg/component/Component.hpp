@@ -60,12 +60,12 @@ class AREG_API Component   : public    RuntimeObject
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
     //!< The basic operations of resource-map.
-    using ImplComponentResource = TEResourceMapImpl<unsigned int, Component *>;
+    using ImplComponentResource = ResourceMapImpl<unsigned int, Component *>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      *          Component           The saved values are Component objects.
      **/
-    using MapComponentContainer  = TEIntegerHashMap<Component *>;
+    using MapComponentContainer  = IntegerHashMap<Component *>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
@@ -74,7 +74,7 @@ class AREG_API Component   : public    RuntimeObject
      *          MapComponentContainer   The hash-map object to store containers.
      *          ImplComponentResource   The implementation of basic resource+map operations.
      **/
-    using MapComponentResource  = TELockResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
+    using MapComponentResource  = ConcurrentResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
 //////////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ public:
      *          The list of addresses of Servers.
      *          StubBase  The pointer to base class of Stub objects.
      **/
-    using ListServers           = TELinkedList<StubBase*>;
+    using ListServers           = LinkedList<StubBase*>;
 
 /************************************************************************/
 // static functions to load / unload component

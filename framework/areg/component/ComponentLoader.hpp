@@ -375,13 +375,13 @@ private:
      * \brief   ComponentLoader::ModelList
      *          Linked List of Model objects
      **/
-    using ModelList     = TEArrayList<NERegistry::Model>;
+    using ModelList     = ArrayList<NERegistry::Model>;
 
     /**
      * \brief   ComponentLoader::ThreadList
      *          Array of component threads.
      **/
-    using ThreadList    = TEArrayList<Thread *>;
+    using ThreadList    = ArrayList<Thread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

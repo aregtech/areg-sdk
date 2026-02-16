@@ -16,7 +16,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/logging/GELog.h"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/MeshDefs.hpp"
 #include "common/src/LocalHelloWorldService.hpp"
 #include "common/src/PublicHelloWorldClient.hpp"
 #include "pubservice/src/PublicServiceComponent.hpp"
@@ -67,26 +67,26 @@ BEGIN_MODEL( _modelName )
     // define component thread
     BEGIN_REGISTER_THREAD( "ControllerServiceThread" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::PublicControllerService, PublicServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::PublicControllerService, PublicServiceComponent )
             // register RemoteRegistry, SystemShutdown service implementation and the dependency.
             REGISTER_IMPLEMENT_SERVICE( NEPublicHelloWorld::ServiceName, NEPublicHelloWorld::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::LocalService)
+            REGISTER_DEPENDENCY(mesh::LocalService)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::PublicControllerService )
+        END_REGISTER_COMPONENT( mesh::PublicControllerService )
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::LocalService, LocalServiceComponent )
+        BEGIN_REGISTER_COMPONENT( mesh::LocalService, LocalServiceComponent )
             // register LocalHelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::PublicControllerService)
+            REGISTER_DEPENDENCY(mesh::PublicControllerService)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::LocalService )
+        END_REGISTER_COMPONENT( mesh::LocalService )
 
     // end of thread description
     END_REGISTER_THREAD( "TestMainServiceThread" )
 
-// end of model NECommon::ModelName
+// end of model mesh::ModelName
 END_MODEL( _modelName )
 
 //////////////////////////////////////////////////////////////////////////

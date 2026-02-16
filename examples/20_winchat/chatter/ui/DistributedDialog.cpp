@@ -19,7 +19,7 @@
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/services/ConnectionService.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 #include "examples/20_winchat/services/NEConnectionManager.hpp"
 #include "areg/appbase/Application.hpp"
 
@@ -474,10 +474,10 @@ LRESULT DistributedDialog::OnCmdChatClosed( WPARAM /*wParam*/, LPARAM lParam)
 
 LRESULT DistributedDialog::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
-        if ( wParam != static_cast<WPARAM>(NECommon::InvalidCookie) )
+        if ( wParam != static_cast<WPARAM>(chat::InvalidCookie) )
             mPageMessaging.OnSendMessage( static_cast<uint32_t>(wParam), *data );
         delete data;
     }
@@ -486,17 +486,17 @@ LRESULT DistributedDialog::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 
 LRESULT DistributedDialog::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
-        if ( wParam != static_cast<WPARAM>(NECommon::InvalidCookie) )
+        if ( wParam != static_cast<WPARAM>(chat::InvalidCookie) )
             mPageMessaging.OnTypeMessage( static_cast<uint32_t>(wParam), *data );
         delete data;
     }
     return 0;
 }
 
-bool DistributedDialog::OutputMessage( NEDistributedApp::eWndCommands cmd, void * sender, NECommon::sMessageData * data )
+bool DistributedDialog::OutputMessage( NEDistributedApp::eWndCommands cmd, void * sender, chat::sMessageData * data )
 {
     bool result = false;
     if ( data != nullptr )

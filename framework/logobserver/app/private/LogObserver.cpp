@@ -60,9 +60,9 @@ namespace
         uint16_t    lcPort{ NESocket::InvalidPort };
     };
 
-    using ListInstances = TEArrayList<sLogInstance>;
-    using ListScopes    = TEArrayList<sLogScope>;
-    using MapScopes     = TEHashMap<ITEM_ID, ListScopes>;
+    using ListInstances = ArrayList<sLogInstance>;
+    using ListScopes    = ArrayList<sLogScope>;
+    using MapScopes     = HashMap<ITEM_ID, ListScopes>;
 
     sLoggerConnect  _logConnect;
     ListInstances   _listInstances;
@@ -510,7 +510,7 @@ void LogObserver::_cleanHelp()
 
 bool LogObserver::_processSaveConfig(const OptionParser::sOption& optSave)
 {
-    TEArrayList<ITEM_ID> listTargets;
+    ArrayList<ITEM_ID> listTargets;
     if (optSave.inString.empty() || (optSave.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
     {
         listTargets.add(NEService::TARGET_ALL);
@@ -664,7 +664,7 @@ bool LogObserver::_processStartLogging(bool doStart)
 bool LogObserver::_processQueryScopes(const OptionParser::sOption& optScope)
 {
     bool result{ true };
-    TEArrayList<ITEM_ID> listTargets;
+    ArrayList<ITEM_ID> listTargets;
     if (optScope.inString.empty() || (optScope.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
     {
         listTargets.add(NEService::TARGET_ALL);
@@ -772,5 +772,5 @@ inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable *
     const String prio{ NELogging::makePrioString(prios) };
 
     config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::LoggingType::LogTypeRemote, false, true);
 }

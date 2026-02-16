@@ -20,7 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/TEArrayList.hpp"
+#include "areg/base/ArrayList.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
@@ -68,7 +68,7 @@ public:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers ) const = 0;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const = 0;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.

@@ -29,7 +29,7 @@ DEF_LOG_SCOPE( areg_aregextend_service_SystemServiceBase_serviceMain );
 //////////////////////////////////////////////////////////////////////////
 // MultitargetRouter class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceBase::SystemServiceBase( ServiceCommunicatonBase & commBase )
+SystemServiceBase::SystemServiceBase( ServiceCommunicationBase & commBase )
     : mCommunication        ( commBase )
     , mSystemServiceState   ( NESystemService::eSystemServiceState::ServiceStopped )
     , mSystemServiceOption  ( NESystemService::DEFAULT_OPTION )

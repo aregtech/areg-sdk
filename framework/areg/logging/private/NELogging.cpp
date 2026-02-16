@@ -16,7 +16,7 @@
 #include "areg/logging/NELogging.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/base/Process.hpp"

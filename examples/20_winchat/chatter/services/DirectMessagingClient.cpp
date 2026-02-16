@@ -5,7 +5,7 @@
 
 #include "chatter/services/DirectMessagingClient.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 #include "areg/logging/GELog.h"
 
 #ifndef NOMINMAX
@@ -122,7 +122,7 @@ void DirectMessagingClient::broadcastChatClosed()
 
 void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd )
 {
-    NECommon::sMessageData * data = NECommon::newData( );
+    chat::sMessageData * data = chat::newData( );
     if ( data != nullptr )
     {
         String nickName;
@@ -130,8 +130,8 @@ void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndComman
             nickName = "[ " + participant.nickName + " ]";
         else
             nickName = participant.nickName;
-        NEString::copyString<TCHAR, char>( data->nickName, NECommon::MAXLEN_NICKNAME, nickName.getString( ) );
-        NEString::copyString<TCHAR, char>( data->message , NECommon::MAXLEN_MESSAGE , msgText.getString( )  );
+        NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
+        NEString::copyString<TCHAR, char>( data->message , chat::MAXLEN_MESSAGE , msgText.getString( )  );
         data->timeSend      = dateStart;
         data->timeReceived  = dateEnd;
         data->dataSave      = participant.cookie;

@@ -163,12 +163,12 @@ namespace NEMemory
     using BufferData = unsigned char;
 
     /**
-     * \brief   TEAlign structure template
+     * \brief   Align structure template
      *          defining single element used in Align union.
      * \tparam  ELEM_TYPE   Any type.
      **/
     template <class ELEM_TYPE>
-    struct TEAlign
+    struct Align
     {
         ELEM_TYPE   mElement;
     };
@@ -187,26 +187,26 @@ namespace NEMemory
      **/
     union uAlign
     {
-        TEAlign<bool>                          alignBool;      //!< boolean value
-        TEAlign<char>                          alignChar;      //!< char value
-        TEAlign<unsigned char>                 alignUChar;     //!< unsigned char value
-        TEAlign<wchar_t>                       alignWChar;     //!< wide char value
-        TEAlign<short>                         alignShort;     //!< short value
-        TEAlign<unsigned short>                alignUShort;    //!< unsigned short value
-        TEAlign<int>                           alignInt;       //!< int value
-        TEAlign<unsigned int>                  alignUInt;      //!< unsigned int value
-        TEAlign<long double>                   alignLDouble;   //!< long double value
-        TEAlign<long>                          alignLong;      //!< long value
-        TEAlign<unsigned long>                 alignULong;     //!< unsigned long value
-        TEAlign<int64_t>                       alignInt64;     //!< 64-bit integer value
-        TEAlign<uint64_t>                      alignUInt64;    //!< 64-bit unsigned integer value
-        TEAlign<float>                         alignFloat;     //!< float value
-        TEAlign<double>                        alignDouble;    //!< double
-        TEAlign<void *>                        alignPtr;       //!< pointer value
-        TEAlign<void (*)()>              alignFunc;      //!< pointer to function value
-        TEAlign<_EmptyClass *>                 alignClsPtr;    //!< pointer to class value
-        TEAlign<void (_EmptyClass::*)()> alignClsFunc;   //!< pointer to class function value
-        TEAlign<int _EmptyClass::*>            alignClsVar;    //!< pointer to class variable value
+        Align<bool>                          alignBool;      //!< boolean value
+        Align<char>                          alignChar;      //!< char value
+        Align<unsigned char>                 alignUChar;     //!< unsigned char value
+        Align<wchar_t>                       alignWChar;     //!< wide char value
+        Align<short>                         alignShort;     //!< short value
+        Align<unsigned short>                alignUShort;    //!< unsigned short value
+        Align<int>                           alignInt;       //!< int value
+        Align<unsigned int>                  alignUInt;      //!< unsigned int value
+        Align<long double>                   alignLDouble;   //!< long double value
+        Align<long>                          alignLong;      //!< long value
+        Align<unsigned long>                 alignULong;     //!< unsigned long value
+        Align<int64_t>                       alignInt64;     //!< 64-bit integer value
+        Align<uint64_t>                      alignUInt64;    //!< 64-bit unsigned integer value
+        Align<float>                         alignFloat;     //!< float value
+        Align<double>                        alignDouble;    //!< double
+        Align<void *>                        alignPtr;       //!< pointer value
+        Align<void (*)()>              alignFunc;      //!< pointer to function value
+        Align<_EmptyClass *>                 alignClsPtr;    //!< pointer to class value
+        Align<void (_EmptyClass::*)()> alignClsFunc;   //!< pointer to class function value
+        Align<int _EmptyClass::*>            alignClsVar;    //!< pointer to class variable value
 
     };
 
@@ -297,39 +297,39 @@ namespace NEMemory
     inline bool operator != (const NEMemory::uAlign & lsh, const NEMemory::uAlign & rhs);
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::sBuferHeader structure declaration
+    // NEMemory::BufferHeader structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::sBuferHeader
+     * \brief   NEMemory::BufferHeader
      *          Structure of Binary Buffer object data header info.
      *          Used in all binary buffers. It stores basic information 
      *          buffer, it's type, allocated and used sizes.
      **/
-    typedef struct S_BuferHeaderInfo
+    struct BufferHeader
     {
         /**
          * \brief   The actual size of complete binary Buffer object,
          *          including header and allocated sizes
          **/
-        unsigned int    biBufSize;
+        unsigned int    biBufSize   { 0 };
         /**
          * \brief   The length in bytes of totally allocated buffer.
          **/
-        unsigned int    biLength;
+        unsigned int    biLength   { 0 };
         /**
          * \brief   The size of buffer header. The buffer data should start after header size offset
          **/
-        unsigned int    biOffset;
+        unsigned int    biOffset   { 0 };
         /**
          * \brief   The type of buffer. For RPC communication this should be external type.
          **/
-        eBufferType     biBufType;
+        eBufferType     biBufType   { eBufferType::BufferUnknown };
         /**
          * \brief   The length in bytes of used space in buffer.
          *          Cannot be more than biLength value.
          **/
-        unsigned int    biUsed;
-    } sBuferHeader;
+        unsigned int    biUsed      { 0 };
+    };
 
     //////////////////////////////////////////////////////////////////////////
     // NEMemory::sRemoteBuferHeader structure declaration
@@ -337,7 +337,7 @@ namespace NEMemory
     /**
      * \brief   NEMemory::sRemoteMessageHeader
      *          Structure of binary buffer for Remote data transfer.
-     *          It is extended type of sBuferHeader with additions
+     *          It is extended type of BufferHeader with additions
      *          of message ID, message sequence number, cookie and checksum.
      **/
     typedef struct S_RemoteMessageHeader
@@ -345,7 +345,7 @@ namespace NEMemory
         /**
          * \brief   The common buffer header information
          **/
-        sBuferHeader    rbhBufHeader;
+        BufferHeader    rbhBufHeader;
         /**
          * \brief   An ID of target object, receiving message.
          *          In remote messaging, this is Cookie of target
@@ -389,7 +389,7 @@ namespace NEMemory
         /**
          * \brief   Byte Buffer information
          **/
-        sBuferHeader    bufHeader;
+        BufferHeader    bufHeader;
         /**
          * \brief   Byte Buffer Data followed after structure.
          *          This is referring to the first element in the data buffer.

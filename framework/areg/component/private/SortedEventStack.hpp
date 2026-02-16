@@ -20,7 +20,7 @@
   * Includes
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEStack.hpp"
+#include "areg/base/Stack.hpp"
 #include "areg/component/Event.hpp"
 
 class RuntimeClassID;
@@ -48,7 +48,7 @@ class RuntimeClassID;
  *          by other developers. The "Exit" events should be immediately processed and they are not removed from the 
  *          stack until they are not processed by thread dispatcher.
  **/
-class SortedEventStack  : protected TELockStack<Event *>
+class SortedEventStack  : protected ConcurrentStack<Event *>
 {
     //!< The maximum size of the event queue stack
     static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };

@@ -41,13 +41,13 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     NEStringTest.cpp
     OptionParserTest.cpp
     StringUtilsTest.cpp
-    TEArrayListTest.cpp
-    TEFixedArrayTest.cpp
-    TEHashMapTest.cpp
-    TELinkedListTest.cpp
-    TEMapTest.cpp
-    TEPropertyTest.cpp
-    TERingStackTest.cpp
-    TESortedLinkedListTest.cpp
-    TEStackTest.cpp
+    ArrayListTest.cpp
+    FixedArrayTest.cpp
+    HashMapTest.cpp
+    LinkedListTest.cpp
+    MapTest.cpp
+    KeyValuePairTest.cpp
+    RingStackTest.cpp
+    SortedLinkedListTest.cpp
+    StackTest.cpp
 )

@@ -30,7 +30,7 @@
     <ClInclude Include="pubservice\src\TrafficLightFSM.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\NECommon.hpp">
+    <ClInclude Include="common\FsmDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,9 +53,5 @@
     <ClCompile Include="pubservice\src\TrafficLightFSM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubservice\CMakeLists.txt" />
-    <Text Include="pubservice\src\CMakeLists.txt" />
   </ItemGroup>
 </Project>

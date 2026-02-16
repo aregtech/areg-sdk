@@ -22,7 +22,7 @@
 
 #include "areg/ipc/RegistrationConsumer.hpp"
 #include "areg/ipc/RegistrationProvider.hpp"
-#include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 
 #include "mtrouter/service/private/ServiceRegistry.hpp"
 
@@ -33,7 +33,7 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class RouterServerService   : public    ServiceCommunicatonBase
+class RouterServerService   : public    ServiceCommunicationBase
                             , private   RegistrationConsumer
                             , private   RegistrationProvider
 {
@@ -105,7 +105,7 @@ protected:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers ) const override;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.

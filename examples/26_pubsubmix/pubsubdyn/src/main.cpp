@@ -15,7 +15,7 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/logging/GELog.h"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/PubSubDefs.hpp"
 #include "common/src/PubSubMixed.hpp"
 
 #ifdef _MSC_VER
@@ -29,8 +29,8 @@ namespace
 {
     constexpr char const _modelName[]   { "PubSub" };                  //!< The name of model
     constexpr std::string_view  _title  { "PubSub mix features, secondary application..."};
-    const String SecondRole(NEUtilities::generateName(NECommon::PublisherSecond));
-    const String ThirddRole(NEUtilities::generateName(NECommon::PublisherThird));
+    const String SecondRole(NEUtilities::generateName(pubsub::PublisherSecond));
+    const String ThirddRole(NEUtilities::generateName(pubsub::PublisherThird));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ BEGIN_MODEL(_modelName)
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
             // register service dependency
-            REGISTER_DEPENDENCY( NECommon::ContollerPublisher )
+            REGISTER_DEPENDENCY( pubsub::ContollerPublisher )
             REGISTER_DEPENDENCY(ThirddRole)
         // end of component description
         END_REGISTER_COMPONENT(SecondRole)
@@ -63,7 +63,7 @@ BEGIN_MODEL(_modelName)
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
             // register service dependency
-            REGISTER_DEPENDENCY( NECommon::ContollerPublisher )
+            REGISTER_DEPENDENCY( pubsub::ContollerPublisher )
             REGISTER_DEPENDENCY(SecondRole)
         // end of component description
         END_REGISTER_COMPONENT(ThirddRole)
@@ -98,8 +98,8 @@ int main()
         // Output the title
         Console & console = Console::getInstance();
         console.clearScreen();
-        console.outputTxt(NECommon::CoordTitle, _title);
-        console.outputTxt(NECommon::CoordSubtitle, NECommon::Separator);
+        console.outputTxt(pubsub::CoordTitle, _title);
+        console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);
 
         // Set this value to have correct outputs on console, it plays no other role.
         ComponentLoader::setComponentData(SecondRole, std::make_any<int>(0));

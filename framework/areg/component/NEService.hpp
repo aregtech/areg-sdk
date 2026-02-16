@@ -22,10 +22,10 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IOStream.hpp"
-#include "areg/base/TEMap.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/OrderedMap.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/TEFixedArray.hpp"
+#include "areg/base/FixedArray.hpp"
 #include "areg/base/Version.hpp"
 
 /************************************************************************
@@ -593,7 +593,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    using StateArrayBase    = TEFixedArray<NEService::eDataStateType>;
+    using StateArrayBase    = FixedArray<NEService::eDataStateType>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/
@@ -1094,7 +1094,7 @@ namespace NEService
     /**
      * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.
      **/
-    using MapInstances = TEMap<ITEM_ID, NEService::sServiceConnectedInstance>;
+    using MapInstances = OrderedMap<ITEM_ID, NEService::sServiceConnectedInstance>;
 }
 
 //////////////////////////////////////////////////////////////////////////

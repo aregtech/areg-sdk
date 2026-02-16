@@ -11,7 +11,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/GEGlobal.h"
 #include "areg/logging/GELog.h"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 
 DEF_LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
 DEF_LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
@@ -87,7 +87,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
         if ( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) && (mClientConnections == nullptr) )
         {
             LOG_DBG("Create client object to get connections");
-            mClientConnections = DEBUG_NEW ConnectionList( NECommon::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
+            mClientConnections = DEBUG_NEW ConnectionList( chat::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
         }
     }
 }
@@ -126,7 +126,7 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
             LOG_DBG("There is no connection client, creates one");
             ASSERT( mConnectionHandler.IsValid() == true );
             ASSERT( mConnectionHandler.GetRegistered() == false );
-            mClientConnections = DEBUG_NEW ConnectionList( NECommon::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler );
+            mClientConnections = DEBUG_NEW ConnectionList( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler );
         }
     }
     else
@@ -156,10 +156,10 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
         ASSERT(::IsWindow(mCtrlConnections.GetSafeHwnd()));
 
         mCtrlConnections.DeleteAllItems();
-        const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
+        const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
         for ( uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
-            const NECommon::sConnection & connection = listConnections.getAt(i);
+            const chat::sConnection & connection = listConnections.getAt(i);
             addConnection( connection );
         }
 

@@ -22,8 +22,8 @@
 #include "areg/base/IOStream.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "areg/base/HashMap.hpp"
 #include "areg/component/NEService.hpp"
 
 #include <string_view>
@@ -53,7 +53,7 @@ namespace NELogging
      * \brief   The list of the scopes. It is a pair, where the key is the ID of the scope
      *          and the value is the pointer to the scope.
      **/
-    using ScopeList     = TEHashMap<unsigned int, LogScope*>;
+    using ScopeList     = HashMap<unsigned int, LogScope*>;
 
     /**
      * \brief   Alias of the map position.
@@ -86,13 +86,13 @@ namespace NELogging
     };
 
     //!< The list of scope update structure.
-    using ScopeNames    = TEArrayList<sScopeInfo>;
+    using ScopeNames    = ArrayList<sScopeInfo>;
 
     /**
-     * \brief   NELogging::eLogingTypes
+     * \brief   NELogging::LoggingType
      *          The logging types in Areg framework
      **/
-    enum eLogingTypes : unsigned int
+    enum LoggingType : unsigned int
     {
           LogTypeUndefined  = 0 //!< Logging is undefined
         , LogTypeRemote     = 1 //!< Logging is to remote log collector

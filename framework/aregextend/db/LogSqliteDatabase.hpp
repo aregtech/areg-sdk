@@ -462,7 +462,7 @@ public:
      * \param   filter  The scope prio filters to setup
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupFilterLogs(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter);
+    uint32_t setupFilterLogs(ITEM_ID instId, const ArrayList<sScopeFilter>& filter);
 
     /**
      * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
@@ -564,7 +564,7 @@ private:
      * \param   filter  The list of scopes and filter mask to apply
      * \return  Returns true if operation succeeded.
      **/
-    inline uint32_t _updaeFilterLogScopes(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter);
+    inline uint32_t _updaeFilterLogScopes(ITEM_ID instId, const ArrayList<sScopeFilter>& filter);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

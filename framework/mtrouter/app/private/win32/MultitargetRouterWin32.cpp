@@ -24,7 +24,7 @@
     #endif // _MSC_VER
 
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"

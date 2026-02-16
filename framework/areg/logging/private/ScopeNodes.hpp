@@ -20,7 +20,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/logging/private/ScopeNodeBase.hpp"
 
-#include "areg/base/TESortedLinkedList.hpp"
+#include "areg/base/SortedLinkedList.hpp"
 
 #if AREG_LOGS
 /************************************************************************
@@ -111,8 +111,8 @@ class ScopeNode : public ScopeNodeBase
 // Internal types
 //////////////////////////////////////////////////////////////////////////
 public:
-    using NodeList = TESortedLinkedList< ScopeNode>;
-    using LeafList = TESortedLinkedList< ScopeLeaf>;
+    using NodeList = SortedLinkedList< ScopeNode>;
+    using LeafList = SortedLinkedList< ScopeLeaf>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

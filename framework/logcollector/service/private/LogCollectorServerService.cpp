@@ -25,11 +25,11 @@ DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSen
 //////////////////////////////////////////////////////////////////////////
 
 LogCollectorServerService::LogCollectorServerService()
-    : ServiceCommunicatonBase   ( NEService::COOKIE_LOGGER
+    : ServiceCommunicationBase   ( NEService::COOKIE_LOGGER
                                 , NERemoteService::eRemoteServices::ServiceLogger
                                 , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
                                 , NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
-                                , ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
+                                , ServiceCommunicationBase::eConnectionBehavior::DefaultAccept )
     , TimerConsumer           ( )
 
     , mLoggerProcessor          ( self() )
@@ -42,7 +42,7 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEServi
 {
     Lock lock(mLock);
 
-    ServiceCommunicatonBase::addInstance(cookie, instance);
+    ServiceCommunicationBase::addInstance(cookie, instance);
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
         NELogging::sLogMessage logMsgHello(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
@@ -67,10 +67,10 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
 {
     Lock lock(mLock);
 
-    TEArrayList<ITEM_ID> listIds;
+    ArrayList<ITEM_ID> listIds;
     NEService::sServiceConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
-    ServiceCommunicatonBase::removeInstance(cookie);
+    ServiceCommunicationBase::removeInstance(cookie);
    
     mLoggerProcessor.clientDisconnected(cookie);
     if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
@@ -102,7 +102,7 @@ void LogCollectorServerService::removeAllInstances()
 
     if (mInstanceMap.getSize() != 0)
     {
-        TEArrayList<ITEM_ID> listIds;
+        ArrayList<ITEM_ID> listIds;
         for (const auto& entry : getInstances().getData())
         {
             if (LogCollectorMessageProcessor::isLogSource(entry.second.ciSource))
@@ -114,7 +114,7 @@ void LogCollectorServerService::removeAllInstances()
         NELogging::sLogMessage logMsgClose(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgClose.logMessage, NELogging::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
         NELogging::logAnyMessageLocal(logMsgClose);
-        ServiceCommunicatonBase::removeAllInstances();
+        ServiceCommunicationBase::removeAllInstances();
 
         if (listIds.isEmpty() == false)
         {

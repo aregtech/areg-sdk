@@ -233,13 +233,13 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 }
 
 
-int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
+int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
     int result = proxyList != nullptr ? static_cast<int32_t>(proxyList->getSize()) : 0;
     if ( result > 0 )
     {
-        threadProxyList = static_cast<const TEArrayList<std::shared_ptr<ProxyBase>> &>(*proxyList);
+        threadProxyList = static_cast<const ArrayList<std::shared_ptr<ProxyBase>> &>(*proxyList);
     }
 
     return result;
@@ -386,7 +386,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 
         // first collect listeners, because on connect / disconnect
         // the listener list might be updated!
-        TEArrayList<ProxyBase::Listener> conListeners;
+        ArrayList<ProxyBase::Listener> conListeners;
         uint32_t index = 0;
         for (index = 0 ; index < mListenerList.getSize(); ++ index)
         {

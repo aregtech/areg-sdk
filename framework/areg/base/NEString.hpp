@@ -20,7 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/NEMath.hpp"
 

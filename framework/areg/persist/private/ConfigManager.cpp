@@ -18,14 +18,14 @@
   ************************************************************************/
 #include "areg/persist/ConfigManager.hpp"
 
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/persist/ConfigListener.hpp"
 
 namespace
 {
-    inline uint32_t _findPosition( const TEArrayList<Property>& propList
+    inline uint32_t _findPosition( const ArrayList<Property>& propList
                                  , uint32_t startAt
                                  , const String& section
                                  , const String& module
@@ -56,8 +56,8 @@ namespace
     }
 
     template <typename Type>
-    inline void _setPositionValue( TEArrayList<Property>& writeList
-                                 , const TEArrayList<Property>& readList
+    inline void _setPositionValue( ArrayList<Property>& writeList
+                                 , const ArrayList<Property>& readList
                                  , const String& section
                                  , const String& module
                                  , const String& property
@@ -637,19 +637,19 @@ bool ConfigManager::getLogEnabled(const String& logType) const
     return result;
 }
 
-bool ConfigManager::getLogEnabled(NELogging::eLogingTypes logType) const
+bool ConfigManager::getLogEnabled(NELogging::LoggingType logType) const
 {
     String id = Identifier::convToString( static_cast<unsigned int>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
+                                        , static_cast<unsigned int>(NELogging::LoggingType::LogTypeUndefined));
     return getLogEnabled(id);
 }
 
-void ConfigManager::setLogEnabled(NELogging::eLogingTypes logType, bool newValue, bool isTemporary /*= false*/)
+void ConfigManager::setLogEnabled(NELogging::LoggingType logType, bool newValue, bool isTemporary /*= false*/)
 {
     String id = Identifier::convToString( static_cast<unsigned int>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
+                                        , static_cast<unsigned int>(NELogging::LoggingType::LogTypeUndefined));
     setLogEnabled(id, newValue, isTemporary);
 }
 

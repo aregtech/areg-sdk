@@ -4,7 +4,6 @@
  ************************************************************************/
 
 #include "chatter/NEDistributedApp.hpp"
-#include "common/NECommon.hpp"
 #include "examples/20_winchat/services/NEDirectConnection.hpp"
 
 #ifndef NOMINMAX

@@ -66,26 +66,26 @@ void TickCountLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, Out
 }
 
 //////////////////////////////////////////////////////////////////////////
-// DayTimeLaytout class declaration
+// DayTimeLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 
 
-DayTimeLaytout::DayTimeLaytout()
+DayTimeLayout::DayTimeLayout()
     : LogLayout ( NELogOptions::eLayouts::LayoutDayTime )
 {
 }
 
-DayTimeLaytout::DayTimeLaytout( const DayTimeLaytout & /*src*/ )
+DayTimeLayout::DayTimeLayout( const DayTimeLayout & /*src*/ )
     : LogLayout ( NELogOptions::eLayouts::LayoutDayTime )
 {
 }
 
-DayTimeLaytout::DayTimeLaytout( DayTimeLaytout && /*src*/ ) noexcept
+DayTimeLayout::DayTimeLayout( DayTimeLayout && /*src*/ ) noexcept
     : LogLayout ( NELogOptions::eLayouts::LayoutDayTime )
 {
 }
 
-void DayTimeLaytout::logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const
+void DayTimeLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const
 {
     if ( msgLog.logTimestamp != 0 )
     {

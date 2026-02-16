@@ -15,8 +15,6 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/logging/GELog.h"
 
-#include "common/src/NECommon.hpp"
-
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);

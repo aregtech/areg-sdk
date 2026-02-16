@@ -20,7 +20,7 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/base/ArrayList.hpp"
 #include "areg/base/NESocket.hpp"
 
 LogObserverBase* LogObserverBase::_theLogObserver{ nullptr };

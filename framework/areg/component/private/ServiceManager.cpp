@@ -295,7 +295,7 @@ void ServiceManager::_waitServiceManagerThread()
     shutdownThread(NECommon::DO_NOT_WAIT);
 }
 
-void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & out_listStubs, TEArrayList<ProxyAddress> & out_lisProxies ) const
+void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & out_listStubs, ArrayList<ProxyAddress> & out_lisProxies ) const
 {
     LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
     Lock lock( mLock );

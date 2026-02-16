@@ -50,9 +50,9 @@ class AREG_API RuntimeClassID
      *          required to initialize runtime class ID in hash map blocks.
      **/
     template < typename KEY, typename VALUE >
-    friend class TEHashMap;
+    friend class HashMap;
     template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Implement>
-    friend class TEResourceMap;
+    friend class ResourceMapBase;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

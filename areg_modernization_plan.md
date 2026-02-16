@@ -1,6 +1,6 @@
 # Areg SDK — Modernization Plan
 
-**Version:** 2.0
+**Version:** 2.1
 **Date:** February 2026
 **Purpose:** Complete reference for renaming types, restructuring namespaces, and modernizing code generation.
 **Audience:** Developer (Avetis) and AI agents performing automated refactoring.
@@ -32,12 +32,12 @@ These rules govern every rename decision in this document.
 |---|-----------|---------|
 | 1 | **Interfaces get the clean name.** When an interface collides with a concrete class, rename the concrete side. | `ByteBuffer` -> `ByteBuffer` (interface); struct `sByteBuffer` -> `RawByteBuffer` |
 | 2 | **No mechanical suffixes.** Never use `Base`, `If`, `Data`, `Kind` as collision-avoidance. Every name must carry domain meaning. | `sLogMessage` -> `LogRecord` (not `LogMessageData`) |
-| 3 | **PascalCase for types, snake_case for namespaces.** Per `docs/AREG_AI_CODING_RULES.md`. | `BufferHeader`, `areg::component` |
-| 4 | **Always use `areg::` namespace.** Remove `AREG_NAMESPACE=0` option. Framework types always live in `areg::`. | `areg::component::ResultType` — always |
+| 3 | **PascalCase for types, snake_case for namespaces.** Per `docs/AREG_AI_CODING_RULES.md`. | `BufferHeader`, `areg::os` |
+| 4 | **Always use `areg::` namespace.** Remove `AREG_NAMESPACE=0` option. Framework types always live in `areg::`. | `areg::ResultType` — always |
 | 5 | **Generated code belongs to the user's namespace.** Generated service classes reference framework types with `areg::` qualification. No re-exports. | `class HelloProvider : public areg::StubBase` |
-| 6 | **Fix all typos in the same pass.** No separate "typo fix" phase. | `sBuferHeader` -> `BufferHeader` |
-| 7 | **Flat fundamentals, broad subsystems.** Base types live directly in `areg::`. Only distinct subsystems get sub-namespaces. Maximum 2 namespace levels. | `areg::String`, `areg::Thread`, `areg::component::ResultType` |
-| 8 | **Namespace provides context — names don't repeat it.** When a type lives in a namespace, drop the namespace's concept from the type name. | `areg::ConnectionProvider` not `areg::ServiceConnectionProvider` |
+| 6 | **Fix all typos in the same pass.** No separate "typo fix" phase. | `BufferHeader` -> `BufferHeader` |
+| 7 | **Flat `areg::` namespace for the entire areg library.** All public types live directly in `areg::`. No sub-namespaces for subsystems — directories organize source files, not API. | `areg::String`, `areg::Thread`, `areg::ResultType`, `areg::LogPriority` |
+| 8 | **Names must be self-descriptive without namespace context.** Since all types share `areg::`, type names carry enough meaning to avoid ambiguity. | `areg::ConnectionProvider` not `areg::ServiceConnectionProvider` |
 | 9 | **Platform types use `os::` namespace + platform suffix.** OS abstraction classes use `areg::os::` namespace with `Posix`/`Win32` suffix in the class name. File name = class name. | `areg::os::MutexPosix` in `posix/MutexPosix.hpp` |
 | 10 | **Thread-safe variants use `Concurrent` prefix.** Following Java/C# convention for synchronized container aliases. | `ConcurrentStack`, `ConcurrentResourceMap` |
 
@@ -53,75 +53,70 @@ Users who want shorter names use standard C++ mechanisms:
 ```cpp
 // Import specific types
 using areg::String;
-using areg::component::ResultType;
-
-// Namespace alias
-namespace comp = areg::component;
-comp::ResultType result = comp::ResultType::Success;
+using areg::ResultType;
 
 // Using-directive in .cpp files only (never in headers)
 using namespace areg;
 ```
 
-### 2.2 Namespace hierarchy (7 namespaces)
+### 2.2 Namespace hierarchy (2 namespaces for areg library)
 
-Fundamental types from `framework/areg/base/` and `framework/areg/appbase/` live directly in `areg::`.
-Only distinct subsystems get their own sub-namespace. This matches Boost/Asio/gRPC convention.
+All public types from the `areg` library live in a single flat `areg::` namespace.
+Directories organize source files for developers; the namespace organizes the API for users.
+This matches Abseil (`absl::` for everything) and Qt (`Qt::` for everything) conventions.
 
 ```
-areg::                       // Fundamentals: String, Thread, Mutex, ByteBuffer, Rect,
-                             //   Point, Size, SystemTime, HashMap, ArrayList, Stack,
-                             //   AppState, SortOrder, CompareResult, Radix, etc.
-                             //   (everything from base/ and appbase/)
-areg::component::            // Component/service system: ResultType, ServiceType,
-                             //   RequestType, ModelState, ComponentEntry, etc.
-                             //   (everything from component/)
-areg::net::                  // Networking/IPC: RemoteConnection, ConnectionType,
-                             //   ConnectionState, RemoteServiceId, etc.
-                             //   (everything from ipc/)
-areg::log::                  // Logging: LogPriority, LogRecord, ScopeInfo, ConfigKey,
-                             //   LayoutTag, LogStatus, Grouping, NodeType, etc.
-                             //   (everything from logging/)
-areg::persist::              // Persistence: ConfigKeys, PropertyRecord, etc.
-                             //   (everything from persist/)
-areg::ext::                  // Extended library: ServiceOption, SystemServiceState,
-                             //   ConnectionBehavior, ServiceControl, etc.
-                             //   (everything from aregextend/)
+areg::                       // ALL areg library types from all directories:
+                             //   base/:      String, Thread, Mutex, ByteBuffer, Rect,
+                             //               Point, Size, SystemTime, HashMap, ArrayList, etc.
+                             //   component/: Component, Proxy, Stub, Timer, ResultType,
+                             //               ServiceType, RequestType, ModelState, etc.
+                             //   ipc/:       RemoteConnection, ConnectionType, ConnectionState,
+                             //               RemoteServiceId, SendPolicy, etc.
+                             //   logging/:   LogPriority, LogRecord, ScopeInfo, ConfigKey,
+                             //               LayoutTag, LogStatus, Grouping, NodeType, etc.
+                             //   persist/:   ConfigKeys, PropertyRecord, etc.
+                             //   appbase/:   AppState, EntryTypesEnabling, etc.
 areg::os::                   // OS abstraction layer: platform-specific primitives
                              //   MutexPosix, SpinLockWin32, SyncObjectPosix, etc.
                              //   Class names carry platform suffix; only one compiles per platform
+                             //   Located in private/posix/ and private/win32/ directories
 
+aregext::                    // Extended library (separate from areg library):
+                             //   ServiceOption, SystemServiceState, ConnectionBehavior, etc.
 mtrouter::                   // Router application (not in areg::)
 logcollector::               // Log collector application (not in areg::)
 ```
 
-**Why this is better than 17 sub-namespaces:**
-- A developer typing `areg::` sees fundamentals immediately — no need to guess `areg::strings::` vs `areg::common::` vs `areg::util::`
-- Subsystems (`component`, `net`, `log`, `persist`) map directly to directory structure
-- Maximum 2 levels deep: `areg::component::ResultType` — never `areg::component::service::ResultType`
-- Only 7 namespaces for users to learn (`os::` is internal but visible in platform code)
+**Why flat `areg::` instead of sub-namespaces:**
+- Areg's core design principle is **transport transparency** — threading, IPC, and logging are one unified system, not isolated subsystems. Sub-namespaces contradict this.
+- `areg::component::Component` says "component" three times. `areg::Component` says it once.
+- Sockets live in `base/`, used by both `ipc/` and `logging/` — sub-namespaces would force an arbitrary assignment.
+- Developers type `areg::` and see everything. No guessing which sub-namespace a type belongs to.
+- Only 2 namespaces to learn: `areg::` (public API) and `areg::os::` (platform internals).
+- The `#include` path already tells you the source directory: `#include "areg/component/Component.hpp"` — the namespace doesn't need to repeat it.
 
 ### 2.3 Previous namespace → new location mapping
 
 | Old NE Namespace | Types move to | Rationale |
 |---|---|---|
-| NEApplication | `areg::` | Small set, fundamental (AppState, EntryTypesEnabling) |
+| NEApplication | `areg::` | AppState, EntryTypesEnabling |
 | NECommon | `areg::` | Constants, SortOrder, IndexPosition, CookieId, RingOverlap |
 | NEMath | `areg::` | Rect, Point, Size, Coord, LargeInteger, CompareResult, DigitSign |
 | NEMemory | `areg::` | BufferHeader, RawByteBuffer, BufferType, MessageResult, Align |
 | NESocket | `areg::` | SocketAddress, UserData |
 | NEString | `areg::` | CharDefs, Radix |
 | NEUtilities | `areg::` | SystemTime |
-| NEDebug | `areg::` | DebugPriority (simple enum, private by file location) |
+| NEDebug | `areg::` | DebugPriority (private by file location) |
 | NESyncTypesIX | `areg::os::` | POSIX sync types (platform suffix on class names) |
-| NERegistry | `areg::component::` | ModelState, ComponentEntry, ServiceEntry |
-| NEService | `areg::component::` | ResultType, ServiceType, RequestType, DataState, etc. |
-| NEConnection | `areg::net::` (internal, private by file location) | Connection constants |
-| NERemoteService | `areg::net::` | RemoteConnection, ConnectionType, RemoteServiceId |
-| NELogging | `areg::log::` | LogPriority, LogRecord, ScopeInfo, LogDataType, etc. |
-| NELogOptions | `areg::log::` (internal, private by file location) | ConfigKey, LayoutTag, LogStatus |
-| NEPersistence | `areg::persist::` | ConfigKeys, PropertyRecord |
-| NESystemService | `areg::ext::` | ServiceOption, SystemServiceState |
+| NERegistry | `areg::` | ModelState, ComponentEntry, ServiceEntry |
+| NEService | `areg::` | ResultType, ServiceType, RequestType, DataState, etc. |
+| NEConnection | `areg::` | Connection constants (private by file location) |
+| NERemoteService | `areg::` | RemoteConnection, ConnectionType, RemoteServiceId |
+| NELogging | `areg::` | LogPriority, LogRecord, ScopeInfo, LogDataType, etc. |
+| NELogOptions | `areg::` | ConfigKey, LayoutTag, LogStatus (private by file location) |
+| NEPersistence | `areg::` | ConfigKeys, PropertyRecord |
+| NESystemService | `aregext::` | ServiceOption, SystemServiceState (separate library) |
 | NELogCollectorSettings | `logcollector::` | App-level, not in areg:: |
 | NEMultitargetRouterSettings | `mtrouter::` | App-level, not in areg:: |
 
@@ -165,7 +160,7 @@ Redundant "Service" prefix dropped where namespace already provides context.
 | `RemoteMessageHandler`          | `RemoteMessageHandler`          | `areg/ipc/RemoteMessageHandler.hpp`                            | `areg/ipc/RemoteMessageHandler.hpp`                              |                                            |
 | `Lockable`                  | `Lockable`                      | `areg/base/SyncObjects.hpp`                                      | (same file)                                                      | Concrete `ResourceLock` keeps its name     |
 | `ConnectionConsumer`     | `ConnectionConsumer`            | `areg/ipc/ConnectionConsumer.hpp`                       | `areg/ipc/ConnectionConsumer.hpp`                                | In `areg::`, "Service" is redundant        |
-| `ConnectionHandler`      | `ConnectionHandler`             | `aregextend/service/ConnectionHandler.hpp`              | `aregextend/service/ConnectionHandler.hpp`                       | In `areg::ext::`, "Service" is redundant   |
+| `ConnectionHandler`      | `ConnectionHandler`             | `aregextend/service/ConnectionHandler.hpp`              | `aregextend/service/ConnectionHandler.hpp`                       | In `aregext::`, "Service" is redundant     |
 | `ConnectionProvider`     | `ConnectionProvider`            | `areg/ipc/ConnectionProvider.hpp`                       | `areg/ipc/ConnectionProvider.hpp`                                | In `areg::`, "Service" is redundant        |
 | `ServiceEventConsumer`      | `ServiceEventConsumer`          | `areg/ipc/ServiceEventConsumer.hpp`                          | `areg/ipc/ServiceEventConsumer.hpp`                              | Keep "Service" to distinguish from `EventConsumer` |
 | `RegistrationConsumer`       | `RegistrationConsumer`          | `areg/ipc/RegistrationConsumer.hpp`                         | `areg/ipc/RegistrationConsumer.hpp`                              | "Registration" is better English than "Register" |
@@ -211,42 +206,41 @@ Drop `TE`. Thread-safe variants use `Concurrent` prefix (Java/C# convention) ins
 
 | Old Name                          | New Name                        | Old File                                                         | New File                                                         | Notes                                      |
 |-----------------------------------|---------------------------------|------------------------------------------------------------------|------------------------------------------------------------------|--------------------------------------------|
-| `TEArrayList`                     | `ArrayList`                     | `areg/base/TEArrayList.hpp`                                      | `areg/base/ArrayList.hpp`                                        |                                            |
-| `TEFixedArray`                    | `FixedArray`                    | `areg/base/TEFixedArray.hpp`                                     | `areg/base/FixedArray.hpp`                                       |                                            |
-| `TEHashMap`                       | `HashMap`                       | `areg/base/TEHashMap.hpp`                                        | `areg/base/HashMap.hpp`                                          |                                            |
-| `TEIdHashMap`                     | `IdHashMap`                     | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TEIdMap`                         | `IdMap`                         | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TEIntegerHashMap`                | `IntHashMap`                    | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TEIntegerMap`                    | `IntMap`                        | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TELinkedList`                    | `LinkedList`                    | `areg/base/TELinkedList.hpp`                                     | `areg/base/LinkedList.hpp`                                       |                                            |
-| `TELockResourceListMap`           | `ConcurrentResourceListMap`     | `areg/base/TEResourceListMap.hpp`                                | (same file)                                                      | `Lock` -> `Concurrent`                     |
-| `TELockResourceMap`               | `ConcurrentResourceMap`         | `areg/base/TEResourceMap.hpp`                                    | (same file)                                                      | `Lock` -> `Concurrent`                     |
-| `TELockRingStack`                 | `ConcurrentRingStack`           | `areg/base/TERingStack.hpp`                                      | (same file)                                                      | `Lock` -> `Concurrent`                     |
-| `TELockRuntimeResourceMap`        | `ConcurrentRuntimeResourceMap`  | `areg/base/TERuntimeResourceMap.hpp`                             | (same file)                                                      | `Lock` -> `Concurrent`                     |
-| `TELockStack`                     | `ConcurrentStack`               | `areg/base/TEStack.hpp`                                          | (same file)                                                      | `Lock` -> `Concurrent`                     |
-| `TEMap`                           | `OrderedMap`                    | `areg/base/TEMap.hpp`                                            | `areg/base/OrderedMap.hpp`                                       | Wraps `std::map` (ordered)                 |
-| `TENolockResourceListMap`         | `ResourceListMap`               | `areg/base/TEResourceListMap.hpp`                                | (same file)                                                      | `Nolock` dropped — unsync is the default   |
-| `TENolockResourceMap`             | `ResourceMap`                   | `areg/base/TEResourceMap.hpp`                                    | (same file)                                                      | `Nolock` dropped                           |
-| `TENolockRingStack`               | `RingStack`                     | `areg/base/TERingStack.hpp`                                      | (same file)                                                      | `Nolock` dropped (same as base template)   |
-| `TENolockRuntimeResourceMap`      | `RuntimeResourceMap`            | `areg/base/TERuntimeResourceMap.hpp`                             | (same file)                                                      | `Nolock` dropped                           |
-| `TENolockStack`                   | `Stack`                         | `areg/base/TEStack.hpp`                                          | (same file)                                                      | `Nolock` dropped (same as base template)   |
-| `TEObjectFactory`                 | `ObjectFactory`                 | `areg/base/ObjectBase.hpp`                                  | (moves with ObjectBase)                                          |                                            |
-| `TEPointerHashMap`                | `PtrHashMap`                    | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TEPointerMap`                    | `PtrMap`                        | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TEProperty`                      | `KeyValuePair`                  | `areg/base/TEProperty.hpp`                                       | `areg/base/KeyValuePair.hpp`                                     |                                            |
-| `TEResourceListMap`               | `ResourceListMapBase`           | `areg/base/TEResourceListMap.hpp`                                | `areg/base/ResourceListMap.hpp`                                  | Base template; aliases are `ResourceListMap` and `ConcurrentResourceListMap` |
-| `TEResourceListMapImpl`           | `ResourceListMapImpl`           | `areg/base/TETemplateBase.hpp`                                   | (same file)                                                      |                                            |
-| `TEResourceMap`                   | `ResourceMapBase`               | `areg/base/TEResourceMap.hpp`                                    | `areg/base/ResourceMap.hpp`                                      | Base template; aliases are `ResourceMap` and `ConcurrentResourceMap` |
-| `TEResourceMapImpl`               | `ResourceMapImpl`               | `areg/base/TETemplateBase.hpp`                                   | (same file)                                                      |                                            |
-| `TERingStack`                     | `RingStackBase`                 | `areg/base/TERingStack.hpp`                                      | `areg/base/RingStack.hpp`                                        | Base template; aliases are `RingStack` and `ConcurrentRingStack` |
-| `TERuntimeHashMap`                | `RuntimeHashMap`                | `areg/base/TERuntimeResourceMap.hpp`                             | (same file)                                                      |                                            |
-| `TERuntimeResourceMap`            | `RuntimeResourceMapBase`        | `areg/base/TERuntimeResourceMap.hpp`                             | `areg/base/RuntimeResourceMap.hpp`                               | Base template; aliases are `RuntimeResourceMap` and `ConcurrentRuntimeResourceMap` |
-| `TESortedLinkedList`              | `SortedLinkedList`              | `areg/base/TESortedLinkedList.hpp`                               | `areg/base/SortedLinkedList.hpp`                                 |                                            |
-| `TEStack`                         | `StackBase`                     | `areg/base/TEStack.hpp`                                          | `areg/base/Stack.hpp`                                            | Base template; aliases are `Stack` and `ConcurrentStack` |
-| `TEString`                        | `StringTemplate`                | `areg/base/TEString.hpp`                                         | `areg/base/StringTemplate.hpp`                                   | `String`/`WideString` inherit from this    |
-| `TEStringHashMap`                 | `StringHashMap`                 | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TEStringMap`                     | `StringMap`                     | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
-| `TEAlign`                         | `Align`                         | `areg/base/NEMemory.hpp`                                         | (stays in `areg::` namespace)                                    |                                            |
+| `ArrayList`                     | `ArrayList`                     | `areg/base/ArrayList.hpp`                                      | `areg/base/ArrayList.hpp`                                        |                                            |
+| `FixedArray`                    | `FixedArray`                    | `areg/base/FixedArray.hpp`                                     | `areg/base/FixedArray.hpp`                                       |                                            |
+| `HashMap`                       | `HashMap`                       | `areg/base/HashMap.hpp`                                        | `areg/base/HashMap.hpp`                                          |                                            |
+| `IdHashMap`                     | `IdHashMap`                     | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `IdMap`                         | `IdMap`                         | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `IntegerHashMap`                | `IntHashMap`                    | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `IntegerMap`                    | `IntMap`                        | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `LinkedList`                    | `LinkedList`                    | `areg/base/LinkedList.hpp`                                     | `areg/base/LinkedList.hpp`                                       |                                            |
+| `ConcurrentResourceListMap`           | `ConcurrentResourceListMap`     | `areg/base/ResourceListMap.hpp`                                | (same file)                                                      | `Lock` -> `Concurrent`                     |
+| `ConcurrentResourceMap`               | `ConcurrentResourceMap`         | `areg/base/ResourceMap.hpp`                                    | (same file)                                                      | `Lock` -> `Concurrent`                     |
+| `ConcurrentRingStack`                 | `ConcurrentRingStack`           | `areg/base/RingStack.hpp`                                      | (same file)                                                      | `Lock` -> `Concurrent`                     |
+| `ConcurrentRuntimeResourceMap`        | `ConcurrentRuntimeResourceMap`  | `areg/base/RuntimeResourceMap.hpp`                             | (same file)                                                      | `Lock` -> `Concurrent`                     |
+| `ConcurrentStack`                     | `ConcurrentStack`               | `areg/base/Stack.hpp`                                          | (same file)                                                      | `Lock` -> `Concurrent`                     |
+| `OrderedMap`                           | `OrderedMap`                    | `areg/base/OrderedMap.hpp`                                            | `areg/base/OrderedMap.hpp`                                       | Wraps `std::map` (ordered)                 |
+| `ResourceListMap`         | `ResourceListMap`               | `areg/base/ResourceListMap.hpp`                                | (same file)                                                      | `Nolock` dropped — unsync is the default   |
+| `ResourceMap`             | `ResourceMap`                   | `areg/base/ResourceMap.hpp`                                    | (same file)                                                      | `Nolock` dropped                           |
+| `RingStack`               | `RingStack`                     | `areg/base/RingStack.hpp`                                      | (same file)                                                      | `Nolock` dropped (same as base template)   |
+| `RuntimeResourceMap`      | `RuntimeResourceMap`            | `areg/base/RuntimeResourceMap.hpp`                             | (same file)                                                      | `Nolock` dropped                           |
+| `Stack`                   | `Stack`                         | `areg/base/Stack.hpp`                                          | (same file)                                                      | `Nolock` dropped (same as base template)   |
+| `PtrHashMap`                | `PtrHashMap`                    | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `PtrMap`                    | `PtrMap`                        | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `KeyValuePair`                      | `KeyValuePair`                  | `areg/base/KeyValuePair.hpp`                                       | `areg/base/KeyValuePair.hpp`                                     |                                            |
+| `ResourceListMapBase`               | `ResourceListMapBase`           | `areg/base/ResourceListMap.hpp`                                | `areg/base/ResourceListMap.hpp`                                  | Base template; aliases are `ResourceListMap` and `ConcurrentResourceListMap` |
+| `ResourceListMapImpl`           | `ResourceListMapImpl`           | `areg/base/TemplateBase.hpp`                                   | (same file)                                                      |                                            |
+| `ResourceMapBase`                   | `ResourceMapBase`               | `areg/base/ResourceMap.hpp`                                    | `areg/base/ResourceMap.hpp`                                      | Base template; aliases are `ResourceMap` and `ConcurrentResourceMap` |
+| `ResourceMapImpl`               | `ResourceMapImpl`               | `areg/base/TemplateBase.hpp`                                   | (same file)                                                      |                                            |
+| `RingStack`                     | `RingStackBase`                 | `areg/base/RingStack.hpp`                                      | `areg/base/RingStack.hpp`                                        | Base template; aliases are `RingStack` and `ConcurrentRingStack` |
+| `RuntimeHashMap`                | `RuntimeHashMap`                | `areg/base/RuntimeResourceMap.hpp`                             | (same file)                                                      |                                            |
+| `RuntimeResourceMapBase`            | `RuntimeResourceMapBase`        | `areg/base/RuntimeResourceMap.hpp`                             | `areg/base/RuntimeResourceMap.hpp`                               | Base template; aliases are `RuntimeResourceMap` and `ConcurrentRuntimeResourceMap` |
+| `SortedLinkedList`              | `SortedLinkedList`              | `areg/base/SortedLinkedList.hpp`                               | `areg/base/SortedLinkedList.hpp`                                 |                                            |
+| `StackBase`                         | `StackBase`                     | `areg/base/Stack.hpp`                                          | `areg/base/Stack.hpp`                                            | Base template; aliases are `Stack` and `ConcurrentStack` |
+| `StringBase`                        | `StringTemplate`                | `areg/base/StringBase.hpp`                                         | `areg/base/StringTemplate.hpp`                                   | `String`/`WideString` inherit from this    |
+| `StringHashMap`                 | `StringHashMap`                 | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `StringMap`                     | `StringMap`                     | `areg/base/Containers.hpp`                                       | (same file)                                                      |                                            |
+| `Align`                         | `Align`                         | `areg/base/MemoryDefs.hpp`                                         | (stays in `areg::` namespace)                                    |                                            |
 
 **Total: 35 renames**
 
@@ -277,32 +271,32 @@ Redundant "Service" prefix dropped where applicable.
 
 | Old Name (inner / alias)                         | New Name                   | File                                              | Collision Resolution                       |
 |--------------------------------------------------|----------------------------|---------------------------------------------------|--------------------------------------------|
-| `S_BuferHeaderInfo` / `sBuferHeader`             | `BufferHeader`             | `areg/base/NEMemory.hpp`                          | Fix typo Bufer -> Buffer                   |
-| `S_ByteBuffer` / `sByteBuffer`                   | `RawByteBuffer`            | `areg/base/NEMemory.hpp`                          | `ByteBuffer` is the interface class        |
-| `S_RemoteMessage` / `sRemoteMessage`             | `MessageFrame`             | `areg/base/NEMemory.hpp`                          | Wire format = "frame"; context already implies remote |
-| `S_RemoteMessageHeader` / `sRemoteMessageHeader` | `MessageHeader`            | `areg/base/NEMemory.hpp`                          | Context already implies remote             |
-| `S_Rect` / `sRect`                               | `Rect`                     | `areg/base/NEMath.hpp`                            |                                            |
-| `S_Size` / `sSize`                               | `Size`                     | `areg/base/NEMath.hpp`                            |                                            |
-| `S_Point` / `sPoint`                             | `Point`                    | `areg/base/NEMath.hpp`                            |                                            |
-| `S_Coord` / `sCoord`                             | `Coord`                    | `areg/base/NEMath.hpp`                            |                                            |
-| `S_SystemTime` / `sSystemTime`                   | `SystemTime`               | `areg/base/NEUtilities.hpp`                       |                                            |
-| `S_InterfaceData` / `SInterfaceData`             | `InterfaceDescriptor`      | `areg/component/NEService.hpp`                    | Describes a service interface               |
-| `sLargeInteger`                                  | `LargeInteger`             | `areg/base/NEMath.hpp`                            |                                            |
-| `sEntryTypesEnabling`                            | `EntryTypesEnabling`       | `areg/appbase/NEApplication.hpp`                  |                                            |
+| `BufferHeader` / `BufferHeader`             | `BufferHeader`             | `areg/base/MemoryDefs.hpp`                          | Fix typo Bufer -> Buffer                   |
+| `S_ByteBuffer` / `sByteBuffer`                   | `RawByteBuffer`            | `areg/base/MemoryDefs.hpp`                          | `ByteBuffer` is the interface class        |
+| `S_RemoteMessage` / `sRemoteMessage`             | `MessageFrame`             | `areg/base/MemoryDefs.hpp`                          | Wire format = "frame"; context already implies remote |
+| `S_RemoteMessageHeader` / `sRemoteMessageHeader` | `MessageHeader`            | `areg/base/MemoryDefs.hpp`                          | Context already implies remote             |
+| `S_Rect` / `sRect`                               | `Rect`                     | `areg/base/MathDefs.hpp`                            |                                            |
+| `S_Size` / `sSize`                               | `Size`                     | `areg/base/MathDefs.hpp`                            |                                            |
+| `S_Point` / `sPoint`                             | `Point`                    | `areg/base/MathDefs.hpp`                            |                                            |
+| `S_Coord` / `sCoord`                             | `Coord`                    | `areg/base/MathDefs.hpp`                            |                                            |
+| `S_SystemTime` / `sSystemTime`                   | `SystemTime`               | `areg/base/UtilityDefs.hpp`                       |                                            |
+| `S_InterfaceData` / `SInterfaceData`             | `InterfaceDescriptor`      | `areg/component/ServiceDefs.hpp`                    | Describes a service interface               |
+| `sLargeInteger`                                  | `LargeInteger`             | `areg/base/MathDefs.hpp`                            |                                            |
+| `sEntryTypesEnabling`                            | `EntryTypesEnabling`       | `areg/appbase/AppDefs.hpp`                  |                                            |
 | `sLogInstance`                                   | `LogInstance`              | `areglogger/client/LogObserverApi.h`              |                                            |
-| `sLogMessage`                                    | `LogRecord`                | `areg/logging/NELogging.hpp`                      | Wire format; `LogMessage` is the class     |
+| `sLogMessage`                                    | `LogRecord`                | `areg/logging/LoggingDefs.hpp`                      | Wire format; `LogMessage` is the class     |
 | `sLogScope`                                      | `LogScopeEntry`            | `areglogger/client/LogObserverApi.h`              | `LogScope` is the class                    |
 | `sObserverEvents`                                | `ObserverEvents`           | `areglogger/client/LogObserverApi.h`              |                                            |
 | `sObserverStatus`                                | `ObserverStatus`           | `logobserver/app/LogObserver.hpp`                 |                                            |
 | `sOption`                                        | `Option`                   | `aregextend/console/OptionParser.hpp`             |                                            |
 | `sOptionSetup`                                   | `OptionSetup`              | `aregextend/console/OptionParser.hpp`             |                                            |
-| `sProperty`                                      | `PropertyRecord`           | `areg/persist/NEPersistence.hpp`                  | Serialized form; `Property` is the class   |
-| `sPropertyKey`                                   | `PropertyKeyRecord`        | `areg/persist/NEPersistence.hpp`                  | Same reasoning                             |
+| `sProperty`                                      | `PropertyRecord`           | `areg/persist/PersistenceDefs.hpp`                  | Serialized form; `Property` is the class   |
+| `sPropertyKey`                                   | `PropertyKeyRecord`        | `areg/persist/PersistenceDefs.hpp`                  | Same reasoning                             |
 | `sScopeFilter`                                   | `ScopeFilter`              | `aregextend/db/LogSqliteDatabase.hpp`             |                                            |
-| `sScopeInfo`                                     | `ScopeInfo`                | `areg/logging/NELogging.hpp`                      |                                            |
-| `sServiceConnectedInstance`                      | `ConnectedInstance`        | `areg/component/NEService.hpp`                    | In `areg::component::`, "Service" is redundant |
-| `BufferAllocator`                                | (keep)                     | `areg/base/NEMemory.hpp`                          |                                            |
-| `BufferDeleter`                                  | (keep)                     | `areg/base/NEMemory.hpp`                          |                                            |
+| `sScopeInfo`                                     | `ScopeInfo`                | `areg/logging/LoggingDefs.hpp`                      |                                            |
+| `sServiceConnectedInstance`                      | `ConnectedInstance`        | `areg/component/ServiceDefs.hpp`                    | In `areg::`, "Service" is redundant            |
+| `BufferAllocator`                                | (keep)                     | `areg/base/MemoryDefs.hpp`                          |                                            |
+| `BufferDeleter`                                  | (keep)                     | `areg/base/MemoryDefs.hpp`                          |                                            |
 | `Range`                                          | (keep)                     | `aregextend/console/OptionParser.hpp`             |                                            |
 
 **Total: 24 renames, 3 kept**
@@ -314,89 +308,91 @@ Redundant "Service" prefix dropped where applicable.
 ## 6. Enums
 
 Drop `e`/`E_` prefixes. PascalCase. Merge typedef inner/alias pairs.
-Redundant "Service" prefix dropped from names in `areg::component::` namespace.
+Redundant "Service" prefix dropped where namespace or context already implies it.
 
 | Old Name (inner / alias)                         | New Name                   | Namespace          | File                                              | Notes                                      |
 |--------------------------------------------------|----------------------------|--------------------|---------------------------------------------------|--------------------------------------------|
-| `E_AppState` / `eApplicationState`               | `AppState`                 | `areg::`           | `areg/appbase/NEApplication.hpp`                  |                                            |
-| `E_CharDefs` / `eCharDefs`                       | `CharDefs`                 | `areg::`           | `areg/base/NEString.hpp`                          |                                            |
-| `E_CompareResult` / `eCompare`                   | `CompareResult`            | `areg::`           | `areg/base/NEMath.hpp`                            |                                            |
+| `E_AppState` / `eApplicationState`               | `AppState`                 | `areg::`           | `areg/appbase/AppDefs.hpp`                  |                                            |
+| `E_CharDefs` / `eCharDefs`                       | `CharDefs`                 | `areg::`           | `areg/base/StringDefs.hpp`                          |                                            |
+| `E_CompareResult` / `eCompare`                   | `CompareResult`            | `areg::`           | `areg/base/MathDefs.hpp`                            |                                            |
 | `E_CompletionStatus` / `eCompletionStatus`       | `CompletionStatus`         | `areg::`           | `areg/base/Thread.hpp`                            |                                            |
-| `E_ConfigKey` / `eConfigKey`                     | `ConfigKey`                | `areg::log::`      | `areg/logging/private/NELogOptions.hpp`           |                                            |
-| `E_ConnectionBehavior` / `eConnectionBehavior`   | `ConnectionBehavior`       | `areg::ext::`      | `aregextend/service/ServiceCommunicatonBase.hpp`  |                                            |
-| `E_Cookies` / `eCookies`                         | `CookieId`                 | `areg::`           | `areg/base/NECommon.hpp`                          |                                            |
+| `E_ConfigKey` / `eConfigKey`                     | `ConfigKey`                | `areg::`      | `areg/logging/private/LogOptions.hpp`           |                                            |
+| `E_ConnectionBehavior` / `eConnectionBehavior`   | `ConnectionBehavior`       | `aregext::`      | `aregextend/service/ServiceCommunicationBase.hpp`  |                                            |
+| `E_Cookies` / `eCookies`                         | `CookieId`                 | `areg::`           | `areg/base/CommonDefs.hpp`                          |                                            |
 | `E_CursorPosition` / `eCursorPosition`           | `SeekOrigin`               | `areg::`           | `areg/base/Cursor.hpp`                  | Matches POSIX/C# convention                |
-| `E_DataStateType` / `eDataStateType`             | `DataState`                | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `E_DegubPrio` / `eDegubPrio`                     | `DebugPriority`            | `areg::`   | `areg/base/private/NEDebug.hpp`                   | Fix typo                                   |
-| `E_DigitSign` / `eDigitSign`                     | `DigitSign`                | `areg::`           | `areg/base/NEMath.hpp`                            |                                            |
-| `E_DisconnectReason` / `eDisconnectReason`       | `DisconnectReason`         | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `E_EventData` / `eEventData`                     | `EventPayload`             | `areg::component::`| `areg/component/EventDataStream.hpp`              | `EventData` is a class                     |
+| `E_DataStateType` / `eDataStateType`             | `DataState`                | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `E_DegubPrio` / `DebugPriority`                     | `DebugPriority`            | `areg::`   | `areg/base/private/DebugDefs.hpp`                   | Fix typo                                   |
+| `E_DigitSign` / `eDigitSign`                     | `DigitSign`                | `areg::`           | `areg/base/MathDefs.hpp`                            |                                            |
+| `E_DisconnectReason` / `eDisconnectReason`       | `DisconnectReason`         | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `E_EventData` / `eEventData`                     | `EventPayload`             | `areg::`| `areg/component/EventDataStream.hpp`              | `EventData` is a class                     |
 | `E_EventFired` / `eEventFired`                   | `EventFired`               | `areg::os::` | `areg/base/private/posix/SyncLockAndWaitPosix.hpp` |                                          |
-| `E_EventOrder` / `eEventOrder`                   | `EventOrder`               | `areg::component::`| `areg/component/private/EventDispatcherBase.hpp`  |                                            |
-| `E_EventPriority` / `eEventPriority`             | `EventPriority`            | `areg::component::`| `areg/component/Event.hpp`                        |                                            |
-| `E_EventResetInfo` / `eEventResetInfo`           | `EventResetInfo`           | `areg::os::` | `areg/base/private/posix/NESyncTypesIX.hpp` |                                            |
-| `E_EventType` / `eEventType`                     | `EventType`                | `areg::component::`| `areg/component/Event.hpp`                        |                                            |
+| `E_EventOrder` / `eEventOrder`                   | `EventOrder`               | `areg::`| `areg/component/private/EventDispatcherBase.hpp`  |                                            |
+| `E_EventPriority` / `eEventPriority`             | `EventPriority`            | `areg::`| `areg/component/Event.hpp`                        |                                            |
+| `E_EventResetInfo` / `eEventResetInfo`           | `EventResetInfo`           | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
+| `E_EventType` / `eEventType`                     | `EventType`                | `areg::`| `areg/component/Event.hpp`                        |                                            |
 | `E_ExitCodes` / `eExitCodes`                     | `ExitCode`                 | `areg::`           | `areg/base/ThreadConsumer.hpp`                  | Singular                                   |
 | `E_FileOpenBits` / `eFileOpenBits`               | `FileOpenBits`             | `areg::`           | `areg/base/FileBase.hpp`                          |                                            |
 | `E_FileOpenMode` / `eFileOpenMode`               | `FileOpenMode`             | `areg::`           | `areg/base/FileBase.hpp`                          |                                            |
-| `E_FuncIdRange` / `eFuncIdRange`                 | `FuncIdRange`              | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `E_InstanceBitness` / `eInstanceBitness`         | `InstanceBitness`          | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `E_Layouts` / `eLayouts`                         | `LayoutTag`                | `areg::log::`      | `areg/logging/private/NELogOptions.hpp`           |                                            |
-| `E_LogStatus` / `eLogStatus`                     | `LogStatus`                | `areg::log::`      | `areg/logging/private/NELogOptions.hpp`           |                                            |
-| `E_LoggingAction` / `eLoggingAction`             | `LoggingAction`            | `areg::log::`      | `areg/logging/private/LoggingEvent.hpp`           |                                            |
-| `E_MatchCondition` / `eMatchCondition`           | `MatchCondition`           | `areg::os::` | `areg/base/private/posix/NESyncTypesIX.hpp` |                                            |
-| `E_MessageDataType` / `eMessageDataType`         | `MessageDataType`          | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `E_MessageSource` / `eMessageSource`             | `MessageSource`            | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
+| `E_FuncIdRange` / `eFuncIdRange`                 | `FuncIdRange`              | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `E_InstanceBitness` / `eInstanceBitness`         | `InstanceBitness`          | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `E_Layouts` / `eLayouts`                         | `LayoutTag`                | `areg::`      | `areg/logging/private/LogOptions.hpp`           |                                            |
+| `E_LogStatus` / `eLogStatus`                     | `LogStatus`                | `areg::`      | `areg/logging/private/LogOptions.hpp`           |                                            |
+| `E_LoggingAction` / `eLoggingAction`             | `LoggingAction`            | `areg::`      | `areg/logging/private/LoggingEvent.hpp`           |                                            |
+| `E_MatchCondition` / `eMatchCondition`           | `MatchCondition`           | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
+| `E_MessageDataType` / `eMessageDataType`         | `MessageDataType`          | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `E_MessageSource` / `eMessageSource`             | `MessageSource`            | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
 | `E_ProcEnv` / `eProcEnv`                         | `ProcessEnv`               | `areg::`           | `areg/base/Process.hpp`                           |                                            |
-| `E_Radix` / `eRadix`                             | `Radix`                    | `areg::`           | `areg/base/NEString.hpp`                          |                                            |
-| `E_RequestType` / `eRequestType`                 | `RequestType`              | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `E_ServiceCall` / `eServiceCalls`                | `ServiceCall`              | `areg::component::`| `areg/component/NEService.hpp`                    | Singular                                   |
-| `E_ServiceConnection` / `eServiceConnection`     | `ConnectionStatus`         | `areg::component::`| `areg/component/NEService.hpp`                    | "Service" dropped; "Status" more precise than "Connection" as enum |
-| `E_ServiceControl` / `eServiceControl`           | `ServiceControl`           | `areg::ext::`      | `aregextend/service/SystemServiceBase.hpp`        |                                            |
-| `E_ServiceManagerCommands` / `eServiceManagerCommands` | `ManagerCommand`    | `areg::component::`| `areg/component/private/ServiceManagerEvents.hpp` | Singular; in component::, "Service" redundant |
-| `E_ServiceRequestType` / `eServiceRequestType`   | `ServiceRequestType`       | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `E_ServiceType` / `eServiceType`                 | `ServiceType`              | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
+| `E_Radix` / `eRadix`                             | `Radix`                    | `areg::`           | `areg/base/StringDefs.hpp`                          |                                            |
+| `E_RequestType` / `eRequestType`                 | `RequestType`              | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `E_ServiceCall` / `eServiceCalls`                | `ServiceCall`              | `areg::`| `areg/component/ServiceDefs.hpp`                    | Singular                                   |
+| `E_ServiceConnection` / `eServiceConnection`     | `ConnectionStatus`         | `areg::`| `areg/component/ServiceDefs.hpp`                    | "Service" dropped; "Status" more precise than "Connection" as enum |
+| `E_ServiceControl` / `eServiceControl`           | `ServiceControl`           | `aregext::`      | `aregextend/service/SystemServiceBase.hpp`        |                                            |
+| `E_ServiceManagerCommands` / `eServiceManagerCommands` | `ManagerCommand`    | `areg::`| `areg/component/private/ServiceManagerEvents.hpp` | Singular; in component::, "Service" redundant |
+| `E_ServiceRequestType` / `eServiceRequestType`   | `ServiceRequestType`       | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `E_ServiceType` / `eServiceType`                 | `ServiceType`              | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
 | `E_SpecialFolder` / `eSpecialFolder`             | `SpecialFolder`            | `areg::`           | `areg/base/File.hpp`                              |                                            |
 | `E_SyncObject` / `eSyncObject`                   | `SyncCategory`             | `areg::`           | `areg/base/SyncObject.hpp`                      | `SyncObject` taken by class                |
-| `E_SyncObjectFired` / `eSyncObjectFired`         | `SyncObjectFired`          | `areg::os::` | `areg/base/private/posix/NESyncTypesIX.hpp` |                                            |
+| `E_SyncObjectFired` / `eSyncObjectFired`         | `SyncObjectFired`          | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
 | `E_ThreadPriority` / `eThreadPriority`           | `ThreadPriority`           | `areg::`           | `areg/base/Thread.hpp`                            |                                            |
 | `E_WaitType` / `eWaitType`                       | `WaitType`                 | `areg::os::` | `areg/base/private/posix/SyncLockAndWaitPosix.hpp` |                                          |
-| `ResultType`                                     | (keep)                     | `areg::component::`| `areg/component/NEService.hpp`                    |                                            |
-| `eBufferType`                                    | `BufferType`               | `areg::`           | `areg/base/NEMemory.hpp`                          |                                            |
-| `eColumnType`                                    | `ColumnType`               | `areg::ext::`      | `aregextend/db/SqliteStatement.hpp`               |                                            |
-| `eConfigKeys`                                    | `ConfigKeys`               | `areg::persist::`  | `areg/persist/NEPersistence.hpp`                  |                                            |
-| `eConnectionState`                               | `ConnectionState`          | `areg::net::`      | `areg/ipc/ServiceClientConnectionBase.hpp`        |                                            |
-| `eConnectionTypes`                               | `ConnectionType`           | `areg::net::`      | `areg/ipc/NERemoteService.hpp`                    | Singular                                   |
-| `eGroupping`                                     | `Grouping`                 | `areg::log::`      | `areg/logging/private/ScopeNodeBase.hpp`          | Fix typo                                   |
-| `eIndex`                                         | `IndexPosition`            | `areg::`           | `areg/base/NECommon.hpp`                          |                                            |
+| `ResultType`                                     | (keep)                     | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
+| `eBufferType`                                    | `BufferType`               | `areg::`           | `areg/base/MemoryDefs.hpp`                          |                                            |
+| `eColumnType`                                    | `ColumnType`               | `aregext::`      | `aregextend/db/SqliteStatement.hpp`               |                                            |
+| `eConfigKeys`                                    | `ConfigKeys`               | `areg::`  | `areg/persist/PersistenceDefs.hpp`                  |                                            |
+| `eConnectionState`                               | `ConnectionState`          | `areg::`      | `areg/ipc/ServiceClientConnectionBase.hpp`        |                                            |
+| `eConnectionTypes`                               | `ConnectionType`           | `areg::`      | `areg/ipc/RemoteServiceDefs.hpp`                    | Singular                                   |
+| `Grouping`                                     | `Grouping`                 | `areg::`      | `areg/logging/private/ScopeNodeBase.hpp`          | Fix typo                                   |
+| `eIndex`                                         | `IndexPosition`            | `areg::`           | `areg/base/CommonDefs.hpp`                          |                                            |
 | `eLockedState`                                   | `LockedState`              | `areg::`           | `areg/base/SyncObjects.hpp`                       |                                            |
-| `eLogDataType`                                   | `LogDataType`              | `areg::log::`      | `areg/logging/NELogging.hpp`                      |                                            |
-| `eLogMessageType`                                | `LogMessageType`           | `areg::log::`      | `areg/logging/NELogging.hpp`                      |                                            |
-| `eLogPriority`                                   | `LogPriority`              | `areg::log::`      | `areg/logging/NELogging.hpp`                      |                                            |
-| `eLogType`                                       | `LogType`                  | `areg::log::`      | `areglogger/client/LogObserverApi.h`              |                                            |
+| `eLogDataType`                                   | `LogDataType`              | `areg::`      | `areg/logging/LoggingDefs.hpp`                      |                                            |
+| `eLogMessageType`                                | `LogMessageType`           | `areg::`      | `areg/logging/LoggingDefs.hpp`                      |                                            |
+| `eLogPriority`                                   | `LogPriority`              | `areg::`      | `areg/logging/LoggingDefs.hpp`                      |                                            |
+| `eLogType`                                       | `LogType`                  | `areg::`      | `areglogger/client/LogObserverApi.h`              |                                            |
 | `eLoggerOptions`                                 | `LoggerOption`             | `logcollector::`   | `logcollector/app/LogCollector.hpp`               | Singular                                   |
-| `eLogingTypes`                                   | `LoggingType`              | `areg::log::`      | `areg/logging/NELogging.hpp`                      | Fix typo, singular                         |
-| `eMessageResult`                                 | `MessageResult`            | `areg::`           | `areg/base/NEMemory.hpp`                          |                                            |
-| `eModelState`                                    | `ModelState`               | `areg::component::`| `areg/component/NERegistry.hpp`                   |                                            |
-| `eNode`                                          | `NodeType`                 | `areg::log::`      | `areg/logging/private/ScopeNodeBase.hpp`          |                                            |
-| `eObserverStates`                                | `ObserverState`            | `areg::log::`      | `areglogger/client/LogObserverApi.h`              | Singular                                   |
-| `eQueryResult`                                   | `QueryResult`              | `areg::ext::`      | `aregextend/db/SqliteStatement.hpp`               |                                            |
-| `eRemoteConnection`                              | `RemoteConnection`         | `areg::net::`      | `areg/ipc/NERemoteService.hpp`                    |                                            |
-| `eRemoteServices`                                | `RemoteServiceId`          | `areg::net::`      | `areg/ipc/NERemoteService.hpp`                    |                                            |
-| `eRingOverlap`                                   | `RingOverlap`              | `areg::`           | `areg/base/NECommon.hpp`                          |                                            |
+| `LoggingType`                                   | `LoggingType`              | `areg::`      | `areg/logging/LoggingDefs.hpp`                      | Fix typo, singular                         |
+| `eMessageResult`                                 | `MessageResult`            | `areg::`           | `areg/base/MemoryDefs.hpp`                          |                                            |
+| `eModelState`                                    | `ModelState`               | `areg::`| `areg/component/Model.hpp`                   |                                            |
+| `eNode`                                          | `NodeType`                 | `areg::`      | `areg/logging/private/ScopeNodeBase.hpp`          |                                            |
+| `eObserverStates`                                | `ObserverState`            | `areg::`      | `areglogger/client/LogObserverApi.h`              | Singular                                   |
+| `eQueryResult`                                   | `QueryResult`              | `aregext::`      | `aregextend/db/SqliteStatement.hpp`               |                                            |
+| `eRemoteConnection`                              | `RemoteConnection`         | `areg::`      | `areg/ipc/RemoteServiceDefs.hpp`                    |                                            |
+| `eRemoteServices`                                | `RemoteServiceId`          | `areg::`      | `areg/ipc/RemoteServiceDefs.hpp`                    |                                            |
+| `eRingOverlap`                                   | `RingOverlap`              | `areg::`           | `areg/base/CommonDefs.hpp`                          |                                            |
 | `eRouterOptions`                                 | `RouterOption`             | `mtrouter::`       | `mtrouter/app/MultitargetRouter.hpp`              | Singular                                   |
-| `eSendMessage`                                   | `SendPolicy`               | `areg::net::`      | `areg/ipc/SendMessageEvent.hpp`                   |                                            |
-| `eServiceEventCommands`                          | `EventCommand`             | `areg::net::`      | `areg/ipc/ServiceEvent.hpp`                       | Singular; "Service" dropped (in net::)     |
-| `eServiceOption`                                 | `ServiceOption`            | `areg::ext::`      | `aregextend/service/NESystemService.hpp`          |                                            |
-| `eSort`                                          | `SortOrder`                | `areg::`           | `areg/base/NECommon.hpp`                          |                                            |
-| `eSystemServiceState`                            | `SystemServiceState`       | `areg::ext::`      | `aregextend/service/NESystemService.hpp`          |                                            |
-| `eTimerType`                                     | `TimerType`                | `areg::component::`| `areg/component/TimerBase.hpp`                    |                                            |
-| `eValidFlags`                                    | `ValidFlags`               | `areg::ext::`      | `aregextend/console/OptionParser.hpp`             |                                            |
+| `eSendMessage`                                   | `SendPolicy`               | `areg::`      | `areg/ipc/SendMessageEvent.hpp`                   |                                            |
+| `eServiceEventCommands`                          | `EventCommand`             | `areg::`      | `areg/ipc/ServiceEvent.hpp`                       | Singular; "Service" dropped (in net::)     |
+| `eServiceOption`                                 | `ServiceOption`            | `aregext::`      | `aregextend/service/SystemServiceDefs.hpp`          |                                            |
+| `eSort`                                          | `SortOrder`                | `areg::`           | `areg/base/CommonDefs.hpp`                          |                                            |
+| `eSystemServiceState`                            | `SystemServiceState`       | `aregext::`      | `aregextend/service/SystemServiceDefs.hpp`          |                                            |
+| `eTimerType`                                     | `TimerType`                | `areg::`| `areg/component/TimerBase.hpp`                    |                                            |
+| `eValidFlags`                                    | `ValidFlags`               | `aregext::`      | `aregextend/console/OptionParser.hpp`             |                                            |
 | `eWaitResult`                                    | `WaitResult`               | `areg::`           | `areg/base/SyncObjects.hpp`                       |                                            |
 
 **Total: ~90 renames (deduplicated pairs), 1 kept**
 
 **Changes from v1.0:** Added namespace column for clarity. `ServiceConnection` -> `ConnectionStatus` (more precise). `ServiceManagerCommand` -> `ManagerCommand`. `ServiceEventCommand` -> `EventCommand`. All POSIX internals explicitly in `areg::os::`.
+
+**Changes in v2.1:** All sub-namespaces (`areg::component::`, `areg::net::`, `areg::log::`, `areg::persist::`) collapsed into flat `areg::`. `areg::ext::` → `aregext::` (separate library). Directories organize source files, not API.
 
 ---
 
@@ -404,31 +400,38 @@ Redundant "Service" prefix dropped from names in `areg::component::` namespace.
 
 File renames — the NE prefix is dropped. The C++ namespace identifier changes per section 2.3.
 
+**File naming convention:**
+- Class files: `PascalCase.hpp` (e.g., `Component.hpp`, `Thread.hpp`)
+- Definition collection files (ex-NE namespaces): `PascalCaseDefs.hpp` (e.g., `MathDefs.hpp`, `ServiceDefs.hpp`)
+- Exception: `NERegistry.hpp` → `Model.hpp` — contains actual classes centered around the `Model` class
+
+The `Defs` suffix instantly signals "not a class" while keeping PascalCase consistent with the rest of the codebase.
+
 | Old NE Namespace | New Namespace | Old Primary File | New Primary File |
 |---|---|---|---|
-| `NEApplication` | `areg::` (flat) | `areg/appbase/NEApplication.hpp` | `areg/appbase/Application.hpp` |
-| `NECommon` | `areg::` (flat) | `areg/base/NECommon.hpp` | `areg/base/Common.hpp` |
-| `NEMath` | `areg::` (flat) | `areg/base/NEMath.hpp` | `areg/base/Math.hpp` |
-| `NEMemory` | `areg::` (flat) | `areg/base/NEMemory.hpp` | `areg/base/Memory.hpp` |
-| `NESocket` | `areg::` (flat) | `areg/base/NESocket.hpp` | `areg/base/Socket.hpp` |
-| `NEString` | `areg::` (flat) | `areg/base/NEString.hpp` | `areg/base/Strings.hpp` |
-| `NEUtilities` | `areg::` (flat) | `areg/base/NEUtilities.hpp` | `areg/base/Utilities.hpp` |
-| `NEDebug` | `areg::` (flat) | `areg/base/private/NEDebug.hpp` | `areg/base/private/Debug.hpp` |
-| `NESyncTypesIX` | `areg::os::` | `areg/base/private/posix/NESyncTypesIX.hpp` | `areg/base/private/posix/SyncTypesPosix.hpp` |
-| `NERegistry` | `areg::component::` | `areg/component/NERegistry.hpp` | `areg/component/Registry.hpp` |
-| `NEService` | `areg::component::` | `areg/component/NEService.hpp` | `areg/component/Service.hpp` |
-| `NEConnection` | `areg::net::` (internal) | `areg/ipc/private/NEConnection.hpp` | `areg/ipc/private/Connection.hpp` |
-| `NERemoteService` | `areg::net::` | `areg/ipc/NERemoteService.hpp` | `areg/ipc/RemoteService.hpp` |
-| `NELogging` | `areg::log::` | `areg/logging/NELogging.hpp` | `areg/logging/Logging.hpp` |
-| `NELogOptions` | `areg::log::` (internal) | `areg/logging/private/NELogOptions.hpp` | `areg/logging/private/LogOptions.hpp` |
-| `NEPersistence` | `areg::persist::` | `areg/persist/NEPersistence.hpp` | `areg/persist/Persistence.hpp` |
-| `NESystemService` | `areg::ext::` | `aregextend/service/NESystemService.hpp` | `aregextend/service/SystemService.hpp` |
+| `NEApplication` | `areg::` | `areg/appbase/AppDefs.hpp` | `areg/appbase/AppDefs.hpp` |
+| `NECommon` | `areg::` | `areg/base/CommonDefs.hpp` | `areg/base/CommonDefs.hpp` |
+| `NEMath` | `areg::` | `areg/base/MathDefs.hpp` | `areg/base/MathDefs.hpp` |
+| `NEMemory` | `areg::` | `areg/base/MemoryDefs.hpp` | `areg/base/MemoryDefs.hpp` |
+| `NESocket` | `areg::` | `areg/base/NESocket.hpp` | `areg/base/SocketDefs.hpp` |
+| `NEString` | `areg::` | `areg/base/StringDefs.hpp` | `areg/base/StringDefs.hpp` |
+| `NEUtilities` | `areg::` | `areg/base/UtilityDefs.hpp` | `areg/base/UtilityDefs.hpp` |
+| `NEDebug` | `areg::` | `areg/base/private/DebugDefs.hpp` | `areg/base/private/DebugDefs.hpp` |
+| `NESyncTypesIX` | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` | `areg/base/private/posix/SyncDefsPosix.hpp` |
+| `NERegistry` | `areg::` | `areg/component/Model.hpp` | `areg/component/Model.hpp` |
+| `NEService` | `areg::` | `areg/component/ServiceDefs.hpp` | `areg/component/ServiceDefs.hpp` |
+| `NEConnection` | `areg::` | `areg/ipc/private/NEConnection.hpp` | `areg/ipc/private/ConnectionDefs.hpp` |
+| `NERemoteService` | `areg::` | `areg/ipc/RemoteServiceDefs.hpp` | `areg/ipc/RemoteServiceDefs.hpp` |
+| `NELogging` | `areg::` | `areg/logging/LoggingDefs.hpp` | `areg/logging/LoggingDefs.hpp` |
+| `NELogOptions` | `areg::` | `areg/logging/private/LogOptions.hpp` | `areg/logging/private/LogOptions.hpp` |
+| `NEPersistence` | `areg::` | `areg/persist/PersistenceDefs.hpp` | `areg/persist/PersistenceDefs.hpp` |
+| `NESystemService` | `aregext::` | `aregextend/service/SystemServiceDefs.hpp` | `aregextend/service/SystemServiceDefs.hpp` |
 | `NELogCollectorSettings` | `logcollector::` | `logcollector/app/NELogCollectorSettings.hpp` | `logcollector/app/LogCollectorSettings.hpp` |
-| `NEMultitargetRouterSettings` | `mtrouter::` | `mtrouter/app/NEMultitargetRouterSettings.hpp` | `mtrouter/app/MultitargetRouterSettings.hpp` |
+| `NEMultitargetRouterSettings` | `mtrouter::` | `mtrouter/app/NEMultitargetRouterSettings.hpp` | `mtrouter/app/RouterSettings.hpp` |
 
 **Total: 19 renames**
 
-**Changes from v1.0:** File names use PascalCase (matching type naming convention) instead of snake_case. 17 separate sub-namespaces collapsed into 7 namespaces (6 public + `os::`). Types from `base/` and `appbase/` merge into flat `areg::`. `areg::detail::` eliminated — replaced by `areg::os::` for platform code, other internals use semantic namespaces with `private/` directory for access control.
+**Changes from v1.0:** `Defs` suffix convention for ex-namespace files. `NERegistry.hpp` → `Model.hpp` (contains classes, not just definitions). 17 sub-namespaces collapsed into 2: flat `areg::` + `areg::os::`. No file name conflicts with existing class files.
 
 ---
 
@@ -438,13 +441,13 @@ These are corrected as part of the renames above. Listed here for tracking.
 
 | Old (typo)                  | Corrected                      | File                                              |
 |-----------------------------|--------------------------------|---------------------------------------------------|
-| `sBuferHeader`              | `BufferHeader`                 | `areg/base/NEMemory.hpp`                          |
-| `S_BuferHeaderInfo`         | `BufferHeader`                 | `areg/base/NEMemory.hpp`                          |
-| `DayTimeLaytout`            | `DayTimeLayout`                | `areg/logging/private/Layouts.hpp`                |
-| `eGroupping`                | `Grouping`                     | `areg/logging/private/ScopeNodeBase.hpp`          |
-| `eLogingTypes`              | `LoggingType`                  | `areg/logging/NELogging.hpp`                      |
-| `eDegubPrio`                | `DebugPriority`                | `areg/base/private/NEDebug.hpp`                   |
-| `ServiceCommunicatonBase`   | `ServiceCommunicationBase`     | `aregextend/service/ServiceCommunicatonBase.hpp`  |
+| `BufferHeader`              | `BufferHeader`                 | `areg/base/MemoryDefs.hpp`                          |
+| `BufferHeader`         | `BufferHeader`                 | `areg/base/MemoryDefs.hpp`                          |
+| `DayTimeLayout`            | `DayTimeLayout`                | `areg/logging/private/Layouts.hpp`                |
+| `Grouping`                | `Grouping`                     | `areg/logging/private/ScopeNodeBase.hpp`          |
+| `LoggingType`              | `LoggingType`                  | `areg/logging/LoggingDefs.hpp`                      |
+| `DebugPriority`                | `DebugPriority`                | `areg/base/private/DebugDefs.hpp`                   |
+| `ServiceCommunicationBase`   | `ServiceCommunicationBase`     | `aregextend/service/ServiceCommunicationBase.hpp`  |
 
 **Total: 7 typos**
 
@@ -454,12 +457,12 @@ These are corrected as part of the renames above. Listed here for tracking.
 
 ### 9.1 Always `areg::` namespace
 
-Generated code references framework types with full `areg::` qualification. With the new namespace structure, `ResultType` is in `areg::component::`:
+Generated code references framework types with full `areg::` qualification:
 
 ```cpp
 class HelloServiceProvider : public areg::StubBase
 {
-    virtual void response_hello(areg::component::ResultType result) = 0;
+    virtual void response_hello(areg::ResultType result) = 0;
 };
 ```
 
@@ -554,7 +557,7 @@ class HelloService : public HelloServiceProvider
         hello_service::HelloData data;
         data.name  = name;
         data.count = 1;
-        response_hello(areg::component::ResultType::Success);
+        response_hello(areg::ResultType::Success);
     }
 };
 ```
@@ -565,9 +568,9 @@ class HelloService : public HelloServiceProvider
 
 class HelloClient : public HelloServiceConsumer
 {
-    void on_hello_response(areg::component::ResultType result) override
+    void on_hello_response(areg::ResultType result) override
     {
-        if (result == areg::component::ResultType::Success)
+        if (result == areg::ResultType::Success)
         {
             // handle success
         }
@@ -608,14 +611,10 @@ Ordered by dependency — complete each phase before starting the next.
 ### Phase 1: Namespace infrastructure
 - [ ] Remove `AREG_NAMESPACE` conditional from `AREG_NAMESPACE_BEGIN/END/USE` macros
 - [ ] Make `areg::` namespace always active
-- [ ] Collapse 17 NE sub-namespaces into 6 public namespaces (per section 2.2)
-- [ ] Move base/ types into flat `areg::` (no sub-namespace for NECommon, NEMath, NEMemory, NEString, NEUtilities, NESocket, NEApplication)
-- [ ] Move component/ types into `areg::component::`
-- [ ] Move ipc/ types into `areg::net::`
-- [ ] Move logging/ types into `areg::log::`
-- [ ] Move persist/ types into `areg::persist::`
-- [ ] Move aregextend/ types into `areg::ext::`
-- [ ] Move internal types into `areg::` and `areg::os::`
+- [ ] Collapse all 17 NE sub-namespaces into flat `areg::` (per section 2.2)
+- [ ] Move all areg library types (base/, component/, ipc/, logging/, persist/) into flat `areg::`
+- [ ] Move platform-specific types into `areg::os::`
+- [ ] Move aregextend/ types into `aregext::`
 - [ ] Rename 19 namespace files (drop NE prefix, use PascalCase)
 - [ ] Update all `#include` paths
 - [ ] Update `areg.init` configuration file if it references old namespace names
@@ -656,7 +655,7 @@ Ordered by dependency — complete each phase before starting the next.
 ### Phase 6: Code generator
 - [ ] Add `Namespace` attribute to `.siml` schema
 - [ ] Update code generator to emit new file names and class names
-- [ ] Update code generator to use `areg::component::ResultType` (new namespace path)
+- [ ] Update code generator to use `areg::ResultType` (new namespace path)
 - [ ] Rename generated classes: `XxxStub` -> `XxxProvider`, `XxxClientBase` -> `XxxConsumer`
 - [ ] Rename generated namespace files: `NEXxx` -> `xxx_namespace`
 - [ ] Update all examples (01-29) to use new generated names
@@ -688,22 +687,22 @@ Ordered by dependency — complete each phase before starting the next.
 | Type naming (structs)             | 9.0/10 | 9.5/10 | Redundant "Remote"/"Service" dropped               |
 | Type naming (enums)               | 9.5/10 | 10/10  | Namespace column clarifies placement; redundant prefixes dropped |
 | Type naming (templates)           | 9.5/10 | 10/10  | Lock/Nolock -> Concurrent/default; standard convention |
-| Namespace naming                  | 9.0/10 | 10/10  | 6 broad namespaces instead of 17; matches Boost/Asio |
-| Namespace architecture            | 9.5/10 | 10/10  | Flat fundamentals, broad subsystems, os:: for platform code |
+| Namespace naming                  | 9.0/10 | 10/10  | Flat `areg::` for entire library; matches Abseil/Qt |
+| Namespace architecture            | 9.5/10 | 10/10  | 2 namespaces total (areg:: + areg::os::); directories organize source, not API |
 | Code generation naming            | 9.0/10 | 9.5/10 | Updated to reference new namespace paths           |
 | Code generation architecture      | 9.5/10 | 9.5/10 | Unchanged — already strong                         |
-| Developer comfort                 | 9.0/10 | 10/10  | `areg::String`, `areg::Thread` — zero learning curve |
+| Developer comfort                 | 9.0/10 | 10/10  | `areg::String`, `areg::Component`, `areg::ResultType` — everything one `areg::` away |
 | Container API surface             | 8.0/10 | 8.5/10 | Evaluation deferred; Concurrent naming is cleaner  |
-| **Overall**                       | **9.3/10** | **9.7/10** | |
+| **Overall**                       | **9.3/10** | **9.8/10** | Simpler namespace (2 vs 7) improves developer comfort |
 
 **What prevents 10.0/10:**
 - Container wrappers around STL types still exist (evaluation deferred — section 10)
 - Whether to keep or remove them is an API design decision, not a naming decision
 
 **What makes this design match top C++ frameworks:**
-- `areg::String`, `areg::Thread`, `areg::Mutex` — identical depth to `boost::asio::io_context`, `std::thread`
-- `areg::component::ResultType` — identical depth to `boost::beast::http::status`
+- `areg::String`, `areg::Thread`, `areg::Component`, `areg::ResultType` — everything one namespace deep, like `absl::Status`, `std::thread`
 - `areg::HashMap<K,V>`, `areg::ConcurrentStack<T>` — Java/C# developers recognize these immediately
 - `areg::os::MutexPosix`, `areg::os::SpinLockWin32` — platform suffix is self-documenting
 - Zero project-specific prefixes (no IE, TE, NE, s, e, E_) — pure C++ community standard naming
+- Flat namespace reflects the architecture: threading, IPC, and logging are one unified system, not separate subsystems
 - The naming is invisible — developers think about their domain, not about decoding Areg conventions

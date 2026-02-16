@@ -175,7 +175,7 @@ int EventDispatcherBase::removeConsumer( EventConsumer & whichConsumer )
     mConsumerMap.lock();
 
     int result = 0;
-    TELinkedList<RuntimeClassID> removedList;
+    LinkedList<RuntimeClassID> removedList;
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
     EventConsumerList* Value = nullptr;
 
