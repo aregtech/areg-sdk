@@ -73,10 +73,10 @@ private:
     static constexpr std::string_view   LOGGING_THREAD_NAME          { "_AREG_LOGGING_THREAD_" };
 
     //!< Logging activation waiting maximum timeout
-    static constexpr unsigned int       LOG_START_WAITING_TIME      { areg::common::WAIT_10_SECONDS };
+    static constexpr unsigned int       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
 
     //!< Reconnect timeout in milliseconds
-    static constexpr unsigned int       LOG_RECONNECT_TIMEOUT       { areg::common::TIMEOUT_1_SEC * 5 };
+    static constexpr unsigned int       LOG_RECONNECT_TIMEOUT       { NECommon::TIMEOUT_1_SEC * 5 };
 
 public:
 

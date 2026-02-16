@@ -34,7 +34,7 @@ namespace
                                  , bool exact
                                  , NEPersistence::eConfigKeys configKey)
     {
-        uint32_t result { areg::common::INVALID_POSITION };
+        uint32_t result { NECommon::INVALID_POSITION };
         const auto& list{ propList.getData() };
         uint32_t count{ static_cast<uint32_t>(list.size()) };
 
@@ -69,14 +69,14 @@ namespace
         uint32_t readPos  = _findPosition(readList , 0, section, NEPersistence::SYNTAX_ALL_MODULES, property, position, false, confKey);
         uint32_t writePos = _findPosition(writeList, 0, section, module, property, position, true , confKey);
 
-        while ((writePos != areg::common::INVALID_POSITION) && (writeList[writePos].isTemporary() != isTemporary))
+        while ((writePos != NECommon::INVALID_POSITION) && (writeList[writePos].isTemporary() != isTemporary))
         {
             writePos = _findPosition(writeList, writePos + 1, section, module, property, position, true, confKey);
         }
 
-        if (readPos == areg::common::INVALID_POSITION)
+        if (readPos == NECommon::INVALID_POSITION)
         {
-            if (writePos != areg::common::INVALID_POSITION)
+            if (writePos != NECommon::INVALID_POSITION)
             {
                 writeList[readPos].getValue() = newValue;
             }
@@ -90,7 +90,7 @@ namespace
             const PropertyValue& readValue = readList[readPos].getValue();
             if (newValue != static_cast<const Type&>(readValue))
             {
-                if ((writePos != areg::common::INVALID_POSITION) && (writeList[writePos].isTemporary() == isTemporary))
+                if ((writePos != NECommon::INVALID_POSITION) && (writeList[writePos].isTemporary() == isTemporary))
                 {
                     writeList[writePos].getValue() = newValue;
                 }
@@ -99,7 +99,7 @@ namespace
                     writeList.add(Property(PropertyKey(section, module, property, position, confKey), PropertyValue(newValue), String::EmptyString, isTemporary));
                 }
             }
-            else if (writePos != areg::common::INVALID_POSITION)
+            else if (writePos != NECommon::INVALID_POSITION)
             {
                 writeList.removeAt(writePos);
             }
@@ -117,7 +117,7 @@ namespace
         ASSERT(keyType != NEPersistence::eConfigKeys::EntryInvalid);
 
         uint32_t elemPos = _findPosition(list, 0, section, module, property, position, exactMatch, keyType);
-        return (elemPos != areg::common::INVALID_POSITION ? &list[elemPos] : nullptr);
+        return (elemPos != NECommon::INVALID_POSITION ? &list[elemPos] : nullptr);
     }
 
     uint32_t _readConfig(const FileBase& file, NEPersistence::ListProperties& listWritable, NEPersistence::ListProperties& listReadonly, const String& module)
@@ -252,7 +252,7 @@ bool ConfigManager::existProperty(const PropertyKey& key) const
                                 , key.getProperty()
                                 , key.getPosition()
                                 , true
-                                , key.getKeyType()) != areg::common::INVALID_POSITION;
+                                , key.getKeyType()) != NECommon::INVALID_POSITION;
 
     if (result == false)
     {
@@ -263,7 +263,7 @@ bool ConfigManager::existProperty(const PropertyKey& key) const
                                 , key.getProperty()
                                 , key.getPosition()
                                 , false
-                                , key.getKeyType()) != areg::common::INVALID_POSITION;
+                                , key.getKeyType()) != NECommon::INVALID_POSITION;
     }
 
     return result;
@@ -338,7 +338,7 @@ void ConfigManager::removeModuleProperty(const String& section, const String& pr
 {
     Lock lock(mLock);
     uint32_t elemPos = _findPosition(mWritableProperties, 0, section, mModule, property, position, true, keyType);
-    if (elemPos != areg::common::INVALID_POSITION)
+    if (elemPos != NECommon::INVALID_POSITION)
     {
         mWritableProperties.removePosition(elemPos);
     }
@@ -868,12 +868,12 @@ bool ConfigManager::removeScope(const String& scopeName)
     constexpr NEPersistence::eConfigKeys confKey{ NEPersistence::eConfigKeys::EntryLogScope };
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogScope();
     uint32_t pos = _findPosition(mWritableProperties, 0, key.section, mModule, key.property, scopeName, true, confKey);
-    if (pos != areg::common::INVALID_POSITION)
+    if (pos != NECommon::INVALID_POSITION)
     {
         mWritableProperties.removeAt(pos);
     }
 
-    return (pos != areg::common::INVALID_POSITION);
+    return (pos != NECommon::INVALID_POSITION);
 }
 
 int ConfigManager::removeModuleScopes()

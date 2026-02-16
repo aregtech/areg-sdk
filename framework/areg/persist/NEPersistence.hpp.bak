@@ -115,12 +115,12 @@ namespace NEPersistence
     /**
      * \brief   Boolean syntax 'true'
      **/
-    constexpr std::string_view  SYNTAX_TRUE                 { areg::common::BOOLEAN_TRUE };
+    constexpr std::string_view  SYNTAX_TRUE                 { NECommon::BOOLEAN_TRUE };
 
     /**
      * \brief   Boolean syntax 'false'
      **/
-    constexpr std::string_view  SYNTAX_FALSE                { areg::common::BOOLEAN_FALSE };
+    constexpr std::string_view  SYNTAX_FALSE                { NECommon::BOOLEAN_FALSE };
 
     /**
      * \brief   The structure to define a property key of the configuration.
