@@ -156,7 +156,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 
     } while(false);
 
-    if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+    if ((waitForStopMs != areg::common::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
     {
         // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
@@ -171,7 +171,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         // The thread completed job normally
         OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadCompleted;
-        ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
+        ASSERT (waitForStopMs != areg::common::WAIT_INFINITE || isRunning() == false);
     }
 
     return result;
@@ -190,7 +190,7 @@ bool Thread::_osCreateSystemThread()
             mWaitForExit.resetEvent( );
             if (RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr))
             {
-                if (mStackSizeKB != NECommon::STACK_SIZE_DEFAULT)
+                if (mStackSizeKB != areg::common::STACK_SIZE_DEFAULT)
                 {
                     size_t stackSizeBytes = static_cast<size_t>(mStackSizeKB) * 1024u;
                     ::pthread_attr_setstacksize(&handle->pthreadAttr, stackSizeBytes);

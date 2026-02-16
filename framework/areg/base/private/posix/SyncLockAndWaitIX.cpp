@@ -39,13 +39,13 @@ SyncLockAndWaitIX::SyncResourceMapIX & SyncLockAndWaitIX::_mapSyncResources()
     return _theSyncResourceMapIX;
 }
 
-int SyncLockAndWaitIX::waitForSingleObject( IEWaitableBaseIX & syncWait, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
+int SyncLockAndWaitIX::waitForSingleObject( IEWaitableBaseIX & syncWait, unsigned int msTimeout /* = areg::common::WAIT_INFINITE */ )
 {
     IEWaitableBaseIX * list[] = { &syncWait };
     return waitForMultipleObjects(list, 1, true, msTimeout);
 }
 
-int SyncLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll /* = false */, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
+int SyncLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll /* = false */, unsigned int msTimeout /* = areg::common::WAIT_INFINITE */ )
 {
     int result = static_cast<int>(NESyncTypesIX::SyncObjectInvalid);
     if ( (listWaitables != nullptr) && (count > 0) )
@@ -174,7 +174,7 @@ void SyncLockAndWaitIX::eventRemove( IEWaitableBaseIX & syncWaitable )
                 break;
 
             int index = lockAndWait->_getWaitableIndex( syncWaitable );
-            lockAndWait->mFiredEntry = index != NECommon::INVALID_INDEX ? static_cast<NESyncTypesIX::eSyncObjectFired>(index + NESyncTypesIX::SyncObject0Error) : NESyncTypesIX::eSyncObjectFired::SyncWaitInterrupted;
+            lockAndWait->mFiredEntry = index != areg::common::INVALID_INDEX ? static_cast<NESyncTypesIX::eSyncObjectFired>(index + NESyncTypesIX::SyncObject0Error) : NESyncTypesIX::eSyncObjectFired::SyncWaitInterrupted;
             lockAndWait->_notifyEvent();
         }
 
@@ -204,7 +204,7 @@ void SyncLockAndWaitIX::eventFailed( IEWaitableBaseIX & syncWaitable )
                 break;
 
             int index = lockAndWait->_getWaitableIndex( syncWaitable );
-            ASSERT(index != NECommon::INVALID_INDEX);
+            ASSERT(index != areg::common::INVALID_INDEX);
             lockAndWait->mFiredEntry = static_cast<NESyncTypesIX::eSyncObjectFired>(index + NESyncTypesIX::SyncObject0Error);
             lockAndWait->_notifyEvent();
         }
@@ -277,7 +277,7 @@ SyncLockAndWaitIX::SyncLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
     {
         SyncResourceMapIX & mapResources { SyncLockAndWaitIX::_mapSyncResources() };
         mapResources.lock();
-        count = MACRO_MIN(NECommon::MAXIMUM_WAITING_OBJECTS, count);
+        count = MACRO_MIN(areg::common::MAXIMUM_WAITING_OBJECTS, count);
 
         if ( (mMatchCondition == NESyncTypesIX::eMatchCondition::MatchConditionAny ) || (mDescribe == SyncLockAndWaitIX::eWaitType::WaitSingleObject) )
         {
@@ -460,7 +460,7 @@ inline void SyncLockAndWaitIX::_unlock()
 
 inline int SyncLockAndWaitIX::_waitCondition()
 {
-    if ( mWaitTimeout == NECommon::WAIT_INFINITE)
+    if ( mWaitTimeout == areg::common::WAIT_INFINITE)
     {
         return ::pthread_cond_wait(&mCondVariable, &mPosixMutex);
     }
@@ -474,7 +474,7 @@ inline int SyncLockAndWaitIX::_waitCondition()
 
 inline int SyncLockAndWaitIX::_getWaitableIndex( const IEWaitableBaseIX & syncWaitable ) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int result = areg::common::INVALID_INDEX;
     for ( uint32_t i = 0; i < mWaitingList.getSize(); ++ i )
     {
         if (mWaitingList[i] == &syncWaitable)

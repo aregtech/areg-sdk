@@ -62,7 +62,7 @@ namespace NESyncTypesIX
         /**
          * \brief   Indicates that all synchronization events where fired.
          **/
-        , SyncObjectAll         =  NECommon::MAXIMUM_WAITING_OBJECTS
+        , SyncObjectAll         =  areg::common::MAXIMUM_WAITING_OBJECTS
         /**
          * \brief   Indicates start of error range
          **/

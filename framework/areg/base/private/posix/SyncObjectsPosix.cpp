@@ -198,7 +198,7 @@ SpinLock::~SpinLock()
     mSyncObject = nullptr;
 }
 
-bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( unsigned int /*timeout = areg::common::WAIT_INFINITE*/ )
 {
     return reinterpret_cast<SpinLockIX *>(mSyncObject)->lock();
 }
@@ -277,9 +277,9 @@ bool SyncTimer::_osCancelTimer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
+int MultiLock::_osLock(unsigned int timeout /* = areg::common::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
 {
-    IEWaitableBaseIX * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
+    IEWaitableBaseIX * syncHandles[areg::common::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i )
     {
         syncHandles[i] = reinterpret_cast<IEWaitableBaseIX *>(mSyncObjArray[i]->getHandle( ));

@@ -105,7 +105,7 @@ id_type Thread::_osGetCurrentThreadId()
 
 Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 {
-    mSyncObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(areg::common::WAIT_INFINITE);
 
     Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
 
@@ -115,7 +115,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         _unregisterThread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+        if ((waitForStopMs != areg::common::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
         {
 #ifdef  _DEBUG
             //////////////////////////////////////////////////////////////////////////
@@ -148,10 +148,10 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         {
             // The thread completed job normally
             result = Thread::eCompletionStatus::ThreadCompleted;
-            ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
+            ASSERT (waitForStopMs != areg::common::WAIT_INFINITE || isRunning() == false);
         }
 
-        mSyncObject.lock(NECommon::WAIT_INFINITE);
+        mSyncObject.lock(areg::common::WAIT_INFINITE);
     }
     else
     {
@@ -173,8 +173,8 @@ bool Thread::_osCreateSystemThread()
         mWaitForExit.resetEvent( );
 
         unsigned long threadId  { 0 };
-        unsigned long dwFlags   { mStackSizeKB != NECommon::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
-        unsigned long dwStack   { mStackSizeKB * NECommon::ONE_KILOBYTE };
+        unsigned long dwFlags   { mStackSizeKB != areg::common::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
+        unsigned long dwStack   { mStackSizeKB * areg::common::ONE_KILOBYTE };
         HANDLE handle = ::CreateThread( nullptr
                                       , dwStack
                                       , (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine)

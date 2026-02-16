@@ -202,7 +202,7 @@ SpinLock::~SpinLock()
     }
 }
 
-bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( unsigned int /*timeout = areg::common::WAIT_INFINITE*/ )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
     return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->lock( ) : false);
@@ -244,7 +244,7 @@ void ResourceLock::_osCreateResourceLock( bool initLock )
     mSyncObject = new CriticalSection( );
     if ( initLock )
     {
-        reinterpret_cast<IEResourceLock *>(mSyncObject)->lock( NECommon::WAIT_INFINITE );
+        reinterpret_cast<IEResourceLock *>(mSyncObject)->lock( areg::common::WAIT_INFINITE );
     }
 
 #endif
@@ -323,9 +323,9 @@ bool SyncTimer::_osCancelTimer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int MultiLock::_osLock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+int MultiLock::_osLock( unsigned int timeout /* = areg::common::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
-    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS] { };
+    void * syncHandles[areg::common::MAXIMUM_WAITING_OBJECTS] { };
     for ( int i = 0; i < mSizeCount; ++ i)
     {
         syncHandles[i] = mSyncObjArray[i]->getHandle( );
@@ -418,7 +418,7 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
         
         do
         {
-            ::Sleep(NECommon::DO_NOT_WAIT);
+            ::Sleep(areg::common::DO_NOT_WAIT);
             ::QueryPerformanceCounter(&dueTime);
         } while (dueTime.QuadPart < deadline);
 
