@@ -37,11 +37,11 @@ namespace NEString
     /**
      * \brief   NEString::CharPos, Definition of character position type in string
      **/
-    using CharPos   = NECommon::ElemPos;
+    using CharPos   = areg::common::ElemPos;
     /**
      * \brief   NEString::CharCount, Definition of character counting type in string
      **/
-    using CharCount = NECommon::ElemCount;
+    using CharCount = areg::common::ElemCount;
 
     /**
      * \brief   Character types. Used bits are defining special meaning of characters.
@@ -101,19 +101,19 @@ namespace NEString
     /**
      * \brief   Constant, defines count all characters in the string
      **/
-    constexpr CharCount COUNT_ALL           { NECommon::COUNT_ALL };
+    constexpr CharCount COUNT_ALL           { areg::common::COUNT_ALL };
     /**
      * \brief   Invalid position in string buffer
      **/
-    constexpr CharPos   INVALID_POS         { NECommon::INVALID_INDEX };
+    constexpr CharPos   INVALID_POS         { areg::common::INVALID_INDEX };
     /**
      * \brief   Start position in string buffer
      **/
-    constexpr CharPos   START_POS           { NECommon::FIRST_INDEX };
+    constexpr CharPos   START_POS           { areg::common::FIRST_INDEX };
     /**
      * \brief   Last valid position in string where it is marked 'end of string'
      **/
-    constexpr CharPos   END_POS             { NECommon::LAST_INDEX };
+    constexpr CharPos   END_POS             { areg::common::LAST_INDEX };
 
     /**
      * \brief   The minimum size of a buffer allocated in the stack to format a string.
@@ -1128,7 +1128,7 @@ const CharType * NEString::getLine( CharType * strSource, NEString::CharCount ch
 
     if (NEString::isEmpty(strSource) == false)
     {
-        charCount = charCount == NEString::COUNT_ALL ? NECommon::VALUE_MAX_INT32 : charCount;
+        charCount = charCount == NEString::COUNT_ALL ? areg::common::VALUE_MAX_INT32 : charCount;
         while ((NEString::isEndOfString<CharType>(*strSource) == false) && (charCount > 0))
         {
             if (NEString::isEndOfLine<CharType>(*strSource))

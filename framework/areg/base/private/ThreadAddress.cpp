@@ -119,7 +119,7 @@ void ThreadAddress::convFromString(const char * threadPath, const char** out_nex
         *out_nextPart = threadPath;
     }
 
-    mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mThreadName  = String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum    = ThreadAddress::_magicNumber(*this);
 
     if (out_nextPart != nullptr)

@@ -349,7 +349,7 @@ public:
 
     /**
      * \brief   Searches element in the stack starting at given position.
-     *          The given position should be valid or equal to NECommon::START_POSITION
+     *          The given position should be valid or equal to areg::common::START_POSITION
      *          to search at the beginning of stack.
      * \param   Value       The element value to search in the stack.
      * \return  If found element, returns valid position. Otherwise, it returns invalid position.
@@ -358,7 +358,7 @@ public:
 
     /**
      * \brief   Searches element in the stack starting at given position.
-     *          The given position should be valid or equal to NECommon::START_POSITION
+     *          The given position should be valid or equal to areg::common::START_POSITION
      *          to search at the beginning of stack.
      * \param   Value       The element value to search in the stack.
      * \param	searchAfter	If valid position, the searching starts from next element specified by position.
@@ -847,7 +847,7 @@ inline void TEStack<VALUE>::release()
 template <typename VALUE>
 inline bool TEStack<VALUE>::lock() const
 {
-    return mSyncObject.lock(NECommon::WAIT_INFINITE);
+    return mSyncObject.lock(areg::common::WAIT_INFINITE);
 }
 
 template <typename VALUE>
@@ -860,7 +860,7 @@ template<typename VALUE >
 inline void TEStack< VALUE >::resize(uint32_t newSize)
 {
     Lock lock(mSyncObject);
-    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
+    mValueList.resize(newSize > areg::common::MAX_CONTAINER_SIZE ? areg::common::MAX_CONTAINER_SIZE : newSize);
 }
 
 template <typename VALUE>

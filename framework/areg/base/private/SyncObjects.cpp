@@ -99,7 +99,7 @@ Semaphore::~Semaphore()
     _osReleaseSemaphore( );
 }
 
-bool Semaphore::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+bool Semaphore::lock( unsigned int timeout /* = areg::common::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     bool result = false;
@@ -159,7 +159,7 @@ SpinLock::SpinLock()
 {
 }
 
-bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( unsigned int /*timeout = areg::common::WAIT_INFINITE*/ )
 {
     for ( ; ; )
     {
@@ -256,13 +256,13 @@ Lock::~Lock()
 //////////////////////////////////////////////////////////////////////////
 MultiLock::MultiLock(IESyncObject* pObjects[], int count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
-    , mSizeCount    (MACRO_MIN(count, NECommon::MAXIMUM_WAITING_OBJECTS))
+    , mSizeCount    (MACRO_MIN(count, areg::common::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
-    NEMemory::memZero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
+    NEMemory::memZero(static_cast<void *>(mLockedStates), areg::common::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
     if (autoLock)
     {
-        lock(NECommon::WAIT_INFINITE, true);
+        lock(areg::common::WAIT_INFINITE, true);
     }
 }
 

@@ -1044,7 +1044,7 @@ inline double String::toDouble() const
 
 inline bool String::toBool() const
 {
-    return (isEmpty() || NEString::compareIgnoreCase<char, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::eCompare::Equal ? false : true);
+    return (isEmpty() || NEString::compareIgnoreCase<char, char>(getString(), areg::common::BOOLEAN_FALSE.data()) == NEMath::eCompare::Equal ? false : true);
 }
 
 inline String & String::fromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )

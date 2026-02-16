@@ -446,7 +446,7 @@ inline bool TEFixedArray<VALUE>::isValidIndex(uint32_t whichIndex) const
 template< typename VALUE >
 inline bool TEFixedArray<VALUE>::contains(const VALUE& elemSearch, uint32_t startAt /*= 0*/) const
 {
-    return (find(elemSearch, startAt) != NECommon::INVALID_INDEX);
+    return (find(elemSearch, startAt) != areg::common::INVALID_INDEX);
 }
 
 template< typename VALUE >
@@ -535,7 +535,7 @@ inline void TEFixedArray<VALUE>::move(TEFixedArray< VALUE > && src) noexcept
 template< typename VALUE >
 inline int TEFixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /* = 0 */) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::common::INVALID_INDEX;
     for (uint32_t i = startAt; i < mElemCount; ++i)
     {
         if (elemSearch == mValueList[i])

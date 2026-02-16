@@ -410,7 +410,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::lock() const
 {
-    mSyncObj.lock( NECommon::WAIT_INFINITE );
+    mSyncObj.lock( areg::common::WAIT_INFINITE );
 }
 
 template < typename RESOURCE_KEY

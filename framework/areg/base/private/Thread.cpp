@@ -139,7 +139,7 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/)
+Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= areg::common::STACK_SIZE_DEFAULT*/)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
@@ -171,7 +171,7 @@ ThreadLocalStorage & Thread::getCurrentThreadStorage()
     return (*localStorage);
 }
 
-bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT */)
+bool Thread::createThread(unsigned int waitForStartMs /* = areg::common::DO_NOT_WAIT */)
 {
     bool result = false;
 
@@ -183,7 +183,7 @@ bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT
 
     if ( result )
     {
-        if (waitForStartMs != NECommon::DO_NOT_WAIT)
+        if (waitForStartMs != areg::common::DO_NOT_WAIT)
         {
             mWaitForRun.lock(waitForStartMs);
         }
@@ -200,7 +200,7 @@ void Thread::triggerExit()
 {
 }
 
-Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
+Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* = areg::common::DO_NOT_WAIT */ )
 {
     Thread::eCompletionStatus result{ _osDestroyThread( waitForStopMs ) };
 
@@ -215,12 +215,12 @@ Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* 
 
 Thread::eCompletionStatus Thread::terminateThread()
 {
-    return shutdownThread( NECommon::WAIT_10_MILLISECONDS );
+    return shutdownThread( areg::common::WAIT_10_MILLISECONDS );
 }
 
-bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
+bool Thread::completionWait( unsigned int waitForCompleteMs /*= areg::common::WAIT_INFINITE*/ )
 {
-    mSyncObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(areg::common::WAIT_INFINITE);
 
     bool result = false;
     THREADHANDLE  handle = mThreadHandle;
@@ -228,7 +228,7 @@ bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_I
     {
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        result = (waitForCompleteMs == NECommon::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
+        result = (waitForCompleteMs == areg::common::DO_NOT_WAIT) || mWaitForExit.lock(waitForCompleteMs) ;
     }
     else
     {

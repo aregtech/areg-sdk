@@ -605,7 +605,7 @@ protected:
     /**
      * \brief   The sorting criteria of linked list.
      **/
-    NECommon::eSort     mSorting;
+    areg::common::eSort     mSorting;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -616,7 +616,7 @@ template <typename VALUE >
 TESortedLinkedList<VALUE>::TESortedLinkedList(bool sortAscending /*= true*/)
     : Constless<std::list<VALUE>> ( )
     , mValueList( )
-    , mSorting  (sortAscending ? NECommon::eSort::SortAscending : NECommon::eSort::SortDescending )
+    , mSorting  (sortAscending ? areg::common::eSort::SortAscending : areg::common::eSort::SortDescending )
 {
 }
 
@@ -675,13 +675,13 @@ inline uint32_t TESortedLinkedList<VALUE>::getSize() const
 template<typename VALUE>
 inline bool TESortedLinkedList<VALUE>::isAscending() const
 {
-    return (mSorting == NECommon::eSort::SortAscending);
+    return (mSorting == areg::common::eSort::SortAscending);
 }
 
 template<typename VALUE>
 inline bool TESortedLinkedList<VALUE>::isDescending() const
 {
-    return (mSorting == NECommon::eSort::SortDescending);
+    return (mSorting == areg::common::eSort::SortDescending);
 }
 
 template <typename VALUE >
@@ -899,7 +899,7 @@ template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(const VALUE& newElement)
 {
 	auto it = mValueList.begin();
-    if ( mSorting == NECommon::eSort::SortAscending )
+    if ( mSorting == areg::common::eSort::SortAscending )
     {
         for (; it != mValueList.end(); ++it)
         {
@@ -923,7 +923,7 @@ template <typename VALUE >
 typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(VALUE&& newElement)
 {
 	auto it = mValueList.begin();
-    if (mSorting == NECommon::eSort::SortAscending)
+    if (mSorting == areg::common::eSort::SortAscending)
     {
         for (; it != mValueList.end(); ++it)
         {
@@ -947,7 +947,7 @@ template <typename VALUE >
 std::pair<typename TESortedLinkedList<VALUE>::LISTPOS, bool> TESortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
-    if (mSorting == NECommon::eSort::SortAscending)
+    if (mSorting == areg::common::eSort::SortAscending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
         {
@@ -980,7 +980,7 @@ template <typename VALUE >
 std::pair<typename TESortedLinkedList<VALUE>::LISTPOS, bool> TESortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
-    if (mSorting == NECommon::eSort::SortAscending)
+    if (mSorting == areg::common::eSort::SortAscending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
         {
@@ -1133,7 +1133,7 @@ uint32_t TESortedLinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
     for (; (pos != end) && (pos != atPosition); ++pos, ++result)
         ;
 
-    return (pos != end ? result : static_cast<uint32_t>(NECommon::INVALID_INDEX));
+    return (pos != end ? result : static_cast<uint32_t>(areg::common::INVALID_INDEX));
 }
 
 template <typename VALUE >
@@ -1221,7 +1221,7 @@ const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<V>& 
     stream >> size;
     stream >> sort;
     input.mValueList.resize(size);
-    input.mSorting = static_cast<NECommon::eSort>(sort);
+    input.mSorting = static_cast<areg::common::eSort>(sort);
 
     for (auto& elem : input.mValueList)
     {

@@ -48,7 +48,7 @@ template <typename VALUE> class TERingStack;
  *          The capacity might be changed depending on overlapping flag.
  *          If ring stack is full, whether the capacity remains same or not,
  *          whether new element is pushed or not, depends on overlapping flag.
- *          For more details of capacity flag see NECommon::eRingOverlap
+ *          For more details of capacity flag see areg::common::eRingOverlap
  *          description. In Ring Stack the start and end position might point
  *          any index withing stack, but they cannot be more than capacity value.
  *
@@ -79,7 +79,7 @@ protected:
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          it is required to insert new element.
      **/
-    explicit TERingStack( IEResourceLock & syncObject, uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    explicit TERingStack( IEResourceLock & syncObject, uint32_t initCapacity = 0, areg::common::eRingOverlap onOverlap = areg::common::eRingOverlap::StopOnOverlap );
 
     /**
      * \brief   Destructor. Public
@@ -188,7 +188,7 @@ public:
     /**
      * \brief   Returns the overlapping type of the Ring Stack
      **/
-    NECommon::eRingOverlap getOverlap() const;
+    areg::common::eRingOverlap getOverlap() const;
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
@@ -317,28 +317,28 @@ public:
 
     /**
      * \brief   Searches element in the stack starting at given position (index).
-     *          The given position should be valid or equal to NECommon::RING_START_POSITION
+     *          The given position should be valid or equal to areg::common::RING_START_POSITION
      *          to search at the beginning of stack.
      * \param   elem        The value to search in the stack.
      * \param   startAt     The starting position to search. It will start to search 
-     *                      from beginning if equal to NECommon::RING_START_POSITION.
+     *                      from beginning if equal to areg::common::RING_START_POSITION.
      * \return  If found element, returns valid position (index).
-     *          Otherwise, it returns NECommon::INVALID_INDEX.
+     *          Otherwise, it returns areg::common::INVALID_INDEX.
      **/
-    uint32_t find(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
+    uint32_t find(const VALUE& elem, uint32_t startAt = areg::common::RING_START_POSITION) const;
 
     /**
      * \brief   Searches the specified element in the ring stack starting at the mentioned position
      *          and returns true if the ring-stack contains specified element. The starting position
      *          is zero-based and should not be more than the number of elements in the ring stack.
-     *          If the starting position is NECommon::RING_START_POSITION, it searches at the begin of
+     *          If the starting position is areg::common::RING_START_POSITION, it searches at the begin of
      *          the ring stack.
      * \param   elem    The element to search.
      * \param   startAt The starting position to search. If the starting position is
-     *                  NECommon::RING_START_POSITION it searches from the begin of the ring stack.
+     *                  areg::common::RING_START_POSITION it searches from the begin of the ring stack.
      * \return  Returns true if found an entry in the ring stack. Otherwise, returns false.
      **/
-    bool contains(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
+    bool contains(const VALUE& elem, uint32_t startAt = areg::common::RING_START_POSITION) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -353,7 +353,7 @@ protected:
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
      **/
-    const NECommon::eRingOverlap    mOnOverlap;
+    const areg::common::eRingOverlap    mOnOverlap;
 
     /**
      * \brief   The array of element in stack.
@@ -476,7 +476,7 @@ public:
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          pushing new element is required.
      **/
-    explicit TELockRingStack(uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    explicit TELockRingStack(uint32_t initCapacity = 0, areg::common::eRingOverlap onOverlap = areg::common::eRingOverlap::StopOnOverlap );
 
     /**
      * \brief   Copy constructor.
@@ -565,7 +565,7 @@ public:
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          pushing new element is required.
      **/
-    TENolockRingStack(uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    TENolockRingStack(uint32_t initCapacity = 0, areg::common::eRingOverlap onOverlap = areg::common::eRingOverlap::StopOnOverlap );
 
     /**
      * \brief   Copy constructor.
@@ -637,7 +637,7 @@ private:
 // TERingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-TERingStack<VALUE>::TERingStack( IEResourceLock & syncObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+TERingStack<VALUE>::TERingStack( IEResourceLock & syncObject, uint32_t initCapacity /*= 0*/, areg::common::eRingOverlap onOverlap /*= areg::common::eRingOverlap::StopOnOverlap*/ )
     : mSyncObj  ( syncObject )
     , mOnOverlap( onOverlap )
     , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
@@ -767,7 +767,7 @@ bool TERingStack<VALUE>::isEmpty() const
 }
 
 template <typename VALUE>
-NECommon::eRingOverlap TERingStack<VALUE>::getOverlap() const
+areg::common::eRingOverlap TERingStack<VALUE>::getOverlap() const
 {
     return mOnOverlap;
 }
@@ -775,7 +775,7 @@ NECommon::eRingOverlap TERingStack<VALUE>::getOverlap() const
 template <typename VALUE>
 bool TERingStack<VALUE>::lock() const
 {
-    return mSyncObj.lock(NECommon::WAIT_INFINITE);
+    return mSyncObj.lock(areg::common::WAIT_INFINITE);
 }
 
 template <typename VALUE>
@@ -795,7 +795,7 @@ template <typename VALUE>
 bool TERingStack<VALUE>::isFull() const
 {
     Lock lock(mSyncObj);
-    return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOverlap) && (mElemCount == mCapacity);
+    return (mOnOverlap != areg::common::eRingOverlap::ResizeOnOverlap) && (mElemCount == mCapacity);
 }
 
 template <typename VALUE>
@@ -919,7 +919,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
     {
         switch ( mOnOverlap )
         {
-        case NECommon::eRingOverlap::ShiftOnOverlap:
+        case areg::common::eRingOverlap::ShiftOnOverlap:
             if (mCapacity != 0u)
             {
                 ASSERT(mStackList != nullptr);
@@ -933,7 +933,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             // else capacity == 0 => nothing to do
             break;
 
-        case NECommon::eRingOverlap::ResizeOnOverlap:
+        case areg::common::eRingOverlap::ResizeOnOverlap:
             // grow buffer (double or at least 1)
             if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
             {
@@ -946,7 +946,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             }
             break;
 
-        case NECommon::eRingOverlap::StopOnOverlap:
+        case areg::common::eRingOverlap::StopOnOverlap:
             OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
             break;  // do nothing
 
@@ -1061,12 +1061,12 @@ void TERingStack<VALUE>::move(TERingStack<VALUE> && source) noexcept
 }
 
 template <typename VALUE>
-uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NECommon::RING_START_POSITION*/) const
+uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= areg::common::RING_START_POSITION*/) const
 {
     Lock lock(mSyncObj);
 
-    uint32_t result = static_cast<uint32_t>(NECommon::INVALID_INDEX);
-    startAt = startAt == NECommon::RING_START_POSITION ? 0u : startAt;
+    uint32_t result = static_cast<uint32_t>(areg::common::INVALID_INDEX);
+    startAt = startAt == areg::common::RING_START_POSITION ? 0u : startAt;
     for (uint32_t i = startAt; i < mElemCount; ++i)
     {
         if (elem == mStackList[_norm2RingIndex(i)])
@@ -1080,9 +1080,9 @@ uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NEComm
 }
 
 template <typename VALUE>
-bool TERingStack<VALUE>::contains(const VALUE& elem, uint32_t startAt /*= NECommon::RING_START_POSITION*/) const
+bool TERingStack<VALUE>::contains(const VALUE& elem, uint32_t startAt /*= areg::common::RING_START_POSITION*/) const
 {
-    return (find(elem, startAt) != static_cast<uint32_t>(NECommon::INVALID_INDEX));
+    return (find(elem, startAt) != static_cast<uint32_t>(areg::common::INVALID_INDEX));
 }
 
 template <typename VALUE>
@@ -1196,7 +1196,7 @@ void TERingStack<VALUE>::_copyStack(const TERingStack<VALUE>& source)
 // TELockRingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-TELockRingStack<VALUE>::TELockRingStack(uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+TELockRingStack<VALUE>::TELockRingStack(uint32_t initCapacity /*= 0*/, areg::common::eRingOverlap onOverlap /*= areg::common::eRingOverlap::StopOnOverlap*/ )
     : TERingStack<VALUE>    ( mLock, initCapacity, onOverlap )
     , mLock ( false )
 {
@@ -1275,7 +1275,7 @@ bool TELockRingStack<VALUE>::operator != (const TERingStack<VALUE>& other) const
 // TENolockRingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-TENolockRingStack<VALUE>::TENolockRingStack(uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+TENolockRingStack<VALUE>::TENolockRingStack(uint32_t initCapacity /*= 0*/, areg::common::eRingOverlap onOverlap /*= areg::common::eRingOverlap::StopOnOverlap*/ )
     : TERingStack<VALUE>    ( mNoLock, initCapacity, onOverlap )
     , mNoLock   ( )
 {

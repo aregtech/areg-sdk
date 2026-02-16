@@ -1242,7 +1242,7 @@ inline uint32_t TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
     for (; (pos != end) && (pos != atPosition); ++pos, ++result)
         ;
 
-    return (pos != end ? result : static_cast<uint32_t>(NECommon::INVALID_INDEX));
+    return (pos != end ? result : static_cast<uint32_t>(areg::common::INVALID_INDEX));
 }
 
 template <typename VALUE >

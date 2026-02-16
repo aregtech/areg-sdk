@@ -360,14 +360,14 @@ bool String::makeBool( const char * strBoolean, const char ** end /*= nullptr*/ 
 {
     bool result = false;
     int lenSkip = 0;
-    int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
-    int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
+    int lenTrue = static_cast<int>(areg::common::BOOLEAN_TRUE.length());
+    int lenFalse= static_cast<int>(areg::common::BOOLEAN_FALSE.length());
+    if ( NEString::compareStrings<char, char>(strBoolean, areg::common::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
+    else if ( NEString::compareStrings<char, char>(strBoolean, areg::common::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
     {
         result = false;
         lenSkip= lenFalse;
@@ -521,7 +521,7 @@ String String::makeString(double number)
 
 String String::makeString( bool value )
 {
-    return String(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
+    return String(value ? areg::common::BOOLEAN_TRUE : areg::common::BOOLEAN_FALSE);
 }
 
 int String::formatString( char * strDst, int count, const char * format, ... )

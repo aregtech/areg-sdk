@@ -97,9 +97,9 @@ Version & Version::convFromString( const String & version )
 
     String major, minor, patch;
     NEString::CharPos pos = NEString::START_POS;
-    pos = version.substring( major, NECommon::OBJECT_SEPARATOR, pos);
-    pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
-    version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
+    pos = version.substring( major, areg::common::OBJECT_SEPARATOR, pos);
+    pos = version.substring( minor, areg::common::OBJECT_SEPARATOR, pos);
+    version.substring( patch, areg::common::OBJECT_SEPARATOR, pos);
 
     mMajor  = major.toUInt32();
     mMinor  = minor.toUInt32();
@@ -159,7 +159,7 @@ String Version::convToString() const
     constexpr const char * format{ "%d%c%d%c%d" };
 
     char buffer[ 128 ]{ 0 };
-    int len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
+    int len = String::formatString( buffer, 128, format, mMajor, areg::common::OBJECT_SEPARATOR, mMinor, areg::common::OBJECT_SEPARATOR, mPatch );
     return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 

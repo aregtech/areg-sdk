@@ -47,7 +47,7 @@
  *
  *          For performance issue, it is recommended to pass capacity value
  *          in constructor to define initial reserved space for array.
- *          By default, the capacity is NECommon::ARRAY_DEFAULT_CAPACITY.
+ *          By default, the capacity is areg::common::ARRAY_DEFAULT_CAPACITY.
  *
  * \tparam  VALUE   The type of stored elements should be either primitive or have
  *                  default constructor, applicable comparing and assigning operators.
@@ -67,7 +67,7 @@ public:
      * \param   capacity    Initial reserved space of array, it must be not less than the 'resize'.
      * \param   resize      Initial size of array.
      **/
-    TEArrayList( uint32_t capacity = NECommon::ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
+    TEArrayList( uint32_t capacity = areg::common::ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
 
     /**
      * \brief   Copies entries from given source.
@@ -492,14 +492,14 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VALUE >
-TEArrayList< VALUE >::TEArrayList( uint32_t capacity /*= NECommon::ARRAY_DEFAULT_CAPACITY*/, uint32_t resize /*= 0*/ )
+TEArrayList< VALUE >::TEArrayList( uint32_t capacity /*= areg::common::ARRAY_DEFAULT_CAPACITY*/, uint32_t resize /*= 0*/ )
     : Constless<std::vector<VALUE>>( )
     , mValueList( )
 {
     capacity = MACRO_MAX( resize, capacity );
     if (capacity != 0)
     {
-        mValueList.reserve(capacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : capacity);
+        mValueList.reserve(capacity > areg::common::MAX_CONTAINER_SIZE ? areg::common::MAX_CONTAINER_SIZE : capacity);
     }
 
     if ( resize > 0 )
@@ -527,9 +527,9 @@ TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
     : Constless<std::vector<VALUE>>( )
     , mValueList( list != nullptr ? count : 0)
 {
-    if (NECommon::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
+    if (areg::common::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
     {
-        mValueList.reserve(NECommon::ARRAY_DEFAULT_CAPACITY);
+        mValueList.reserve(areg::common::ARRAY_DEFAULT_CAPACITY);
     }
 
     if (list != nullptr)
@@ -700,7 +700,7 @@ inline void TEArrayList< VALUE >::setAt(uint32_t index, const VALUE & newElement
     {
         mValueList[index] = newElement;
     }
-    else if ( NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()) )
+    else if ( areg::common::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()) )
     {
         mValueList.push_back(newElement);
     }
@@ -720,7 +720,7 @@ inline void TEArrayList< VALUE >::setAt(uint32_t index, VALUE && newElement)
     {
         mValueList[index] = std::move(newElement);
     }
-    else if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
+    else if (areg::common::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
     {
         mValueList.push_back(std::move(newElement));
     }
@@ -756,7 +756,7 @@ inline const VALUE* TEArrayList< VALUE >::getValues() const
 template<typename VALUE >
 inline void TEArrayList< VALUE >::add(const VALUE & newElement)
 {
-    if (NECommon::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
+    if (areg::common::MAX_CONTAINER_SIZE > static_cast<uint32_t>(mValueList.size()))
     {
         mValueList.push_back(newElement);
     }
@@ -794,9 +794,9 @@ inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(const std::vector< VAL
 
     uint32_t size = static_cast<uint32_t>(mValueList.size());
     uint32_t remain = static_cast<uint32_t>(src.size());
-    if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+    if ((size + remain) > areg::common::MAX_CONTAINER_SIZE)
     {
-        remain = NECommon::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+        remain = areg::common::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
     }
 
     mValueList.reserve(size + remain);
@@ -821,9 +821,9 @@ TEArrayList< VALUE >& TEArrayList< VALUE >::append(std::vector< VALUE > && src) 
 
     uint32_t size = static_cast<uint32_t>(mValueList.size());
     uint32_t remain = static_cast<uint32_t>(src.size());
-    if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+    if ((size + remain) > areg::common::MAX_CONTAINER_SIZE)
     {
-        remain = NECommon::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+        remain = areg::common::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
     }
 
     mValueList.reserve(size + remain);
@@ -867,9 +867,9 @@ void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE& newElement, u
     if (elemCount != 0)
     {
         uint32_t size = getSize();
-        if ((size + elemCount) > NECommon::MAX_CONTAINER_SIZE)
+        if ((size + elemCount) > areg::common::MAX_CONTAINER_SIZE)
         {
-            elemCount = NECommon::MAX_CONTAINER_SIZE - size;
+            elemCount = areg::common::MAX_CONTAINER_SIZE - size;
         }
 
         ARRAYPOS cit = getPosition(startAt);
@@ -889,9 +889,9 @@ void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArray, uin
 {
     if ((newArray != nullptr) && (count != 0))
     {
-        if ((getSize() + count) > NECommon::MAX_CONTAINER_SIZE)
+        if ((getSize() + count) > areg::common::MAX_CONTAINER_SIZE)
         {
-            count = NECommon::MAX_CONTAINER_SIZE - getSize();
+            count = areg::common::MAX_CONTAINER_SIZE - getSize();
         }
 
         if (mValueList.size() == startAt)
@@ -925,9 +925,9 @@ void TEArrayList< VALUE >::insertAt(uint32_t startAt, const std::vector< VALUE >
     if (newArray.empty() == false)
     {
         int32_t limit = 0;
-        if ((getSize() + newArray.size()) > NECommon::MAX_CONTAINER_SIZE)
+        if ((getSize() + newArray.size()) > areg::common::MAX_CONTAINER_SIZE)
         {
-            limit = static_cast<int>(NECommon::MAX_CONTAINER_SIZE - (getSize() + static_cast<uint32_t>(newArray.size())));
+            limit = static_cast<int>(areg::common::MAX_CONTAINER_SIZE - (getSize() + static_cast<uint32_t>(newArray.size())));
         }
 
         ARRAYPOS cit = getPosition(startAt);
@@ -988,7 +988,7 @@ bool TEArrayList< VALUE >::removeElem( const VALUE & elemRemove, uint32_t search
 template<typename VALUE >
 int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int result = areg::common::INVALID_INDEX;
     if (startAt < static_cast<uint32_t>(mValueList.size()))
     {
         result = static_cast<int>(startAt) - 1;
@@ -997,7 +997,7 @@ int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0
 
         if (it == mValueList.end())
         {
-            result = NECommon::INVALID_INDEX;
+            result = areg::common::INVALID_INDEX;
         }
     }
 
@@ -1007,13 +1007,13 @@ int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0
 template<typename VALUE >
 inline void TEArrayList< VALUE >::resize( uint32_t newSize )
 {
-    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
+    mValueList.resize(newSize > areg::common::MAX_CONTAINER_SIZE ? areg::common::MAX_CONTAINER_SIZE : newSize);
 }
 
 template<typename VALUE >
 inline void TEArrayList< VALUE >::reserve( uint32_t newCapacity)
 {
-    mValueList.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
+    mValueList.reserve(newCapacity > areg::common::MAX_CONTAINER_SIZE ? areg::common::MAX_CONTAINER_SIZE : newCapacity);
 }
 
 template<typename VALUE >
@@ -1029,9 +1029,9 @@ void TEArrayList< VALUE >::shift(uint32_t startAt, int  count)
     {
         if (count > 0)
         {
-            if (static_cast<uint32_t>(static_cast<int>(getSize()) + count) > NECommon::MAX_CONTAINER_SIZE)
+            if (static_cast<uint32_t>(static_cast<int>(getSize()) + count) > areg::common::MAX_CONTAINER_SIZE)
             {
-                count = static_cast<int>(NECommon::MAX_CONTAINER_SIZE - getSize());
+                count = static_cast<int>(areg::common::MAX_CONTAINER_SIZE - getSize());
             }
 
             VALUE* values = mValueList.data();

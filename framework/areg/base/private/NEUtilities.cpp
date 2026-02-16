@@ -212,7 +212,7 @@ AREG_API_IMPL String NEUtilities::createComponentItemName( const String & compon
     String result( componentName );
     if ((componentName.isEmpty() == false) && (itemName.isEmpty() == false))
     {
-        result += NECommon::COMPONENT_ITEM_SEPARATOR;
+        result += areg::common::COMPONENT_ITEM_SEPARATOR;
         result += itemName;
 
         if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
@@ -237,7 +237,7 @@ AREG_API_IMPL String NEUtilities::generateName( const char* prefix )
 
 AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
 {
-    return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
+    return NEUtilities::generateName(prefix, out_buffer, length, areg::common::DEFAULT_SPECIAL_CHAR.data());
 }
 
 AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
@@ -247,7 +247,7 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
     if (out_buffer != nullptr)
     {
         *out_buffer = '\0';
-        const char* spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
+        const char* spec = specChar != nullptr ? specChar : areg::common::DEFAULT_SPECIAL_CHAR.data();
         NEMath::uLargeInteger time{};
         auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
         time.quadPart = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
@@ -335,16 +335,16 @@ AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & timeValue, NEUt
 
 AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDataSize( uint64_t dataSize )
 {
-    NEUtilities::DataLiteral result{ static_cast<double>(dataSize), NECommon::STR_ONE_BYTE};
-    if ( dataSize >= NECommon::ONE_MEGABYTE )
+    NEUtilities::DataLiteral result{ static_cast<double>(dataSize), areg::common::STR_ONE_BYTE};
+    if ( dataSize >= areg::common::ONE_MEGABYTE )
     {
-        result.first = static_cast<double>(dataSize) / NECommon::ONE_MEGABYTE;
-        result.second = NECommon::STR_ONE_MEGABYTE;
+        result.first = static_cast<double>(dataSize) / areg::common::ONE_MEGABYTE;
+        result.second = areg::common::STR_ONE_MEGABYTE;
     }
-    else if ( dataSize >= NECommon::ONE_KILOBYTE )
+    else if ( dataSize >= areg::common::ONE_KILOBYTE )
     {
-        result.first = static_cast<double>(dataSize) / NECommon::ONE_KILOBYTE;
-        result.second = NECommon::STR_ONE_KILOBYTE;
+        result.first = static_cast<double>(dataSize) / areg::common::ONE_KILOBYTE;
+        result.second = areg::common::STR_ONE_KILOBYTE;
     }
 
     return result;
@@ -352,21 +352,21 @@ AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDataSize( uint64_t dataS
 
 AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDuration( uint64_t timeDuration )
 {
-    NEUtilities::DataLiteral result{ static_cast<double>(timeDuration), NECommon::STR_1_NS_SHORT };
-    if ( timeDuration >= NECommon::DURATION_1_SEC )
+    NEUtilities::DataLiteral result{ static_cast<double>(timeDuration), areg::common::STR_1_NS_SHORT };
+    if ( timeDuration >= areg::common::DURATION_1_SEC )
     {
-        result.first = static_cast<double>(timeDuration) / NECommon::DURATION_1_SEC;
-        result.second = NECommon::STR_1_SEC_SHORT;
+        result.first = static_cast<double>(timeDuration) / areg::common::DURATION_1_SEC;
+        result.second = areg::common::STR_1_SEC_SHORT;
     }
-    else if ( timeDuration >= NECommon::DURATION_1_MILLI )
+    else if ( timeDuration >= areg::common::DURATION_1_MILLI )
     {
-        result.first = static_cast<double>(timeDuration) / NECommon::DURATION_1_MILLI;
-        result.second = NECommon::STR_1_MILLISEC_SHORT;
+        result.first = static_cast<double>(timeDuration) / areg::common::DURATION_1_MILLI;
+        result.second = areg::common::STR_1_MILLISEC_SHORT;
     }
-    else if ( timeDuration >= NECommon::DURATION_1_MICRO )
+    else if ( timeDuration >= areg::common::DURATION_1_MICRO )
     {
-        result.first = static_cast<double>(timeDuration) / NECommon::DURATION_1_MICRO;
-        result.second = NECommon::STR_1_MICROSEC_SHORT;
+        result.first = static_cast<double>(timeDuration) / areg::common::DURATION_1_MICRO;
+        result.second = areg::common::STR_1_MICROSEC_SHORT;
     }
 
     return result;

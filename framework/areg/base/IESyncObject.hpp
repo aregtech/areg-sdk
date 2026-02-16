@@ -114,7 +114,7 @@ public:
      *                      own synchronization object
      * \return	If thread successfully owns object, returns true. Otherwise returns false.
      **/
-    virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE );
+    virtual bool lock( unsigned int timeout = areg::common::WAIT_INFINITE );
 
     /**
      * \brief   Unlocks / Release current thread ownership of synchronization object

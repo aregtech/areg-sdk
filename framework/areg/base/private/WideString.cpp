@@ -360,14 +360,14 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
 {
     bool result = false;
     int lenSkip = 0;
-    int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
-    int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
+    int lenTrue = static_cast<int>(areg::common::BOOLEAN_TRUE.length());
+    int lenFalse= static_cast<int>(areg::common::BOOLEAN_FALSE.length());
+    if ( NEString::compareStrings<wchar_t, char>(strBoolean, areg::common::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
+    else if ( NEString::compareStrings<wchar_t, char>(strBoolean, areg::common::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
     {
         result = false;
         lenSkip= lenFalse;
@@ -521,7 +521,7 @@ WideString WideString::makeString(double number)
 
 WideString WideString::makeString( bool value )
 {
-    return WideString(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
+    return WideString(value ? areg::common::BOOLEAN_TRUE : areg::common::BOOLEAN_FALSE);
 }
 
 int WideString::formatString( wchar_t * strDst, int count, const wchar_t * format, ... )

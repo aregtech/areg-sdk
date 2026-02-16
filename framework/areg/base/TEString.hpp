@@ -1283,7 +1283,7 @@ inline TEString<CharType>::TEString(const std::basic_string_view<CharType>& sour
 
 template<typename CharType>
 inline TEString<CharType>::TEString(const CharType* source, NEString::CharCount count)
-    : mData  ( source != nullptr ? source : &EmptyChar, static_cast<uint32_t>(count != NECommon::COUNT_ALL ? count : NEString::getStringLength(source)) )
+    : mData  ( source != nullptr ? source : &EmptyChar, static_cast<uint32_t>(count != areg::common::COUNT_ALL ? count : NEString::getStringLength(source)) )
 {
 }
 

@@ -118,7 +118,7 @@ public:
      * \param   idValue     The digital value of the identifier to convert.
      * \param   lookupList  The lookup table to search identifier to return string value.
      * \param   defIndex    The index of the value to return in case if did not find the identifier.
-     *                      Pass NECommon::INVALID_POSITION value to ignore and return empty string
+     *                      Pass areg::common::INVALID_POSITION value to ignore and return empty string
      *                      if no identifier entry exists.
      * \return  Returns the string value of the identifier it found.
      *          Return the string value of the given default identifier entry index if identifier not found and default index is valid.
@@ -132,7 +132,7 @@ public:
      * \param   idName      The string value of the identifier to convert.
      * \param   lookupList  The lookup table to search identifier to return integer value.
      * \param   defIndex    The index of the value to return in case if did not find the identifier.
-     *                      Pass NECommon::INVALID_POSITION value to ignore and return 0xFFFFFFFF
+     *                      Pass areg::common::INVALID_POSITION value to ignore and return 0xFFFFFFFF
      *                      if no identifier entry exists.
      * \return  Returns the integer value of the identifier it found.
      *          Return the integer value of the given default identifier entry index if identifier not found and default index is valid.
