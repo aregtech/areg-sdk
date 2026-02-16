@@ -35,7 +35,7 @@ TEST(TEArrayListTest, TestConstructors)
     Array arr1;
     ASSERT_TRUE(arr1.isEmpty());
     EXPECT_EQ(arr1.getSize(), 0u);
-    EXPECT_EQ(arr1.getCapacity(), NECommon::ARRAY_DEFAULT_CAPACITY);
+    EXPECT_EQ(arr1.getCapacity(), areg::common::ARRAY_DEFAULT_CAPACITY);
 
     Array arr2(_capacity, 0);
     ASSERT_TRUE(arr2.isEmpty());
@@ -48,7 +48,7 @@ TEST(TEArrayListTest, TestConstructors)
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), static_cast<uint32_t>(_len));
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, areg::common::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), static_cast<uint32_t>(_len));
@@ -119,7 +119,7 @@ TEST(TEArrayListTest, TestArrayContent)
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, areg::common::ARRAY_DEFAULT_CAPACITY));
 
     Array arr5(arr4);
     EXPECT_EQ(arr5.getSize(), _len);
@@ -161,7 +161,7 @@ TEST(TEArrayListTest, TestGetSetAndContent)
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
-    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, NECommon::ARRAY_DEFAULT_CAPACITY));
+    EXPECT_EQ(arr4.getCapacity(), MACRO_MAX(_len, areg::common::ARRAY_DEFAULT_CAPACITY));
     const int* values = arr4.getValues();
     ASSERT_TRUE(::memcmp(values, _arr, sizeof(int) * _len) == 0);
 
@@ -207,7 +207,7 @@ TEST(TEArrayListTest, TestAdd)
     {
         uint32_t size{ static_cast<uint32_t>(arrMixed.getSize()) };
 
-        if (arrMixed.find(_mixed[i]) == NECommon::INVALID_INDEX)
+        if (arrMixed.find(_mixed[i]) == areg::common::INVALID_INDEX)
         {
             ASSERT_TRUE(arrMixed.addIfUnique(_mixed[i]));
             ASSERT_EQ(arrMixed.getSize(), (size + 1));
@@ -446,7 +446,7 @@ TEST(TEArrayListTest, TestFind)
     {
         if (_len1 <= static_cast<uint32_t>(i))
         {
-            EXPECT_EQ(arr.find(i), NECommon::INVALID_INDEX);
+            EXPECT_EQ(arr.find(i), areg::common::INVALID_INDEX);
         }
         else
         {
@@ -463,7 +463,7 @@ TEST(TEArrayListTest, TestFind)
         EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i)), i);
 
         EXPECT_FALSE(arr.contains(i, static_cast<uint32_t>(i) + 1u));
-        EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i) + 1u), NECommon::INVALID_INDEX);
+        EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i) + 1u), areg::common::INVALID_INDEX);
     }
 
     EXPECT_FALSE(arr.contains(0, _len1 * 2));

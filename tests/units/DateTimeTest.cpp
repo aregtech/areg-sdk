@@ -176,7 +176,7 @@ TEST( DateTimeTest, TestOperators)
 
     DateTime dateOld( DateTime::getNow( ) );
 
-    Thread::sleep( NECommon::WAIT_100_MILLISECONDS );
+    Thread::sleep( areg::common::WAIT_100_MILLISECONDS );
 
     DateTime dateNew( DateTime::getNow( ) );
 
