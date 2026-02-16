@@ -47,9 +47,9 @@ int main()
     // declare thread object.
     HelloThread aThread;
     // create and start thread, wait until it is started.
-    aThread.createThread(NECommon::WAIT_INFINITE);
+    aThread.createThread(areg::common::WAIT_INFINITE);
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.shutdownThread(NECommon::WAIT_INFINITE);
+    aThread.shutdownThread(areg::common::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

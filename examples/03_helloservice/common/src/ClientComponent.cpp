@@ -50,7 +50,7 @@ void ClientComponent::responseHelloService( bool success )
     // Sleep for no reason! Do not do this in a real application.
     // It is done to give a chance to see an output message on the console.
     // Otherwise, the next line of code closes the application and you miss the message on console.
-    Thread::sleep(NECommon::WAIT_1_SECOND);
+    Thread::sleep(areg::common::WAIT_1_SECOND);
 
     // The client completed the job, set signal to quit application
     Application::signalAppQuit();

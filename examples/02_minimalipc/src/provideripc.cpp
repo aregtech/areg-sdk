@@ -73,7 +73,7 @@ int main()
     // load model to initialize components
     Application::loadModel("ProviderModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::common::WAIT_INFINITE);
     // release and cleanup resources of application.
     Application::releaseApplication();
     return 0;

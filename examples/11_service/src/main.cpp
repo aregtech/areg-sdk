@@ -57,7 +57,7 @@ int main()
 
     do 
     {
-        unsigned int timeout{ NECommon::WAIT_10_SECONDS };
+        unsigned int timeout{ areg::common::WAIT_10_SECONDS };
 
         LOG_SCOPE(examples_11_service_main);
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
@@ -68,7 +68,7 @@ int main()
         Application::waitAppQuit( timeout );    // wait for quit signal to complete application.
         Application::unloadModel(_modelName);   // stop and unload components
         
-        unsigned int duration = static_cast<unsigned int>(Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI);
+        unsigned int duration = static_cast<unsigned int>(Application::findModel( _modelName ).getAliveDuration( ) / areg::common::DURATION_1_MILLI);
         timeout = MACRO_MIN( timeout, duration );
         std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
         Application::releaseApplication();      // release and cleanup resources of application.

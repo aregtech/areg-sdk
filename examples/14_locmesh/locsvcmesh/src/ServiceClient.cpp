@@ -84,7 +84,7 @@ inline String ServiceClient::timerName( Component & /* owner */ ) const
     ASSERT( getProxy( ) != nullptr );
     String result = "";
     result.append( getServiceRole( ) )
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::common::DEFAULT_SPECIAL_CHAR)
           .append(getServiceName());
 
     return result;

@@ -90,11 +90,11 @@ int main()
 
         Application::loadModel(_modelName);
         std::cout << "Service model is loaded. Waiting to quit application signal." << std::endl;
-        Application::waitAppQuit( NECommon::WAIT_INFINITE ); // wait for quit signal to complete application.
+        Application::waitAppQuit( areg::common::WAIT_INFINITE ); // wait for quit signal to complete application.
         Application::unloadModel(_modelName);                // stop and unload components
         
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (Application::findModel( _modelName ).getAliveDuration( ) / areg::common::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 

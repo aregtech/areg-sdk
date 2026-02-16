@@ -42,13 +42,13 @@ DEF_LOG_SCOPE(timer_main_main);
 class TimerDispatcher   : public DispatcherThread
                         , private IETimerConsumer
 {
-    static constexpr unsigned int TIMEOUT_ONE_TIME{ NECommon::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
-    static constexpr unsigned int TIMEOUT_PERIODIC_TIME{ NECommon::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
-    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME{ NECommon::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
+    static constexpr unsigned int TIMEOUT_ONE_TIME{ areg::common::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
+    static constexpr unsigned int TIMEOUT_PERIODIC_TIME{ areg::common::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
+    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME{ areg::common::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
 
 public:
     explicit TimerDispatcher(const String & name)
-        : DispatcherThread( name, NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
+        : DispatcherThread( name, areg::common::DEFAULT_BLOCK_SIZE, areg::common::IGNORE_VALUE )
         , IETimerConsumer()
         , mOneTime(*this, name + "_one_time")
         , mPeriodic(*this, name + "_periodic")
@@ -75,7 +75,7 @@ public:
         };
 
         start(mOneTime, TIMEOUT_ONE_TIME, 1);
-        start(mPeriodic, TIMEOUT_PERIODIC_TIME, (NECommon::TIMEOUT_1_SEC*5 / 2)/TIMEOUT_PERIODIC_TIME);
+        start(mPeriodic, TIMEOUT_PERIODIC_TIME, (areg::common::TIMEOUT_1_SEC*5 / 2)/TIMEOUT_PERIODIC_TIME);
         start(mContinuous, TIMEOUT_CONTINUOUS_TIME, Timer::CONTINUOUSLY);
     }
 
@@ -118,12 +118,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
-    constexpr unsigned int TIMEOUT_APPLICATION = NECommon::TIMEOUT_1_SEC * 5;
+    constexpr unsigned int TIMEOUT_APPLICATION = areg::common::TIMEOUT_1_SEC * 5;
 
     void startTimerThread(TimerDispatcher & thread)
     {
         LOG_SCOPE(timer_main_startTimerThread);
-        thread.createThread(NECommon::WAIT_INFINITE);
+        thread.createThread(areg::common::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", thread.isValid() ? "SUCCEEDED" : "FAILED", thread.getName().getString());
         thread.startTimers();
     }
@@ -133,7 +133,7 @@ namespace
         LOG_SCOPE(timer_main_stopTimerThread);
         thread.stopTimers();
         thread.triggerExit();
-        thread.shutdownThread(NECommon::WAIT_INFINITE);
+        thread.shutdownThread(areg::common::WAIT_INFINITE);
         LOG_WARN("Thread [ %s ] completed job.", thread.getName().getString());
     }
 }
