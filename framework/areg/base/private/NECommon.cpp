@@ -18,3 +18,11 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/NECommon.hpp"
+
+AREG_NAMESPACE_BEGIN
+namespace common
+{
+    // Implementation file for common namespace
+    // Currently all definitions are in the header (constexpr values)
+}
+AREG_NAMESPACE_END
