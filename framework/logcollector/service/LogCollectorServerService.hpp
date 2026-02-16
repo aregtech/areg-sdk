@@ -47,7 +47,7 @@ class LogCollectorServerService : public    ServiceCommunicatonBase
 private:
 
     //!< The timeout waiting to save config.
-    static constexpr uint32_t   TIMEOUT_SAVE_CONFIG{ NECommon::WAIT_1_SECOND };
+    static constexpr uint32_t   TIMEOUT_SAVE_CONFIG{ areg::common::WAIT_1_SECOND };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

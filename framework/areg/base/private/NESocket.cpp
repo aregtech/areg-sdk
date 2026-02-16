@@ -736,7 +736,7 @@ AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, uint32_t dataLength, uint32_t blockMaxSize /*= NECommon::DEFAULT_SIZE*/)
+AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, uint32_t dataLength, uint32_t blockMaxSize /*= areg::common::DEFAULT_SIZE*/)
 {
     int result = -1;
     if (isSocketHandleValid(hSocket))

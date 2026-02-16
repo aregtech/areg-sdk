@@ -206,7 +206,7 @@ void LogCollector::runConsoleInputSimple()
 
 void LogCollector::runService()
 {
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::common::WAIT_INFINITE);
 }
 
 std::pair<const OptionParser::sOptionSetup*, int> LogCollector::getAppOptions() const

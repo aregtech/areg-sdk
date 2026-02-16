@@ -41,7 +41,7 @@ LoggerClient::LoggerClient()
                                  , static_cast<DispatcherThread &>(self())
                                  , LoggerClient::ThreadPrefix)
     , IEConfigurationListener    ( )
-    , DispatcherThread           ( LoggerClient::ThreadName, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    , DispatcherThread           ( LoggerClient::ThreadName, areg::common::DEFAULT_BLOCK_SIZE, areg::common::QUEUE_SIZE_MAXIMUM )
     , IEServiceConnectionConsumer( )
     , IERemoteMessageHandler     ( )
 
@@ -453,13 +453,13 @@ bool LoggerClient::connectServiceHost()
     bool result{ false };
     if (isRunning() == false)
     {
-        if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
+        if (createThread(areg::common::WAIT_INFINITE) && waitForDispatcherStart(areg::common::WAIT_INFINITE))
         {
             result = ServiceClientConnectionBase::connectServiceHost();
         }
         else
         {
-            shutdownThread(NECommon::WAIT_INFINITE);
+            shutdownThread(areg::common::WAIT_INFINITE);
         }
     }
     else
@@ -491,8 +491,8 @@ void LoggerClient::disconnectServiceHost()
         mInstances.clear();
 
         ServiceClientConnectionBase::disconnectServiceHost();
-        completionWait(NECommon::WAIT_INFINITE);
-        shutdownThread(NECommon::DO_NOT_WAIT);
+        completionWait(areg::common::WAIT_INFINITE);
+        shutdownThread(areg::common::DO_NOT_WAIT);
     }
 }
 

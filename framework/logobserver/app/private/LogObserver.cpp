@@ -330,7 +330,7 @@ void LogObserver::logMain( int argc, char ** argv )
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
     {
         uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::eLoggerOptions::CMD_LogLoad));
-        if (pos != NECommon::INVALID_POSITION)
+        if (pos != areg::common::INVALID_POSITION)
         {
             String filePath{ parser.getOptions().getAt(pos).inString[0] };
             if (File::existFile(filePath))
