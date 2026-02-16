@@ -25,7 +25,7 @@ PatientClient & PatientClient::self()
     return (*this);
 }
 
-IEWorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
+WorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
 {
     if ( mHwWorker.getConsumerName() == consumerName)
     {
@@ -53,7 +53,7 @@ bool PatientClient::serviceConnected( NEService::eServiceConnection status, Prox
     return result;
 }
 
-void PatientClient::onPatientUpdate(const NEPatientInformation::PatientInfo & Patient, NEService::eDataStateType state)
+void PatientClient::onPatientUpdate(const PatientInformation::PatientInfo & Patient, NEService::eDataStateType state)
 {
     if (state == NEService::eDataStateType::DataIsOK)
     {

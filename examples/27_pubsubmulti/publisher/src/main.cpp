@@ -37,7 +37,7 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceName, Publisher )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSub::ServiceName, NEPubSub::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PubSub::ServiceName, PubSub::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( _serviceName )
     // end of thread description

@@ -25,7 +25,7 @@
 #include "areg/base/Containers.hpp"
 #include "areg/base/SocketAccepted.hpp"
 #include "areg/base/SocketServer.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class declaration.

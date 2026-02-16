@@ -20,7 +20,7 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/base/HashMap.hpp"
 #include "areg/component/private/ServerInfo.hpp"
 #include "areg/component/private/ClientList.hpp"
 
@@ -36,7 +36,7 @@ class ProxyAddress;
 /**
  * \brief   Server List helper class.
  **/
-using ServerListBase    = TEHashMap<ServerInfo, ClientList>;
+using ServerListBase    = HashMap<ServerInfo, ClientList>;
 
 /**
  * \brief   Server List is a Hash Map class containing information

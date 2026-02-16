@@ -24,7 +24,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/GELog.h"
 
-#include "common/NECommon.hpp"
+#include "common/FsmDefs.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef _MSC_VER
@@ -42,14 +42,14 @@ BEGIN_MODEL(_modelName)
     // define component thread
     BEGIN_REGISTER_THREAD( _threadName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( NECommon::ServiceLightController, TrafficLightService )
+        BEGIN_REGISTER_COMPONENT( fsm::ServiceLightController, TrafficLightService )
             // register PowerManager and TrafficController service implementation, and the dependencies (client runs in the same thread).
-            REGISTER_IMPLEMENT_SERVICE( NEPowerManager::ServiceName, NEPowerManager::InterfaceVersion )
-            REGISTER_IMPLEMENT_SERVICE( NETrafficController::ServiceName, NETrafficController::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PowerManager::ServiceName, PowerManager::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( TrafficController::ServiceName, TrafficController::InterfaceVersion )
             // The power controller local service and the client run in the same thread.
-            REGISTER_DEPENDENCY(NECommon::ServiceLightController)
+            REGISTER_DEPENDENCY(fsm::ServiceLightController)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
+        END_REGISTER_COMPONENT( fsm::SimpleLightControllerName )
     // end of thread description
     END_REGISTER_THREAD( _threadName )
 

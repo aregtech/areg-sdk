@@ -204,22 +204,22 @@ public:
      * \brief	Sets the file pointer position and returns current position. 
      *          The positive value of offset means move pointer forward.
      *          The negative value of offset means move pointer back.
-     *          For memory buffered file the pointer cannot move more than IECursorPosition::eCursorPosition::PositionEnd.
+     *          For memory buffered file the pointer cannot move more than Cursor::eCursorPosition::PositionEnd.
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from beginning of file
-     *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
-     *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
+     *                  Cursor::eCursorPosition::PositionBegin   -- position from beginning of file
+     *                  Cursor::eCursorPosition::PositionCurrent -- from current pointer position
+     *                  Cursor::eCursorPosition::PositionEnd     -- from end of file
      *
-     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
+    virtual unsigned int setPosition(int offset, Cursor::eCursorPosition startAt) const override;
 
     /**
-     * \brief	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
+     * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
-     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int getPosition() const override;
 
@@ -242,7 +242,7 @@ public:
      * 
      * \param	newSize	New Size is bytes to reserve or set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
     virtual unsigned int reserve(unsigned int newSize) override;
 
@@ -252,7 +252,7 @@ public:
     virtual bool truncate() override;
 
 /************************************************************************/
-// IEInStream interface overrides
+// InStream interface overrides
 /************************************************************************/
 
     /**
@@ -263,7 +263,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const override;
+    virtual unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -291,7 +291,7 @@ public:
     virtual unsigned int read( unsigned char * buffer, unsigned int size ) const override;
 
 /************************************************************************/
-// IEOutStream interface overrides
+// OutStream interface overrides
 /************************************************************************/
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -300,7 +300,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer ) override;
+    virtual unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -337,7 +337,7 @@ public:
 
 protected:
 /************************************************************************/
-// IEInStream interface overrides
+// InStream interface overrides
 /************************************************************************/
     /**
      * \brief	Returns size in bytes of available data that can be read, 
@@ -349,7 +349,7 @@ protected:
     virtual unsigned int getSizeReadable() const override;
 
 /************************************************************************/
-// IEOutStream interface overrides
+// OutStream interface overrides
 /************************************************************************/
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -664,13 +664,13 @@ private:
      *                  cursor forward. The negative value means move cursor back.
      * \param   startAt The position to start moving cursor.
      * \return  If succeeded, returns the new position of the cursor. Otherwise, returns
-     *          invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     *          invalid position (Cursor::INVALID_CURSOR_POSITION).
      */
-    unsigned int _osSetPositionFile(int offset, IECursorPosition::eCursorPosition startAt) const;
+    unsigned int _osSetPositionFile(int offset, Cursor::eCursorPosition startAt) const;
 
     /**
      * \brief   If file is opened, return the current cursor position in the file.
-     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      */
     unsigned int _osGetPositionFile() const;
 

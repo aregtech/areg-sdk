@@ -83,12 +83,12 @@ It as well broadcasts own text message to all connected clients.</Description>
     </MethodList>
     <ConstantList>
         <Constant ID="23" Name="MessageMaxLen" DataType="uint32">
-            <Value>NECommon::MaxlenMessage</Value>
+            <Value>chat::MaxlenMessage</Value>
             <Description>The maximum length of messages.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="24" Name="common/NECommon.hpp">
+        <Location ID="24" Name="common/ChatDefs.hpp">
             <Description>The shared namespace to include</Description>
         </Location>
     </IncludeList>

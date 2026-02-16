@@ -11,8 +11,8 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Component.hpp"
 #include "examples/25_pubsub/services/PubSubStub.hpp"
 
@@ -40,8 +40,8 @@
  **/
 class Publisher : public    Component
                 , protected PubSubStub
-                , private   IETimerConsumer
-                , private   IEThreadConsumer
+                , private   TimerConsumer
+                , private   ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -94,7 +94,7 @@ protected:
     virtual void shutdownComponent( ComponentThread & comThread ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**
@@ -106,7 +106,7 @@ protected:
     virtual void processTimer( Timer & timer ) override;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**

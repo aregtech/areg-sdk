@@ -3,13 +3,13 @@
 
 #include "register/res/stdafx.h"
 #include "register/CentralApp.hpp"
+#include "register/CentralAppDefs.hpp"
 #include "register/ui/PageConnections.hpp"
-#include "register/services/ConnectionManager.hpp"
-#include "register/NECentralApp.hpp"
+#include "register/services/ConnectionController.hpp"
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/GEMacros.h"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 
 // PageConnections
@@ -44,7 +44,7 @@ PageConnections::~PageConnections()
 {
     for (uint32_t i = 0; i < mTypingList.getSize(); ++ i )
     {
-        NECommon::sMessageData * data = mTypingList.getAt(i);
+        chat::sMessageData * data = mTypingList.getAt(i);
         delete data;
     }
 
@@ -66,13 +66,13 @@ void PageConnections::OutputMessage( CString nickName, CString message, CString 
     lv.iSubItem     = 0;
     lv.pszText      = nickName.GetBuffer();
     lv.lParam       = data;
-    lv.cchTextMax   = NEConnectionManager::NicknameMaxLen;
+    lv.cchTextMax   = ConnectionManager::NicknameMaxLen;
     mCtrlList.InsertItem(&lv);
 
-    if ( dateStart.GetLength() > NECommon::DAY_FORMAT_LEN )
-        dateStart = dateStart.Mid( NECommon::DAY_FORMAT_LEN );
-    if ( dateEnd.GetLength() > NECommon::DAY_FORMAT_LEN )
-        dateEnd = dateEnd.Mid( NECommon::DAY_FORMAT_LEN );
+    if ( dateStart.GetLength() > chat::DAY_FORMAT_LEN )
+        dateStart = dateStart.Mid( chat::DAY_FORMAT_LEN );
+    if ( dateEnd.GetLength() > chat::DAY_FORMAT_LEN )
+        dateEnd = dateEnd.Mid( chat::DAY_FORMAT_LEN );
 
     mCtrlList.SetItemText(mLastItem, 1, message.IsEmpty() == false  ? message.GetBuffer()   : _T("..."));
     mCtrlList.SetItemText(mLastItem, 2, dateStart.IsEmpty() == false? dateStart.GetBuffer() : _T("..."));
@@ -108,18 +108,18 @@ END_MESSAGE_MAP( )
 void PageConnections::OnClickedButtonBroadcast()
 {
     UpdateData(TRUE);
-    ConnectionManager * service = !mTextBroadcast.IsEmpty() ? ConnectionManager::getService( ) : nullptr;
+    ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getService( ) : nullptr;
     if ( service != nullptr )
     {
         DateTime timestamp = DateTime::getNow();
         String msg( mTextBroadcast.GetString() );
         service->broadcastBroadcastMessage(msg, timestamp);
 
-        OutputMessage(   CString(NECommon::SERVER_NAME)
+        OutputMessage(   CString(chat::SERVER_NAME)
                        , mTextBroadcast
                        , CString( timestamp.formatTime( ).getString( ) )
                        , CentralApp::EmptyString
-                       , NEConnectionManager::InvalidCookie );
+                       , ConnectionManager::InvalidCookie );
 
         mTextBroadcast = _T("");
         UpdateData(FALSE);
@@ -160,7 +160,7 @@ void PageConnections::setHeaders()
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;
-    NECommon::getWidths( rc.Width(), count, width1, width2 );
+    chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
     {
@@ -201,7 +201,7 @@ BOOL PageConnections::OnInitDialog( )
 
 LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
         ++ mRegistered;
@@ -234,7 +234,7 @@ int PageConnections::findInTyping( unsigned int cookie )
 
 LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
         if ( mRegistered != 0 )
@@ -254,7 +254,7 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
                        , CString(_T("Disconnected ..."))
                        , CString( DateTime(data->timeSend).formatTime().getString() )
                        , CString( DateTime(data->timeReceived).formatTime().getString() )
-                       , static_cast<LPARAM>(NECommon::InvalidCookie) );
+                       , static_cast<LPARAM>(chat::InvalidCookie) );
 
         delete data;
     }
@@ -263,13 +263,13 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
 
 LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != NECommon::INVALID_INDEX )
         {
-            NECommon::sMessageData *temp = mTypingList.getAt(rmIndex);
+            chat::sMessageData *temp = mTypingList.getAt(rmIndex);
             mTypingList.removeAt( rmIndex, 1 );
             delete temp;
         }
@@ -288,7 +288,7 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
                        , CString(data->message)
                        , CString( DateTime(data->timeSend).formatTime().getString() )
                        , CString( DateTime(data->timeReceived).formatTime().getString() )
-                       , static_cast<LPARAM>(NECommon::InvalidCookie) );
+                       , static_cast<LPARAM>(chat::InvalidCookie) );
 
         delete data;
     }
@@ -297,14 +297,14 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 
 LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     bool isEmpty = data != nullptr ? NEString::isEmpty<TCHAR>( data->message ) : true;
     if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != NECommon::INVALID_INDEX )
         {
-            NECommon::sMessageData *temp = mTypingList.getAt( rmIndex );
+            chat::sMessageData *temp = mTypingList.getAt( rmIndex );
             if ( isEmpty )
                 mTypingList.removeAt(rmIndex);
             else
@@ -341,7 +341,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
             lv.iSubItem     = 0;
             lv.pszText      = data->nickName;
             lv.lParam       = static_cast<LPARAM>(data->dataSave);
-            lv.cchTextMax   = NECentralMessager::MessageMaxLen;
+            lv.cchTextMax   = CentralMessager::MessageMaxLen;
             mCtrlList.InsertItem( &lv );
 
             mCtrlList.SetItemText( mLastItem, 1, data->message );

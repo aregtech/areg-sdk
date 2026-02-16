@@ -8,7 +8,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "chatter/ui/PageChat.hpp"
 
-NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & /* listParticipants */, std::any data )
+NERegistry::Model ChatParticipantService::GetModel( const DirectMessager::sParticipant & initiator, const DirectMessager::ListParticipants & /* listParticipants */, std::any data )
 {
     String    serviceName = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
     String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );

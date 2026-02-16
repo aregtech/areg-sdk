@@ -16,7 +16,7 @@
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "areg/base/Socket.hpp"
 #include "areg/base/RemoteMessage.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #include "areg/logging/GELog.h"
 

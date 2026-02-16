@@ -41,7 +41,7 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
 {
 }
 
-ServiceRequestEvent::ServiceRequestEvent(const IEInStream & stream)
+ServiceRequestEvent::ServiceRequestEvent(const InStream & stream)
     : StubEvent     (stream)
     , mProxySource  (stream)
     , mMessageId    (NEService::INVALID_MESSAGE_ID)
@@ -53,7 +53,7 @@ ServiceRequestEvent::ServiceRequestEvent(const IEInStream & stream)
     stream >> mSequenceNr;
 }
 
-const IEInStream & ServiceRequestEvent::readStream(const IEInStream & stream)
+const InStream & ServiceRequestEvent::readStream(const InStream & stream)
 {
     StubEvent::readStream(stream);
     stream >> mProxySource;
@@ -63,7 +63,7 @@ const IEInStream & ServiceRequestEvent::readStream(const IEInStream & stream)
     return stream;
 }
 
-IEOutStream & ServiceRequestEvent::writeStream(IEOutStream & stream) const
+OutStream & ServiceRequestEvent::writeStream(OutStream & stream) const
 {
     StubEvent::writeStream(stream);
     stream << mProxySource;

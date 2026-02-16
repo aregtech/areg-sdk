@@ -10,9 +10,9 @@
   * Include files
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "examples/18_pubworker/services/NEPatientInformation.hpp"
+#include "examples/18_pubworker/services/PatientInformation.hpp"
 
 /**
  * \brief   The patient information event data, event and the event consumer object declaration.
@@ -42,7 +42,7 @@ public:
     /**
      * \brief   Initializes the patient information 
      **/
-    inline PatientInfoEventData( const NEPatientInformation::PatientInfo & infoPatient );
+    inline PatientInfoEventData( const PatientInformation::PatientInfo & infoPatient );
 
     /**
      * \brief   Sets the shared buffer that already contains patient information data.
@@ -109,7 +109,7 @@ inline PatientInfoEventData::PatientInfoEventData()
 {
 }
 
-inline PatientInfoEventData::PatientInfoEventData( const NEPatientInformation::PatientInfo & infoPatient )
+inline PatientInfoEventData::PatientInfoEventData( const PatientInformation::PatientInfo & infoPatient )
     : mData ( )
 {
     mData << PatientInfoEventData::CMD_PatientInfo;

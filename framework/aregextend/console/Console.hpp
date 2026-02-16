@@ -19,9 +19,9 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include <functional>
 

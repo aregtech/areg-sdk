@@ -43,7 +43,7 @@
     <ClCompile Include="pubclient\src\TrafficLightClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\NECommon.hpp" />
+    <ClInclude Include="common\FsmDefs.hpp" />
     <ClInclude Include="pubclient\src\TrafficLightClient.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

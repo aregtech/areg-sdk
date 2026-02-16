@@ -26,12 +26,12 @@
 
 #include "areg/component/ComponentAddress.hpp"
 #include "areg/component/private/ComponentInfo.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEWorkerThreadConsumer;
+class WorkerThreadConsumer;
 class ComponentThread;
 class WorkerThread;
 class StubBase;
@@ -60,12 +60,12 @@ class AREG_API Component   : public    RuntimeObject
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
     //!< The basic operations of resource-map.
-    using ImplComponentResource = TEResourceMapImpl<unsigned int, Component *>;
+    using ImplComponentResource = ResourceMapImpl<unsigned int, Component *>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      *          Component           The saved values are Component objects.
      **/
-    using MapComponentContainer  = TEIntegerHashMap<Component *>;
+    using MapComponentContainer  = IntegerHashMap<Component *>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
@@ -74,7 +74,7 @@ class AREG_API Component   : public    RuntimeObject
      *          MapComponentContainer   The hash-map object to store containers.
      *          ImplComponentResource   The implementation of basic resource+map operations.
      **/
-    using MapComponentResource  = TELockResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
+    using MapComponentResource  = ConcurrentResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
 //////////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ public:
      *          The list of addresses of Servers.
      *          StubBase  The pointer to base class of Stub objects.
      **/
-    using ListServers           = TELinkedList<StubBase*>;
+    using ListServers           = LinkedList<StubBase*>;
 
 /************************************************************************/
 // static functions to load / unload component
@@ -222,7 +222,7 @@ public:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName );
+    virtual WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName );
 
     /**
      * \brief   This function is called when worker thread is started.
@@ -231,7 +231,7 @@ public:
      * \param   consumer        The worker thread consumer object
      * \param   workerThread    The worker thread, which is started.
      **/
-    virtual void notifyWorkerThreadStarted(IEWorkerThreadConsumer& consumer, WorkerThread & workerThread);
+    virtual void notifyWorkerThreadStarted(WorkerThreadConsumer& consumer, WorkerThread & workerThread);
 
 /************************************************************************/
 // Component operations
@@ -248,7 +248,7 @@ public:
      * \return	Pointer to created worker thread object.
      **/
     WorkerThread * createWorkerThread( const String & threadName
-                                     , IEWorkerThreadConsumer & consumer
+                                     , WorkerThreadConsumer & consumer
                                      , ComponentThread & ownerThread
                                      , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
                                      , uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT

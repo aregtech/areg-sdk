@@ -6,8 +6,8 @@ addServiceInterface(26_generated examples/26_pubsubmix/services/PubSubMix.siml)
 
 # add static library
 macro_declare_static_library(26_common 26_generated
-    common/src/NECommon.cpp
     common/src/Publisher.cpp
+    common/src/PubSubDefs.cpp
     common/src/PubSubMixed.cpp
     common/src/Subscriber.cpp
 )

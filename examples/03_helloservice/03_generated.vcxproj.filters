@@ -27,7 +27,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\NEHelloService.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\HelloServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\NEHelloService.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\HelloService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

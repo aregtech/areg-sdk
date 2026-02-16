@@ -40,7 +40,7 @@
   <ItemGroup>
     <ClCompile Include="logcollector\app\private\LogCollectorConsoleService.cpp" />
     <ClCompile Include="logcollector\app\private\LogCollector.cpp" />
-    <ClCompile Include="logcollector\app\private\NELogCollectorSettings.cpp" />
+    <ClCompile Include="logcollector\app\private\LogCollectorNames.cpp" />
     <ClCompile Include="logcollector\app\private\posix\LogCollectorPosix.cpp" />
     <ClCompile Include="logcollector\app\private\win32\LogCollectorWin32.cpp" />
     <ClCompile Include="logcollector\service\private\LogCollectorMessageProcessor.cpp" />
@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logcollector\app\LogCollector.hpp" />
-    <ClInclude Include="logcollector\app\NELogCollectorSettings.hpp" />
+    <ClInclude Include="logcollector\app\LogCollectorNames.hpp" />
     <ClInclude Include="logcollector\app\private\LogCollectorConsoleService.hpp" />
     <ClInclude Include="logcollector\service\LogCollectorServerService.hpp" />
     <ClInclude Include="logcollector\service\private\LogCollectorMessageProcessor.hpp" />

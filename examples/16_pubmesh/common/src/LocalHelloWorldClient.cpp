@@ -15,8 +15,6 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/logging/GELog.h"
 
-#include "common/src/NECommon.hpp"
-
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);
@@ -24,10 +22,10 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
 
 LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout)
     : LocalHelloWorldClientBase ( dependency, owner )
-    , IETimerConsumer           ( )
+    , TimerConsumer           ( )
 
     , mMsTimeout                ( timeout )
-    , mTimer                    ( static_cast<IETimerConsumer &>(self()), timerName( owner ) )
+    , mTimer                    ( static_cast<TimerConsumer &>(self()), timerName( owner ) )
     , mID                       ( 0 )
 {
 }
@@ -52,7 +50,7 @@ bool LocalHelloWorldClient::serviceConnected( NEService::eServiceConnection stat
     return result;
 }
 
-void LocalHelloWorldClient::responseHelloWorld(const NELocalHelloWorld::sConnectedClient & clientInfo)
+void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnectedClient & clientInfo)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]"

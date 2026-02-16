@@ -21,10 +21,10 @@
 #include "areg/base/GEGlobal.h"
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "aregextend/console/OptionParser.hpp"
-#include "aregextend/service/NESystemService.hpp"
-#include "mtrouter/app/NEMultitargetRouterSettings.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
+#include "mtrouter/app/MTRouterNames.hpp"
 #include "mtrouter/service/RouterServerService.hpp"
 
 #include <utility>

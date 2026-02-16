@@ -30,9 +30,9 @@ void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitc
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TrafficLightService::TimerConsumer class implementation
+// TrafficLightService::TrafficLightTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
-void TrafficLightService::TimerConsumer::processTimer( Timer & timer )
+void TrafficLightService::TrafficLightTimerConsumer::processTimer( Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -48,34 +48,34 @@ TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entr
     : Component                 ( entry, owner )
     , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )
 
-    , mTimer                    ( static_cast<IETimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
-    , mPrevState                ( NESimpleTrafficLight::eTrafficLight::LightOff )
+    , mTimer                    ( static_cast<TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
+    , mPrevState                ( SimpleTrafficLight::eTrafficLight::LightOff )
     , mEventConsumer            ( self() )
     , mTimerConsumer            ( self() )
 {
-    setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightOff);
-    setEastWest(NESimpleTrafficLight::eTrafficLight::LightOff);
+    setSouthNorth(SimpleTrafficLight::eTrafficLight::LightOff);
+    setEastWest(SimpleTrafficLight::eTrafficLight::LightOff);
 }
 
 void TrafficLightService::onTrafficLightSwitchedOn()
 {
-    if ( getSouthNorth( ) == NESimpleTrafficLight::eTrafficLight::LightOff )
+    if ( getSouthNorth( ) == SimpleTrafficLight::eTrafficLight::LightOff )
     {
-        setSouthNorth( NESimpleTrafficLight::eTrafficLight::LightYellow );
-        setEastWest( NESimpleTrafficLight::eTrafficLight::LightYellow );
-        mTimer.startTimer( NESimpleTrafficLight::TimeoutYellow, 1 );
+        setSouthNorth( SimpleTrafficLight::eTrafficLight::LightYellow );
+        setEastWest( SimpleTrafficLight::eTrafficLight::LightYellow );
+        mTimer.startTimer( SimpleTrafficLight::TimeoutYellow, 1 );
     }
 }
 
 void TrafficLightService::onTrafficLightSwitchedOff()
 {
-    if ( getSouthNorth( ) != NESimpleTrafficLight::eTrafficLight::LightOff )
+    if ( getSouthNorth( ) != SimpleTrafficLight::eTrafficLight::LightOff )
     {
         mTimer.stopTimer( );
 
-        mPrevState = NESimpleTrafficLight::eTrafficLight::LightOff;
-        setSouthNorth( NESimpleTrafficLight::eTrafficLight::LightOff );
-        setEastWest( NESimpleTrafficLight::eTrafficLight::LightOff );
+        mPrevState = SimpleTrafficLight::eTrafficLight::LightOff;
+        setSouthNorth( SimpleTrafficLight::eTrafficLight::LightOff );
+        setEastWest( SimpleTrafficLight::eTrafficLight::LightOff );
     }
 }
 
@@ -83,42 +83,42 @@ void TrafficLightService::onTimerExpired()
 {
     switch (getSouthNorth())
     {
-    case NESimpleTrafficLight::eTrafficLight::LightRed:
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightRed;
-        setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        setEastWest(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        mTimer.startTimer(NESimpleTrafficLight::TimeoutYellow, 1);
+    case SimpleTrafficLight::eTrafficLight::LightRed:
+        mPrevState  = SimpleTrafficLight::eTrafficLight::LightRed;
+        setSouthNorth(SimpleTrafficLight::eTrafficLight::LightYellow);
+        setEastWest(SimpleTrafficLight::eTrafficLight::LightYellow);
+        mTimer.startTimer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
-    case NESimpleTrafficLight::eTrafficLight::LightYellow:
-        if ((mPrevState == NESimpleTrafficLight::eTrafficLight::LightRed) || (mPrevState == NESimpleTrafficLight::eTrafficLight::LightOff))
+    case SimpleTrafficLight::eTrafficLight::LightYellow:
+        if ((mPrevState == SimpleTrafficLight::eTrafficLight::LightRed) || (mPrevState == SimpleTrafficLight::eTrafficLight::LightOff))
         {
-            setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightGreen);
-            setEastWest(NESimpleTrafficLight::eTrafficLight::LightRed);
-            mTimer.startTimer(NESimpleTrafficLight::TimeoutGreen);
+            setSouthNorth(SimpleTrafficLight::eTrafficLight::LightGreen);
+            setEastWest(SimpleTrafficLight::eTrafficLight::LightRed);
+            mTimer.startTimer(SimpleTrafficLight::TimeoutGreen);
         }
         else
         {
-            setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightRed);
-            setEastWest(NESimpleTrafficLight::eTrafficLight::LightGreen);
-            mTimer.startTimer(NESimpleTrafficLight::TimeoutRed);
+            setSouthNorth(SimpleTrafficLight::eTrafficLight::LightRed);
+            setEastWest(SimpleTrafficLight::eTrafficLight::LightGreen);
+            mTimer.startTimer(SimpleTrafficLight::TimeoutRed);
         }
 
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightYellow;
+        mPrevState  = SimpleTrafficLight::eTrafficLight::LightYellow;
         break;
 
-    case NESimpleTrafficLight::eTrafficLight::LightGreen:
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightGreen;
-        setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        setEastWest(NESimpleTrafficLight::eTrafficLight::LightYellow);
-        mTimer.startTimer(NESimpleTrafficLight::TimeoutYellow, 1);
+    case SimpleTrafficLight::eTrafficLight::LightGreen:
+        mPrevState  = SimpleTrafficLight::eTrafficLight::LightGreen;
+        setSouthNorth(SimpleTrafficLight::eTrafficLight::LightYellow);
+        setEastWest(SimpleTrafficLight::eTrafficLight::LightYellow);
+        mTimer.startTimer(SimpleTrafficLight::TimeoutYellow, 1);
         break;
 
-    case NESimpleTrafficLight::eTrafficLight::LightOff:
+    case SimpleTrafficLight::eTrafficLight::LightOff:
     default:
-        mPrevState  = NESimpleTrafficLight::eTrafficLight::LightOff;
-        setSouthNorth(NESimpleTrafficLight::eTrafficLight::LightOff);
-        setEastWest(NESimpleTrafficLight::eTrafficLight::LightOff);
+        mPrevState  = SimpleTrafficLight::eTrafficLight::LightOff;
+        setSouthNorth(SimpleTrafficLight::eTrafficLight::LightOff);
+        setEastWest(SimpleTrafficLight::eTrafficLight::LightOff);
         break;
     }
 }

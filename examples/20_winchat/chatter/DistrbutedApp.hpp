@@ -19,7 +19,7 @@
 #endif
 
 #include "chatter/res/resource.h"       // main symbols
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
 
 // DistrbutedApp:

@@ -12,8 +12,8 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/File.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "common/NELargeData.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "common/LargeDataDefs.hpp"
 
 #include <algorithm>
 #include <string>

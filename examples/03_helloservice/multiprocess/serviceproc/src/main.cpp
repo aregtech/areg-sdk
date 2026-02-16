@@ -23,7 +23,7 @@ BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceComponent" )
     END_REGISTER_THREAD( "Thread1" )
 

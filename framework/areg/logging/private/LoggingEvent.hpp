@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
 #if AREG_LOGS
@@ -165,10 +165,10 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Declare LoggingEvent class, derived from TEEvent object,
- *          and IELoggingEventConsumer class, derived from TEEventConsumer object
+ * \brief   Declare LoggingEvent class, derived from EventTemplate object,
+ *          and LoggingEventConsumer class, derived from TEEventConsumer object
  **/
-AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, IELoggingEventConsumer)
+AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // LoggingEventData class inline functions

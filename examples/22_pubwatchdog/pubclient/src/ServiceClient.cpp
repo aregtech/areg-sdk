@@ -38,9 +38,9 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     {
         // dynamic subscribe on messages.
         notifyOnServiceStateUpdate( true );
-        if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
+        if (++ mRestarts <= HelloWatchdog::MaximumRestarts)
         {
-            mSleepTimeout   = NEHelloWatchdog::InitialSleepTimeout;
+            mSleepTimeout   = HelloWatchdog::InitialSleepTimeout;
             LOG_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
 
             requestStartSleep( mSleepTimeout );
@@ -62,13 +62,13 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     return result;
 }
 
-void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState ServiceState, NEService::eDataStateType state )
 {
     LOG_SCOPE(examples_22_pubclient_ServiceClient_onServiceStateUpdate);
-    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
     if (state == NEService::eDataStateType::DataIsOK)
     {
-        if (ServiceState == NEHelloWatchdog::eState::Stopped)
+        if (ServiceState == HelloWatchdog::eState::Stopped)
         {
             printf("Sending request to shutdown and quit application");
             requestShutdownService();
@@ -85,7 +85,7 @@ void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
     if (timeoutSleep != 0)
     {
         ASSERT( timeoutSleep == mSleepTimeout );
-        mSleepTimeout += NEHelloWatchdog::TimeoutStep;
+        mSleepTimeout += HelloWatchdog::TimeoutStep;
 
         requestStartSleep( mSleepTimeout );
     }

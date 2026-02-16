@@ -17,7 +17,7 @@
 
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ ServiceManagerEventData ServiceManagerEventData::shutdownServiceManager()
 ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddress & addrProxy)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterProxy );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << addrProxy;
     stream << addrProxy.getChannel();
     return data;
@@ -46,7 +46,7 @@ ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddres
 ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, NEService::eDisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << addrProxy;
     stream << addrProxy.getChannel();
     stream << reason;
@@ -56,7 +56,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAdd
 ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress & addrStub)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterStub );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << addrStub;
     stream << addrStub.getChannel();
     return data;
@@ -65,7 +65,7 @@ ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress 
 ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << addrStub;
     stream << addrStub.getChannel();
     stream << reason;
@@ -75,7 +75,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddre
 ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << service;
     stream << connectTypes;
     return data;
@@ -84,7 +84,7 @@ ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteSer
 ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << service;
     stream << connectTypes;
     return data;
@@ -93,7 +93,7 @@ ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService
 ServiceManagerEventData ServiceManagerEventData::startNetConnection( const String & ipAddress, unsigned short portNr )
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection );
-    IEOutStream & stream = data.getWriteStream( );
+    OutStream & stream = data.getWriteStream( );
     stream << ipAddress;
     stream << portNr;
     return data;
@@ -107,7 +107,7 @@ ServiceManagerEventData ServiceManagerEventData::stopConnection()
 ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << channel;
     return data;
 }
@@ -115,7 +115,7 @@ ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channe
 ServiceManagerEventData ServiceManagerEventData::unregisterConnection(const Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << channel;
     return data;
 }
@@ -123,7 +123,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterConnection(const Chan
 ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection );
-    IEOutStream & stream = data.getWriteStream();
+    OutStream & stream = data.getWriteStream();
     stream << channel;
     return data;
 }
@@ -131,7 +131,7 @@ ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & 
 ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const String& threadName)
 {
     ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread);
-    IEOutStream& stream = data.getWriteStream();
+    OutStream& stream = data.getWriteStream();
     stream << threadName;
     return data;
 }
@@ -139,7 +139,7 @@ ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const 
 ServiceManagerEventData ServiceManagerEventData::createComponentThread(const String& threadName)
 {
     ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread);
-    IEOutStream& stream = data.getWriteStream();
+    OutStream& stream = data.getWriteStream();
     stream << threadName;
     return data;
 }

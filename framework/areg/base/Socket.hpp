@@ -21,8 +21,8 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/String.hpp"
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NESocket.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include <memory>
 
 /************************************************************************

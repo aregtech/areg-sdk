@@ -16,7 +16,7 @@
 #include "areg/component/private/StubConnectEvent.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 
 AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
@@ -40,21 +40,21 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
 {
 }
 
-StubConnectEvent::StubConnectEvent( const IEInStream & stream )
+StubConnectEvent::StubConnectEvent( const InStream & stream )
     : ServiceRequestEvent   ( stream )
     , mConnectionStatus    ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
     stream >> mConnectionStatus;
 }
 
-const IEInStream & StubConnectEvent::readStream(const IEInStream & stream)
+const InStream & StubConnectEvent::readStream(const InStream & stream)
 {
     ServiceRequestEvent::readStream(stream);
     stream >> mConnectionStatus;
     return stream;
 }
 
-IEOutStream & StubConnectEvent::writeStream(IEOutStream & stream) const
+OutStream & StubConnectEvent::writeStream(OutStream & stream) const
 {
     ServiceRequestEvent::writeStream(stream);
     stream << mConnectionStatus;

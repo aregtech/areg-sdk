@@ -25,7 +25,7 @@ inline PatientService & PatientService::self()
     return (*this);
 }
 
-IEWorkerThreadConsumer * PatientService::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
+WorkerThreadConsumer * PatientService::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
 {
     if ( mWorkerConsumer.getConsumerName() == consumerName)
     {

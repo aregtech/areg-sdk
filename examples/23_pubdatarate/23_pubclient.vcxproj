@@ -43,7 +43,7 @@
     <ClCompile Include="pubclient\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\NELargeData.hpp" />
+    <ClInclude Include="common\LargeDataDefs.hpp" />
     <ClInclude Include="common\SimpleBitmap.hpp" />
     <ClInclude Include="pubclient\src\ServiceClient.hpp" />
   </ItemGroup>

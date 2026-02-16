@@ -12,7 +12,7 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/FileBuffer.hpp"
 #include "areg/base/String.hpp"

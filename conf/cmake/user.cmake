@@ -29,8 +29,7 @@
 #  19. AREG_OUTPUT_LIB      -- Directory for output static libraries.
 #  20. AREG_PACKAGES        -- Location for fetching third-party packages such as GTest.
 #  21. AREG_INSTALL         -- Enables or disables installation of Areg SDK binaries, headers and dependencies like 'sqlite3' and 'ncurses'.
-#  22. AREG_INSTALL_PATH    -- Location where Areg SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
-#  23. AREG_NAMESPACE       -- If set to ON, Areg SDK will be built with using the 'areg' namespace. Defaults to ON.
+#  22. AREG_INSTALL_PATH    -- Location where Areg SDK binaries, headers, and tools are installed. Defaults to the user's home directory
 #
 # Default Values:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, mingw, llvm, msvc)
@@ -54,8 +53,7 @@
 #  19. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
 #  20. AREG_PACKAGES        = '${CMAKE_BINARY_DIR}/packages'
 #  21. AREG_INSTALL         = ON        (possible values: ON, OFF)
-#  22. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset)
-#  23. AREG_NAMESPACE       = ON        (possible values: ON, OFF)
+#  22. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset
 #
 # Hints:
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
@@ -256,9 +254,6 @@ if (NOT DEFINED AREG_LOGGER_BINARY)
 elseif (NOT "${AREG_LOGGER_BINARY}" STREQUAL "static")
     set(AREG_LOGGER_BINARY "shared")
 endif()
-
-# Set Areg SDK namespace usage flag. By default, it is enabled. To disable, set OFF
-macro_create_option(AREG_NAMESPACE  ON  "Enable areg namespace")
 
 # Build tests. By default it is disabled. To enable, set ON
 macro_create_option(AREG_BUILD_TESTS ON "Build unit tests")

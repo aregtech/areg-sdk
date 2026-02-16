@@ -17,8 +17,8 @@
  ************************************************************************/
 #include "areg/base/private/WriteConverter.hpp"
 
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
 
@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-WriteConverter::WriteConverter( IEOutStream & writeStream, IECursorPosition & /*writePosition*/ )
+WriteConverter::WriteConverter( OutStream & writeStream, Cursor & /*writePosition*/ )
     : mWriteStream  (writeStream)
 {
 }

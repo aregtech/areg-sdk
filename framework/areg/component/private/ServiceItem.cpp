@@ -14,8 +14,8 @@
  ************************************************************************/
 #include "areg/component/ServiceItem.hpp"
 
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <utility>
 
@@ -59,7 +59,7 @@ ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVer
     mMagicNum = ServiceItem::_magicNumber(*this);
 }
 
-ServiceItem::ServiceItem( const IEInStream & stream )
+ServiceItem::ServiceItem( const InStream & stream )
     : mServiceName      ( stream )
     , mServiceVersion   ( stream )
     , mServiceType      ( NEService::eServiceType::ServiceLocal )

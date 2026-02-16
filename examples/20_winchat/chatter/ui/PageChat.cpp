@@ -6,7 +6,6 @@
 #include "chatter/ui/DistributedDialog.hpp"
 #include "chatter/services/DirectChatService.hpp"
 #include "chatter/services/ChatParticipantService.hpp"
-#include "chatter/NEDistributedApp.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/DateTime.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
@@ -27,9 +26,9 @@ LPCTSTR PageChat::HEADER_TITILES[] =
 IMPLEMENT_DYNAMIC(PageChat, CPropertyPage)
 
 PageChat::PageChat( const String & serviceName
-                      , const NEDirectConnection::sInitiator & initiator
-                      , const NEDirectConnection::ListParticipants & listParties
-                      , const NEDirectConnection::sParticipant & ownerConnection
+                      , const DirectConnection::sInitiator & initiator
+                      , const DirectConnection::ListParticipants & listParties
+                      , const DirectConnection::sParticipant & ownerConnection
                       , bool isInitiator )
 	: CPropertyPage             (PageChat::IDD)
     , ChatPrticipantHandler   ( serviceName, initiator, listParties, ownerConnection )
@@ -109,15 +108,15 @@ BOOL PageChat::OnInitDialog( )
     setHeaders( );
     srand(static_cast<unsigned int>(time(nullptr)));
 
-    const NEDirectConnection::sInitiator & initiator    = GetInitiator();
-    const NEDirectConnection::ListParticipants & parties= GetParticipantList();
-    const NEDirectConnection::sParticipant & owner      = GetConnectionOwner( );
+    const DirectConnection::sInitiator & initiator    = GetInitiator();
+    const DirectConnection::ListParticipants & parties= GetParticipantList();
+    const DirectConnection::sParticipant & owner      = GetConnectionOwner( );
     String message("");
     String comma("");
 
     for ( uint32_t i = 0; i < parties.getSize(); ++ i )
     {
-        const NEDirectConnection::sParticipant & participant = parties[i];
+        const DirectConnection::sParticipant & participant = parties[i];
         if ( owner != participant )
         {
             message += comma;
@@ -289,7 +288,7 @@ void PageChat::setHeaders()
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
     int width1, width2;
-    NECommon::getWidths( rc.Width(), count, width1, width2 );
+    chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
     {
@@ -328,13 +327,13 @@ void PageChat::outputMessage( CString nickName
     lv.iSubItem = 0;
     lv.pszText  = nickName.GetBuffer( );
     lv.lParam   = cookie;
-    lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+    lv.cchTextMax = chat::MAXLEN_NICKNAME;
     mCtrlList.InsertItem( &lv );
 
-    if ( dateStart.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateStart = dateStart.Mid( NECommon::DAY_FORMAT_LEN );
-    if ( dateEnd.GetLength( ) > NECommon::DAY_FORMAT_LEN )
-        dateEnd = dateEnd.Mid( NECommon::DAY_FORMAT_LEN );
+    if ( dateStart.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateStart = dateStart.Mid( chat::DAY_FORMAT_LEN );
+    if ( dateEnd.GetLength( ) > chat::DAY_FORMAT_LEN )
+        dateEnd = dateEnd.Mid( chat::DAY_FORMAT_LEN );
 
     mCtrlList.SetItemText( mLastItem, 1, message.IsEmpty( )     == false ? message.GetString( )     : _T( "..." ) );
     mCtrlList.SetItemText( mLastItem, 2, dateStart.IsEmpty( )   == false ? dateStart.GetString( )   : _T( "..." ) );
@@ -366,7 +365,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
             lv.iSubItem = 0;
             lv.pszText  = nickName.GetBuffer( );
             lv.lParam   = cookie;
-            lv.cchTextMax = NECommon::MAXLEN_NICKNAME;
+            lv.cchTextMax = chat::MAXLEN_NICKNAME;
             pos = mCtrlList.InsertItem( &lv );
         }
 
@@ -413,7 +412,7 @@ void PageChat::setTabTitle( const String & title )
 
 LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
         outputMessage( CString( data->nickName )
@@ -431,7 +430,7 @@ LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
 
 LRESULT PageChat::OnCmdChatTyping( WPARAM /*wParam*/, LPARAM lParam)
 {
-    NECommon::sMessageData * data = reinterpret_cast<NECommon::sMessageData *>(lParam);
+    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
         outputTyping(CString( data->nickName ), CString( data->message ), static_cast<uint32_t>(data->dataSave));

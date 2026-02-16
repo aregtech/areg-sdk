@@ -18,15 +18,15 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/DateTime.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEInStream;
-class IEOutStream;
+class InStream;
+class OutStream;
 class LogScope;
 
 //////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ public:
      * \brief   Initialization constructor.
      *          Initializes log message data from stream.
      **/
-    inline LogMessage( const IEInStream & stream );
+    inline LogMessage( const InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -233,7 +233,7 @@ inline LogMessage::LogMessage( NELogging::eLogMessageType msgType, unsigned int 
 {
 }
 
-inline LogMessage::LogMessage( const IEInStream & stream )
+inline LogMessage::LogMessage( const InStream & stream )
     : NELogging::sLogMessage( )
 {
     stream >> static_cast<NELogging::sLogMessage &>(*this);
@@ -326,7 +326,7 @@ inline LogMessage::LogMessage(NELogging::eLogMessageType /*msgType*/, unsigned i
 {
 }
 
-inline LogMessage::LogMessage(const IEInStream& stream)
+inline LogMessage::LogMessage(const InStream& stream)
     : NELogging::sLogMessage()
 {
     stream >> static_cast<NELogging::sLogMessage&>(*this);

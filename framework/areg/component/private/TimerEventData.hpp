@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 
 /************************************************************************
  * Declared classes
@@ -108,7 +108,7 @@ private:
     Timer *   mTimer;
 };
 
-AREG_DECLARE_EVENT(TimerEventData, TimerEventBase, IETimerEventConsumerBase)
+AREG_DECLARE_EVENT(TimerEventData, TimerEventBase, TimerEventConsumerBase)
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class declaration

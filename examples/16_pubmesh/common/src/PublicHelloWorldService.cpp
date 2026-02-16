@@ -36,11 +36,11 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
         , thread.getString( )
         , process.getString( ) );
 
-    NEPublicHelloWorld::sClientRegister theClient;
+    PublicHelloWorld::sClientRegister theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition( );
     for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
-        const NEPublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
+        const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
         if ( (client.crName == name) && (client.crService == service) && (client.crThread == thread) )
         {
             LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );
@@ -51,7 +51,7 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
 
     if ( mClientList.isInvalidPosition( pos ) )
     {
-        theClient = NEPublicHelloWorld::sClientRegister( NEUtilities::generateUniqueId( ), name, service, thread, process );
+        theClient = PublicHelloWorld::sClientRegister( NEUtilities::generateUniqueId( ), name, service, thread, process );
         mClientList.pushFirst( theClient );
         LOG_DBG( "Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
             , theClient.crID
@@ -64,14 +64,14 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
     responseRegister( theClient );
 }
 
-void PublicHelloWorldService::requestUnregister( const NEPublicHelloWorld::sClientRegister & client )
+void PublicHelloWorldService::requestUnregister( const PublicHelloWorld::sClientRegister & client )
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestUnregister );
     LOG_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString( ), client.crID );
 
     for ( ClientList::LISTPOS pos = mClientList.firstPosition( ); mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
-        const NEPublicHelloWorld::sClientRegister & entry = mClientList.valueAtPosition( pos );
+        const PublicHelloWorld::sClientRegister & entry = mClientList.valueAtPosition( pos );
         if ( entry == client )
         {
             mClientList.removeAt( pos );
@@ -85,11 +85,11 @@ void PublicHelloWorldService::requestHelloWorld( unsigned int clientID )
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 
-    NEPublicHelloWorld::sClientRegister theClient;
+    PublicHelloWorld::sClientRegister theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition( );
     for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
-        const NEPublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
+        const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
         if ( clientID == client.crID )
         {
             LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.crName.getString( ), client.crID );

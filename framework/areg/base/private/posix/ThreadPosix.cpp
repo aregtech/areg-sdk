@@ -18,8 +18,8 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/IEThreadConsumer.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/ThreadConsumer.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #ifndef _POSIX_PRIORITY_SCHEDULING
     #define _POSIX_PRIORITY_SCHEDULING

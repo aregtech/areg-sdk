@@ -22,9 +22,9 @@ DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
 
 ServiceClient::ServiceClient(const String & roleName, Component & owner)
     : HelloWorldClientBase  ( roleName, owner )
-    , IETimerConsumer       ( )
+    , TimerConsumer       ( )
 
-    , mTimer                ( static_cast<IETimerConsumer &>(self()), timerName( owner ) )
+    , mTimer                ( static_cast<TimerConsumer &>(self()), timerName( owner ) )
     , mID                   ( 0 )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);

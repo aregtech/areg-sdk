@@ -40,7 +40,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="mtrouter\app\private\MultitargetRouter.cpp" />
-    <ClCompile Include="mtrouter\app\private\NEMultitargetRouterSettings.cpp" />
+    <ClCompile Include="mtrouter\app\private\MTRouterNames.cpp" />
     <ClCompile Include="mtrouter\app\private\posix\MultitargetRouterPosix.cpp" />
     <ClCompile Include="mtrouter\app\private\RouterConsoleService.cpp" />
     <ClCompile Include="mtrouter\app\private\win32\MultitargetRouterWin32.cpp" />
@@ -59,7 +59,7 @@
     <ClInclude Include="mtrouter\service\RouterServerService.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="mtrouter\app\MultitargetRouter.hpp" />
-    <ClInclude Include="mtrouter\app\NEMultitargetRouterSettings.hpp" />
+    <ClInclude Include="mtrouter\app\MTRouterNames.hpp" />
     <ClInclude Include="mtrouter\resources\resource.h" />
     <ClInclude Include="mtrouter\resources\targetver.h" />
     <ResourceCompile Include="mtrouter\resources\mtrouter.rc" />

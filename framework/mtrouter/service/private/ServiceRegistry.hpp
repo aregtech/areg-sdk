@@ -19,15 +19,15 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/base/HashMap.hpp"
 #include "mtrouter/service/private/ServiceStub.hpp"
 #include "mtrouter/service/private/ListServiceProxies.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/base/ArrayList.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry class declaration
 //////////////////////////////////////////////////////////////////////////
-using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies>;
+using ServiceRegistryBase = HashMap<ServiceStub, ListServiceProxies>;
 
 /**
  * \brief   The remote services registration map, which is a map of stub and list of connected proxies.
@@ -164,7 +164,7 @@ public:
      * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers ) const;
+    void getServiceList(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
@@ -173,7 +173,7 @@ public:
      * \param[out]  listProviders      On output the list contains stub address objects that have sources of specified cookie.
      * \param[out]  listConsumers    On output the list contains proxy address objects that have sources of specified cookie.
      **/
-    void getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers);
+    void getServiceSources(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers);
 
     /**
      * \brief   Call to disconnect proxy service specified by proxy address.

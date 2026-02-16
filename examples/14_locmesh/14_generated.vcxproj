@@ -49,12 +49,12 @@
     <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldProxy.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\NEHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorldClientBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorldStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorld.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldProxy.hpp" />
   </ItemGroup>

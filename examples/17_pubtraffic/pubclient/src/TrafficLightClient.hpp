@@ -15,7 +15,7 @@
 #include "areg/component/Component.hpp"
 #include "examples/17_pubtraffic/services/SimpleTrafficLightClientBase.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/TrafficDefs.hpp"
 
 //! The simple service client, which receives data update notifications.
 class TrafficLightClient    : public    Component
@@ -33,7 +33,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -57,7 +57,7 @@ protected:
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onSouthNorthUpdate( NESimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state ) override;
+    virtual void onSouthNorthUpdate( SimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Triggered, when EastWest attribute is updated. The function contains
@@ -68,7 +68,7 @@ protected:
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onEastWestUpdate( NESimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state ) override;
+    virtual void onEastWestUpdate( SimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
@@ -86,11 +86,11 @@ private:
     /**
      * \brief   Makes message outputs on console.
      **/
-    inline void outputState(NESimpleTrafficLight::eTrafficLight lightState);
+    inline void outputState(SimpleTrafficLight::eTrafficLight lightState);
 
 private:
     /**
      * \brief   The symbolic traffic direction that is South-North or East-West.
      **/
-    NECommon::eTrafficDirection  mTrafficDirection;
+    traffic::eTrafficDirection  mTrafficDirection;
 };

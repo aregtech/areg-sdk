@@ -12,14 +12,14 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/logging/GELog.h"
-#include "subscribermulti/src/NECommon.hpp"
+#include "subscribermulti/src/PubSubDefs.hpp"
 
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
 Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         (entry, owner)
-    , SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), NECommon::Coord1Integer, NECommon::Coord1String)
+    , SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
     , mStateEventCount  ( 0 )
     , mSecond           ( entry.mDependencyServices[1], static_cast<Component &>(self()) )
 {
@@ -42,16 +42,16 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(NECommon::CoordStatus, NECommon::FmtDisconnected.data(), NEService::getString(status));
+        console.outputMsg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), NEService::getString(status));
     }
     else
     {
         console.clearScreen();
-        console.outputTxt(NECommon::CoordTitle, NECommon::AppTitle);
-        console.outputTxt(NECommon::CoordSubtitle, NECommon::Separator);
-        console.outputTxt(NECommon::CoordStatus, NECommon::TxtConnected);
-        console.outputTxt(NECommon::Coord1Subtitle, NECommon::Txt1Subscriber);
-        console.outputTxt(NECommon::Coord2Subtitle, NECommon::Txt2Subscriber);
+        console.outputTxt(pubsub::CoordTitle, pubsub::AppTitle);
+        console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);
+        console.outputTxt(pubsub::CoordStatus, pubsub::TxtConnected);
+        console.outputTxt(pubsub::Coord1Subtitle, pubsub::Txt1Subscriber);
+        console.outputTxt(pubsub::Coord2Subtitle, pubsub::Txt2Subscriber);
     }
 
     console.refreshScreen();
@@ -59,24 +59,24 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    String publisherState = state == NEService::eDataStateType::DataIsOK ? NEPubSub::getString(ServiceProviderState) : NECommon::StrInvalid.data();
+    String publisherState = state == NEService::eDataStateType::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
     Console & console = Console::getInstance();    
-    String stateConnect = NECommon::TxtConnected;
+    String stateConnect = pubsub::TxtConnected;
     if (PubSubClientBase::isConnected() == false)
     {
         ASSERT(PubSubClientBase::getProxy() != nullptr);
         stateConnect = NEService::getString(PubSubClientBase::getProxy()->getConnectionStatus());
     }
 
-    console.outputMsg(  NECommon::CoordStatus
+    console.outputMsg(  pubsub::CoordStatus
                       , "PubSub service %s, Publisher %s, event count: %u"
                       , stateConnect.getString()
                       , publisherState.getString()
@@ -98,9 +98,9 @@ void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServicePro
             notifyOnStringOnChangeUpdate(true);
         }
 
-        mSecond.notifyOnServiceProviderStateUpdate(ServiceProviderState != NEPubSub::eServiceState::Shutdown);
+        mSecond.notifyOnServiceProviderStateUpdate(ServiceProviderState != PubSub::eServiceState::Shutdown);
 
-        if (ServiceProviderState == NEPubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::eServiceState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

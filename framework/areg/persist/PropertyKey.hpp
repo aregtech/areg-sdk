@@ -20,7 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
-#include "areg/persist/NEPersistence.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // PropertyKey class declaration

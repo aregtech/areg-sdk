@@ -22,10 +22,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/Object.hpp"
 #include "areg/base/private/RuntimeBase.hpp"
 
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 
@@ -185,7 +184,6 @@ Template bool ClassName::isInstanceOfRuntimeClass( unsigned int classMagic ) con
  *          which contain class name used in Runtime operation.
  **/
 class AREG_API RuntimeObject    : private   RuntimeBase   // Base Runtime class, declared as private
-                                , public    Object        // Instance of Object class
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -212,6 +210,118 @@ public:
      * \brief   The Runtime Object should contain runtime information.
      **/
     AREG_DECLARE_RUNTIME(RuntimeObject)
+
+/************************************************************************/
+// RuntimeObject interface overrides
+/************************************************************************/
+    /**
+     * \brief   Destroys created (cloned) object
+     **/
+    virtual void destroy();
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Operator to get integer value of object, mainly used in map
+     * \return  Integer value of object.
+     **/
+    explicit operator unsigned int () const;
+
+/************************************************************************
+ * new operator
+ ************************************************************************/
+    /**
+     * \brief   Overloaded new() operator
+     * \param   size    The size of the memory block to allocate
+     * \return  Valid pointer to a memory block of size 'size' or nullptr in case of error.
+     **/
+    void * operator new( size_t size );
+
+    /**
+     * \brief   Overloaded array new operator
+     * \param   size    The size of the memory block to allocate
+     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
+     **/
+    void * operator new [ ] ( size_t size );
+
+    /**
+     * \brief   Overloaded placement new
+     * \param   ptr     Pointer to the memory block where the object is located
+     * \return  Pointer to the memory block where the object is located, same as 'ptr'
+     **/
+    void * operator new( size_t /*size*/, void * ptr );
+
+    /**
+     * \brief   Overloaded placement new
+     * \param   ptr     Pointer to the memory block where the object is located
+     * \return  Pointer to the memory block where the object is located, same as 'ptr'
+     **/
+    void * operator new [ ] ( size_t /*size*/, void *ptr );
+
+    /**
+     * \brief   Overloaded placement new. Stores block type, file name and line number information
+     *          Used in debugging version. In other versions, only allocates memory without
+     *          containing other information.
+     * \param   size    The size of the memory block to allocate
+     * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
+     * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
+     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
+     **/
+    void * operator new( size_t size, int /*block*/, const char * file, int line );
+
+    /**
+     * \brief   Overloaded placement new. Stores block type, file name and line number information
+     *          Used in debugging version. In other versions, only allocates memory without
+     *          containing other information.
+     * \param   size    The size of the memory block to allocate
+     * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
+     * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
+     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
+     **/
+    void * operator new [ ] ( size_t size, int /*block*/, const char * file, int line );
+
+/************************************************************************
+ * delete operators
+ ************************************************************************/
+    /**
+     * \brief   Overloaded delete() operator
+     * \param   ptr   pointer to the memory block to delete
+     **/
+    void operator delete( void * ptr );
+
+    /**
+     * \brief   Overloaded delete() operator
+     * \param   ptr     Pointer to the memory block to delete
+     * \param   size    Not used.
+     **/
+    void operator delete( void * ptr, size_t size );
+
+    /**
+     * \brief	Overloaded delete() operator
+     * \param	ptr	Pointer to the memory block to delete
+     **/
+    void operator delete( void * ptr, int, const char *, int );
+
+    /**
+     * \brief   Overloaded array delete operator
+     * \param   ptr     Pointer to the memory block to delete
+     **/
+    void operator delete [ ] ( void* ptr );
+
+    /**
+     * \brief   Overloaded array delete operator
+     * \param   ptr     Pointer to the memory block to delete
+     **/
+    void operator delete [ ] (void* ptr, size_t /*size*/);
+
+    /**
+     * \brief	Overloaded delete [] operator
+     * \param	ptr	Pointer to the memory block to delete
+     **/
+    void operator delete [ ] ( void * ptr, int, const char *, int );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations

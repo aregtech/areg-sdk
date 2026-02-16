@@ -15,7 +15,7 @@
  *
  ************************************************************************/
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/ThreadLocalStorage.hpp"
 
 namespace
@@ -76,7 +76,7 @@ Thread::MapThreadIDResource& Thread::_getMapThreadId()
 unsigned long Thread::_defaultThreadFunction(void* data)
 {
     Thread* threadObj = reinterpret_cast<Thread *>(data);
-    IEThreadConsumer::eExitCodes result= IEThreadConsumer::eExitCodes::ExitNoParam;
+    ThreadConsumer::eExitCodes result= ThreadConsumer::eExitCodes::ExitNoParam;
     if (threadObj != nullptr)
     {
         do 
@@ -89,7 +89,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         // it should be created in the thread context
         Thread::_getThreadLocalStorage(threadObj);
 
-        result = static_cast<IEThreadConsumer::eExitCodes>( threadObj->_threadEntry() );
+        result = static_cast<ThreadConsumer::eExitCodes>( threadObj->_threadEntry() );
 
         // delete thread local storage.
         Thread::_getThreadLocalStorage(nullptr);
@@ -139,7 +139,7 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/)
+Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= NECommon::STACK_SIZE_DEFAULT*/)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
@@ -267,7 +267,7 @@ const size_t Thread::getCurrentStackSize()
 
 int Thread::_threadEntry()
 {
-    IEThreadConsumer::eExitCodes result = IEThreadConsumer::eExitCodes::ExitTerminated;
+    ThreadConsumer::eExitCodes result = ThreadConsumer::eExitCodes::ExitTerminated;
 
     if (Thread::_findThreadByHandle(mThreadHandle) != nullptr )
     {
@@ -282,7 +282,7 @@ int Thread::_threadEntry()
 
         _setRunning(false);
 
-        result = static_cast<IEThreadConsumer::eExitCodes>(mThreadConsumer.onThreadExit());
+        result = static_cast<ThreadConsumer::eExitCodes>(mThreadConsumer.onThreadExit());
         onPostExitThread();
 
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
@@ -352,11 +352,11 @@ void Thread::_unregisterThread()
     }
 }
 
-IEThreadConsumer& Thread::getCurrentThreadConsumer()
+ThreadConsumer& Thread::getCurrentThreadConsumer()
 {
     ASSERT(getCurrentThread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
-    IEThreadConsumer* consumer = reinterpret_cast<IEThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).alignPtr.mElement);
+    ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).alignPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);
 }

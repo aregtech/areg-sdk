@@ -21,11 +21,11 @@
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #include <sqlite3.h>
@@ -425,7 +425,7 @@ String LogSqliteDatabase::getReadAllLogMessagesQuery()
 }
 
 LogSqliteDatabase::LogSqliteDatabase()
-    : IELogDatabaseEngine   ( )
+    : LogDatabaseEngine   ( )
 
     , mDatabase             ( )
     , mStmtLogs             (mDatabase)
@@ -1218,7 +1218,7 @@ uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& stmt, ITEM_I
     }
 }
 
-uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter)
+uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID instId, const ArrayList<sScopeFilter>& filter)
 {
     Lock lock(mLock);
     if (mDatabase.isOperable() == false)
@@ -1283,7 +1283,7 @@ uint32_t LogSqliteDatabase::setupStatementReadFilterLogs(SqliteStatement& stmt, 
     return result;
 }
 
-uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter)
+uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID instId, const ArrayList<sScopeFilter>& filter)
 {
     if (filter.isEmpty() == false)
     {

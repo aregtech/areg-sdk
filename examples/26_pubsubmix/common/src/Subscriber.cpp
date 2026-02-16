@@ -14,7 +14,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
-#include "common/src/NECommon.hpp"
+#include "common/src/PubSubDefs.hpp"
 
 #include <algorithm>
 #include <string_view>
@@ -28,12 +28,12 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
     : PubSubMixClientBase   ( entry, owner )
     , mOldInteger   ( {0, entry.mRoleName } )
     , mOldState     ( false )
-    , mOldString    ( { NECommon::Invalid, entry.mRoleName } )
-    , mCoordInt     ( { NECommon::CoordInteger.posX    , NECommon::CoordInteger.posY  + position * 3 })
-    , mCoordStr     ( { NECommon::CoordString.posX     , NECommon::CoordString.posY   + position * 3 })
-    , mCoordSep     ( { NECommon::CoordSeparator.posX  , NECommon::CoordSeparator.posY+ position * 3 })
+    , mOldString    ( { pubsub::Invalid, entry.mRoleName } )
+    , mCoordInt     ( { pubsub::CoordInteger.posX    , pubsub::CoordInteger.posY  + position * 3 })
+    , mCoordStr     ( { pubsub::CoordString.posX     , pubsub::CoordString.posY   + position * 3 })
+    , mCoordSep     ( { pubsub::CoordSeparator.posX  , pubsub::CoordSeparator.posY+ position * 3 })
 {
-    NECommon::CoordInfoMsg.posY = std::max(NECommon::CoordInfoMsg.posY + 1, NECommon::CoordSeparator.posY);
+    pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
 }
 
 bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
@@ -56,19 +56,19 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
 
     }
 
-    if (proxy.getStubAddress().getRoleName() == NECommon::ContollerPublisher)
+    if (proxy.getStubAddress().getRoleName() == pubsub::ContollerPublisher)
     {
         if (connected)
         {
-            console.outputTxt(NECommon::CoordStatus, NECommon::TxtConnected);
+            console.outputTxt(pubsub::CoordStatus, pubsub::TxtConnected);
         }
         else
         {
-            console.outputMsg(NECommon::CoordStatus, NECommon::FormatDisconnect.data(), NEService::getString(status));
+            console.outputMsg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), NEService::getString(status));
         }
     }
 
-    console.outputTxt(NECommon::CoordSeparator, NECommon::Separator);
+    console.outputTxt(pubsub::CoordSeparator, pubsub::Separator);
     console.refreshScreen();
     console.restoreCursorPosition();
     console.unlockConsole();
@@ -76,7 +76,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnChange, NEService::eDataStateType state)
+void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
@@ -95,7 +95,7 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
                    , isChanged ? "CHANGED" : "UNCHANGED");
 
         console.outputMsg( mCoordStr
-                          , NECommon::FormatString.data()
+                          , pubsub::FormatString.data()
                           , StringOnChange.name.getString()
                           , mOldString.value.getString()
                           , StringOnChange.value.getString()
@@ -111,13 +111,13 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
                    , StringOnChange.value.getString());
 
         console.outputMsg ( mCoordStr
-                          , NECommon::FormatString.data()
+                          , pubsub::FormatString.data()
                           , StringOnChange.name.isEmpty() ? "[Unknown]" : StringOnChange.name.getString()
                           , mOldString.value.getString()
-                          , NECommon::Invalid.data()
+                          , pubsub::Invalid.data()
                           , "INVALIDATED");
 
-        mOldString.value = NECommon::Invalid;
+        mOldString.value = pubsub::Invalid;
 
         if (isServiceProviderStateValid() == false)
         {
@@ -131,12 +131,12 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
     console.unlockConsole();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
+void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
-    String oldInt = mOldState ? String::makeString(mOldInteger.value) : NECommon::Invalid;
+    String oldInt = mOldState ? String::makeString(mOldInteger.value) : pubsub::Invalid;
     console.saveCursorPosition();
     if (state == NEService::eDataStateType::DataIsOK)
     {
@@ -148,7 +148,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
                    , isChanged ? "CHANGED" : "UNCHANGED");
 
         console.outputMsg(  mCoordInt
-                          , NECommon::FormatInteger.data()
+                          , pubsub::FormatInteger.data()
                           , IntegerAlways.name.getString()
                           , oldInt.getString()
                           , String::makeString(IntegerAlways.value).getString()
@@ -162,13 +162,13 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
         LOG_INFO("The [ %s ] names INTEGER is invalidated, old is [ %s ], new [ %s ]"
                    , IntegerAlways.name.getString()
                    , oldInt.getString()
-                   , NECommon::Invalid.data());
+                   , pubsub::Invalid.data());
 
         console.outputMsg(  mCoordInt
-                          , NECommon::FormatInteger.data()
+                          , pubsub::FormatInteger.data()
                           , IntegerAlways.name.isEmpty() ? "[Unknown]" : IntegerAlways.name.getString()
                           , oldInt.getString()
-                          , NECommon::Invalid.data()
+                          , pubsub::Invalid.data()
                           , "INVALIDATED");
 
 
@@ -187,7 +187,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
     console.unlockConsole();
 }
 
-void Subscriber::onServiceProviderStateUpdate(NEPubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::eDataStateType::DataIsOK)
@@ -204,7 +204,7 @@ void Subscriber::onServiceProviderStateUpdate(NEPubSubMix::eServiceState Service
             notifyOnStringOnChangeUpdate(true);
         }
 
-        if (ServiceProviderState == NEPubSubMix::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSubMix::eServiceState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

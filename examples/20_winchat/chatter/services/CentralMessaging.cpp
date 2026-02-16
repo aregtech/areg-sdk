@@ -7,9 +7,9 @@
 #include "chatter/services/CentralMessaging.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "common/NECommon.hpp"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "common/ChatDefs.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
@@ -55,11 +55,11 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned i
     {
         ASSERT(nickName != mConnectionHandler.GetNickName());
 
-        NECommon::sMessageData * data = NECommon::newData();
+        chat::sMessageData * data = chat::newData();
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, NECommon::MAXLEN_NICKNAME, nickName.getString() );
-            NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, newMessage.getString( ) );
+            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString() );
+            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
             data->dataSave      = cookie;
             data->timeReceived  = DateTime::getNow();
             data->timeSend      = dateTime;
@@ -76,11 +76,11 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int
     {
         ASSERT( nickName != mConnectionHandler.GetNickName( ) );
 
-        NECommon::sMessageData * data = NECommon::newData( );
+        chat::sMessageData * data = chat::newData( );
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, NECommon::MAXLEN_NICKNAME, nickName.getString( ) );
-            NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, newMessage.getString( ) );
+            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
+            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
             data->dataSave      = cookie;
             data->timeReceived  = 0;
             data->timeSend      = 0;
@@ -94,12 +94,11 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
-    NECommon::sMessageData * data = NECommon::newData( );
+    chat::sMessageData * data = chat::newData( );
     if ( data != nullptr )
     {
-        NEString::copyString<TCHAR, TCHAR>( data->nickName, NECommon::MAXLEN_NICKNAME, NECommon::SERVER_NAME );
-        NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, serverMessage.getString( ) );
-
+        NEString::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
+        NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.getString( ) );
         data->dataSave      = static_cast<uint64_t>(-1);
         data->timeReceived  = DateTime::getNow();
         data->timeSend      = dateTime;

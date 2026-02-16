@@ -19,11 +19,11 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/base/Version.hpp"
-#include "areg/persist/NEPersistence.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 #include "areg/persist/Property.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <vector>
 
@@ -91,7 +91,7 @@ public:
      *                      is enabled or disabled. If true, the logging for specified type
      *                      is enabled.
      **/
-    void setLogEnabled(NELogging::eLogingTypes logType, bool isEnabled);
+    void setLogEnabled(NELogging::LoggingType logType, bool isEnabled);
 
     /**
      * \brief   Gets and sets the property value of logging version.

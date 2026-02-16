@@ -17,8 +17,8 @@
  *
  ************************************************************************/
 #include "areg/base/RuntimeClassID.hpp"
-#include "areg/base/NEString.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/StringDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <string_view>
 

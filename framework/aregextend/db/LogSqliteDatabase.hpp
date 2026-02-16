@@ -21,11 +21,11 @@
 
 #include "aregextend/db/SqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/logging/NELogging.hpp"
-#include "areg/logging/IELogDatabaseEngine.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+#include "areg/logging/LogDatabaseEngine.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include <vector>
 
@@ -35,7 +35,7 @@
 /**
  * \brief   The logging database engine, responsible to log messages in the database.
  **/
-class LogSqliteDatabase : public IELogDatabaseEngine
+class LogSqliteDatabase : public LogDatabaseEngine
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
@@ -134,7 +134,7 @@ public:
 public:
 
 /************************************************************************/
-// IEDatabaseEngine interface overrides.
+// DatabaseEngine class overrides.
 /************************************************************************/
 
     /**
@@ -182,7 +182,7 @@ public:
     virtual bool commit(bool doCommit) override;
 
 /************************************************************************/
-// IELogDatabaseEngine interface overrides.
+// LogDatabaseEngine class overrides.
 /************************************************************************/
 
     /**
@@ -462,7 +462,7 @@ public:
      * \param   filter  The scope prio filters to setup
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupFilterLogs(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter);
+    uint32_t setupFilterLogs(ITEM_ID instId, const ArrayList<sScopeFilter>& filter);
 
     /**
      * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
@@ -564,7 +564,7 @@ private:
      * \param   filter  The list of scopes and filter mask to apply
      * \return  Returns true if operation succeeded.
      **/
-    inline uint32_t _updaeFilterLogScopes(ITEM_ID instId, const TEArrayList<sScopeFilter>& filter);
+    inline uint32_t _updaeFilterLogScopes(ITEM_ID instId, const ArrayList<sScopeFilter>& filter);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

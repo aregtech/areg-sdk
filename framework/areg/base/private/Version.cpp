@@ -16,8 +16,8 @@
 
 #include "areg/base/Version.hpp"
 
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/CommonDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Version class implementation
@@ -60,7 +60,7 @@ Version::Version( Version && src ) noexcept
 {
 }
 
-Version::Version(const IEInStream & stream)
+Version::Version(const InStream & stream)
     : mMajor    ( 0 )
     , mMinor    ( 0 )
     , mPatch    ( 0 )

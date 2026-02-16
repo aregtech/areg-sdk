@@ -22,14 +22,14 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/logging/private/LoggerBase.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
-#include "areg/ipc/IEServiceConnectionConsumer.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/TERingStack.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/RingStack.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 
 #include <string_view>
@@ -54,15 +54,15 @@ class SharedBuffer;
  **/
 class NetTcpLogger  : public    LoggerBase
                     , public    ServiceClientConnectionBase
-                    , private   IEServiceConnectionConsumer
-                    , private   IERemoteMessageHandler
+                    , private   ConnectionConsumer
+                    , private   RemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
-    using RingStack = TENolockRingStack<RemoteMessage>;
+    using RingStack = RingStack<RemoteMessage>;
 
     //!< A prefix to add in front of thread and timer names.
     static constexpr std::string_view   PREFIX_THREAD{ "logger_" };
@@ -125,7 +125,7 @@ public:
 private:
 
 /************************************************************************/
-// IEServiceConnectionConsumer overrides
+// ConnectionConsumer overrides
 /************************************************************************/
 
     /**
@@ -149,7 +149,7 @@ private:
     virtual void lostRemoteServiceChannel(const Channel& channel) override;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**

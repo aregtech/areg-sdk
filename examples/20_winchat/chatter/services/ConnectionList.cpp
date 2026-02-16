@@ -3,7 +3,7 @@
 #include "chatter/services/ConnectionList.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
@@ -30,37 +30,37 @@ bool ConnectionList::serviceConnected( NEService::eServiceConnection status, Pro
     bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
-        LOG_DBG("The service is connected, posting NEDistributedApp::eWndCommands::CmdServiceConnection message");
+        LOG_DBG("The service is connected, posting DistributedApp::eWndCommands::CmdServiceConnection message");
         DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
     }
     else
     {
-        LOG_DBG("The service is disconnected, posting NEDistributedApp::eWndCommands::CmdServiceConnection message");
+        LOG_DBG("The service is disconnected, posting DistributedApp::eWndCommands::CmdServiceConnection message");
         DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 0, 0 );
     }
 
     return result;
 }
 
-void ConnectionList::broadcastClientDisconnected( const NEConnectionManager::sConnection & clientData )
+void ConnectionList::broadcastClientDisconnected( const ConnectionManager::sConnection & clientData )
 {
     if (mConnectionHandler.RemoveConnection(clientData))
     {
-        NEConnectionManager::sConnection * data = new NEConnectionManager::sConnection( clientData );
+        ConnectionManager::sConnection * data = new ConnectionManager::sConnection( clientData );
         DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdRemoveConnection, 1, reinterpret_cast<LPARAM>(data) );
     }
 }
 
-void ConnectionList::broadcastClientConnected( const NEConnectionManager::sConnection & newClient )
+void ConnectionList::broadcastClientConnected( const ConnectionManager::sConnection & newClient )
 {
     if (mConnectionHandler.AddConnection(newClient))
     {
-        NEConnectionManager::sConnection * data = new NEConnectionManager::sConnection(newClient);
+        ConnectionManager::sConnection * data = new ConnectionManager::sConnection(newClient);
         DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdAddConnection, 1, reinterpret_cast<LPARAM>(data));
     }
 }
 
-void ConnectionList::responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnections & connectionList, bool success )
+void ConnectionList::responseRegisterConnection( const ConnectionManager::sConnection & connection, const ConnectionManager::ListConnections & connectionList, bool success )
 {
     LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
     LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.getString());
@@ -78,7 +78,7 @@ void ConnectionList::responseRegisterConnection( const NEConnectionManager::sCon
     else
     {
         mConnectionHandler.SetRegistered( false );
-        mConnectionHandler.SetCookie( NEConnectionManager::InvalidCookie );
+        mConnectionHandler.SetCookie( ConnectionManager::InvalidCookie );
         mConnectionHandler.SetTimeConnect( DateTime( ) );
         mConnectionHandler.SetTimeConnected( DateTime( ) );
         mConnectionHandler.RemoveConnections();

@@ -243,20 +243,36 @@ struct ServiceConfig
 };
 ```
 
-### 4.4 Virtual methods
+### 4.4 Virtual methods (C.128)
 
-In derived classes, use both the `virtual` keyword and the `override` specifier in the declaration.
-Do not write `override` in the `.cpp` definition — it is only valid in class declarations.
+Use exactly ONE of `virtual`, `override`, or `final` per declaration:
+- Base class introducing a virtual function: `virtual` alone.
+- Derived class overriding: `override` alone (it implies virtual).
+- Final override: `final` alone.
+
+Do not write `override` or `virtual` in the `.cpp` definition.
 
 ```cpp
-// In header (class declaration)
+class Base
+{
+public:
+    virtual void process();             // Base: 'virtual' alone
+    virtual ~Base() = default;
+};
+
 class Derived : public Base
 {
 public:
-    virtual void process() override;
+    void process() override;            // Derived: 'override' alone
 };
 
-// In source (definition) — no override keyword
+class Final final : public Derived
+{
+public:
+    void process() final;               // Final: 'final' alone
+};
+
+// In source — no keywords
 void Derived::process()
 {
     // Implementation
@@ -393,7 +409,8 @@ These are preferred practices but not mandatory:
 7. Remove deprecated methods and variables; update dependent files.
 8. Document units in comments when not obvious.
 9. Use `snake_case` for local variables in AI-generated code.
-10. Do not complain about `camelCase` local variables in existing code; consider them acceptable if consistent within the file. 
+10. Do not complain about `camelCase` local variables in existing code; consider them acceptable if consistent within the file.
+11. Prefer private data with protected accessors over `protected` data members (C.133). Protected data is acceptable when it reduces verbosity and the hierarchy is small.
 
 ---
 
@@ -404,7 +421,8 @@ These are preferred practices but not mandatory:
 | `#pragma once`                            | Traditional include guards                    |
 | `unsigned int/short/char`                 | `uint32_t`, `uint16_t`, `uint8_t`             |
 | `get_` prefix on accessors                | `count()` not `get_count()`                   |
-| `inline virtual` methods                  | `virtual void foo() override;`                |
+| `inline virtual` methods                  | Non-inline virtual in base; `override` alone in derived |
+| `virtual` + `override` together           | Use exactly one: `virtual`, `override`, or `final` |
 | In-class member initializers for classes  | Constructor initializer lists                 |
 | Exceptions for error handling             | Return codes, `std::optional`, error states   |
 | Global variables with external linkage    | Anonymous namespace or file-static            |

@@ -26,8 +26,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServiceConnectionHandler;
-class IERemoteMessageHandler;
+class ConnectionHandler;
+class RemoteMessageHandler;
 class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
      * \param   remoteService   The instance of remote servicing handler
      * \param   connection      The instance of server connection object.
      **/
-    ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler& remoteService, ServerConnection & connection );
+    ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler& remoteService, ServerConnection & connection );
     /**
      * \brief   Destructor
      **/
@@ -100,11 +100,11 @@ private:
     /**
      * \brief   Service connection handler.
      **/
-    IEServiceConnectionHandler& mConnectHandler;
+    ConnectionHandler& mConnectHandler;
     /**
      * \brief   The instance of remote service message handler.
      **/
-    IERemoteMessageHandler &    mRemoteService;
+    RemoteMessageHandler &    mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/

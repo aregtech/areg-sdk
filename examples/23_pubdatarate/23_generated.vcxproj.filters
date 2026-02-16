@@ -27,7 +27,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeDataStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\NELargeData.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\23_pubdatarate\services\private\LargeData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\LargeDataStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\NELargeData.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\23_pubdatarate\services\LargeData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

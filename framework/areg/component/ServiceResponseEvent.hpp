@@ -22,7 +22,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/ProxyEvent.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 /************************************************************************
  * Dependencies.
@@ -94,7 +94,7 @@ protected:
      * \brief   Creates event from streaming object and initializes data
      * \param   stream  The streaming object to read data
      **/
-    ServiceResponseEvent(const IEInStream & stream);
+    ServiceResponseEvent(const InStream & stream);
 
     /**
      * \brief   Destructor. Protected.
@@ -154,14 +154,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    virtual const InStream & readStream( const InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    virtual OutStream & writeStream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

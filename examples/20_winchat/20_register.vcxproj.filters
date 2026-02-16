@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="register\NECentralApp.hpp">
+    <ClInclude Include="register\CentralAppDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="register\res\resource.h">
@@ -27,7 +27,7 @@
     <ClInclude Include="register\res\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="register\services\ConnectionManager.hpp">
+    <ClInclude Include="register\services\ConnectionController.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="register\ui\PageConnections.hpp">
@@ -44,7 +44,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="register\NECentralApp.cpp">
+    <ClCompile Include="register\CentralAppDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="register\res\stdafx.cpp">
@@ -53,7 +53,7 @@
     <ClCompile Include="register\ui\PageConnections.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="register\services\ConnectionManager.cpp">
+    <ClCompile Include="register\services\ConnectionController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="register\ui\PageConnections.cpp">

@@ -20,7 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/StubBase.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -40,7 +40,7 @@ class DataRateHelper;
  **/
 class SystemServiceConsole  : public    Component
                             , protected StubBase
-                            , protected IETimerConsumer
+                            , protected TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -86,7 +86,7 @@ protected:
     virtual void shutdownServiceInterface ( Component & holder ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer class overrides.
 /************************************************************************/
 
     /**
@@ -133,7 +133,7 @@ protected:
     virtual void errorRequest( unsigned int msgId, bool msgCancel ) override;
 
 /************************************************************************/
-// IEStubEventConsumer interface overrides.
+// StubEventConsumer class overrides.
 /************************************************************************/
 
     /**

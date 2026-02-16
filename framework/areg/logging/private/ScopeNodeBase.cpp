@@ -20,7 +20,7 @@
 
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/logging/LogScope.hpp"
-#include "areg/logging/private/NELogOptions.hpp"
+#include "areg/logging/private/LogOptions.hpp"
 
 #if AREG_LOGS
 
@@ -34,7 +34,7 @@ ScopeNodeBase::ScopeNodeBase()
     : mNodeType     ( ScopeNodeBase::eNode::Invalid )
     , mPrioStates   ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
     , mNodeName     ( )
-    , mGroupping    ( static_cast<unsigned int>(ScopeNodeBase::eGroupping::NoGroupping) )
+    , mGrouping     ( static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping) )
 {
 }
 
@@ -42,7 +42,7 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType )
     : mNodeType     ( nodeType )
     , mPrioStates   ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
     , mNodeName     ( )
-    , mGroupping    ( static_cast<unsigned int>(ScopeNodeBase::eGroupping::NoGroupping) )
+    , mGrouping    ( static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping) )
 {
 }
 
@@ -50,7 +50,7 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & node
     : mNodeType     ( nodeType )
     , mPrioStates   ( prio )
     , mNodeName     ( nodeName )
-    , mGroupping    ( static_cast<unsigned int>(ScopeNodeBase::eGroupping::NoGroupping) )
+    , mGrouping    ( static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping) )
 {
 }
 
@@ -58,7 +58,7 @@ ScopeNodeBase::ScopeNodeBase( const ScopeNodeBase & src )
     : mNodeType     ( src.mNodeType )
     , mPrioStates   ( src.mPrioStates )
     , mNodeName     ( src.mNodeName )
-    , mGroupping    ( src.mGroupping )
+    , mGrouping    ( src.mGrouping )
 {
 }
 
@@ -66,7 +66,7 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
     : mNodeType     ( src.mNodeType )
     , mPrioStates   ( src.mPrioStates )
     , mNodeName     ( std::move(src.mNodeName) )
-    , mGroupping    ( src.mGroupping )
+    , mGrouping    ( src.mGrouping )
 {
 }
 
@@ -104,7 +104,7 @@ ScopeNodeBase & ScopeNodeBase::operator = ( const ScopeNodeBase & src )
     {
         mPrioStates = src.mPrioStates;
         mNodeName   = src.mNodeName;
-        mGroupping  = src.mGroupping;
+        mGrouping  = src.mGrouping;
     }
 
     return (*this);
@@ -117,7 +117,7 @@ ScopeNodeBase & ScopeNodeBase::operator = ( ScopeNodeBase && src ) noexcept
     {
         mPrioStates = src.mPrioStates;
         mNodeName   = std::move(src.mNodeName);
-        mGroupping  = src.mGroupping;
+        mGrouping  = src.mGrouping;
     }
 
     return (*this);

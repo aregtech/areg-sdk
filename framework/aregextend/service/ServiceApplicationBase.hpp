@@ -19,13 +19,13 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/persist/IEConfigurationListener.hpp"
+#include "areg/persist/ConfigListener.hpp"
 #include "aregextend/service/SystemServiceBase.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServiceConnectionProvider;
+class ConnectionProvider;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class declaration
@@ -37,7 +37,7 @@ class IEServiceConnectionProvider;
  *          of configuration listener.
  **/
 class ServiceApplicationBase    : public    SystemServiceBase
-                                , protected IEConfigurationListener
+                                , protected ConfigListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -50,7 +50,7 @@ protected:
      *                      that provides the connection implementation, sends and receives messages.
      *                      The object is required by base class of the System Service.
      **/
-    ServiceApplicationBase(ServiceCommunicatonBase& commBase);
+    ServiceApplicationBase(ServiceCommunicationBase& commBase);
 
     virtual ~ServiceApplicationBase() = default;
 
@@ -233,7 +233,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEConfigurationListener protected overrides
+// ConfigListener protected overrides
 /************************************************************************/
 
     /**

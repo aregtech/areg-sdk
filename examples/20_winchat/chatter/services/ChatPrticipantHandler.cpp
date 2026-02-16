@@ -14,9 +14,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 ChatPrticipantHandler::ChatPrticipantHandler( const String & serviceName
-                                            , const NECommon::sInitiator & initiator
-                                            , const NECommon::ListParticipants & listParticipants
-                                            , const NECommon::sParticipant & ownerConnection )
+                                            , const chat::sInitiator & initiator
+                                            , const chat::ListParticipants & listParticipants
+                                            , const chat::sParticipant & ownerConnection )
     : mServiceName      ( serviceName )
     , mOwnerConnection  ( ownerConnection )
     , mInitiator        ( initiator )
@@ -33,7 +33,7 @@ ChatPrticipantHandler::~ChatPrticipantHandler()
 {
 }
 
-int ChatPrticipantHandler::AddParticipant( const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants )
+int ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
     Lock lock( mLock );
     int result = 0;
@@ -41,7 +41,7 @@ int ChatPrticipantHandler::AddParticipant( const NECommon::sInitiator & initiato
     {
         for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
         {
-            const NECommon::sParticipant & connection = listParticipants[i];
+            const chat::sParticipant & connection = listParticipants[i];
             if ( findPosition(connection) == NECommon::INVALID_INDEX )
             {
                 mListParticipants.add(connection);
@@ -52,7 +52,7 @@ int ChatPrticipantHandler::AddParticipant( const NECommon::sInitiator & initiato
     return result;
 }
 
-bool ChatPrticipantHandler::AddParticipant( const NECommon::sInitiator & initiator, const NECommon::sParticipant & participant )
+bool ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant )
 {
     Lock lock( mLock );
     int result = 0;
@@ -64,7 +64,7 @@ bool ChatPrticipantHandler::AddParticipant( const NECommon::sInitiator & initiat
     return (result == 1);
 }
 
-int ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants )
+int ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
     Lock lock( mLock );
     int result = 0;
@@ -72,7 +72,7 @@ int ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & initi
     {
         for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
         {
-            const NECommon::sParticipant & connection = listParticipants[i];
+            const chat::sParticipant & connection = listParticipants[i];
             int pos = findPosition(connection);
             if ( pos != NECommon::INVALID_INDEX )
             {
@@ -84,7 +84,7 @@ int ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & initi
     return result;
 }
 
-bool ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & initiator, const NECommon::sParticipant & participant )
+bool ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant )
 {
     Lock lock( mLock );
     int result = 0;
@@ -100,7 +100,7 @@ bool ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & init
     return (result == 1);
 }
 
-bool ChatPrticipantHandler::ParticipantExist( const NECommon::sParticipant & participant ) const
+bool ChatPrticipantHandler::ParticipantExist( const chat::sParticipant & participant ) const
 {
     Lock lock( mLock );
     return (findPosition(participant) != NECommon::INVALID_INDEX);
@@ -112,7 +112,7 @@ bool ChatPrticipantHandler::IsEmpty() const
     uint32_t size = mListParticipants.getSize( );
     if (size == 1)
     {
-        const NECommon::sParticipant & part = mListParticipants[0u];
+        const chat::sParticipant & part = mListParticipants[0u];
         return (mOwnerConnection == part);
     }
     else
@@ -125,15 +125,15 @@ void ChatPrticipantHandler::Invalidate()
 {
     Lock lock( mLock );
     mListParticipants.clear();
-    mOwnerConnection    = NECommon::sParticipant();
-    mInitiator          = NECommon::sInitiator();
+    mOwnerConnection    = chat::sParticipant();
+    mInitiator          = chat::sInitiator();
     mConnectionService  = nullptr;
     mChatClient         = nullptr;
     mIsServicing        = false;
     mWndChat            = static_cast<ptr_type>(0);
 }
 
-int ChatPrticipantHandler::findPosition( const NECommon::sParticipant & participant ) const
+int ChatPrticipantHandler::findPosition( const chat::sParticipant & participant ) const
 {
     int result = NECommon::INVALID_INDEX;
     for (uint32_t i = 0; i < mListParticipants.getSize( ); ++ i )
@@ -148,7 +148,7 @@ int ChatPrticipantHandler::findPosition( const NECommon::sParticipant & particip
     return result;
 }
 
-void ChatPrticipantHandler::SetInitiator( const NECommon::sInitiator & initiator )
+void ChatPrticipantHandler::SetInitiator( const chat::sInitiator & initiator )
 {
     Lock lock( mLock );
     mInitiator  = initiator;

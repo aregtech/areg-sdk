@@ -4,11 +4,11 @@
  ************************************************************************/
 
 #include "chatter/services/DirectConnectionClient.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 
- DirectConnectionClient::DirectConnectionClient( Component & owner, ChatPrticipantHandler * participantsHandler, const NEDirectConnection::sParticipant & target )
+ DirectConnectionClient::DirectConnectionClient( Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::sParticipant & target )
     : DirectConnectionClientBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).getString(), owner )
 
     , mParticipantsHandler          ( participantsHandler )
@@ -33,17 +33,17 @@ bool DirectConnectionClient::serviceConnected( NEService::eServiceConnection sta
 
 #ifdef  DEBUG
 void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
-                                                    , const NEDirectConnection::sParticipant & /* target */
-                                                    , const NEDirectConnection::sInitiator & initiator
-                                                    , const NEDirectConnection::ListParticipants & /* listParticipants */ )
+                                                    , const DirectConnection::sParticipant & /* target */
+                                                    , const DirectConnection::sInitiator & initiator
+                                                    , const DirectConnection::ListParticipants & /* listParticipants */ )
 {
     ASSERT(mParticipantsHandler->GetInitiator() == initiator);
 }
 #else   // DEBUG
 void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
-                                                    , const NEDirectConnection::sParticipant & /* target */
-                                                    , const NEDirectConnection::sInitiator & /*initiator*/
-                                                    , const NEDirectConnection::ListParticipants & /* listParticipants */ )
+                                                    , const DirectConnection::sParticipant & /* target */
+                                                    , const DirectConnection::sInitiator & /*initiator*/
+                                                    , const DirectConnection::ListParticipants & /* listParticipants */ )
 {
 }
 #endif  // DEBUG

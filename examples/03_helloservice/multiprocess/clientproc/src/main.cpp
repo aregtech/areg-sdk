@@ -4,7 +4,7 @@
  **/
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"

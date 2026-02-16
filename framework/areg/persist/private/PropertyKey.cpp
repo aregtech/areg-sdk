@@ -13,9 +13,9 @@
  * \brief       Property Key object to persist application data.
  ************************************************************************/
 #include "areg/persist/PropertyKey.hpp"
-#include "areg/persist/NEPersistence.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <utility>
 
@@ -360,7 +360,7 @@ void PropertyKey::resetKey()
 
 inline void PropertyKey::_parseKey(const String& key)
 {
-    std::vector<TEString<char>> list = key.split(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
+    std::vector<StringBase<char>> list = key.split(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
     resetKey();
 
     if (list.size() != 0)

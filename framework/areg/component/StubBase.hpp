@@ -21,11 +21,11 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 #include "areg/component/StubEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 #include <utility>
 
@@ -54,7 +54,7 @@ class Component;
  *          main basic logic of asynchronous communication. It keeps 
  *          track of requests and contains list of listeners
  **/
-class AREG_API StubBase    : public IEStubEventConsumer
+class AREG_API StubBase    : public StubEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // friend classes
@@ -176,7 +176,7 @@ protected:
     /**
      * \brief   StubBase::StubListenerList class defines list of pending listeners.
      **/
-    using StubListenerList  = TELinkedList<StubBase::Listener>;
+    using StubListenerList  = LinkedList<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase session tracking
@@ -184,20 +184,20 @@ protected:
     /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = TEIntegerMap<StubBase::Listener>;
+    using MapStubSession     = IntegerMap<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
     //////////////////////////////////////////////////////////////////////////
-    using MapStub           = TEHashMap<StubAddress, StubBase *>;
+    using MapStub           = HashMap<StubAddress, StubBase *>;
     /**
      * \brief   Stub resource helper definition.
      **/
-    using ImplStubResource  = TEResourceMapImpl<StubAddress, StubBase *>;
+    using ImplStubResource  = ResourceMapImpl<StubAddress, StubBase *>;
     /**
      * \brief   Resource Map definition.
      **/
-    using MapStubResource   = TELockResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
+    using MapStubResource   = ConcurrentResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -368,7 +368,7 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const;
+    virtual RemoteRequestEvent * createRemoteRequestEvent( const InStream & stream ) const;
 
     /**
      * \brief   Overwrite method to create remote notify request event from streaming object for 
@@ -377,10 +377,10 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const IEInStream & stream ) const;
+    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const InStream & stream ) const;
 
 /************************************************************************/
-// IEStubEventConsumer interface overrides.
+// StubEventConsumer interface overrides.
 /************************************************************************/
 
     /**

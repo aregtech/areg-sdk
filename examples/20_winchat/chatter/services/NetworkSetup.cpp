@@ -4,7 +4,7 @@
 #include "chatter/services/ConnectionHandler.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
 DEF_LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
@@ -17,13 +17,13 @@ NetworkSetup::NetworkSetup( const char * roleName, Component & owner, Connection
 {
 }
 
-void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result )
+void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, ConnectionManager::eConnectionResult result )
 {
     LOG_SCOPE(chatter_NetworkSetup_responseConnect);
-    LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, NEConnectionManager::getString(result));
+    LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, ConnectionManager::getString(result));
     DateTime timeConnected = DateTime::getNow();
 
-    if (result == NEConnectionManager::eConnectionResult::ConnectionAccepted)
+    if (result == ConnectionManager::eConnectionResult::ConnectionAccepted)
     {
         mConnectionHandler.SetNickName(nickName);
         mConnectionHandler.SetConnectCookie(cookie);
@@ -33,14 +33,14 @@ void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie
     else
     {
         mConnectionHandler.SetNickName(nickName);
-        mConnectionHandler.SetCookie(NEConnectionManager::InvalidCookie);
-        mConnectionHandler.SetConnectCookie(NEConnectionManager::InvalidCookie);
+        mConnectionHandler.SetCookie(ConnectionManager::InvalidCookie);
+        mConnectionHandler.SetConnectCookie(ConnectionManager::InvalidCookie);
         mConnectionHandler.SetTimeConnect(DateTime());
         mConnectionHandler.SetTimeConnected(DateTime());
     }
 
     mConnectionHandler.SetRegistered( false );
-    bool isConnected = result == NEConnectionManager::eConnectionResult::ConnectionAccepted;
+    bool isConnected = result == ConnectionManager::eConnectionResult::ConnectionAccepted;
     DispatcherThread *dispThread = getDispatcherThread();
     DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }

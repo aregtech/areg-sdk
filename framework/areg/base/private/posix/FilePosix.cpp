@@ -23,7 +23,7 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Containers.hpp"
 
 #include <fcntl.h>
@@ -273,23 +273,23 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int File::_osSetPositionFile(int offset, IECursorPosition::eCursorPosition startAt) const
+unsigned int File::_osSetPositionFile(int offset, Cursor::eCursorPosition startAt) const
 {
     ASSERT(mFileHandle != nullptr);
-    unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
+    unsigned int result = Cursor::INVALID_CURSOR_POSITION;
 
     sPosixFile* file = reinterpret_cast<sPosixFile*>(mFileHandle);
     switch (startAt)
     {
-    case IECursorPosition::eCursorPosition::PositionBegin:
+    case Cursor::eCursorPosition::PositionBegin:
         result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_SET));
         break;
 
-    case IECursorPosition::eCursorPosition::PositionCurrent:
+    case Cursor::eCursorPosition::PositionCurrent:
         result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_CUR));
         break;
 
-    case IECursorPosition::eCursorPosition::PositionEnd:
+    case Cursor::eCursorPosition::PositionEnd:
         result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_END));
         break;
 

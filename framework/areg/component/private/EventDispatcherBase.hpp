@@ -29,13 +29,12 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/private/IEQueueListener.hpp"
-#include "areg/component/private/IEEventDispatcher.hpp"
+#include "areg/component/private/QueueListener.hpp"
 
 #include "areg/component/private/EventConsumerMap.hpp"
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 /************************************************************************
  * Dependencies
@@ -55,8 +54,7 @@ class DispatcherThread;
  *          Event Consumers to trigger Event Processing.
  *          
  **/
-class AREG_API EventDispatcherBase  : public    IEEventDispatcher
-                                    , protected IEQueueListener
+class AREG_API EventDispatcherBase  : protected QueueListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal defines and constants.
@@ -96,6 +94,78 @@ public:
 // EventDispatcherBase overrides
 /************************************************************************/
 
+    /**
+     * \brief   Call to start dispatcher. Returns true if successfully started.
+     **/
+    virtual bool startDispatcher();
+
+    /**
+     * \brief   Call to stop running dispatcher.
+     **/
+    virtual void stopDispatcher();
+
+    /**
+     * \brief   Called when dispatcher completed the job and exit.
+     *          The cleanups should be done here.
+     **/
+    virtual void exitDispatcher();
+
+    /**
+     * \brief   Call to queue event object in the event queue of dispatcher.
+     *          The passed event parameter should be allocated in memory and
+     *          should be globally accessed (for example, via new operator).
+     * \param   eventElem           Event object to queue in event stack of dispatcher.
+     * \return  Returns true, if Event was queued. Otherwise, it was not queued
+     *          and the object should be deleted.
+     **/
+    virtual bool queueEvent(Event& eventElem);
+
+    /**
+     * \brief   Call to register specified event consumer for the specified
+     *          event class type. One event class type can have several
+     *          registered consumers and one consumer can be registered for
+     *          several class types.
+     * \param	whichClass	    The runtime class ID object of an event
+     *                          to register consumer.
+     * \param	whichConsumer	Reference to event consumer object to register
+     *                          as an event listener. The processEvent() function
+     *                          of consumer will be automatically triggered by
+     *                          event dispatcher every time when appropriate
+     *                          event class type has been picked from event queue.
+     * \return	Return true if consumer has been registered with success.
+     *          If specified consumer is already registered for specified
+     *          event class type, it returns false.
+     **/
+    virtual bool registerEventConsumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+
+    /**
+     * \brief	Call to unregister specified event consumer previously registered
+     *          for specified event class type.
+     * \param	whichClass	    The runtime class ID of event object.
+     * \param	whichConsumer	Reference to consumer that should be unregistered.
+     * \return	Returns true if successfully unregistered event consumer.
+     **/
+    virtual bool unregisterEventConsumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+
+    /**
+     * \brief	Call to remove specified consumer for all registered event class types,
+     *          previously registered in dispatcher.
+     * \param	whichConsumer	Reference to consumer object to unregister.
+     * \return	Returns unregister count. If zero, consumer is not registered for any event.
+     **/
+    virtual int  removeConsumer(EventConsumer& whichConsumer);
+
+    /**
+     * \brief	Call to check whether specified event class type has any registered consumer.
+     * \param	whichClass	Runtime class ID to be checked.
+     * \return	Returns true if dispatcher has at least one registered consumer for
+     *          specified runtime class ID.
+     **/
+    virtual bool hasRegisteredConsumer(const RuntimeClassID& whichClass) const;
+
+/************************************************************************/
+// EventDispatcherBase operations
+/************************************************************************/
     /**
      * \brief   Returns true if dispatcher is ready to receive events.
      *          Otherwise return false.
@@ -137,85 +207,12 @@ public:
      **/
     bool isExitEvent( const Event * anEvent ) const;
 
-/************************************************************************/
-// IEEventDispatcher overrides
-/************************************************************************/
-
-    /**
-     * \brief   Call to start dispatcher. Returns true if successfully started.
-     **/
-    virtual bool startDispatcher() override;
-
-    /**
-     * \brief   Call to stop running dispatcher.
-     **/
-    virtual void stopDispatcher() override;
-
-    /**
-     * \brief   Called when dispatcher completed the job and exit.
-     *          The cleanups should be done here.
-     **/
-    virtual void exitDispatcher() override;
-
-    /**
-     * \brief   Call to queue event object in the event queue of dispatcher.
-     *          The passed event parameter should be allocated in memory and
-     *          should be globally accessed (for example, via new operator).
-     * \param   eventElem           Event object to queue in event stack of dispatcher.
-     * \return  Returns true, if Event was queued. Otherwise, it was not queued
-     *          and the object should be deleted.
-     **/
-    virtual bool queueEvent( Event & eventElem ) override;
-    
-    /**
-     * \brief   Call to register specified event consumer for the specified
-     *          event class type. One event class type can have several
-     *          registered consumers and one consumer can be registered for
-     *          several class types.
-     * \param	whichClass	    The runtime class ID object of an event 
-     *                          to register consumer.
-     * \param	whichConsumer	Reference to event consumer object to register
-     *                          as an event listener. The processEvent() function
-     *                          of consumer will be automatically triggered by
-     *                          event dispatcher every time when appropriate
-     *                          event class type has been picked from event queue.
-     * \return	Return true if consumer has been registered with success.
-     *          If specified consumer is already registered for specified
-     *          event class type, it returns false.
-     **/
-    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
-
-    /**
-     * \brief	Call to unregister specified event consumer previously registered
-     *          for specified event class type.
-     * \param	whichClass	    The runtime class ID of event object.
-     * \param	whichConsumer	Reference to consumer that should be unregistered.
-     * \return	Returns true if successfully unregistered event consumer.
-     **/
-    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
-
-    /**
-     * \brief	Call to remove specified consumer for all registered event class types,
-     *          previously registered in dispatcher.
-     * \param	whichConsumer	Reference to consumer object to unregister.
-     * \return	Returns unregister count. If zero, consumer is not registered for any event.
-     **/
-    virtual int  removeConsumer( IEEventConsumer & whichConsumer ) override;
-
-    /**
-     * \brief	Call to check whether specified event class type has any registered consumer.
-     * \param	whichClass	Runtime class ID to be checked.
-     * \return	Returns true if dispatcher has at least one registered consumer for
-     *          specified runtime class ID.
-     **/
-    virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const override;
-
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEQueueListener overrides
+// QueueListener overrides
 /************************************************************************/
 
     /**
@@ -228,7 +225,7 @@ protected:
     virtual void signalEvent(uint32_t eventCount) override;
 
 /************************************************************************/
-// IEEventDispatcher overrides
+// EventDispatcherBase overrides
 /************************************************************************/
 
     /**
@@ -239,7 +236,7 @@ protected:
      * \return	Returns true if at least one consumer processed event.
      *          Otherwise it returns false.
      **/
-    virtual bool dispatchEvent( Event & eventElem ) override;
+    virtual bool dispatchEvent( Event & eventElem );
     /**
      * \brief   The method is triggered after picking up event from event queue.
      *          Before starting dispatching, this function is called and if it
@@ -248,7 +245,7 @@ protected:
      * \return  Return true if event should be forwarded for dispatching.
      *          Return false if event should be ignored / dropped.
      **/
-    virtual bool prepareDispatchEvent( Event * eventElem ) override;
+    virtual bool prepareDispatchEvent( Event * eventElem );
     /**
      * \brief	All events after being processed are forwarded
      *          to this method. All cleanup operations should be provided
@@ -256,11 +253,7 @@ protected:
      * \param	eventElem	Pointer to Event element, which has been finished
      *                      to be dispatched.
      **/
-    virtual void postDispatchEvent( Event * eventElem ) override;
-
-/************************************************************************/
-// EventDispatcherBase overrides
-/************************************************************************/
+    virtual void postDispatchEvent( Event * eventElem );
 
     /**
      * \brief	Triggered when dispatcher starts running. 

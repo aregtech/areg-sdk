@@ -1076,12 +1076,12 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
         ${_generate}/private/${_interface_name}Events.cpp
         ${_generate}/private/${_interface_name}Proxy.cpp
         ${_generate}/private/${_interface_name}Stub.cpp
-        ${_generate}/private/NE${_interface_name}.cpp
+        ${_generate}/private/${_interface_name}.cpp
         ${_generate}/private/${_interface_name}Events.hpp
         ${_generate}/private/${_interface_name}Proxy.hpp
         ${_generate}/${_interface_name}ClientBase.hpp
         ${_generate}/${_interface_name}Stub.hpp
-        ${_generate}/NE${_interface_name}.hpp
+        ${_generate}/${_interface_name}.hpp
     )
 
     # Add generated files to an existing or new static library
@@ -1318,7 +1318,7 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_BINARY}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SQLITE_PACKAGE}', GTest package use = '${AREG_GTEST_PACKAGE}'")
-    message(STATUS "${var_prefix}: >>> Feature Options ....: 'areg' namespace = '${AREG_NAMESPACE}', Logs = '${AREG_LOGS}', Extended = '${AREG_EXTENDED}'")
+    message(STATUS "${var_prefix}: >>> Feature Options ....: Logs = '${AREG_LOGS}', Extended = '${AREG_EXTENDED}'")
     message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}'")
     message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
 

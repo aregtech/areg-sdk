@@ -15,8 +15,8 @@
  ************************************************************************/
 #include "areg/base/String.hpp"
 #include "areg/base/WideString.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -154,10 +154,10 @@ namespace
      **/
     inline bool _isEqual(const char* str, const wchar_t* wstr)
     {
-        while ((*str != TEString<char>::EmptyChar) && (*wstr++ == static_cast<wchar_t>(*str++)))
+        while ((*str != StringBase<char>::EmptyChar) && (*wstr++ == static_cast<wchar_t>(*str++)))
             ;
 
-        return (*str == TEString<char>::EmptyChar);
+        return (*str == StringBase<char>::EmptyChar);
     }
 
 } // namespace
@@ -174,13 +174,13 @@ const String & String::getEmptyString()
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 String::String(const WideString & source)
-    : TEString<char>( )
+    : StringBase<char>( )
 {
     assign(source.getString(), source.getLength());
 }
 
-String::String( const IEInStream & stream )
-    : TEString<char>( )
+String::String( const InStream & stream )
+    : StringBase<char>( )
 {
     readStream(stream);
 }
@@ -624,12 +624,12 @@ String& String::append(const wchar_t* source, NEString::CharCount count /*= NESt
     return (*this);
 }
 
-void String::readStream(const IEInStream& stream)
+void String::readStream(const InStream& stream)
 {
     stream.read(*this);
 }
 
-void String::writeStream(IEOutStream& stream) const
+void String::writeStream(OutStream& stream) const
 {
     stream.write(*this);
 }

@@ -21,7 +21,7 @@
  * Include files
  ************************************************************************/
 
-#include "pubservice/src/NETrafficLightFSM.hpp"
+#include "pubservice/src/TrafficLightDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // IETrafficLightActionHandler class declaration 

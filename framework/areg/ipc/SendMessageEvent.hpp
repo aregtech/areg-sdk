@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
+#include "areg/component/EventTemplate.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
 #include <utility>
@@ -133,10 +133,10 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// SendMessageEvent and IESendMessageEventConsumer declaration
+// SendMessageEvent and SendMessageEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
-//!< Declaration of SendMessageEvent event and IESendMessageEventConsumer consumer classes
-AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer)
+//!< Declaration of SendMessageEvent event and SendMessageEventConsumer consumer classes
+AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////
 // SendMessageEventData class inline functions

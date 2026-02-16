@@ -32,7 +32,7 @@ StreamableEvent::StreamableEvent( Event::eEventType eventType )
 {
 }
 
-StreamableEvent::StreamableEvent( const IEInStream & stream )
+StreamableEvent::StreamableEvent( const InStream & stream )
     : Event ( Event::eEventType::EventUnknown )
 {
     stream >> Event::mEventType;
@@ -41,12 +41,12 @@ StreamableEvent::StreamableEvent( const IEInStream & stream )
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-const IEInStream & StreamableEvent::readStream( const IEInStream & stream )
+const InStream & StreamableEvent::readStream( const InStream & stream )
 {
     return (stream >> Event::mEventType);
 }
 
-IEOutStream & StreamableEvent::writeStream( IEOutStream & stream ) const
+OutStream & StreamableEvent::writeStream( OutStream & stream ) const
 {
     return (stream << Event::mEventType);
 }

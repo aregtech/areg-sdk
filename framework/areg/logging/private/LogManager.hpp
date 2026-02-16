@@ -23,9 +23,9 @@
 #include "areg/logging/private/LoggingEvent.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/logging/LogConfiguration.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/ScopeController.hpp"
 #include "areg/logging/private/FileLogger.hpp"
 #include "areg/logging/private/DebugOutputLogger.hpp"
@@ -40,7 +40,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IELogDatabaseEngine;
+class LogDatabaseEngine;
 class LogScope;
 class LogMessage;
 class IELogger;
@@ -60,7 +60,7 @@ namespace NELogging
  *          be started and the configuration should be loaded.
  **/
 class LogManager    : public    DispatcherThread
-                    , private   IELoggingEventConsumer
+                    , private   LoggingEventConsumer
 {
     friend class LogEventProcessor;
 
@@ -258,7 +258,7 @@ public:
      *          Otherwise, ignores to write the log messages.
      * \param   dbEngine    The pointer to the log database engine to set.
      **/
-    static void setLogDatabaseEngine(IELogDatabaseEngine * dbEngine);
+    static void setLogDatabaseEngine(LogDatabaseEngine * dbEngine);
 
     /**
      * \brief   Returns true if database and data tables are initialized and the
@@ -301,7 +301,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
@@ -327,7 +327,7 @@ protected:
     virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
-// IELoggingEventConsumer interface overrides
+// LoggingEventConsumer interface overrides
 /************************************************************************/
     /**
      * \brief   Called by event dispatcher when processes the logging event data.
@@ -432,7 +432,7 @@ private:
     /**
      * \brief   Returns read-only list of registered scopes.
      **/
-    inline const TEHashMap<unsigned int, LogScope *> & getScopeList() const;
+    inline const HashMap<unsigned int, LogScope *> & getScopeList() const;
 
     /**
      * \brief   Returns instance of log manager.
@@ -525,7 +525,7 @@ inline const ITEM_ID & LogManager::getConnectionCookie()
     return LogManager::getInstance().mLoggerTcp.getConnectionCookie();
 }
 
-inline const TEHashMap<unsigned int, LogScope *> & LogManager::getScopeList() const
+inline const HashMap<unsigned int, LogScope *> & LogManager::getScopeList() const
 {
     return mScopeController.getScopeList( );
 }

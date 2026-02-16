@@ -20,9 +20,9 @@
 /************************************************************************
  * Includes
  ************************************************************************/
-#include "areg/base/TERuntimeResourceMap.hpp"
+#include "areg/base/RuntimeResourceMap.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 
 /************************************************************************
  * Declared classes
@@ -32,7 +32,7 @@ class EventConsumerList;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEEventConsumer;
+class EventConsumer;
 
 /************************************************************************
  * \brief   In this file are declared Event Consumer contain classes:
@@ -45,7 +45,7 @@ class IEEventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using EventConsumerListBase	= TELinkedList<IEEventConsumer *>;
+using EventConsumerListBase	= LinkedList<EventConsumer *>;
 
 /**
  * \brief   Event Consumer List is a helper class containing 
@@ -104,7 +104,7 @@ public:
      * \param   whichConsumer   The Event Consumer object to add to the list.
      * \return  Returns true if Event Consumer is added to the list.
      **/
-    bool addConsumer( IEEventConsumer & whichConsumer );
+    bool addConsumer( EventConsumer & whichConsumer );
 
     /**
      * \brief   Removes Event Consumer object from the List. The function will 
@@ -116,7 +116,7 @@ public:
      * \param   whichConsumer   The Event Consumer object to remove from the list.
      * \return  Returns true if Event Consumer was removed from the list.
      **/
-    bool removeConsumer( IEEventConsumer & whichConsumer );
+    bool removeConsumer( EventConsumer & whichConsumer );
 
     /**
      * \brief   Removes all Event Consumers from the list.
@@ -129,14 +129,14 @@ public:
      * \param   whichConsumer   The Event Consumer object to search.
      * \return  Returns true, if the specified Event Consumer already exists in the list.
      **/
-    inline bool existConsumer( IEEventConsumer & whichConsumer ) const;
+    inline bool existConsumer( EventConsumer & whichConsumer ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class ImplEventConsumerMap	: public TEResourceMapImpl<RuntimeClassID, EventConsumerList *>
+class ImplEventConsumerMap	: public ResourceMapImpl<RuntimeClassID, EventConsumerList *>
 {
 public:
     /**
@@ -154,7 +154,7 @@ public:
  *          It is used in Dispatcher, when a Consumer is registered for Event.
  *          For use, see implementation of EventDispatcherBase class
  **/
-using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
+using EventConsumerMap  = ConcurrentRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation
@@ -163,7 +163,7 @@ using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList *, ImplEven
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool EventConsumerList::existConsumer( IEEventConsumer & whichConsumer ) const
+inline bool EventConsumerList::existConsumer( EventConsumer & whichConsumer ) const
 {
     return EventConsumerListBase::contains( &whichConsumer);
 }

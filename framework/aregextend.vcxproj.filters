@@ -30,10 +30,7 @@
     <ClCompile Include="aregextend\service\private\DataRateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\service\private\IEServiceConnectionHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="aregextend\service\private\NESystemService.cpp">
+    <ClCompile Include="aregextend\service\private\SystemServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\console\private\OptionParser.cpp">
@@ -48,7 +45,7 @@
     <ClCompile Include="aregextend\service\private\ServerSendThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\service\private\ServiceCommunicatonBase.cpp">
+    <ClCompile Include="aregextend\service\private\ServiceCommunicationBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\service\private\SystemServiceBase.cpp">
@@ -78,6 +75,9 @@
     <ClCompile Include="aregextend\db\private\SqliteRow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aregextend\service\private\ConnectionHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="aregextend\CMakeLists.txt">
@@ -100,10 +100,7 @@
     <ClInclude Include="aregextend\service\DataRateHelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aregextend\service\IEServiceConnectionHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aregextend\service\NESystemService.hpp">
+    <ClInclude Include="aregextend\service\SystemServiceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\console\OptionParser.hpp">
@@ -118,7 +115,7 @@
     <ClInclude Include="aregextend\service\private\ServerSendThread.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aregextend\service\ServiceCommunicatonBase.hpp">
+    <ClInclude Include="aregextend\service\ServiceCommunicationBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\service\SystemServiceBase.hpp">
@@ -143,6 +140,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\db\SqliteStatement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aregextend\service\ConnectionHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

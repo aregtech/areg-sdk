@@ -36,7 +36,7 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceName, ServiceComponent )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloUnblock::ServiceName, NEHelloUnblock::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloUnblock::ServiceName, HelloUnblock::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( _serviceName )
     // end of thread description

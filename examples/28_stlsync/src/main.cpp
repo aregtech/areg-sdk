@@ -19,7 +19,7 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include <iostream>
 #include <string>

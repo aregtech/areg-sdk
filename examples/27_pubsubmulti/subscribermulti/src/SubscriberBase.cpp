@@ -12,7 +12,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/logging/GELog.h"
-#include "subscribermulti/src/NECommon.hpp"
+#include "subscribermulti/src/PubSubDefs.hpp"
 
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
@@ -25,7 +25,7 @@ SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Compon
     , mCoordString      ( coordStr )
     , mOldInteger       ( 0 )
     , mOldState         ( false )
-    , mOldString        ( NECommon::StrInvalid )
+    , mOldString        ( pubsub::StrInvalid )
     , mIntEventCount    ( 0 )
     , mStrEventCount    ( 0 )
 {
@@ -41,7 +41,7 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
         console.outputMsg(mCoordString, "%s%s => %s { changed }, event count: %u"
-                          , NECommon::TxtString.data()
+                          , pubsub::TxtString.data()
                           , mOldString.getString()
                           , StringOnChange.getString()
                           , mStrEventCount);
@@ -52,10 +52,10 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
         LOG_INFO("The STRING (on change) have got invalidated, old value [ %s ]", mOldString.getString());
 
         console.outputMsg( mCoordString, "%s%s => INVALID { invalid }, event count: %u"
-                         , NECommon::TxtString.data()
+                         , pubsub::TxtString.data()
                          , mOldString.getString()
                          , mStrEventCount);
-        mOldString = NECommon::StrInvalid;
+        mOldString = pubsub::StrInvalid;
 
         if (isServiceProviderStateValid() == false)
         {
@@ -73,12 +73,12 @@ void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService
     ++ mIntEventCount;
 
     Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::makeString(mOldInteger) : NECommon::StrInvalid;
+    String oldInt = mOldState ? String::makeString(mOldInteger) : pubsub::StrInvalid;
     if (state == NEService::eDataStateType::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
         console.outputMsg( mCoordInteger, "%s%s => %u { %s }, event count: %u"
-                         , NECommon::TxtInteger.data()
+                         , pubsub::TxtInteger.data()
                          , oldInt.getString()
                          , IntegerAlways
                          , (mOldState == false) || (IntegerAlways != mOldInteger) ? "changed" : "UNCHANGED"
@@ -91,7 +91,7 @@ void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService
         LOG_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
 
         console.outputMsg( mCoordInteger, "%s%s => INVALID { invalid }, event count %u"
-                         , NECommon::TxtInteger.data()
+                         , pubsub::TxtInteger.data()
                          , oldInt.getString()
                          , mIntEventCount);
         mOldInteger = 0;

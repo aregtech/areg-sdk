@@ -89,13 +89,13 @@ AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::sendEvent( const NotificationEventData& data, IENotificationEventConsumer* caller /*= nullptr*/ )
+void NotificationEvent::sendEvent( const NotificationEventData& data, NotificationConsumer* caller /*= nullptr*/ )
 {
     NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
     if (eventElem != nullptr)
     {
         if (caller != nullptr)
-            eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
+            eventElem->setEventConsumer(static_cast<EventConsumer *>(caller));
         static_cast<Event *>(eventElem)->deliverEvent();
     }
 }
@@ -122,13 +122,13 @@ void NotificationEvent::setTargetThread()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IENotificationEventConsumer class implementation
+// NotificationConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IENotificationEventConsumer class, methods
+// NotificationConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-void IENotificationEventConsumer::startEventProcessing( Event& eventElem )
+void NotificationConsumer::startEventProcessing( Event& eventElem )
 {
     NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
     if (eventNotify != nullptr)

@@ -42,7 +42,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\NESimpleTrafficLight.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLight.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightClientBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightProxy.cpp" />
@@ -51,7 +51,7 @@
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\private\SimpleTrafficLightProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\NESimpleTrafficLight.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLight.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLightClientBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\17_pubtraffic\services\SimpleTrafficLightStub.hpp" />
   </ItemGroup>

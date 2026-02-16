@@ -29,7 +29,7 @@
     <ClInclude Include="common\SimpleBitmap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\NELargeData.hpp">
+    <ClInclude Include="common\LargeDataDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

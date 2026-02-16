@@ -21,8 +21,8 @@
 #include "areg/base/GEGlobal.h"
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
-#include "logcollector/app/NELogCollectorSettings.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "logcollector/app/LogCollectorNames.hpp"
 #include "logcollector/service/LogCollectorServerService.hpp"
 #include "aregextend/console/OptionParser.hpp"
 
@@ -214,7 +214,7 @@ protected:
     virtual NERemoteService::eConnectionTypes getConnectionType() const override;
 
 /************************************************************************/
-// IEConfigurationListener protected overrides
+// ConfigListener protected overrides
 /************************************************************************/
 
     /**
@@ -315,7 +315,7 @@ private:
      * \param[out]  msgList     On output it contains a list a messages to send to the targets.
      *                          If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
      **/
-    static void _createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage> & msgList);
+    static void _createScopeMessage(const OptionParser::sOption& optScope, ArrayList<RemoteMessage> & msgList);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.

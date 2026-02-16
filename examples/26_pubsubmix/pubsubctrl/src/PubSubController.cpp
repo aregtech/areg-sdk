@@ -16,7 +16,7 @@
 #include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/PubSubDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Log scopes
@@ -56,11 +56,11 @@ const OptionParser::sOptionSetup PubSubController::ValidOptions[]
 PubSubController::PubSubController( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , Publisher         ( static_cast<Component &>(self()) )
-    , IEThreadConsumer  ( )
+    , ThreadConsumer  ( )
 
     , mSubscriber       ( entry.mDependencyServices[0], static_cast<Component &>(self()), 0 )
 
-    , mConsoleThread    (static_cast<IEThreadConsumer &>(self()), entry.mRoleName + "_Thread")
+    , mConsoleThread    (static_cast<ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
 {
 }
 
@@ -126,14 +126,14 @@ void PubSubController::onThreadRuns()
             case PubSubController::eCommands::CMD_Error:
             default:
                 cmd = PubSubController::eCommands::CMD_Error;
-                message.format(NECommon::FormatError.data(), usrInput.getString());
+                message.format(pubsub::FormatError.data(), usrInput.getString());
                 break;
             }
         }
         else
         {
             cmd = PubSubController::eCommands::CMD_Error;
-            message.format(NECommon::FormatError.data(), usrInput.getString());
+            message.format(pubsub::FormatError.data(), usrInput.getString());
         }
 
         printMessage(message, cmd);
@@ -148,19 +148,19 @@ inline void PubSubController::printMessage(const String & message, eCommands cmd
     Console & console = Console::getInstance();
     if (cmd == eCommands::CMD_Error)
     {
-        console.outputStr(NECommon::CoordInfoMsg, message);
+        console.outputStr(pubsub::CoordInfoMsg, message);
     }
     else if (cmd == eCommands::CMD_Help)
     {
-        console.outputStr(NECommon::CoordInfoMsg, _help);
+        console.outputStr(pubsub::CoordInfoMsg, _help);
     }
     else if (cmd != eCommands::CMD_Undefined)
     {
-        console.outputMsg(NECommon::CoordInfoMsg, message);
+        console.outputMsg(pubsub::CoordInfoMsg, message);
     }
 
-    console.outputStr(NECommon::CoordSeparate, NECommon::Separator);
-    console.outputStr(NECommon::CoordUserInput, NECommon::UserInput);
+    console.outputStr(pubsub::CoordSeparate, pubsub::Separator);
+    console.outputStr(pubsub::CoordUserInput, pubsub::UserInput);
     console.refreshScreen();
 }
 

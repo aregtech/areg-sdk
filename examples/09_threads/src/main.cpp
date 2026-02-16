@@ -11,10 +11,10 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/logging/GELog.h"
 
@@ -32,7 +32,7 @@ DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
 Mutex gSync(false);
 
 class HelloThread   : public Thread
-                    , protected IEThreadConsumer
+                    , protected ThreadConsumer
 {
 public:
     HelloThread()
@@ -44,7 +44,7 @@ public:
 
 protected:
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     void onThreadRuns() override
@@ -73,12 +73,12 @@ DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
 
 class HelloDispatcher   : public DispatcherThread
-                        , private IETimerConsumer
+                        , private TimerConsumer
 {
 public:
     HelloDispatcher() 
         : DispatcherThread("HelloDispatcher", NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
-        , IETimerConsumer()
+        , TimerConsumer()
         , mTimer(*this, "aTimer")
     {
         LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
@@ -107,7 +107,7 @@ protected:
     }
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
     bool dispatchEvent(Event & eventElem) override
     {
@@ -125,7 +125,7 @@ protected:
     }
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
     void processTimer(Timer &) override
     {

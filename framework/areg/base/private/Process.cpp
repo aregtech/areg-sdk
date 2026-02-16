@@ -16,7 +16,7 @@
 #include "areg/base/Process.hpp"
 
 #include "areg/base/File.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include <filesystem>
 #include <iostream>
 

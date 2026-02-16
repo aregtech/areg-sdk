@@ -25,7 +25,7 @@
 #include "areg/component/DispatcherThread.hpp"
 
 #include "areg/component/private/Watchdog.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 
 /************************************************************************
  * Dependencies
@@ -52,7 +52,7 @@ private:
      * \brief   ComponentThread::ListComponent;
      *          Linked List of instantiated components in the Component Thread.
      **/
-    using ListComponent     = TELinkedList<Component*>;
+    using ListComponent     = LinkedList<Component*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance
@@ -167,7 +167,7 @@ public:
     virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
@@ -209,7 +209,7 @@ protected:
     virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -258,7 +258,7 @@ protected:
     virtual void destroyComponents();
 
 /************************************************************************/
-// IEEventDispatcher overrides
+// EventDispatcherBase overrides
 /************************************************************************/
 
     /**

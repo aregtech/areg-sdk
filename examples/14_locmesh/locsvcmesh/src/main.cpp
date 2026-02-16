@@ -50,7 +50,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _mainServiceName, ControllerComponent )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWorld::ServiceName, HelloWorld::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( _mainServiceName )
     // end of thread description
@@ -66,7 +66,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "SecondaryComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWorld::ServiceName, HelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(_mainServiceName)
             REGISTER_DEPENDENCY("SecondaryComponent")
         // end of component description
@@ -80,7 +80,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "ThirdComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloWorld::ServiceName, HelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY( _mainServiceName )
             REGISTER_DEPENDENCY( "SecondaryComponent")
         // end of component description

@@ -39,7 +39,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\NEPubSub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSub.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubClientBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProxy.cpp" />
@@ -48,7 +48,7 @@
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\private\PubSubProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\NEPubSub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSub.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubClientBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\27_pubsubmulti\services\PubSubStub.hpp" />
   </ItemGroup>

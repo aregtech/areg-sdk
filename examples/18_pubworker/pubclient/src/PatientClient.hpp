@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    virtual void onPatientUpdate( const NEPatientInformation::PatientInfo & Patient, NEService::eDataStateType state ) override;
+    virtual void onPatientUpdate( const PatientInformation::PatientInfo & Patient, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -85,7 +85,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
+    virtual WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
 
 private:
     /**

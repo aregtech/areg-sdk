@@ -1,0 +1,36 @@
+/************************************************************************
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]areg.tech
+ *
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/component/private/TimerConsumer.cpp
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \author      Artak Avetyan
+ * \brief       Areg Platform, Timer Event Consumer.
+ *
+ ************************************************************************/
+#include "areg/component/TimerConsumer.hpp"
+#include "areg/component/DispatcherThread.hpp"
+
+//////////////////////////////////////////////////////////////////////////
+// TimerConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+
+void TimerConsumer::processEvent( const TimerEventData & /* data */ )
+{
+    ASSERT(false);
+}
+
+void TimerConsumer::startEventProcessing( Event& eventElem )
+{
+    TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
+    Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
+    if (timer != nullptr )
+    {
+        processTimer(*timer);
+    }
+}

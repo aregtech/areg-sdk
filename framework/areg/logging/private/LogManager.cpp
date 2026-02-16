@@ -19,7 +19,7 @@
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 
-#include "areg/logging/IELogDatabaseEngine.hpp"
+#include "areg/logging/LogDatabaseEngine.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogMessage.hpp"
 
@@ -112,7 +112,7 @@ bool LogManager::forceActivateLogging()
     {
         Lock lock( logManager.mLock );
         logManager.mLogConfig.setStatus(true);
-        logManager.mLogConfig.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true);
+        logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
         logManager.mScopeController.activateDefaults( );
         result = logManager.startLoggingThread( );
     }
@@ -157,7 +157,7 @@ unsigned int LogManager::getScopePriority( const char * scopeName )
     return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid));
 }
 
-void LogManager::setLogDatabaseEngine(IELogDatabaseEngine * dbEngine)
+void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
 {
     LogManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
 }
@@ -176,7 +176,7 @@ void LogManager::forceEnableLogging()
 {
     LogManager& logManager = LogManager::getInstance();
     logManager.mLogConfig.setStatus(true);
-    logManager.mLogConfig.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true);
+    logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ void LogManager::forceEnableLogging()
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
     : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
-    , IELoggingEventConsumer  ( )
+    , LoggingEventConsumer  ( )
 
     , mScopeController  ( )
 	, mIsStarted		( false )
@@ -281,13 +281,13 @@ void LogManager::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        LoggingEvent::addListener( static_cast<IELoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        LoggingEvent::addListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
         DispatcherThread::readyForEvents( true );
     }
     else
     {
         DispatcherThread::readyForEvents( false );
-        LoggingEvent::removeListener( static_cast<IELoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        LoggingEvent::removeListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
         // When we are here, all loggers should be already closed.
         ASSERT(mLoggerFile.isLoggerOpened() == false);
@@ -370,7 +370,7 @@ bool LogManager::postEvent(Event & eventElem)
 
 inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
-    LoggingEvent::sendEvent( data, static_cast<IELoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
+    LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
 }
 
 void LogManager::changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio )

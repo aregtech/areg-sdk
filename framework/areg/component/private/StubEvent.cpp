@@ -40,7 +40,7 @@ StubEvent::StubEvent( const StubAddress& toTarget, Event::eEventType eventType )
 {
 }
 
-StubEvent::StubEvent( const IEInStream & stream  )
+StubEvent::StubEvent( const InStream & stream  )
     : StreamableEvent   (stream)
     , mTargetStubAddress(stream)
 {
@@ -49,14 +49,14 @@ StubEvent::StubEvent( const IEInStream & stream  )
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-const IEInStream & StubEvent::readStream( const IEInStream & stream )
+const InStream & StubEvent::readStream( const InStream & stream )
 {
     StreamableEvent::readStream(stream);
     stream >> mTargetStubAddress;
     return stream;
 }
 
-IEOutStream & StubEvent::writeStream( IEOutStream & stream ) const
+OutStream & StubEvent::writeStream( OutStream & stream ) const
 {
     StreamableEvent::writeStream(stream);
     stream << mTargetStubAddress;
@@ -82,20 +82,20 @@ void StubEvent::deliverEvent()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class implementation
+// StubEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class, constructor / destructor
+// StubEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-IEStubEventConsumer::IEStubEventConsumer( const StubAddress & stubAddress )
-    : IEEventConsumer   ( )
+StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
+    : EventConsumer   ( )
     , mStubAddress      ( stubAddress )
     , mCurEvent         ( nullptr )
 {
 }
 
-inline void IEStubEventConsumer::_localProcessRequestEvent( RequestEvent & requestEvent )
+inline void StubEventConsumer::_localProcessRequestEvent( RequestEvent & requestEvent )
 {
     Component *curComponent   = Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
     ComponentThread::setCurrentComponent(curComponent);
@@ -112,7 +112,7 @@ inline void IEStubEventConsumer::_localProcessRequestEvent( RequestEvent & reque
     ComponentThread::setCurrentComponent(nullptr);
 }
 
-inline void IEStubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
+inline void StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
 {
     Component *curComponent   = Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
     ComponentThread::setCurrentComponent(curComponent);
@@ -130,7 +130,7 @@ inline void IEStubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestE
     ComponentThread::setCurrentComponent(nullptr);
 }
 
-inline void IEStubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
+inline void StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
     if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
     {
@@ -150,9 +150,9 @@ inline void IEStubEventConsumer::_localProcessConnectEvent( StubConnectEvent & n
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class, methods
+// StubEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-void IEStubEventConsumer::startEventProcessing( Event & eventElem )
+void StubEventConsumer::startEventProcessing( Event & eventElem )
 {
     mCurEvent = &eventElem;
     StubEvent* stubEvent = AREG_RUNTIME_CAST(&eventElem, StubEvent);

@@ -23,10 +23,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\NEPowerManager.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\NETrafficController.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerClientBase.cpp">
@@ -67,10 +67,10 @@
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\NEPowerManager.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\NETrafficController.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficController.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerClientBase.hpp">

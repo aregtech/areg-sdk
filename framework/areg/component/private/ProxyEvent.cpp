@@ -39,7 +39,7 @@ ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::eEventType even
 {
 }
 
-ProxyEvent::ProxyEvent( const IEInStream & stream )
+ProxyEvent::ProxyEvent( const InStream & stream )
     : StreamableEvent       ( stream )
     , mTargetProxyAddress   ( stream )
 {
@@ -66,14 +66,14 @@ void ProxyEvent::deliverEvent()
     }
 }
 
-const IEInStream & ProxyEvent::readStream( const IEInStream & stream )
+const InStream & ProxyEvent::readStream( const InStream & stream )
 {
     StreamableEvent::readStream(stream);
     stream >> mTargetProxyAddress;
     return stream;
 }
 
-IEOutStream & ProxyEvent::writeStream( IEOutStream & stream ) const
+OutStream & ProxyEvent::writeStream( OutStream & stream ) const
 {
     StreamableEvent::writeStream(stream);
     stream << mTargetProxyAddress;
@@ -81,22 +81,22 @@ IEOutStream & ProxyEvent::writeStream( IEOutStream & stream ) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEProxyEventConsumer class implementation
+// ProxyEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IEProxyEventConsumer class, constructor / destructor
+// ProxyEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-IEProxyEventConsumer::IEProxyEventConsumer( const ProxyAddress & proxy )
-    : IEEventConsumer   ( )
+ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
+    : EventConsumer   ( )
     , mProxyAddress     ( proxy )
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEProxyEventConsumer class, methods
+// ProxyEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-inline void IEProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eventResponse)
+inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eventResponse)
 {
     switch (eventResponse.getDataType() )
     {
@@ -119,7 +119,7 @@ inline void IEProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eve
     }
 }
 
-inline void IEProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
+inline void ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
     if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
     {
@@ -131,7 +131,7 @@ inline void IEProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent &
     }
 }
 
-void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
+void ProxyEventConsumer::startEventProcessing( Event & eventElem )
 {
     ProxyEvent * proxyEvent = AREG_RUNTIME_CAST(&eventElem, ProxyEvent);
     if ( proxyEvent != nullptr )

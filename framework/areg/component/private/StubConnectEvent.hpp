@@ -56,7 +56,7 @@ public:
      * \brief   Constructor. Reads data from streaming object.
      * \param   stream      The instance of streaming object, which contains information.
      **/
-    StubConnectEvent( const IEInStream & stream );
+    StubConnectEvent( const InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -86,14 +86,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    virtual const InStream & readStream( const InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    virtual OutStream & writeStream( OutStream & stream ) const override;
 
 private:
     /**

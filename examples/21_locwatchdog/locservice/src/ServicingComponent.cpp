@@ -33,17 +33,17 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
 
     HelloWatchdogStub::startupServiceInterface(holder);
-    setServiceState(NEHelloWatchdog::eState::Initialized);
+    setServiceState(HelloWatchdog::eState::Initialized);
 }
 
 void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
 
-    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
-    printf("Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
+    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
+    printf("Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
 
-    setServiceState( NEHelloWatchdog::eState::Started );
+    setServiceState( HelloWatchdog::eState::Started );
 
     Thread::sleep(timeoutSleep);
 

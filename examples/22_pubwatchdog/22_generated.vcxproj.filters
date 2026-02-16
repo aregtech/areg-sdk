@@ -27,7 +27,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\NEHelloWatchdog.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\NEHelloWatchdog.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

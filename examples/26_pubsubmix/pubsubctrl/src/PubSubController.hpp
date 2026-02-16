@@ -11,7 +11,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Component.hpp"
 
 #include "areg/base/Thread.hpp"
@@ -27,7 +27,7 @@
  **/
 class PubSubController  : public    Component
                         , private   Publisher
-                        , private   IEThreadConsumer
+                        , private   ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -80,7 +80,7 @@ protected:
     virtual void shutdownComponent( ComponentThread & comThread ) override;
 
 /************************************************************************/
-// IEThreadConsumer interface overrides
+// ThreadConsumer interface overrides
 /************************************************************************/
 
     /**

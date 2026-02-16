@@ -63,7 +63,7 @@ protected:
     virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

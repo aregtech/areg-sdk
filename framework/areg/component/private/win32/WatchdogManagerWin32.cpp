@@ -20,8 +20,8 @@
 #ifdef  _WIN32
 
 #include "areg/component/private/Watchdog.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #ifndef NOMINMAX
     #define NOMINMAX

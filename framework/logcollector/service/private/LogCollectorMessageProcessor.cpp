@@ -16,7 +16,7 @@
 
 #include "logcollector/app/LogCollector.hpp"
 #include "logcollector/service/LogCollectorServerService.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerService & loggerService)
     : mLoggerService    ( loggerService )
@@ -72,7 +72,7 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::Map
 
         if (count != 0)
         {
-            msgInstances.setPosition(static_cast<int>(pos), IECursorPosition::eCursorPosition::PositionBegin);
+            msgInstances.setPosition(static_cast<int>(pos), Cursor::eCursorPosition::PositionBegin);
             msgInstances << count;
             msgInstances.moveToEnd();
         }
@@ -94,7 +94,7 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::Map
     }
 }
 
-void LogCollectorMessageProcessor::notifyDisconnectedInstances(const TEArrayList<ITEM_ID>& listIds, const ITEM_ID& target) const
+void LogCollectorMessageProcessor::notifyDisconnectedInstances(const ArrayList<ITEM_ID>& listIds, const ITEM_ID& target) const
 {
     const auto& observers{ mLoggerService.getObservers() };
     if (observers.isEmpty())

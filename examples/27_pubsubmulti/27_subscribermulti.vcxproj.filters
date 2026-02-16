@@ -21,7 +21,7 @@
     <ClInclude Include="subscribermulti\src\SubscriberSecond.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="subscribermulti\src\NECommon.hpp">
+    <ClInclude Include="subscribermulti\src\PubSubDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="subscribermulti\src\SubscriberBase.hpp">

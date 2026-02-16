@@ -4,9 +4,9 @@
 // PageConnections dialog
 
 #include "register/res/resource.h"
-#include "register/NECentralApp.hpp"
-#include "common/NECommon.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "register/CentralApp.hpp"
+#include "common/ChatDefs.hpp"
+#include "areg/base/ArrayList.hpp"
 
 class PageConnections : public CPropertyPage
 {
@@ -21,7 +21,7 @@ class PageConnections : public CPropertyPage
         , ReceivedAt
     } eHeader;
 
-    typedef TEArrayList<NECommon::sMessageData *>   TypingList;
+    typedef ArrayList<chat::sMessageData *>   TypingList;
 
 DECLARE_DYNAMIC(PageConnections)
 

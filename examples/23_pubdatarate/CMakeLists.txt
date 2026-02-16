@@ -9,6 +9,6 @@ macro_declare_executable(23_pubclient   23_generated
 
 macro_declare_executable(23_pubservice   23_generated
     pubservice/src/main.cpp
-    pubservice/src/NEUtilities.cpp
+    pubservice/src/UtilityDefs.cpp
     pubservice/src/ServicingComponent.cpp
 )

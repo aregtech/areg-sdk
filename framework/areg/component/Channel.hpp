@@ -21,8 +21,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/component/NEService.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/base/IOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Channel class declaration.
@@ -123,14 +123,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Connection channel to initialize.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input );
+    friend inline const InStream & operator >> ( const InStream & stream, Channel & input );
 
     /**
      * \brief   Streaming operator. Writes connection channel data into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Connection channel to stream.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output);
+    friend inline OutStream & operator << ( OutStream & stream, const Channel & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -272,7 +272,7 @@ inline void Channel::invalidate()
     mCookie = NEService::COOKIE_UNKNOWN;
 }
 
-inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input )
+inline const InStream & operator >> ( const InStream & stream, Channel & input )
 {
     stream >> input.mSource;
     stream >> input.mTarget;
@@ -280,7 +280,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, Channel & inp
     return stream;
 }
 
-inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output)
+inline OutStream & operator << ( OutStream & stream, const Channel & output)
 {
     stream << output.mSource;
     stream << output.mTarget;

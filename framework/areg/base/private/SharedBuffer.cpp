@@ -16,9 +16,9 @@
 #include "areg/base/SharedBuffer.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/base/NEMath.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
 #include <algorithm>
@@ -33,41 +33,41 @@ inline SharedBuffer& SharedBuffer::self()
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 SharedBuffer::SharedBuffer( unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
-    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , IECursorPosition  ( )
+    : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+    , Cursor  ( )
 
     , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
 }
 
 SharedBuffer::SharedBuffer( unsigned int reserveSize, unsigned int blockSize)
-    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , IECursorPosition  ( )
+    : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+    , Cursor  ( )
 
     , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     reserve(reserveSize, false);
 }
 
 SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
-    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , IECursorPosition  ( )
+    : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+    , Cursor  ( )
 
     , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     reserve(size, false);
     writeData(buffer, size);
 }
 
 SharedBuffer::SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize)
-    : BufferStreamBase  (static_cast<IECursorPosition&>(self()), static_cast<IECursorPosition&>(self()))
-    , IECursorPosition  ( )
+    : BufferStreamBase  (static_cast<Cursor&>(self()), static_cast<Cursor&>(self()))
+    , Cursor  ( )
 
     , mBlockSize        (NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE))
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     reserveSize = std::max(reserveSize, size);
     reserve(reserveSize, false);
@@ -75,11 +75,11 @@ SharedBuffer::SharedBuffer(unsigned int reserveSize, const unsigned char* buffer
 }
 
 SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
-    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , IECursorPosition  ( )
+    : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+    , Cursor  ( )
 
     , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<char>(textString)) + 1u) * sizeof(char);
     size = reserve(size, false);
@@ -87,11 +87,11 @@ SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= N
 }
 
 SharedBuffer::SharedBuffer(const wchar_t * textString, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
-    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , IECursorPosition  ( )
+    : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+    , Cursor  ( )
 
     , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
     size = reserve(size, false);
@@ -99,25 +99,25 @@ SharedBuffer::SharedBuffer(const wchar_t * textString, unsigned int blockSize /*
 }
 
 SharedBuffer::SharedBuffer( const SharedBuffer & src )
-    : BufferStreamBase  ( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
-    , IECursorPosition  ( )
+    : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
+    , Cursor  ( )
 
     , mBlockSize        (src.mBlockSize)
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     mByteBuffer = src.mByteBuffer;
-    mBufferPosition.setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+    mBufferPosition.setPosition(0, Cursor::eCursorPosition::PositionBegin);
 }
 
 SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
-    : BufferStreamBase  ( static_cast<IECursorPosition &>(self( )), static_cast<IECursorPosition &>(self( )) )
-    , IECursorPosition  ( )
+    : BufferStreamBase  ( static_cast<Cursor &>(self( )), static_cast<Cursor &>(self( )) )
+    , Cursor  ( )
 
     , mBlockSize        ( src.mBlockSize )
-    , mBufferPosition   ( static_cast<IEByteBuffer&>(self()) )
+    , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     mByteBuffer = src.mByteBuffer;
-    mBufferPosition.setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+    mBufferPosition.setPosition(0, Cursor::eCursorPosition::PositionBegin);
     src.invalidate();
 }
 
@@ -132,7 +132,7 @@ SharedBuffer & SharedBuffer::operator = ( const SharedBuffer &src )
         if (src.isValid())
         {
             mByteBuffer = src.mByteBuffer;
-            mBufferPosition.setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
+            mBufferPosition.setPosition(0, Cursor::eCursorPosition::PositionBegin);
         }
         else
         {
@@ -150,7 +150,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
         if ( src.isValid( ) )
         {
             mByteBuffer = src.mByteBuffer;
-            mBufferPosition.setPosition( 0, IECursorPosition::eCursorPosition::PositionBegin );
+            mBufferPosition.setPosition( 0, Cursor::eCursorPosition::PositionBegin );
             src.invalidate();
         }
         else
@@ -162,7 +162,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
     return (*this);
 }
 
-unsigned int SharedBuffer::setPosition(int offset, IECursorPosition::eCursorPosition startAt) const
+unsigned int SharedBuffer::setPosition(int offset, Cursor::eCursorPosition startAt) const
 {
     return mBufferPosition.setPosition(offset, startAt);
 }
@@ -185,7 +185,7 @@ const unsigned char* SharedBuffer::getBufferAtCurrentPosition() const
     {
         unsigned int curPos = getPosition();
         unsigned int written= getSizeUsed();
-        ASSERT(curPos != IECursorPosition::INVALID_CURSOR_POSITION);
+        ASSERT(curPos != Cursor::INVALID_CURSOR_POSITION);
         if (curPos != written)
         {
             ASSERT(curPos < written);
@@ -223,7 +223,7 @@ bool SharedBuffer::canShare() const
 
 unsigned int SharedBuffer::getDataOffset() const
 {
-    return sizeof(NEMemory::sBuferHeader);
+    return sizeof(NEMemory::BufferHeader);
 }
 
 unsigned int SharedBuffer::getHeaderSize() const

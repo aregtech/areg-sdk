@@ -189,12 +189,6 @@ else()
     add_definitions(-DBIT64)
 endif()
 
-if (AREG_NAMESPACE)
-    add_definitions(-DAREG_NAMESPACE=1)
-else()
-    add_definitions(-DAREG_NAMESPACE=0)
-endif()
-
 # -------------------------------------------------------
 # Setup product paths
 # -------------------------------------------------------

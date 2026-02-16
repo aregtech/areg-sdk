@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteMessageHandler;
+class RemoteMessageHandler;
 class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ class ServerConnection;
  * \brief   The IPC message sender thread
  **/
 class ServerSendThread  : public    DispatcherThread
-                        , public    IESendMessageEventConsumer
+                        , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -48,7 +48,7 @@ public:
      * \param   remoteService   The instance of remote servicing handle to set.
      * \param   connection      The instance of server socket connection object.
      **/
-    ServerSendThread(IERemoteMessageHandler& remoteService, ServerConnection & connection );
+    ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection );
 
     /**
      * \brief   Destructor
@@ -90,7 +90,7 @@ protected:
     virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter class overrides
 /************************************************************************/
 
     /**
@@ -106,7 +106,7 @@ protected:
 
 private:
 /************************************************************************/
-// IESendMessageEventConsumer interface overrides.
+// SendMessageEventConsumer class overrides.
 /************************************************************************/
     /**
      * \brief   Automatically triggered when event is dispatched by registered
@@ -124,7 +124,7 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    IERemoteMessageHandler&     mRemoteService;
+    RemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/

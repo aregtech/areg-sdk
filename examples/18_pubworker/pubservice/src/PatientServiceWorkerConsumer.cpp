@@ -10,8 +10,8 @@
   ************************************************************************/
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
-#include "areg/base/NEUtilities.hpp"
-#include "common/NECommon.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "common/WorkerDefs.hpp"
 #include "examples/18_pubworker/services/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
 
@@ -25,7 +25,7 @@
 
 
 PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
-    : IEWorkerThreadConsumer( NEUtilities::createComponentItemName( NECommon::ServiceNamePatientInfo, consumerName) )
+    : WorkerThreadConsumer( NEUtilities::createComponentItemName( worker::ServiceNamePatientInfo, consumerName) )
 
     , mStubPatienInfo       ( infoPatient )
 {
@@ -80,7 +80,7 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* work
 
         printf("===============================\n");
 
-        NEPatientInformation::PatientInfo infoPatient;
+        PatientInformation::PatientInfo infoPatient;
         infoPatient.firstName   = firstName;
         infoPatient.lastName    = lastName;
         infoPatient.weight      = weight;

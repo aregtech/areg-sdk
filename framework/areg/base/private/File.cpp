@@ -21,8 +21,8 @@
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/base/Containers.hpp"
 
 #include <filesystem>
@@ -409,7 +409,7 @@ String File::makeFileFullPath(const char* dirName, const char* fileName)
     return (!err ? fp.string() : filePath.string());
 }
 
-unsigned int File::read(IEByteBuffer & buffer) const
+unsigned int File::read(ByteBuffer & buffer) const
 {
     return FileBase::read(buffer);
 }
@@ -438,7 +438,7 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
     return result;
 }
 
-unsigned int File::write(const IEByteBuffer & buffer)
+unsigned int File::write(const ByteBuffer & buffer)
 {
     return FileBase::write(buffer);
 }
@@ -467,14 +467,14 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition startAt) const
+unsigned int File::setPosition(int offset, Cursor::eCursorPosition startAt) const
 {
-    return (isOpened() ? _osSetPositionFile(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (isOpened() ? _osSetPositionFile(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
 unsigned int File::getPosition() const
 {
-    return (isOpened() ? _osGetPositionFile() : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (isOpened() ? _osGetPositionFile() : Cursor::INVALID_CURSOR_POSITION);
 }
 
 unsigned int File::getLength() const
@@ -491,7 +491,7 @@ unsigned int File::getLength() const
 
 unsigned int File::reserve(unsigned int newSize)
 {
-    unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
+    unsigned int result = Cursor::INVALID_CURSOR_POSITION;
     if (isOpened() && canWrite())
     {
         unsigned int curPos = _osGetPositionFile();
@@ -505,7 +505,7 @@ unsigned int File::reserve(unsigned int newSize)
             {
                 if (moveToBegin())
                 {
-                    result = IECursorPosition::START_CURSOR_POSITION;
+                    result = Cursor::START_CURSOR_POSITION;
                 }
             }
             else if (newSize <= curPos)
@@ -517,7 +517,7 @@ unsigned int File::reserve(unsigned int newSize)
             }
             else
             {
-                result = setPosition(static_cast<int>(curPos), IECursorPosition::eCursorPosition::PositionBegin);
+                result = setPosition(static_cast<int>(curPos), Cursor::eCursorPosition::PositionBegin);
             }
         }
     }

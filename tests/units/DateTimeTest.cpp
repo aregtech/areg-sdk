@@ -19,9 +19,9 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/DateTime.hpp"
 
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEMath.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Thread.hpp"
 

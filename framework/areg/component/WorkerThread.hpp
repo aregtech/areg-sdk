@@ -29,7 +29,7 @@
  ************************************************************************/
 class Component;
 class ComponentThread;
-class IEWorkerThreadConsumer;
+class WorkerThreadConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThread class declaration
@@ -98,7 +98,7 @@ public:
      **/
     WorkerThread( const String & threadName
                 , Component & bindingComponent
-                , IEWorkerThreadConsumer & threadConsumer
+                , WorkerThreadConsumer & threadConsumer
                 , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
                 , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
                 , uint32_t maxQueue         = NECommon::IGNORE_VALUE);
@@ -138,7 +138,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IEEventRouter interface overrides.
+// EventRouter interface overrides.
 /************************************************************************/
     /**
      * \brief   Posts given event object. If the event addressee is
@@ -176,7 +176,7 @@ protected:
     virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
 /************************************************************************/
-// IEEventDispatcher overrides
+// EventDispatcherBase overrides
 /************************************************************************/
 
     /**
@@ -201,7 +201,7 @@ private:
     /**
      * \brief   Worker Thread Consumer object
      **/
-    IEWorkerThreadConsumer &   mWorkerThreadConsumer;
+    WorkerThreadConsumer &   mWorkerThreadConsumer;
 
     /**
      * \brief   The watchdog object to track the event processing.

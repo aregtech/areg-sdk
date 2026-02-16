@@ -26,12 +26,8 @@
     <ClInclude Include="pubclient\src\TrafficLightClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\NECommon.hpp">
+    <ClInclude Include="common\FsmDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubclient\CMakeLists.txt" />
-    <Text Include="pubclient\src\CMakeLists.txt" />
   </ItemGroup>
 </Project>

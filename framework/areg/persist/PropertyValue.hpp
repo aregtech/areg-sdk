@@ -21,7 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 #include "areg/base/Identifier.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/base/ArrayList.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // PropertyValue class declaration
@@ -255,7 +255,7 @@ public:
      * \param   lookupList  The lookup list to convert literal identifiers into integer values.
      * \return  Combined with logical OR ('|') operation digital value of the identifiers.
      **/
-    TEArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
+    ArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
 
     /**
      * \brief   Sets as a string the list of values of the property.
@@ -272,7 +272,7 @@ public:
      *                      If the flag is 'false', the entries in the result list are not checked.
      * \return  Returns the list of strings.
      **/
-    TEArrayList<String> getValueList(bool makeUnique = false) const;
+    ArrayList<String> getValueList(bool makeUnique = false) const;
 
     /**
      * \brief   Sets a list of string as a value.

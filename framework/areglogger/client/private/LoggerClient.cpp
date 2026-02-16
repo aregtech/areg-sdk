@@ -36,14 +36,14 @@ LoggerClient::LoggerClient()
                                  , LoggerClient::ServiceType
                                  , static_cast<uint32_t>(ConnectType)
                                  , LoggerClient::SourceType
-                                 , static_cast<IEServiceConnectionConsumer &>(self())
-                                 , static_cast<IERemoteMessageHandler &>(self())
+                                 , static_cast<ConnectionConsumer &>(self())
+                                 , static_cast<RemoteMessageHandler &>(self())
                                  , static_cast<DispatcherThread &>(self())
                                  , LoggerClient::ThreadPrefix)
-    , IEConfigurationListener    ( )
+    , ConfigListener    ( )
     , DispatcherThread           ( LoggerClient::ThreadName, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
-    , IEServiceConnectionConsumer( )
-    , IERemoteMessageHandler     ( )
+    , ConnectionConsumer( )
+    , RemoteMessageHandler     ( )
 
     , mCallbacks                 ( nullptr )
     , mMessageProcessor          ( self() )
@@ -389,8 +389,8 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     String dbLocation;
     String dbUser;
 
-    config.setLogEnabled(NELogging::eLogingTypes::LogTypeFile, true, true);
-    config.setLogEnabled(NELogging::eLogingTypes::LogTypeRemote, true, true);
+    config.setLogEnabled(NELogging::LoggingType::LogTypeFile, true, true);
+    config.setLogEnabled(NELogging::LoggingType::LogTypeRemote, true, true);
 
     do
     {
@@ -410,14 +410,14 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     if (LogObserverBase::_theLogObserver != nullptr)
     {
         LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
-        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName.getData(), dbLocation.getData(), dbUser.getData());
+        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(NELogging::LoggingType::LogTypeDatabase), dbName.getData(), dbLocation.getData(), dbUser.getData());
     }
     else
     {
         if (callbackConf != nullptr)
             callbackConf(true, address.getString(), port);
         if (callbackConfDb != nullptr)
-            callbackConfDb(config.getLogEnabled(NELogging::eLogingTypes::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
+            callbackConfDb(config.getLogEnabled(NELogging::LoggingType::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
     }
 }
 

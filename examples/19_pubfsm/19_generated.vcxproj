@@ -46,8 +46,8 @@
     <None Include="services\TrafficController.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\NEPowerManager.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\NETrafficController.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManager.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficController.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerClientBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\PowerManagerProxy.cpp" />
@@ -58,8 +58,8 @@
     <ClCompile Include="$(AregGenerateDir)examples\19_pubfsm\services\private\TrafficControllerStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\NEPowerManager.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\NETrafficController.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManager.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficController.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerClientBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\PowerManagerStub.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\19_pubfsm\services\TrafficControllerClientBase.hpp" />

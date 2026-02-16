@@ -20,9 +20,9 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/ipc/IEServiceRegisterConsumer.hpp"
-#include "areg/ipc/IEServiceRegisterProvider.hpp"
-#include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "areg/ipc/RegistrationConsumer.hpp"
+#include "areg/ipc/RegistrationProvider.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 
 #include "mtrouter/service/private/ServiceRegistry.hpp"
 
@@ -33,9 +33,9 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class RouterServerService   : public    ServiceCommunicatonBase
-                            , private   IEServiceRegisterConsumer
-                            , private   IEServiceRegisterProvider
+class RouterServerService   : public    ServiceCommunicationBase
+                            , private   RegistrationConsumer
+                            , private   RegistrationProvider
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -56,7 +56,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEServiceRegisterProvider interface overrides
+// RegistrationProvider interface overrides
 /************************************************************************/
 
     /**
@@ -94,7 +94,7 @@ protected:
     virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
 
 /************************************************************************/
-// IEServiceRegisterConsumer interface overrides
+// RegistrationConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -105,7 +105,7 @@ protected:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers ) const override;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.
@@ -158,7 +158,7 @@ protected:
     virtual void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -169,7 +169,7 @@ protected:
     virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
-// IEServiceEventConsumerBase overrides
+// ServiceEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -200,7 +200,7 @@ protected:
     virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
 /************************************************************************/
-// IEServiceConnectionHandler overrides
+// ConnectionHandler overrides
 /************************************************************************/
 
     /**

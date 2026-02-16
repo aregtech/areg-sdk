@@ -9,11 +9,10 @@
 #include "examples/20_winchat/services/DirectMessagerStub.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
-#include "areg/component/NERegistry.hpp"
-#include "areg/base/TEResourceMap.hpp"
-#include "examples/20_winchat/services/NEDirectConnection.hpp"
-#include "common/NECommon.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "areg/component/Model.hpp"
+#include "areg/base/ResourceMap.hpp"
+#include "examples/20_winchat/services/DirectConnection.hpp"
+#include "common/ChatDefs.hpp"
 
 class DirectConnectionClient;
 class ChatPrticipantHandler;
@@ -22,15 +21,15 @@ class DirectChatService : public Component
                         , public DirectMessagerStub
                           
 {
-    using HashMapDirectConnections      = TEMap<String, DirectChatService *>;
-    using MapDirectConnections          = TELockResourceMap<String, DirectChatService *, HashMapDirectConnections>;
-    using ListDirectConnectionClients   = TEArrayList<DirectConnectionClient *>;
+    using HashMapDirectConnections      = OrderedMap<String, DirectChatService *>;
+    using MapDirectConnections          = ConcurrentResourceMap<String, DirectChatService *, HashMapDirectConnections>;
+    using ListDirectConnectionClients   = ArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, std::any data );
+    static NERegistry::Model GetModel( const DirectMessager::sParticipant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
     DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
@@ -48,7 +47,7 @@ protected:
      * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
-    virtual void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect ) override;
+    virtual void requestChatJoin( const DirectMessager::sParticipant & participant, const DateTime & timeConnect ) override;
 
     /**
      * \brief   Request call.
@@ -58,7 +57,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    virtual void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    virtual void requestMessageSend( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Request call.
@@ -67,7 +66,7 @@ protected:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    virtual void requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText ) override;
+    virtual void requestMessageType( const DirectMessager::sParticipant & participant, const String & msgText ) override;
 
     /**
      * \brief   Request call.
@@ -76,7 +75,7 @@ protected:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    virtual void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave ) override;
+    virtual void requestChatLeave( const DirectMessager::sParticipant & participant, const DateTime & timeLeave ) override;
 
 protected:
 

@@ -38,7 +38,7 @@ class TimerBase;
  *          It requires to run as separate thread.
  **/
 class TimerManagerBase  : protected DispatcherThread
-                        , protected IETimerManagerEventConsumer
+                        , protected TimerManagerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Runtime declaration

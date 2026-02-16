@@ -15,14 +15,14 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "areg/component/StubBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //! \brief   A demo of simple servicing component with timer without component servicing (request) methods.
 class ServicingComponent    : public    Component
                             , protected StubBase
-                            , protected IETimerConsumer
+                            , protected TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants
@@ -54,7 +54,7 @@ protected:
     virtual void shutdownServiceInterface ( Component & holder ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**
@@ -86,7 +86,7 @@ protected:
     }
 
 /************************************************************************/
-// IEStubEventConsumer interface overrides.
+// StubEventConsumer interface overrides.
 /************************************************************************/
 
     /**

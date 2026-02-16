@@ -19,7 +19,7 @@
  ************************************************************************/
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
 
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ProxyAddress.hpp"
@@ -27,8 +27,8 @@
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
 #include "areg/component/private/ServiceManager.hpp"
-#include "areg/ipc/IEServiceConnectionConsumer.hpp"
-#include "areg/ipc/IEServiceRegisterProvider.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
+#include "areg/ipc/RegistrationProvider.hpp"
 
 #include "areg/logging/GELog.h"
 
@@ -49,9 +49,9 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 }
 
 void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::eServiceManagerCommands cmdService
-                                                        , const IEInStream& stream
-                                                        , IEServiceConnectionProvider& connectProvider
-                                                        , IEServiceRegisterProvider& registerProvider )
+                                                        , const InStream& stream
+                                                        , ConnectionProvider& connectProvider
+                                                        , RegistrationProvider& registerProvider )
 {
     switch ( cmdService )
     {
@@ -213,8 +213,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             // Create service provider and service consumer list
             // to be able to unregister entries, because they are removing
             // elements from the existing list and it may invalidate position object.
-            TEArrayList<StubAddress> stubList;
-            TEArrayList<ProxyAddress> proxyList;
+            ArrayList<StubAddress> stubList;
+            ArrayList<ProxyAddress> proxyList;
             for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
             {
                 const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
@@ -278,7 +278,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     }
 }
 
-void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, IEServiceRegisterProvider& registerProvider)
+void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
 
@@ -309,7 +309,7 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
@@ -345,7 +345,7 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
     }
 }
 
-void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, IEServiceRegisterProvider& registerProvider)
+void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
 
@@ -372,7 +372,7 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 

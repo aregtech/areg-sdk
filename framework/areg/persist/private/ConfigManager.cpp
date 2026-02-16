@@ -18,14 +18,14 @@
   ************************************************************************/
 #include "areg/persist/ConfigManager.hpp"
 
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/persist/IEConfigurationListener.hpp"
+#include "areg/persist/ConfigListener.hpp"
 
 namespace
 {
-    inline uint32_t _findPosition( const TEArrayList<Property>& propList
+    inline uint32_t _findPosition( const ArrayList<Property>& propList
                                  , uint32_t startAt
                                  , const String& section
                                  , const String& module
@@ -56,8 +56,8 @@ namespace
     }
 
     template <typename Type>
-    inline void _setPositionValue( TEArrayList<Property>& writeList
-                                 , const TEArrayList<Property>& readList
+    inline void _setPositionValue( ArrayList<Property>& writeList
+                                 , const ArrayList<Property>& readList
                                  , const String& section
                                  , const String& module
                                  , const String& property
@@ -389,7 +389,7 @@ void ConfigManager::removeSectionProperties(const String& section)
     }
 }
 
-bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (mIsConfigured == false)
@@ -416,7 +416,7 @@ bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/,
     return mIsConfigured;
 }
 
-bool ConfigManager::readConfig(const FileBase& file, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::readConfig(const FileBase& file, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (mIsConfigured == false)
@@ -439,7 +439,7 @@ bool ConfigManager::readConfig(const FileBase& file, IEConfigurationListener * l
     return mIsConfigured;
 }
 
-bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::saveConfig(const String& filePath, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     bool result{ false };
@@ -499,7 +499,7 @@ bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener *
     return result;
 }
 
-bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, IEConfigurationListener * listener /*= nullptr*/)
+bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (listener != nullptr)
@@ -517,7 +517,7 @@ bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool 
     return result;
 }
 
-void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, IEConfigurationListener* listener /*= nullptr*/)
+void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigListener* listener /*= nullptr*/)
 {
     Lock lock(mLock);
 
@@ -637,19 +637,19 @@ bool ConfigManager::getLogEnabled(const String& logType) const
     return result;
 }
 
-bool ConfigManager::getLogEnabled(NELogging::eLogingTypes logType) const
+bool ConfigManager::getLogEnabled(NELogging::LoggingType logType) const
 {
     String id = Identifier::convToString( static_cast<unsigned int>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
+                                        , static_cast<unsigned int>(NELogging::LoggingType::LogTypeUndefined));
     return getLogEnabled(id);
 }
 
-void ConfigManager::setLogEnabled(NELogging::eLogingTypes logType, bool newValue, bool isTemporary /*= false*/)
+void ConfigManager::setLogEnabled(NELogging::LoggingType logType, bool newValue, bool isTemporary /*= false*/)
 {
     String id = Identifier::convToString( static_cast<unsigned int>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::eLogingTypes::LogTypeUndefined));
+                                        , static_cast<unsigned int>(NELogging::LoggingType::LogTypeUndefined));
     setLogEnabled(id, newValue, isTemporary);
 }
 

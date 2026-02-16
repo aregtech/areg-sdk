@@ -22,9 +22,9 @@
 #include "areglogger/client/LogObserverSwitches.h"
 #include "areglogger/client/LogObserverApi.h"
 
-#include "areg/base/NESocket.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/base/SocketDefs.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <map>
 #include <string>

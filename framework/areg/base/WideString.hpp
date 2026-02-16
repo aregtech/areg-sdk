@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEString.hpp"
+#include "areg/base/StringBase.hpp"
 
 #include <functional>
 #include <stdarg.h>
@@ -29,8 +29,8 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class IEInStream;
-class IEOutStream;
+class InStream;
+class OutStream;
 class String;
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,11 +47,11 @@ class String;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-class AREG_API WideString : public TEString<wchar_t>
+class AREG_API WideString : public StringBase<wchar_t>
  {
     friend class BufferStreamBase;
 
-    using Base = TEString<wchar_t>;
+    using Base = StringBase<wchar_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // defined constants
@@ -133,7 +133,7 @@ public:
     /**
      * \brief   Constructor, initializes string from streaming object
      **/
-    explicit WideString( const IEInStream & stream );
+    explicit WideString( const InStream & stream );
 
 //////////////////////////////////////////////////////////////////////////
 // operators
@@ -249,7 +249,7 @@ public:
      * \param   input    WideString object to initialize and write string data.
      * \return  Reference to stream object.
      **/
-    friend inline const IEInStream & operator >> (const IEInStream & stream, WideString & input);
+    friend inline const InStream & operator >> (const InStream & stream, WideString & input);
 
     /**
      * \brief   Streams from output object, i.e. write data from string to streaming object.
@@ -257,7 +257,7 @@ public:
      * \param   output    WideString object to read data from
      * \return  Reference to stream object.
      **/
-    friend inline IEOutStream & operator << (IEOutStream & stream, const WideString & output);
+    friend inline OutStream & operator << (OutStream & stream, const WideString & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -672,13 +672,13 @@ protected:
      * \brief   Reads string data from streaming object.
      * \param   stream  The streaming object, which contains string source data
      **/
-    void readStream(const IEInStream & stream);
+    void readStream(const InStream & stream);
 
     /**
      * \brief   Writes string data to streaming object.
      * \param   stream  The streaming object to write string data.
      **/
-    void writeStream(IEOutStream & stream) const;
+    void writeStream(OutStream & stream) const;
 };
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -708,55 +708,55 @@ namespace std
 //////////////////////////////////////////////////////////////////////////
 
 inline WideString::WideString(const wchar_t* source)
-    : TEString<wchar_t>(source)
+    : StringBase<wchar_t>(source)
 {
 }
 
 inline WideString::WideString(const std::wstring& source)
-    : TEString<wchar_t>(source)
+    : StringBase<wchar_t>(source)
 {
 }
 
 inline WideString::WideString(const std::wstring_view& source)
-    : TEString<wchar_t>(source)
+    : StringBase<wchar_t>(source)
 {
 }
 
 inline WideString::WideString(std::wstring&& source) noexcept
-    : TEString<wchar_t>( std::move( source ) )
+    : StringBase<wchar_t>( std::move( source ) )
 {
 }
 
 inline WideString::WideString(const std::string& source)
-    : TEString<wchar_t>()
+    : StringBase<wchar_t>()
 {
     assign(source.c_str(), static_cast<NEString::CharCount>(source.length()));
 }
 
 inline WideString::WideString(const char* source)
-    : TEString<wchar_t>()
+    : StringBase<wchar_t>()
 {
     assign(source, NEString::COUNT_ALL);
 }
 
 inline WideString::WideString(const wchar_t* source, uint32_t charCount)
-    : TEString<wchar_t>(source, static_cast<NEString::CharCount>(charCount))
+    : StringBase<wchar_t>(source, static_cast<NEString::CharCount>(charCount))
 {
 }
 
 inline WideString::WideString(const char* source, uint32_t charCount)
-    : TEString<wchar_t>()
+    : StringBase<wchar_t>()
 {
     assign(source, static_cast<NEString::CharCount>(charCount));
 }
 
 inline WideString::WideString( wchar_t ch )
-    : TEString<wchar_t>( ch )
+    : StringBase<wchar_t>( ch )
 {
 }
 
 inline WideString::WideString(uint32_t count)
-    : TEString<wchar_t>( static_cast<uint32_t>(count) )
+    : StringBase<wchar_t>( static_cast<uint32_t>(count) )
 {
 }
 
@@ -1000,13 +1000,13 @@ inline WideString operator + (const char* lhs, const WideString& rhs)
     return result;
 }
 
-inline const IEInStream& operator >> (const IEInStream& stream, WideString& input)
+inline const InStream& operator >> (const InStream& stream, WideString& input)
 {
     input.readStream(stream);
     return stream;
 }
 
-inline IEOutStream& operator << (IEOutStream& stream, const WideString& output)
+inline OutStream& operator << (OutStream& stream, const WideString& output)
 {
     output.writeStream(stream);
     return stream;

@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/persist/IEDatabaseEngine.hpp"
+#include "areg/persist/DatabaseEngine.hpp"
 #include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 /**
  * \brief   The SQLite Database engine.
  **/
-class SqliteDatabase  : public IEDatabaseEngine
+class SqliteDatabase  : public DatabaseEngine
 {
     friend class SqliteStatement;
 //////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IEDatabaseEngine interface overrides.
+// DatabaseEngine class overrides.
 /************************************************************************/
 
     /**

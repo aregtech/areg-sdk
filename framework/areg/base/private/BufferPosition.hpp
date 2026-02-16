@@ -20,12 +20,12 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IECursorPosition.hpp"
+#include "areg/base/Cursor.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEByteBuffer;
+class ByteBuffer;
 
 //////////////////////////////////////////////////////////////////////////
 // BufferPosition class declaration
@@ -45,7 +45,7 @@ public:
      * \brief	Sets the instance of byte buffer object
      * \param	buffer	Instance of Byte Buffer object
      **/
-    BufferPosition( IEByteBuffer & buffer );
+    BufferPosition( ByteBuffer & buffer );
 
     /**
      * \brief   Destructor
@@ -57,7 +57,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Invalidates current position, i.e. sets current position to IECursorPosition::INVALID_CURSOR_POSITION
+     * \brief   Invalidates current position, i.e. sets current position to Cursor::INVALID_CURSOR_POSITION
      **/
     inline void invalidate();
 
@@ -66,7 +66,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IECursorPosition interface overrides
+// Cursor interface overrides
 /************************************************************************/
 
     /**
@@ -84,13 +84,13 @@ public:
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from the beginning of data
-     *                  IECursorPosition::eCursorPosition::PositionCurrent -- position from current pointer position
-     *                  IECursorPosition::eCursorPosition::PositionEnd     -- position from the end of file
+     *                  Cursor::eCursorPosition::PositionBegin   -- position from the beginning of data
+     *                  Cursor::eCursorPosition::PositionCurrent -- position from current pointer position
+     *                  Cursor::eCursorPosition::PositionEnd     -- position from the end of file
      *
-     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    unsigned int setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const;
+    unsigned int setPosition( int offset, Cursor::eCursorPosition startAt ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -99,11 +99,11 @@ private:
     /**
      * \brief   Reference to the Byte Buffer object
      **/
-    IEByteBuffer &         mBuffer;
+    ByteBuffer &         mBuffer;
 
     /**
      * \brief   Current position of Byte Buffer cursor.
-     *          Value IECursorPosition::INVALID_CURSOR_POSITION means invalid position.
+     *          Value Cursor::INVALID_CURSOR_POSITION means invalid position.
      **/
     mutable unsigned int    mPosition;
 
@@ -121,7 +121,7 @@ private:
 
 inline void BufferPosition::invalidate()
 {
-    mPosition   = IECursorPosition::INVALID_CURSOR_POSITION;
+    mPosition   = Cursor::INVALID_CURSOR_POSITION;
 }
 
 #endif  // AREG_BASE_PRIVATE_BUFFERPOSITION_HPP

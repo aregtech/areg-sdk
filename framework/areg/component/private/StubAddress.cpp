@@ -19,8 +19,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/base/ThreadAddress.hpp"
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <string_view>
 
@@ -155,7 +155,7 @@ StubAddress::StubAddress( ServiceAddress && source)
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-StubAddress::StubAddress( const IEInStream & stream )
+StubAddress::StubAddress( const InStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )
     , mChannel      ( )
@@ -281,7 +281,7 @@ bool StubAddress::isValidated() const
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
-AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, StubAddress & input )
+AREG_API_IMPL const InStream & operator >> ( const InStream & stream, StubAddress & input )
 {
     ITEM_ID cookie = NEService::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
@@ -294,7 +294,7 @@ AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, StubAd
     return stream;
 }
 
-AREG_API_IMPL IEOutStream & operator << ( IEOutStream & stream, const StubAddress & output)
+AREG_API_IMPL OutStream & operator << ( OutStream & stream, const StubAddress & output)
 {
     stream << static_cast<const ServiceAddress &>(output);
     stream << output.mThreadName;

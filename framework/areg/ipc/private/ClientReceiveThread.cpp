@@ -16,14 +16,14 @@
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/ipc/ClientConnection.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
-ClientReceiveThread::ClientReceiveThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
+ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
     : DispatcherThread  (namePrefix + NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -39,7 +39,7 @@ bool ClientReceiveThread::runDispatcher()
     
     readyForEvents( true );
 
-    IESyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
+    SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
     RemoteMessage msgReceived;
     int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };

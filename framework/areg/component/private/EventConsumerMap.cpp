@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/component/private/EventConsumerMap.hpp"
 
-#include "areg/component/IEEventConsumer.hpp"
+#include "areg/component/EventConsumer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class implementation
@@ -33,7 +33,7 @@ EventConsumerList::~EventConsumerList()
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class, methods
 //////////////////////////////////////////////////////////////////////////
-bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
+bool EventConsumerList::addConsumer( EventConsumer& whichConsumer )
 {
     bool result = false;
     if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
@@ -45,7 +45,7 @@ bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
     return result;
 }
 
-bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
+bool EventConsumerList::removeConsumer( EventConsumer& whichConsumer )
 {
     bool result = false;
     if ( EventConsumerListBase::removeEntry(&whichConsumer) )
@@ -62,7 +62,7 @@ void EventConsumerList::removeAllConsumers()
     EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
     for (; isValidPosition(pos); pos = nextPosition(pos))
     {
-        IEEventConsumer* consumer = valueAtPosition(pos);
+        EventConsumer* consumer = valueAtPosition(pos);
         ASSERT(consumer != nullptr);
         consumer->consumerRegistered(false);
     }

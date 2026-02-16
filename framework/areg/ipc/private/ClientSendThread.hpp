@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteMessageHandler;
+class RemoteMessageHandler;
 class ClientConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ class ClientConnection;
  *          are queued in message sender thread. 
  **/
 class ClientSendThread  : public    DispatcherThread
-                        , public    IESendMessageEventConsumer
+                        , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -51,7 +51,7 @@ public:
      * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_SEND_MESSAGE_THREAD
      *                          to have unique thread names.
      **/
-    ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
+    ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
     /**
      * \brief   Destructor
      **/
@@ -92,7 +92,7 @@ protected:
     virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
-// IEEventRouter interface overrides
+// EventRouter interface overrides
 /************************************************************************/
 
     /**
@@ -108,7 +108,7 @@ protected:
 
 private:
 /************************************************************************/
-// IESendMessageEventConsumer interface overrides.
+// SendMessageEventConsumer interface overrides.
 /************************************************************************/
     /**
      * \brief   Automatically triggered when event is dispatched by registered
@@ -126,7 +126,7 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteMessageHandler&     mRemoteService;
+    RemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/

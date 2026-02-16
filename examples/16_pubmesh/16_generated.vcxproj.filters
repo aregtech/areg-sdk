@@ -32,13 +32,13 @@
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorldStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\NELocalHelloWorld.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\LocalHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\NEPublicHelloWorld.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\NESystemShutdown.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\SystemShutdown.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\16_pubmesh\services\private\PublicHelloWorldClientBase.cpp">
@@ -91,13 +91,13 @@
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorldStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\NELocalHelloWorld.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\LocalHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\NEPublicHelloWorld.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\NESystemShutdown.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\SystemShutdown.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\16_pubmesh\services\PublicHelloWorldClientBase.hpp">

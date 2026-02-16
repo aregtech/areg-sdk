@@ -16,16 +16,15 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/EventDispatcherBase.cpp
 	areg/component/private/EventQueue.cpp
 	areg/component/private/ExitEvent.cpp
-	areg/component/private/IEEventConsumer.cpp
-	areg/component/private/IEEventDispatcher.cpp
-	areg/component/private/IEEventRouter.cpp
-	areg/component/private/IEProxyListener.cpp
-	areg/component/private/IEQueueListener.cpp
-	areg/component/private/IERemoteEventConsumer.cpp
-	areg/component/private/IETimerConsumer.cpp
-	areg/component/private/IEWorkerThreadConsumer.cpp
-	areg/component/private/NERegistry.cpp
-	areg/component/private/NEService.cpp
+	areg/component/private/EventConsumer.cpp
+	areg/component/private/EventRouter.cpp
+	areg/component/private/ProxyListener.cpp
+	areg/component/private/QueueListener.cpp
+	areg/component/private/RemoteEventConsumer.cpp
+	areg/component/private/TimerConsumer.cpp
+	areg/component/private/WorkerThreadConsumer.cpp
+	areg/component/private/Model.cpp
+	areg/component/private/ServiceDefs.cpp
 	areg/component/private/NotificationEvent.cpp
 	areg/component/private/ProxyAddress.cpp
 	areg/component/private/ProxyBase.cpp
@@ -49,7 +48,7 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/StubBase.cpp
 	areg/component/private/StubConnectEvent.cpp
 	areg/component/private/StubEvent.cpp
-	areg/component/private/TEEvent.cpp
+	areg/component/private/EventTemplate.cpp
 	areg/component/private/Timer.cpp
 	areg/component/private/TimerBase.cpp
 	areg/component/private/TimerEventData.cpp

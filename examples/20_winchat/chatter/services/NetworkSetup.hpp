@@ -30,10 +30,10 @@ protected:
      * \param   result      The connection operation result
      * \see     requestConnect
      **/
-    virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result ) override;
+    virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, ConnectionManager::eConnectionResult result ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

@@ -18,7 +18,7 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/private/ExitEvent.hpp"
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/component/private/IEQueueListener.hpp"
+#include "areg/component/private/QueueListener.hpp"
 
 #include "areg/base/RuntimeClassID.hpp"
 
@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventQueue::EventQueue( IEQueueListener & eventListener, SortedEventStack & eventQueue )
+EventQueue::EventQueue( QueueListener & eventListener, SortedEventStack & eventQueue )
     : mEventListener(eventListener)
     , mEventQueue   (eventQueue)
 {
@@ -77,7 +77,7 @@ void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
 // ExternalEventQueue class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener, uint32_t maxQueue)
+ExternalEventQueue::ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue)
     : EventQueue( eventListener, mStack )
     , mStack    ( maxQueue)
 {
@@ -93,7 +93,7 @@ ExternalEventQueue::~ExternalEventQueue()
 //////////////////////////////////////////////////////////////////////////
 
 InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
-    : EventQueue( static_cast<IEQueueListener &>(self()), mStack )
+    : EventQueue( static_cast<QueueListener &>(self()), mStack )
     , mStack    ( maxQueue )
 {
 }

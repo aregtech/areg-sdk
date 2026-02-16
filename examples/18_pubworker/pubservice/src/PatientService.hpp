@@ -53,7 +53,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
+    virtual WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

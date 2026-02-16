@@ -13,7 +13,7 @@
 #include "areg/logging/GELog.h"
 #include "aregextend/console/Console.hpp"
 
-#include "common/src/NECommon.hpp"
+#include "common/src/PubSubDefs.hpp"
 #include "common/src/PubSubMixed.hpp"
 #include "pubsubctrl/src/PubSubController.hpp"
 
@@ -33,7 +33,7 @@ namespace
     constexpr char const _modelName[]       { "ServiceModel" };
 
     //!< Generates the name of second Publisher that is using same interface.
-    String SecondRole(NEUtilities::generateName(NECommon::PublisherSecond));
+    String SecondRole(NEUtilities::generateName(pubsub::PublisherSecond));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,12 +48,12 @@ BEGIN_MODEL( _modelName )
     // define component thread
     BEGIN_REGISTER_THREAD( "TestServiceThread1" )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT(NECommon::ContollerPublisher, PubSubController )
+        BEGIN_REGISTER_COMPONENT(pubsub::ContollerPublisher, PubSubController )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::ContollerPublisher)
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
+            REGISTER_DEPENDENCY(pubsub::ContollerPublisher)
         // end of component description
-        END_REGISTER_COMPONENT(NECommon::ContollerPublisher)
+        END_REGISTER_COMPONENT(pubsub::ContollerPublisher)
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread1" )
 
@@ -62,8 +62,8 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(SecondRole, PubSubMixed)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
-            REGISTER_DEPENDENCY(NECommon::ContollerPublisher)
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
+            REGISTER_DEPENDENCY(pubsub::ContollerPublisher)
             REGISTER_DEPENDENCY(SecondRole)
         // end of component description
         END_REGISTER_COMPONENT(SecondRole)
@@ -99,8 +99,8 @@ int main( )
         // Output the title of the application.
         Console & console = Console::getInstance();
         console.clearScreen();
-        console.outputTxt(NECommon::CoordTitle, _title);
-        console.outputTxt(NECommon::CoordSubtitle, NECommon::Separator);
+        console.outputTxt(pubsub::CoordTitle, _title);
+        console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);
 
         // Set this value to have correct outputs on console, it plays no other role.
         ComponentLoader::setComponentData(SecondRole, std::make_any<int>(1));

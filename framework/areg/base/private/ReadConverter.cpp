@@ -17,9 +17,9 @@
  ************************************************************************/
 #include "areg/base/private/ReadConverter.hpp"
 
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/IECursorPosition.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/Cursor.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
 
@@ -30,7 +30,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ReadConverter::ReadConverter( IEInStream & readStream, IECursorPosition & readPosition )
+ReadConverter::ReadConverter( InStream & readStream, Cursor & readPosition )
     : mReadStream   (readStream)
     , mReadPosition (readPosition)
 {
@@ -133,7 +133,7 @@ bool ReadConverter::readLine( String & Value ) const
         {
             if (getChar(ch) && (NEString::isCarriageReturn<char>(ch) == false) && (NEString::isEndOfString<char>(ch) == false))
             {
-                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(char)), IECursorPosition::eCursorPosition::PositionCurrent);
+                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(char)), Cursor::eCursorPosition::PositionCurrent);
             }
 
             break;
@@ -156,7 +156,7 @@ bool ReadConverter::readLine( WideString & Value ) const
         {
             if ( getChar( ch ) && (NEString::isCarriageReturn<wchar_t>( ch ) == false) && (NEString::isEndOfString<wchar_t>( ch ) == false) )
             {
-                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(wchar_t)), IECursorPosition::eCursorPosition::PositionCurrent);
+                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(wchar_t)), Cursor::eCursorPosition::PositionCurrent);
             }
 
             break;

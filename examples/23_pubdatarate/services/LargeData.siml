@@ -7,7 +7,7 @@ image data to connected clients.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="42" Name="ImageBlock" Type="Imported">
-            <Location>common/NELargeData.hpp</Location>
+            <Location>common/LargeDataDefs.hpp</Location>
             <Namespace>NELargeData</Namespace>
             <ImportedObject>ImageBlock</ImportedObject>
             <Description/>

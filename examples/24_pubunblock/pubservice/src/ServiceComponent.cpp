@@ -13,7 +13,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/GELog.h"
 
 #include <iostream>
@@ -26,12 +26,12 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 ServiceComponent::ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , HelloUnblockStub  ( static_cast<Component &>(self()) )
-    , IETimerConsumer   ( )
+    , TimerConsumer   ( )
 
     , mSessionList      ( )
-    , mTimer            ( static_cast<IETimerConsumer &>(self()), entry.mRoleName )
+    , mTimer            ( static_cast<TimerConsumer &>(self()), entry.mRoleName )
 {
-    setHelloServiceState( NEHelloUnblock::eServiceState::ServiceUndefined );
+    setHelloServiceState( HelloUnblock::eServiceState::ServiceUndefined );
 }
 
 void ServiceComponent::startupServiceInterface( Component & holder )
@@ -39,7 +39,7 @@ void ServiceComponent::startupServiceInterface( Component & holder )
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_startupServiceInterface );
 
     HelloUnblockStub::startupServiceInterface( holder );
-    setHelloServiceState( NEHelloUnblock::eServiceState::ServiceActive );
+    setHelloServiceState( HelloUnblock::eServiceState::ServiceActive );
     LOG_DBG( "The service [ %s ] is up and running", getRoleName( ).getString( ) );
 }
 
@@ -55,7 +55,7 @@ void ServiceComponent::requestHelloUblock( unsigned int clientId, unsigned int s
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
 
-    ASSERT( clientId != NEHelloUnblock::InvalidId );
+    ASSERT( clientId != HelloUnblock::InvalidId );
 
     String timestamp( DateTime::getNow( ).formatTime( ) );
     uint32_t sessionId = unblockCurrentRequest( );
@@ -64,8 +64,8 @@ void ServiceComponent::requestHelloUblock( unsigned int clientId, unsigned int s
     if ( mSessionList.isEmpty() )
     {
         ASSERT( mTimer.isActive( ) == false );
-        LOG_DBG( "First request with valid ID, trigger timer to send response every [ %u ] ms", NEHelloUnblock::ServiceTimeout );
-        mTimer.startTimer( NEHelloUnblock::ServiceTimeout, Timer::CONTINUOUSLY );
+        LOG_DBG( "First request with valid ID, trigger timer to send response every [ %u ] ms", HelloUnblock::ServiceTimeout );
+        mTimer.startTimer( HelloUnblock::ServiceTimeout, Timer::CONTINUOUSLY );
     }
 
     mSessionList.pushLast( SessionEtnry{ clientId, seqNr, sessionId } );
@@ -101,7 +101,7 @@ void ServiceComponent::processTimer( Timer & /* timer */ )
     if ( mSessionList.isEmpty( ) )
     {
         mTimer.stopTimer( );
-        setHelloServiceState( NEHelloUnblock::eServiceState::ServiceShutdown );
+        setHelloServiceState( HelloUnblock::eServiceState::ServiceShutdown );
 
         LOG_WARN( "No more saved sessions in the list, quit application!" );
         Application::signalAppQuit( );

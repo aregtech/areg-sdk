@@ -24,8 +24,8 @@
 #include "areg/component/private/Watchdog.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "areg/base/private/posix/NESyncTypesIX.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #ifndef __APPLE__
     #include <signal.h>
@@ -74,13 +74,13 @@ TimerPosix::TimerPosix()
 
 TimerPosix::~TimerPosix()
 {
-    SpinAutolockIX lock(mLock);
+    SpinAutolockPosix lock(mLock);
     _destroyTimer();
 }
 
 bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
 #ifdef __APPLE__
     return ((mTimerQueue != INVALID_DISPATCH_QUEUE) && (mTimerCallback != INVALID_TIMER_CALLBACK)) ||
            ((funcTimer != INVALID_TIMER_CALLBACK) && _createTimer(funcTimer));
@@ -91,7 +91,7 @@ bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
 
 bool TimerPosix::startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
 
     mContext    = &context;
     mContextId  = contextId;
@@ -115,13 +115,13 @@ bool TimerPosix::startTimer( TimerBase & context, id_type contextId, FuncPosixTi
 
 bool TimerPosix::restartTimer()
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
     return _startTimer();
 }
 
 bool TimerPosix::pauseTimer()
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
 
     if ( _isStarted() )
     {
@@ -137,7 +137,7 @@ bool TimerPosix::pauseTimer()
 
 bool TimerPosix::stopTimer()
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
 
     if ( _isStarted() )
     {
@@ -153,7 +153,7 @@ bool TimerPosix::stopTimer()
 
 void TimerPosix::destroyTimer()
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
 
     _destroyTimer();
 
@@ -163,7 +163,7 @@ void TimerPosix::destroyTimer()
 
 void TimerPosix::timerExpired()
 {
-    SpinAutolockIX lock(mLock);
+    SpinAutolockPosix lock(mLock);
     if (mContext != nullptr)
     {
         if (mContext->getEventCount() > TimerBase::ONE_TIME)

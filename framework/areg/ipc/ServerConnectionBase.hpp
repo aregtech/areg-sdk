@@ -21,10 +21,10 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/Containers.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnectionBase class declaration.
@@ -52,22 +52,22 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using MapSocketToObject 	= TEMap<SOCKETHANDLE, SocketAccepted>;
+    using MapSocketToObject 	= OrderedMap<SOCKETHANDLE, SocketAccepted>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
-    using MapCookieToSocket		= TEMap<ITEM_ID, SOCKETHANDLE>;
+    using MapCookieToSocket		= OrderedMap<ITEM_ID, SOCKETHANDLE>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
-    using MapSocketToCookie		= TEMap<SOCKETHANDLE, ITEM_ID>;
+    using MapSocketToCookie		= OrderedMap<SOCKETHANDLE, ITEM_ID>;
 
     /**
      * \brief   The list of accepted sockets.
      **/
-    using ListSockets			= TEArrayList<SOCKETHANDLE>;
+    using ListSockets			= ArrayList<SOCKETHANDLE>;
 
     /**
      * \brief   The size of master list to listen sockets for incoming messages.

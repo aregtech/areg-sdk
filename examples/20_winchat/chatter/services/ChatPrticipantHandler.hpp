@@ -5,8 +5,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "common/NECommon.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "common/ChatDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
@@ -25,9 +25,9 @@ class ChatPrticipantHandler
 //////////////////////////////////////////////////////////////////////////
 public:
     ChatPrticipantHandler( const String & serviceName
-                         , const NECommon::sInitiator & initiator
-                         , const NECommon::ListParticipants & listPaticipants
-                         , const NECommon::sParticipant & ownerConnection);
+                         , const chat::sInitiator & initiator
+                         , const chat::ListParticipants & listPaticipants
+                         , const chat::sParticipant & ownerConnection);
     virtual ~ChatPrticipantHandler();
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,15 +37,15 @@ public:
 
     inline bool IsValid() const;
 
-    inline void SetConnectionData( const String & serviceName, const NECommon::sInitiator & initiator, const NECommon::ListParticipants & connectionList);
+    inline void SetConnectionData( const String & serviceName, const chat::sInitiator & initiator, const chat::ListParticipants & connectionList);
 
-    inline void SetParticipantsList( const NECommon::ListParticipants & listParaticipants );
+    inline void SetParticipantsList( const chat::ListParticipants & listParaticipants );
 
     inline const String & GetServiceName() const;
 
-    inline const NECommon::sInitiator & GetInitiator() const;
+    inline const chat::sInitiator & GetInitiator() const;
 
-    inline const NECommon::ListParticipants & GetParticipantList() const;
+    inline const chat::ListParticipants & GetParticipantList() const;
     
     inline void SetChatWindow(ptr_type hWnd );
 
@@ -59,21 +59,21 @@ public:
 
     inline DirectMessagingClient * GetChatClient() const;
 
-    inline void SetConnectionOwner( const NECommon::sParticipant & ownerConnection );
+    inline void SetConnectionOwner( const chat::sParticipant & ownerConnection );
 
-    inline const NECommon::sParticipant & GetConnectionOwner() const;
+    inline const chat::sParticipant & GetConnectionOwner() const;
 
-    void SetInitiator( const NECommon::sInitiator & initiator );
+    void SetInitiator( const chat::sInitiator & initiator );
 
-    int AddParticipant( const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants );
+    int AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
 
-    bool AddParticipant( const NECommon::sInitiator & initiator, const NECommon::sParticipant & participant );
+    bool AddParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant );
 
-    int RemoveParticipant( const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants );
+    int RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
 
-    bool RemoveParticipant( const NECommon::sInitiator & initiator, const NECommon::sParticipant & participant );
+    bool RemoveParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant );
 
-    bool ParticipantExist( const NECommon::sParticipant & participant ) const;
+    bool ParticipantExist( const chat::sParticipant & participant ) const;
 
     bool IsEmpty() const;
 
@@ -84,16 +84,16 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    int findPosition( const NECommon::sParticipant & participant ) const;
+    int findPosition( const chat::sParticipant & participant ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     String                      mServiceName;
-    NECommon::sParticipant      mOwnerConnection;
-    NECommon::sInitiator        mInitiator;
-    NECommon::ListParticipants  mListParticipants;
+    chat::sParticipant      mOwnerConnection;
+    chat::sInitiator        mInitiator;
+    chat::ListParticipants  mListParticipants;
     DirectChatService *         mConnectionService;
     DirectMessagingClient *     mChatClient;
     bool                        mIsServicing;
@@ -119,7 +119,7 @@ inline bool ChatPrticipantHandler::IsValid() const
     return (mWndChat != 0) && (mConnectionService != nullptr);
 }
 
-inline void ChatPrticipantHandler::SetConnectionData( const String & serviceName, const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants )
+inline void ChatPrticipantHandler::SetConnectionData( const String & serviceName, const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
     Lock lock( mLock );
     mServiceName        = serviceName;
@@ -133,19 +133,19 @@ inline const String & ChatPrticipantHandler::GetServiceName() const
     return mServiceName;
 }
 
-void ChatPrticipantHandler::SetParticipantsList( const NECommon::ListParticipants & listParaticipants )
+void ChatPrticipantHandler::SetParticipantsList( const chat::ListParticipants & listParaticipants )
 {
     Lock lock( mLock );
     mListParticipants = listParaticipants;
 }
 
-inline const NECommon::sInitiator & ChatPrticipantHandler::GetInitiator() const
+inline const chat::sInitiator & ChatPrticipantHandler::GetInitiator() const
 {
     Lock lock( mLock );
     return mInitiator;
 }
 
-inline const NECommon::ListParticipants & ChatPrticipantHandler::GetParticipantList() const
+inline const chat::ListParticipants & ChatPrticipantHandler::GetParticipantList() const
 {
     Lock lock( mLock );
     return mListParticipants;
@@ -175,13 +175,13 @@ inline DirectChatService * ChatPrticipantHandler::GetConnectionService() const
     return mConnectionService;
 }
 
-inline void ChatPrticipantHandler::SetConnectionOwner( const NECommon::sParticipant & ownerConnection )
+inline void ChatPrticipantHandler::SetConnectionOwner( const chat::sParticipant & ownerConnection )
 {
     Lock lock( mLock );
     mOwnerConnection    = ownerConnection;
 }
 
-inline const NECommon::sParticipant & ChatPrticipantHandler::GetConnectionOwner() const
+inline const chat::sParticipant & ChatPrticipantHandler::GetConnectionOwner() const
 {
     Lock lock( mLock );
     return mOwnerConnection;

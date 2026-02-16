@@ -22,13 +22,13 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NEString.hpp"
+#include "areg/base/StringDefs.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEOutStream;
-class IECursorPosition;
+class OutStream;
+class Cursor;
 class String;
 class WideString;
 
@@ -49,7 +49,7 @@ public:
      * \param   writeStream     The writable streaming object
      * \param   writePosition   The position object of writable stream.
      **/
-    WriteConverter( IEOutStream & writeStream, IECursorPosition & writePosition );
+    WriteConverter( OutStream & writeStream, Cursor & writePosition );
 
     /**
      * \brief   Destructor.
@@ -199,8 +199,8 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEOutStream &      mWriteStream;    //!< Reference of a writable streaming object
-    // IECursorPosition & mWritePosition;  //!< Reference of cursor position object in writable stream.
+    OutStream &      mWriteStream;    //!< Reference of a writable streaming object
+    // Cursor & mWritePosition;  //!< Reference of cursor position object in writable stream.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods

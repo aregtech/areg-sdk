@@ -45,7 +45,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -72,7 +72,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate( NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state ) override;
+    virtual void onServiceProviderStateUpdate( PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

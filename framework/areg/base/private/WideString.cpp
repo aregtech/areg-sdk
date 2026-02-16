@@ -15,8 +15,8 @@
  ************************************************************************/
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/IOStream.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -154,10 +154,10 @@ namespace
      **/
     inline bool _isEqual(const wchar_t* str, const char* wstr)
     {
-        while ((*str != TEString<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
+        while ((*str != StringBase<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
 
-        return (*str == TEString<wchar_t>::EmptyChar);
+        return (*str == StringBase<wchar_t>::EmptyChar);
     }
 
 } // namespace
@@ -174,13 +174,13 @@ const WideString & WideString::getEmptyString()
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 WideString::WideString(const String & source)
-    : TEString<wchar_t>( )
+    : StringBase<wchar_t>( )
 {
     assign(source.getString(), source.getLength());
 }
 
-WideString::WideString( const IEInStream & stream )
-    : TEString<wchar_t>( )
+WideString::WideString( const InStream & stream )
+    : StringBase<wchar_t>( )
 {
     readStream(stream);
 }
@@ -624,12 +624,12 @@ WideString& WideString::append(const char* source, NEString::CharCount count /*=
     return (*this);
 }
 
-void WideString::readStream(const IEInStream& stream)
+void WideString::readStream(const InStream& stream)
 {
     stream.read(*this);
 }
 
-void WideString::writeStream(IEOutStream& stream) const
+void WideString::writeStream(OutStream& stream) const
 {
     stream.write(*this);
 }

@@ -22,7 +22,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/base/String.hpp"
 
 #include <string_view>
@@ -194,7 +194,7 @@ public:
      * \param   input   Identifier to write values
      * \return  Returns instance of read streaming object
      **/
-    friend inline const IEInStream & operator >> (const IEInStream & stream, Identifier & input);
+    friend inline const InStream & operator >> (const InStream & stream, Identifier & input);
 
     /**
      * \brief   Writes identifier value to stream.
@@ -202,7 +202,7 @@ public:
      * \param   output  Identifier to read values
      * \return  Returns instance of write streaming object
      **/
-    friend inline IEOutStream & operator << (IEOutStream & stream, const Identifier & output);
+    friend inline OutStream & operator << (OutStream & stream, const Identifier & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -330,14 +330,14 @@ inline unsigned int Identifier::getValue() const
  * Friend functions. Declare to make it streamable
  * It is streamable object and the values can be streamed between different threads
  ************************************************************************/
-inline const IEInStream& operator >> (const IEInStream& stream, Identifier& input)
+inline const InStream& operator >> (const InStream& stream, Identifier& input)
 {
     stream >> input.mValue;
     stream >> input.mName;
     return stream;
 }
 
-inline IEOutStream & operator << (IEOutStream& stream, const Identifier& output)
+inline OutStream & operator << (OutStream& stream, const Identifier& output)
 {
     stream << output.mValue;
     stream << output.mName;

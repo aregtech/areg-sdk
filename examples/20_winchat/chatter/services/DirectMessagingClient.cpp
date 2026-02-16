@@ -5,7 +5,7 @@
 
 #include "chatter/services/DirectMessagingClient.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 #include "areg/logging/GELog.h"
 
 #ifndef NOMINMAX
@@ -65,7 +65,7 @@ bool DirectMessagingClient::serviceConnected( NEService::eServiceConnection stat
     return result;
 }
 
-void DirectMessagingClient::responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected )
+void DirectMessagingClient::responseChatJoin( bool succeed, const DirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_responseChatJoin );
 
@@ -82,26 +82,26 @@ void DirectMessagingClient::responseChatJoin( bool succeed, const NEDirectMessag
     }
 }
 
-void DirectMessagingClient::broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
+void DirectMessagingClient::broadcastMessageSent( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastMessageSent );
     updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, sender, msgText, timeSent, DateTime::getNow() );
 }
 
-void DirectMessagingClient::broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText )
+void DirectMessagingClient::broadcastMessageTyped( const DirectMessager::sParticipant & participant, const String & msgText )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastMessageTyped );
     updateChatOutput( NEDistributedApp::eWndCommands::CmdChatTyping, participant, msgText, DateTime( ), DateTime( ) );
 }
 
-void DirectMessagingClient::broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined )
+void DirectMessagingClient::broadcastParticipantJoined( const DirectMessager::sParticipant & participant, const DateTime & timeJoined )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantJoined );
     if ( participant != mParticipantsHandler->GetConnectionOwner() )
         updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, participant, String( "Joined chat" ), timeJoined, DateTime::getNow() );
 }
 
-void DirectMessagingClient::broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft )
+void DirectMessagingClient::broadcastParticipantLeft( const DirectMessager::sParticipant & participant, const DateTime & timeLeft )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantLeft );
     updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, participant, String( "Left chat" ), timeLeft, DateTime::getNow() );
@@ -110,7 +110,7 @@ void DirectMessagingClient::broadcastParticipantLeft( const NEDirectMessager::sP
 void DirectMessagingClient::broadcastChatClosed()
 {
     LOG_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
-    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatClosed, NEDirectMessager::sParticipant(), String( "Chat Closed" ), DateTime(), DateTime() );
+    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatClosed, DirectMessager::sParticipant(), String( "Chat Closed" ), DateTime(), DateTime() );
 
     notifyOnBroadcastMessageSent( false );
     notifyOnBroadcastMessageTyped( false );
@@ -120,9 +120,9 @@ void DirectMessagingClient::broadcastChatClosed()
     notifyOnBroadcastParticipantLeft(false);
 }
 
-void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd )
+void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndCommands cmdSend, const DirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd )
 {
-    NECommon::sMessageData * data = NECommon::newData( );
+    chat::sMessageData * data = chat::newData( );
     if ( data != nullptr )
     {
         String nickName;
@@ -130,8 +130,8 @@ void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndComman
             nickName = "[ " + participant.nickName + " ]";
         else
             nickName = participant.nickName;
-        NEString::copyString<TCHAR, char>( data->nickName, NECommon::MAXLEN_NICKNAME, nickName.getString( ) );
-        NEString::copyString<TCHAR, char>( data->message , NECommon::MAXLEN_MESSAGE , msgText.getString( )  );
+        NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
+        NEString::copyString<TCHAR, char>( data->message , chat::MAXLEN_MESSAGE , msgText.getString( )  );
         data->timeSend      = dateStart;
         data->timeReceived  = dateEnd;
         data->dataSave      = participant.cookie;

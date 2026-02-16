@@ -8,26 +8,26 @@ the role name is a nick name of a registered application.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>sParticipant</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="3" Name="sInitiator" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>sInitiator</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="4" Name="ListParticipants" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>ListParticipants</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="6" Name="MapParticipants" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>MapParticipants</ImportedObject>
             <Description/>
         </DataType>
@@ -121,11 +121,11 @@ the role name is a nick name of a registered application.</Description>
     </MethodList>
     <ConstantList>
         <Constant ID="36" Name="InvalidSession" DataType="uint64">
-            <Value>NECommon::InvalidSession</Value>
+            <Value>chat::InvalidSession</Value>
             <Description>Indicates Invalid session</Description>
         </Constant>
         <Constant ID="37" Name="InvalidCookie" DataType="uint32">
-            <Value>NECommon::InvalidCookie</Value>
+            <Value>chat::InvalidCookie</Value>
             <Description>Indicates Invalid cookie</Description>
         </Constant>
         <Constant ID="38" Name="ServicePrefixStub" DataType="String">
@@ -138,7 +138,7 @@ the role name is a nick name of a registered application.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="47" Name="common/NECommon.hpp">
+        <Location ID="47" Name="common/ChatDefs.hpp">
             <Description>Shared data</Description>
         </Location>
     </IncludeList>

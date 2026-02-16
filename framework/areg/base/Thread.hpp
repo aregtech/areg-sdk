@@ -25,10 +25,10 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/RuntimeObject.hpp"
 
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/base/ThreadAddress.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/ResourceMap.hpp"
 #include "areg/base/String.hpp"
 
 #include <string_view>
@@ -38,8 +38,8 @@
  * Dependencies
  ************************************************************************/
 class ThreadLocalStorage;
-class IEThreadConsumer;
-class IEInStream;
+class ThreadConsumer;
+class InStream;
 class String;
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,14 +51,14 @@ class String;
  *          Use this or derived classes to keep tracking of instantiated and running thread
  *          that can be accessed by ID, unique names or handles. The class creates (starts) 
  *          and destroys (stops) thread. To implement the cyclic runs, the object requires
- *          instance of thread consumer (IEThreadConsumer). It as well provides the possibility
+ *          instance of thread consumer (ThreadConsumer). It as well provides the possibility
  *          to save thread specific storage to store objects that are not accessible outside
  *          of the thread context.
  * 
  *          The derived objects are Dispatcher, Worker and Component threads that are able
  *          to receive and process thread specific events.
  *
- * \see     IEThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
+ * \see     ThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
  **/
 class AREG_API Thread  : public RuntimeObject
 {
@@ -148,7 +148,7 @@ public:
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
      *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
-    Thread( IEThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -376,7 +376,7 @@ public:
     /**
      * \brief   Returns the current Thread Consumer, saved in local storage.
      **/
-    static IEThreadConsumer & getCurrentThreadConsumer();
+    static ThreadConsumer & getCurrentThreadConsumer();
 
     /**
      * \brief   Returns the Local Storage Object of the Thread.
@@ -458,7 +458,7 @@ protected:
     /**
      * \brief   Reference to Thread Consumer interface
      **/
-    IEThreadConsumer &      mThreadConsumer;
+    ThreadConsumer &      mThreadConsumer;
     /**
      * \brief   Thread handle
      **/
@@ -653,23 +653,23 @@ private:
      * \brief   Thread resource mapping by thread ID.
      *          The unique thread ID is set when thread is created
      **/
-    using   MapThreadID             = TEIdMap<Thread *>;
-    using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread *>;
-    using   MapThreadIDResource     = TELockResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
+    using   MapThreadID             = IdMap<Thread *>;
+    using   ImplThreadIDResource    = ResourceMapImpl<id_type, Thread *>;
+    using   MapThreadIDResource     = ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   MapThreadPoiters        = TEPointerMap<Thread *>;
-    using   ImplThreadHandleResource= TEResourceMapImpl< void *, Thread *>;
-    using   MapThreadHandleResource = TELockResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
+    using   MapThreadPoiters        = PtrMap<Thread *>;
+    using   ImplThreadHandleResource= ResourceMapImpl< void *, Thread *>;
+    using   MapThreadHandleResource = ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   MapThreadName           = TEStringMap<Thread *>;
-    using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread *>;
-    using   MapThreadNameResource   = TELockResourceMap<String, Thread *, MapThreadName, ImplThreadNameResource>;
+    using   MapThreadName           = StringMap<Thread *>;
+    using   ImplThreadNameResource  = ResourceMapImpl<String, Thread *>;
+    using   MapThreadNameResource   = ConcurrentResourceMap<String, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables

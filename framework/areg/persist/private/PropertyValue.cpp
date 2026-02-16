@@ -13,8 +13,8 @@
  * \brief       Property Key object to persist application data.
  ************************************************************************/
 #include "areg/persist/PropertyValue.hpp"
-#include "areg/persist/NEPersistence.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <utility>
 
@@ -185,7 +185,7 @@ unsigned int PropertyValue::getIndetifier( const std::vector<Identifier> & idLis
     unsigned int result = Identifier::BAD_IDENTIFIER_VALUE;
     if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
     {
-        std::vector<TEString<char>> list { mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list { mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };
@@ -235,12 +235,12 @@ void PropertyValue::setDouble(double dValue)
     mValue = String::makeString( dValue );
 }
 
-TEArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
+ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
 {
-    TEArrayList<Identifier> result;
+    ArrayList<Identifier> result;
     if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
     {
-        std::vector<TEString<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };
@@ -294,12 +294,12 @@ void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
     }
 }
 
-TEArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
+ArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
 {
-    TEArrayList<String> result;
+    ArrayList<String> result;
     if (mValue.isEmpty() == false)
     {
-        std::vector<TEString<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };

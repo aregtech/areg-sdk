@@ -18,8 +18,8 @@
  ************************************************************************/
 #include "areg/base/RemoteMessage.hpp"
 
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/logging/GELog.h"
 
 #include <algorithm>
@@ -57,7 +57,7 @@ RemoteMessage::RemoteMessage(const unsigned char * buffer, unsigned int size, un
 
 unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bufLength, bool makeCopy) const
 {
-    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
+    unsigned int result{ Cursor::INVALID_CURSOR_POSITION };
 
     if (newBuffer != nullptr)
     {

@@ -18,7 +18,7 @@
  ************************************************************************/
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/ConfigManager.hpp"
 

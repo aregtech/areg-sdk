@@ -22,8 +22,8 @@
  ************************************************************************/
 #include "areg/component/private/TimerManagerBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
-#include "areg/base/TEResourceMap.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/ResourceMap.hpp"
 
 /************************************************************************
  * Dependencies
@@ -65,8 +65,8 @@ private:
      **/
     static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
 
-    using MapTimerResource  = TEHashMap<TIMERHANDLE, Timer *>;
-    using TimerResource     = TELockResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
+    using MapTimerResource  = HashMap<TIMERHANDLE, Timer *>;
+    using TimerResource     = ConcurrentResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

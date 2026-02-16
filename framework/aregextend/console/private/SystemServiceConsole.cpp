@@ -21,7 +21,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "aregextend/console/Console.hpp"
 #include "aregextend/service/DataRateHelper.hpp"
-#include "aregextend/service/NESystemService.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
@@ -29,7 +29,7 @@
 SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
-    , IETimerConsumer   ( )
+    , TimerConsumer   ( )
 
     , mDataRateHelper   ( dataRate )
     , mTimer            ( self( ), "ConsoleServiceTimer" )

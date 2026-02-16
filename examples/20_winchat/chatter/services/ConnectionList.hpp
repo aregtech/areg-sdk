@@ -27,7 +27,7 @@ protected:
      * \param   success         Flag, indicating whether the request to register connection succeeded or not.
      * \see     requestRegisterConnection
      **/
-    virtual void responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnections & connectionList, bool success ) override;
+    virtual void responseRegisterConnection( const ConnectionManager::sConnection & connection, const ConnectionManager::ListConnections & connectionList, bool success ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when new client connection is accepted
@@ -35,7 +35,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
-    virtual void broadcastClientConnected( const NEConnectionManager::sConnection & clientConnected ) override;
+    virtual void broadcastClientConnected( const ConnectionManager::sConnection & clientConnected ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when client is disconnected
@@ -43,10 +43,10 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/
-    virtual void broadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft ) override;
+    virtual void broadcastClientDisconnected( const ConnectionManager::sConnection & clientLeft ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

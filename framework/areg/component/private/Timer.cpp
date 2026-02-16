@@ -20,7 +20,7 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_component_Timer_startTimer);
@@ -33,7 +33,7 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Timer::Timer( IETimerConsumer& timerConsumer
+Timer::Timer( TimerConsumer& timerConsumer
             , const String & timerName  /*= String::getEmptyString()*/
             , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
             , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)

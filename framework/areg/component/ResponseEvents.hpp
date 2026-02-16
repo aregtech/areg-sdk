@@ -109,7 +109,7 @@ protected:
      * \brief   Creates event from streaming object and initializes data
      * \param   stream  The streaming object to read data
      **/
-    ResponseEvent( const IEInStream & stream );
+    ResponseEvent( const InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -134,13 +134,13 @@ public:
      * \brief   Returns reference of data input streaming object
      *          to deserialize parameters.
      **/
-    inline const IEInStream & getReadStream() const;
+    inline const InStream & getReadStream() const;
 
     /**
      * \brief   Returns reference of data output streaming object
      *          to serialize parameters.
      **/
-    inline IEOutStream & getWriteStream();
+    inline OutStream & getWriteStream();
 
 protected:
     /**
@@ -160,14 +160,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    virtual const InStream & readStream( const InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    virtual OutStream & writeStream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -249,7 +249,7 @@ protected:
      * \brief   Creates event from streaming object and initializes data
      * \param   stream  The streaming object to read data
      **/
-    LocalResponseEvent(const IEInStream & stream);
+    LocalResponseEvent(const InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -328,7 +328,7 @@ protected:
      * \brief   Creates event from streaming object and initializes data
      * \param   stream  The streaming object to read data
      **/
-    RemoteResponseEvent(const IEInStream & stream);
+    RemoteResponseEvent(const InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -378,12 +378,12 @@ inline EventData & ResponseEvent::getData()
     return mData;
 }
 
-inline const IEInStream & ResponseEvent::getReadStream() const
+inline const InStream & ResponseEvent::getReadStream() const
 {
     return mData.getReadStream();
 }
 
-inline IEOutStream & ResponseEvent::getWriteStream()
+inline OutStream & ResponseEvent::getWriteStream()
 {
     return mData.getWriteStream();
 }

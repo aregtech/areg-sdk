@@ -19,7 +19,7 @@ macro_declare_executable(20_chatter
     chatter/res/chatter.rc
 
     chatter/DistrbutedApp.cpp
-    chatter/NEDistributedApp.cpp
+    chatter/DistributedAppDefs.cpp
 
     chatter/services/CentralMessaging.cpp
     chatter/services/ChatParticipantService.cpp
@@ -57,7 +57,7 @@ macro_declare_executable(20_register    20_generated
     register/res/register.rc
 
     register/CentralApp.cpp
-    register/NECentralApp.cpp
+    register/CentralAppDefs.cpp
 
     register/services/ConnectionManager.cpp
     

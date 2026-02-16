@@ -77,9 +77,9 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Disable consumer registration functionalities
     //////////////////////////////////////////////////////////////////////////
-    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
-    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, IEEventConsumer & whichConsumer ) override;
-    virtual int  removeConsumer( IEEventConsumer & whichConsumer ) override;
+    virtual bool registerEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
+    virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
+    virtual int  removeConsumer( EventConsumer & whichConsumer ) override;
     virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const override;
 
     //////////////////////////////////////////////////////////////////////////
@@ -133,13 +133,13 @@ inline NullDispatcherThread::NullDispatcherThread()
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class. Disable basic functionalities.
 //////////////////////////////////////////////////////////////////////////
-bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID & /* whichClass*/, IEEventConsumer & /*whichConsumer*/ )
+bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID & /* whichClass*/, EventConsumer & /*whichConsumer*/ )
 {   return false;   }
 
-bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID & /*whichClass*/, IEEventConsumer & /* whichConsumer*/ )
+bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID & /*whichClass*/, EventConsumer & /* whichConsumer*/ )
 {   return false;   }
 
-int NullDispatcherThread::removeConsumer( IEEventConsumer & /* whichConsumer*/ )
+int NullDispatcherThread::removeConsumer( EventConsumer & /* whichConsumer*/ )
 {   return 0;       }
 
 bool NullDispatcherThread::hasRegisteredConsumer( const RuntimeClassID & /* whichClass */ ) const
@@ -166,7 +166,7 @@ void NullDispatcherThread::onThreadRuns()
 int NullDispatcherThread::onThreadExit()
 {
     ASSERT(false);
-    return static_cast<int>(IEThreadConsumer::eExitCodes::ExitError);
+    return static_cast<int>(ThreadConsumer::eExitCodes::ExitError);
 }
 
 bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= NECommon::WAIT_INFINITE */ )
@@ -204,7 +204,7 @@ DispatcherThread & DispatcherThread::_getNullDispatherThread()
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
-    : Thread          ( static_cast<IEThreadConsumer &>(self()), threadName, stackSizeKb )
+    : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
     , EventDispatcher ( threadName, maxQeueue )
 
     , mEventStarted     ( true, false )

@@ -39,7 +39,7 @@ LogScope::LogScope( const char * scopeName, NELogging::eLogPriority priority /*=
     LogManager::registerLogScope( self() );
 }
 
-LogScope::LogScope(const IEInStream & stream)
+LogScope::LogScope(const InStream & stream)
     : mScopeId      ( stream.read32Bits() )
     , mScopePrio    ( stream.read32Bits() )
     , mScopeName    ( stream )
@@ -76,7 +76,7 @@ LogScope::LogScope(const char* /*scopeName*/, NELogging::eLogPriority /*priority
 {
 }
 
-LogScope::LogScope(const IEInStream& /*stream*/ )
+LogScope::LogScope(const InStream& /*stream*/ )
     : mScopeId      ( 0 )
     , mScopePrio    ( static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid) )
     , mScopeName    ( )

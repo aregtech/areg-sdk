@@ -17,9 +17,9 @@
 
 #include "areg/component/Component.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/NECommon.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/CommonDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <string_view>
 #include <utility>
@@ -113,7 +113,7 @@ ComponentAddress::ComponentAddress( ComponentAddress && src ) noexcept
 {
 }
 
-ComponentAddress::ComponentAddress( const IEInStream & stream )
+ComponentAddress::ComponentAddress( const InStream & stream )
     : mRoleName     ( stream )
     , mThreadAddress( stream )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )

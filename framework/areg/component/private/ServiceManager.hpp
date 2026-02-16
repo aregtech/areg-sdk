@@ -23,10 +23,10 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/ServiceManagerEvents.hpp"
-#include "areg/ipc/IEServiceConnectionConsumer.hpp"
-#include "areg/ipc/IEServiceRegisterConsumer.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
+#include "areg/ipc/RegistrationConsumer.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
 #include "areg/ipc/private/RouterClient.hpp"
 
@@ -65,9 +65,9 @@ class ServiceResponseEvent;
  *          which should be called before any model is loaded.
  **/
 class ServiceManager    : private   DispatcherThread
-                        , private   IEServiceManagerEventConsumer
-                        , private   IEServiceConnectionConsumer
-                        , private   IEServiceRegisterConsumer
+                        , private   ServiceManagerEventConsumer
+                        , private   ConnectionConsumer
+                        , private   RegistrationConsumer
 {
     friend class Application;
     friend class ServiceManagerEventProcessor;
@@ -299,7 +299,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IEServiceManagerEventConsumer overrides
+// ServiceManagerEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -312,7 +312,7 @@ private:
     virtual void processEvent( const ServiceManagerEventData & data ) override;
 
 /************************************************************************/
-// IEEventRouter Interface overrides.
+// EventRouter Interface overrides.
 /************************************************************************/
 
     /**
@@ -331,7 +331,7 @@ private:
     virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
-// IEServiceConnectionConsumer overrides
+// ConnectionConsumer overrides
 /************************************************************************/
 
     /**
@@ -355,7 +355,7 @@ private:
     virtual void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
-// IEServiceRegisterConsumer overrides
+// RegistrationConsumer overrides
 /************************************************************************/
 
     /**
@@ -366,7 +366,7 @@ private:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumer ) const override;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumer ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.
@@ -405,12 +405,12 @@ private:
     /**
      * \brief   Returns the instance of remote servicing handler.
      **/
-    inline IEServiceConnectionProvider& getServiceConnectionProvider();
+    inline ConnectionProvider& getServiceConnectionProvider();
 
     /**
      * \brief   Returns the instance of remote servicing handler.
      **/
-    inline IEServiceRegisterProvider& getServiceRegisterProvider();
+    inline RegistrationProvider& getServiceRegisterProvider();
 
     /**
      * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
@@ -467,14 +467,14 @@ private:
 // ServiceManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline IEServiceConnectionProvider& ServiceManager::getServiceConnectionProvider()
+inline ConnectionProvider& ServiceManager::getServiceConnectionProvider()
 {
-    return static_cast<IEServiceConnectionProvider&>(mServiceClient);
+    return static_cast<ConnectionProvider&>(mServiceClient);
 }
 
-inline IEServiceRegisterProvider& ServiceManager::getServiceRegisterProvider()
+inline RegistrationProvider& ServiceManager::getServiceRegisterProvider()
 {
-    return static_cast<IEServiceRegisterProvider&>(mServiceClient);
+    return static_cast<RegistrationProvider&>(mServiceClient);
 }
 
 inline ServiceManager & ServiceManager::self()

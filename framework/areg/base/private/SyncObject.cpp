@@ -1,0 +1,53 @@
+/************************************************************************
+ * This file is part of the Areg SDK core engine.
+ * Areg SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the Areg SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]areg.tech
+ *
+ * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
+ * \file        areg/base/private/SyncObject.cpp
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
+ * \author      Artak Avetyan
+ * \brief       Areg Platform, Base Synchronization object interface.
+ *
+ ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+
+#include "areg/base/SyncObject.hpp"
+
+//////////////////////////////////////////////////////////////////////////
+// SyncObject class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// SyncObject class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+
+SyncObject::SyncObject(SyncObject::eSyncObject syncObjectType)
+    : mSyncObject      ( nullptr )
+    , mSyncObjectType  (syncObjectType)
+{
+    ASSERT( mSyncObjectType != SyncObject::eSyncObject::SoUnknown );
+}
+
+SyncObject::~SyncObject()
+{
+    _osDestroySyncObject();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SyncObject class, Methods
+//////////////////////////////////////////////////////////////////////////
+bool SyncObject::lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
+{
+    return false;
+}
+
+bool SyncObject::unlock()
+{
+    return false;
+}

@@ -18,7 +18,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class implementation
@@ -188,7 +188,7 @@ void ComponentThread::terminateSelf()
         component->terminateSelf();
     }
 
-    TEArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::findThreadProxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.getSize(); ++i)
     {
@@ -204,7 +204,7 @@ void ComponentThread::terminateSelf()
 
 inline void ComponentThread::_shutdownProxies()
 {
-    TEArrayList<std::shared_ptr<ProxyBase>> proxyList;
+    ArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::findThreadProxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.getSize(); ++i)
     {

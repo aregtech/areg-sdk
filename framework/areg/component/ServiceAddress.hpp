@@ -103,7 +103,7 @@ public:
      * \brief   Initializes service address data from given streaming object.
      * \param   stream      The streaming object, which contain service address information
      **/
-    ServiceAddress( const IEInStream & stream );
+    ServiceAddress( const InStream & stream );
 
     /**
      * \brief   Copies data from given source.
@@ -165,14 +165,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Service address object to initialize data.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, ServiceAddress & input );
+    friend inline const InStream & operator >> ( const InStream & stream, ServiceAddress & input );
 
     /**
      * \brief   Streaming operator. Writes proxy address into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Service address object to serialize.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const ServiceAddress & output);
+    friend inline OutStream & operator << ( OutStream & stream, const ServiceAddress & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -330,7 +330,7 @@ inline bool ServiceAddress::isValidated() const
 // Global serialization operators
 //////////////////////////////////////////////////////////////////////////
 
-inline const IEInStream & operator >> ( const IEInStream & stream, ServiceAddress & input )
+inline const InStream & operator >> ( const InStream & stream, ServiceAddress & input )
 {
     stream >> static_cast<ServiceItem &>(input); 
     stream >> input.mRoleName; 
@@ -339,7 +339,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, ServiceAddres
     return stream;
 }
 
-inline IEOutStream & operator << ( IEOutStream & stream, const ServiceAddress & output)
+inline OutStream & operator << ( OutStream & stream, const ServiceAddress & output)
 {
     stream << static_cast<const ServiceItem &>(output);
     stream << output.mRoleName;

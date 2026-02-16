@@ -19,7 +19,7 @@
 class ServiceHelloWorld : protected HelloWorldStub
 {
     //!< The type of list of connected clients.
-    using ClientList = TEMap<String, unsigned int>;
+    using ClientList = OrderedMap<String, unsigned int>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

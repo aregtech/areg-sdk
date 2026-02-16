@@ -24,13 +24,13 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Event.hpp"
-#include "areg/component/IEEventConsumer.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/EventConsumer.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 /************************************************************************
  * List of declared classes
  ************************************************************************/
-class IENotificationEventConsumer;
+class NotificationConsumer;
 class NotificationEventData;
 class NotificationEvent;
 
@@ -45,7 +45,7 @@ class ProxyBase;
  *          Following classes are implemented in this file:
  *              1. NotificationEventData  -- the data contained in notification event.
  *              2. NotificationEvent      -- the notification event used for communication
- *              3. IENotificationEventConsumer -- Notification Event Consumer to process event.
+ *              3. NotificationConsumer -- Notification Event Consumer to process event.
  **/
 
 //////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ private:
  *          The notification events are queued in the internal queue of 
  *          the dispatcher and are processed immediately after external 
  *          event processing is finished. All Proxy clients are instances
- *          of IENotificationEventConsumer
+ *          of NotificationConsumer
  *
  *          The state-machines as well use internal notification events
  *          when generate event to trigger in state-machine.
@@ -219,7 +219,7 @@ public:
      * \param	data	Notification Data to forward.
      * \param	caller  The Notification Consumer, which should be notified.
      **/
-    static void sendEvent(const NotificationEventData & data, IENotificationEventConsumer * caller = nullptr);
+    static void sendEvent(const NotificationEventData & data, NotificationConsumer * caller = nullptr);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -281,7 +281,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// IENotificationEventConsumer class declaration
+// NotificationConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Notification Event consumer is an object that receives
@@ -289,7 +289,7 @@ private:
  *          Notification Event Consumer to be able to receive and process
  *          notifications from proxies.
  **/
-class AREG_API IENotificationEventConsumer  : public IEEventConsumer
+class AREG_API NotificationConsumer  : public EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -298,19 +298,19 @@ protected:
     /**
      * \brief   Default constructor.
      **/
-    IENotificationEventConsumer() = default;
+    NotificationConsumer() = default;
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~IENotificationEventConsumer() = default;
+    virtual ~NotificationConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IENotificationEventConsumer overrides
+// NotificationConsumer overrides
 /************************************************************************/
 
     /**
@@ -327,11 +327,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// IEEventConsumer overrides
+// EventConsumer overrides
 /************************************************************************/
 
     /**
-     * \brief   Override method derived from IEEventConsumer.
+     * \brief   Override method derived from EventConsumer.
      *          This function is filtering out notification events
      *          and triggers notification event processing function.
      **/
@@ -341,7 +341,7 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    AREG_NOCOPY_NOMOVE( IENotificationEventConsumer );
+    AREG_NOCOPY_NOMOVE( NotificationConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////

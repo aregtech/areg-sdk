@@ -23,7 +23,7 @@ DEF_LOG_SCOPE(examples_13_locservice_ServicingComponent_requestShutdownService);
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component     ( entry, owner )
     , HelloWorldStub( static_cast<Component &>(self()) )
-    , mRemainRequest( NEHelloWorld::MaxMessages )
+    , mRemainRequest( HelloWorld::MaxMessages )
 {
 }
 
@@ -42,7 +42,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     if ( mRemainRequest == 0 )
     {
         LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
-        broadcastReachedMaximum( NEHelloWorld::MaxMessages );
+        broadcastReachedMaximum( HelloWorld::MaxMessages );
     }
     else
     {

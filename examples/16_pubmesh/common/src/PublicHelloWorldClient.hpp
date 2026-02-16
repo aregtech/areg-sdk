@@ -16,7 +16,7 @@
 #include "areg/base/GEGlobal.h"
 #include "examples/16_pubmesh/services/PublicHelloWorldClientBase.hpp"
 #include "examples/16_pubmesh/services/SystemShutdownClientBase.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 class PublicHelloWorldClient    : private   PublicHelloWorldClientBase
                                 , private   SystemShutdownClientBase
-                                , private   IETimerConsumer
+                                , private   TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -55,7 +55,7 @@ protected:
      * \param   client  The client registration object that contains unique ID.
      * \see     requestRegister
      **/
-    virtual void responseRegister( const NEPublicHelloWorld::sClientRegister & client ) override;
+    virtual void responseRegister( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Response callback.
@@ -76,10 +76,10 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state ) override;
+    virtual void onServiceStateUpdate( SystemShutdown::eServiceState ServiceState, NEService::eDataStateType state ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -95,7 +95,7 @@ protected:
     virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
     /**
      * \brief   Triggered when Timer is expired.
@@ -120,7 +120,7 @@ private:
 protected:
     const unsigned int  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
     Timer               mTimer;     //!< The timer to trigger to send request to output message
-    NEPublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
+    PublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

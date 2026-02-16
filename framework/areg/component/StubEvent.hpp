@@ -31,7 +31,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/RuntimeObject.hpp"
-#include "areg/component/IEEventConsumer.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
@@ -41,8 +41,8 @@
  ************************************************************************/
 // class StreamableEvent
     class StubEvent;
-// class IEEventConsumer
-    class IEStubEventConsumer;
+// class EventConsumer
+    class StubEventConsumer;
 
 /************************************************************************
  * Dependencies
@@ -55,7 +55,7 @@ class StubConnectEvent;
 /************************************************************************
  * \brief   This file contains declarations of following classes:
  *              1. StubEvent
- *              2. IEStubEventConsumer
+ *              2. StubEventConsumer
  *          These objects are defining event object for component communication
  *          and the consumer object to parse and process event.
  *          For more information, see description bellow.
@@ -75,7 +75,7 @@ class AREG_API StubEvent  : public StreamableEvent
 /************************************************************************/
 // Friend classes
 /************************************************************************/
-    friend class IEStubEventConsumer;
+    friend class StubEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime event object
@@ -93,7 +93,7 @@ protected:
     /**
      * \brief   Initialize component event from streaming object.
      **/
-    StubEvent( const IEInStream & stream );
+    StubEvent( const InStream & stream );
     
     /**
      * \brief   Initializes target Stub addresses and sets event type.
@@ -140,13 +140,13 @@ protected:
      * \brief   Initialize component address from reading stream
      * \param   stream  The reading stream to read out data
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    virtual const InStream & readStream( const InStream & stream ) override;
 
     /**
      * \brief   Write component address to stream.
      * \param   stream  The writing stream to write in data
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    virtual OutStream & writeStream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -166,16 +166,16 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class declaration
+// StubEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   All Stub (service provider) objects are instances of 
- *          IEStubEventConsumer to receive and process component events.
- *          IEStubEventConsumer is registered at component thread as a
+ *          StubEventConsumer to receive and process component events.
+ *          StubEventConsumer is registered at component thread as a
  *          consumer of Stub specific events. It is extended in StubBase
  *          class, which is a base class for all Stub objects.
  **/
-class AREG_API IEStubEventConsumer  : public IEEventConsumer
+class AREG_API StubEventConsumer  : public EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -185,12 +185,12 @@ protected:
      * \brief   Default constructor
      * \param   stubAddress The address of stub object, which is handling consumer
      **/
-    explicit IEStubEventConsumer( const StubAddress & stubAddress );
+    explicit StubEventConsumer( const StubAddress & stubAddress );
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IEStubEventConsumer() = default;
+    virtual ~StubEventConsumer() = default;
 
     /**
      * \brief   Returns the pointer to the currently processing event object.
@@ -254,7 +254,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// IEEventConsumer interface overrides
+// EventConsumer interface overrides
 /************************************************************************/
     /**
      * \brief   Override derived from Event Consumer class.
@@ -298,8 +298,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEStubEventConsumer() = delete;
-    AREG_NOCOPY_NOMOVE( IEStubEventConsumer );
+    StubEventConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( StubEventConsumer );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -315,7 +315,7 @@ inline const StubAddress & StubEvent::getTargetStub() const
     return mTargetStubAddress;
 }
 
-inline const Event* IEStubEventConsumer::getCurrentEvent() const
+inline const Event* StubEventConsumer::getCurrentEvent() const
 {
     return mCurEvent;
 }

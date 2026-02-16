@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="chatter\NEDistributedApp.hpp">
+    <ClInclude Include="chatter\DistributedAppDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="chatter\res\resource.h">
@@ -80,7 +80,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="chatter\NEDistributedApp.cpp">
+    <ClCompile Include="chatter\DistributedAppDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chatter\res\stdafx.cpp">

@@ -12,7 +12,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "areg/component/IEWorkerThreadConsumer.hpp"
+#include "areg/component/WorkerThreadConsumer.hpp"
 #include "common/PatientInfoEvent.hpp"
 
 /**
@@ -21,7 +21,7 @@
  *          worker thread and the binding component (master), or between worker threads
  *          of the same binding component (master).
  **/
-class HardwareWorkerConsumer    : public    IEWorkerThreadConsumer
+class HardwareWorkerConsumer    : public    WorkerThreadConsumer
                                 , private   IEPatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEWorkerThreadConsumer overrides
+// WorkerThreadConsumer overrides
 /************************************************************************/
 
     /**

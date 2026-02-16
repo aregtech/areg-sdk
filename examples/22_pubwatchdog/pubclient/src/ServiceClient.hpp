@@ -52,7 +52,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state ) override;
+    virtual void onServiceStateUpdate( HelloWatchdog::eState ServiceState, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Response callback.
@@ -85,7 +85,7 @@ protected:
 #endif  // AREG_LOGS
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

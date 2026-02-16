@@ -21,7 +21,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/private/SortedEventStack.hpp"
-#include "areg/component/private/IEQueueListener.hpp"
+#include "areg/component/private/QueueListener.hpp"
 
 /************************************************************************
  * Dependencies
@@ -54,7 +54,7 @@ public:
      *                          the Queue is empty.
      * \param   messageQueue    The instance of event queue object to keep event elements.
      **/
-    EventQueue( IEQueueListener & eventListener, SortedEventStack & messageQueue );
+    EventQueue( QueueListener & eventListener, SortedEventStack & messageQueue );
 
     /**
      * \brief   Destructor
@@ -141,7 +141,7 @@ private:
      * \brief   Queue Listener object, which is signaled every time 
      *          new Event is pushed or removed.
      **/
-    IEQueueListener &   mEventListener;
+    QueueListener &   mEventListener;
     /**
      * \brief   Event queue stack object, which stores event elements
      **/
@@ -182,7 +182,7 @@ public:
      * \param   maxQueue        The maximum number of event elements in the queue.
      *                          The value NECommon::IGNORE_VALUE (0) means ignore the maximum size.
      **/
-    ExternalEventQueue( IEQueueListener & eventListener, uint32_t maxQueue );
+    ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue );
 
     /**
      * \brief   Destructor
@@ -212,7 +212,7 @@ private:
  *          Used to queue external types of event. 
  **/
 class AREG_API InternalEventQueue   : public    EventQueue
-                                    , private   IEQueueListener
+                                    , private   QueueListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -235,7 +235,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// IEQueueListener interface overrides
+// QueueListener interface overrides
 /************************************************************************/
     /**
      * \brief	Triggered from Event Queue object every time when new event

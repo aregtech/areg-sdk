@@ -47,18 +47,18 @@
     <ClCompile Include="units\GUnitTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
-    <ClCompile Include="units\NEStringTest.cpp" />
+    <ClCompile Include="units\StringDefsTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
-    <ClCompile Include="units\TEArrayListTest.cpp" />
-    <ClCompile Include="units\TEFixedArrayTest.cpp" />
-    <ClCompile Include="units\TEHashMapTest.cpp" />
-    <ClCompile Include="units\TELinkedListTest.cpp" />
-    <ClCompile Include="units\TEMapTest.cpp" />
-    <ClCompile Include="units\TEPropertyTest.cpp" />
-    <ClCompile Include="units\TERingStackTest.cpp" />
-    <ClCompile Include="units\TESortedLinkedListTest.cpp" />
-    <ClCompile Include="units\TEStackTest.cpp" />
+    <ClCompile Include="units\ArrayListTest.cpp" />
+    <ClCompile Include="units\FixedArrayTest.cpp" />
+    <ClCompile Include="units\HashMapTest.cpp" />
+    <ClCompile Include="units\LinkedListTest.cpp" />
+    <ClCompile Include="units\MapTest.cpp" />
+    <ClCompile Include="units\KeyValuePairTest.cpp" />
+    <ClCompile Include="units\RingStackTest.cpp" />
+    <ClCompile Include="units\SortedLinkedListTest.cpp" />
+    <ClCompile Include="units\StackTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />

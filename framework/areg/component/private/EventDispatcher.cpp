@@ -27,8 +27,8 @@
 //////////////////////////////////////////////////////////////////////////
 EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
     : EventDispatcherBase   ( name, maxQeueue )
-    , IEThreadConsumer      (  )
-    , IEEventRouter         (  )
+    , ThreadConsumer      (  )
+    , EventRouter         (  )
 
     , mDispatcherThread     ( nullptr )
 {
@@ -67,7 +67,7 @@ int EventDispatcher::onThreadExit()
 {
     exitDispatcher( );
     mDispatcherThread   = nullptr;
-    return static_cast<int>(IEThreadConsumer::eExitCodes::ExitNormal);
+    return static_cast<int>(ThreadConsumer::eExitCodes::ExitNormal);
 }
 
 bool EventDispatcher::postEvent( Event& eventElem )

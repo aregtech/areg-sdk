@@ -12,11 +12,11 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/GELog.h"
 
 
-#include "common/NELargeData.hpp"
+#include "common/LargeDataDefs.hpp"
 #include "pubclient/src/ServiceClient.hpp"
 
 #ifdef _MSC_VER

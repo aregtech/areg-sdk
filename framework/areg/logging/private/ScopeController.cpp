@@ -18,10 +18,10 @@
 #include "areg/logging/private/ScopeController.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/persist/Property.hpp"
 #include "areg/logging/LogScope.hpp"
-#include "areg/logging/private/NELogOptions.hpp"
+#include "areg/logging/private/LogOptions.hpp"
 
 #if AREG_LOGS
 inline bool ScopeController::_isScopeGroup( const String & scopeName )

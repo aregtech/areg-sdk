@@ -13,14 +13,14 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "examples/24_pubunblock/services/HelloUnblockClientBase.hpp"
 
-#include "areg/base/TEStack.hpp"
+#include "areg/base/Stack.hpp"
 #include "areg/component/Timer.hpp"
 
 /**
- * \brief   This service client sends a request every 200 ms (NEHelloUnblock::ClientTimeot).
+ * \brief   This service client sends a request every 200 ms (HelloUnblock::ClientTimeot).
  *          Since the service responses with the timeout 500 ms, if do not manually
  *          unblock the request it will fail with reason 'the request is busy'
  *          (NEService::ResultType::RequestBusy).
@@ -30,10 +30,10 @@
  **/
 class ServiceClient : public    Component
                     , private   HelloUnblockClientBase
-                    , private   IETimerConsumer
+                    , private   TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
-    using SequenceList = TENolockStack<uint32_t>;
+    using SequenceList = Stack<uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -46,7 +46,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -105,7 +105,7 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onHelloServiceStateUpdate( NEHelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state ) override;
+    virtual void onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 

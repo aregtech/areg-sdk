@@ -18,9 +18,9 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/GELog.h"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/FsmDefs.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef _MSC_VER
@@ -38,7 +38,7 @@
 constexpr char const _modelName[]  { "TheModel" };   //!< The name of model
 constexpr char const _threadName[] { "TestTrafficLightThread" }; //!< The name of component wonning thread.
 static char clientRole[128];    //!< The role name of service client.
-static const char* const _compName  = NEUtilities::generateName(NECommon::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
+static const char* const _compName  = NEUtilities::generateName(fsm::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -48,7 +48,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _compName, TrafficLightClient )
             // register TrafficController dependency.
-            REGISTER_DEPENDENCY(NECommon::ServiceLightController)
+            REGISTER_DEPENDENCY(fsm::ServiceLightController)
         // end of component description
         END_REGISTER_COMPONENT( _compName )
     // end of thread description

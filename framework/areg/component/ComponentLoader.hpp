@@ -21,8 +21,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/NERegistry.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/component/Model.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 /************************************************************************
  * \brief   Predefined MACRO to model threads, components and services.
@@ -375,13 +375,13 @@ private:
      * \brief   ComponentLoader::ModelList
      *          Linked List of Model objects
      **/
-    using ModelList     = TEArrayList<NERegistry::Model>;
+    using ModelList     = ArrayList<NERegistry::Model>;
 
     /**
      * \brief   ComponentLoader::ThreadList
      *          Array of component threads.
      **/
-    using ThreadList    = TEArrayList<Thread *>;
+    using ThreadList    = ArrayList<Thread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

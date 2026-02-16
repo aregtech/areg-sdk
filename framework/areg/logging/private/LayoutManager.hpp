@@ -18,16 +18,16 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if AREG_LOGS
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IELayout;
-class IEOutStream;
+class LogLayout;
+class OutStream;
 
 //////////////////////////////////////////////////////////////////////////
 // ClientService class declaration
@@ -46,7 +46,7 @@ class LayoutManager
 // Local types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
-    using ListLayouts   = TEArrayList<IELayout *>;
+    using ListLayouts   = ArrayList<LogLayout *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -84,7 +84,7 @@ public:
      * \param   logMsg  The logging message to stream.
      * \param   stream  The streaming object to write output message.
      **/
-    void logMessage( const NELogging::sLogMessage & logMsg, IEOutStream & stream ) const;
+    void logMessage( const NELogging::sLogMessage & logMsg, OutStream & stream ) const;
 
     /**
      * \brief   Returns true if layout manager is valid.

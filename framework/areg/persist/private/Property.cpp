@@ -13,8 +13,8 @@
  * \brief       Property object for persisting data
  ************************************************************************/
 #include "areg/persist/Property.hpp"
-#include "areg/persist/NEPersistence.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <utility>
 

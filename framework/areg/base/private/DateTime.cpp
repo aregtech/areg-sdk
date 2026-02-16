@@ -14,7 +14,7 @@
  *
  ************************************************************************/
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <time.h>
 
@@ -52,7 +52,7 @@ DateTime::DateTime( const TIME64 & dateTime )
 {
 }
 
-DateTime::DateTime( const IEInStream & stream )
+DateTime::DateTime( const InStream & stream )
     : mDateTime ( stream.read64Bits() )
 {
 }

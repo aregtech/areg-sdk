@@ -5,7 +5,7 @@
 #include "common/src/ClientComponent.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "areg/base/NECommon.hpp"
+#include "areg/base/CommonDefs.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 

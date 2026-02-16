@@ -5,14 +5,14 @@
     </Overview>
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>sParticipant</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="3" Name="ListParticipants" Type="Imported">
-            <Location>common/NECommon.hpp</Location>
-            <Namespace>NECommon</Namespace>
+            <Location>common/ChatDefs.hpp</Location>
+            <Namespace>chat</Namespace>
             <ImportedObject>ListParticipants</ImportedObject>
             <Description/>
         </DataType>
@@ -140,20 +140,20 @@
     </MethodList>
     <ConstantList>
         <Constant ID="40" Name="MessageMaxLen" DataType="uint32">
-            <Value>NECommon::MaxlenMessage</Value>
+            <Value>chat::MaxlenMessage</Value>
             <Description>The maximum length of a message.</Description>
         </Constant>
         <Constant ID="41" Name="InvalidSession" DataType="uint64">
-            <Value>NECommon::InvalidSession</Value>
+            <Value>chat::InvalidSession</Value>
             <Description>Identifies invalid session value.</Description>
         </Constant>
         <Constant ID="42" Name="InvalidCookie" DataType="uint32">
-            <Value>NECommon::InvalidCookie</Value>
+            <Value>chat::InvalidCookie</Value>
             <Description>Identifies the invalid cookie.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="39" Name="common/NECommon.hpp">
+        <Location ID="39" Name="common/ChatDefs.hpp">
             <Description>Shared data</Description>
         </Location>
     </IncludeList>

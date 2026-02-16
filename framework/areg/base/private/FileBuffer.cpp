@@ -189,14 +189,14 @@ bool FileBuffer::truncate()
     return result;
 }
 
-unsigned int FileBuffer::setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const
+unsigned int FileBuffer::setPosition( int offset, Cursor::eCursorPosition startAt ) const
 {
-    return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
 unsigned int FileBuffer::getPosition() const
 {
-    return (isOpened() ? mSharedBuffer.getPosition() : IECursorPosition::INVALID_CURSOR_POSITION);
+    return (isOpened() ? mSharedBuffer.getPosition() : Cursor::INVALID_CURSOR_POSITION);
 }
 
 unsigned int FileBuffer::normalizeMode( unsigned int mode ) const
@@ -218,7 +218,7 @@ unsigned int FileBuffer::insertAt( const unsigned char* buffer, unsigned int siz
     return (isOpened() && canWrite() ? mSharedBuffer.insertAt(buffer, size, atPos) : 0);
 }
 
-unsigned int FileBuffer::read(IEByteBuffer & buffer) const
+unsigned int FileBuffer::read(ByteBuffer & buffer) const
 {
     return FileBase::read(buffer);
 }
@@ -233,7 +233,7 @@ unsigned int FileBuffer::read(WideString & wide) const
     return FileBase::read(wide);
 }
 
-unsigned int FileBuffer::write(const IEByteBuffer & buffer)
+unsigned int FileBuffer::write(const ByteBuffer & buffer)
 {
     return FileBase::write(buffer);
 }

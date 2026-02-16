@@ -19,11 +19,11 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
-#include "areg/logging/NELogging.hpp"
-#include "aregextend/service/ServiceCommunicatonBase.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+#include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "logcollector/service/private/LogCollectorMessageProcessor.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,8 +33,8 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class LogCollectorServerService : public    ServiceCommunicatonBase
-                                , private   IETimerConsumer
+class LogCollectorServerService : public    ServiceCommunicationBase
+                                , private   TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes to access internals
@@ -80,7 +80,7 @@ public:
 
 public:
 /************************************************************************/
-// ServiceCommunicatonBase overrides
+// ServiceCommunicationBase overrides
 /************************************************************************/
     /**
      * \brief   Adds an entry into the list of connected instances.
@@ -126,7 +126,7 @@ protected:
     virtual void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
-// IERemoteMessageHandler interface overrides
+// RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -137,7 +137,7 @@ protected:
     virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
-// IEServiceEventConsumerBase overrides
+// ServiceEventConsumer overrides
 /************************************************************************/
 
     /**
@@ -168,7 +168,7 @@ protected:
     virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**

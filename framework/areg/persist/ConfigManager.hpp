@@ -21,12 +21,12 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Version.hpp"
-#include "areg/persist/NEPersistence.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 #include "areg/persist/Property.hpp"
-#include "areg/logging/NELogging.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 #include <vector>
 
@@ -34,7 +34,7 @@
  * Dependencies.
  ************************************************************************/
 class FileBase;
-class IEConfigurationListener;
+class ConfigListener;
 
 //////////////////////////////////////////////////////////////////////////
 // ConfigManager class declaration
@@ -334,7 +334,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to read and initialize configuration.
      **/
-    bool readConfig(const String& filePath = String::EmptyString, IEConfigurationListener * listener = nullptr);
+    bool readConfig(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Reads the configuration from the specified configuration file.
@@ -347,7 +347,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to read and initialize configuration.
      **/
-    bool readConfig(const FileBase& file, IEConfigurationListener * listener = nullptr);
+    bool readConfig(const FileBase& file, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Saves the current configuration in the specified file.
@@ -362,7 +362,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to save configuration.
      **/
-    bool saveConfig(const String& filePath = String::EmptyString, IEConfigurationListener * listener = nullptr);
+    bool saveConfig(const String& filePath = String::EmptyString, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Saves the current configuration in the specified file object opened with write access.
@@ -375,7 +375,7 @@ public:
      *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to save configuration.
      **/
-    bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, IEConfigurationListener * listener = nullptr);
+    bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Sets the read-only and writable configuration entries.
@@ -384,7 +384,7 @@ public:
      * \param   listener        The pointer to the configuration listener to notify configuration data set/
      *                          If nullptr, no notification is triggered.
      **/
-    void setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, IEConfigurationListener * listener = nullptr);
+    void setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Releases all module specific entries.
@@ -417,7 +417,7 @@ public:
     Version getLogVersion() const;
 
     /**
-     * \brief   Returns list of logging targets specified in the NELogging::eLogingTypes.
+     * \brief   Returns list of logging targets specified in the NELogging::LoggingType.
      **/
     std::vector<Identifier> getLogTargets() const;
 
@@ -437,15 +437,15 @@ public:
     inline void setLoggingStatus(bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NELogging::eLogingTypes.
-     * \param   logType     The string value of NELogging::eLogingTypes.
+     * \brief   Returns log enable or disable state for the target defined in NELogging::LoggingType.
+     * \param   logType     The string value of NELogging::LoggingType.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     bool getLogEnabled(const String& logType) const;
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NELogging::eLogingTypes.
-     * \param   logType     The Identifier object containing NELogging::eLogingTypes value and string equivalent.
+     * \brief   Returns log enable or disable state for the target defined in NELogging::LoggingType.
+     * \param   logType     The Identifier object containing NELogging::LoggingType value and string equivalent.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     inline bool getLogEnabled(const Identifier& logType) const;
@@ -455,11 +455,11 @@ public:
      * \param   logType     The logging target to check.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
-    bool getLogEnabled(NELogging::eLogingTypes logType) const;
+    bool getLogEnabled(NELogging::LoggingType logType) const;
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::eLogingTypes.
-     * \param   logType     The Identifier object containing NELogging::eLogingTypes value and string equivalent.
+     * \brief   Sets the logging state for the target defined in NELogging::LoggingType.
+     * \param   logType     The Identifier object containing NELogging::LoggingType value and string equivalent.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -467,8 +467,8 @@ public:
     inline void setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::eLogingTypes.
-     * \param   logType     The string value of NELogging::eLogingTypes.
+     * \brief   Sets the logging state for the target defined in NELogging::LoggingType.
+     * \param   logType     The string value of NELogging::LoggingType.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -476,13 +476,13 @@ public:
     inline void setLogEnabled(const String& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::eLogingTypes.
+     * \brief   Sets the logging state for the target defined in NELogging::LoggingType.
      * \param   logType     The logging target to set enabling flag.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setLogEnabled(NELogging::eLogingTypes logType, bool newValue, bool isTemporary = false);
+    void setLogEnabled(NELogging::LoggingType logType, bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the path of the log file that contains messages.

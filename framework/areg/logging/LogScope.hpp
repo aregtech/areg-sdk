@@ -18,9 +18,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include <atomic>
 
 //////////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ public:
      * \brief   Initializes the logging scope object from the stream.
      * \param   stream  The streaming object that contains the scope attributes.
      **/
-    LogScope(const IEInStream & stream);
+    LogScope(const InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -89,7 +89,7 @@ public:
      * \param   stream  The stream object to write data.
      * \param   output  The scope to write into the stream object.
      **/
-    inline friend IEOutStream & operator << ( IEOutStream & stream, const LogScope & output );
+    inline friend OutStream & operator << ( OutStream & stream, const LogScope & output );
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -235,7 +235,7 @@ namespace std
 // inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline IEOutStream & operator << ( IEOutStream & stream, const LogScope & output )
+inline OutStream & operator << ( OutStream & stream, const LogScope & output )
 {
     stream << output.mScopeId;
     stream << output.mScopePrio;

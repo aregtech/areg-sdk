@@ -41,14 +41,14 @@ namespace
 }
 
 SqliteDatabase::SqliteDatabase()
-    : IEDatabaseEngine  ( )
+    : DatabaseEngine  ( )
     , mDbPath           ( )
     , mDbObject         ( nullptr )
 {
 }
 
 SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
-    : IEDatabaseEngine  ( )
+    : DatabaseEngine  ( )
     , mDbPath           ( )
     , mDbObject         ( nullptr )
 {

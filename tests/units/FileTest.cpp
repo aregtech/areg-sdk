@@ -20,7 +20,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/logging/GELog.h"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <fstream>
 #include <filesystem>

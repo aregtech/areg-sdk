@@ -16,7 +16,7 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Thread.hpp"
 
@@ -31,7 +31,7 @@ DEF_LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
 DEF_LOG_SCOPE(logging_main_main);
 
 //! \brief Thread to run
-class HelloThread : public Thread, protected IEThreadConsumer
+class HelloThread : public Thread, protected ThreadConsumer
 {
 public:
     HelloThread()
@@ -43,7 +43,7 @@ public:
 
 protected:
     /************************************************************************/
-    // IEThreadConsumer interface overrides
+    // ThreadConsumer interface overrides
     /************************************************************************/
     void onThreadRuns() override
     {

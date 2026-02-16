@@ -23,7 +23,7 @@
 #include "areg/base/FileBase.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // FileBuffer class declaration
@@ -101,7 +101,7 @@ public:
      * \param	input	The File Buffer object to write data
      * \return	The instance of streaming object.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, FileBuffer & input );
+    friend inline const InStream & operator >> ( const InStream & stream, FileBuffer & input );
     /**
      * \brief   Friend global operator declaration to make File Buffer streamable.
      *          Writes the from file buffer to streaming object
@@ -109,7 +109,7 @@ public:
      * \param	output	The File Buffer object to read data
      * \return	The instance of streaming object.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const FileBuffer & output );
+    friend inline OutStream & operator << ( OutStream & stream, const FileBuffer & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -221,7 +221,7 @@ public:
      *
      * \param	newSize     New Size is bytes to set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
     virtual unsigned int reserve(unsigned int newSize) override;
 
@@ -231,7 +231,7 @@ public:
     virtual bool truncate() override;
 
 /************************************************************************/
-// IEInStream interface overrides
+// InStream interface overrides
 /************************************************************************/
 
     /**
@@ -242,7 +242,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( IEByteBuffer & buffer ) const override;
+    virtual unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -270,7 +270,7 @@ public:
     virtual unsigned int read( unsigned char * buffer, unsigned int size ) const override;
 
 /************************************************************************/
-// IEOutStream interface overrides
+// OutStream interface overrides
 /************************************************************************/
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -279,7 +279,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const IEByteBuffer & buffer ) override;
+    virtual unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -309,35 +309,35 @@ public:
     virtual unsigned int write( const unsigned char * buffer, unsigned int size ) override;
 
 /************************************************************************/
-// IECursorPosition interface overrides
+// Cursor interface overrides
 /************************************************************************/
     /**
      * \brief	Sets the file pointer position and returns current position. 
      *          The positive value of offset means move pointer forward.
      *          The negative value of offset means move pointer back.
-     *          For memory buffered file the pointer cannot move more than IECursorPosition::eCursorPosition::PositionEnd.
+     *          For memory buffered file the pointer cannot move more than Cursor::eCursorPosition::PositionEnd.
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from beginning of file
-     *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
-     *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
+     *                  Cursor::eCursorPosition::PositionBegin   -- position from beginning of file
+     *                  Cursor::eCursorPosition::PositionCurrent -- from current pointer position
+     *                  Cursor::eCursorPosition::PositionEnd     -- from end of file
      *
-     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
+    virtual unsigned int setPosition(int offset, Cursor::eCursorPosition startAt) const override;
 
     /**
-     * \brief	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
+     * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
-     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int getPosition() const override;
 
 protected:
 /************************************************************************/
-// IEIOStream interface overrides
-// includes IEInStream and IEOutStream interfaces
+// IOStream interface overrides
+// includes InStream and OutStream interfaces
 /************************************************************************/
 
     /**
@@ -421,12 +421,12 @@ inline bool FileBuffer::isEmpty() const
     return ((isOpened() == false) || mSharedBuffer.isEmpty());
 }
 
-inline const IEInStream & operator >> ( const IEInStream & stream, FileBuffer & input )
+inline const InStream & operator >> ( const InStream & stream, FileBuffer & input )
 {
     return (stream >> static_cast<SharedBuffer &>(input.mSharedBuffer));
 }
 
-inline IEOutStream & operator << ( IEOutStream & stream, const FileBuffer & output )
+inline OutStream & operator << ( OutStream & stream, const FileBuffer & output )
 {
     return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
 }

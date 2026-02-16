@@ -23,7 +23,7 @@ AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
 
 TimerManagerBase::TimerManagerBase(const String& threadName)
     : DispatcherThread              (threadName, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
-    , IETimerManagerEventConsumer   ( )
+    , TimerManagerEventConsumer   ( )
 {
 }
 
@@ -36,7 +36,7 @@ bool TimerManagerBase::runDispatcher()
 {
     readyForEvents( true );
 
-    IESyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
+    SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(syncObjects, 2, false);
     int whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
@@ -79,11 +79,11 @@ void TimerManagerBase::readyForEvents(bool isReady)
 {
     if (isReady)
     {
-        TimerManagerEvent::addListener(static_cast<IETimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
+        TimerManagerEvent::addListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
     }
     else
     {
-        TimerManagerEvent::removeListener(static_cast<IETimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
+        TimerManagerEvent::removeListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
     }
 
     DispatcherThread::readyForEvents( true );

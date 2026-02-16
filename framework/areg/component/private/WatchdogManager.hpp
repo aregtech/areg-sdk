@@ -41,8 +41,8 @@ private:
      **/
     static constexpr std::string_view WATCHDOG_THREAD_NAME { "_AREG_WATCHDOG_THREAD_NAME_" };
 
-    using MapWatchdogResource   = TEMap<Watchdog::GUARD_ID, Watchdog *>;
-    using WatchdogResource      = TELockResourceMap<Watchdog::GUARD_ID, Watchdog *, MapWatchdogResource>;
+    using MapWatchdogResource   = OrderedMap<Watchdog::GUARD_ID, Watchdog *>;
+    using WatchdogResource      = ConcurrentResourceMap<Watchdog::GUARD_ID, Watchdog *, MapWatchdogResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -125,7 +125,8 @@ private:
 // Overrides.
 //////////////////////////////////////////////////////////////////////////
 protected:
-/************************************************************************/
+/**
+**********************************************************************/
 // IETimerManagingEventConsumer overrides
 /************************************************************************/
 

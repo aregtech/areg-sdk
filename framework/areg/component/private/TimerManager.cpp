@@ -18,7 +18,7 @@
 #include "areg/component/private/ExitEvent.hpp"
 
 #include "areg/component/Timer.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_component_private_TimerManager_startTimer);
@@ -78,7 +78,7 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
         {
             LOG_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
             result = TimerManagerEvent::sendEvent( TimerManagerEventData(&timer)
-                                                 , static_cast<IETimerManagerEventConsumer &>(timerManager)
+                                                 , static_cast<TimerManagerEventConsumer &>(timerManager)
                                                  , static_cast<DispatcherThread &>(timerManager) );
         }
         else

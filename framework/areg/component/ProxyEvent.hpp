@@ -20,7 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/IEEventConsumer.hpp"
+#include "areg/component/EventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
@@ -28,7 +28,7 @@
  * List of declared classes
  ************************************************************************/
 class ProxyEvent;
-class IEProxyEventConsumer;
+class ProxyEventConsumer;
 
 /************************************************************************
  * Dependencies
@@ -37,7 +37,7 @@ class Event;
 class ProxyEvent;
 class StubAddress;
 class ServiceResponseEvent;
-class IENotificationEventConsumer;
+class NotificationConsumer;
 class Channel;
 class ResponseEvent;
 class ProxyConnectEvent;
@@ -45,7 +45,7 @@ class ProxyConnectEvent;
 /**
  * \remark  The following classes are declared in this file:
  *              1. ProxyEvent
- *              2. IEProxyEventConsumer
+ *              2. ProxyEventConsumer
  *          The Proxy Event used to send Event from Stub to Proxy object.
  *          The Proxy Event Consumer is an object, which is processing
  *          such event. All Proxy objects are instances of Proxy Event Consumer.
@@ -82,7 +82,7 @@ protected:
      * \brief   Initializes event data from streaming object.
      * \param   stream      Streaming object, containing event data.
      **/
-    ProxyEvent( const IEInStream & stream );
+    ProxyEvent( const InStream & stream );
 
     /**
      * \brief   Destructor. Protected.
@@ -123,14 +123,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const IEInStream & readStream( const IEInStream & stream ) override;
+    virtual const InStream & readStream( const InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual IEOutStream & writeStream( IEOutStream & stream ) const override;
+    virtual OutStream & writeStream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -150,16 +150,16 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// IEProxyEventConsumer class declaration
+// ProxyEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief       Proxy Event Consumer to receive and process events.
- *              All Proxies are instances of IEProxyEventConsumer interface.
+ *              All Proxies are instances of ProxyEventConsumer interface.
  *              This interface is triggering an appropriate event processing
  *              function depending on event runtime class ID.
  * 
  **/
-class AREG_API IEProxyEventConsumer : public IEEventConsumer
+class AREG_API ProxyEventConsumer : public EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -169,19 +169,19 @@ protected:
      * \brief   Constructor. Sets the Proxy address of event consumer.
      * \param   proxy   The address of proxy object, which is handling consumer
      **/
-    explicit IEProxyEventConsumer( const ProxyAddress & proxy );
+    explicit ProxyEventConsumer( const ProxyAddress & proxy );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEProxyEventConsumer() = default;
+    virtual ~ProxyEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Should be implemented
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// IEProxyEventConsumer overrides
+// ProxyEventConsumer overrides
 /************************************************************************/
     
     /**
@@ -219,7 +219,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// IEEventConsumer interface overrides
+// EventConsumer interface overrides
 /************************************************************************/
 
     /**
@@ -263,8 +263,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IEProxyEventConsumer() = delete;
-    AREG_NOCOPY_NOMOVE( IEProxyEventConsumer );
+    ProxyEventConsumer() = delete;
+    AREG_NOCOPY_NOMOVE( ProxyEventConsumer );
 };
 
 /************************************************************************

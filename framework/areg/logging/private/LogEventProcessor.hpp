@@ -19,7 +19,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 
 #if AREG_LOGS
@@ -29,7 +29,7 @@
 class LogManager;
 class LogConfiguration;
 class LoggerBase;
-class IEInStream;
+class InStream;
 
 //////////////////////////////////////////////////////////////////////////
 // LogEventProcessor class declaration

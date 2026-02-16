@@ -23,16 +23,16 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NECommon.hpp"
-#include "areg/base/TEHashMap.hpp"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TELinkedList.hpp"
-#include "areg/base/TEResourceMap.hpp"
-#include "areg/base/TEResourceListMap.hpp"
+#include "areg/base/CommonDefs.hpp"
+#include "areg/base/HashMap.hpp"
+#include "areg/base/ArrayList.hpp"
+#include "areg/base/LinkedList.hpp"
+#include "areg/base/ResourceMap.hpp"
+#include "areg/base/ResourceListMap.hpp"
 #include "areg/component/ProxyEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/StubAddress.hpp"
 
 #include <atomic>
@@ -41,7 +41,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IENotificationEventConsumer;
+class NotificationConsumer;
 class NotificationEventData;
 class ServiceResponseEvent;
 class RemoteResponseEvent;
@@ -49,7 +49,7 @@ class ServiceRequestEvent;
 class NotificationEvent;
 class DispatcherThread;
 class EventDataStream;
-class IEProxyListener;
+class ProxyListener;
 class ProxyEvent;
 class ProxyBase;
 class Version;
@@ -88,7 +88,7 @@ typedef ProxyBase* (*FuncCreateProxy)( const String & /*roleName*/, DispatcherTh
  *          of client in the same thread.
  *
  **/
-class AREG_API ProxyBase  : public    IEProxyEventConsumer
+class AREG_API ProxyBase  : public    ProxyEventConsumer
 {
     friend class RemoteEventFactory;
 //////////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ private:
          * \param   seqNr   Sequence Number
          * \param   caller  Client listener pointer 
          **/
-        Listener(unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer * caller);
+        Listener(unsigned int msgId, const SequenceNumber & seqNr, NotificationConsumer * caller);
 
         /**
          * \brief   Copies data from given source.
@@ -193,7 +193,7 @@ private:
         /**
          * \brief   Pointer to notification event listener object, which should be instance of Proxy client.
          **/
-        IENotificationEventConsumer *   mListener;
+        NotificationConsumer *   mListener;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -203,7 +203,7 @@ private:
      * \brief   Proxy Listener List class to save list of listener objects.
      *          Every Proxy class has list of listeners.
      ************************************************************************/
-    using ProxyListenerList = TEArrayList<ProxyBase::Listener>;
+    using ProxyListenerList = ArrayList<ProxyBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyConnectList definition
@@ -212,7 +212,7 @@ private:
      * \brief   Proxy Connected client List class to handle connect and 
      *          disconnect service.
      ************************************************************************/
-    using ProxyConnectList  = TEArrayList<IEProxyListener *>;
+    using ProxyConnectList  = ArrayList<ProxyListener *>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyMap class declaration.
@@ -226,11 +226,11 @@ private:
     /**
      * \brief   Proxy hash map
      **/
-    using MapProxy          = TEHashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using MapProxy          = HashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
     /**
      * \brief   Proxy resource map helper.
      **/
-    using ImplProxyResource = TEResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using ImplProxyResource = ResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
 
     /**
      * \brief   ProxyBase::MapProxyResource
@@ -239,7 +239,7 @@ private:
      *          ProxyBase     The Values are pointers of Proxy object.
      *          ProxyMap      The type of Hash Mapping object used as container
      **/
-    using MapProxyResource  = TELockResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
+    using MapProxyResource  = ConcurrentResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ThreadProxyList internal class declaration
@@ -247,7 +247,7 @@ private:
     /************************************************************************
      * \brief   The list of proxies. Used to save in Map List.
      ************************************************************************/
-    using ThreadProxyList   = TEArrayList<std::shared_ptr<ProxyBase>>;
+    using ThreadProxyList   = ArrayList<std::shared_ptr<ProxyBase>>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ImplThreadProxyMap internal class declaration
@@ -255,7 +255,7 @@ private:
     /**
      * \brief   The helper class used in the map of lists..
      **/
-    class ImplThreadProxyMap    : public TEResourceListMapImpl<String, std::shared_ptr<ProxyBase>, ThreadProxyList>
+    class ImplThreadProxyMap    : public ResourceListMapImpl<String, std::shared_ptr<ProxyBase>, ThreadProxyList>
     {
     public:
         /**
@@ -297,13 +297,13 @@ private:
      * \brief   ProxyBase::MapThreadProxy
      *          The string hash map which values are list of proxies.
      **/
-    using MapThreadProxy    = TEStringHashMap<ThreadProxyList>;
+    using MapThreadProxy    = StringHashMap<ThreadProxyList>;
 
     /**
      * \brief   ProxyBase::MapThreadProxyList
      *          The Map of the lits, where the key is a string and values are list of proxies.
      **/
-    using MapThreadProxyList= TELockResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
+    using MapThreadProxyList= ConcurrentResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -343,7 +343,7 @@ protected:
         /**
          * \brief   Sets event consumer object to deliver notification.
          **/
-        explicit ServiceAvailableEvent( IENotificationEventConsumer & consumer );
+        explicit ServiceAvailableEvent( NotificationConsumer & consumer );
         /**
          * \brief   Destructor
          **/
@@ -356,7 +356,7 @@ protected:
         /**
          * \brief   Returns instance of consumer to send notification
          **/
-        inline IENotificationEventConsumer & getConsumer() const
+        inline NotificationConsumer & getConsumer() const
         {
             return mNotifyConsumer;
         }
@@ -397,7 +397,7 @@ protected:
         /**
          * \brief   Instance of consumer to send service available notification.
          **/
-        IENotificationEventConsumer &   mNotifyConsumer;
+        NotificationConsumer &   mNotifyConsumer;
 
         /**
          * \brief   The time in milliseconds to delay service available event.
@@ -436,7 +436,7 @@ public:
      **/
     static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
                                                        , const NEService::SInterfaceData & serviceIfData
-                                                       , IEProxyListener & connect
+                                                       , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , const String & ownerThread = String::getEmptyString() );
 
@@ -459,7 +459,7 @@ public:
      **/
     static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
                                                        , const NEService::SInterfaceData & serviceIfData
-                                                       , IEProxyListener & connect
+                                                       , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , DispatcherThread & ownerThread );
 
@@ -479,7 +479,7 @@ public:
      * \param[out]  threadProxyList On output, which contains list of proxies created in specified thread.
      * \return  Returns number of proxies added to the list.
      **/
-    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
+    static int findThreadProxies( DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
 
     /**
      * \brief   Creates the request failure event to send to remote proxy. This may happen when either the request of client
@@ -605,7 +605,7 @@ public:
      *          and delete Proxy object.
      * \param   connect The object to notify when Proxy is disconnected.
      **/
-    void freeProxy( IEProxyListener & connect );
+    void freeProxy( ProxyListener & connect );
 
     /**
      * \brief   Function is called when thread completes job and makes cleanups.
@@ -622,11 +622,11 @@ public:
 
 protected:
 /************************************************************************/
-// IEProxyEventConsumer interface overrides. Should be implemented
+// ProxyEventConsumer interface overrides. Should be implemented
 /************************************************************************/
 
     /**
-     * \brief   Method derived from IEProxyEventConsumer interface.
+     * \brief   Method derived from ProxyEventConsumer interface.
      *          Triggered when on the request to execute function
      *          on server side, Proxy have got response message.
      * \param   eventElem   The Service Response event object.
@@ -636,7 +636,7 @@ protected:
     virtual void processResponseEvent(ServiceResponseEvent & eventElem) override = 0;
 
     /**
-     * \brief   Method derived from IEProxyEventConsumer interface.
+     * \brief   Method derived from ProxyEventConsumer interface.
      *          Triggered when on server side a certain Attribute 
      *          value has been updated.
      * \param   eventElem   The Service Response event object.
@@ -654,7 +654,7 @@ protected:
      * \param   consumer    The instance of consumer, which receives service available event.
      * \return  If succeeds, returns valid pointer to service available event object.
      **/
-    virtual ProxyBase::ServiceAvailableEvent * createServiceAvailableEvent( IENotificationEventConsumer & consumer ) = 0;
+    virtual ProxyBase::ServiceAvailableEvent * createServiceAvailableEvent( NotificationConsumer & consumer ) = 0;
 
     /**
      * \brief   Creates notification event to send to client objects. 
@@ -701,7 +701,7 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Response event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteResponseEvent * createRemoteResponseEvent( const IEInStream & stream ) const;
+    virtual RemoteResponseEvent * createRemoteResponseEvent( const InStream & stream ) const;
 
     /**
      * \brief   Overwrite method to create error remote response event.
@@ -714,7 +714,7 @@ protected:
     virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::ResultType reason, const SequenceNumber & seqNr ) const;
 
 /************************************************************************/
-// IEProxyEventConsumer interface overrides.
+// ProxyEventConsumer interface overrides.
 /************************************************************************/
     /**
      * \brief   Triggered, when current dispatching event is an instance of Proxy Event
@@ -751,7 +751,7 @@ protected:
      * \param   consumer    The instance of consumer to process service available event.
      * \param   delayEvent  The timeout in milliseconds to delay when processing the service available event.
      **/
-    virtual void processServiceAvailableEvent( IENotificationEventConsumer & consumer, unsigned int delayEvent );
+    virtual void processServiceAvailableEvent( NotificationConsumer & consumer, unsigned int delayEvent );
 
     /**
      * \brief	Unregisters listener and removes from list, clear all
@@ -777,7 +777,7 @@ protected:
      *          If no more listener object in Listener List, it will create
      *          event object and send to Stop with stop notification flag.
      **/
-    virtual void unregisterListener( IENotificationEventConsumer * consumer );
+    virtual void unregisterListener( NotificationConsumer * consumer );
 
     /**
      * \brief	Sends the notification event.
@@ -792,7 +792,7 @@ protected:
      * \param	seqNr	    Sequence number to use for listener searching
      * \param	caller	    Pointer to Listener object to be notified.
      **/
-    virtual void sendNotificationEvent( unsigned int msgId, NEService::ResultType resType, const SequenceNumber & seqNr, IENotificationEventConsumer * caller );
+    virtual void sendNotificationEvent( unsigned int msgId, NEService::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer * caller );
 
     /**
      * \brief   Called to register all servicing listeners. It is called when proxy is instantiated.
@@ -867,7 +867,7 @@ protected:
      * \param   seqNr       The sequence number of listener to remove.
      * \param   caller      Notification Event consumer.
      **/
-    inline void removeListener( unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer * caller );
+    inline void removeListener( unsigned int msgId, const SequenceNumber & seqNr, NotificationConsumer * caller );
 
     /**
      * \brief   Add Proxy Listener entry to listener list.
@@ -880,7 +880,7 @@ protected:
      * \return  Returns true if new listener has been added.
      *          If listener already exists, returns false.
      **/
-    inline bool addListener( unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer * caller, bool unique );
+    inline bool addListener( unsigned int msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique );
 
     /**
      * \brief   Sets Data state of specified message ID in Proxy Data object
@@ -906,14 +906,14 @@ protected:
      * \param   alwaysNotify    The flag indicating whether notification message
      *                          should be sent if the notification already is pending.
      **/
-    void setNotification( unsigned int msgId, IENotificationEventConsumer * caller, bool alwaysNotify = false );
+    void setNotification( unsigned int msgId, NotificationConsumer * caller, bool alwaysNotify = false );
 
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
      * \param   msgId   The Notification Message ID
      * \param   caller  The pointer of Notification Event Consumer.
      **/
-    void clearNotification( unsigned int msgId, IENotificationEventConsumer * caller );
+    void clearNotification( unsigned int msgId, NotificationConsumer * caller );
 
     /**
      * \brief   Sends notification events to notification listeners.
@@ -951,7 +951,7 @@ protected:
      *                  This parameter can be nullptr only if request has not appropriate response.
      *                  Otherwise this should be valid pointer.
      **/
-    void sendRequestEvent( unsigned int reqId, const EventDataStream & args, IENotificationEventConsumer * caller );
+    void sendRequestEvent( unsigned int reqId, const EventDataStream & args, NotificationConsumer * caller );
 
     /**
      * \brief   Sends request events to Stub object to start or stop receiving update notifications.
@@ -965,7 +965,7 @@ protected:
     /**
      * \brief   Returns true if specified consumer is registered in the listener list.
      **/
-    bool isServiceListenerRegistered( IENotificationEventConsumer & caller ) const;
+    bool isServiceListenerRegistered( NotificationConsumer & caller ) const;
 
     /**
      * \brief   Called to instantiate service available event to send to client.
@@ -1171,7 +1171,7 @@ inline NEService::ProxyData & ProxyBase::getProxyData()
     return mProxyData;
 }
 
-inline bool ProxyBase::addListener( unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer* caller, bool unique)
+inline bool ProxyBase::addListener( unsigned int msgId, const SequenceNumber & seqNr, NotificationConsumer* caller, bool unique)
 {
     ProxyBase::Listener listener( msgId, seqNr, caller );
     if (unique)
@@ -1185,7 +1185,7 @@ inline bool ProxyBase::addListener( unsigned int msgId, const SequenceNumber & s
     }
 }
 
-inline void ProxyBase::removeListener( unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer* caller )
+inline void ProxyBase::removeListener( unsigned int msgId, const SequenceNumber & seqNr, NotificationConsumer* caller )
 {
     static_cast<void>(mListenerList.removeElem( ProxyBase::Listener( msgId, seqNr, caller ) ));
 }
@@ -1193,12 +1193,12 @@ inline void ProxyBase::removeListener( unsigned int msgId, const SequenceNumber 
 
 inline void ProxyBase::registerForEvent( const RuntimeClassID & eventClass )
 {
-    Event::addListener( eventClass, static_cast<IEEventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
+    Event::addListener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
 inline void ProxyBase::unregisterForEvent( const RuntimeClassID & eventClass )
 {
-    Event::removeListener( eventClass, static_cast<IEEventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
+    Event::removeListener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
 inline void ProxyBase::setState( unsigned int msgId, NEService::eDataStateType newState )

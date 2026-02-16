@@ -21,9 +21,9 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/component/EventDataStream.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // EventData class declaration
@@ -90,7 +90,7 @@ public:
      *          Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    EventData( const IEInStream & stream );
+    EventData( const InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -120,7 +120,7 @@ public:
      * \param	input	The Event Data Buffer object to write data.
      * \return	Reference to Streaming object.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, EventData & input );
+    friend inline const InStream & operator >> ( const InStream & stream, EventData & input );
 
     /**
      * \brief	Friend global operator to write object into streaming buffer.
@@ -128,7 +128,7 @@ public:
      * \param	output	The Event Data Buffer object of data source.
      * \return	Reference to Streaming object.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const EventData & output );
+    friend inline OutStream & operator << ( OutStream & stream, const EventData & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -145,13 +145,13 @@ public:
      * \brief   Returns reference of data input streaming object
      *          to deserialize message parameters.
      **/
-    inline const IEInStream & getReadStream() const;
+    inline const InStream & getReadStream() const;
     
     /**
      * \brief   Returns reference of data output streaming object
      *          to serialize message parameters
      **/
-    inline IEOutStream & getWriteStream();
+    inline OutStream & getWriteStream();
 
     /**
      * \brief   Returns reference of data container object,
@@ -182,12 +182,12 @@ inline NEService::eMessageDataType EventData::getDataType() const
     return mDataType;
 }
 
-inline const IEInStream& EventData::getReadStream() const
+inline const InStream& EventData::getReadStream() const
 {
     return mData.getStreamForRead();
 }
 
-inline IEOutStream & EventData::getWriteStream()
+inline OutStream & EventData::getWriteStream()
 {
     return mData.getStreamForWrite();
 }
@@ -197,7 +197,7 @@ inline const EventDataStream & EventData::getDataStream() const
     return mData;
 }
 
-inline const IEInStream & operator >> ( const IEInStream & stream, EventData & input )
+inline const InStream & operator >> ( const InStream & stream, EventData & input )
 {
     stream >> input.mDataType;
     stream >> input.mData;
@@ -205,7 +205,7 @@ inline const IEInStream & operator >> ( const IEInStream & stream, EventData & i
     return stream;
 }
 
-inline IEOutStream & operator << ( IEOutStream & stream, const EventData & output )
+inline OutStream & operator << ( OutStream & stream, const EventData & output )
 {
     stream << output.mDataType;
     stream << output.mData;

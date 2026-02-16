@@ -214,7 +214,7 @@ ServiceRegistry::MAPPOS ServiceRegistry::findService( const ServiceAddress & add
     return find(ServiceStub(addrService));
 }
 
-void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAddress> & listProviders, TEArrayList<ProxyAddress> & listConsumers ) const
+void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceList);
     LOG_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
@@ -266,7 +266,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
     }
 }
 
-void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & stubSource, TEArrayList<ProxyAddress> & proxySources)
+void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, ArrayList<StubAddress> & stubSource, ArrayList<ProxyAddress> & proxySources)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceSources);
     LOG_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));

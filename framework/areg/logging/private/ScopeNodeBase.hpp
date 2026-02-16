@@ -20,7 +20,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/String.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if AREG_LOGS
 
@@ -66,7 +66,7 @@ protected:
     /**
      * \brief   The grouping flags to set bitwise.
      **/
-    enum class eGroupping   : unsigned char
+    enum class Grouping   : unsigned char
     {
           NoGroupping           = 0 // Bits: 0000 0000
         , GrouppingPartially    = 4 // Bits: 0000 0100
@@ -373,7 +373,7 @@ protected:
     String                      mNodeName;
 
     //!< Bitwise flag, indicating the groupings of nodes.
-    unsigned int                mGroupping;
+    unsigned int                mGrouping;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden, only for internal use

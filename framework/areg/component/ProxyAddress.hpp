@@ -21,7 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/ServiceAddress.hpp"
 #include "areg/component/Channel.hpp"
 
@@ -30,7 +30,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEInStream;
+class InStream;
 class StubAddress;
 class Event;
 class ServiceRequestEvent;
@@ -144,7 +144,7 @@ public:
     /**
      * \brief   Initialize proxy address from streaming object.
      **/
-    ProxyAddress(const IEInStream & stream);
+    ProxyAddress(const InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -203,14 +203,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Service address object to initialize data.
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, ProxyAddress & input );
+    friend AREG_API const InStream & operator >> ( const InStream & stream, ProxyAddress & input );
 
     /**
      * \brief   Writes proxy address into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Service address object to serialize.
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const ProxyAddress & output);
+    friend AREG_API OutStream & operator << ( OutStream & stream, const ProxyAddress & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

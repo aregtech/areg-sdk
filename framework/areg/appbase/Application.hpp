@@ -19,19 +19,19 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/AppDefs.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/component/Model.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
  /************************************************************************
   * Dependencies.
   ************************************************************************/
-class IEConfigurationListener;
+class ConfigListener;
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
@@ -57,7 +57,7 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign>;
+    using MapAppStorage     = StringHashMap<NEMemory::uAlign>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
@@ -104,7 +104,7 @@ public:
                                 , bool startTimer     = true
                                 , bool startWatchdog  = false
                                 , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data()
-                                , IEConfigurationListener * configListener = nullptr);
+                                , ConfigListener * configListener = nullptr);
 
     /**
      * \brief   Call to stop all components, unload models, stop services and release resources.
@@ -359,7 +359,7 @@ public:
      * \return  Returns true if succeeded to load configuration.
      *          If fails, loads default configuration and returns false.
      **/
-    static bool loadConfiguration(const char * fileName = nullptr, IEConfigurationListener * listener = nullptr);
+    static bool loadConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Saves current configuration in the given file.
@@ -374,7 +374,7 @@ public:
      * \return  Returns true if succeeded to save configuration.
      *          Otherwise, returns false.
      **/
-    static bool saveConfiguration(const char * fileName = nullptr, IEConfigurationListener * listener = nullptr);
+    static bool saveConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Loads default configuration properties defined in NEApplication::DefaultReadonlyProperties
@@ -383,7 +383,7 @@ public:
      * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered if default
      *                      configuration is set. If listener is null, no notification is triggered.
      **/
-    static void setupDefaultConfiguration(IEConfigurationListener * listener = nullptr);
+    static void setupDefaultConfiguration(ConfigListener * listener = nullptr);
 
     /**
      * \brief   Returns true if the application is already configured.

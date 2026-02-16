@@ -15,13 +15,27 @@
  * \brief       Areg Platform, Log Observer to run as a console application.
  ************************************************************************/
 
+#if !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB) && !defined(IMPORT_SHARED_SYMBOLS) && !defined(IMPORT_STATIC_SYMBOLS)
+    #define IMP_AREG_DLL
+#elif defined(IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS)
+    #undef  IMP_AREG_DLL
+    #define IMP_AREG_DLL
+#elif defined(IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS)
+    #undef  IMP_AREG_LIB
+    #define IMP_AREG_LIB
+#endif  // !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB) && !defined(IMPORT_SHARED_SYMBOLS) && !defined(IMPORT_STATIC_SYMBOLS)
+
+#if !defined(IMP_LOGGER_DLL) && !defined(IMP_LOGGER_LIB)
+    #define     IMP_LOGGER_DLL
+#endif  // !defined(IMP_LOGGER_DLL) || !defined(IMP_LOGGER_LIB)
+
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "logobserver/app/NELogObserverSettings.hpp"
-#include "areg/persist/IEConfigurationListener.hpp"
+#include "areglogger/client/LogObserverSwitches.h"
+#include "areg/persist/ConfigListener.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "aregextend/console/Console.hpp"
 #include "aregextend/console/OptionParser.hpp"
 

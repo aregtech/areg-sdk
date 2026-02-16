@@ -12,7 +12,7 @@
   ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "areg/component/IEWorkerThreadConsumer.hpp"
+#include "areg/component/WorkerThreadConsumer.hpp"
 
 class PatientInformationStub;
 
@@ -21,7 +21,7 @@ class PatientInformationStub;
  *          it gets inputs from console and sets data directly to Stub object to
  *          send data update notification to all subscribers.
  **/
-class PatientServiceWorkerConsumer  : public    IEWorkerThreadConsumer
+class PatientServiceWorkerConsumer  : public    WorkerThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -42,7 +42,7 @@ public:
 protected:
 
 /************************************************************************/
-// IEWorkerThreadConsumer overrides
+// WorkerThreadConsumer overrides
 /************************************************************************/
 
     /**

@@ -12,11 +12,11 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/GELog.h"
 
 
-#include "common/NECommon.hpp"
+#include "common/WatchdogDefs.hpp"
 #include "pubclient/src/ServiceClient.hpp"
 
 #ifdef _MSC_VER
@@ -43,7 +43,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
             // register service dependency
-            REGISTER_DEPENDENCY(NECommon::ServiceRoleName )
+            REGISTER_DEPENDENCY(watchdog::ServiceRoleName )
         // end of component description
         END_REGISTER_COMPONENT( _serviceClient )
     // end of thread description

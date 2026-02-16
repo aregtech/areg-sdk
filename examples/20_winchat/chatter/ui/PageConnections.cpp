@@ -11,7 +11,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/GEGlobal.h"
 #include "areg/logging/GELog.h"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 
 DEF_LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
 DEF_LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
@@ -76,7 +76,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
                 , isConnected ? "CONNECTED" : "DISCONNECTED"
                 , ownerThread != nullptr ? "VALID" : "NULL"
                 , mConnectionHandler.IsValid() ? "VALID" : "INVALID"
-                , cookie != NEConnectionManager::InvalidCookie ? String::makeString(cookie).getString() : "Invalid cookie"
+                , cookie != ConnectionManager::InvalidCookie ? String::makeString(cookie).getString() : "Invalid cookie"
                 , nickName.getString()
                 , mConnectionHandler.GetRegistered() ? "REGISTERED" : "NOT REGISTERED"
                 , mClientConnections != nullptr ? mClientConnections->getServiceName().getString() : "NULL");
@@ -87,7 +87,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
         if ( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) && (mClientConnections == nullptr) )
         {
             LOG_DBG("Create client object to get connections");
-            mClientConnections = DEBUG_NEW ConnectionList( NECommon::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
+            mClientConnections = DEBUG_NEW ConnectionList( chat::COMP_NAME_CENTRAL_SERVER, *ownerThread, mConnectionHandler );
         }
     }
 }
@@ -126,7 +126,7 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
             LOG_DBG("There is no connection client, creates one");
             ASSERT( mConnectionHandler.IsValid() == true );
             ASSERT( mConnectionHandler.GetRegistered() == false );
-            mClientConnections = DEBUG_NEW ConnectionList( NECommon::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler );
+            mClientConnections = DEBUG_NEW ConnectionList( chat::COMP_NAME_CENTRAL_SERVER, *dispThread, mConnectionHandler );
         }
     }
     else
@@ -156,10 +156,10 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
         ASSERT(::IsWindow(mCtrlConnections.GetSafeHwnd()));
 
         mCtrlConnections.DeleteAllItems();
-        const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
+        const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
         for ( uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
-            const NECommon::sConnection & connection = listConnections.getAt(i);
+            const chat::sConnection & connection = listConnections.getAt(i);
             addConnection( connection );
         }
 
@@ -171,12 +171,12 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
     }
 }
 
-void PageConnections::OnAddConnection( NEConnectionManager::sConnection & data )
+void PageConnections::OnAddConnection( ConnectionManager::sConnection & data )
 {
     addConnection(data);
 }
 
-void PageConnections::OnRemoveConnection( NEConnectionManager::sConnection & data )
+void PageConnections::OnRemoveConnection( ConnectionManager::sConnection & data )
 {
     removeConnection(data);
 }
@@ -197,8 +197,8 @@ void PageConnections::OnDisconnectTriggered()
 
 void PageConnections::OnClickedButtonInitiateChat( )
 {
-    NEDirectConnection::sInitiator          initiator;
-    NEDirectConnection::ListParticipants    listParticipnats;
+    DirectConnection::sInitiator          initiator;
+    DirectConnection::ListParticipants    listParticipnats;
     if ( getSelectedConnections(initiator, listParticipnats) > 1 )
         DistributedDialog::GetDialog( )->AddChatPage( initiator, listParticipnats, true );
 }
@@ -246,7 +246,7 @@ uint32_t PageConnections::GetRegisteredCookie() const
     return mConnectionHandler.GetCookie( );
 }
 
-inline void PageConnections::addConnection( const NEConnectionManager::sConnection & connection )
+inline void PageConnections::addConnection( const ConnectionManager::sConnection & connection )
 {
     LOG_SCOPE( chatter_ui_PageConnections_AddConnection );
     if ( mConnectionHandler.GetNickName() != connection.nickName )
@@ -266,7 +266,7 @@ inline void PageConnections::addConnection( const NEConnectionManager::sConnecti
         lv.iSubItem = 0;
         lv.pszText = nickName.GetBuffer( );
         lv.lParam = cookie;
-        lv.cchTextMax = NEConnectionManager::NicknameMaxLen;
+        lv.cchTextMax = ConnectionManager::NicknameMaxLen;
         mCtrlConnections.InsertItem( &lv );
         mCtrlConnections.SetItemText( pos, 1, timeConnect.GetBuffer( ) );
         mCtrlConnections.EnsureVisible( pos, FALSE );
@@ -281,7 +281,7 @@ inline void PageConnections::addConnection( const NEConnectionManager::sConnecti
     }
 }
 
-inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiator & outParticipant, NEDirectConnection::ListParticipants & outListParticipants )
+inline int PageConnections::getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants )
 {
     outListParticipants.clear();
     UINT selected = mCtrlConnections.GetSelectedCount();
@@ -305,7 +305,7 @@ inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiat
             CString nickName= mCtrlConnections.GetItemText(i, 0);
             LPARAM cookie   = mCtrlConnections.GetItemData(i);
 
-            NEDirectConnection::sParticipant participant;
+            DirectConnection::sParticipant participant;
             participant.nickName    = static_cast<LPCTSTR>(nickName);
             participant.cookie      = static_cast<uint32_t>(cookie);
             participant.sessionId   = static_cast<uint64_t>(now);
@@ -358,7 +358,7 @@ inline void PageConnections::cleanService()
     }
 }
 
-inline int PageConnections::findConnection( const NEConnectionManager::sConnection & connection ) const
+inline int PageConnections::findConnection( const ConnectionManager::sConnection & connection ) const
 {
     int result = NECommon::INVALID_INDEX;
     for ( int i = 0; i < mCtrlConnections.GetItemCount(); ++ i )
@@ -376,7 +376,7 @@ inline int PageConnections::findConnection( const NEConnectionManager::sConnecti
     return result;
 }
 
-inline void PageConnections::removeConnection( const NEConnectionManager::sConnection & connection )
+inline void PageConnections::removeConnection( const ConnectionManager::sConnection & connection )
 {
     int pos = findConnection(connection);
     if ( pos != NECommon::INVALID_INDEX )
@@ -423,7 +423,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
     {
         LOG_WARN( "The service [ %s ] is already running, ignoring creating new model for nick name [ %s ] with cookie [ %u ]", serviceName.getString( ), nickName.getString( ), cookie );
         ASSERT( mConnectionHandler.GetNickName( ).isEmpty( ) == false );
-        ASSERT( mConnectionHandler.GetCookie( ) != NEDirectConnection::InvalidCookie );
+        ASSERT( mConnectionHandler.GetCookie( ) != DirectConnection::InvalidCookie );
         result = true;
     }
     return result;

@@ -15,8 +15,8 @@
  ************************************************************************/
 #include "areg/component/ProxyAddress.hpp"
 
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/IEIOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/IOStream.hpp"
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/ServiceRequestEvent.hpp"
 #include "areg/component/DispatcherThread.hpp"
@@ -156,7 +156,7 @@ ProxyAddress::ProxyAddress( ServiceAddress && source)
 {
 }
 
-ProxyAddress::ProxyAddress( const IEInStream & stream )
+ProxyAddress::ProxyAddress( const InStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )
     , mChannel      ( )
@@ -287,7 +287,7 @@ bool ProxyAddress::isValidated() const
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
-AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, ProxyAddress & input )
+AREG_API_IMPL const InStream & operator >> ( const InStream & stream, ProxyAddress & input )
 {
     ITEM_ID cookie = NEService::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
@@ -300,7 +300,7 @@ AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, ProxyA
     return stream;
 }
 
-AREG_API_IMPL IEOutStream & operator << ( IEOutStream & stream, const ProxyAddress & output)
+AREG_API_IMPL OutStream & operator << ( OutStream & stream, const ProxyAddress & output)
 {
     stream << static_cast<const ServiceAddress &>(output);
     stream << output.mThreadName;

@@ -133,11 +133,11 @@
  **/
 #ifdef _DEBUG
 
-#include "areg/base/private/NEDebug.hpp"
+#include "areg/base/private/DebugDefs.hpp"
 
     #ifndef AREG_OUTPUT_DBG
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
-            #define AREG_OUTPUT_DBG(...)        NEDebug::outputConsole(NEDebug::eDegubPrio::PrioDbg, __VA_ARGS__)
+            #define AREG_OUTPUT_DBG(...)        NEDebug::outputConsole(NEDebug::DebugPriority::PrioDbg, __VA_ARGS__)
         #else
             #define AREG_OUTPUT_DBG(...)        ((void)0)
         #endif
@@ -145,7 +145,7 @@
 
     #ifndef AREG_OUTPUT_INFO
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_INFO)
-            #define AREG_OUTPUT_INFO(...)       NEDebug::outputConsole(NEDebug::eDegubPrio::PrioInfo, __VA_ARGS__)
+            #define AREG_OUTPUT_INFO(...)       NEDebug::outputConsole(NEDebug::DebugPriority::PrioInfo, __VA_ARGS__)
         #else
             #define AREG_OUTPUT_INFO(...)       ((void)0)
         #endif
@@ -153,7 +153,7 @@
 
     #ifndef AREG_OUTPUT_WARN
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_WARN)
-            #define AREG_OUTPUT_WARN(...)       NEDebug::outputConsole(NEDebug::eDegubPrio::PrioWarn, __VA_ARGS__)
+            #define AREG_OUTPUT_WARN(...)       NEDebug::outputConsole(NEDebug::DebugPriority::PrioWarn, __VA_ARGS__)
         #else
             #define AREG_OUTPUT_WARN(...)       ((void)0)
         #endif
@@ -161,7 +161,7 @@
 
     #ifndef AREG_OUTPUT_ERR
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_ERROR)
-            #define AREG_OUTPUT_ERR(...)        NEDebug::outputConsole(NEDebug::eDegubPrio::PrioErr, __VA_ARGS__)
+            #define AREG_OUTPUT_ERR(...)        NEDebug::outputConsole(NEDebug::DebugPriority::PrioErr, __VA_ARGS__)
         #else
             #define AREG_OUTPUT_ERR(...)        ((void)0)
         #endif

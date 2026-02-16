@@ -23,12 +23,12 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping)
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( entry, owner )
     , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , IETimerConsumer       ( )
+    , TimerConsumer       ( )
 
     , mBitmap               ( )
     , mDataSize             ( 0 )
     , mBlockCount           ( 0 )
-    , mTimer                (static_cast<IETimerConsumer&>(self()), TIMER_NAME)
+    , mTimer                (static_cast<TimerConsumer&>(self()), TIMER_NAME)
 {
 }
 

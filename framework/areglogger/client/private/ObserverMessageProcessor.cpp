@@ -21,10 +21,10 @@
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/RemoteMessage.hpp"
-#include "areg/base/TEArrayList.hpp"
+#include "areg/base/ArrayList.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/LogScope.hpp"
 
 #include "areglogger/client/LogObserverApi.h"
@@ -275,7 +275,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
 
 void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceived)
 {
-    TEArrayList< NEService::sServiceConnectedInstance > listConnected;
+    ArrayList< NEService::sServiceConnectedInstance > listConnected;
     msgReceived >> listConnected;
 
     FuncInstancesConnect callback{ nullptr };
@@ -372,8 +372,8 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
 
 void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgReceived)
 {
-    TEArrayList<ITEM_ID> listClients;
-    TEArrayList< NEService::sServiceConnectedInstance > listDisconnected;
+    ArrayList<ITEM_ID> listClients;
+    ArrayList< NEService::sServiceConnectedInstance > listDisconnected;
 
     msgReceived >> listClients;
     FuncInstancesDisconnect callback{ nullptr };

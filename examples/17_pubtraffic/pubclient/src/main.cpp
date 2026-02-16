@@ -18,10 +18,10 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/GELog.h"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "aregextend/console/Console.hpp"
 
-#include "common/NECommon.hpp"
+#include "common/TrafficDefs.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef _MSC_VER
@@ -35,7 +35,7 @@ int main()
 {
     constexpr char const _modelName[]{ "TheModel" };
 
-    NECommon::eTrafficDirection trafficDirection = NECommon::eTrafficDirection::DirectionUnknown;
+    traffic::eTrafficDirection trafficDirection = traffic::eTrafficDirection::DirectionUnknown;
     std::string_view directions[]
     {
           {"sn"}
@@ -43,7 +43,7 @@ int main()
         , {"quit"}
     };
 
-    String roleName( NECommon::SimpleLightClientNamePrefix);
+    String roleName( traffic::SimpleLightClientNamePrefix);
     char name[128];
 
     Console & console = Console::getInstance( );
@@ -64,7 +64,7 @@ int main()
             bool result{ false };
             if ( cmd.compare( directions[0], false ) == NEMath::eCompare::Equal )
             {
-                trafficDirection = NECommon::eTrafficDirection::DirectionSouthNorth;
+                trafficDirection = traffic::eTrafficDirection::DirectionSouthNorth;
                 roleName += "SouthNorth";
                 roleName = NEUtilities::generateName( roleName, name, 128 );
                 result = true;
@@ -72,7 +72,7 @@ int main()
             }
             else if ( cmd.compare( directions[1], false ) == NEMath::eCompare::Equal )
             {
-                trafficDirection = NECommon::eTrafficDirection::DirectionEastWest;
+                trafficDirection = traffic::eTrafficDirection::DirectionEastWest;
                 roleName += "EastWest";
                 roleName = NEUtilities::generateName( roleName, name, 128 );
                 result = true;
@@ -86,7 +86,7 @@ int main()
             return result;
         } );
 
-    if ( trafficDirection == NECommon::eTrafficDirection::DirectionUnknown )
+    if ( trafficDirection == traffic::eTrafficDirection::DirectionUnknown )
         return 0; // quit
 
     console.moveToLine( 10 );
@@ -101,10 +101,10 @@ int main()
     NERegistry::ComponentThreadEntry & threadEntry = model.addThread("SimpleTrafficLighThread");
     // Add component in the thread and set the service dependency.
     NERegistry::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
-    component.addDependencyService( NECommon::SimpleLightControllerName);
+    component.addDependencyService( traffic::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.
-    std::any data = std::make_any< NECommon::eTrafficDirection>(trafficDirection);
+    std::any data = std::make_any< traffic::eTrafficDirection>(trafficDirection);
     component.setData( data );
     
     // Add created model to the model list.

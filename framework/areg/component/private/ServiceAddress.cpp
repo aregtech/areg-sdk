@@ -17,9 +17,9 @@
 
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/IOStream.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 
 #include <utility>
@@ -80,7 +80,7 @@ ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-ServiceAddress::ServiceAddress( const IEInStream & stream )
+ServiceAddress::ServiceAddress( const InStream & stream )
     : ServiceItem   ( stream )
     , mRoleName     ( stream )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )

@@ -35,10 +35,10 @@ void ServicingComponent::OptionConsumer::processEvent(const OptionData& data)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ServicingComponent::TimerConsumer class implementation
+// ServicingComponent::ServicingTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void ServicingComponent::TimerConsumer::processTimer( Timer & timer )
+void ServicingComponent::ServicingTimerConsumer::processTimer( Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -53,13 +53,13 @@ void ServicingComponent::TimerConsumer::processTimer( Timer & timer )
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , LargeDataStub     ( static_cast<Component &>(self()) )
-    , IEThreadConsumer  ( )
+    , ThreadConsumer  ( )
 
     , mBitmap           ( )
     , mBlockList        ( )
-    , mTimer            ( static_cast<IETimerConsumer &>(mTimerConsumer) , TIMER_NAME )
-    , mInputThread      ( static_cast<IEThreadConsumer &>(self()), THREAD_WAITINPUT )
-    , mImageThread      ( static_cast<IEThreadConsumer &>(self()), THREAD_GENERATE )
+    , mTimer            ( static_cast<TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
+    , mInputThread      ( static_cast<ThreadConsumer &>(self()), THREAD_WAITINPUT )
+    , mImageThread      ( static_cast<ThreadConsumer &>(self()), THREAD_GENERATE )
     , mOptions          ( )
     , mQuitThread       ( true )
     , mOptionChanged    ( true )

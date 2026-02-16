@@ -55,7 +55,7 @@
  *          The instance of Shared Buffer can be used for data streaming.
  **/
 class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streaming object
-                            , public  IECursorPosition  // To control read and write operations
+                            , public  Cursor  // To control read and write operations
 {
     friend class FileBuffer;
 
@@ -174,7 +174,7 @@ public:
      * \param	input	The Shared Buffer object to write data
      * \return	Reference to Streaming object.
      **/
-    friend inline const IEInStream & operator >> ( const IEInStream & stream, SharedBuffer & input );
+    friend inline const InStream & operator >> ( const InStream & stream, SharedBuffer & input );
 
     /**
      * \brief	Friend global operator declaration to make Shared Buffer streamable.
@@ -183,7 +183,7 @@ public:
      * \param	output	The Shared Buffer object to write data
      * \return	Reference to Streaming object.
      **/
-    friend inline IEOutStream & operator << ( IEOutStream & stream, const SharedBuffer & output );
+    friend inline OutStream & operator << ( OutStream & stream, const SharedBuffer & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -193,7 +193,7 @@ public:
     /**
      * \brief   Returns true if either buffer is invalid, 
      *          or current position is equal to zero,
-     *          or current position is equal to IECursorPosition::INVALID_CURSOR_POSITION.
+     *          or current position is equal to Cursor::INVALID_CURSOR_POSITION.
      *          Otherwise, it returns false.
      **/
     inline bool isBeginOfBuffer() const;
@@ -207,8 +207,8 @@ public:
 
     /**
      * \brief   Returns the pointer to the data buffer at current position.
-     *          If position is invalid (IECursorPosition::INVALID_CURSOR_POSITION), it will return nullptr
-     *          If it is a start position (IECursorPosition::START_CURSOR_POSITION), it will return pointer to complete buffer
+     *          If position is invalid (Cursor::INVALID_CURSOR_POSITION), it will return nullptr
+     *          If it is a start position (Cursor::START_CURSOR_POSITION), it will return pointer to complete buffer
      *          If it is an end of position, it will return nullptr
      *          In other cases it will return (GetBuffer() + GetCursorPosition())
      **/
@@ -229,7 +229,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IECursorPosition overrides
+// Cursor overrides
 /************************************************************************/
     /**
      * \brief	Returns the current position of pointer relative to begin in streaming data.
@@ -246,16 +246,16 @@ public:
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from the beginning of data
-     *                  IECursorPosition::eCursorPosition::PositionCurrent -- position from current pointer position
-     *                  IECursorPosition::eCursorPosition::PositionEnd     -- position from the end of file
+     *                  Cursor::eCursorPosition::PositionBegin   -- position from the beginning of data
+     *                  Cursor::eCursorPosition::PositionCurrent -- position from current pointer position
+     *                  Cursor::eCursorPosition::PositionEnd     -- position from the end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const override;
+    virtual unsigned int setPosition( int offset, Cursor::eCursorPosition startAt ) const override;
 
 /************************************************************************/
-// IEByteBuffer interface overrides, not implemented in BufferStreamBase
+// ByteBuffer interface overrides, not implemented in BufferStreamBase
 /************************************************************************/
 
     /**
@@ -278,7 +278,7 @@ public:
 
 protected:
 /************************************************************************/
-// IEByteBuffer protected overrides
+// ByteBuffer protected overrides
 /************************************************************************/
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
@@ -347,7 +347,7 @@ inline bool SharedBuffer::operator != ( const SharedBuffer &other ) const
 inline bool SharedBuffer::isBeginOfBuffer() const
 {
     unsigned int curPos = getPosition();
-    return ((isValid() == false) || (curPos == 0) || (curPos == IECursorPosition::INVALID_CURSOR_POSITION));
+    return ((isValid() == false) || (curPos == 0) || (curPos == Cursor::INVALID_CURSOR_POSITION));
 }
 
 inline bool SharedBuffer::isEndOfBuffer() const
@@ -364,9 +364,9 @@ inline unsigned int SharedBuffer::getBlockSize() const
 // Friend streamable operators
 /************************************************************************/
 
-inline const IEInStream & operator >> (const IEInStream & stream, SharedBuffer & input)
+inline const InStream & operator >> (const InStream & stream, SharedBuffer & input)
 {
-    if ( static_cast<const IEInStream *>(&stream) != static_cast<const IEInStream *>(&input) )
+    if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
     {
         stream.read(input);
         input.moveToBegin();
@@ -375,9 +375,9 @@ inline const IEInStream & operator >> (const IEInStream & stream, SharedBuffer &
     return stream;
 }
 
-inline IEOutStream & operator << (IEOutStream & stream, const SharedBuffer & output)
+inline OutStream & operator << (OutStream & stream, const SharedBuffer & output)
 {
-    if ( static_cast<const IEOutStream *>(&stream) != static_cast<const IEOutStream *>(&output) )
+    if ( static_cast<const OutStream *>(&stream) != static_cast<const OutStream *>(&output) )
     {
         stream.write( output );
         output.moveToBegin();

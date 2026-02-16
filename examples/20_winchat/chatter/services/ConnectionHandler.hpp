@@ -6,8 +6,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "common/NECommon.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "common/ChatDefs.hpp"
 
 class ConnectionHandler
 {
@@ -54,26 +54,26 @@ public:
 
     inline void RemoveConnections();
 
-    inline const NECommon::ListConnections & GetConnectionList() const;
+    inline const chat::ListConnections & GetConnectionList() const;
 
     bool IsValid() const;
 
-    bool AddConnection( const NECommon::sConnection & newConnection );
+    bool AddConnection( const chat::sConnection & newConnection );
 
-    int AddConnections( const NECommon::ListConnections & listConnections );
+    int AddConnections( const chat::ListConnections & listConnections );
 
-    bool RemoveConnection( const NECommon::sConnection & connection );
+    bool RemoveConnection( const chat::sConnection & connection );
 
-    bool ConnectionExist( const NECommon::sConnection & connection );
+    bool ConnectionExist( const chat::sConnection & connection );
 
     void ResetConnectionList();
 
 private:
 
-    int findConnection( const NECommon::sConnection & connection ) const;
+    int findConnection( const chat::sConnection & connection ) const;
 
 private:
-    NECommon::ListConnections mListConnections;
+    chat::ListConnections mListConnections;
     String        mNickName;
     uint32_t      mCookie;
     uint32_t      mConnectCookie;
@@ -160,13 +160,13 @@ inline bool ConnectionHandler::HasName() const
 inline bool ConnectionHandler::CanRegister() const
 {
     Lock lock(mLock);
-    return (mNickName.isEmpty() == false) && (mCookie != NECommon::InvalidCookie) && (mIsRegistered == false);
+    return (mNickName.isEmpty() == false) && (mCookie != chat::InvalidCookie) && (mIsRegistered == false);
 }
 
 inline bool ConnectionHandler::CanConnect() const
 {
     Lock lock(mLock);
-    return (mNickName.isEmpty( ) == false) && (mCookie == NECommon::InvalidCookie);
+    return (mNickName.isEmpty( ) == false) && (mCookie == chat::InvalidCookie);
 }
 
 inline void ConnectionHandler::RemoveConnections()
@@ -175,7 +175,7 @@ inline void ConnectionHandler::RemoveConnections()
     mListConnections.clear();
 }
 
-inline const NECommon::ListConnections & ConnectionHandler::GetConnectionList() const
+inline const chat::ListConnections & ConnectionHandler::GetConnectionList() const
 {
     return mListConnections;
 }

@@ -27,7 +27,7 @@
     <ClInclude Include="mtrouter\app\MultitargetRouter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mtrouter\app\NEMultitargetRouterSettings.hpp">
+    <ClInclude Include="mtrouter\app\MTRouterNames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mtrouter\service\RouterServerService.hpp">
@@ -95,7 +95,7 @@
     <ClCompile Include="mtrouter\service\private\ServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mtrouter\app\private\NEMultitargetRouterSettings.cpp">
+    <ClCompile Include="mtrouter\app\private\MTRouterNames.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mtrouter\app\private\posix\MultitargetRouterPosix.cpp">

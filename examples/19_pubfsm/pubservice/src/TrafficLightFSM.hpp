@@ -26,11 +26,11 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "pubservice/src/NETrafficLightFSM.hpp"
+#include "pubservice/src/TrafficLightDefs.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 
 /************************************************************************
  * Dependencies
@@ -108,7 +108,7 @@ private:
     /**
      * \brief   TrafficLight state-machine timer consumer to dispatch the timer events. 
      **/
-    class TrafficLightTimerConsumer : public IETimerConsumer
+    class TrafficLightTimerConsumer : public TimerConsumer
     {
     public:
         /**

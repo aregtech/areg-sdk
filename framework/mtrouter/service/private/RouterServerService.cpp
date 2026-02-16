@@ -14,9 +14,9 @@
  ************************************************************************/
 #include "mtrouter/service/RouterServerService.hpp"
 
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceProvider);
@@ -37,9 +37,9 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 //////////////////////////////////////////////////////////////////////////
 
 RouterServerService::RouterServerService()
-    : ServiceCommunicatonBase   ( NEService::COOKIE_ROUTER, NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
-    , IEServiceRegisterConsumer ( )
-    , IEServiceRegisterProvider ( )
+    : ServiceCommunicationBase   ( NEService::COOKIE_ROUTER, NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicationBase::eConnectionBehavior::DefaultAccept )
+    , RegistrationConsumer ( )
+    , RegistrationProvider ( )
 
     , mServiceRegistry          ( )
 {
@@ -144,8 +144,8 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
             removeInstance(cookie);
             mServerConnection.closeConnection(cookie);
 
-            TEArrayList<StubAddress>  listStubs;
-            TEArrayList<ProxyAddress> listProxies;
+            ArrayList<StubAddress>  listStubs;
+            ArrayList<ProxyAddress> listProxies;
             mServiceRegistry.getServiceSources(cookie, listStubs, listProxies);
 
             LOG_DBG("Routing service received disconnect message from cookie [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
@@ -245,10 +245,10 @@ void RouterServerService::onServiceMessageSend(const RemoteMessage &msgSend)
 
 void RouterServerService::disconnectServices()
 {
-    ServiceCommunicatonBase::disconnectServices( );
+    ServiceCommunicationBase::disconnectServices( );
 
-    TEArrayList<StubAddress>  stubList;
-    TEArrayList<ProxyAddress> proxyList;
+    ArrayList<StubAddress>  stubList;
+    ArrayList<ProxyAddress> proxyList;
     extractRemoteServiceAddresses(NEService::COOKIE_ANY, stubList, proxyList);
 
     for ( uint32_t i = 0; i < stubList.getSize(); ++ i )
@@ -264,7 +264,7 @@ void RouterServerService::disconnectServices()
     mServiceRegistry.clear( );
 }
 
-void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, TEArrayList<StubAddress> & out_listStubs, TEArrayList<ProxyAddress> & out_lisProxies ) const
+void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, ArrayList<StubAddress> & out_listStubs, ArrayList<ProxyAddress> & out_lisProxies ) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }
@@ -285,7 +285,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
                         , StubAddress::convAddressToPath(stubService.getServiceAddress()).getString()
                         , listProxies.getSize());
 
-            TEArrayList<ITEM_ID> sendList;
+            ArrayList<ITEM_ID> sendList;
             for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
             {
                 const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
@@ -411,7 +411,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
 
         LOG_DBG("Filter sources [ %u ] of proxy list", static_cast<unsigned int>(cookie));
 
-        TEArrayList<ITEM_ID> sendList;
+        ArrayList<ITEM_ID> sendList;
         for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
         {
             const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);

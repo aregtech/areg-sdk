@@ -3,18 +3,18 @@
 
 #include "chatter/res/stdafx.h"
 #include "chatter/DistrbutedApp.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/ui/PageNetworkSetup.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
-#include "common/NECommon.hpp"
+#include "common/ChatDefs.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 #define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
@@ -73,7 +73,7 @@ void PageNetworkSetup::OnServiceStartup( bool isStarted, Component * owner )
     if ( isStarted )
     {
         if ( (mNetworkSetup == nullptr) && (owner != nullptr) )
-            mNetworkSetup = DEBUG_NEW NetworkSetup( NECommon::COMP_NAME_CENTRAL_SERVER, *owner, mConnectionHandler );
+            mNetworkSetup = DEBUG_NEW NetworkSetup( chat::COMP_NAME_CENTRAL_SERVER, *owner, mConnectionHandler );
     }
     else
     {
@@ -88,7 +88,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * /*
     mConnectionHandler.SetConnected( isConnected );
     if ( mRegisterPending )
     {
-        if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == NECommon::InvalidCookie) )
+        if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == chat::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
             mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), DateTime::getNow() );
@@ -123,12 +123,12 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
     }
 }
 
-void PageNetworkSetup::OnAddConnection( NEConnectionManager::sConnection & /*data*/)
+void PageNetworkSetup::OnAddConnection( ConnectionManager::sConnection & /*data*/)
 {
     // do nothing
 }
 
-void PageNetworkSetup::OnRemoveConnection( NEConnectionManager::sConnection & /*data*/)
+void PageNetworkSetup::OnRemoveConnection( ConnectionManager::sConnection & /*data*/)
 {
     // do nothing
 }
@@ -194,7 +194,7 @@ void PageNetworkSetup::OnClickedBrokerConnect()
             ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
             if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
             {
-                Application::loadModel( NECommon::MODEL_NAME_DISTRIBUTED_CLIENT );
+                Application::loadModel( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
                 CWnd *wnd = GetDlgItem(IDC_EDIT_NICKNAME);
                 wnd->EnableWindow(TRUE);
                 wnd->SetFocus();
@@ -212,7 +212,7 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
         ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdDisconnectTriggered), 0, 0);
         mConnectionHandler.ResetConnectionList();
 
-        Application::unloadModel(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT);
+        Application::unloadModel(chat::MODEL_NAME_DISTRIBUTED_CLIENT);
         Application::stopMessageRouting();
         mConnectPending = false;
         mRegisterPending= false;

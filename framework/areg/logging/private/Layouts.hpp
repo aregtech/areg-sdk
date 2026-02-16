@@ -19,14 +19,14 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
-#include "areg/logging/private/NELogOptions.hpp"
+#include "areg/logging/private/LogOptions.hpp"
 
 #if AREG_LOGS
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEOutStream;
+class OutStream;
 
 /************************************************************************
  * \brief   This file contains declaration of layout objects used
@@ -39,9 +39,9 @@ class IEOutStream;
 /************************************************************************
  * Declarations and hierarchies.
  ************************************************************************/
-class IELayout;
+class LogLayout;
     class TickCountLayout;
-    class DayTimeLaytout;
+    class DayTimeLayout;
     class ModuleIdLayout;
     class MessageLayout;
     class EndOfLineLayout;
@@ -55,12 +55,12 @@ class IELayout;
     class CookieIdLayout;
 
 //////////////////////////////////////////////////////////////////////////
-// IELayout interface declaration
+// LogLayout interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The layout base interface to extend by all layout objects.
  **/
-class IELayout
+class LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -69,20 +69,20 @@ protected:
     /**
      * \brief   Initializes the layout type
      **/
-    IELayout( NELogOptions::eLayouts layout );
+    LogLayout( NELogOptions::eLayouts layout );
 
 public:
     /**
      * \brief   Destructor. Public
      **/
-    virtual ~IELayout() = default;
+    virtual ~LogLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -91,7 +91,7 @@ public:
      * \param   stream  The streaming object, where the text message should be written.
      * \note    Every layout object should overwrite this message to make layout specific outputs.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const = 0;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -115,8 +115,8 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    IELayout() = delete;
-    AREG_NOCOPY_NOMOVE( IELayout );
+    LogLayout() = delete;
+    AREG_NOCOPY_NOMOVE( LogLayout );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ private:
 /**
  * \brief   This layout outputs the tick-count value in milliseconds since process has been started.
  **/
-class TickCountLayout   : public    IELayout
+class TickCountLayout   : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -174,7 +174,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -182,16 +182,16 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// DayTimeLaytout class declaration
+// DayTimeLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   This layout formats and outputs day-time data in streaming object
  **/
-class DayTimeLaytout    : public    IELayout
+class DayTimeLayout    : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -200,24 +200,24 @@ public:
     /**
      * \brief   Sets layout type value
      **/
-    DayTimeLaytout();
+    DayTimeLayout();
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    DayTimeLaytout( const DayTimeLaytout & src );
+    DayTimeLayout( const DayTimeLayout & src );
 
     /**
      * \brief   Moves data from given source.
      * \param   src     The source of data to move.
      **/
-    DayTimeLaytout( DayTimeLaytout && src ) noexcept;
+    DayTimeLayout( DayTimeLayout && src ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~DayTimeLaytout() = default;
+    virtual ~DayTimeLayout() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -227,20 +227,20 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline DayTimeLaytout & operator = ( const DayTimeLaytout & src );
+    inline DayTimeLayout & operator = ( const DayTimeLayout & src );
 
     /**
      * \brief   Moves data from given source.
      * \param   src     The source of data to move.
      **/
-    inline DayTimeLaytout & operator = ( DayTimeLaytout && src ) noexcept;
+    inline DayTimeLayout & operator = ( DayTimeLayout && src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -248,7 +248,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -257,7 +257,7 @@ public:
 /**
  * \brief   This layout outputs formated information of running module data.
  **/
-class ModuleIdLayout    : public    IELayout
+class ModuleIdLayout    : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -306,7 +306,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -314,7 +314,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -323,7 +323,7 @@ public:
 /**
  * \brief   This layout outputs log message to the stream.
  **/
-class MessageLayout       : public    IELayout
+class MessageLayout       : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -372,7 +372,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -380,7 +380,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -389,7 +389,7 @@ public:
 /**
  * \brief   This layout prints end-of-line data at current position of cursor.
  **/
-class EndOfLineLayout   : public    IELayout
+class EndOfLineLayout   : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -438,7 +438,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -446,7 +446,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -455,7 +455,7 @@ public:
 /**
  * \brief   This layout prints message priority information in the stream.
  **/
-class PriorityLayout    : public    IELayout
+class PriorityLayout    : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -504,7 +504,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -512,7 +512,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -521,7 +521,7 @@ public:
 /**
  * \brief   This layout outputs the information of scope ID in the streaming object.
  **/
-class ScopeIdLayout : public    IELayout
+class ScopeIdLayout : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -570,7 +570,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -578,7 +578,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -587,7 +587,7 @@ public:
 /**
  * \brief   This layout outputs thread ID in the streaming object.
  **/
-class ThreadIdLayout      : public    IELayout
+class ThreadIdLayout      : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -636,7 +636,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -644,7 +644,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -653,7 +653,7 @@ public:
 /**
  * \brief   This layout outputs the name of the thread, which logs message.
  **/
-class ModuleNameLayout      : public    IELayout
+class ModuleNameLayout      : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -702,7 +702,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -710,7 +710,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -719,7 +719,7 @@ public:
 /**
  * \brief   This layout output the name of thread in output logging message.
  **/
-class ThreadNameLayout    : public    IELayout
+class ThreadNameLayout    : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -768,7 +768,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -776,7 +776,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -785,7 +785,7 @@ public:
 /**
  * \brief   This layout outputs scope name in the streaming object.
  **/
-class ScopeNameLayout    : public    IELayout
+class ScopeNameLayout    : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -834,7 +834,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -842,7 +842,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -851,7 +851,7 @@ public:
 /**
  * \brief   This layout outputs any text message as it is without formating in the streaming object.
  **/
-class AnyTextLayout    : public    IELayout
+class AnyTextLayout    : public    LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -912,7 +912,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -920,7 +920,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -938,7 +938,7 @@ private:
 /**
  * \brief   This layout outputs the cookie ID of the log message module.
  **/
-class CookieIdLayout : public IELayout
+class CookieIdLayout : public LogLayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -987,7 +987,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
-// IELayout interface overrides
+// LogLayout interface overrides
 /************************************************************************/
 
     /**
@@ -995,7 +995,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1003,10 +1003,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// IELayout interface inline methods
+// LogLayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogOptions::eLayouts IELayout::getLayoutType() const
+inline NELogOptions::eLayouts LogLayout::getLayoutType() const
 {
     return mLayout;
 }
@@ -1028,16 +1028,16 @@ inline TickCountLayout & TickCountLayout::operator = ( TickCountLayout && /*src*
 }
 
 //////////////////////////////////////////////////////////////////////////
-// DayTimeLaytout class inline methods
+// DayTimeLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline DayTimeLaytout & DayTimeLaytout::operator = ( const DayTimeLaytout & /*src*/ )
+inline DayTimeLayout & DayTimeLayout::operator = ( const DayTimeLayout & /*src*/ )
 {
     /* Fixed layout type, do nothing */
     return (*this);
 }
 
-inline DayTimeLaytout & DayTimeLaytout::operator = ( DayTimeLaytout && /*src*/ ) noexcept
+inline DayTimeLayout & DayTimeLayout::operator = ( DayTimeLayout && /*src*/ ) noexcept
 {
     /* Fixed layout type, do nothing */
     return (*this);

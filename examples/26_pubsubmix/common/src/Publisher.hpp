@@ -12,7 +12,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/IETimerConsumer.hpp"
+#include "areg/component/TimerConsumer.hpp"
 #include "examples/26_pubsubmix/services/PubSubMixStub.hpp"
 
 #include "areg/component/Timer.hpp"
@@ -37,7 +37,7 @@
  *                           the value is set even if the value is not updated.
  **/
 class Publisher : protected PubSubMixStub
-                , private   IETimerConsumer
+                , private   TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -73,7 +73,7 @@ public:
 protected:
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
+// TimerConsumer interface overrides.
 /************************************************************************/
 
     /**

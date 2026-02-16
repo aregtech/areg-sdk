@@ -33,19 +33,19 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
 
     HelloWatchdogStub::startupServiceInterface(holder);
-    setServiceState(NEHelloWatchdog::eState::Initialized);
+    setServiceState(HelloWatchdog::eState::Initialized);
 }
 
 void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
 {
     LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStartSleep);
 
-    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
+    LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
 
-    if (getServiceState() != NEHelloWatchdog::eState::Stopped )
+    if (getServiceState() != HelloWatchdog::eState::Stopped )
     {
-        printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog );
-        setServiceState( NEHelloWatchdog::eState::Started );
+        printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog );
+        setServiceState( HelloWatchdog::eState::Started );
         Thread::sleep( timeoutSleep );
         responseStartSleep( timeoutSleep );
     }
@@ -61,7 +61,7 @@ void ServicingComponent::requestStopService()
     LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
     LOG_DBG("Received request to stop service");
     printf("Requested to stop the service.\n");
-    setServiceState( NEHelloWatchdog::eState::Stopped );
+    setServiceState( HelloWatchdog::eState::Stopped );
 }
 
 void ServicingComponent::requestShutdownService()
@@ -69,6 +69,6 @@ void ServicingComponent::requestShutdownService()
     LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
-    setServiceState( NEHelloWatchdog::eState::Stopped );
+    setServiceState( HelloWatchdog::eState::Stopped );
     Application::signalAppQuit();
 }

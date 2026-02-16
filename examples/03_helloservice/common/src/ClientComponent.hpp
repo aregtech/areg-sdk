@@ -34,7 +34,7 @@ protected:
     virtual void requestHelloServiceFailed( NEService::ResultType FailureReason ) override;
 
 /************************************************************************/
-// IEProxyListener Overrides
+// ProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

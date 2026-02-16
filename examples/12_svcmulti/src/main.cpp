@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/GELog.h"
 #include "src/ServicingComponent.hpp"
