@@ -76,9 +76,9 @@
  *
  * \param   thread_name     The name of component thread, which should be unique.
  * \param   timeout         The watchdog timeout in milliseconds of the worker thread.
- *                          The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ *                          The value 0 (areg::common::WATCHDOG_IGNORE) ignores the watchdog.
  * \param   stackSizeKb     The stack size of the thread in kilobytes. 1 KB = 1024 Bytes.
- *                          The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                          The value 0 (areg::common::STACK_SIZE_DEFAULT) ignores to change the stack size,
  *                          and uses system default stack size.
  **/
 #define BEGIN_REGISTER_THREAD_EX2(thread_name, timeout, stackSizeKb)                                        \
@@ -91,13 +91,13 @@
  *          The watchdog timeout is set if `timeout` is not 0.
  **/
 #define BEGIN_REGISTER_THREAD_EX(thread_name, timeout)                                                      \
-            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), NECommon::STACK_SIZE_DEFAULT);
+            BEGIN_REGISTER_THREAD_EX2((thread_name), (timeout), areg::common::STACK_SIZE_DEFAULT);
 
 /**
  * \brief   Register component thread with no watchdog and system default stack size.
  **/
 #define BEGIN_REGISTER_THREAD(thread_name)                                                                  \
-            BEGIN_REGISTER_THREAD_EX((thread_name), NECommon::WATCHDOG_IGNORE)
+            BEGIN_REGISTER_THREAD_EX((thread_name), areg::common::WATCHDOG_IGNORE)
 
 /**
  * \brief   Closes component thread registration.
@@ -192,9 +192,9 @@
  * \param   consumer_name       The consumer name of worker thread. Differentiate consumer
  *                              names if one component has more than one worker thread.
  * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
- *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog.
+ *                              The value 0 (areg::common::WATCHDOG_IGNORE) ignores the watchdog.
  * \param   stackSizeKb         The stack size of the worker thread in kilobytes. 1 KB = 1024 Bytes.
- *                              The value 0 (NECommon::STACK_SIZE_DEFAULT) ignores to change the stack size,
+ *                              The value 0 (areg::common::STACK_SIZE_DEFAULT) ignores to change the stack size,
  *                              and uses system default stack size.
  **/
 #define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb)                 \
@@ -213,13 +213,13 @@
             REGISTER_WORKER_THREAD_EX2(   (worker_thread_name)                                              \
                                         , (consumer_name)                                                   \
                                         , (timeout)                                                         \
-                                        , NECommon::STACK_SIZE_DEFAULT)
+                                        , areg::common::STACK_SIZE_DEFAULT)
 
 /**
  * \brief   Register worker thread with no watchdog and system default stack size.
  **/
 #define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name)                                           \
-            REGISTER_WORKER_THREAD_EX((worker_thread_name), (consumer_name), NECommon::WATCHDOG_IGNORE)
+            REGISTER_WORKER_THREAD_EX((worker_thread_name), (consumer_name), areg::common::WATCHDOG_IGNORE)
 
 /**
  * \brief   Declare and register component dependency. Optional.

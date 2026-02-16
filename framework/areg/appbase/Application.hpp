@@ -303,10 +303,10 @@ public:
     /**
      * \brief   Locks the calling thread until either application quit signal is set, or waiting timeout is expired.
      * \param   waitTimeout The waiting timeout for application quit signal.
-     *                      If NECommon::WAIT_INFINITE, waits until signal is set.
+     *                      If areg::common::WAIT_INFINITE, waits until signal is set.
      * \return  Returns true, if application quit event signal is set. If timeout expired, returns false.
      **/
-    static bool waitAppQuit( unsigned int waitTimeout = NECommon::WAIT_INFINITE);
+    static bool waitAppQuit( unsigned int waitTimeout = areg::common::WAIT_INFINITE);
 
     /**
      * \brief   Sets application quit signal event. So that, the waiting signal thread can be released

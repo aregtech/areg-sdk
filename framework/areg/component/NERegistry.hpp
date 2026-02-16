@@ -383,17 +383,17 @@ namespace NERegistry
          * \param   compConsumerName    The name of Consumer object to configure, it should not be same as Component name.
          * \param   watchdogTimeout     The timeout in milliseconds to set for watchdog. The value 0 ignores watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-         *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+         *                              Pass `areg::common::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          * \param   maxQueue            The maximum size of message queue for the thread.
-         *                              Pass NECommon::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
+         *                              Pass areg::common::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
          **/
         WorkerThreadEntry( const String & masterThreadName
                          , const String & workerThreadName
                          , const String & compRoleName
                          , const String & compConsumerName
-                         , const uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
-                         , const uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT
-                         , const uint32_t maxQueue        = NECommon::IGNORE_VALUE );
+                         , const uint32_t watchdogTimeout = areg::common::WATCHDOG_IGNORE
+                         , const uint32_t stackSizeKb     = areg::common::STACK_SIZE_DEFAULT
+                         , const uint32_t maxQueue        = areg::common::IGNORE_VALUE );
 
         /**
          * \brief   Copies /move entries from source.
@@ -1360,32 +1360,32 @@ namespace NERegistry
          * \brief   Initialize Thread Entry with given Thread Name.
          * \param   threadName  The Thread Name to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
-         *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
+         *                              The value 0 (areg::common::WATCHDOG_IGNORE) ignores watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-         *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+         *                              Pass `areg::common::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          * \param   maxQueue            The maximum size of message queue for the thread.
-         *                              Pass NECommon::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
+         *                              Pass areg::common::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
          **/
         explicit ComponentThreadEntry( const String & threadName
-                                     , const uint32_t watchdogTimeout   = NECommon::WATCHDOG_IGNORE
-                                     , const uint32_t stackSizeKb       = NECommon::STACK_SIZE_DEFAULT
-                                     , const uint32_t maxQueue          = NECommon::IGNORE_VALUE);
+                                     , const uint32_t watchdogTimeout   = areg::common::WATCHDOG_IGNORE
+                                     , const uint32_t stackSizeKb       = areg::common::STACK_SIZE_DEFAULT
+                                     , const uint32_t maxQueue          = areg::common::IGNORE_VALUE);
 
         /**
          * \brief   Initialize Thread Entry with given Thread Name and given Component List.
          * \param   threadName      The Thread Name to assign.
          * \param   componentList   The List of Component Entries to assign.
          * \param   watchdogTimeout     The watchdog timeout in milliseconds to guard component thread.
-         *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores watchdog.
+         *                              The value 0 (areg::common::WATCHDOG_IGNORE) ignores watchdog.
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-         *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+         *                              Pass `areg::common::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          * \param   maxQueue            The maximum size of message queue for the thread.
          **/
         ComponentThreadEntry( const String & threadName
                             , const NERegistry::ComponentList & componentList
-                            , const uint32_t watchdogTimeout= NECommon::WATCHDOG_IGNORE
-                            , const uint32_t stackSizeKb    = NECommon::STACK_SIZE_DEFAULT
-                            , const uint32_t maxQueue       = NECommon::IGNORE_VALUE );
+                            , const uint32_t watchdogTimeout= areg::common::WATCHDOG_IGNORE
+                            , const uint32_t stackSizeKb    = areg::common::STACK_SIZE_DEFAULT
+                            , const uint32_t maxQueue       = areg::common::IGNORE_VALUE );
 
         /**
          * \brief   Copies data from given source.

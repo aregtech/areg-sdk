@@ -216,7 +216,7 @@ bool EventDispatcherBase::runDispatcher()
 
     do 
     {
-        whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false);
+        whichEvent = multiLock.lock(areg::common::WAIT_INFINITE, false);
         Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
         if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
         {
@@ -242,7 +242,7 @@ bool EventDispatcherBase::runDispatcher()
                     // But before popping internal event from stack, check whether
                     // there is no request to exit thread.
                     eventElem = nullptr;
-                    int eventLock = multiLock.lock(NECommon::DO_NOT_WAIT);
+                    int eventLock = multiLock.lock(areg::common::DO_NOT_WAIT);
                     if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) )
                     {
                         eventElem = static_cast<EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;

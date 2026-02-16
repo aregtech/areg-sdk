@@ -92,16 +92,16 @@ public:
      *                              If timeout is not zero and it expires before the thread processed
      *                              an event, it terminates and restarts the thread again.
      *                              There is no guarantee that terminated thread will make all cleanups properly.
-     *                              Watchdog timeout is ignored if it is equal to NECommon::WATCHDOG_IGNORE.
+     *                              Watchdog timeout is ignored if it is equal to areg::common::WATCHDOG_IGNORE.
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                              Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+     *                              Pass `areg::common::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
     WorkerThread( const String & threadName
                 , Component & bindingComponent
                 , IEWorkerThreadConsumer & threadConsumer
-                , uint32_t watchdogTimeout  = NECommon::WATCHDOG_IGNORE
-                , uint32_t stackSizeKb      = NECommon::STACK_SIZE_DEFAULT
-                , uint32_t maxQueue         = NECommon::IGNORE_VALUE);
+                , uint32_t watchdogTimeout  = areg::common::WATCHDOG_IGNORE
+                , uint32_t stackSizeKb      = areg::common::STACK_SIZE_DEFAULT
+                , uint32_t maxQueue         = areg::common::IGNORE_VALUE);
 
     /**
      * \brief   Destructor
@@ -129,7 +129,7 @@ public:
 
     /**
      * \brief   Returns the watchdog timeout value in milliseconds. The value 0
-     *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
+     *          (areg::common::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
      **/
     inline uint32_t getWatchdogTimeout() const;
 

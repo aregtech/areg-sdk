@@ -35,17 +35,17 @@
 /**
  * \brief   Converts request message id to index
  **/
-#define GET_REQ_INDEX(msgId)           static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::RequestFirstId) : static_cast<unsigned int>(NECommon::INVALID_INDEX))
+#define GET_REQ_INDEX(msgId)           static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::RequestFirstId) : static_cast<unsigned int>(areg::common::INVALID_INDEX))
 
 /**
  * \brief   Converts response message id to index
  **/
-#define GET_RESP_INDEX(msgId)          static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::ResponseFirstId) : static_cast<unsigned int>(NECommon::INVALID_INDEX))
+#define GET_RESP_INDEX(msgId)          static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::ResponseFirstId) : static_cast<unsigned int>(areg::common::INVALID_INDEX))
 
 /**
  * \brief   Converts attribute message id to index
  **/
-#define GET_ATTR_INDEX(msgId)          static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::AttributeFirstId) : static_cast<unsigned int>(NECommon::INVALID_INDEX))
+#define GET_ATTR_INDEX(msgId)          static_cast<unsigned int>(static_cast<unsigned int>(msgId) != static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId) ? static_cast<unsigned int>(msgId) - static_cast<unsigned int>(NEService::eFuncIdRange::AttributeFirstId) : static_cast<unsigned int>(areg::common::INVALID_INDEX))
 
 /**
  * \brief       NEService namespace contains defined and fixed constants,
@@ -323,37 +323,37 @@ namespace NEService
      * \brief   NEService::COOKIE_UNKNOWN
      *          Unknown cookie
      **/
-    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(NECommon::eCookies::CookieInvalid) };
+    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(areg::common::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::COOKIE_LOCAL
      *          The indication of local service.
      **/
-    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
+    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(areg::common::eCookies::CookieLocal) };
     /**
      * \brief   NEService::COOKIE_ROUTER
      *          Indicates message router cookie
      **/
-    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(NECommon::eCookies::CookieRouter) };
+    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(areg::common::eCookies::CookieRouter) };
     /**
      * \brief   NEService::COOKIE_LOGGER
      *          Indicates log collector cookie
      **/
-    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(NECommon::eCookies::CookieLogger) };
+    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(areg::common::eCookies::CookieLogger) };
     /**
      * \brief   NEService::COOKIE_ANY
      *          Indicates any valid cookie
      **/
-    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(NECommon::eCookies::CookieAny) };
+    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(areg::common::eCookies::CookieAny) };
     /**
      * \brief   NEService::TARGET_UNKNOWN
      *          The unknown target ID
      **/
-    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(NECommon::eCookies::CookieInvalid) };
+    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(areg::common::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::TARGET_LOCAL
      *          The local target ID
      **/
-    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
+    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(areg::common::eCookies::CookieLocal) };
     /**
      * \brief   NEService::TARGET_ALL
      *          The undefined (all) target ID
@@ -363,17 +363,17 @@ namespace NEService
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(NECommon::eCookies::CookieInvalid) };
+    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(areg::common::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID.
      **/
-    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
+    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(areg::common::eCookies::CookieLocal) };
     /**
      * \brief   NEService::COOKIE_REMOTE_SERVICE
      *          The ID of first valid remote cookie.
      **/
-    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(NECommon::eCookies::CookieFirstRemote) };
+    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(areg::common::eCookies::CookieFirstRemote) };
 
     /**
      * \brief   NEService::eServiceCalls

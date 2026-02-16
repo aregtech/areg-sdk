@@ -131,7 +131,7 @@ String ComponentAddress::convToString() const
     String result;
 
     result.append(mRoleName)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::common::COMPONENT_PATH_SEPARATOR)
           .append(ThreadAddress::convAddressToPath(mThreadAddress));
 
     return result;
@@ -141,7 +141,7 @@ void ComponentAddress::convFromString(const char * pathComponent, const char** o
 {
     const char* strSource = pathComponent;
 
-    mRoleName       = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mRoleName       = String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mThreadAddress  = ThreadAddress::convPathToAddress(strSource, &strSource);
     mMagicNum       = ComponentAddress::_magicNumber(*this);
 

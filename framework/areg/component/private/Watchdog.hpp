@@ -38,7 +38,7 @@ class WorkerThread;
  *          terminates the component thread, and restarts again.
  *          Set the watchdog timeout value big enough to process events.
  *          The watchdog timeout is set in milliseconds.
- *          If the watchdog timeout is zero (NECommon::WATCHDOG_IGNORE), the
+ *          If the watchdog timeout is zero (areg::common::WATCHDOG_IGNORE), the
  *          watchdog is ignored for the thread and thread is not terminated.
  **/
 class AREG_API Watchdog  : public TimerBase
@@ -88,7 +88,7 @@ public:
      * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
      *                      The timeout with value zero disables Watchdog
      **/
-    Watchdog(ComponentThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(ComponentThread& thread, uint32_t msTimeout = areg::common::WATCHDOG_IGNORE);
 
     /**
      * \brief   The watchdog object bind with Worker Thread. Should not be instantiated
@@ -97,7 +97,7 @@ public:
      * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
      *                      The timeout with value zero disables Watchdog
      **/
-    Watchdog(WorkerThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::common::WATCHDOG_IGNORE);
 
     /**
      * \brief   Destructor.

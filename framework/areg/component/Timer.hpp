@@ -92,7 +92,7 @@ public:
      **/
     explicit Timer( IETimerConsumer & timerConsumer
                   , const String & timerName = String::getEmptyString()
-                  , uint32_t timeoutMs       = NECommon::INVALID_TIMEOUT
+                  , uint32_t timeoutMs       = areg::common::INVALID_TIMEOUT
                   , int maxQueued            = Timer::IGNORE_TIMER_QUEUE );
     /**
      * \brief   Destructor
@@ -296,7 +296,7 @@ inline IETimerConsumer& Timer::getConsumer() const
 
 inline bool Timer::isStopped() const
 {
-    return (mTimeoutInMs == NECommon::INVALID_TIMEOUT);
+    return (mTimeoutInMs == areg::common::INVALID_TIMEOUT);
 }
 
 #endif  // AREG_COMPONENT_TIMER_HPP

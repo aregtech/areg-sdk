@@ -408,9 +408,9 @@ bool ComponentLoader::loadModel( NERegistry::Model & whichModel ) const
                 ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
                 if ( thrObject != nullptr )
                 {
-                    if ( thrObject->createThread( NECommon::WAIT_INFINITE ) == false )
+                    if ( thrObject->createThread( areg::common::WAIT_INFINITE ) == false )
                     {
-                        thrObject->shutdownThread( NECommon::DO_NOT_WAIT );
+                        thrObject->shutdownThread( areg::common::DO_NOT_WAIT );
                         delete thrObject;
                         result = false;
                     }
@@ -543,7 +543,7 @@ void ComponentLoader::_waitThreads( const ThreadList & threadList ) const
     {
         Thread * thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
-        thrObject->completionWait( NECommon::WAIT_INFINITE );
+        thrObject->completionWait( areg::common::WAIT_INFINITE );
     }
 }
 
@@ -553,7 +553,7 @@ void ComponentLoader::_shutdownThreads( const ThreadList & threadList ) const
     {
         Thread* thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
-        thrObject->shutdownThread( NECommon::DO_NOT_WAIT );
+        thrObject->shutdownThread( areg::common::DO_NOT_WAIT );
         delete thrObject;
     }
 }
@@ -586,7 +586,7 @@ const NERegistry::ComponentThreadEntry * ComponentLoader::findThreadEntryByName(
         {
             const NERegistry::Model & model = mModelList[i];
             int index = model.findThread(threadName);
-            if ( index != NECommon::INVALID_INDEX )
+            if ( index != areg::common::INVALID_INDEX )
             {
                 const NERegistry::ComponentThreadEntry & entry = model.getThreadList().mListThreads.getAt(static_cast<uint32_t>(index));
                 result = &entry;
@@ -611,7 +611,7 @@ const NERegistry::ComponentEntry * ComponentLoader::findComponentEntryByName( co
             {
                 const NERegistry::ComponentThreadEntry & thread   = threadList.mListThreads.getAt(j);
                 int index = thread.findComponentEntry(roleName);
-                if ( index != NECommon::INVALID_INDEX )
+                if ( index != areg::common::INVALID_INDEX )
                 {
                     const NERegistry::ComponentEntry & entry = thread.mComponents.mListComponents.getAt(static_cast<uint32_t>(index));
                     result = & entry;

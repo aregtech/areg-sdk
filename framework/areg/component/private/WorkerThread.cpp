@@ -36,9 +36,9 @@ IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 WorkerThread::WorkerThread( const String & threadName
                           , Component & bindingComponent
                           , IEWorkerThreadConsumer & threadConsumer
-                          , uint32_t watchdogTimeout/* = NECommon::WATCHDOG_IGNORE    */
-                          , uint32_t stackSizeKb    /* = NECommon::STACK_SIZE_DEFAULT */
-                          , uint32_t maxQueue       /* = NECommon::IGNORE_VALUE */ )
+                          , uint32_t watchdogTimeout/* = areg::common::WATCHDOG_IGNORE    */
+                          , uint32_t stackSizeKb    /* = areg::common::STACK_SIZE_DEFAULT */
+                          , uint32_t maxQueue       /* = areg::common::IGNORE_VALUE */ )
     : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
 
     , mBindingComponent     ( bindingComponent )
@@ -94,7 +94,7 @@ void WorkerThread::terminateSelf()
     mHasStarted = false;
     removeAllEvents();
     mEventExit.setEvent();
-    Thread::shutdownThread(NECommon::TIMEOUT_10_MS);
+    Thread::shutdownThread(areg::common::TIMEOUT_10_MS);
 
     delete this;
 }

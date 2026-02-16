@@ -90,7 +90,7 @@ protected:
      **/
     TimerBase( const eTimerType timerType
              , const String & timerName
-             , unsigned int timeoutMs   = NECommon::INVALID_TIMEOUT
+             , unsigned int timeoutMs   = areg::common::INVALID_TIMEOUT
              , unsigned int eventCount  = TimerBase::CONTINUOUSLY );
 
 public:
@@ -149,7 +149,7 @@ public:
 
     /**
      * \brief   Returns true if timer is valid. The valid timer has timeout
-     *          not equal to NECommon::INVALID_TIMEOUT;
+     *          not equal to areg::common::INVALID_TIMEOUT;
      **/
     inline bool isValid() const;
 
@@ -237,7 +237,7 @@ private:
 
 inline bool TimerBase::isValid() const
 {
-    return ((mTimeoutInMs != NECommon::INVALID_TIMEOUT) && (mHandle != nullptr));
+    return ((mTimeoutInMs != areg::common::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
 
 inline void TimerBase::setEventCount(unsigned int eventCount)

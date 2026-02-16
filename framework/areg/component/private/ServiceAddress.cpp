@@ -105,7 +105,7 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 String ServiceAddress::convToString() const
 {
     String result( ServiceItem::convToString() );
-    result.append(NECommon::COMPONENT_PATH_SEPARATOR).append(mRoleName);
+    result.append(areg::common::COMPONENT_PATH_SEPARATOR).append(mRoleName);
 
     return result;
 }
@@ -114,7 +114,7 @@ void ServiceAddress::convFromString(const char * pathService, const char** out_n
 {
     const char* strSource   = pathService;
     ServiceItem::convFromString(pathService, &strSource);
-    mRoleName   = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mRoleName   = String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magicNumber(*this);
 
     if (out_nextPart != nullptr)

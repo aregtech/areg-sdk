@@ -638,7 +638,7 @@ void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & cons
 {
     if (isConnected() && isServiceListenerRegistered( consumer ) )
     {
-        if (delayEvent != NECommon::DO_NOT_WAIT)
+        if (delayEvent != areg::common::DO_NOT_WAIT)
         {
             Thread::sleep(delayEvent);
         }

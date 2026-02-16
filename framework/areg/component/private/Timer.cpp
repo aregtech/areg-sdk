@@ -34,7 +34,7 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 //////////////////////////////////////////////////////////////////////////
 Timer::Timer( IETimerConsumer& timerConsumer
             , const String & timerName  /*= String::getEmptyString()*/
-            , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
+            , uint32_t timeoutMs        /*= areg::common::INVALID_TIMEOUT*/
             , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : TimerBase         ( TimerBase::eTimerType::TimerTypeNormal, NEUtilities::generateName(timerName), timeoutMs )
     , mConsumer         (timerConsumer)
@@ -123,7 +123,7 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
     mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
     mActive = mEventsCount != 0;
 
-    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
+    if (mTimeoutInMs != areg::common::INVALID_TIMEOUT)
     {
         TimerEvent::sendEvent(*this, *mDispatchThread);
     }
@@ -184,7 +184,7 @@ inline void Timer::_stopTimer()
     mActive         = false;
     mDispatchThread = nullptr;
     mCurrentQueued  = 0;
-    mTimeoutInMs    = NECommon::INVALID_TIMEOUT;
+    mTimeoutInMs    = areg::common::INVALID_TIMEOUT;
     mEventsCount    = 0;
     mStartedAt      = 0;
     mExpiredAt      = 0;

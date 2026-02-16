@@ -318,7 +318,7 @@ protected:
      *          processed earlier than the client object is created, so that the
      *          wrong service available method can be called.
      **/
-    static constexpr unsigned int MINIMAL_DELAY_TIME_MS { NECommon::WAIT_5_MILLISECONDS };
+    static constexpr unsigned int MINIMAL_DELAY_TIME_MS { areg::common::WAIT_5_MILLISECONDS };
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ServiceAvailableEvent internal class declaration

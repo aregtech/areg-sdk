@@ -61,9 +61,9 @@ inline ComponentThread* ComponentThread::_getCurrentComponentThread()
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ComponentThread::ComponentThread( const String & threadName
-                                , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
-                                , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */
-                                , uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */ )
+                                , uint32_t watchdogTimeout  /* = areg::common::WATCHDOG_IGNORE      */
+                                , uint32_t stackSizeKb      /* = areg::common::STACK_SIZE_DEFAULT   */
+                                , uint32_t maxQueue         /* = areg::common::IGNORE_VALUE         */ )
     : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 
     , mCurrentComponent ( nullptr )
@@ -197,7 +197,7 @@ void ComponentThread::terminateSelf()
         proxy->terminateSelf();
     }
 
-    DispatcherThread::shutdownThread(NECommon::TIMEOUT_10_MS);
+    DispatcherThread::shutdownThread(areg::common::TIMEOUT_10_MS);
 
     delete this;
 }
@@ -225,7 +225,7 @@ inline void ComponentThread::_shutdownComponents()
     }
 }
 
-Thread::eCompletionStatus ComponentThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::eCompletionStatus ComponentThread::shutdownThread( unsigned int waitForStopMs /*= areg::common::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition( );
     while ( mListComponent.isValidPosition( pos ) )
@@ -238,7 +238,7 @@ Thread::eCompletionStatus ComponentThread::shutdownThread( unsigned int waitForS
     return DispatcherThread::shutdownThread( waitForStopMs );
 }
 
-bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
+bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= areg::common::WAIT_INFINITE */ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition();
     while ( mListComponent.isValidPosition(pos) )

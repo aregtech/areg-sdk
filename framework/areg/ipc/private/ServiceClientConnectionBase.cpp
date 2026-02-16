@@ -259,10 +259,10 @@ void ServiceClientConnectionBase::onServiceStop()
 
     disconnectService( Event::eEventPriority::EventPriorityNormal );
 
-    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-    mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
+    mThreadSend.completionWait( areg::common::WAIT_INFINITE );
+    mThreadSend.shutdownThread( areg::common::DO_NOT_WAIT );
     mClientConnection.closeSocket( );
-    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadReceive.shutdownThread( areg::common::WAIT_INFINITE );
 
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
 }
@@ -302,8 +302,8 @@ void ServiceClientConnectionBase::onServiceConnectionStopped()
 
     cancelConnection( );
 
-    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
-    mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadReceive.shutdownThread( areg::common::WAIT_INFINITE );
+    mThreadSend.shutdownThread( areg::common::WAIT_INFINITE );
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
 
     if ( Application::isServicingReady( ) )
@@ -326,8 +326,8 @@ void ServiceClientConnectionBase::onServiceConnectionLost()
     {
         LOG_DBG( "Restarting lost connection with remote service" );
 
-        mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
-        mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
+        mThreadReceive.shutdownThread( areg::common::WAIT_INFINITE );
+        mThreadSend.shutdownThread( areg::common::WAIT_INFINITE );
         mConnectionConsumer.lostRemoteServiceChannel( channel );
 
         mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
@@ -389,10 +389,10 @@ bool ServiceClientConnectionBase::startConnection()
 
     if ( mClientConnection.createSocket() )
     {
-        if ( mThreadReceive.createThread( NECommon::WAIT_INFINITE ) && mThreadSend.createThread( NECommon::WAIT_INFINITE ) )
+        if ( mThreadReceive.createThread( areg::common::WAIT_INFINITE ) && mThreadSend.createThread( areg::common::WAIT_INFINITE ) )
         {
-            VERIFY( mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
-            VERIFY( mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
+            VERIFY( mThreadReceive.waitForDispatcherStart( areg::common::WAIT_INFINITE ) );
+            VERIFY( mThreadSend.waitForDispatcherStart( areg::common::WAIT_INFINITE ) );
             LOG_DBG("Client service starting connection with remote routing service.");
             result = mClientConnection.sendMessage(createServiceConnectMessage(NEService::COOKIE_UNKNOWN, mTarget, mMessageSource));
         }
@@ -401,8 +401,8 @@ bool ServiceClientConnectionBase::startConnection()
     if ( result == false )
     {
         LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
-        mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
-        mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
+        mThreadSend.shutdownThread( areg::common::DO_NOT_WAIT );
+        mThreadReceive.shutdownThread( areg::common::DO_NOT_WAIT );
         mClientConnection.closeSocket();
         mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
     }
@@ -418,6 +418,6 @@ void ServiceClientConnectionBase::cancelConnection()
     mClientConnection.closeSocket();
     mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
 
-    mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
-    mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
+    mThreadReceive.shutdownThread( areg::common::DO_NOT_WAIT );
+    mThreadSend.shutdownThread( areg::common::DO_NOT_WAIT );
 }

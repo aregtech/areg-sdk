@@ -226,7 +226,7 @@ void ServiceManager::_requestCreateThread(const String& componentThread)
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager()
-    : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME, areg::common::STACK_SIZE_DEFAULT, areg::common::QUEUE_SIZE_MAXIMUM )
     , IEServiceManagerEventConsumer ( )
     , IEServiceConnectionConsumer   ( )
     , IEServiceRegisterConsumer     ( )
@@ -273,7 +273,7 @@ bool ServiceManager::_startServiceManagerThread()
 {
     Lock lock(mLock);
     ASSERT(isReady() || (isRunning() == false));
-    return (isReady() || (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE)));
+    return (isReady() || (createThread(areg::common::WAIT_INFINITE) && waitForDispatcherStart(areg::common::WAIT_INFINITE)));
 }
 
 void ServiceManager::_stopServiceManagerThread(bool waitComplete)
@@ -284,15 +284,15 @@ void ServiceManager::_stopServiceManagerThread(bool waitComplete)
 
     if (waitComplete)
     {
-        completionWait(NECommon::WAIT_INFINITE);
-        shutdownThread(NECommon::DO_NOT_WAIT);
+        completionWait(areg::common::WAIT_INFINITE);
+        shutdownThread(areg::common::DO_NOT_WAIT);
     }
 }
 
 void ServiceManager::_waitServiceManagerThread()
 {
-    completionWait(NECommon::WAIT_INFINITE);
-    shutdownThread(NECommon::DO_NOT_WAIT);
+    completionWait(areg::common::WAIT_INFINITE);
+    shutdownThread(areg::common::DO_NOT_WAIT);
 }
 
 void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & out_listStubs, TEArrayList<ProxyAddress> & out_lisProxies ) const

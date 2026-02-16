@@ -90,9 +90,9 @@ String ServiceItem::convToString() const
     String result(static_cast<uint32_t>(0xFF));
 
     result.append(mServiceName)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::common::COMPONENT_PATH_SEPARATOR)
           .append(mServiceVersion.convToString())
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::common::COMPONENT_PATH_SEPARATOR)
           .append(String::makeString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal));
 
     return result;
@@ -101,9 +101,9 @@ String ServiceItem::convToString() const
 void ServiceItem::convFromString(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
 {
     const char* strSource   = pathService;
-    mServiceName        = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    mServiceVersion     = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    String serviceType  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceName        = String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceVersion     = String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    String serviceType  = String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceType        = static_cast<NEService::eServiceType>(serviceType.toInt32());
     mMagicNum           = ServiceItem::_magicNumber(*this);
 

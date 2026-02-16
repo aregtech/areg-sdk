@@ -322,8 +322,8 @@ inline void SortedEventStack::_insertAtBegin(Event* newEvent)
 
 inline constexpr uint32_t SortedEventStack::_calcQueueSize(uint32_t requestedSize)
 {
-    if (requestedSize == NECommon::IGNORE_VALUE)
+    if (requestedSize == areg::common::IGNORE_VALUE)
         requestedSize = Application::getConfigManager().getDefaultMessageQueueSize();
 
-    return (requestedSize != NECommon::IGNORE_VALUE ? MACRO_MAX(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
+    return (requestedSize != areg::common::IGNORE_VALUE ? MACRO_MAX(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
 }

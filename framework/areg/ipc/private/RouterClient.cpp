@@ -54,7 +54,7 @@ RouterClient::RouterClient(IEServiceConnectionConsumer& connectionConsumer, IESe
                                     , static_cast<DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
     , IEServiceRegisterProvider     ( )
-    , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
+    , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD, areg::common::STACK_SIZE_DEFAULT, areg::common::QUEUE_SIZE_MAXIMUM)
     , IERemoteEventConsumer         ( )
 
     , mRegisterConsumer (registerConsumer)
@@ -66,13 +66,13 @@ bool RouterClient::connectServiceHost()
     bool result{ true };
     if (isRunning() == false)
     {
-        if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
+        if (createThread(areg::common::WAIT_INFINITE) && waitForDispatcherStart(areg::common::WAIT_INFINITE))
         {
             result = ServiceClientConnectionBase::connectServiceHost();
         }
         else
         {
-            shutdownThread(NECommon::WAIT_INFINITE);
+            shutdownThread(areg::common::WAIT_INFINITE);
         }
     }
     else if (mClientConnection.isValid() == false)
@@ -92,8 +92,8 @@ void RouterClient::disconnectServiceHost()
     if (isRunning())
     {
         ServiceClientConnectionBase::disconnectServiceHost();
-        completionWait(NECommon::WAIT_INFINITE);
-        shutdownThread(NECommon::DO_NOT_WAIT);
+        completionWait(areg::common::WAIT_INFINITE);
+        shutdownThread(areg::common::DO_NOT_WAIT);
     }
 }
 

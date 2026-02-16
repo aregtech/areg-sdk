@@ -252,11 +252,11 @@ String ProxyAddress::convToString() const
     String result(static_cast<uint32_t>(0xFF));
 
     result.append(EXTENTION_PROXY)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::common::COMPONENT_PATH_SEPARATOR)
           .append(ServiceAddress::convToString( ))
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::common::COMPONENT_PATH_SEPARATOR)
           .append(mThreadName)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::common::COMPONENT_PATH_SEPARATOR)
           .append(mChannel.convToString());
 
     return result;
@@ -265,11 +265,11 @@ String ProxyAddress::convToString() const
 void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathProxy;
-    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
+    if ( String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
     {
         ServiceAddress::convFromString(strSource, &strSource);
-        mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
+        mThreadName  = String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+        mChannel.convFromString( String::getSubstring(strSource, areg::common::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
 
         mMagicNum = ProxyAddress::_magicNumber(*this);
     }

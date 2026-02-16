@@ -84,9 +84,9 @@ const Channel & Channel::convFromString(const String & channel)
 
     String source, target, cookie;
     NEString::CharPos pos = NEString::START_POS;
-    pos = channel.substring( source, NECommon::OBJECT_SEPARATOR, pos );
-    pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
-    channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( source, areg::common::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( target, areg::common::OBJECT_SEPARATOR, pos );
+    channel.substring( cookie, areg::common::OBJECT_SEPARATOR, pos );
 
     mSource = static_cast<ITEM_ID>( source.toUInt64() );
     mTarget = static_cast<ITEM_ID>( target.toUInt64() );

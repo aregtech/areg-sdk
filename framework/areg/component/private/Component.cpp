@@ -161,9 +161,9 @@ Component::~Component()
 WorkerThread* Component::createWorkerThread(  const String & threadName
                                             , IEWorkerThreadConsumer& consumer
                                             , ComponentThread & /* ownerThread */
-                                            , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE */
-                                            , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT */
-                                            , uint32_t maxQeueue        /* = NECommon::IGNORE_VALUE */)
+                                            , uint32_t watchdogTimeout  /* = areg::common::WATCHDOG_IGNORE */
+                                            , uint32_t stackSizeKb      /* = areg::common::STACK_SIZE_DEFAULT */
+                                            , uint32_t maxQeueue        /* = areg::common::IGNORE_VALUE */)
 {
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread == nullptr)
@@ -171,7 +171,7 @@ WorkerThread* Component::createWorkerThread(  const String & threadName
         workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
         if (workThread != nullptr)
         {
-            if (workThread->createThread(NECommon::WAIT_INFINITE))
+            if (workThread->createThread(areg::common::WAIT_INFINITE))
             {
                 mComponentInfo.registerWorkerThread(*workThread);
             }
@@ -191,7 +191,7 @@ void Component::deleteWorkerThread( const String & threadName )
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread != nullptr)
     {
-        workThread->shutdownThread(NECommon::WAIT_INFINITE);
+        workThread->shutdownThread(areg::common::WAIT_INFINITE);
         mComponentInfo.unregisterWorkerThread(*workThread);
         delete workThread;
     }
@@ -216,7 +216,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
+        workerThread->shutdownThread( areg::common::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }
@@ -227,7 +227,7 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
+        workerThread->shutdownThread( areg::common::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }

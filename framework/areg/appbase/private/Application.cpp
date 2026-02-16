@@ -311,7 +311,7 @@ NEMemory::uAlign Application::getStoredElement( const String & elemName )
     return (theApp.mStorage.isValidPosition(pos) ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
 }
 
-bool Application::waitAppQuit(unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/)
+bool Application::waitAppQuit(unsigned int waitTimeout /*= areg::common::WAIT_INFINITE*/)
 {
     Application & theApp = Application::getInstance( );
     return theApp.mAppQuit.lock(waitTimeout);

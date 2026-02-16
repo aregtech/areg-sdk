@@ -139,9 +139,9 @@ public:
      *          name, which is registered in system (in resource mapping). The Dispatcher Thread can be accessed by its unique name.
      * \param	threadName	    The unique name of dispatcher. If this parameter is nullptr or empty, system will unique thread name.
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+     *                          Pass `areg::common::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      * \param   maxQeueue       The maximum number of queued external events.
-     *                          Pass `NECommon::IGNORE_VALUE` to use default value set in configuration or ignore the parameter if not configured.
+     *                          Pass `areg::common::IGNORE_VALUE` to use default value set in configuration or ignore the parameter if not configured.
      *                          The configuration is set in `areg.init` file under key "config::*::default::messagequeue".
      **/
     explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
@@ -173,7 +173,7 @@ public:
      * \param   waitTimeout     The waiting timeout in milliseconds
      * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns false.
      **/
-    virtual bool waitForDispatcherStart( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    virtual bool waitForDispatcherStart( unsigned int waitTimeout = areg::common::WAIT_INFINITE );
 
 /************************************************************************/
 // Thread overrides
@@ -200,7 +200,7 @@ public:
      *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
      *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = areg::common::DO_NOT_WAIT ) override;
 
 protected:
 /************************************************************************/
