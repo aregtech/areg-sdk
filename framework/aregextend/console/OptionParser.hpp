@@ -433,10 +433,10 @@ public:
     /**
      * \brief   Searches in the command list the option of specified ID.
      *          Returns valid index if found the option.
-     *          Otherwise, returns invalid index (NECommon::INVALID_POSITION).
+     *          Otherwise, returns invalid index (areg::common::INVALID_POSITION).
      * \param   optId   The ID of an option to search in list.
      * \return  Returns valid index if found an option with specified ID.
-     *          Otherwise, returns invalid index (NECommon::INVALID_POSITION).
+     *          Otherwise, returns invalid index (areg::common::INVALID_POSITION).
      **/
     uint32_t findOption(int optId) const;
 

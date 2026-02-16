@@ -329,7 +329,7 @@ bool OptionParser::parseOptions( StrList & optList )
         mCmdLine += input;
         mCmdLine += DELIMITER_SPACE;
         sOption opt;
-        ASSERT( opt.inRefSetup == NECommon::INVALID_INDEX );
+        ASSERT( opt.inRefSetup == areg::common::INVALID_INDEX );
 
         for (uint32_t j = 0; j < initSize; ++ j )
         {
@@ -346,12 +346,12 @@ bool OptionParser::parseOptions( StrList & optList )
             }
         }
 
-        if ( opt.inRefSetup == NECommon::INVALID_INDEX )
+        if ( opt.inRefSetup == areg::common::INVALID_INDEX )
         {
             if ( mInputOptions.isEmpty() == false )
             {
                 sOption & last = mInputOptions.lastEntry();
-                ASSERT( last.inRefSetup != NECommon::INVALID_INDEX );
+                ASSERT( last.inRefSetup != areg::common::INVALID_INDEX );
                 _setInputValue( input, last, static_cast<uint32_t>(last.inRefSetup) );
                 result = OptionParser::hasInputError( static_cast<uint32_t>(last.inField) ) == false;
             }
@@ -391,7 +391,7 @@ bool OptionParser::parseOptions( StrList & optList )
 
 uint32_t OptionParser::findOption(int optId) const
 {
-    uint32_t result{ NECommon::INVALID_POSITION };
+    uint32_t result{ areg::common::INVALID_POSITION };
     for (uint32_t i = 0; i < mInputOptions.getSize(); ++i)
     {
         if (mInputOptions.getAt(i).inCommand == optId)

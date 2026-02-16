@@ -43,9 +43,9 @@ class DataRateHelper
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< Bytes in 1 Kilobyte.
-    static constexpr uint32_t           ONE_KILOBYTE    { NECommon::ONE_KILOBYTE };
+    static constexpr uint32_t           ONE_KILOBYTE    { areg::common::ONE_KILOBYTE };
     //!< Bytes in 1 megabyte.
-    static constexpr uint32_t           ONE_MEGABYTE    { NECommon::ONE_MEGABYTE };
+    static constexpr uint32_t           ONE_MEGABYTE    { areg::common::ONE_MEGABYTE };
     //!< String kilobytes per second
     static constexpr std::string_view   MSG_KILOBYTES   { "KBytes / sec." };
     //!< String megabytes per second

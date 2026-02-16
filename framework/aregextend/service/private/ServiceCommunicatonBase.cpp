@@ -52,7 +52,7 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( const ITEM_ID & serviceId
     : IERemoteMessageHandler        ( )
     , IEServiceConnectionConsumer   ( )
     , IEServiceConnectionProvider   ( )
-    , DispatcherThread              ( dispatcher, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    , DispatcherThread              ( dispatcher, areg::common::DEFAULT_BLOCK_SIZE, areg::common::QUEUE_SIZE_MAXIMUM )
     , IEServiceEventConsumerBase    ( )
     , IEServiceConnectionHandler    ( )
 
@@ -126,7 +126,7 @@ bool ServiceCommunicatonBase::connectServiceHost()
     bool result{ false };
     if ( mServerConnection.isValid() == false && isRunning() == false )
     {
-        if ( createThread( NECommon::WAIT_INFINITE ) && waitForDispatcherStart(NECommon::WAIT_INFINITE) )
+        if ( createThread( areg::common::WAIT_INFINITE ) && waitForDispatcherStart(areg::common::WAIT_INFINITE) )
         {
             result = true;
             sendCommand( ServiceEventData::eServiceEventCommands::CMD_StartService );
@@ -151,7 +151,7 @@ bool ServiceCommunicatonBase::reconnectServiceHost()
     bool result = true;
     if (isRunning() == false)
     {
-        if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
+        if (createThread(areg::common::WAIT_INFINITE) && waitForDispatcherStart(areg::common::WAIT_INFINITE))
         {
             result = sendCommand( ServiceEventData::eServiceEventCommands::CMD_RestartService );
         }
@@ -355,23 +355,23 @@ void ServiceCommunicatonBase::stopConnection()
     disconnectService( Event::eEventPriority::EventPriorityNormal );
 
     // Wait without triggering exit.
-    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+    mThreadSend.completionWait( areg::common::WAIT_INFINITE );
     mServerConnection.closeSocket( );
     // Trigger exit and clean resources.
-    mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
-    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadSend.shutdownThread( areg::common::WAIT_INFINITE );
+    mThreadReceive.shutdownThread( areg::common::WAIT_INFINITE );
 }
 
 bool ServiceCommunicatonBase::startSendThread()
 {
-    return mThreadSend.createThread( NECommon::WAIT_INFINITE ) && 
-           mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE );
+    return mThreadSend.createThread( areg::common::WAIT_INFINITE ) && 
+           mThreadSend.waitForDispatcherStart( areg::common::WAIT_INFINITE );
 }
 
 bool ServiceCommunicatonBase::startReceiveThread()
 {
-    return mThreadReceive.createThread( NECommon::WAIT_INFINITE ) &&
-           mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE );
+    return mThreadReceive.createThread( areg::common::WAIT_INFINITE ) &&
+           mThreadReceive.waitForDispatcherStart( areg::common::WAIT_INFINITE );
 }
 
 #ifdef DEBUG

@@ -50,7 +50,7 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
         console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
     }
 
-    mTimer.startTimer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
+    mTimer.startTimer( areg::common::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
 
     console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
     console.enableConsoleInput( true );

@@ -156,22 +156,22 @@ bool ServiceApplicationBase::_osCreateService()
                 failures.lpsaActions    = actions;
 
                 // first failure
-                actions[0].Delay        = NECommon::WAIT_1_SECOND;
+                actions[0].Delay        = areg::common::WAIT_1_SECOND;
                 actions[0].Type         = SC_ACTION_RESTART;
 
                 // first second
-                actions[1].Delay        = NECommon::WAIT_1_SECOND;
+                actions[1].Delay        = areg::common::WAIT_1_SECOND;
                 actions[1].Type         = SC_ACTION_RESTART;
 
                 // third failure
-                actions[2].Delay        = NECommon::WAIT_5_SECONDS;
+                actions[2].Delay        = areg::common::WAIT_5_SECONDS;
                 actions[2].Type         = SC_ACTION_RESTART;
 
                 // fourth failure
-                actions[3].Delay        = NECommon::WAIT_10_SECONDS;
+                actions[3].Delay        = areg::common::WAIT_10_SECONDS;
                 actions[3].Type         = SC_ACTION_RESTART;
 
-                actions[count - 1].Delay= NECommon::DO_NOT_WAIT;
+                actions[count - 1].Delay= areg::common::DO_NOT_WAIT;
                 actions[count - 1].Type = SC_ACTION_NONE;
 
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS, &failures);

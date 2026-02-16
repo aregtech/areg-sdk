@@ -46,7 +46,7 @@ String Console::waitForInput(Console::CallBack callback) const
 {
     String result;
 
-    mEnable.lock(NECommon::WAIT_INFINITE);
+    mEnable.lock(areg::common::WAIT_INFINITE);
 
     if (mIsReady)
     {
@@ -80,7 +80,7 @@ bool Console::readInputs(const char* format, ...) const
 
 bool Console::readInputList(const char* format, va_list varList) const
 {
-    mEnable.lock(NECommon::WAIT_INFINITE);
+    mEnable.lock(areg::common::WAIT_INFINITE);
     return _osReadInputList(format, varList);
 }
 

@@ -226,7 +226,7 @@ bool ServiceApplicationBase::setState(NESystemService::eSystemServiceState newSt
 
 void ServiceApplicationBase::runService()
 {
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::common::WAIT_INFINITE);
 }
 
 int ServiceApplicationBase::startServiceDispatcher()

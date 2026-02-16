@@ -27,7 +27,7 @@
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD, areg::common::DEFAULT_BLOCK_SIZE, areg::common::QUEUE_SIZE_MAXIMUM )
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -52,7 +52,7 @@ bool ServerReceiveThread::runDispatcher()
         uint32_t retryCount = 0;
         do 
         {
-            whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
+            whichEvent = multiLock.lock(areg::common::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
                 whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit

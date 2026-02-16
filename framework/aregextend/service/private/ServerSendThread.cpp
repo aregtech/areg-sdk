@@ -24,7 +24,7 @@
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(IERemoteMessageHandler& remoteService, ServerConnection & connection)
-    : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD, areg::common::DEFAULT_BLOCK_SIZE, areg::common::QUEUE_SIZE_MAXIMUM )
     , IESendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )

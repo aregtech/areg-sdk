@@ -560,8 +560,8 @@ inline const NEService::MapInstances & ServiceCommunicatonBase::getInstances() c
 
 inline void ServiceCommunicatonBase::waitToComplete( )
 {
-    completionWait( NECommon::WAIT_INFINITE );
-    shutdownThread( NECommon::DO_NOT_WAIT );
+    completionWait( areg::common::WAIT_INFINITE );
+    shutdownThread( areg::common::DO_NOT_WAIT );
 }
 
 inline bool ServiceCommunicatonBase::sendCommand( ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )

@@ -485,7 +485,7 @@ inline void Console::refreshScreen() const
 
 inline bool Console::lockConsole()
 {
-    return mLock.lock(NECommon::WAIT_INFINITE);
+    return mLock.lock(areg::common::WAIT_INFINITE);
 }
 
 inline void Console::unlockConsole()
