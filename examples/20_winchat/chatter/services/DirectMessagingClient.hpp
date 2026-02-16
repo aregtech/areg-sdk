@@ -7,7 +7,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "examples/20_winchat/services/DirectMessagerClientBase.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 
 class ChatPrticipantHandler;
 
@@ -37,7 +37,7 @@ protected:
      * \param   timeConnected   Time-stamp when the request to join was accepted and new participants was registered.
      * \see     requestChatJoin
      **/
-    virtual void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected ) override;
+    virtual void responseChatJoin( bool succeed, const DirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected ) override;
 
     /**
      * \brief   Server broadcast.
@@ -48,7 +48,7 @@ protected:
      * \param   msgText     The message, which was sent.
      * \param   timeSent    The time-stamp when the message was sent.
      **/
-    virtual void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    virtual void broadcastMessageSent( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Server broadcast.
@@ -58,7 +58,7 @@ protected:
      * \param   participant The structure of participant, who initiated message during typing.
      * \param   msgText     The text message while typing.
      **/
-    virtual void broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText ) override;
+    virtual void broadcastMessageTyped( const DirectMessager::sParticipant & participant, const String & msgText ) override;
 
     /**
      * \brief   Server broadcast.
@@ -68,7 +68,7 @@ protected:
      * \param   participant The structure of participant, joined chat-room.
      * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
-    virtual void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined ) override;
+    virtual void broadcastParticipantJoined( const DirectMessager::sParticipant & participant, const DateTime & timeJoined ) override;
 
     /**
      * \brief   Server broadcast.
@@ -78,7 +78,7 @@ protected:
      * \param   participant The structure of participant, who left the chat-room.
      * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
-    virtual void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft ) override;
+    virtual void broadcastParticipantLeft( const DirectMessager::sParticipant & participant, const DateTime & timeLeft ) override;
 
     /**
      * \brief   Server broadcast.
@@ -110,7 +110,7 @@ protected:
 private:
     inline DirectMessagingClient & self();
 
-    inline void updateChatOutput( NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
+    inline void updateChatOutput( NEDistributedApp::eWndCommands cmdSend, const DirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
 
     inline void postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam);
 

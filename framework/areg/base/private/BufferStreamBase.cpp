@@ -18,8 +18,8 @@
 #include "areg/base/Cursor.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <algorithm>
 #include <string.h>

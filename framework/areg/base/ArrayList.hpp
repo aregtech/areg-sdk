@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "areg/base/CommonDefs.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/IOStream.hpp"
 
 #include <algorithm>

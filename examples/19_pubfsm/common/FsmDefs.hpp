@@ -11,7 +11,8 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "examples/19_pubfsm/services/NETrafficController.hpp"
+#include "examples/19_pubfsm/services/TrafficController.hpp"
+
 
 namespace fsm
 {
@@ -20,39 +21,39 @@ namespace fsm
 
     constexpr char  SerivceLightClient[]        { "LightUser" };
 
-    inline const char * getName(NETrafficController::eVehicleTrafficLight value);
+    inline const char * getName(TrafficController::eVehicleTrafficLight value);
 
-    inline const char * getName(NETrafficController::ePedestrianTrafficLight value);
+    inline const char * getName(TrafficController::ePedestrianTrafficLight value);
 }
 
-inline const char * fsm::getName(NETrafficController::eVehicleTrafficLight value)
+inline const char * fsm::getName(TrafficController::eVehicleTrafficLight value)
 {
     switch (value)
     {
-    case NETrafficController::eVehicleTrafficLight::VehicleLightsInit:
+    case TrafficController::eVehicleTrafficLight::VehicleLightsInit:
         return "Blink YELLOW";
-    case NETrafficController::eVehicleTrafficLight::VehicleLightRed:
+    case TrafficController::eVehicleTrafficLight::VehicleLightRed:
         return "RED";
-    case NETrafficController::eVehicleTrafficLight::VehicleLightYellow:
+    case TrafficController::eVehicleTrafficLight::VehicleLightYellow:
         return "YELLOW";
-    case NETrafficController::eVehicleTrafficLight::VehicleLightGreen:
+    case TrafficController::eVehicleTrafficLight::VehicleLightGreen:
         return "GREEN";
 
-    case NETrafficController::eVehicleTrafficLight::VehicleLightOFF:
+    case TrafficController::eVehicleTrafficLight::VehicleLightOFF:
     default:
         return "OFF";
     }
 }
 
-inline const char * fsm::getName(NETrafficController::ePedestrianTrafficLight value)
+inline const char * fsm::getName(TrafficController::ePedestrianTrafficLight value)
 {
     switch (value)
     {
-    case NETrafficController::ePedestrianTrafficLight::PedestrianLightRed:
+    case TrafficController::ePedestrianTrafficLight::PedestrianLightRed:
         return "RED";
-    case NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen:
+    case TrafficController::ePedestrianTrafficLight::PedestrianLightGreen:
         return "GREEN";
-    case NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF:
+    case TrafficController::ePedestrianTrafficLight::PedestrianLightOFF:
     default:
         return "OFF";
     }

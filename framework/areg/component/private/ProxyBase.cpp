@@ -16,8 +16,8 @@
 #include "areg/component/ProxyBase.hpp"
 
 #include "areg/base/Version.hpp"
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
 #include "areg/component/ServiceRequestEvent.hpp"

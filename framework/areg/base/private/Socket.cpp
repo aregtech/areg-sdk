@@ -14,8 +14,8 @@
  ************************************************************************/
 #include "areg/base/Socket.hpp"
 
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
 #include <atomic>

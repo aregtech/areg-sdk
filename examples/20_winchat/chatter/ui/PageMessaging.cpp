@@ -5,7 +5,7 @@
 #include "chatter/ui/PageMessaging.hpp"
 #include "chatter/services/CentralMessaging.hpp"
 #include "chatter/DistrbutedApp.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "areg/base/GEGlobal.h"
 #include "chatter/services/ConnectionHandler.hpp"
 
@@ -102,13 +102,13 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
     }
 }
 
-void PageMessaging::OnAddConnection( NEConnectionManager::sConnection & data )
+void PageMessaging::OnAddConnection( ConnectionManager::sConnection & data )
 {
     if ( (mConnectionHandler.GetCookie() != data.cookie) && (mConnectionHandler.GetNickName() != data.nickName) )
         outputMessage( data.nickName, "Is connected and registered", data.connectTime, data.connectedTime, data.cookie );
 }
 
-void PageMessaging::OnRemoveConnection( NEConnectionManager::sConnection & data )
+void PageMessaging::OnRemoveConnection( ConnectionManager::sConnection & data )
 {
     outputMessage( data.nickName, "Is unregistered and disconnected", data.connectTime, data.connectedTime, data.cookie );
 }

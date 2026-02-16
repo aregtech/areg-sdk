@@ -23,9 +23,9 @@
 #include "areg/logging/private/LoggingEvent.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/logging/LogConfiguration.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/ScopeController.hpp"
 #include "areg/logging/private/FileLogger.hpp"
 #include "areg/logging/private/DebugOutputLogger.hpp"

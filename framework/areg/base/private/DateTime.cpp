@@ -14,7 +14,7 @@
  *
  ************************************************************************/
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <time.h>
 

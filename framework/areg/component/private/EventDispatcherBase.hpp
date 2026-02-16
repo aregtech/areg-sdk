@@ -34,7 +34,7 @@
 #include "areg/component/private/EventConsumerMap.hpp"
 #include "areg/component/private/EventQueue.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 /************************************************************************
  * Dependencies

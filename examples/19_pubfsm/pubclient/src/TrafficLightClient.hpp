@@ -39,7 +39,7 @@ protected:
      * \param   TrafficSouthNorth   The value of TrafficSouthNorth attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onTrafficSouthNorthUpdate( const NETrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state ) override;
+    virtual void onTrafficSouthNorthUpdate( const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Triggered, when TrafficEastWest attribute is updated. The function contains
@@ -50,7 +50,7 @@ protected:
      * \param   TrafficEastWest The value of TrafficEastWest attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onTrafficEastWestUpdate( const NETrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state ) override;
+    virtual void onTrafficEastWestUpdate( const TrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Server broadcast.
@@ -60,7 +60,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian ) override;
+    virtual void broadcastSouthNorth( TrafficController::eVehicleTrafficLight LightVehicle, TrafficController::ePedestrianTrafficLight LightPedestrian ) override;
 
     /**
      * \brief   Server broadcast.
@@ -70,7 +70,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian ) override;
+    virtual void broadcastEastWest( TrafficController::eVehicleTrafficLight LightVehicle, TrafficController::ePedestrianTrafficLight LightPedestrian ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

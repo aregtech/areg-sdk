@@ -64,7 +64,7 @@
     <ClCompile Include="units\SortedLinkedListTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\NEStringTest.cpp">
+    <ClCompile Include="units\StringDefsTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -21,8 +21,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/NERegistry.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/component/Model.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 /************************************************************************
  * \brief   Predefined MACRO to model threads, components and services.

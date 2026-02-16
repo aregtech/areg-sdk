@@ -11,7 +11,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/ArrayList.hpp"
 #include "areg/base/HashMap.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 #include <tchar.h>
 
 namespace chat

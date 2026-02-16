@@ -30,7 +30,7 @@ protected:
      * \param   result      The connection operation result
      * \see     requestConnect
      **/
-    virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result ) override;
+    virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, ConnectionManager::eConnectionResult result ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

@@ -22,7 +22,7 @@
 
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 /************************************************************************
  * Dependencies

@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "areg/ipc/ServerConnectionBase.hpp"
 
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )

@@ -36,7 +36,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(NELargeData::ServiceRoleName, ServicingComponent)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NELargeData::ServiceName, NELargeData::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( LargeData::ServiceName, LargeData::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT(NELargeData::ServiceRoleName)
     // end of thread description

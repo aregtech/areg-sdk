@@ -22,7 +22,7 @@
  ************************************************************************/
 #include "areg/component/private/TimerManagerBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/ResourceMap.hpp"
 
 /************************************************************************

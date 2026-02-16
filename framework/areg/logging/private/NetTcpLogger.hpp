@@ -29,7 +29,7 @@
 #include "areg/base/RingStack.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 
 #include <string_view>

@@ -22,7 +22,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/ProxyEvent.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 /************************************************************************
  * Dependencies.

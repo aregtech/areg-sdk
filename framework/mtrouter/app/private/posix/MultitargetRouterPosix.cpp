@@ -16,11 +16,11 @@
 
 #ifdef _POSIX
 
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/AppDefs.hpp"
 

@@ -19,7 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/ArrayList.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if AREG_LOGS
 

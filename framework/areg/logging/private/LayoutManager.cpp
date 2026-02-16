@@ -15,8 +15,8 @@
 #include "areg/logging/private/LayoutManager.hpp"
 
 #include "areg/logging/private/Layouts.hpp"
-#include "areg/logging/private/NELogOptions.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/logging/private/LogOptions.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #if AREG_LOGS
 

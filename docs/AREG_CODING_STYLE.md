@@ -143,18 +143,33 @@ int get_connection_count();    // Drop "get_" prefix
 | `set_property()`  | Mutator           | `set_size()`, `set_name()`        |
 | `action_noun()`   | Command           | `start_service()`, `stop_timer()` |
 
-**Virtual methods:**
+**Virtual methods (C.128):**
 
 ```cpp
-// RULE: Derived classes use both 'virtual' and 'override' in the declaration
+// RULE: Use exactly ONE of: virtual, override, or final
+// - Base class introducing a virtual: use 'virtual' alone
+// - Derived class overriding: use 'override' alone (implies virtual)
+// - Final override: use 'final' alone
+class ServiceBase
+{
+public:
+    virtual ~ServiceBase() = default;
+    virtual void start_service();       // Base: 'virtual' alone
+};
+
 class DerivedService : public ServiceBase
 {
 public:
-    virtual void start_service() override;
-    virtual void stop_service() override;
+    void start_service() override;      // Derived: 'override' alone
 };
 
-// In source (definition) - no override keyword
+class FinalService final : public DerivedService
+{
+public:
+    void start_service() final;         // Final: 'final' alone
+};
+
+// In source (definition) - no override/virtual keyword
 void DerivedService::start_service()
 {
     // Implementation
@@ -1024,6 +1039,8 @@ private:
 7. Protected member variables
 8. Private member variables
 9. Deleted constructors / operators
+
+**Recommendation (C.133):** Prefer private data with protected accessors over protected data members. Protected data creates tight coupling between base and derived classes — changing the member type or semantics silently breaks all subclasses. Protected accessors allow the base class to evolve its internals. However, protected data is acceptable when it significantly reduces verbosity and the inheritance hierarchy is small and controlled.
 
 ### 8.2 Constructor Initialization
 

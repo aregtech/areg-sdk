@@ -21,7 +21,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/base/IOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////

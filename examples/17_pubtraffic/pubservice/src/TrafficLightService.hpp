@@ -187,7 +187,7 @@ private:
 
     Timer                               mTimer;         //!< The timer to switch lights
 
-    NESimpleTrafficLight::eTrafficLight mPrevState;     //!< Previous state for yellow light switch
+    SimpleTrafficLight::eTrafficLight mPrevState;     //!< Previous state for yellow light switch
 
     TrafficSwitchConsumer               mEventConsumer; //!< The event consumer object.
 

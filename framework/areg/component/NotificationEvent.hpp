@@ -25,7 +25,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Event.hpp"
 #include "areg/component/EventConsumer.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 /************************************************************************
  * List of declared classes

@@ -10,7 +10,7 @@
   ************************************************************************/
 #include "common/src/PubSubMixed.hpp"
 
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
 PubSubMixed::PubSubMixed(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component (entry, owner)

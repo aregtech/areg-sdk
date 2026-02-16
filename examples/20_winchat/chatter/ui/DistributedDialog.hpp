@@ -18,7 +18,7 @@
 #include "chatter/ui/PageNetworkSetup.hpp"
 #include "chatter/ui/PageMessaging.hpp"
 #include "chatter/ui/PageConnections.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
 #include "areg/base/Containers.hpp"
 
@@ -50,7 +50,7 @@ public:
 
 public:
 
-    PageChat * AddChatPage( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParties, bool isInitiator );
+    PageChat * AddChatPage( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParties, bool isInitiator );
 
     bool RemoveChatPage( const String & connectName );
 

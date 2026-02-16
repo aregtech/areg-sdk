@@ -5,7 +5,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "common/ChatDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////

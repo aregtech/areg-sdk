@@ -21,8 +21,8 @@
 #include "areg/base/GEGlobal.h"
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
-#include "logcollector/app/NELogCollectorSettings.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "logcollector/app/LogCollectorNames.hpp"
 #include "logcollector/service/LogCollectorServerService.hpp"
 #include "aregextend/console/OptionParser.hpp"
 

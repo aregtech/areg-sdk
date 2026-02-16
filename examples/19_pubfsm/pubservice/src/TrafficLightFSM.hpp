@@ -26,7 +26,7 @@
 /************************************************************************
  * Include files
  ************************************************************************/
-#include "pubservice/src/NETrafficLightFSM.hpp"
+#include "pubservice/src/TrafficLightDefs.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/component/Timer.hpp"

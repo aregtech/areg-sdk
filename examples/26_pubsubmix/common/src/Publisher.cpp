@@ -71,7 +71,7 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::eService
 
     if (isServiceProviderStateValid() == false)
     {
-        setServiceProviderState(NEPubSubMix::eServiceState::Uninitialized);
+        setServiceProviderState(PubSubMix::eServiceState::Uninitialized);
     }
 
     return result;
@@ -87,7 +87,7 @@ void Publisher::start()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Running);
+    setServiceProviderState(PubSubMix::eServiceState::Running);
     const String & roleName = PubSubMixStub::getServiceRole();
 
     if (isIntegerAlwaysValid() == false)
@@ -102,8 +102,8 @@ void Publisher::start()
         setStringOnChange( { generateString(mSeqString), roleName } );
     }
 
-    mTimerAlways.startTimer(NEPubSubMix::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(NEPubSubMix::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerAlways.startTimer(PubSubMix::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerOnChange.startTimer(PubSubMix::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
@@ -116,7 +116,7 @@ void Publisher::stop()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Stopped);
+    setServiceProviderState(PubSubMix::eServiceState::Stopped);
 }
 
 void Publisher::invalidate()
@@ -131,7 +131,7 @@ void Publisher::invalidate()
     mSeqString = 0;
     mSeqInteger = 0;
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Uninitialized);
+    setServiceProviderState(PubSubMix::eServiceState::Uninitialized);
 
     invalidateIntegerAlways();
     invalidateStringOnChange();
@@ -147,7 +147,7 @@ void Publisher::quit()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(NEPubSubMix::eServiceState::Shutdown);
+    setServiceProviderState(PubSubMix::eServiceState::Shutdown);
     Application::signalAppQuit();
 }
 
@@ -160,7 +160,7 @@ void Publisher::processTimer(Timer & timer)
     if (&timer == &mTimerAlways)
     {
         Lock lock(mLock);
-        if (++ mCountInteger > NEPubSubMix::CycleAlways)
+        if (++ mCountInteger > PubSubMix::CycleAlways)
         {
             ++ mSeqInteger;
             mCountInteger = 0;
@@ -172,7 +172,7 @@ void Publisher::processTimer(Timer & timer)
     else if (&timer == &mTimerOnChange)
     {
         Lock lock(mLock);
-        if (++ mCountString > NEPubSubMix::CycleAlways)
+        if (++ mCountString > PubSubMix::CycleAlways)
         {
             ++ mSeqString;
             mCountString = 0;

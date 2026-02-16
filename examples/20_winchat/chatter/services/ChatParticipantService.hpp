@@ -6,7 +6,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 #include "common/ChatDefs.hpp"
 
@@ -18,7 +18,7 @@ class ChatParticipantService  : private   Component
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, std::any data );
+    static NERegistry::Model GetModel( const DirectMessager::sParticipant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
     ChatParticipantService(const NERegistry::ComponentEntry& entry, ComponentThread& ownerThread);

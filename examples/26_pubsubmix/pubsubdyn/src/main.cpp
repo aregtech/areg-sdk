@@ -12,7 +12,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/GELog.h"
 
 #include "common/src/PubSubDefs.hpp"
@@ -47,7 +47,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( SecondRole, PubSubMixed)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
             // register service dependency
             REGISTER_DEPENDENCY( pubsub::ContollerPublisher )
             REGISTER_DEPENDENCY(ThirddRole)
@@ -61,7 +61,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(ThirddRole, PubSubMixed)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
             // register service dependency
             REGISTER_DEPENDENCY( pubsub::ContollerPublisher )
             REGISTER_DEPENDENCY(SecondRole)

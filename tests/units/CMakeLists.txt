@@ -38,8 +38,8 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     DateTimeTest.cpp
     FileTest.cpp
     LogScopesTest.cpp
-    NEStringTest.cpp
     OptionParserTest.cpp
+    StringDefsTest.cpp
     StringUtilsTest.cpp
     ArrayListTest.cpp
     FixedArrayTest.cpp

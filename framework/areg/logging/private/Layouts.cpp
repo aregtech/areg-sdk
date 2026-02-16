@@ -16,7 +16,7 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include "areg/logging/private/LogManager.hpp"
 

@@ -28,7 +28,7 @@
 #include "areg/base/SortedLinkedList.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 /************************************************************************
  * \brief   Collection of container such as hash maps, arrays, linked 

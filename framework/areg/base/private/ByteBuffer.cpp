@@ -14,7 +14,7 @@
  *
  ************************************************************************/
 #include "areg/base/ByteBuffer.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <algorithm>
 #include <utility>

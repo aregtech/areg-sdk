@@ -20,7 +20,7 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/base/ThreadAddress.hpp"
 #include "areg/base/IOStream.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <string_view>
 

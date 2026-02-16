@@ -4,7 +4,7 @@
 #include "areg/base/ArrayList.hpp"
 #include "common/ChatDefs.hpp"
 #include "chatter/res/resource.h"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
 
 class Component;
 class DispatcherThread;
@@ -34,8 +34,8 @@ public:
     void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
     void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
-    void OnAddConnection( NEConnectionManager::sConnection & data );
-    void OnRemoveConnection( NEConnectionManager::sConnection & data );
+    void OnAddConnection( ConnectionManager::sConnection & data );
+    void OnRemoveConnection( ConnectionManager::sConnection & data );
     void OnUpdateConnection();
     void OnDisconnectTriggered();
     void OnTypeMessage( uint32_t cookie, chat::sMessageData & data );

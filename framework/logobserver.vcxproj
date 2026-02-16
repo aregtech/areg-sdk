@@ -35,13 +35,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="logobserver\app\LogObserver.hpp" />
-    <ClInclude Include="logobserver\app\NELogObserverSettings.hpp" />
     <ClInclude Include="logobserver\resources\resource.h" />
     <ClInclude Include="logobserver\resources\targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logobserver\app\private\LogObserver.cpp" />
-    <ClCompile Include="logobserver\app\private\NELogObserverSettings.cpp" />
     <ClCompile Include="logobserver\app\private\posix\LogObserverPosix.cpp" />
     <ClCompile Include="logobserver\app\private\win32\LogObserverWin32.cpp" />
   </ItemGroup>

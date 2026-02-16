@@ -23,7 +23,7 @@
 #include "areg/base/FileBase.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // FileBuffer class declaration

@@ -46,7 +46,7 @@
         <DataType ID="11" Name="uAlign" Type="Imported">
             <Description>This example exports NEMemory::uAlign in the service interface.</Description>
             <Namespace>NEMemory</Namespace>
-            <Location>areg/base/NEMemory.hpp</Location>
+            <Location>areg/base/MemoryDefs.hpp</Location>
         </DataType>
         <DataType ID="12" Name="SomeArray" Type="DefinedType">
             <Description>Defines new type of array</Description>
@@ -144,7 +144,7 @@
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="36" Name="areg/base/NEMath.hpp">
+        <Location ID="36" Name="areg/base/MathDefs.hpp">
             <Description>can make additional includes</Description>
         </Location>
         <Location ID="43" Name="areg/example/nonexist/folder/DataType.dtml">

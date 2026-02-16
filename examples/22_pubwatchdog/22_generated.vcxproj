@@ -49,12 +49,12 @@
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProxy.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\NEHelloWatchdog.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogClientBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdogStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\NEHelloWatchdog.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\HelloWatchdog.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\22_pubwatchdog\services\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>

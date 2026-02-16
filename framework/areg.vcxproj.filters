@@ -33,19 +33,19 @@
     <ClCompile Include="areg\base\private\CommonDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEDebug.cpp">
+    <ClCompile Include="areg\base\private\DebugDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEMath.cpp">
+    <ClCompile Include="areg\base\private\MathDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEMemory.cpp">
+    <ClCompile Include="areg\base\private\MemoryDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEString.cpp">
+    <ClCompile Include="areg\base\private\StringDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NEUtilities.cpp">
+    <ClCompile Include="areg\base\private\UtilityDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\EventConsumer.cpp">
@@ -63,10 +63,10 @@
     <ClCompile Include="areg\component\private\WorkerThreadConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\NERegistry.cpp">
+    <ClCompile Include="areg\component\private\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\NEService.cpp">
+    <ClCompile Include="areg\component\private\ServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\EventTemplate.cpp">
@@ -81,43 +81,43 @@
     <ClCompile Include="areg\ipc\private\RemoteMessageHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\NERemoteService.cpp">
+    <ClCompile Include="areg\ipc\private\RemoteServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\persist\private\NEPersistence.cpp">
+    <ClCompile Include="areg\persist\private\PersistenceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\Layouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\logging\private\NELogOptions.cpp">
+    <ClCompile Include="areg\logging\private\LogOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\logging\private\NELogging.cpp">
+    <ClCompile Include="areg\logging\private\LoggingDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\SyncObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\NESocket.cpp">
+    <ClCompile Include="areg\base\private\SocketDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\WaitablePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\NEDebugPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\DebugDefsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\NESocketPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\SocketDefsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\NEUtilitiesPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\UtilityDefsPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\NESocketWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\SocketDefsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\NEUtilitiesWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\UtilityDefsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\SyncObjectPosix.cpp">
@@ -243,16 +243,16 @@
     <ClCompile Include="areg\base\private\RemoteMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\SyncObjects.cpp">
+    <ClCompile Include="areg\base\private\SyncPrimitives.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\Containers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\SyncObjectsWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\SyncPrimitivesWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SyncObjectsPosix.cpp">
+    <ClCompile Include="areg\base\private\posix\SyncPrimitivesPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp">
@@ -465,7 +465,7 @@
     <ClCompile Include="areg\base\private\WideString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\win32\NEDebugWin32.cpp">
+    <ClCompile Include="areg\base\private\win32\DebugDefsWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\logging\private\LogConfiguration.cpp">
@@ -537,7 +537,7 @@
     <ClCompile Include="areg\persist\private\ConfigManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\NEConnection.cpp">
+    <ClCompile Include="areg\ipc\private\ConnectionDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\ConfigListener.cpp">
@@ -572,13 +572,13 @@
     <ClInclude Include="areg\appbase\AppDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\NEDebug.hpp">
+    <ClInclude Include="areg\base\private\DebugDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\Containers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\SyncObjects.hpp">
+    <ClInclude Include="areg\base\SyncPrimitives.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\GEGlobal.h">
@@ -605,19 +605,19 @@
     <ClInclude Include="areg\base\CommonDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEMath.hpp">
+    <ClInclude Include="areg\base\MathDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEMemory.hpp">
+    <ClInclude Include="areg\base\MemoryDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NESocket.hpp">
+    <ClInclude Include="areg\base\SocketDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEString.hpp">
+    <ClInclude Include="areg\base\StringDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\NEUtilities.hpp">
+    <ClInclude Include="areg\base\UtilityDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\ArrayList.hpp">
@@ -668,10 +668,10 @@
     <ClInclude Include="areg\component\WorkerThreadConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\NERegistry.hpp">
+    <ClInclude Include="areg\component\Model.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\NEService.hpp">
+    <ClInclude Include="areg\component\ServiceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\EventTemplate.hpp">
@@ -683,22 +683,22 @@
     <ClInclude Include="areg\ipc\RegistrationConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\NERemoteService.hpp">
+    <ClInclude Include="areg\ipc\RemoteServiceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\persist\NEPersistence.hpp">
+    <ClInclude Include="areg\persist\PersistenceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\private\Layouts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\logging\private\NELogOptions.hpp">
+    <ClInclude Include="areg\logging\private\LogOptions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\logging\GELog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\logging\NELogging.hpp">
+    <ClInclude Include="areg\logging\LoggingDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\system\posix\GEPosix.h">
@@ -716,7 +716,7 @@
     <ClInclude Include="areg\base\private\posix\WaitablePosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\NESyncTypesIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SyncDefsPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\posix\SyncObjectPosix.hpp">
@@ -1082,7 +1082,7 @@
     <ClInclude Include="areg\persist\ConfigManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\NEConnection.hpp">
+    <ClInclude Include="areg\ipc\private\ConnectionDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\persist\ConfigListener.hpp">

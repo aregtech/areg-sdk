@@ -27,7 +27,7 @@
 #include "areg/ipc/private/ClientSendThread.hpp"
 #include "areg/component/Channel.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/String.hpp"
 
 /************************************************************************

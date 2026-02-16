@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    virtual void onPatientUpdate( const NEPatientInformation::PatientInfo & Patient, NEService::eDataStateType state ) override;
+    virtual void onPatientUpdate( const PatientInformation::PatientInfo & Patient, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.

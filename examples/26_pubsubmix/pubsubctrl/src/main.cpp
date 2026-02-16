@@ -50,7 +50,7 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(pubsub::ContollerPublisher, PubSubController )
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
             REGISTER_DEPENDENCY(pubsub::ContollerPublisher)
         // end of component description
         END_REGISTER_COMPONENT(pubsub::ContollerPublisher)
@@ -62,7 +62,7 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(SecondRole, PubSubMixed)
             // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NEPubSubMix::ServiceName, NEPubSubMix::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PubSubMix::ServiceName, PubSubMix::InterfaceVersion )
             REGISTER_DEPENDENCY(pubsub::ContollerPublisher)
             REGISTER_DEPENDENCY(SecondRole)
         // end of component description

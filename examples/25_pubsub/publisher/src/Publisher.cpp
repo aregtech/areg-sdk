@@ -120,7 +120,7 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::eService
 
     if (isServiceProviderStateValid() == false)
     {
-        setServiceProviderState(NEPubSub::eServiceState::Uninitialized);
+        setServiceProviderState(PubSub::eServiceState::Uninitialized);
     }
 
     return result;
@@ -136,7 +136,7 @@ void Publisher::start()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(NEPubSub::eServiceState::Running);
+    setServiceProviderState(PubSub::eServiceState::Running);
 
     if (isIntegerAlwaysValid() == false)
     {
@@ -150,8 +150,8 @@ void Publisher::start()
         setStringOnChange(generateString(mSeqString));
     }
 
-    mTimerAlways.startTimer(NEPubSub::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(NEPubSub::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerAlways.startTimer(PubSub::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerOnChange.startTimer(PubSub::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
@@ -164,7 +164,7 @@ void Publisher::stop()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(NEPubSub::eServiceState::Stopped);
+    setServiceProviderState(PubSub::eServiceState::Stopped);
 }
 
 void Publisher::invalidate()
@@ -179,7 +179,7 @@ void Publisher::invalidate()
     mSeqString = 0;
     mSeqInteger = 0;
 
-    setServiceProviderState(NEPubSub::eServiceState::Uninitialized);
+    setServiceProviderState(PubSub::eServiceState::Uninitialized);
 
     invalidateIntegerAlways();
     invalidateStringOnChange();
@@ -195,7 +195,7 @@ void Publisher::quit()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(NEPubSub::eServiceState::Shutdown);
+    setServiceProviderState(PubSub::eServiceState::Shutdown);
     Application::signalAppQuit();
 }
 
@@ -206,7 +206,7 @@ void Publisher::processTimer(Timer & timer)
     if (&timer == &mTimerAlways)
     {
         Lock lock(mLock);
-        if (++ mCountInteger > NEPubSub::CycleAlways)
+        if (++ mCountInteger > PubSub::CycleAlways)
         {
             ++ mSeqInteger;
             mCountInteger = 0;
@@ -218,7 +218,7 @@ void Publisher::processTimer(Timer & timer)
     else if (&timer == &mTimerOnChange)
     {
         Lock lock(mLock);
-        if (++ mCountString > NEPubSub::CycleAlways)
+        if (++ mCountString > PubSub::CycleAlways)
         {
             ++ mSeqString;
             mCountString = 0;

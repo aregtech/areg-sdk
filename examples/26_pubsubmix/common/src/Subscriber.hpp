@@ -14,7 +14,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "examples/26_pubsubmix/services/PubSubMixClientBase.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   The PubSub service consumer object.
@@ -78,7 +78,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnChange, NEService::eDataStateType state) override;
+    virtual void onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::eDataStateType state) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -89,7 +89,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state) override;
+    virtual void onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state) override;
 
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -100,7 +100,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate(NEPubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state) override;
+    virtual void onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -113,9 +113,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    NEPubSubMix::sInteger   mOldInteger;    //!< Old integer value to compare when output on console.
+    PubSubMix::sInteger   mOldInteger;    //!< Old integer value to compare when output on console.
     bool                    mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
-    NEPubSubMix::sString    mOldString;     //!< Old string value to compare when output on console.
+    PubSubMix::sString    mOldString;     //!< Old string value to compare when output on console.
     NEMath::sCoord          mCoordInt;      //!< The coordinate to output the information about integer update.
     NEMath::sCoord          mCoordStr;      //!< The coordinate to output the information about string update
     NEMath::sCoord          mCoordSep;      //!< The coordinate to output a separation line.

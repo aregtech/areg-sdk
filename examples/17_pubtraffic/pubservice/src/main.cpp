@@ -41,7 +41,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( traffic::SimpleLightControllerName, TrafficLightService )
             // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NESimpleTrafficLight::ServiceName, NESimpleTrafficLight::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( SimpleTrafficLight::ServiceName, SimpleTrafficLight::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( traffic::SimpleLightControllerName )
     // end of thread description

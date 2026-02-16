@@ -20,7 +20,7 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_component_Timer_startTimer);

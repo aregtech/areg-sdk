@@ -79,7 +79,7 @@
     <ClInclude Include="chatter\ui\DistributedDialog.hpp" />
     <ClInclude Include="chatter\ui\PageNetworkSetup.hpp" />
     <ClInclude Include="chatter\services\ConnectionService.hpp" />
-    <ClInclude Include="chatter\NEDistributedApp.hpp" />
+    <ClInclude Include="chatter\DistributedAppDefs.hpp" />
     <ClInclude Include="chatter\DistrbutedApp.hpp" />
     <ClInclude Include="chatter\res\resource.h" />
     <ClInclude Include="chatter\res\stdafx.h" />
@@ -103,7 +103,7 @@
     <ClCompile Include="chatter\ui\PageNetworkSetup.cpp" />
     <ClCompile Include="chatter\services\ConnectionService.cpp" />
     <ClCompile Include="chatter\DistrbutedApp.cpp" />
-    <ClCompile Include="chatter\NEDistributedApp.cpp" />
+    <ClCompile Include="chatter\DistributedAppDefs.cpp" />
     <ClCompile Include="chatter\res\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>

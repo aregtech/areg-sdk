@@ -19,7 +19,7 @@
 
 #include "areg/base/IOStream.hpp"
 #include "areg/base/Cursor.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
 

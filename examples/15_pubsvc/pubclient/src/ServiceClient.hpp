@@ -46,7 +46,7 @@ protected:
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo ) override;
+    virtual void responseHelloWorld( const HelloWorld::sConnectedClient & clientInfo ) override;
 
     /**
      * \brief   Server broadcast.

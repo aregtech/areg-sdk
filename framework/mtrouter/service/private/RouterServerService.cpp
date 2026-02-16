@@ -14,9 +14,9 @@
  ************************************************************************/
 #include "mtrouter/service/RouterServerService.hpp"
 
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceProvider);

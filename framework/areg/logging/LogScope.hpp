@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/IOStream.hpp"
 #include <atomic>

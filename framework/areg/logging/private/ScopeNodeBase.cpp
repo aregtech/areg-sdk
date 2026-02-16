@@ -20,7 +20,7 @@
 
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/logging/LogScope.hpp"
-#include "areg/logging/private/NELogOptions.hpp"
+#include "areg/logging/private/LogOptions.hpp"
 
 #if AREG_LOGS
 

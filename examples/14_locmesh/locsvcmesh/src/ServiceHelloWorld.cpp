@@ -22,7 +22,7 @@ ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
     : HelloWorldStub( masterComp )
     , mIsMain( isMain )
     , mClientList( )
-    , mRemainRequest( NEHelloWorld::MaxMessages )
+    , mRemainRequest( HelloWorld::MaxMessages )
 {
 }
 
@@ -47,7 +47,7 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
         if ( mIsMain )
         {
             LOG_WARN( "The controller component [ %s ] broadcasts message to shutdown application", getServiceRole( ).getString( ) );
-            broadcastReachedMaximum( NEHelloWorld::MaxMessages );
+            broadcastReachedMaximum( HelloWorld::MaxMessages );
         }
     }
     else
@@ -65,7 +65,7 @@ void ServiceHelloWorld::requestShutdownService( unsigned int clientID, const Str
 
     if ( mIsMain )
     {
-        LOG_INFO( "All clients are set message to shutdown, all [ %d ] messages are output, going to shutdown application", NEHelloWorld::MaxMessages );
+        LOG_INFO( "All clients are set message to shutdown, all [ %d ] messages are output, going to shutdown application", HelloWorld::MaxMessages );
         Application::signalAppQuit( );
     }
 }

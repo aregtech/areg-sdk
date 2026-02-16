@@ -19,7 +19,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/component/TimerBase.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
  /************************************************************************
   * Dependencies.

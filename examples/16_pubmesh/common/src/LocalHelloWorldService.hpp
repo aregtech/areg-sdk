@@ -21,7 +21,7 @@ class LocalHelloWorldService  : private LocalHelloWorldStub
 {
 
     //!< The type of list of connected clients.
-    using ClientList = LinkedList<NELocalHelloWorld::sConnectedClient>;
+    using ClientList = LinkedList<LocalHelloWorld::sConnectedClient>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

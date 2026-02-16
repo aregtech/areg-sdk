@@ -55,7 +55,7 @@ protected:
      * \param   client  The client registration object that contains unique ID.
      * \see     requestRegister
      **/
-    virtual void responseRegister( const NEPublicHelloWorld::sClientRegister & client ) override;
+    virtual void responseRegister( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Response callback.
@@ -76,7 +76,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state ) override;
+    virtual void onServiceStateUpdate( SystemShutdown::eServiceState ServiceState, NEService::eDataStateType state ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -120,7 +120,7 @@ private:
 protected:
     const unsigned int  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
     Timer               mTimer;     //!< The timer to trigger to send request to output message
-    NEPublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
+    PublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

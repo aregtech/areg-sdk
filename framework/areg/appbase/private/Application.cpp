@@ -17,17 +17,17 @@
 #include "areg/appbase/Application.hpp"
 
 #include "areg/base/File.hpp"
-#include "areg/base/NESocket.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/SocketDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Process.hpp"
 
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/private/TimerManager.hpp"
 #include "areg/component/private/WatchdogManager.hpp"
 
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
 #include <vector>

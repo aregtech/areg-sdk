@@ -19,7 +19,7 @@
 //! \brief  Implementation of a public service to receive requests from remote clients.
 class PublicHelloWorldService : private PublicHelloWorldStub
 {
-    using ClientList = LinkedList< NEPublicHelloWorld::sClientRegister >;
+    using ClientList = LinkedList< PublicHelloWorld::sClientRegister >;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -60,7 +60,7 @@ protected:
      * \param   client  The client registration object indicating the unregistered client.
      * \note    Has no response
      **/
-    virtual void requestUnregister( const NEPublicHelloWorld::sClientRegister & client ) override;
+    virtual void requestUnregister( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Request call.

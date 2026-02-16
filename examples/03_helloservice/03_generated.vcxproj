@@ -46,12 +46,12 @@
     <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloServiceEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloServiceProxy.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloServiceStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\NEHelloService.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloService.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\HelloServiceClientBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\HelloServiceStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\NEHelloService.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\HelloService.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloServiceEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\03_helloservice\services\private\HelloServiceProxy.hpp" />
   </ItemGroup>

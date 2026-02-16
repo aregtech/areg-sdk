@@ -5,11 +5,11 @@
 #include "register/CentralApp.hpp"
 #include "register/ui/PageBrokerSetup.hpp"
 #include "register/ui/CentralDialog.hpp"
-#include "register/NECentralApp.hpp"
+#include "register/CentralAppDefs.hpp"
 #include "common/ChatDefs.hpp"
 
 #include "areg/base/String.hpp"
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/component/ComponentLoader.hpp"

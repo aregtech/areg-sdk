@@ -15,7 +15,7 @@
  ************************************************************************/
 
 #include "areg/base/FileBase.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/ByteBuffer.hpp"
 #include "areg/base/DateTime.hpp"

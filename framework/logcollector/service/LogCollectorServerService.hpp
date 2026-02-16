@@ -22,7 +22,7 @@
 #include "areg/component/TimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "logcollector/service/private/LogCollectorMessageProcessor.hpp"
 

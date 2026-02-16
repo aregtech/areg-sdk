@@ -17,7 +17,7 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include "areg/logging/GELog.h"
 

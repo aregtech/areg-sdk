@@ -19,7 +19,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/HashMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   Test HashMap constructors.

@@ -24,7 +24,7 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
     : Component     ( entry, owner )
     , HelloWorldStub( static_cast<Component &>(self()) )
     , mClientList   ( )
-    , mRemainRequest( NEHelloWorld::MaxMessages )
+    , mRemainRequest( HelloWorld::MaxMessages )
 {
 }
 
@@ -32,11 +32,11 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 
-    NEHelloWorld::sConnectedClient theClient;
+    HelloWorld::sConnectedClient theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition();
     for ( ; mClientList.isValidPosition(pos); pos = mClientList.nextPosition(pos))
     {
-        const NEHelloWorld::sConnectedClient & client = mClientList.valueAtPosition(pos);
+        const HelloWorld::sConnectedClient & client = mClientList.valueAtPosition(pos);
         if (roleName == client.ccName)
         {
             LOG_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString(), client.ccID);
@@ -47,7 +47,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 
     if ( mClientList.isInvalidPosition(pos))
     {
-        theClient = NEHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
+        theClient = HelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
         mClientList.pushFirst( theClient );
         LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }
@@ -63,7 +63,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     if ( mRemainRequest == 0 )
     {
         LOG_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
-        broadcastReachedMaximum( NEHelloWorld::MaxMessages );
+        broadcastReachedMaximum( HelloWorld::MaxMessages );
     }
     else
     {

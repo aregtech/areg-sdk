@@ -65,9 +65,9 @@ void TrafficLightService::requestStartTrafficLight()
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStartTrafficLight);
 
     bool result = false;
-    const NETrafficController::sTrafficLight & lights = getTrafficEastWest();
+    const TrafficController::sTrafficLight & lights = getTrafficEastWest();
 
-    if ((lights.trafficDirection != NETrafficController::eTrafficDirection::DirectionUndefiend) && (lights.lightVehicle != NETrafficController::eVehicleTrafficLight::VehicleLightOFF))
+    if ((lights.trafficDirection != TrafficController::eTrafficDirection::DirectionUndefiend) && (lights.lightVehicle != TrafficController::eVehicleTrafficLight::VehicleLightOFF))
     {
         mLightFsm.startTrafficControl();
         result = true;
@@ -81,9 +81,9 @@ void TrafficLightService::requestStopTrafficLight()
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_requestStopTrafficLight);
 
     bool result = false;
-    const NETrafficController::sTrafficLight & lights = getTrafficEastWest();
+    const TrafficController::sTrafficLight & lights = getTrafficEastWest();
 
-    if ((lights.trafficDirection != NETrafficController::eTrafficDirection::DirectionUndefiend) && (lights.lightVehicle != NETrafficController::eVehicleTrafficLight::VehicleLightOFF))
+    if ((lights.trafficDirection != TrafficController::eTrafficDirection::DirectionUndefiend) && (lights.lightVehicle != TrafficController::eVehicleTrafficLight::VehicleLightOFF))
     {
         mLightFsm.stopTrafficControl();
         result = true;
@@ -97,20 +97,20 @@ void TrafficLightService::actionPowerOff()
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPowerOff);
     LOG_DBG("Handling traffic light power OFF");
 
-    NETrafficController::sTrafficLight lights;
-    lights.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightOFF;
-    lights.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF;
+    TrafficController::sTrafficLight lights;
+    lights.lightVehicle     = TrafficController::eVehicleTrafficLight::VehicleLightOFF;
+    lights.lightPedestrian  = TrafficController::ePedestrianTrafficLight::PedestrianLightOFF;
 
-    setLightsPowerState(NEPowerManager::ePoweredState::LightsOFF);
+    setLightsPowerState(PowerManager::ePoweredState::LightsOFF);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionSouthNorth;
+    lights.trafficDirection = TrafficController::eTrafficDirection::DirectionSouthNorth;
     setTrafficSouthNorth(lights);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionEastWest;
+    lights.trafficDirection = TrafficController::eTrafficDirection::DirectionEastWest;
     setTrafficEastWest(lights);
 
-    broadcastEastWest(NETrafficController::eVehicleTrafficLight::VehicleLightOFF, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
-    broadcastSouthNorth(NETrafficController::eVehicleTrafficLight::VehicleLightOFF, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
+    broadcastEastWest(TrafficController::eVehicleTrafficLight::VehicleLightOFF, TrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
+    broadcastSouthNorth(TrafficController::eVehicleTrafficLight::VehicleLightOFF, TrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
 }
 
 void TrafficLightService::actionPowerOn()
@@ -119,20 +119,20 @@ void TrafficLightService::actionPowerOn()
 
     LOG_DBG("Handling traffic light power ON");
 
-    NETrafficController::sTrafficLight lights;
-    lights.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightsInit;
-    lights.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF;
+    TrafficController::sTrafficLight lights;
+    lights.lightVehicle     = TrafficController::eVehicleTrafficLight::VehicleLightsInit;
+    lights.lightPedestrian  = TrafficController::ePedestrianTrafficLight::PedestrianLightOFF;
 
-    setLightsPowerState(NEPowerManager::ePoweredState::LightsON);
+    setLightsPowerState(PowerManager::ePoweredState::LightsON);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionSouthNorth;
+    lights.trafficDirection = TrafficController::eTrafficDirection::DirectionSouthNorth;
     setTrafficSouthNorth(lights);
 
-    lights.trafficDirection = NETrafficController::eTrafficDirection::DirectionEastWest;
+    lights.trafficDirection = TrafficController::eTrafficDirection::DirectionEastWest;
     setTrafficEastWest(lights);
 
-    broadcastEastWest(NETrafficController::eVehicleTrafficLight::VehicleLightsInit, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
-    broadcastSouthNorth(NETrafficController::eVehicleTrafficLight::VehicleLightsInit, NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
+    broadcastEastWest(TrafficController::eVehicleTrafficLight::VehicleLightsInit, TrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
+    broadcastSouthNorth(TrafficController::eVehicleTrafficLight::VehicleLightsInit, TrafficController::ePedestrianTrafficLight::PedestrianLightOFF);
 }
 
 void TrafficLightService::actionVehicleYellow()
@@ -140,15 +140,15 @@ void TrafficLightService::actionVehicleYellow()
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleYellow);
     LOG_DBG("Vehicle light is yellow, pedestrian is red");
 
-    NETrafficController::sTrafficLight sn, ew;
+    TrafficController::sTrafficLight sn, ew;
     
-    sn.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightYellow;
-    sn.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
-    sn.trafficDirection = NETrafficController::eTrafficDirection::DirectionSouthNorth;
+    sn.lightVehicle     = TrafficController::eVehicleTrafficLight::VehicleLightYellow;
+    sn.lightPedestrian  = TrafficController::ePedestrianTrafficLight::PedestrianLightRed;
+    sn.trafficDirection = TrafficController::eTrafficDirection::DirectionSouthNorth;
 
-    ew.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightYellow;
-    ew.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
-    ew.trafficDirection = NETrafficController::eTrafficDirection::DirectionEastWest;
+    ew.lightVehicle     = TrafficController::eVehicleTrafficLight::VehicleLightYellow;
+    ew.lightPedestrian  = TrafficController::ePedestrianTrafficLight::PedestrianLightRed;
+    ew.trafficDirection = TrafficController::eTrafficDirection::DirectionEastWest;
 
     setTrafficSouthNorth(sn);
     setTrafficEastWest(ew);
@@ -165,11 +165,11 @@ void TrafficLightService::actionVehicleRed()
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleRed);
     LOG_DBG("Vehicle light is red. Initially, pedestrian is red");
 
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = getTrafficSouthNorth();
+    TrafficController::sTrafficLight ew = getTrafficEastWest();
 
-    sn.lightVehicle     = NETrafficController::eVehicleTrafficLight::VehicleLightRed;
-    sn.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
+    sn.lightVehicle     = TrafficController::eVehicleTrafficLight::VehicleLightRed;
+    sn.lightPedestrian  = TrafficController::ePedestrianTrafficLight::PedestrianLightRed;
 
     setTrafficSouthNorth(sn);
     broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
@@ -184,11 +184,11 @@ void TrafficLightService::actionPedestrianRed()
     LOG_DBG("Pedestrian light is red. Vehicle light is unchanged.");
 
     LOG_DBG("Setting traffic light states for direction East-West");
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = getTrafficSouthNorth();
+    TrafficController::sTrafficLight ew = getTrafficEastWest();
 
-    sn.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
-    ew.lightPedestrian  = NETrafficController::ePedestrianTrafficLight::PedestrianLightRed;
+    sn.lightPedestrian  = TrafficController::ePedestrianTrafficLight::PedestrianLightRed;
+    ew.lightPedestrian  = TrafficController::ePedestrianTrafficLight::PedestrianLightRed;
 
     setTrafficSouthNorth(sn);
     setTrafficEastWest(ew);
@@ -203,14 +203,14 @@ void TrafficLightService::actionVehicleGreen( bool isEastWest )
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionVehicleGreen);
 
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = getTrafficSouthNorth();
+    TrafficController::sTrafficLight ew = getTrafficEastWest();
 
     if (isEastWest)
     {
         LOG_DBG("East-West direction vehicle light is green. Pedestrian light is unchanged.");
 
-        ew.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightGreen;
+        ew.lightVehicle = TrafficController::eVehicleTrafficLight::VehicleLightGreen;
         setTrafficEastWest(ew);
         broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
     }
@@ -218,7 +218,7 @@ void TrafficLightService::actionVehicleGreen( bool isEastWest )
     {
         LOG_DBG("North-South direction vehicle light is green. Pedestrian light is unchanged.");
 
-        sn.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightGreen;
+        sn.lightVehicle = TrafficController::eVehicleTrafficLight::VehicleLightGreen;
         setTrafficSouthNorth(sn);
         broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
     }
@@ -231,19 +231,19 @@ void TrafficLightService::actionPedestrianGreen(bool isEastWest)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen);
 
-    NETrafficController::sTrafficLight sn = getTrafficSouthNorth();
-    NETrafficController::sTrafficLight ew = getTrafficEastWest();
+    TrafficController::sTrafficLight sn = getTrafficSouthNorth();
+    TrafficController::sTrafficLight ew = getTrafficEastWest();
 
     if (isEastWest)
     {
         LOG_DBG("East-West direction pedestrian light is green. Vehicle light is unchanged.");
 
-        ew.lightPedestrian = NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen;
+        ew.lightPedestrian = TrafficController::ePedestrianTrafficLight::PedestrianLightGreen;
         setTrafficEastWest(ew);
         broadcastEastWest(ew.lightVehicle, ew.lightPedestrian);
 
 
-        sn.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightRed;
+        sn.lightVehicle = TrafficController::eVehicleTrafficLight::VehicleLightRed;
         setTrafficSouthNorth( sn );
         broadcastSouthNorth( sn.lightVehicle, sn.lightPedestrian );
     }
@@ -251,11 +251,11 @@ void TrafficLightService::actionPedestrianGreen(bool isEastWest)
     {
         LOG_DBG("North-South direction pedestrian light is green. Vehicle light is unchanged.");
 
-        sn.lightPedestrian = NETrafficController::ePedestrianTrafficLight::PedestrianLightGreen;
+        sn.lightPedestrian = TrafficController::ePedestrianTrafficLight::PedestrianLightGreen;
         setTrafficSouthNorth(sn);
         broadcastSouthNorth(sn.lightVehicle, sn.lightPedestrian);
 
-        ew.lightVehicle = NETrafficController::eVehicleTrafficLight::VehicleLightRed;
+        ew.lightVehicle = TrafficController::eVehicleTrafficLight::VehicleLightRed;
         setTrafficEastWest( ew );
         broadcastEastWest( ew.lightVehicle, ew.lightPedestrian );
     }

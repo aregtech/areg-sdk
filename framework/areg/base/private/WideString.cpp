@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/IOStream.hpp"
 
 #include <stdio.h>

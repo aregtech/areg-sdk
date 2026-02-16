@@ -23,9 +23,9 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/component/Model.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
  /************************************************************************

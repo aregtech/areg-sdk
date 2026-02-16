@@ -20,14 +20,14 @@
  * Include files.
  ************************************************************************/
 #include "areglogger/client/LogObserverSwitches.h"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/persist/ConfigListener.hpp"
 
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 
 #include "areglogger/client/private/ObserverMessageProcessor.hpp"

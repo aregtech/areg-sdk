@@ -21,11 +21,11 @@
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #include <sqlite3.h>

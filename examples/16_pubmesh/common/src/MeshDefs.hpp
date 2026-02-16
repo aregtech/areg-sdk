@@ -38,4 +38,4 @@ namespace mesh
 
 }
 
-#endif // PUBMESH_COMMON_SRC_NECOMMON_HPP
+#endif // PUBMESH_COMMON_SRC_PUBMESHDEFS_HPP

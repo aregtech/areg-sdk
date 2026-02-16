@@ -26,7 +26,7 @@
 #include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/RegistrationConsumer.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
 #include "areg/ipc/private/RouterClient.hpp"
 

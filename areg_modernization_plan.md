@@ -158,7 +158,7 @@ Redundant "Service" prefix dropped where namespace already provides context.
 | `QueueListener`                 | `QueueListener`                 | `areg/component/private/QueueListener.hpp`                     | `areg/component/private/QueueListener.hpp`                       |                                            |
 | `RemoteEventConsumer`           | `RemoteEventConsumer`           | `areg/component/RemoteEventConsumer.hpp`                       | `areg/component/RemoteEventConsumer.hpp`                         |                                            |
 | `RemoteMessageHandler`          | `RemoteMessageHandler`          | `areg/ipc/RemoteMessageHandler.hpp`                            | `areg/ipc/RemoteMessageHandler.hpp`                              |                                            |
-| `Lockable`                  | `Lockable`                      | `areg/base/SyncObjects.hpp`                                      | (same file)                                                      | Concrete `ResourceLock` keeps its name     |
+| `Lockable`                  | `Lockable`                      | `areg/base/SyncPrimitives.hpp`                                      | (same file)                                                      | Concrete `ResourceLock` keeps its name     |
 | `ConnectionConsumer`     | `ConnectionConsumer`            | `areg/ipc/ConnectionConsumer.hpp`                       | `areg/ipc/ConnectionConsumer.hpp`                                | In `areg::`, "Service" is redundant        |
 | `ConnectionHandler`      | `ConnectionHandler`             | `aregextend/service/ConnectionHandler.hpp`              | `aregextend/service/ConnectionHandler.hpp`                       | In `aregext::`, "Service" is redundant     |
 | `ConnectionProvider`     | `ConnectionProvider`            | `areg/ipc/ConnectionProvider.hpp`                       | `areg/ipc/ConnectionProvider.hpp`                                | In `areg::`, "Service" is redundant        |
@@ -363,7 +363,7 @@ Redundant "Service" prefix dropped where namespace or context already implies it
 | `eConnectionTypes`                               | `ConnectionType`           | `areg::`      | `areg/ipc/RemoteServiceDefs.hpp`                    | Singular                                   |
 | `Grouping`                                     | `Grouping`                 | `areg::`      | `areg/logging/private/ScopeNodeBase.hpp`          | Fix typo                                   |
 | `eIndex`                                         | `IndexPosition`            | `areg::`           | `areg/base/CommonDefs.hpp`                          |                                            |
-| `eLockedState`                                   | `LockedState`              | `areg::`           | `areg/base/SyncObjects.hpp`                       |                                            |
+| `eLockedState`                                   | `LockedState`              | `areg::`           | `areg/base/SyncPrimitives.hpp`                       |                                            |
 | `eLogDataType`                                   | `LogDataType`              | `areg::`      | `areg/logging/LoggingDefs.hpp`                      |                                            |
 | `eLogMessageType`                                | `LogMessageType`           | `areg::`      | `areg/logging/LoggingDefs.hpp`                      |                                            |
 | `eLogPriority`                                   | `LogPriority`              | `areg::`      | `areg/logging/LoggingDefs.hpp`                      |                                            |
@@ -386,7 +386,7 @@ Redundant "Service" prefix dropped where namespace or context already implies it
 | `eSystemServiceState`                            | `SystemServiceState`       | `aregext::`      | `aregextend/service/SystemServiceDefs.hpp`          |                                            |
 | `eTimerType`                                     | `TimerType`                | `areg::`| `areg/component/TimerBase.hpp`                    |                                            |
 | `eValidFlags`                                    | `ValidFlags`               | `aregext::`      | `aregextend/console/OptionParser.hpp`             |                                            |
-| `eWaitResult`                                    | `WaitResult`               | `areg::`           | `areg/base/SyncObjects.hpp`                       |                                            |
+| `eWaitResult`                                    | `WaitResult`               | `areg::`           | `areg/base/SyncPrimitives.hpp`                       |                                            |
 
 **Total: ~90 renames (deduplicated pairs), 1 kept**
 
@@ -413,21 +413,21 @@ The `Defs` suffix instantly signals "not a class" while keeping PascalCase consi
 | `NECommon` | `areg::` | `areg/base/CommonDefs.hpp` | `areg/base/CommonDefs.hpp` |
 | `NEMath` | `areg::` | `areg/base/MathDefs.hpp` | `areg/base/MathDefs.hpp` |
 | `NEMemory` | `areg::` | `areg/base/MemoryDefs.hpp` | `areg/base/MemoryDefs.hpp` |
-| `NESocket` | `areg::` | `areg/base/NESocket.hpp` | `areg/base/SocketDefs.hpp` |
+| `NESocket` | `areg::` | `areg/base/SocketDefs.hpp` | `areg/base/SocketDefs.hpp` |
 | `NEString` | `areg::` | `areg/base/StringDefs.hpp` | `areg/base/StringDefs.hpp` |
 | `NEUtilities` | `areg::` | `areg/base/UtilityDefs.hpp` | `areg/base/UtilityDefs.hpp` |
 | `NEDebug` | `areg::` | `areg/base/private/DebugDefs.hpp` | `areg/base/private/DebugDefs.hpp` |
 | `NESyncTypesIX` | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` | `areg/base/private/posix/SyncDefsPosix.hpp` |
 | `NERegistry` | `areg::` | `areg/component/Model.hpp` | `areg/component/Model.hpp` |
 | `NEService` | `areg::` | `areg/component/ServiceDefs.hpp` | `areg/component/ServiceDefs.hpp` |
-| `NEConnection` | `areg::` | `areg/ipc/private/NEConnection.hpp` | `areg/ipc/private/ConnectionDefs.hpp` |
+| `NEConnection` | `areg::` | `areg/ipc/private/ConnectionDefs.hpp` | `areg/ipc/private/ConnectionDefs.hpp` |
 | `NERemoteService` | `areg::` | `areg/ipc/RemoteServiceDefs.hpp` | `areg/ipc/RemoteServiceDefs.hpp` |
 | `NELogging` | `areg::` | `areg/logging/LoggingDefs.hpp` | `areg/logging/LoggingDefs.hpp` |
 | `NELogOptions` | `areg::` | `areg/logging/private/LogOptions.hpp` | `areg/logging/private/LogOptions.hpp` |
 | `NEPersistence` | `areg::` | `areg/persist/PersistenceDefs.hpp` | `areg/persist/PersistenceDefs.hpp` |
 | `NESystemService` | `aregext::` | `aregextend/service/SystemServiceDefs.hpp` | `aregextend/service/SystemServiceDefs.hpp` |
-| `NELogCollectorSettings` | `logcollector::` | `logcollector/app/NELogCollectorSettings.hpp` | `logcollector/app/LogCollectorSettings.hpp` |
-| `NEMultitargetRouterSettings` | `mtrouter::` | `mtrouter/app/NEMultitargetRouterSettings.hpp` | `mtrouter/app/RouterSettings.hpp` |
+| `NELogCollectorSettings` | `logcollector::` | `logcollector/app/LogCollectorNames.hpp` | `logcollector/app/LogCollectorNames.hpp` |
+| `NEMultitargetRouterSettings` | `mtrouter::` | `mtrouter/app/MTRouterNames.hpp` | `mtrouter/app/MTRouterNames.hpp` |
 
 **Total: 19 renames**
 

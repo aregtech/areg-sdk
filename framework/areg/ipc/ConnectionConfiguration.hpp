@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 
 //////////////////////////////////////////////////////////////////////////

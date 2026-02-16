@@ -16,7 +16,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/logging/private/ScopeNodes.hpp"
-#include "areg/logging/private/NELogOptions.hpp"
+#include "areg/logging/private/LogOptions.hpp"
 #include "areg/logging/LogScope.hpp"
 #include "areg/base/FileBase.hpp"
 #include "areg/base/Process.hpp"

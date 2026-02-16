@@ -35,7 +35,7 @@ bool SubscriberSecond::serviceConnected( NEService::eServiceConnection status, P
     return PubSubClientBase::serviceConnected( status, proxy );
 }
 
-void SubscriberSecond::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void SubscriberSecond::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
     if (state == NEService::eDataStateType::DataIsOK)
@@ -52,7 +52,7 @@ void SubscriberSecond::onServiceProviderStateUpdate(NEPubSub::eServiceState Serv
             notifyOnStringOnChangeUpdate(true);
         }
 
-        if (ServiceProviderState == NEPubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::eServiceState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

@@ -23,7 +23,7 @@
 
 #if  defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/NESyncTypesIX.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include "areg/base/SyncObject.hpp"
 #include "areg/base/String.hpp"
 

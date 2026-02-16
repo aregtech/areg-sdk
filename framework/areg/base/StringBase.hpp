@@ -20,7 +20,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/TemplateBase.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/StringDefs.hpp"
 
 #include <algorithm>
 #include <iostream>

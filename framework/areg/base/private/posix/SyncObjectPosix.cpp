@@ -19,7 +19,7 @@
 #if  defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/StringDefs.hpp"
 #include <string.h>
 
 //////////////////////////////////////////////////////////////////////////

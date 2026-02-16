@@ -16,7 +16,7 @@
 #include "areg/base/IOStream.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <utility>
 

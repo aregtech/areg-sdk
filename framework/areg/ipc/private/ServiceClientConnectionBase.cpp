@@ -14,12 +14,12 @@
  ************************************************************************/
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/ipc/ConnectionConsumer.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/ipc/NERemoteService.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired);

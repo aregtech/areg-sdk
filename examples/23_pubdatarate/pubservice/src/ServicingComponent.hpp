@@ -19,14 +19,14 @@
 #include "areg/component/EventTemplate.hpp"
 #include "examples/23_pubdatarate/services/LargeDataStub.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
 #include "aregextend/console/Console.hpp"
 
 #include "common/SimpleBitmap.hpp"
-#include "common/NELargeData.hpp"
-#include "pubservice/src/NEUtilities.hpp"
+#include "common/LargeDataDefs.hpp"
+#include "pubservice/src/UtilityDefs.hpp"
 
 #include <atomic>
 #include <string_view>

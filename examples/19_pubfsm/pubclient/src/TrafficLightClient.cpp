@@ -27,7 +27,7 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 {
 }
 
-void TrafficLightClient::onTrafficSouthNorthUpdate(const NETrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state)
+void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
 
@@ -41,12 +41,12 @@ void TrafficLightClient::onTrafficSouthNorthUpdate(const NETrafficController::sT
     else
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                    , fsm::getName(NETrafficController::eVehicleTrafficLight::VehicleLightOFF)
-                    , fsm::getName(NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF));
+                    , fsm::getName(TrafficController::eVehicleTrafficLight::VehicleLightOFF)
+                    , fsm::getName(TrafficController::ePedestrianTrafficLight::PedestrianLightOFF));
     }
 }
 
-void TrafficLightClient::onTrafficEastWestUpdate(const NETrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state)
+void TrafficLightClient::onTrafficEastWestUpdate(const TrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
 
@@ -60,19 +60,19 @@ void TrafficLightClient::onTrafficEastWestUpdate(const NETrafficController::sTra
     else
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                    , fsm::getName(NETrafficController::eVehicleTrafficLight::VehicleLightOFF)
-                    , fsm::getName(NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF));
+                    , fsm::getName(TrafficController::eVehicleTrafficLight::VehicleLightOFF)
+                    , fsm::getName(TrafficController::ePedestrianTrafficLight::PedestrianLightOFF));
     }
 }
 
-void TrafficLightClient::broadcastSouthNorth(NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian)
+void TrafficLightClient::broadcastSouthNorth(TrafficController::eVehicleTrafficLight LightVehicle, TrafficController::ePedestrianTrafficLight LightPedestrian)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
 
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(LightVehicle), fsm::getName(LightPedestrian));
 }
 
-void TrafficLightClient::broadcastEastWest(NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian)
+void TrafficLightClient::broadcastEastWest(TrafficController::eVehicleTrafficLight LightVehicle, TrafficController::ePedestrianTrafficLight LightPedestrian)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
 
@@ -102,8 +102,8 @@ bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status,
         LOG_WARN( "The traffic light controller is disconnected, set states OFF and close the application" );
 
         printf( "\tVehicle Light: %12s    |\tPedestrian Light: %s\n"
-                , fsm::getName( NETrafficController::eVehicleTrafficLight::VehicleLightOFF )
-                , fsm::getName( NETrafficController::ePedestrianTrafficLight::PedestrianLightOFF ) );
+                , fsm::getName( TrafficController::eVehicleTrafficLight::VehicleLightOFF )
+                , fsm::getName( TrafficController::ePedestrianTrafficLight::PedestrianLightOFF ) );
         printf( "\nClose the application ..." );
 
         notifyOnTrafficEastWestUpdate( false );

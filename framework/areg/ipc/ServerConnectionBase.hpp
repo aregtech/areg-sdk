@@ -21,10 +21,10 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/Containers.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnectionBase class declaration.

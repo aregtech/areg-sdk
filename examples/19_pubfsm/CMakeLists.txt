@@ -12,7 +12,7 @@ macro_declare_executable(19_pubclient   19_generated
 macro_declare_executable(19_pubservice  19_generated
     pubservice/src/IETrafficLightActionHandler.cpp
     pubservice/src/main.cpp
-    pubservice/src/NETrafficLightFSM.cpp
+    pubservice/src/TrafficLightDefs.cpp
     pubservice/src/PowerControllerClient.cpp
     pubservice/src/TrafficLightFSM.cpp
     pubservice/src/TrafficLightService.cpp

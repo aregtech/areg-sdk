@@ -57,7 +57,7 @@ protected:
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onSouthNorthUpdate( NESimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state ) override;
+    virtual void onSouthNorthUpdate( SimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Triggered, when EastWest attribute is updated. The function contains
@@ -68,7 +68,7 @@ protected:
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onEastWestUpdate( NESimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state ) override;
+    virtual void onEastWestUpdate( SimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
@@ -86,7 +86,7 @@ private:
     /**
      * \brief   Makes message outputs on console.
      **/
-    inline void outputState(NESimpleTrafficLight::eTrafficLight lightState);
+    inline void outputState(SimpleTrafficLight::eTrafficLight lightState);
 
 private:
     /**

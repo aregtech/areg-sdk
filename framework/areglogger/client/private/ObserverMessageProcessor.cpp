@@ -23,8 +23,8 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/ArrayList.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/logging/LogScope.hpp"
 
 #include "areglogger/client/LogObserverApi.h"

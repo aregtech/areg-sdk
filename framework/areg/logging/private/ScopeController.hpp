@@ -20,7 +20,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/ResourceMap.hpp"
 
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <string_view>
 

@@ -33,11 +33,11 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
     if (isConnected())
     {
-        if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
+        if (++ mRestarts <= HelloWatchdog::MaximumRestarts)
         {
             // dynamic subscribe on messages.
             notifyOnServiceStateUpdate( true );
-            mSleepTimeout   = NEHelloWatchdog::InitialSleepTimeout;
+            mSleepTimeout   = HelloWatchdog::InitialSleepTimeout;
             LOG_DBG( "Initialized thread sleep timeout [ %u ] ms, sending first request", mSleepTimeout );
 
             requestStartSleep( mSleepTimeout );
@@ -61,15 +61,15 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
 #if AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState ServiceState, NEService::eDataStateType state )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
-    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
 }
 
 #else  // AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState /*ServiceState*/, NEService::eDataStateType /*state*/ )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState /*ServiceState*/, NEService::eDataStateType /*state*/ )
 {
 }
 
@@ -81,7 +81,7 @@ void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
     LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);
 
     ASSERT( timeoutSleep == mSleepTimeout);
-    mSleepTimeout += NEHelloWatchdog::TimeoutStep;
+    mSleepTimeout += HelloWatchdog::TimeoutStep;
 
     requestStartSleep(mSleepTimeout);
 }

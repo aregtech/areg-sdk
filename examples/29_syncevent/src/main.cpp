@@ -20,7 +20,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 
 #include <iostream>

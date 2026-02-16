@@ -20,7 +20,7 @@
 #include "areg/component/Timer.hpp"
 
 /**
- * \brief   This service client sends a request every 200 ms (NEHelloUnblock::ClientTimeot).
+ * \brief   This service client sends a request every 200 ms (HelloUnblock::ClientTimeot).
  *          Since the service responses with the timeout 500 ms, if do not manually
  *          unblock the request it will fail with reason 'the request is busy'
  *          (NEService::ResultType::RequestBusy).
@@ -105,7 +105,7 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onHelloServiceStateUpdate( NEHelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state ) override;
+    virtual void onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 

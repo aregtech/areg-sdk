@@ -17,7 +17,7 @@
 
 #include "areg/base/Process.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 #include "areg/component/private/ServerList.hpp"
 
 #include "areg/logging/GELog.h"

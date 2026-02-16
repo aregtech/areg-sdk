@@ -65,13 +65,13 @@
     <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\DirectMessagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\NECentralMessager.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\CentralMessager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\NEDirectConnection.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\DirectConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\NEDirectMessager.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\DirectMessager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\ConnectionManagerClientBase.cpp">
@@ -86,7 +86,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\ConnectionManagerStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\NEConnectionManager.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\20_winchat\services\private\ConnectionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -133,13 +133,13 @@
     <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\DirectMessagerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\NECentralMessager.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\CentralMessager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\NEDirectConnection.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\DirectConnection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\NEDirectMessager.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\DirectMessager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\ConnectionManagerClientBase.hpp">
@@ -148,7 +148,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\ConnectionManagerStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\NEConnectionManager.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\20_winchat\services\ConnectionManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

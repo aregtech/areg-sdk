@@ -15,12 +15,12 @@
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 
 #include "areg/base/DateTime.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/GELog.h"
 
-#include "aregextend/service/NESystemService.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);

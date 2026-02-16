@@ -18,8 +18,8 @@
  ************************************************************************/
 #include "areg/base/RemoteMessage.hpp"
 
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 #include "areg/logging/GELog.h"
 
 #include <algorithm>

@@ -113,7 +113,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( mesh::PublicSecondService, PublicServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEPublicHelloWorld::ServiceName, NEPublicHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PublicHelloWorld::ServiceName, PublicHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(mesh::PublicControllerService)
             REGISTER_DEPENDENCY(mesh::PublicThirdService)
             REGISTER_DEPENDENCY(mesh::LocalService)
@@ -124,7 +124,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( mesh::LocalService, LocalServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( LocalHelloWorld::ServiceName, LocalHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(mesh::PublicThirdService)
             REGISTER_DEPENDENCY( _localService )
         // end of component description
@@ -136,7 +136,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( mesh::PublicThirdService, PublicServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NEPublicHelloWorld::ServiceName, NEPublicHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PublicHelloWorld::ServiceName, PublicHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(mesh::PublicSecondService)
             REGISTER_DEPENDENCY(mesh::PublicThirdService)
             REGISTER_DEPENDENCY(mesh::LocalService)
@@ -147,7 +147,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _localService, LocalServiceComponent )
             // register LocalHelloWorld service implementation and the dependencies.
-            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( LocalHelloWorld::ServiceName, LocalHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(mesh::PublicControllerService)
             REGISTER_DEPENDENCY( _localService )
         // end of component description

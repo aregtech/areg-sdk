@@ -21,9 +21,9 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/SharedBuffer.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/EventTemplate.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 /************************************************************************
  * Dependencies

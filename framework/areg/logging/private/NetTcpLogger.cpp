@@ -21,7 +21,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/RemoteMessage.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/logging/private/LogManager.hpp"
 #include "areg/logging/private/ScopeController.hpp"

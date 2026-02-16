@@ -23,7 +23,7 @@
  ************************************************************************/
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/Containers.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 /************************************************************************
  * Hierarchies. Following class are declared.

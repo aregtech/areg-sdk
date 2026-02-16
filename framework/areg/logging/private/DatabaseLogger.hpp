@@ -21,7 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/logging/private/LoggerBase.hpp"
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #if AREG_LOGS
 

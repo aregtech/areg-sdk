@@ -20,7 +20,7 @@
 #include "areg/component/Timer.hpp"
 #include "aregextend/console/Console.hpp"
 
-#include "common/NELargeData.hpp"
+#include "common/LargeDataDefs.hpp"
 #include "common/SimpleBitmap.hpp"
 
 //////////////////////////////////////////////////////////////////////////

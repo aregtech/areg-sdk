@@ -20,7 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "aregextend/service/NESystemService.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 
 /************************************************************************

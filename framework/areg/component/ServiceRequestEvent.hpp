@@ -23,7 +23,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/StubEvent.hpp"
 
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 /************************************************************************
  * Dependencies.

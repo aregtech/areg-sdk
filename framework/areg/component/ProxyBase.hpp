@@ -32,7 +32,7 @@
 #include "areg/component/ProxyEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/StubAddress.hpp"
 
 #include <atomic>

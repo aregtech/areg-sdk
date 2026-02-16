@@ -6,14 +6,14 @@
 
 #include "areg/base/GEGlobal.h"
 #include "examples/20_winchat/services/DirectConnectionClientBase.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
 class ChatPrticipantHandler;
 
 class DirectConnectionClient  : public DirectConnectionClientBase
 {
 public:
-    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const NEDirectConnection::sParticipant & target );
+    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::sParticipant & target );
     virtual ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,9 +32,9 @@ protected:
      * \see     requestConnectoinSetup
      **/
     virtual void responseConnectoinSetup( bool succeeded
-                                        , const NEDirectConnection::sParticipant & target
-                                        , const NEDirectConnection::sInitiator & initiator
-                                        , const NEDirectConnection::ListParticipants & listParticipants ) override;
+                                        , const DirectConnection::sParticipant & target
+                                        , const DirectConnection::sInitiator & initiator
+                                        , const DirectConnection::ListParticipants & listParticipants ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

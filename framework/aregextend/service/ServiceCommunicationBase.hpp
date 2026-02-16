@@ -28,9 +28,9 @@
 #include "aregextend/service/ConnectionHandler.hpp"
 
 #include "areg/base/OrderedMap.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 #include "aregextend/service/ServerConnection.hpp"
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 #include "aregextend/service/private/ServerSendThread.hpp"

@@ -23,7 +23,7 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Containers.hpp"
 
 #include <fcntl.h>

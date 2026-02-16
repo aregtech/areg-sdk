@@ -27,7 +27,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\01_minimalrpc\services\private\HelloServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\01_minimalrpc\services\private\NEHelloService.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\01_minimalrpc\services\private\HelloService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,7 +38,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\01_minimalrpc\services\HelloServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\01_minimalrpc\services\NEHelloService.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\01_minimalrpc\services\HelloService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(AregGenerateDir)examples\01_minimalrpc\services\private\HelloServiceEvents.hpp">

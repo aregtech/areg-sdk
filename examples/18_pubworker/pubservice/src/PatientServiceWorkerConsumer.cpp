@@ -10,7 +10,7 @@
   ************************************************************************/
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "common/WorkerDefs.hpp"
 #include "examples/18_pubworker/services/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
@@ -80,7 +80,7 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* work
 
         printf("===============================\n");
 
-        NEPatientInformation::PatientInfo infoPatient;
+        PatientInformation::PatientInfo infoPatient;
         infoPatient.firstName   = firstName;
         infoPatient.lastName    = lastName;
         infoPatient.weight      = weight;

@@ -3,7 +3,7 @@
 
 #include "chatter/res/stdafx.h"
 #include "chatter/DistrbutedApp.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/ui/PageNetworkSetup.hpp"
@@ -12,9 +12,9 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 #define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
@@ -123,12 +123,12 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
     }
 }
 
-void PageNetworkSetup::OnAddConnection( NEConnectionManager::sConnection & /*data*/)
+void PageNetworkSetup::OnAddConnection( ConnectionManager::sConnection & /*data*/)
 {
     // do nothing
 }
 
-void PageNetworkSetup::OnRemoveConnection( NEConnectionManager::sConnection & /*data*/)
+void PageNetworkSetup::OnRemoveConnection( ConnectionManager::sConnection & /*data*/)
 {
     // do nothing
 }

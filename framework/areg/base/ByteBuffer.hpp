@@ -22,7 +22,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/Cursor.hpp"
 
 #include <memory>

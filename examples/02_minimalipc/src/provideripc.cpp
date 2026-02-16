@@ -57,7 +57,7 @@ BEGIN_MODEL("ProviderModel")
     // Thread 1, provides a service
     BEGIN_REGISTER_THREAD( "Thread1" )
         BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
         END_REGISTER_COMPONENT( "ServiceProvider" )
     END_REGISTER_THREAD( "Thread1" )
 // end of model description

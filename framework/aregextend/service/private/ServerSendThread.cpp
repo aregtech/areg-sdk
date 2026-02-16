@@ -14,8 +14,8 @@
  ************************************************************************/
 #include "aregextend/service/private/ServerSendThread.hpp"
 
-#include "areg/component/NEService.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/logging/GELog.h"
 #include "aregextend/service/ServerConnection.hpp"

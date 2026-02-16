@@ -69,8 +69,8 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( mesh::PublicControllerService, PublicServiceComponent )
             // register RemoteRegistry, SystemShutdown service implementation and the dependency.
-            REGISTER_IMPLEMENT_SERVICE( NEPublicHelloWorld::ServiceName, NEPublicHelloWorld::InterfaceVersion )
-            REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PublicHelloWorld::ServiceName, PublicHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( SystemShutdown::ServiceName, SystemShutdown::InterfaceVersion )
             REGISTER_DEPENDENCY(mesh::LocalService)
         // end of component description
         END_REGISTER_COMPONENT( mesh::PublicControllerService )
@@ -78,7 +78,7 @@ BEGIN_MODEL( _modelName )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( mesh::LocalService, LocalServiceComponent )
             // register LocalHelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NELocalHelloWorld::ServiceName, NELocalHelloWorld::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( LocalHelloWorld::ServiceName, LocalHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(mesh::PublicControllerService)
         // end of component description
         END_REGISTER_COMPONENT( mesh::LocalService )

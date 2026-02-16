@@ -16,7 +16,7 @@
 
 #include "areg/base/Version.hpp"
 
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/CommonDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////

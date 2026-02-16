@@ -4,13 +4,13 @@
 ************************************************************************/
 
 #include "chatter/services/ConnectionHandler.hpp"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
 
 ConnectionHandler::ConnectionHandler()
     : mListConnections  ( )
     , mNickName         ( )
-    , mCookie           ( NEConnectionManager::InvalidCookie )
-    , mConnectCookie    ( NEConnectionManager::InvalidCookie )
+    , mCookie           ( ConnectionManager::InvalidCookie )
+    , mConnectCookie    ( ConnectionManager::InvalidCookie )
     , mTimeConnect      ( )
     , mTimeConnected    ( )
     , mIsRegistered     ( false )
@@ -26,7 +26,7 @@ ConnectionHandler::~ConnectionHandler()
 bool ConnectionHandler::IsValid() const
 {
     Lock lock(mLock);
-    return (GetCookie() != NEConnectionManager::InvalidCookie) && (mNickName.isEmpty() == false);
+    return (GetCookie() != ConnectionManager::InvalidCookie) && (mNickName.isEmpty() == false);
 }
 
 bool ConnectionHandler::AddConnection(const chat::sConnection & newConnection)
@@ -104,8 +104,8 @@ void ConnectionHandler::ResetConnectionList()
     mListConnections.clear( );
     mNickName.clear( );
     
-    mCookie         = NEConnectionManager::InvalidCookie;
-    mConnectCookie  = NEConnectionManager::InvalidCookie;
+    mCookie         = ConnectionManager::InvalidCookie;
+    mConnectCookie  = ConnectionManager::InvalidCookie;
     mTimeConnect    = DateTime( );
     mTimeConnected  = DateTime( );
     mIsRegistered   = false;

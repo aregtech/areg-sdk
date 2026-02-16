@@ -19,7 +19,7 @@
 #include "areg/component/Event.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Component.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThread class implementation

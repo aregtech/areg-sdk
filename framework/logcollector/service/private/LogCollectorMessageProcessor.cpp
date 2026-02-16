@@ -16,7 +16,7 @@
 
 #include "logcollector/app/LogCollector.hpp"
 #include "logcollector/service/LogCollectorServerService.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerService & loggerService)
     : mLoggerService    ( loggerService )

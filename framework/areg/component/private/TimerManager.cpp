@@ -18,7 +18,7 @@
 #include "areg/component/private/ExitEvent.hpp"
 
 #include "areg/component/Timer.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(areg_component_private_TimerManager_startTimer);

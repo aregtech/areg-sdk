@@ -22,7 +22,7 @@
 #include "areg/component/private/posix/TimerPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 #include "areg/component/Timer.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #ifndef __APPLE__
     #include <signal.h>

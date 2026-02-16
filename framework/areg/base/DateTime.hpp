@@ -22,7 +22,7 @@
 
 #include "areg/base/IOStream.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include <chrono>
 #include <string_view>

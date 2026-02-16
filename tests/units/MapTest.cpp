@@ -19,7 +19,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/OrderedMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   Test OrderedMap constructors.

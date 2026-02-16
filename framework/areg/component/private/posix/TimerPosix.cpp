@@ -24,8 +24,8 @@
 #include "areg/component/private/Watchdog.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "areg/base/private/posix/NESyncTypesIX.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #ifndef __APPLE__
     #include <signal.h>

@@ -6,7 +6,6 @@
 #include "chatter/ui/DistributedDialog.hpp"
 #include "chatter/services/DirectChatService.hpp"
 #include "chatter/services/ChatParticipantService.hpp"
-#include "chatter/NEDistributedApp.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/DateTime.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
@@ -27,9 +26,9 @@ LPCTSTR PageChat::HEADER_TITILES[] =
 IMPLEMENT_DYNAMIC(PageChat, CPropertyPage)
 
 PageChat::PageChat( const String & serviceName
-                      , const NEDirectConnection::sInitiator & initiator
-                      , const NEDirectConnection::ListParticipants & listParties
-                      , const NEDirectConnection::sParticipant & ownerConnection
+                      , const DirectConnection::sInitiator & initiator
+                      , const DirectConnection::ListParticipants & listParties
+                      , const DirectConnection::sParticipant & ownerConnection
                       , bool isInitiator )
 	: CPropertyPage             (PageChat::IDD)
     , ChatPrticipantHandler   ( serviceName, initiator, listParties, ownerConnection )
@@ -109,15 +108,15 @@ BOOL PageChat::OnInitDialog( )
     setHeaders( );
     srand(static_cast<unsigned int>(time(nullptr)));
 
-    const NEDirectConnection::sInitiator & initiator    = GetInitiator();
-    const NEDirectConnection::ListParticipants & parties= GetParticipantList();
-    const NEDirectConnection::sParticipant & owner      = GetConnectionOwner( );
+    const DirectConnection::sInitiator & initiator    = GetInitiator();
+    const DirectConnection::ListParticipants & parties= GetParticipantList();
+    const DirectConnection::sParticipant & owner      = GetConnectionOwner( );
     String message("");
     String comma("");
 
     for ( uint32_t i = 0; i < parties.getSize(); ++ i )
     {
-        const NEDirectConnection::sParticipant & participant = parties[i];
+        const DirectConnection::sParticipant & participant = parties[i];
         if ( owner != participant )
         {
             message += comma;

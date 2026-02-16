@@ -78,7 +78,7 @@ bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection sta
     return result;
 }
 
-void PublicHelloWorldClient::responseRegister( const NEPublicHelloWorld::sClientRegister & client )
+void PublicHelloWorldClient::responseRegister( const PublicHelloWorld::sClientRegister & client )
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseRegister);
 
@@ -118,18 +118,18 @@ void PublicHelloWorldClient::responseHelloWorld(unsigned int clientID)
     }
 }
 
-void PublicHelloWorldClient::onServiceStateUpdate( NESystemShutdown::eServiceState ServiceState, NEService::eDataStateType state )
+void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::eServiceState ServiceState, NEService::eDataStateType state )
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
     LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
-               , NESystemShutdown::getString(ServiceState)
+               , SystemShutdown::getString(ServiceState)
                , NEService::getString(state)
                , mClient.crID
                , mClient.crName.getString());
 
     if (state == NEService::eDataStateType::DataIsOK)
     {
-        if (ServiceState == NESystemShutdown::eServiceState::ServiceShutdown)
+        if (ServiceState == SystemShutdown::eServiceState::ServiceShutdown)
         {
             if ( SystemShutdownClientBase::getProxy()->getStubAddress( ).isSourcePublic( ) )
             {
@@ -177,17 +177,17 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
     LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
 
     NEService::eDataStateType dataState { NEService::eDataStateType::DataIsUndefined };
-    NESystemShutdown::eServiceState serviceState = getServiceState( dataState );
+    SystemShutdown::eServiceState serviceState = getServiceState( dataState );
     if ( dataState == NEService::eDataStateType::DataIsOK )
     {
-        if ( serviceState == NESystemShutdown::eServiceState::ServiceReady )
+        if ( serviceState == SystemShutdown::eServiceState::ServiceReady )
         {
             LOG_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldClientBase::getServiceRole( ).getString( ) );
             requestHelloWorld( mClient.crID );
         }
         else
         {
-            LOG_WARN( "Ignored sending request, the service state is [ %s ]", NESystemShutdown::getString( serviceState ) );
+            LOG_WARN( "Ignored sending request, the service state is [ %s ]", SystemShutdown::getString( serviceState ) );
         }
     }
     else

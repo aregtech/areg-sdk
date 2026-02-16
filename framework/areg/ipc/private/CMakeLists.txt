@@ -8,8 +8,8 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/ipc/private/ConnectionProvider.cpp
 	areg/ipc/private/RegistrationConsumer.cpp
 	areg/ipc/private/RegistrationProvider.cpp
-	areg/ipc/private/NEConnection.cpp
-	areg/ipc/private/NERemoteService.cpp
+	areg/ipc/private/ConnectionDefs.cpp
+	areg/ipc/private/RemoteServiceDefs.cpp
 	areg/ipc/private/RouterClient.cpp
 	areg/ipc/private/SendMessageEvent.cpp
 	areg/ipc/private/ServerConnectionBase.cpp

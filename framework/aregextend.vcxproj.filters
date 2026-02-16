@@ -30,7 +30,7 @@
     <ClCompile Include="aregextend\service\private\DataRateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="aregextend\service\private\NESystemService.cpp">
+    <ClCompile Include="aregextend\service\private\SystemServiceDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="aregextend\console\private\OptionParser.cpp">
@@ -100,7 +100,7 @@
     <ClInclude Include="aregextend\service\DataRateHelper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="aregextend\service\NESystemService.hpp">
+    <ClInclude Include="aregextend\service\SystemServiceDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="aregextend\console\OptionParser.hpp">

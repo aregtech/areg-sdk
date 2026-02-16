@@ -29,7 +29,7 @@
 #include "areg/base/HashMap.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 #include "areg/base/ResourceMap.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 /************************************************************************
  * Hierarchies and list of declared classes

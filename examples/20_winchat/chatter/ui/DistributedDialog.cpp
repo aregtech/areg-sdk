@@ -16,11 +16,11 @@
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 #include "chatter/ui/PageChat.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/services/ConnectionService.hpp"
 #include "common/ChatDefs.hpp"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _DEBUG
@@ -379,7 +379,7 @@ DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
 LRESULT DistributedDialog::OnCmdAddConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
-    NEConnectionManager::sConnection * data = reinterpret_cast<NEConnectionManager::sConnection *>(lParam);
+    ConnectionManager::sConnection * data = reinterpret_cast<ConnectionManager::sConnection *>(lParam);
     if ( data != nullptr )
     {
         LOG_DBG("Adding new connection [ %s ]", data->nickName.getString());
@@ -397,7 +397,7 @@ DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
 LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
-    NEConnectionManager::sConnection * data = reinterpret_cast<NEConnectionManager::sConnection *>(lParam);
+    ConnectionManager::sConnection * data = reinterpret_cast<ConnectionManager::sConnection *>(lParam);
     if ( data != nullptr )
     {
         LOG_DBG("Removing a connection [ %s ]", data->nickName.getString());
@@ -514,9 +514,9 @@ bool DistributedDialog::OutputMessage( NEDistributedApp::eWndCommands cmd, void 
     return result;
 }
 
-PageChat * DistributedDialog::AddChatPage( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParties, bool isInitiator )
+PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParties, bool isInitiator )
 {
-    NEDirectConnection::sParticipant owner;
+    DirectConnection::sParticipant owner;
     if ( isInitiator )
     {
         owner.nickName  = initiator.nickName;
@@ -602,8 +602,8 @@ void DistributedDialog::RemoveAllChatPages()
 
 LRESULT DistributedDialog::OnCmdSetDirectConnection( WPARAM wParam, LPARAM lParam )
 {
-    NEDirectConnection::sInitiator      * initiator     = reinterpret_cast<NEDirectConnection::sInitiator *>( wParam );
-    NEDirectConnection::ListParticipants* listParties   = reinterpret_cast<NEDirectConnection::ListParticipants *>( lParam );
+    DirectConnection::sInitiator      * initiator     = reinterpret_cast<DirectConnection::sInitiator *>( wParam );
+    DirectConnection::ListParticipants* listParties   = reinterpret_cast<DirectConnection::ListParticipants *>( lParam );
 
     if ( (initiator != nullptr) && (listParties != nullptr) )
         AddChatPage(*initiator, *listParties, false);

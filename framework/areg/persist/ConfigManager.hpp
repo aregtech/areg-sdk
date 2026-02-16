@@ -21,12 +21,12 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Version.hpp"
-#include "areg/persist/NEPersistence.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 #include "areg/persist/Property.hpp"
-#include "areg/logging/NELogging.hpp"
-#include "areg/ipc/NERemoteService.hpp"
+#include "areg/logging/LoggingDefs.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
 
 #include <vector>
 

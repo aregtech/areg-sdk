@@ -41,7 +41,7 @@ bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status,
     return result;
 }
 
-void TrafficLightClient::onSouthNorthUpdate(NESimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state)
+void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state)
 {
     if (state == NEService::eDataStateType::DataIsOK)
     {
@@ -49,7 +49,7 @@ void TrafficLightClient::onSouthNorthUpdate(NESimpleTrafficLight::eTrafficLight 
     }
 }
 
-void TrafficLightClient::onEastWestUpdate(NESimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state)
+void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state)
 {
     if (state == NEService::eDataStateType::DataIsOK)
     {
@@ -57,20 +57,20 @@ void TrafficLightClient::onEastWestUpdate(NESimpleTrafficLight::eTrafficLight Ea
     }
 }
 
-inline void TrafficLightClient::outputState(NESimpleTrafficLight::eTrafficLight lightState)
+inline void TrafficLightClient::outputState(SimpleTrafficLight::eTrafficLight lightState)
 {
     switch (lightState)
     {
-    case NESimpleTrafficLight::eTrafficLight::LightRed:
+    case SimpleTrafficLight::eTrafficLight::LightRed:
         printf("Light: RED ...\r\n");
         break;
-    case NESimpleTrafficLight::eTrafficLight::LightYellow:
+    case SimpleTrafficLight::eTrafficLight::LightYellow:
         printf("Light: Yellow ...\r\n");
         break;
-    case NESimpleTrafficLight::eTrafficLight::LightGreen:
+    case SimpleTrafficLight::eTrafficLight::LightGreen:
         printf("Light: GREEN ...\r\n");
         break;
-    case NESimpleTrafficLight::eTrafficLight::LightOff:
+    case SimpleTrafficLight::eTrafficLight::LightOff:
     default:
         printf("Light: OFF ...\r\n");
         break;

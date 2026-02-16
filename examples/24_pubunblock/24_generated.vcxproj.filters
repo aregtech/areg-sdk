@@ -32,7 +32,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\24_pubunblock\services\private\HelloUnblockStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\24_pubunblock\services\private\NEHelloUnblock.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\24_pubunblock\services\private\HelloUnblock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -49,7 +49,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\24_pubunblock\services\HelloUnblockStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\24_pubunblock\services\NEHelloUnblock.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\24_pubunblock\services\HelloUnblock.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

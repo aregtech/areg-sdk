@@ -19,7 +19,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include <algorithm>
 #include <errno.h>

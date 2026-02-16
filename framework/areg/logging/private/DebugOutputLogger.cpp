@@ -19,11 +19,11 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/ByteBuffer.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/WideString.hpp"
 #include "areg/base/String.hpp"
 
-#include "areg/base/private/NEDebug.hpp"
+#include "areg/base/private/DebugDefs.hpp"
 
 #if AREG_LOGS
 

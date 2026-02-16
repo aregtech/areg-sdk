@@ -16,7 +16,7 @@
 
 #include "areglogger/client/LogObserverApi.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include "areglogger/client/private/LoggerClient.hpp"
 

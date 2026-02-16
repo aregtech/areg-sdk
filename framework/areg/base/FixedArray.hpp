@@ -24,7 +24,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TemplateBase.hpp"
 
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/IOStream.hpp"
 
 #include <algorithm>

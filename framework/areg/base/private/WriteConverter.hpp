@@ -22,7 +22,7 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NEString.hpp"
+#include "areg/base/StringDefs.hpp"
 
 /************************************************************************
  * Dependencies

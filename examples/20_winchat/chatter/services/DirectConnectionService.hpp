@@ -43,7 +43,7 @@ protected:
      * \param   listParticipants    The list of chat-room participants
      * \see     responseConnectoinSetup
      **/
-    virtual void requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
+    virtual void requestConnectoinSetup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -52,7 +52,7 @@ protected:
      * \param   listParticipants    List of participants
      * \see     responseAddParticipant
      **/
-    virtual void requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
+    virtual void requestAddParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -61,7 +61,7 @@ protected:
      * \param   listParticipants    List of chat-room participants
      * \see     responseRemoveParticipant
      **/
-    virtual void requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
+    virtual void requestRemoveParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -69,16 +69,16 @@ protected:
      * \param   initiator   The initiator to close chat-room.
      * \note    Has no response
      **/
-    virtual void requestCloseConnection( const NEDirectConnection::sInitiator & initiator ) override;
+    virtual void requestCloseConnection( const DirectConnection::sInitiator & initiator ) override;
 
 private:
     inline DirectConnectionService & self();
 
-    inline bool isInitiatorValid( const NEDirectConnection::sInitiator & initiator ) const;
+    inline bool isInitiatorValid( const DirectConnection::sInitiator & initiator ) const;
 
-    inline bool exists( const NEDirectConnection::sInitiator & initiator ) const;
+    inline bool exists( const DirectConnection::sInitiator & initiator ) const;
 
-    inline uint64_t getSession( const NEDirectConnection::ListParticipants & listParticipants );
+    inline uint64_t getSession( const DirectConnection::ListParticipants & listParticipants );
 
 private:
     static DirectConnectionService *  mService;

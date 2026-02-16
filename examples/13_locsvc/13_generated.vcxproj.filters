@@ -27,7 +27,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorldStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\NEHelloWorld.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\HelloWorldStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\NEHelloWorld.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\HelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

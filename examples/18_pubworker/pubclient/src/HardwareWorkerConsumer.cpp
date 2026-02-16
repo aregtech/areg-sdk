@@ -56,7 +56,7 @@ void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
 
 void HardwareWorkerConsumer::updateInfoPatient(const SharedBuffer & data)
 {
-    NEPatientInformation::PatientInfo infoPatient;
+    PatientInformation::PatientInfo infoPatient;
     data >> infoPatient;
 
     printf("Update patient info ...\n");

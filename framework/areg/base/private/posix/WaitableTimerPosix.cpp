@@ -22,9 +22,9 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/base/private/posix/NESyncTypesIX.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
 #ifndef __APPLE__

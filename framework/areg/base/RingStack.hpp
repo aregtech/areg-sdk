@@ -23,11 +23,11 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TemplateBase.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include "areg/base/IOStream.hpp"
-#include "areg/base/NEMemory.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <algorithm>
 

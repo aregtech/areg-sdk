@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 
 /************************************************************************
  * Dependencies

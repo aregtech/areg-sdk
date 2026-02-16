@@ -23,7 +23,7 @@
 
 #include "areg/base/TemplateBase.hpp"
 #include "areg/base/IOStream.hpp"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 #include <map>
 #include <algorithm>

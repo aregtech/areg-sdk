@@ -133,7 +133,7 @@
  **/
 #ifdef _DEBUG
 
-#include "areg/base/private/NEDebug.hpp"
+#include "areg/base/private/DebugDefs.hpp"
 
     #ifndef AREG_OUTPUT_DBG
         #if defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)

@@ -1076,12 +1076,12 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
         ${_generate}/private/${_interface_name}Events.cpp
         ${_generate}/private/${_interface_name}Proxy.cpp
         ${_generate}/private/${_interface_name}Stub.cpp
-        ${_generate}/private/NE${_interface_name}.cpp
+        ${_generate}/private/${_interface_name}.cpp
         ${_generate}/private/${_interface_name}Events.hpp
         ${_generate}/private/${_interface_name}Proxy.hpp
         ${_generate}/${_interface_name}ClientBase.hpp
         ${_generate}/${_interface_name}Stub.hpp
-        ${_generate}/NE${_interface_name}.hpp
+        ${_generate}/${_interface_name}.hpp
     )
 
     # Add generated files to an existing or new static library

@@ -19,7 +19,7 @@
   * Include files.
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 class StubAddress;
 class ProxyAddress;

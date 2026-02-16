@@ -76,7 +76,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnChange, NEService::eDataStateType state)
+void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
@@ -131,7 +131,7 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
     console.unlockConsole();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
+void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
@@ -187,7 +187,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
     console.unlockConsole();
 }
 
-void Subscriber::onServiceProviderStateUpdate(NEPubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::eDataStateType::DataIsOK)
@@ -204,7 +204,7 @@ void Subscriber::onServiceProviderStateUpdate(NEPubSubMix::eServiceState Service
             notifyOnStringOnChangeUpdate(true);
         }
 
-        if (ServiceProviderState == NEPubSubMix::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSubMix::eServiceState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

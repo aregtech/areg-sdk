@@ -25,7 +25,7 @@
 #include "areg/component/StubEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 #include <utility>
 

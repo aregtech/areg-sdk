@@ -14,7 +14,7 @@
 #include "areg/base/GEGlobal.h"
 #include "examples/27_pubsubmulti/services/PubSubClientBase.hpp"
 
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 /**
  * \brief   Base class to print subscriber state information.

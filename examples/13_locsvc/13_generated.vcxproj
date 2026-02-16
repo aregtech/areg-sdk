@@ -46,12 +46,12 @@
     <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorldEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorldProxy.cpp" />
     <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorldStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\NEHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\HelloWorldClientBase.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\HelloWorldStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\HelloWorld.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorldEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)examples\13_locsvc\services\private\HelloWorldProxy.hpp" />
   </ItemGroup>

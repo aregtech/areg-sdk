@@ -24,7 +24,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/private/RuntimeBase.hpp"
 
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/RuntimeClassID.hpp"
 

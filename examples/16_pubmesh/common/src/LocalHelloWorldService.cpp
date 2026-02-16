@@ -28,11 +28,11 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
 {
     LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 
-    NELocalHelloWorld::sConnectedClient theClient;
+    LocalHelloWorld::sConnectedClient theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition( );
     for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
-        const NELocalHelloWorld::sConnectedClient & client = mClientList.valueAtPosition( pos );
+        const LocalHelloWorld::sConnectedClient & client = mClientList.valueAtPosition( pos );
         if ( roleName == client.ccName )
         {
             LOG_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString( ), client.ccID );
@@ -43,7 +43,7 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
 
     if ( mClientList.isInvalidPosition( pos ) )
     {
-        theClient = NELocalHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
+        theClient = LocalHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
         mClientList.pushLast( theClient );
         LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }

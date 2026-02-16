@@ -19,11 +19,11 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/NESocket.hpp"
+#include "areg/base/SocketDefs.hpp"
 #include "areg/base/Version.hpp"
-#include "areg/persist/NEPersistence.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
 #include "areg/persist/Property.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <vector>
 

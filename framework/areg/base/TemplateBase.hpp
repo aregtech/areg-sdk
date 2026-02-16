@@ -21,8 +21,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/CommonDefs.hpp"
-#include "areg/base/NEMath.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/base/IOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////

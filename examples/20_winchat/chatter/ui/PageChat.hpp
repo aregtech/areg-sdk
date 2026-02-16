@@ -12,7 +12,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/ArrayList.hpp"
 #include "areg/base/HashMap.hpp"
-#include "examples/20_winchat/services/NEDirectConnection.hpp"
+#include "examples/20_winchat/services/DirectConnection.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 class PageChat  : public CPropertyPage
@@ -30,9 +30,9 @@ private:
 
 public:
 	PageChat( const String & serviceName
-              , const NEDirectConnection::sInitiator & initiator
-              , const NEDirectConnection::ListParticipants & listParties
-              , const NEDirectConnection::sParticipant & ownerConnection
+              , const DirectConnection::sInitiator & initiator
+              , const DirectConnection::ListParticipants & listParties
+              , const DirectConnection::sParticipant & ownerConnection
               , bool isInitiator );
 	virtual ~PageChat() = default;
 

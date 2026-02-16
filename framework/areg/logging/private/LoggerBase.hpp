@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/logging/NELogging.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LayoutManager.hpp"
 
 #include <string_view>

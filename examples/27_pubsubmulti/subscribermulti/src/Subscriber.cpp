@@ -59,12 +59,12 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    String publisherState = state == NEService::eDataStateType::DataIsOK ? NEPubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
+    String publisherState = state == NEService::eDataStateType::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
@@ -98,9 +98,9 @@ void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServicePro
             notifyOnStringOnChangeUpdate(true);
         }
 
-        mSecond.notifyOnServiceProviderStateUpdate(ServiceProviderState != NEPubSub::eServiceState::Shutdown);
+        mSecond.notifyOnServiceProviderStateUpdate(ServiceProviderState != PubSub::eServiceState::Shutdown);
 
-        if (ServiceProviderState == NEPubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::eServiceState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

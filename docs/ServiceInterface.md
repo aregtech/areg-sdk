@@ -114,7 +114,7 @@ Reference types from external headers:
 ```xml
 <DataType ID="11" Name="uAlign" Type="Imported">
     <Namespace>NEMemory</Namespace>
-    <Location>areg/base/NEMemory.hpp</Location>
+    <Location>areg/base/MemoryDefs.hpp</Location>
 </DataType>
 ```
 
@@ -232,7 +232,7 @@ Additional header files required by the service:
 
 ```xml
 <IncludeList>
-    <Location ID="36" Name="areg/base/NEMath.hpp"/>
+    <Location ID="36" Name="areg/base/MathDefs.hpp"/>
 </IncludeList>
 ```
 

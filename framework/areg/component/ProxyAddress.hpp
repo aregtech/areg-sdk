@@ -21,7 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/component/ServiceAddress.hpp"
 #include "areg/component/Channel.hpp"
 

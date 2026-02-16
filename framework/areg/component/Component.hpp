@@ -26,7 +26,7 @@
 
 #include "areg/component/ComponentAddress.hpp"
 #include "areg/component/private/ComponentInfo.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
 /************************************************************************
  * Dependencies

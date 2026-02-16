@@ -18,7 +18,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ComponentLoader.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentThread class implementation

@@ -21,8 +21,8 @@
 #include "areg/base/String.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/base/Containers.hpp"
 
 #include <filesystem>

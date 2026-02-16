@@ -4,7 +4,7 @@
 // PageConnections dialog
 
 #include "register/res/resource.h"
-#include "register/NECentralApp.hpp"
+#include "register/CentralApp.hpp"
 #include "common/ChatDefs.hpp"
 #include "areg/base/ArrayList.hpp"
 

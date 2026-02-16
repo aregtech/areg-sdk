@@ -7,7 +7,7 @@
 #include "chatter/res/stdafx.h"
 #include "chatter/services/DirectChatService.hpp"
 #include "chatter/services/DirectConnectionClient.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/ui/PageConnections.hpp"
 #include "chatter/ui/PageChat.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
@@ -20,8 +20,8 @@ DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
 DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
 DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
 
-NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticipant & initiator
-                                             , const NEDirectMessager::ListParticipants & listParticipants
+NERegistry::Model DirectChatService::GetModel( const DirectMessager::sParticipant & initiator
+                                             , const DirectMessager::ListParticipants & listParticipants
                                              , std::any data)
 {
     String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
@@ -34,12 +34,12 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
     
     for ( uint32_t i = 0; i < count; ++i )
     {
-        const NEDirectConnection::sParticipant & participant = listParticipants[i];
+        const DirectConnection::sParticipant & participant = listParticipants[i];
         NERegistry::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
         listDependencies.mListDependencies.add( entry );
     }
 
-    NERegistry::ServiceEntry          serviceEntry( NEDirectMessager::ServiceName, NEDirectMessager::InterfaceVersion );
+    NERegistry::ServiceEntry          serviceEntry( DirectMessager::ServiceName, DirectMessager::InterfaceVersion );
     NERegistry::ServiceList           listServices( serviceEntry );
     NERegistry::ComponentEntry        componentEntry( threadName, roleName
                                                     , FUNC_CREATE_COMP(DirectChatService)
@@ -75,12 +75,12 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
     Component::startupComponent(comThread);
     mPaticipantsHandler->SetConnectionService( this );
 
-    const NEDirectConnection::sInitiator & initiator = mPaticipantsHandler->GetInitiator();
-    const NEDirectConnection::ListParticipants & listParticipants = mPaticipantsHandler->GetParticipantList();
+    const DirectConnection::sInitiator & initiator = mPaticipantsHandler->GetInitiator();
+    const DirectConnection::ListParticipants & listParticipants = mPaticipantsHandler->GetParticipantList();
     uint32_t count {listParticipants.getSize( )};
     for (uint32_t i = 0; i < count; ++ i )
     {
-        const NEDirectConnection::sParticipant & target = listParticipants[i];
+        const DirectConnection::sParticipant & target = listParticipants[i];
         if ( target != initiator )
         {
             DirectConnectionClient * client = new DirectConnectionClient( static_cast<Component &>(self( )), mPaticipantsHandler, target );
@@ -101,16 +101,16 @@ void DirectChatService::shutdownComponent( ComponentThread & comThread )
 void DirectChatService::startupServiceInterface( Component & holder )
 {
     DirectMessagerStub::startupServiceInterface(holder);
-    setChatParticipants( NEDirectMessager::ListParticipants() );
+    setChatParticipants( DirectMessager::ListParticipants() );
 }
 
-void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
+void DirectChatService::requestChatJoin( const DirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
     if ( mPaticipantsHandler->ParticipantExist(participant) )
     {
         bool newParticipant = false;
-        NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants();
+        DirectMessager::ListParticipants & chatParticipants = getChatParticipants();
         if ( chatParticipants.contains(participant, 0) == false )
         {
             chatParticipants.add(participant);
@@ -126,14 +126,14 @@ void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & 
     }
     else
     {
-        responseChatJoin( false, NEDirectMessager::ListParticipants(), timeConnect, DateTime() );
+        responseChatJoin( false, DirectMessager::ListParticipants(), timeConnect, DateTime() );
     }
 }
 
-void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & timeSent )
+void DirectChatService::requestMessageSend( const DirectMessager::sParticipant & participant, const String & msgText, const DateTime & timeSent )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
-    const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
+    const DirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
     if ( chatParticipants.contains(participant, 0) )
     {
         broadcastMessageSent(participant, msgText, timeSent );
@@ -141,20 +141,20 @@ void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant
     }
 }
 
-void DirectChatService::requestMessageType( const NEDirectMessager::sParticipant & participant, const String & msgText )
+void DirectChatService::requestMessageType( const DirectMessager::sParticipant & participant, const String & msgText )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
-    const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
+    const DirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
     if ( chatParticipants.contains( participant, 0 ) )
     {
         broadcastMessageTyped( participant, msgText );
     }
 }
 
-void DirectChatService::requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave )
+void DirectChatService::requestChatLeave( const DirectMessager::sParticipant & participant, const DateTime & timeLeave )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
-    NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
+    DirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
     if ( chatParticipants.removeElem( participant, 0 ) )
     {
         broadcastParticipantLeft( participant, timeLeave );

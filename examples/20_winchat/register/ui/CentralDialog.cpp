@@ -15,6 +15,7 @@
 #include "register/res/stdafx.h"
 #include "register/ui/CentralDialog.hpp"
 #include "register/CentralApp.hpp"
+#include "register/CentralAppDefs.hpp"
 #include "common/ChatDefs.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/appbase/Application.hpp"

@@ -8,8 +8,8 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "common/ChatDefs.hpp"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 

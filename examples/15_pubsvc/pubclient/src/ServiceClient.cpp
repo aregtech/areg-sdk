@@ -54,7 +54,7 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     return result;
 }
 
-void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
+void ServiceClient::responseHelloWorld(const HelloWorld::sConnectedClient & clientInfo)
 {
     LOG_SCOPE(examples_15_pubclient_ServiceClient_responseHelloWorld);
     LOG_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);

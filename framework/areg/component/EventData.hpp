@@ -23,7 +23,7 @@
 
 #include "areg/base/IOStream.hpp"
 #include "areg/component/EventDataStream.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // EventData class declaration

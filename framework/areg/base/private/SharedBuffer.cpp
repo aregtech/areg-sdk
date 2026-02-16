@@ -16,9 +16,9 @@
 #include "areg/base/SharedBuffer.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/base/NEMath.hpp"
-#include "areg/base/SyncObjects.hpp"
-#include "areg/base/NEString.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/base/SyncPrimitives.hpp"
+#include "areg/base/StringDefs.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
 #include <algorithm>

@@ -21,11 +21,11 @@
 
 #include "aregextend/db/SqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/component/ServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/LogDatabaseEngine.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 
 #include <vector>
 

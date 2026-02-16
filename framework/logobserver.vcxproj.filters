@@ -18,9 +18,6 @@
     <ClCompile Include="logobserver\app\private\LogObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="logobserver\app\private\NELogObserverSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="logobserver\app\private\posix\LogObserverPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -30,9 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logobserver\app\LogObserver.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="logobserver\app\NELogObserverSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="logobserver\resources\resource.h">

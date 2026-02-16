@@ -8,8 +8,8 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/logging/private/LogMessage.cpp
 	areg/logging/private/LoggerBase.cpp
 	areg/logging/private/Layouts.cpp
-	areg/logging/private/NELogging.cpp
-	areg/logging/private/NELogOptions.cpp
+	areg/logging/private/LoggingDefs.cpp
+	areg/logging/private/LogOptions.cpp
 	areg/logging/private/NetTcpLogger.cpp
 	areg/logging/private/ScopeController.cpp
 	areg/logging/private/ScopeNodeBase.cpp

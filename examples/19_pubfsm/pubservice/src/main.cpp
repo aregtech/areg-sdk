@@ -44,8 +44,8 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( fsm::ServiceLightController, TrafficLightService )
             // register PowerManager and TrafficController service implementation, and the dependencies (client runs in the same thread).
-            REGISTER_IMPLEMENT_SERVICE( NEPowerManager::ServiceName, NEPowerManager::InterfaceVersion )
-            REGISTER_IMPLEMENT_SERVICE( NETrafficController::ServiceName, NETrafficController::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( PowerManager::ServiceName, PowerManager::InterfaceVersion )
+            REGISTER_IMPLEMENT_SERVICE( TrafficController::ServiceName, TrafficController::InterfaceVersion )
             // The power controller local service and the client run in the same thread.
             REGISTER_DEPENDENCY(fsm::ServiceLightController)
         // end of component description

@@ -23,8 +23,8 @@ macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/component/private/RemoteEventConsumer.cpp
 	areg/component/private/TimerConsumer.cpp
 	areg/component/private/WorkerThreadConsumer.cpp
-	areg/component/private/NERegistry.cpp
-	areg/component/private/NEService.cpp
+	areg/component/private/Model.cpp
+	areg/component/private/ServiceDefs.cpp
 	areg/component/private/NotificationEvent.cpp
 	areg/component/private/ProxyAddress.cpp
 	areg/component/private/ProxyBase.cpp

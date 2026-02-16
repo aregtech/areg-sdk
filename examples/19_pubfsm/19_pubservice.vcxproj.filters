@@ -24,7 +24,7 @@
     <ClInclude Include="pubservice\src\IETrafficLightActionHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pubservice\src\NETrafficLightFSM.hpp">
+    <ClInclude Include="pubservice\src\TrafficLightDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pubservice\src\TrafficLightFSM.hpp">
@@ -47,7 +47,7 @@
     <ClCompile Include="pubservice\src\IETrafficLightActionHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pubservice\src\NETrafficLightFSM.cpp">
+    <ClCompile Include="pubservice\src\TrafficLightDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pubservice\src\TrafficLightFSM.cpp">

@@ -48,7 +48,7 @@ protected:
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo ) override;
+    virtual void responseHelloWorld( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

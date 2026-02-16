@@ -3,8 +3,8 @@
 #include "areg/base/GEGlobal.h"
 #include "chatter/res/resource.h"
 #include "areg/base/String.hpp"
-#include "examples/20_winchat/services/NEDirectConnection.hpp"
-#include "examples/20_winchat/services/NEConnectionManager.hpp"
+#include "examples/20_winchat/services/DirectConnection.hpp"
+#include "examples/20_winchat/services/ConnectionManager.hpp"
 
 class String;
 class Component;
@@ -33,8 +33,8 @@ public:
     void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
     void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
-    void OnAddConnection( NEConnectionManager::sConnection & data );
-    void OnRemoveConnection( NEConnectionManager::sConnection & data );
+    void OnAddConnection( ConnectionManager::sConnection & data );
+    void OnRemoveConnection( ConnectionManager::sConnection & data );
     void OnUpdateConnection();
     void OnDisconnectTriggered();
 
@@ -64,13 +64,13 @@ private:
 
     inline void setHeaders();
 
-    inline int getSelectedConnections( NEDirectConnection::sInitiator & outParticipant, NEDirectConnection::ListParticipants & outListParticipants );
+    inline int getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants );
 
-    inline void addConnection( const NEConnectionManager::sConnection & connection );
+    inline void addConnection( const ConnectionManager::sConnection & connection );
 
-    inline int findConnection( const NEConnectionManager::sConnection & connection ) const;
+    inline int findConnection( const ConnectionManager::sConnection & connection ) const;
 
-    inline void removeConnection( const NEConnectionManager::sConnection & connection );
+    inline void removeConnection( const ConnectionManager::sConnection & connection );
 
     inline void unloadModel();
 

@@ -50,7 +50,7 @@ bool LocalHelloWorldClient::serviceConnected( NEService::eServiceConnection stat
     return result;
 }
 
-void LocalHelloWorldClient::responseHelloWorld(const NELocalHelloWorld::sConnectedClient & clientInfo)
+void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnectedClient & clientInfo)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]"

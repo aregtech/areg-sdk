@@ -19,7 +19,7 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/CommonDefs.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <string_view>
 #include <utility>

@@ -19,7 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
-#include "areg/logging/private/NELogOptions.hpp"
+#include "areg/logging/private/LogOptions.hpp"
 
 #if AREG_LOGS
 

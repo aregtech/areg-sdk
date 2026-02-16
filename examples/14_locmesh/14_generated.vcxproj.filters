@@ -30,7 +30,7 @@
     <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorldStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\NEHelloWorld.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\14_locmesh\services\private\HelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,7 +47,7 @@
     <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorldStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\NEHelloWorld.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\14_locmesh\services\HelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

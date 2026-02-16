@@ -13,9 +13,9 @@
  * \brief       Property Key object to persist application data.
  ************************************************************************/
 #include "areg/persist/PropertyKey.hpp"
-#include "areg/persist/NEPersistence.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/NEMath.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/base/UtilityDefs.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <utility>
 

@@ -26,7 +26,7 @@
 #include <algorithm>
 #include <deque>
 
-#include "areg/base/SyncObjects.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/IOStream.hpp"
 
 #include <algorithm>

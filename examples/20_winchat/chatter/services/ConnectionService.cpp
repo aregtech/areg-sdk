@@ -6,11 +6,11 @@
 #include "chatter/res/stdafx.h"
 #include "areg/base/GEGlobal.h"
 #include "chatter/services/ConnectionService.hpp"
-#include "areg/component/NERegistry.hpp"
+#include "areg/component/Model.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "common/ChatDefs.hpp"
-#include "chatter/NEDistributedApp.hpp"
+#include "chatter/DistributedAppDefs.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 

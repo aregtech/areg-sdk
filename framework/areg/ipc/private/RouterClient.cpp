@@ -15,13 +15,13 @@
 #include "areg/ipc/private/RouterClient.hpp"
 
 #include "areg/ipc/RegistrationConsumer.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 
 #include "areg/component/RemoteEventFactory.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/RequestEvents.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/logging/GELog.h"

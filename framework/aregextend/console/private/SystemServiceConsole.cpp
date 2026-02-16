@@ -21,7 +21,7 @@
 #include "areg/component/ComponentThread.hpp"
 #include "aregextend/console/Console.hpp"
 #include "aregextend/service/DataRateHelper.hpp"
-#include "aregextend/service/NESystemService.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation

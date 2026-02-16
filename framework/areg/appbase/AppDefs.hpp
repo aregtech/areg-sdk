@@ -20,9 +20,9 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/Identifier.hpp"
-#include "areg/persist/NEPersistence.hpp"
-#include "areg/ipc/NERemoteService.hpp"
-#include "areg/logging/NELogging.hpp"
+#include "areg/persist/PersistenceDefs.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 
 #include <string_view>
 #include <vector>

@@ -18,7 +18,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/GELog.h"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/base/UtilityDefs.hpp"
 
 #include "common/FsmDefs.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"

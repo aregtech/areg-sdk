@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "logcollector/service/LogCollectorServerService.hpp"
 
-#include "areg/ipc/private/NEConnection.hpp"
+#include "areg/ipc/private/ConnectionDefs.hpp"
 #include "areg/logging/GELog.h"
 
 DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);

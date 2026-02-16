@@ -13,8 +13,8 @@
  * \brief       Areg Platform, service server connection class.
  ************************************************************************/
 #include "aregextend/service/ServerConnection.hpp"
-#include "areg/ipc/NERemoteService.hpp"
-#include "areg/component/NEService.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/component/ServiceDefs.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId )

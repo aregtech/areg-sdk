@@ -24,7 +24,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/CommonDefs.hpp"
-#include "areg/base/private/posix/NESyncTypesIX.hpp"
+#include "areg/base/private/posix/SyncDefsPosix.hpp"
 #include "areg/base/SyncObject.hpp"
 #include "areg/base/HashMap.hpp"
 #include "areg/base/LinkedList.hpp"

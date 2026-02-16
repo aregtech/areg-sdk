@@ -3,13 +3,13 @@
 
 #include "register/res/stdafx.h"
 #include "register/CentralApp.hpp"
+#include "register/CentralAppDefs.hpp"
 #include "register/ui/PageConnections.hpp"
-#include "register/services/ConnectionManager.hpp"
-#include "register/NECentralApp.hpp"
+#include "register/services/ConnectionController.hpp"
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/GEMacros.h"
-#include "areg/base/NEMemory.hpp"
+#include "areg/base/MemoryDefs.hpp"
 
 
 // PageConnections
@@ -66,7 +66,7 @@ void PageConnections::OutputMessage( CString nickName, CString message, CString 
     lv.iSubItem     = 0;
     lv.pszText      = nickName.GetBuffer();
     lv.lParam       = data;
-    lv.cchTextMax   = NEConnectionManager::NicknameMaxLen;
+    lv.cchTextMax   = ConnectionManager::NicknameMaxLen;
     mCtrlList.InsertItem(&lv);
 
     if ( dateStart.GetLength() > chat::DAY_FORMAT_LEN )
@@ -108,7 +108,7 @@ END_MESSAGE_MAP( )
 void PageConnections::OnClickedButtonBroadcast()
 {
     UpdateData(TRUE);
-    ConnectionManager * service = !mTextBroadcast.IsEmpty() ? ConnectionManager::getService( ) : nullptr;
+    ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getService( ) : nullptr;
     if ( service != nullptr )
     {
         DateTime timestamp = DateTime::getNow();
@@ -119,7 +119,7 @@ void PageConnections::OnClickedButtonBroadcast()
                        , mTextBroadcast
                        , CString( timestamp.formatTime( ).getString( ) )
                        , CentralApp::EmptyString
-                       , NEConnectionManager::InvalidCookie );
+                       , ConnectionManager::InvalidCookie );
 
         mTextBroadcast = _T("");
         UpdateData(FALSE);
@@ -341,7 +341,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
             lv.iSubItem     = 0;
             lv.pszText      = data->nickName;
             lv.lParam       = static_cast<LPARAM>(data->dataSave);
-            lv.cchTextMax   = NECentralMessager::MessageMaxLen;
+            lv.cchTextMax   = CentralMessager::MessageMaxLen;
             mCtrlList.InsertItem( &lv );
 
             mCtrlList.SetItemText( mLastItem, 1, data->message );
