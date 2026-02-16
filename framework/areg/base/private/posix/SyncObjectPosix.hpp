@@ -31,10 +31,10 @@
 // Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
 class SyncObjectPosix;
-    class MutexIX;
+    class MutexPosix;
         class WaitableBaseIX;
-            class WaitableEventIX;
-            class WaitableMutexIX;
+            class WaitableEventPosix;
+            class WaitableMutexPosix;
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class declaration

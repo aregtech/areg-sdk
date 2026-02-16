@@ -7,14 +7,14 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/SyncLockAndWaitIX.cpp
+ * \file        areg/base/private/posix/SyncLockAndWaitPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Lock and wait object for POSIX synchronization objects.
  *
  ************************************************************************/
 
-#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -25,41 +25,41 @@
 #include <errno.h>
 
 //////////////////////////////////////////////////////////////////////////
-// SyncLockAndWaitIX class implementation
+// SyncLockAndWaitPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SyncLockAndWaitIX::MapWaitIDResource & SyncLockAndWaitIX::_mapWaitResourceIds()
+SyncLockAndWaitPosix::MapWaitIDResource & SyncLockAndWaitPosix::_mapWaitResourceIds()
 {
-    static SyncLockAndWaitIX::MapWaitIDResource _mapWaitIdResource;
+    static SyncLockAndWaitPosix::MapWaitIDResource _mapWaitIdResource;
     return _mapWaitIdResource;
 }
 
-SyncLockAndWaitIX::SyncResourceMapIX & SyncLockAndWaitIX::_mapSyncResources()
+SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_mapSyncResources()
 {
-    static SyncLockAndWaitIX::SyncResourceMapIX _theSyncResourceMapIX;
+    static SyncLockAndWaitPosix::SyncResourceMapIX _theSyncResourceMapIX;
     return _theSyncResourceMapIX;
 }
 
-int SyncLockAndWaitIX::waitForSingleObject( WaitablePosix & syncWait, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
+int SyncLockAndWaitPosix::waitForSingleObject( WaitablePosix & syncWait, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
 {
     WaitablePosix * list[] = { &syncWait };
     return waitForMultipleObjects(list, 1, true, msTimeout);
 }
 
-int SyncLockAndWaitIX::waitForMultipleObjects( WaitablePosix ** listWaitables, int count, bool waitAll /* = false */, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
+int SyncLockAndWaitPosix::waitForMultipleObjects( WaitablePosix ** listWaitables, int count, bool waitAll /* = false */, unsigned int msTimeout /* = NECommon::WAIT_INFINITE */ )
 {
     int result = static_cast<int>(NESyncTypesIX::SyncObjectInvalid);
     if ( (listWaitables != nullptr) && (count > 0) )
     {
         AREG_OUTPUT_DBG("Going to wait [ %s%d ] event(s).", (waitAll && (count > 1) ? "all " : ""), count);
-        SyncLockAndWaitIX lockAndWait(    listWaitables
+        SyncLockAndWaitPosix lockAndWait(    listWaitables
                                         , count
                                         , waitAll ? NESyncTypesIX::eMatchCondition::MatchConditionExact : NESyncTypesIX::eMatchCondition::MatchConditionAny
                                         , msTimeout);
 
         if ( (lockAndWait._isEmpty() == false) && lockAndWait._lock( ) )
         {
-            SyncLockAndWaitIX::MapWaitIDResource & mapReousrces { SyncLockAndWaitIX::_mapWaitResourceIds() };
+            SyncLockAndWaitPosix::MapWaitIDResource & mapReousrces { SyncLockAndWaitPosix::_mapWaitResourceIds() };
             mapReousrces.registerResourceObject(reinterpret_cast<ptr_type>(lockAndWait.mContext), &lockAndWait);
 
             int waitResult = ENOLCK;
@@ -87,11 +87,11 @@ int SyncLockAndWaitIX::waitForMultipleObjects( WaitablePosix ** listWaitables, i
     return result;
 }
 
-int SyncLockAndWaitIX::eventSignaled( WaitablePosix & syncWaitable )
+int SyncLockAndWaitPosix::eventSignaled( WaitablePosix & syncWaitable )
 {
     int result = 0;
 
-    SyncResourceMapIX & mapResource { SyncLockAndWaitIX::_mapSyncResources() };
+    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_mapSyncResources() };
     mapResource.lock( );
 
     ListLockAndWait * waitList = mapResource.getResource( &syncWaitable );
@@ -106,7 +106,7 @@ int SyncLockAndWaitIX::eventSignaled( WaitablePosix & syncWaitable )
         ListLockAndWait::LISTPOS end = waitList->invalidPosition();
         for ( ListLockAndWait::LISTPOS pos = waitList->firstPosition( ); pos != end; )
         {
-            SyncLockAndWaitIX * lockAndWait = waitList->valueAtPosition(pos);
+            SyncLockAndWaitPosix * lockAndWait = waitList->valueAtPosition(pos);
             ASSERT(lockAndWait != nullptr);
 
             if (syncWaitable.checkSignaled(lockAndWait->mContext) == false)
@@ -152,9 +152,9 @@ int SyncLockAndWaitIX::eventSignaled( WaitablePosix & syncWaitable )
     return result;
 }
 
-void SyncLockAndWaitIX::eventRemove( WaitablePosix & syncWaitable )
+void SyncLockAndWaitPosix::eventRemove( WaitablePosix & syncWaitable )
 {
-    SyncResourceMapIX & mapResource { SyncLockAndWaitIX::_mapSyncResources() };
+    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_mapSyncResources() };
     mapResource.lock( );
 
     ListLockAndWait * waitList = mapResource.getResource( &syncWaitable );
@@ -169,7 +169,7 @@ void SyncLockAndWaitIX::eventRemove( WaitablePosix & syncWaitable )
         ListLockAndWait::LISTPOS end = waitList->invalidPosition();
         for ( ListLockAndWait::LISTPOS pos = waitList->firstPosition( ); pos != end ; pos = waitList->nextPosition(pos))
         {
-            SyncLockAndWaitIX * lockAndWait = waitList->valueAtPosition(pos);
+            SyncLockAndWaitPosix * lockAndWait = waitList->valueAtPosition(pos);
             ASSERT(lockAndWait != nullptr);
             if (syncWaitable.checkSignaled(lockAndWait->mContext) == false)
                 break;
@@ -185,9 +185,9 @@ void SyncLockAndWaitIX::eventRemove( WaitablePosix & syncWaitable )
     mapResource.unlock( );
 }
 
-void SyncLockAndWaitIX::eventFailed( WaitablePosix & syncWaitable )
+void SyncLockAndWaitPosix::eventFailed( WaitablePosix & syncWaitable )
 {
-    SyncResourceMapIX & mapResource { SyncLockAndWaitIX::_mapSyncResources() };
+    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_mapSyncResources() };
     mapResource.lock( );
 
     ListLockAndWait * waitList = mapResource.getResource( &syncWaitable );
@@ -199,7 +199,7 @@ void SyncLockAndWaitIX::eventFailed( WaitablePosix & syncWaitable )
         ListLockAndWait::LISTPOS end = waitList->invalidPosition();
         for ( ListLockAndWait::LISTPOS pos = waitList->firstPosition( ); pos != end; pos = waitList->nextPosition(pos))
         {
-            SyncLockAndWaitIX * lockAndWait = waitList->valueAtPosition(pos);
+            SyncLockAndWaitPosix * lockAndWait = waitList->valueAtPosition(pos);
             ASSERT(lockAndWait != nullptr);
             if (syncWaitable.checkSignaled(lockAndWait->mContext) == false)
                 break;
@@ -214,11 +214,11 @@ void SyncLockAndWaitIX::eventFailed( WaitablePosix & syncWaitable )
     mapResource.unlock( );
 }
 
-bool SyncLockAndWaitIX::isWaitableRegistered( WaitablePosix & syncWaitable )
+bool SyncLockAndWaitPosix::isWaitableRegistered( WaitablePosix & syncWaitable )
 {
     bool result = false;
 
-    SyncResourceMapIX & mapResources { SyncLockAndWaitIX::_mapSyncResources() };
+    SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_mapSyncResources() };
     mapResources.lock();
 
     result = mapResources.existResource(&syncWaitable);
@@ -228,17 +228,17 @@ bool SyncLockAndWaitIX::isWaitableRegistered( WaitablePosix & syncWaitable )
     return result;
 }
 
-bool SyncLockAndWaitIX::notifyAsyncSignal( id_type threadId )
+bool SyncLockAndWaitPosix::notifyAsyncSignal( id_type threadId )
 {
     bool result{false};
 
-    SyncResourceMapIX & mapResource { SyncLockAndWaitIX::_mapSyncResources() };
+    SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_mapSyncResources() };
     mapResource.lock( );
     do 
     {
-        SyncLockAndWaitIX::MapWaitIDResource & mapReousrces { SyncLockAndWaitIX::_mapWaitResourceIds() };
+        SyncLockAndWaitPosix::MapWaitIDResource & mapReousrces { SyncLockAndWaitPosix::_mapWaitResourceIds() };
         mapReousrces.lock();
-        SyncLockAndWaitIX * lockAndWait = mapReousrces.findResourceObject(static_cast<ptr_type>(threadId));
+        SyncLockAndWaitPosix * lockAndWait = mapReousrces.findResourceObject(static_cast<ptr_type>(threadId));
         if (lockAndWait != nullptr)
         {
             lockAndWait->mFiredEntry = NESyncTypesIX::SyncAsyncSignal;
@@ -253,11 +253,11 @@ bool SyncLockAndWaitIX::notifyAsyncSignal( id_type threadId )
     return result;
 }
 
-SyncLockAndWaitIX::SyncLockAndWaitIX(   WaitablePosix ** listWaitables
+SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
                                             , int count
                                             , NESyncTypesIX::eMatchCondition matchCondition
                                             , unsigned int msTimeout )
-    : mDescribe         ( count > 1 ? SyncLockAndWaitIX::eWaitType::WaitMultipleObjects : SyncLockAndWaitIX::eWaitType::WaitSingleObject )
+    : mDescribe         ( count > 1 ? SyncLockAndWaitPosix::eWaitType::WaitMultipleObjects : SyncLockAndWaitPosix::eWaitType::WaitSingleObject )
     , mMatchCondition   ( matchCondition )
     , mWaitTimeout      ( msTimeout )
     , mContext          ( pthread_self() )
@@ -276,11 +276,11 @@ SyncLockAndWaitIX::SyncLockAndWaitIX(   WaitablePosix ** listWaitables
 
     if ( _initPosixSyncObjects() )
     {
-        SyncResourceMapIX & mapResources { SyncLockAndWaitIX::_mapSyncResources() };
+        SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_mapSyncResources() };
         mapResources.lock();
         count = std::min(NECommon::MAXIMUM_WAITING_OBJECTS, count);
 
-        if ( (mMatchCondition == NESyncTypesIX::eMatchCondition::MatchConditionAny ) || (mDescribe == SyncLockAndWaitIX::eWaitType::WaitSingleObject) )
+        if ( (mMatchCondition == NESyncTypesIX::eMatchCondition::MatchConditionAny ) || (mDescribe == SyncLockAndWaitPosix::eWaitType::WaitSingleObject) )
         {
             for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
@@ -361,22 +361,22 @@ SyncLockAndWaitIX::SyncLockAndWaitIX(   WaitablePosix ** listWaitables
     }
 }
 
-SyncLockAndWaitIX::~SyncLockAndWaitIX()
+SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
 {
-	SyncLockAndWaitIX::_mapSyncResources().removeResourceObject(this, true);
+	SyncLockAndWaitPosix::_mapSyncResources().removeResourceObject(this, true);
 }
 
-inline bool SyncLockAndWaitIX::_noEventFired() const
+inline bool SyncLockAndWaitPosix::_noEventFired() const
 {
     return (mFiredEntry == NESyncTypesIX::SyncObjectInvalid);
 }
 
-inline bool SyncLockAndWaitIX::_isEmpty() const
+inline bool SyncLockAndWaitPosix::_isEmpty() const
 {
     return mWaitingList.isEmpty();
 }
 
-inline bool SyncLockAndWaitIX::_notifyEvent()
+inline bool SyncLockAndWaitPosix::_notifyEvent()
 {
     bool result = false;
 
@@ -389,7 +389,7 @@ inline bool SyncLockAndWaitIX::_notifyEvent()
     return result;
 }
 
-inline bool SyncLockAndWaitIX::_initPosixSyncObjects()
+inline bool SyncLockAndWaitPosix::_initPosixSyncObjects()
 {
     // Init POSIX mutex
     if (NECommon::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ))
@@ -414,7 +414,7 @@ inline bool SyncLockAndWaitIX::_initPosixSyncObjects()
     return (mMutexValid && mCondVarValid);
 }
 
-inline void SyncLockAndWaitIX::_releasePosixSyncObjects()
+inline void SyncLockAndWaitPosix::_releasePosixSyncObjects()
 {
     if (mMutexValid)
     {
@@ -441,17 +441,17 @@ inline void SyncLockAndWaitIX::_releasePosixSyncObjects()
     }
 }
 
-inline bool SyncLockAndWaitIX::_isValid() const
+inline bool SyncLockAndWaitPosix::_isValid() const
 {
     return ((mMutexValid && mCondVarValid) && (mWaitingList.isEmpty() == false));
 }
 
-inline bool SyncLockAndWaitIX::_lock()
+inline bool SyncLockAndWaitPosix::_lock()
 {
     return (mMutexValid && (NECommon::RETURNED_OK == pthread_mutex_lock(&mPosixMutex)));
 }
 
-inline void SyncLockAndWaitIX::_unlock()
+inline void SyncLockAndWaitPosix::_unlock()
 {
     if (mMutexValid)
     {
@@ -459,7 +459,7 @@ inline void SyncLockAndWaitIX::_unlock()
     }
 }
 
-inline int SyncLockAndWaitIX::_waitCondition()
+inline int SyncLockAndWaitPosix::_waitCondition()
 {
     if ( mWaitTimeout == NECommon::WAIT_INFINITE)
     {
@@ -473,7 +473,7 @@ inline int SyncLockAndWaitIX::_waitCondition()
     }
 }
 
-inline int SyncLockAndWaitIX::_getWaitableIndex( const WaitablePosix & syncWaitable ) const
+inline int SyncLockAndWaitPosix::_getWaitableIndex( const WaitablePosix & syncWaitable ) const
 {
     int result = NECommon::INVALID_INDEX;
     for ( uint32_t i = 0; i < mWaitingList.getSize(); ++ i )
@@ -488,13 +488,13 @@ inline int SyncLockAndWaitIX::_getWaitableIndex( const WaitablePosix & syncWaita
     return result;
 }
 
-NESyncTypesIX::eSyncObjectFired SyncLockAndWaitIX::SyncLockAndWaitIX::_checkEventFired( WaitablePosix & syncObject )
+NESyncTypesIX::eSyncObjectFired SyncLockAndWaitPosix::SyncLockAndWaitPosix::_checkEventFired( WaitablePosix & syncObject )
 {
     NESyncTypesIX::eSyncObjectFired result = NESyncTypesIX::SyncObjectInvalid;
 
     if (syncObject.checkSignaled(mContext) && (mWaitingList.getSize() != 0) && (mFiredEntry == NESyncTypesIX::SyncObjectInvalid))
     {
-        if (mDescribe == SyncLockAndWaitIX::eWaitType::WaitSingleObject)
+        if (mDescribe == SyncLockAndWaitPosix::eWaitType::WaitSingleObject)
         {
             result = NESyncTypesIX::SyncObject0;
         }
@@ -541,7 +541,7 @@ NESyncTypesIX::eSyncObjectFired SyncLockAndWaitIX::SyncLockAndWaitIX::_checkEven
     return result;
 }
 
-bool SyncLockAndWaitIX::_requestOwnership( const NESyncTypesIX::eSyncObjectFired firedEvent )
+bool SyncLockAndWaitPosix::_requestOwnership( const NESyncTypesIX::eSyncObjectFired firedEvent )
 {
     bool result = false;
 

@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/WaitableSemaphoreIX.hpp
+ * \file        areg/base/private/posix/WaitableSemaphorePosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Waitable Semaphore class.
@@ -26,7 +26,7 @@
 #include "areg/base/private/posix/WaitablePosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableSemaphoreIX class declaration.
+// WaitableSemaphorePosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -40,7 +40,7 @@
  *          The semaphore cannot have owning thread, because several threads
  *          can get released until the count reaches zero.
  **/
-class WaitableSemaphoreIX : public WaitablePosix
+class WaitableSemaphorePosix : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -55,12 +55,12 @@ public:
      * \param   initCount   The initial count of semaphore.
      * \param   asciiName   The name of semaphore.
      **/
-    explicit WaitableSemaphoreIX( int maxCount, int initCount = 0, const char * asciiName = nullptr );
+    explicit WaitableSemaphorePosix( int maxCount, int initCount = 0, const char * asciiName = nullptr );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableSemaphoreIX() = default;
+    virtual ~WaitableSemaphorePosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -134,22 +134,22 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WaitableSemaphoreIX() = delete;
-    AREG_NOCOPY_NOMOVE( WaitableSemaphoreIX );
+    WaitableSemaphorePosix() = delete;
+    AREG_NOCOPY_NOMOVE( WaitableSemaphorePosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableSemaphoreIX class declaration.
+// WaitableSemaphorePosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 
-inline int WaitableSemaphoreIX::getMaximumCount() const
+inline int WaitableSemaphorePosix::getMaximumCount() const
 {
     return mMaxCount;
 }
 
-inline int WaitableSemaphoreIX::getCurrentCount() const
+inline int WaitableSemaphorePosix::getCurrentCount() const
 {
-    ObjectLockIX lock(*this); return mCurCount;
+    ObjectLockPosix lock(*this); return mCurCount;
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

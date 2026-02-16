@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/CriticalSectionIX.cpp
+ * \file        areg/base/private/posix/CriticalSectionPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Mutex wrapper class.
@@ -17,16 +17,16 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/private/posix/CriticalSectionIX.hpp"
+#include "areg/base/private/posix/CriticalSectionPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include <pthread.h>
 
 //////////////////////////////////////////////////////////////////////////
-// CriticalSectionIX class implementation.
+// CriticalSectionPosix class implementation.
 //////////////////////////////////////////////////////////////////////////
-CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
+CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
     : SyncObjectPosix   ( NESyncTypesIX::eSyncObject::SoSpinLock, "CriticalSection" )
 
     , mSpinLock             ( )
@@ -37,27 +37,27 @@ CriticalSectionIX::CriticalSectionIX( bool initLock /*= false*/ )
     }
 }
 
-bool CriticalSectionIX::lock() const
+bool CriticalSectionPosix::lock() const
 {
     return mSpinLock.lock();
 }
 
-void CriticalSectionIX::unlock() const
+void CriticalSectionPosix::unlock() const
 {
     mSpinLock.unlock();
 }
 
-bool CriticalSectionIX::tryLock() const
+bool CriticalSectionPosix::tryLock() const
 {
     return mSpinLock.tryLock();
 }
 
-bool CriticalSectionIX::isValid() const
+bool CriticalSectionPosix::isValid() const
 {
     return mSpinLock.isValid();
 }
 
-void CriticalSectionIX::freeResources()
+void CriticalSectionPosix::freeResources()
 {
     mSpinLock.freeResources();
 }

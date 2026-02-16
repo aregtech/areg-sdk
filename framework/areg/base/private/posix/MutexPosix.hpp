@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
+#ifndef AREG_BASE_PRIVATE_POSIX_MUTEXPOSIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_MUTEXPOSIX_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/MutexIX.hpp
+ * \file        areg/base/private/posix/MutexPosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Mutex wrapper class.
@@ -27,7 +27,7 @@
 #include <pthread.h>
 
 //////////////////////////////////////////////////////////////////////////
-// MutexIX class declaration.
+// MutexPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A simple synchronization object to synchronize resource access.
@@ -36,14 +36,14 @@
  *          waitable synchronization objects that can trigger event to
  *          a waiting thread.
  **/
-class MutexIX   : public SyncObjectPosix
+class MutexPosix   : public SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes MutexIX. If the object is initialized
+     * \brief   Initializes MutexPosix. If the object is initialized
      *          via this constructor, it is specified as recursive.
      *          If a thread owns the synchronization object, any
      *          further request to lock the object within the same
@@ -56,12 +56,12 @@ public:
      *                      owning thread can unlock the object.
      * \param   asciiName   The name of synchronization object.
      **/
-    explicit MutexIX(bool initLocked = false, const char* asciiName = nullptr);
+    explicit MutexPosix(bool initLocked = false, const char* asciiName = nullptr);
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~MutexIX();
+    virtual ~MutexPosix();
 
 protected:
     /**
@@ -78,14 +78,14 @@ protected:
      *                          locked the object.
      * \param   asciiName       The name of synchronization object.
      **/
-    MutexIX( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char * asciiName = nullptr );
+    MutexPosix( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char * asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// MutexIX operations.
+// MutexPosix operations.
 /************************************************************************/
 
     /**
@@ -136,7 +136,7 @@ public:
     virtual void freeResources() override;
 
 //////////////////////////////////////////////////////////////////////////
-// MutexIX class implementation
+// MutexPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
@@ -152,7 +152,7 @@ private:
     inline void _initPosixMutex( bool isRecursive );
 
 //////////////////////////////////////////////////////////////////////////
-// MutexIX class implementation
+// MutexPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
@@ -176,11 +176,11 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    AREG_NOCOPY_NOMOVE( MutexIX );
+    AREG_NOCOPY_NOMOVE( MutexPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ObjectLockIX class declaration.
+// ObjectLockPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Simple auto-locking object for single synchronization object.
@@ -188,7 +188,7 @@ private:
  *          and release when the destructor is called. Other helper methods
  *          can help to lock and unlock synchronization object during run.
  **/
-class ObjectLockIX
+class ObjectLockPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor.
@@ -201,12 +201,12 @@ public:
      * \param   autoLock    If true, the mutex is automatically locked when
      *                      this object is instantiated.
      **/
-    inline ObjectLockIX( const MutexIX & mutex, bool autoLock = true );
+    inline ObjectLockPosix( const MutexPosix & mutex, bool autoLock = true );
 
     /**
      * \brief   If previously the object is locked, it will be unlocked in destructor.
      **/
-    inline ~ObjectLockIX();
+    inline ~ObjectLockPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -237,7 +237,7 @@ private:
     /**
      * \brief   Instance of POSIX mutex wrapper object.
      **/
-    MutexIX & mMutex;
+    MutexPosix & mMutex;
     /**
      * \brief   Flag, indicating whether mutex automatically locked / unlocked or not.
      *          The automatic locking mutexes are automatically released in destructor.
@@ -248,16 +248,16 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    ObjectLockIX() = delete;
-    AREG_NOCOPY_NOMOVE( ObjectLockIX );
+    ObjectLockPosix() = delete;
+    AREG_NOCOPY_NOMOVE( ObjectLockPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ObjectLockIX inline functions implementation
+// ObjectLockPosix inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ObjectLockIX::ObjectLockIX( const MutexIX & mutex, bool autoLock /*= true*/ )
-    : mMutex    (const_cast<MutexIX &>(mutex))
+inline ObjectLockPosix::ObjectLockPosix( const MutexPosix & mutex, bool autoLock /*= true*/ )
+    : mMutex    (const_cast<MutexPosix &>(mutex))
     , mAutolock (autoLock)
 {
     if (autoLock)
@@ -266,7 +266,7 @@ inline ObjectLockIX::ObjectLockIX( const MutexIX & mutex, bool autoLock /*= true
     }
 }
 
-inline ObjectLockIX::~ObjectLockIX()
+inline ObjectLockPosix::~ObjectLockPosix()
 {
     if (mAutolock)
     {
@@ -274,16 +274,16 @@ inline ObjectLockIX::~ObjectLockIX()
     }
 }
 
-inline bool ObjectLockIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
+inline bool ObjectLockPosix::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 {
     return mMutex.lock(msTimeout);
 }
 
-inline void ObjectLockIX::unlock() const
+inline void ObjectLockPosix::unlock() const
 {
     mMutex.unlock();
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
 
-#endif  // AREG_BASE_PRIVATE_POSIX_MUTEXIX_HPP
+#endif  // AREG_BASE_PRIVATE_POSIX_MUTEXPOSIX_HPP

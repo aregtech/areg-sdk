@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITIX_HPP
+#ifndef AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITPOSIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITPOSIX_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/SyncLockAndWaitIX.hpp
+ * \file        areg/base/private/posix/SyncLockAndWaitPosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Lock and wait object for POSIX synchronization objects.
@@ -38,10 +38,10 @@
   * dependencies.
   ************************************************************************/
 class WaitablePosix;
-class SyncLockAndWaitIX;
+class SyncLockAndWaitPosix;
 
 //////////////////////////////////////////////////////////////////////////
-// SyncLockAndWaitIX class declaration
+// SyncLockAndWaitPosix class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   LockAndWait object that makes locking of single and multiple objects and waits until
@@ -50,12 +50,12 @@ class SyncLockAndWaitIX;
  *          equal to NECommon::MAXIMUM_WAITING_OBJECTS.
  *          Use static methods for waiting functionalities. The internal methods are hidden.
  **/
-class SyncLockAndWaitIX
+class SyncLockAndWaitPosix
 {
     /**
      * \brief   The list of LockAndWait objects.
      **/
-    using ListLockAndWait       = TELinkedList<SyncLockAndWaitIX *>;
+    using ListLockAndWait       = TELinkedList<SyncLockAndWaitPosix *>;
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
@@ -67,7 +67,7 @@ class SyncLockAndWaitIX
     /**
      * \brief   The helper class of resource list map that contains helper functions implementation.
      **/
-    class ImplResourceListMap : public TEResourceListMapImpl<WaitablePosix *, SyncLockAndWaitIX, ListLockAndWait>
+    class ImplResourceListMap : public TEResourceListMapImpl<WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
     {
     public:
         /**
@@ -87,7 +87,7 @@ class SyncLockAndWaitIX
          * \param   List        The list of resource objects.
          * \param   Resource    The resource object to add to the list.
          **/
-        inline void implAddResource( ListLockAndWait & List, SyncLockAndWaitIX * Resource )
+        inline void implAddResource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource )
         {
         	List.pushLast(Resource);
         }
@@ -97,7 +97,7 @@ class SyncLockAndWaitIX
          * \param   List        The list of resource objects.
          * \param   Resource    The resource object to remove from the list.
          **/
-        inline bool implRemoveResource( ListLockAndWait & List, SyncLockAndWaitIX * Resource )
+        inline bool implRemoveResource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource )
         {
         	return List.removeEntry( Resource );
         }
@@ -108,7 +108,7 @@ class SyncLockAndWaitIX
      *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
      *          objects in the entire map are not unique, but should be unique in the list.
      **/
-    using SyncResourceMapIX = TELockResourceListMap<WaitablePosix *, SyncLockAndWaitIX *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
+    using SyncResourceMapIX = TELockResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // The resource map for timer.
@@ -116,29 +116,29 @@ class SyncLockAndWaitIX
     /**
      * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
      **/
-    using MapWaitID         = TEIdHashMap<SyncLockAndWaitIX *>;
+    using MapWaitID         = TEIdHashMap<SyncLockAndWaitPosix *>;
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
-    using ImplWaitIDResource= TEResourceMapImpl<ptr_type, SyncLockAndWaitIX *>;
+    using ImplWaitIDResource= TEResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
     /**
      * \brief   Resource map of waitable where the keys are pthread_t (thread ID) and the values are
      *          LockAndWait objects. It is used in the timer.
      **/
-    using MapWaitIDResource = TELockResourceMap<ptr_type, SyncLockAndWaitIX *, MapWaitID, ImplWaitIDResource>;
+    using MapWaitIDResource = TELockResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
 //////////////////////////////////////////////////////////////////////////
     friend class TimerManager;
-    friend class WaitableTimerIX;
+    friend class WaitableTimerPosix;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   SyncLockAndWaitIX::eWaitType
+     * \brief   SyncLockAndWaitPosix::eWaitType
      *          Describes the waiting type.
      **/
     typedef enum class E_WaitType
@@ -149,7 +149,7 @@ private:
     } eWaitType;
 
     /**
-     * \brief   SyncLockAndWaitIX::eEventFired
+     * \brief   SyncLockAndWaitPosix::eEventFired
      *          Describes the fired state of each event.
      **/
     typedef enum class E_EventFired
@@ -262,12 +262,12 @@ private:
      *                          or it should wait for any event to be in signaled state.
      * \param   msTimeout       Initializes the timeout in milliseconds to wait.
      **/
-    SyncLockAndWaitIX( WaitablePosix ** listWaitables, int count, NESyncTypesIX::eMatchCondition matchCondition, unsigned int msTimeout );
+    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int count, NESyncTypesIX::eMatchCondition matchCondition, unsigned int msTimeout );
 
     /**
      * \brief   Destructor.
      **/
-    ~SyncLockAndWaitIX();
+    ~SyncLockAndWaitPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -276,7 +276,7 @@ private:
     /**
      * \brief   Returns static list of waitables, where keys are id_type and values are waitables.
      **/
-    static SyncLockAndWaitIX::MapWaitIDResource& _mapWaitResourceIds();
+    static SyncLockAndWaitPosix::MapWaitIDResource& _mapWaitResourceIds();
 
     /**
      * \brief   Returns the static instance of synchronization resource map.
@@ -418,10 +418,10 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    SyncLockAndWaitIX() = delete;
-    AREG_NOCOPY_NOMOVE( SyncLockAndWaitIX );
+    SyncLockAndWaitPosix() = delete;
+    AREG_NOCOPY_NOMOVE( SyncLockAndWaitPosix );
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)
 
-#endif  // AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITIX_HPP
+#endif  // AREG_BASE_PRIVATE_POSIX_SYNCLOCKANDWAITPOSIX_HPP

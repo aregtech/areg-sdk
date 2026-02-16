@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/WaitableMutexIX.cpp
+ * \file        areg/base/private/posix/WaitableMutexPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Waitable Event class.
@@ -17,17 +17,17 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/private/posix/WaitableMutexIX.hpp"
+#include "areg/base/private/posix/WaitableMutexPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableMutexIX class implementation.
+// WaitableMutexPosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-WaitableMutexIX::WaitableMutexIX(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
+WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
     : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitMutex, true, asciiName             )
 
     , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
@@ -35,14 +35,14 @@ WaitableMutexIX::WaitableMutexIX(bool initOwned /*= false*/, const char * asciiN
 {
 }
 
-bool WaitableMutexIX::releaseMutex()
+bool WaitableMutexPosix::releaseMutex()
 {
     bool result     = false;
     bool sendSignal = false;
 
     do 
     {
-        ObjectLockIX lock(*this);
+        ObjectLockPosix lock(*this);
         if (mOwnerThread == pthread_self())
         {
             ASSERT(mLockCount > 0);
@@ -77,24 +77,24 @@ bool WaitableMutexIX::releaseMutex()
 
     if (sendSignal)
     {
-        SyncLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitPosix::eventSignaled(*this);
     }
     return result;
 }
 
 
-bool WaitableMutexIX::checkSignaled(pthread_t contextThread) const
+bool WaitableMutexPosix::checkSignaled(pthread_t contextThread) const
 {
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
     return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
 }
 
-bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)
+bool WaitableMutexPosix::notifyRequestOwnership(pthread_t ownerThread)
 {
     bool result = false;
     if (ownerThread != static_cast<pthread_t>(0))
     {
-        ObjectLockIX lock(*this);
+        ObjectLockPosix lock(*this);
         if (mOwnerThread == static_cast<pthread_t>(0))
         {
             ASSERT(mLockCount == 0);
@@ -117,21 +117,21 @@ bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)
     return result;
 }
 
-bool WaitableMutexIX::checkCanSignalMultipleThreads() const
+bool WaitableMutexPosix::checkCanSignalMultipleThreads() const
 {
     return false;
 }
 
 #ifdef  DEBUG
 
-void WaitableMutexIX::notifyReleasedThreads(int numThreads)
+void WaitableMutexPosix::notifyReleasedThreads(int numThreads)
 {
     ASSERT((numThreads == 1) || (numThreads == 0));
 }
 
 #else   // DEBUG
 
-void WaitableMutexIX::notifyReleasedThreads(int /*numThreads*/)
+void WaitableMutexPosix::notifyReleasedThreads(int /*numThreads*/)
 {
 }
 

@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/WaitableTimerIX.hpp
+ * \file        areg/base/private/posix/WaitableTimerPosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Waitable Timer class.
@@ -38,7 +38,7 @@
  *          set to signaled when the specified timeout is expired. There are two 
  *          types of waitable timers: manual- or auto-reset.
  **/
-class WaitableTimerIX : public WaitablePosix
+class WaitableTimerPosix : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -61,11 +61,11 @@ public:
      * \param   isAutoReset 	Indicates whether the waitable timer is manual- or auto-reset.
      * \param   name        	The name of waitable timer. Plays no role for POSIX timers.
      **/
-    explicit WaitableTimerIX( bool isAutoReset = false, const char * name = nullptr);
+    explicit WaitableTimerPosix( bool isAutoReset = false, const char * name = nullptr);
     /**
      * \brief   Destructor.
      */
-    virtual ~WaitableTimerIX();
+    virtual ~WaitableTimerPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -204,7 +204,7 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    AREG_NOCOPY_NOMOVE( WaitableTimerIX );
+    AREG_NOCOPY_NOMOVE( WaitableTimerPosix );
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)

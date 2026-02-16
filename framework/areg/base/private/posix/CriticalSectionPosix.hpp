@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONIX_HPP
+#ifndef AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONPOSIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONPOSIX_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/CriticalSectionIX.hpp
+ * \file        areg/base/private/posix/CriticalSectionPosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Spin Lock wrapper class.
@@ -24,11 +24,11 @@
 #if  defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncObjectPosix.hpp"
-#include "areg/base/private/posix/SpinLockIX.hpp"
+#include "areg/base/private/posix/SpinLockPosix.hpp"
 #include <pthread.h>
 
 //////////////////////////////////////////////////////////////////////////
-// CriticalSectionIX class declaration.
+// CriticalSectionPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   POSIX Critical Section is a wrapper of POSIX spin lock, since
@@ -36,7 +36,7 @@
  *          The Critical Section can be used only for the communication between threads.
  *          The Critical Section can be owned only by one thread at a time.
  **/
-class CriticalSectionIX   : protected SyncObjectPosix
+class CriticalSectionPosix   : protected SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -47,12 +47,12 @@ public:
      * \brief   Creates Critical Section object and initializes POSIX spin lock.
      * \param   initLock    If true, the critical section (spin lock) is initially locked.
      **/
-    explicit CriticalSectionIX( bool initLock = false );
+    explicit CriticalSectionPosix( bool initLock = false );
 
     /**
      * \brief   Destroy the object, free resources.
      **/
-    virtual ~CriticalSectionIX() = default;
+    virtual ~CriticalSectionPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -104,19 +104,19 @@ private:
     /**
      * \brief   The Critical Section object, which has implementation of recursive spin lock.
      **/
-    mutable SpinLockIX  mSpinLock;
+    mutable SpinLockPosix  mSpinLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    AREG_NOCOPY_NOMOVE( CriticalSectionIX );
+    AREG_NOCOPY_NOMOVE( CriticalSectionPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CriticalSectionIX inline methods.
+// CriticalSectionPosix inline methods.
 //////////////////////////////////////////////////////////////////////////
 
 #endif  //  defined(_POSIX) || defined(POSIX)
 
-#endif  // AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONIX_HPP
+#endif  // AREG_BASE_PRIVATE_POSIX_CRITICALSECTIONPOSIX_HPP

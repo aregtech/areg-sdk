@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/WaitableEventIX.hpp
+ * \file        areg/base/private/posix/WaitableEventPosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Waitable Event class.
@@ -26,7 +26,7 @@
 #include "areg/base/private/posix/WaitablePosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableEventIX class declaration.
+// WaitableEventPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The synchronization event object. As a waitable object, the event has signaled
@@ -42,13 +42,13 @@
  *                              the event automatically switches to not signaled state. Multiple 
  *                              waiting threads can be released at the same time. The threads are
  *                              released by priority order.
- *          A thread can wait for one, any or all events. For more details see @SyncLockAndWaitIX.
+ *          A thread can wait for one, any or all events. For more details see @SyncLockAndWaitPosix.
  *          If Event is in signaled state, multiple calls to signal Event are ignored.
  *          If Event is in non-signaled state, multiple calls to reset signal state are ignored.
  *
- * \see     SyncLockAndWaitIX
+ * \see     SyncLockAndWaitPosix
  **/
-class WaitableEventIX : public WaitablePosix
+class WaitableEventPosix : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -71,12 +71,12 @@ public:
      *                                          are released and the signal state is changed.
      * \param   asciiName       The name of synchronization Event.
      **/
-    WaitableEventIX(bool isInitSignaled, bool isAutoReset, const char * asciiName = nullptr);
+    WaitableEventPosix(bool isInitSignaled, bool isAutoReset, const char * asciiName = nullptr);
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableEventIX() = default;
+    virtual ~WaitableEventPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -173,17 +173,17 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    WaitableEventIX() = delete;
-    AREG_NOCOPY_NOMOVE( WaitableEventIX );
+    WaitableEventPosix() = delete;
+    AREG_NOCOPY_NOMOVE( WaitableEventPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableEventIX class inline implementation
+// WaitableEventPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NESyncTypesIX::eEventResetInfo WaitableEventIX::getResetInfo() const
+inline NESyncTypesIX::eEventResetInfo WaitableEventPosix::getResetInfo() const
 {
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
     return mEventReset;
 }
 

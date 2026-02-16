@@ -22,7 +22,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SpinLockIX.hpp"
+#include "areg/base/private/posix/SpinLockPosix.hpp"
 #include <sys/types.h>
 #include <time.h>
 
@@ -251,7 +251,7 @@ private:
     /**
      * \brief   Synchronization object.
      */
-    mutable SpinLockIX      mLock;
+    mutable SpinLockPosix      mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -267,32 +267,32 @@ private:
 #ifndef __APPLE__
 inline timer_t TimerPosix::getTimerId() const
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
     return mTimerId;
 }
 #endif  // !__APPLE__
 
 inline void * TimerPosix::getContext() const
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
     return mContext;
 }
 
 inline id_type TimerPosix::getContextId() const
 {
-    SpinAutolockIX lock(mLock);
+    SpinAutolockPosix lock(mLock);
     return mContextId;
 }
 
 inline const timespec & TimerPosix::getDueTime() const
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
     return mDueTime;
 }
 
 inline bool TimerPosix::isValid() const
 {
-	SpinAutolockIX lock(mLock);
+	SpinAutolockPosix lock(mLock);
 #ifdef __APPLE__
     return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerQueue != nullptr));
 #else   // !__APPLE__

@@ -43,17 +43,17 @@
     <ClCompile Include="areg\appbase\private\configure.cpp" />
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\appbase\private\NEApplication.cpp" />
-    <ClCompile Include="areg\base\private\posix\CriticalSectionIX.cpp" />
+    <ClCompile Include="areg\base\private\posix\CriticalSectionPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp" />
-    <ClCompile Include="areg\base\private\posix\MutexIX.cpp" />
+    <ClCompile Include="areg\base\private\posix\MutexPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\ProcessPosix.cpp" />
-    <ClCompile Include="areg\base\private\posix\SpinLockIX.cpp" />
-    <ClCompile Include="areg\base\private\posix\SyncLockAndWaitIX.cpp" />
+    <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp" />
+    <ClCompile Include="areg\base\private\posix\SyncLockAndWaitPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\ThreadPosix.cpp" />
-    <ClCompile Include="areg\base\private\posix\WaitableEventIX.cpp" />
-    <ClCompile Include="areg\base\private\posix\WaitableMutexIX.cpp" />
-    <ClCompile Include="areg\base\private\posix\WaitableSemaphoreIX.cpp" />
-    <ClCompile Include="areg\base\private\posix\WaitableTimerIX.cpp" />
+    <ClCompile Include="areg\base\private\posix\WaitableEventPosix.cpp" />
+    <ClCompile Include="areg\base\private\posix\WaitableMutexPosix.cpp" />
+    <ClCompile Include="areg\base\private\posix\WaitableSemaphorePosix.cpp" />
+    <ClCompile Include="areg\base\private\posix\WaitableTimerPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SyncObjectsPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\SyncObjectPosix.cpp" />
     <ClCompile Include="areg\base\private\posix\WaitablePosix.cpp" />
@@ -222,7 +222,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\base\DateTime.hpp" />
-    <ClInclude Include="areg\base\private\posix\SpinLockIX.hpp" />
+    <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
     <ClInclude Include="areg\base\TEMap.hpp" />
     <ClInclude Include="areg\base\TETemplateBase.hpp" />
@@ -232,13 +232,13 @@
     <ClInclude Include="areg\appbase\private\configure.hpp" />
     <ClInclude Include="areg\base\private\BufferPosition.hpp" />
     <ClInclude Include="areg\base\BufferStreamBase.hpp" />
-    <ClInclude Include="areg\base\private\posix\CriticalSectionIX.hpp" />
-    <ClInclude Include="areg\base\private\posix\MutexIX.hpp" />
-    <ClInclude Include="areg\base\private\posix\SyncLockAndWaitIX.hpp" />
-    <ClInclude Include="areg\base\private\posix\WaitableEventIX.hpp" />
-    <ClInclude Include="areg\base\private\posix\WaitableMutexIX.hpp" />
-    <ClInclude Include="areg\base\private\posix\WaitableSemaphoreIX.hpp" />
-    <ClInclude Include="areg\base\private\posix\WaitableTimerIX.hpp" />
+    <ClInclude Include="areg\base\private\posix\CriticalSectionPosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\MutexPosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\SyncLockAndWaitPosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\WaitableEventPosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\WaitableMutexPosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\WaitableSemaphorePosix.hpp" />
+    <ClInclude Include="areg\base\private\posix\WaitableTimerPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\SyncObjectPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\WaitablePosix.hpp" />
     <ClInclude Include="areg\base\private\posix\NESyncTypesIX.hpp" />

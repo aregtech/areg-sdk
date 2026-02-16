@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/WaitableEventIX.cpp
+ * \file        areg/base/private/posix/WaitableEventPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Waitable Event class.
@@ -17,17 +17,17 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/private/posix/WaitableEventIX.hpp"
+#include "areg/base/private/posix/WaitableEventPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableEventIX class implementation
+// WaitableEventPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-WaitableEventIX::WaitableEventIX( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
+WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
     : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitEvent, true, asciiName )
 
     , mEventReset       ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
@@ -35,14 +35,14 @@ WaitableEventIX::WaitableEventIX( bool isInitSignaled, bool isAutoReset, const c
 {
 }
 
-bool WaitableEventIX::setEvent()
+bool WaitableEventPosix::setEvent()
 {
     bool result     = false;
     bool sendSignal = false;
 
     do 
     {
-        ObjectLockIX lock(*this);
+        ObjectLockPosix lock(*this);
 
         if (isValid())
         {
@@ -64,16 +64,16 @@ bool WaitableEventIX::setEvent()
 
     if (sendSignal)
     {
-        SyncLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitPosix::eventSignaled(*this);
     }
 
     return result;
 }
 
-bool WaitableEventIX::resetEvent()
+bool WaitableEventPosix::resetEvent()
 {
     bool result = false;
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
     if ( isValid() )
     {
 #ifdef DEBUG
@@ -98,11 +98,11 @@ bool WaitableEventIX::resetEvent()
 }
 
 
-void WaitableEventIX::pulseEvent()
+void WaitableEventPosix::pulseEvent()
 {
     do 
     {
-        ObjectLockIX lock(*this);
+        ObjectLockPosix lock(*this);
         if (isValid())
         {
             if (mIsSignaled == false)
@@ -112,7 +112,7 @@ void WaitableEventIX::pulseEvent()
                 mIsSignaled = true;
                 lock.unlock();
 
-                SyncLockAndWaitIX::eventSignaled(*this);
+                SyncLockAndWaitPosix::eventSignaled(*this);
 
                 lock.lock();
                 mIsSignaled = false;
@@ -121,25 +121,25 @@ void WaitableEventIX::pulseEvent()
     } while (false);
 }
 
-bool WaitableEventIX::checkSignaled(pthread_t /*contextThread*/) const
+bool WaitableEventPosix::checkSignaled(pthread_t /*contextThread*/) const
 {
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
     return mIsSignaled;
 }
 
-bool WaitableEventIX::notifyRequestOwnership( pthread_t /* ownerThread */ )
+bool WaitableEventPosix::notifyRequestOwnership( pthread_t /* ownerThread */ )
 {
     return true;
 }
 
-bool WaitableEventIX::checkCanSignalMultipleThreads() const
+bool WaitableEventPosix::checkCanSignalMultipleThreads() const
 {
     return true;
 }
 
-void WaitableEventIX::notifyReleasedThreads(int numThreads)
+void WaitableEventPosix::notifyReleasedThreads(int numThreads)
 {
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
 
     if ((mEventReset == NESyncTypesIX::eEventResetInfo::EventResetAutomatic) && (numThreads > 0))
     {

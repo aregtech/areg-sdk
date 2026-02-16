@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/WaitableSemaphoreIX.cpp
+ * \file        areg/base/private/posix/WaitableSemaphorePosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Waitable Event class.
@@ -17,17 +17,17 @@
  /************************************************************************
   * Includes
   ************************************************************************/
-#include "areg/base/private/posix/WaitableSemaphoreIX.hpp"
+#include "areg/base/private/posix/WaitableSemaphorePosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableSemaphoreIX class implementation.
+// WaitableSemaphorePosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-WaitableSemaphoreIX::WaitableSemaphoreIX(int maxCount, int initCount /*= 0*/, const char * asciiName /*= nullptr */)
+WaitableSemaphorePosix::WaitableSemaphorePosix(int maxCount, int initCount /*= 0*/, const char * asciiName /*= nullptr */)
     : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitSemaphore, true, asciiName )
 
     , mMaxCount         ( maxCount  )
@@ -35,13 +35,13 @@ WaitableSemaphoreIX::WaitableSemaphoreIX(int maxCount, int initCount /*= 0*/, co
 {
 }
 
-bool WaitableSemaphoreIX::releaseSemaphore()
+bool WaitableSemaphorePosix::releaseSemaphore()
 {
     bool sendSignal = false;
 
     do 
     {
-        ObjectLockIX lock(*this);
+        ObjectLockPosix lock(*this);
         if (mCurCount < mMaxCount)
         {
             ++ mCurCount;
@@ -51,21 +51,21 @@ bool WaitableSemaphoreIX::releaseSemaphore()
 
     if (sendSignal)
     {
-        SyncLockAndWaitIX::eventSignaled(*this);
+        SyncLockAndWaitPosix::eventSignaled(*this);
     }
 
     return sendSignal;
 }
 
-bool WaitableSemaphoreIX::checkSignaled(pthread_t /*contextThread*/) const
+bool WaitableSemaphorePosix::checkSignaled(pthread_t /*contextThread*/) const
 {
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
     return (mCurCount > 0);
 }
 
-bool WaitableSemaphoreIX::notifyRequestOwnership(pthread_t ownerThread)
+bool WaitableSemaphorePosix::notifyRequestOwnership(pthread_t ownerThread)
 {
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
     bool result = false;
 
     if ((mCurCount > 0) && (ownerThread != static_cast<pthread_t>(0)))
@@ -81,12 +81,12 @@ bool WaitableSemaphoreIX::notifyRequestOwnership(pthread_t ownerThread)
     return result;
 }
 
-bool WaitableSemaphoreIX::checkCanSignalMultipleThreads() const
+bool WaitableSemaphorePosix::checkCanSignalMultipleThreads() const
 {
     return true;
 }
 
-void WaitableSemaphoreIX::notifyReleasedThreads(int /* numThreads */)
+void WaitableSemaphorePosix::notifyReleasedThreads(int /* numThreads */)
 {
 }
 

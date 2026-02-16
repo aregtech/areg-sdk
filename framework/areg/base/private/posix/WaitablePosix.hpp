@@ -23,7 +23,7 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/MutexIX.hpp"
+#include "areg/base/private/posix/MutexPosix.hpp"
 #include <pthread.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@
  *          signaled. This object cannot be directly instantiated.
  *          Instead, instantiate one of child classes.
  **/
-class WaitablePosix : public MutexIX
+class WaitablePosix : public MutexPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

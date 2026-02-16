@@ -132,34 +132,34 @@
     <ClCompile Include="areg\appbase\private\win32\ApplicationWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\CriticalSectionIX.cpp">
+    <ClCompile Include="areg\base\private\posix\CriticalSectionPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableTimerIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableTimerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\MutexIX.cpp">
+    <ClCompile Include="areg\base\private\posix\MutexPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\ProcessPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SyncLockAndWaitIX.cpp">
+    <ClCompile Include="areg\base\private\posix\SyncLockAndWaitPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\ThreadPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableEventIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableEventPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableMutexIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableMutexPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\WaitableSemaphoreIX.cpp">
+    <ClCompile Include="areg\base\private\posix\WaitableSemaphorePosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\win32\FileWin32.cpp">
@@ -456,7 +456,7 @@
     <ClCompile Include="areg\base\private\win32\SpinLockWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\base\private\posix\SpinLockIX.cpp">
+    <ClCompile Include="areg\base\private\posix\SpinLockPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\appbase\private\NEApplication.cpp">
@@ -725,25 +725,25 @@
     <ClInclude Include="areg\appbase\Application.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\CriticalSectionIX.hpp">
+    <ClInclude Include="areg\base\private\posix\CriticalSectionPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableTimerIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableTimerPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\MutexIX.hpp">
+    <ClInclude Include="areg\base\private\posix\MutexPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\SyncLockAndWaitIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SyncLockAndWaitPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableEventIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableEventPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableMutexIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableMutexPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\WaitableSemaphoreIX.hpp">
+    <ClInclude Include="areg\base\private\posix\WaitableSemaphorePosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\BufferPosition.hpp">
@@ -1016,7 +1016,7 @@
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\base\private\posix\SpinLockIX.hpp">
+    <ClInclude Include="areg\base\private\posix\SpinLockPosix.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\WideString.hpp">

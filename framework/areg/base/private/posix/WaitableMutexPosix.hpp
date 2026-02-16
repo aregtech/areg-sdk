@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/WaitableMutexIX.hpp
+ * \file        areg/base/private/posix/WaitableMutexPosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, POSIX Waitable Event class.
@@ -26,7 +26,7 @@
 #include "areg/base/private/posix/WaitablePosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableMutexIX class declaration.
+// WaitableMutexPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The synchronization waitable Mutex object is used to synchronize data access
@@ -38,7 +38,7 @@
  *          state. The released state of Mute is considered as signaled and the thread
  *          owning state is non-signaled if it has mutex owning thread.
  **/
-class WaitableMutexIX : public WaitablePosix
+class WaitableMutexPosix : public WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
@@ -48,7 +48,7 @@ public:
      * \brief   Initializes the synchronization waitable Mutex object, sets the Mutex owned flag.
      * \param   initOwned   If true, the Mutex is created non-signaled and owned by the 
      *                      current thread. The waitable Mutex gets ownership by calling one of
-     *                      wait methods defined in SyncLockAndWaitIX. Once the thread gets 
+     *                      wait methods defined in SyncLockAndWaitPosix. Once the thread gets 
      *                      ownership, any further waiting functions calls of the same thread
      *                      will not be blocked and stopped, so that the waiting Mutex can be
      *                      waited recursive. Any other thread that tries to get the ownership
@@ -59,12 +59,12 @@ public:
      *                      is ignored by the system.
      * \param   asciiName   The name of synchronization Event.
      **/
-    explicit WaitableMutexIX(bool initOwned = false, const char * asciiName = nullptr);
+    explicit WaitableMutexPosix(bool initOwned = false, const char * asciiName = nullptr);
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~WaitableMutexIX() = default;
+    virtual ~WaitableMutexPosix() = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -148,16 +148,16 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    AREG_NOCOPY_NOMOVE( WaitableMutexIX );
+    AREG_NOCOPY_NOMOVE( WaitableMutexPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// WaitableMutexIX class inline functions
+// WaitableMutexPosix class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline pthread_t WaitableMutexIX::getOwningThreadId() const
+inline pthread_t WaitableMutexPosix::getOwningThreadId() const
 {
-    ObjectLockIX lock(*this);
+    ObjectLockPosix lock(*this);
     return mOwnerThread;
 }
 

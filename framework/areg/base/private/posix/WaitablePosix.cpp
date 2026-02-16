@@ -21,25 +21,25 @@
 
 #if   defined(_POSIX) || defined(POSIX)
 
-#include "areg/base/private/posix/SyncLockAndWaitIX.hpp"
+#include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // SyncWaitable class implementation
 //////////////////////////////////////////////////////////////////////////
 
 WaitablePosix::WaitablePosix( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
-    : MutexIX     ( syncType, isRecursive, asciiName )
+    : MutexPosix     ( syncType, isRecursive, asciiName )
 {
 }
 
 WaitablePosix::~WaitablePosix()
 {
-    ASSERT(SyncLockAndWaitIX::isWaitableRegistered(*this) == false);
+    ASSERT(SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
 }
 
 void WaitablePosix::freeResources()
 {
-    SyncLockAndWaitIX::eventRemove(*this);
+    SyncLockAndWaitPosix::eventRemove(*this);
 }
 
 #endif  //  defined(_POSIX) || defined(POSIX)

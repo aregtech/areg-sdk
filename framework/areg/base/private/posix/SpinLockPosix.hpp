@@ -1,5 +1,5 @@
-#ifndef AREG_BASE_PRIVATE_POSIX_SPINLOCKIX_HPP
-#define AREG_BASE_PRIVATE_POSIX_SPINLOCKIX_HPP
+#ifndef AREG_BASE_PRIVATE_POSIX_SPINLOCKPOSIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_SPINLOCKPOSIX_HPP
 /************************************************************************
  * This file is part of the Areg SDK core engine.
  * Areg SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/SpinLockIX.hpp
+ * \file        areg/base/private/posix/SpinLockPosix.hpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, OS specific spin-lock synchronization object.
@@ -33,27 +33,27 @@
 #endif  // __APPLE__
 
 //////////////////////////////////////////////////////////////////////////
-// SpinLockIX class declaration.
+// SpinLockPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   POSIX specific recursive spin-lock with atomic operations.
  **/
-class SpinLockIX
+class SpinLockPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets the instance of CriticalSectionIX object, which is the 
+     * \brief   Sets the instance of CriticalSectionPosix object, which is the 
      *          real POSIX spin-lock wrapper class.
      **/
-    SpinLockIX();
+    SpinLockPosix();
 
     /**
      * \brief   Destructor.
      **/
-    ~SpinLockIX();
+    ~SpinLockPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -137,18 +137,18 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    AREG_NOCOPY_NOMOVE( SpinLockIX );
+    AREG_NOCOPY_NOMOVE( SpinLockPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// SpinAutolockIX class declaration to make recursive automatic lock of spin
+// SpinAutolockPosix class declaration to make recursive automatic lock of spin
 //////////////////////////////////////////////////////////////////////////
 
 /**
  * \brief   The automatic lock of spin-lock It is not used for any other objects.
  *          Use the spin lock for quick operations only.
  **/
-class SpinAutolockIX
+class SpinAutolockPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // COnstructor / Destructor
@@ -160,7 +160,7 @@ public:
      *          Since the lock can be done recursive, it will not block
      *          the spin owning thread.
      **/
-    inline SpinAutolockIX( SpinLockIX & spinLock )
+    inline SpinAutolockPosix( SpinLockPosix & spinLock )
         : mSpinLock ( spinLock )
     {
         mSpinLock.lock();
@@ -169,7 +169,7 @@ public:
     /**
      * \brief   Automatically unlocks the spin lock
      **/
-    inline ~SpinAutolockIX()
+    inline ~SpinAutolockPosix()
     {
         mSpinLock.unlock();
     }
@@ -202,25 +202,25 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    SpinLockIX &    mSpinLock;  //!< The valid instance of SpinLock object.
+    SpinLockPosix &    mSpinLock;  //!< The valid instance of SpinLock object.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    SpinAutolockIX() = delete;
-    AREG_NOCOPY_NOMOVE( SpinAutolockIX );
+    SpinAutolockPosix() = delete;
+    AREG_NOCOPY_NOMOVE( SpinAutolockPosix );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// SpinLockIX inline  methods
+// SpinLockPosix inline  methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SpinLockIX::isValid() const
+inline bool SpinLockPosix::isValid() const
 {
     return mIsValid.load();
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
 
-#endif  // AREG_BASE_PRIVATE_POSIX_SPINLOCKIX_HPP
+#endif  // AREG_BASE_PRIVATE_POSIX_SPINLOCKPOSIX_HPP

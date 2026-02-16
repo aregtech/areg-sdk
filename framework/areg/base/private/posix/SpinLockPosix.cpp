@@ -7,7 +7,7 @@
  * If not, please contact to info[at]areg.tech
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/SpinLockIX.cpp
+ * \file        areg/base/private/posix/SpinLockPosix.cpp
  * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, OS specific spin-lock synchronization object.
@@ -17,18 +17,18 @@
   * Include files.
   ************************************************************************/
 
-#include "areg/base/private/posix/SpinLockIX.hpp"
+#include "areg/base/private/posix/SpinLockPosix.hpp"
 
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/Thread.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// SpinLockIX class, Methods
+// SpinLockPosix class, Methods
 //////////////////////////////////////////////////////////////////////////
 
 
-SpinLockIX::SpinLockIX()
+SpinLockPosix::SpinLockPosix()
     : mSpinLock     ( )
     , mInternLock   ( )
     , mSpinOwner    ( 0 )
@@ -45,12 +45,12 @@ SpinLockIX::SpinLockIX()
 #endif  // __APPLE__
 }
 
-SpinLockIX::~SpinLockIX()
+SpinLockPosix::~SpinLockPosix()
 {
     freeResources( );
 }
 
-bool SpinLockIX::lock()
+bool SpinLockPosix::lock()
 {
     bool result = false;
 
@@ -85,7 +85,7 @@ bool SpinLockIX::lock()
     return result;
 }
 
-bool SpinLockIX::unlock()
+bool SpinLockPosix::unlock()
 {
     bool result = false;
 
@@ -113,7 +113,7 @@ bool SpinLockIX::unlock()
     return result;
 }
 
-bool SpinLockIX::tryLock()
+bool SpinLockPosix::tryLock()
 {
     bool result = false;
 
@@ -152,7 +152,7 @@ bool SpinLockIX::tryLock()
     return result;
 }
 
-void SpinLockIX::freeResources()
+void SpinLockPosix::freeResources()
 {
     if ( mIsValid.load() )
     {
@@ -173,7 +173,7 @@ void SpinLockIX::freeResources()
 }
 
 
-inline bool SpinLockIX::_lockSpin()
+inline bool SpinLockPosix::_lockSpin()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_lock( &mSpinLock );
@@ -183,7 +183,7 @@ inline bool SpinLockIX::_lockSpin()
 #endif  // __APPLE__
 }
 
-inline void SpinLockIX::_unlockSpin()
+inline void SpinLockPosix::_unlockSpin()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_unlock( &mSpinLock );
@@ -192,7 +192,7 @@ inline void SpinLockIX::_unlockSpin()
 #endif  // __APPLE__
 }
 
-inline void SpinLockIX::_lockIntern()
+inline void SpinLockPosix::_lockIntern()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_lock( &mInternLock );
@@ -201,7 +201,7 @@ inline void SpinLockIX::_lockIntern()
 #endif  // __APPLE__
 }
 
-inline void SpinLockIX::_unlockIntern()
+inline void SpinLockPosix::_unlockIntern()
 {
 #ifdef __APPLE__
     ::os_unfair_lock_unlock( &mInternLock );
