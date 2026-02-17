@@ -40,6 +40,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     LogScopesTest.cpp
     NEStringTest.cpp
     OptionParserTest.cpp
+    StringTest.cpp
     StringUtilsTest.cpp
     TEArrayListTest.cpp
     TEFixedArrayTest.cpp
