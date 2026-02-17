@@ -46,7 +46,7 @@ namespace
                       sizeof(NEMemory::sRemoteMessage)          // biBufSize
                     , sizeof(unsigned char)                     // biLength
                     , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                    , NEMemory::eBufferType::BufferRemote       // biBufType
+                    , NEMemory::BufferType::Remote       // biBufType
                     , 0                                         // biUsed
                 }
                 , NEService::COOKIE_LOGGER                      // rbhTarget
@@ -77,7 +77,7 @@ namespace
                       sizeof(NEMemory::sRemoteMessage)          // biBufSize
                     , sizeof(unsigned char)                     // biLength
                     , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                    , NEMemory::eBufferType::BufferRemote       // biBufType
+                    , NEMemory::BufferType::Remote       // biBufType
                     , 0                                         // biUsed
                 }
                 , NEService::COOKIE_LOGGER                      // rbhTarget

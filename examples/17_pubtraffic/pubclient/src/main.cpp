@@ -62,7 +62,7 @@ int main()
     console.waitForInput( [&]( const String cmd ) -> bool
         {
             bool result{ false };
-            if ( cmd.compare( directions[0], false ) == NEMath::eCompare::Equal )
+            if ( cmd.compare( directions[0], false ) == NEMath::Ordering::Equal )
             {
                 trafficDirection = traffic::eTrafficDirection::DirectionSouthNorth;
                 roleName += "SouthNorth";
@@ -70,7 +70,7 @@ int main()
                 result = true;
                 console.outputTxt( { 0, 8 }, "Selected direction is South - North" );
             }
-            else if ( cmd.compare( directions[1], false ) == NEMath::eCompare::Equal )
+            else if ( cmd.compare( directions[1], false ) == NEMath::Ordering::Equal )
             {
                 trafficDirection = traffic::eTrafficDirection::DirectionEastWest;
                 roleName += "EastWest";
@@ -78,7 +78,7 @@ int main()
                 result = true;
                 console.outputTxt( { 0, 8 }, "Selected direction is East - West" );
             }
-            else if ( cmd.compare( directions[2], false ) == NEMath::eCompare::Equal )
+            else if ( cmd.compare( directions[2], false ) == NEMath::Ordering::Equal )
             {
                 result = true; // do not set the direction, just stop input
             }

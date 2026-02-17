@@ -213,34 +213,35 @@ namespace NEMemory
     /**
      * \brief   Message communication results
      **/
-    enum class eMessageResult : int32_t
+    enum class MessageResult : int32_t
     {
-          ResultUnknownError        = -1    //!< Error, unknown type
-        , ResultSucceed             =  0    //!< No error
-        , ResultNoConnection        =  1    //!< Error, there is no connection
-        , ServiceUnavailable                //!< Error, service is unavailable
-        , ServiceRejected                   //!< Error, service is rejected
-        , ResultTargetUnavailable           //!< Error, the target object is unavailable
+          UnknownError          = -1    //!< Error, unknown type
+        , Succeed               =  0    //!< No error
+        , NoConnection          =  1    //!< Error, there is no connection
+        , ProviderUnavailable            //!< Error, service is unavailable
+        , ConsumerRejected               //!< Error, service is rejected
+        , TargetUnavailable             //!< Error, the target object is unavailable
     };
+
     /**
-     * \brief   Converts the values of type NEMemory::eMessageResult to string, used in logs and output messages.
+     * \brief   Converts the values of type NEMemory::MessageResult to string, used in logs and output messages.
      **/
-    inline const char * getString( NEMemory::eMessageResult msgResult );
+    inline const char * getString( NEMemory::MessageResult msgResult );
 
     /**
      * \brief   Types of data buffer
-     *          NEMemory::eBufferType
+     *          NEMemory::BufferType
      **/
-    enum class eBufferType : int8_t
+    enum class BufferType : int8_t
     {
-          BufferUnknown     = -1    //!< Unknown buffer type, not used
-        , BufferInternal    =  0    //!< Buffer type for internal communication
-        , BufferRemote      =  2    //!< Buffer type for remote communication
+          Unknown   = -1    //!< Unknown buffer type, not used
+        , Internal  =  0    //!< Buffer type for internal communication
+        , Remote    =  2    //!< Buffer type for remote communication
     };
     /**
-     * \brief   Returns string value of NEMemory::eBufferType
+     * \brief   Returns string value of NEMemory::BufferType
      **/
-    inline const char * getString( NEMemory::eBufferType val );
+    inline const char * getString( NEMemory::BufferType val );
 
     /**
      * \brief   NEMemory::BLOCK_SIZE
@@ -268,7 +269,7 @@ namespace NEMemory
      * \brief   NEMemory::MESSAGE_SUCCESS
      *          Constants. Defines the message result success.
      **/
-    constexpr unsigned int      MESSAGE_SUCCESS { static_cast<unsigned int>(NEMemory::eMessageResult::ResultSucceed) };
+    constexpr unsigned int      MESSAGE_SUCCESS { static_cast<unsigned int>(NEMemory::MessageResult::Succeed) };
 
     /**
      * \brief   NEMemory::InvalidElement
@@ -323,7 +324,7 @@ namespace NEMemory
         /**
          * \brief   The type of buffer. For RPC communication this should be external type.
          **/
-        eBufferType     biBufType   { eBufferType::BufferUnknown };
+        BufferType     biBufType   { BufferType::Unknown };
         /**
          * \brief   The length in bytes of used space in buffer.
          *          Cannot be more than biLength value.
@@ -636,7 +637,7 @@ namespace NEMemory
      *          -   NEMath::Equal   if the content of memLeft is same as memRight;
      *          -   NEMath::Bigger if the content of memLeft is greater than memRight.
      **/
-    inline NEMath::eCompare memCompare( const void * memLeft, const void * memRight, uint32_t count);
+    inline NEMath::Ordering memCompare( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
      * \brief   Compares 2 chunks of memories and return true if they are equal.
@@ -778,26 +779,26 @@ inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void 
     return result;
 }
 
-inline NEMath::eCompare NEMemory::memCompare( const void * memLeft, const void * memRight, uint32_t count )
+inline NEMath::Ordering NEMemory::memCompare( const void * memLeft, const void * memRight, uint32_t count )
 {
-    NEMath::eCompare result = NEMath::eCompare::Equal;
+    NEMath::Ordering result = NEMath::Ordering::Equal;
 
     if ( (count == 0) || (memLeft == memRight) )
     {
-        result = NEMath::eCompare::Equal;
+        result = NEMath::Ordering::Equal;
     }
     else if ( (memLeft != nullptr) && (memRight != nullptr) )
     {
         int32_t cmp = ::memcmp(memLeft, memRight, count);
-        result = (cmp > 0 ? NEMath::eCompare::Bigger : (cmp < 0 ?  NEMath::eCompare::Smaller : NEMath::eCompare::Equal));
+        result = (cmp > 0 ? NEMath::Ordering::Bigger : (cmp < 0 ?  NEMath::Ordering::Smaller : NEMath::Ordering::Equal));
     }
     else if ( memLeft != nullptr )
     {
-        result = NEMath::eCompare::Bigger;
+        result = NEMath::Ordering::Bigger;
     }
     else
     {
-        result = NEMath::eCompare::Smaller;
+        result = NEMath::Ordering::Smaller;
     }
 
     return result;
@@ -805,7 +806,7 @@ inline NEMath::eCompare NEMemory::memCompare( const void * memLeft, const void *
 
 inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uint32_t count )
 {
-    return (NEMath::eCompare::Equal == memCompare(memLeft, memRight, count));
+    return (NEMath::Ordering::Equal == memCompare(memLeft, memRight, count));
 }
 
 
@@ -991,39 +992,39 @@ void NEMemory::BufferDeleter<BufType>::operator ( ) (void * buffer)
     }
 }
 
-inline const char * NEMemory::getString( NEMemory::eMessageResult msgResult )
+inline const char * NEMemory::getString( NEMemory::MessageResult msgResult )
 {
     switch ( msgResult )
     {
-    case NEMemory::eMessageResult::ResultUnknownError:
-        return "NEMemory::ResultUnknownError";
-    case NEMemory::eMessageResult::ResultSucceed:
-        return "NEMemory::ResultSucceed";
-    case NEMemory::eMessageResult::ResultNoConnection:
-        return "NEMemory::ResultNoConnection";
-    case NEMemory::eMessageResult::ServiceUnavailable:
-        return "NEMemory::ServiceUnavailable";
-    case NEMemory::eMessageResult::ServiceRejected:
-        return "NEMemory::ServiceRejected";
-    case NEMemory::eMessageResult::ResultTargetUnavailable:
-        return "NEMemory::ResultTargetUnavailable";
+    case NEMemory::MessageResult::UnknownError:
+        return "NEMemory::UnknownError";
+    case NEMemory::MessageResult::Succeed:
+        return "NEMemory::Succeed";
+    case NEMemory::MessageResult::NoConnection:
+        return "NEMemory::NoConnection";
+    case NEMemory::MessageResult::ProviderUnavailable:
+        return "NEMemory::ProviderUnavailable";
+    case NEMemory::MessageResult::ConsumerRejected:
+        return "NEMemory::ConsumerRejected";
+    case NEMemory::MessageResult::TargetUnavailable:
+        return "NEMemory::TargetUnavailable";
     default:
-        return "ERR: Invalid NEMemory::eMessageResult value!!!";
+        return "ERR: Invalid NEMemory::MessageResult value!!!";
     }
 }
 
-inline const char * NEMemory::getString(NEMemory::eBufferType val )
+inline const char * NEMemory::getString(NEMemory::BufferType val )
 {
     switch (val)
     {
-    case NEMemory::eBufferType::BufferUnknown:
-        return "NEMemory::BufferUnknown";
-    case NEMemory::eBufferType::BufferInternal:
-        return "NEMemory::BufferInternal";
-    case NEMemory::eBufferType::BufferRemote:
-        return "NEMemory::BufferRemote";
+    case NEMemory::BufferType::Unknown:
+        return "NEMemory::Unknown";
+    case NEMemory::BufferType::Internal:
+        return "NEMemory::Internal";
+    case NEMemory::BufferType::Remote:
+        return "NEMemory::Remote";
     default:
-        return "ERR: Invalid NEMemory::eBufferType value!!!";
+        return "ERR: Invalid NEMemory::BufferType value!!!";
     }
 }
 

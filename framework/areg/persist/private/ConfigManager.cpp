@@ -406,7 +406,10 @@ bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/,
         }
 
         path = File::getFileFullPath(File::normalizePath(path));
-        File fileConfig(path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ);
+        File fileConfig(path, static_cast<uint32_t>(File::OpenMode::Exist) 
+                            | static_cast<uint32_t>(File::OpenMode::Read)
+                            | static_cast<uint32_t>(File::OpenMode::Text)
+                            | static_cast<uint32_t>(File::OpenMode::ShareRead));
         if (fileConfig.open() && readConfig(fileConfig, listener))
         {
             mFilePath = fileConfig.getName();
@@ -444,16 +447,14 @@ bool ConfigManager::saveConfig(const String& filePath, ConfigListener * listener
     Lock lock(mLock);
     bool result{ false };
 
-    constexpr unsigned int modeRead {   File::FO_MODE_READ      |
-                                        File::FO_MODE_TEXT      |
-                                        File::FO_MODE_CREATE    |
-                                        File::FO_MODE_SHARE_READ};
-
-    constexpr unsigned int modeWrite{   FileBase::FO_MODE_READ       | 
-                                        FileBase::FO_MODE_TEXT       | 
-                                        FileBase::FO_MODE_CREATE     | 
-                                        FileBase::FO_MODE_WRITE };
-
+    constexpr uint32_t modeRead { static_cast<uint32_t>(File::OpenMode::Read)
+                                | static_cast<uint32_t>(File::OpenMode::Text)
+                                | static_cast<uint32_t>(File::OpenMode::Create)
+                                | static_cast<uint32_t>(File::OpenMode::ShareRead)};
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read)
+                                | static_cast<uint32_t>(File::OpenMode::Text)
+                                | static_cast<uint32_t>(File::OpenMode::Create)
+                                | static_cast<uint32_t>(File::OpenMode::Write) };
     bool saveAll{ false };
 
     String srcPath, dstPath;

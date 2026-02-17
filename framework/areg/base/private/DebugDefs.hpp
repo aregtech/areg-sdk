@@ -50,7 +50,7 @@ namespace NEDebug
      *          by using these constants, user makes appropriate 
      *          message output prefix, showing importance. 
      **/
-    typedef enum class E_DegubPrio : int
+    enum class DebugPriority : int32_t
     {
           PrioNone  = OUTPUT_DEBUG_LEVEL_NONE   //!< No priority, output message should be ignored.
         , PrioErr   = OUTPUT_DEBUG_LEVEL_ERROR  //!< Priority Error, outputs "ERR:" string in front of message
@@ -58,7 +58,7 @@ namespace NEDebug
         , PrioInfo  = OUTPUT_DEBUG_LEVEL_INFO   //!< Priority Information, outputs "INF:" string in front of message
         , PrioDbg   = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
 
-    } DebugPriority;
+    };
 
     /**
      * \brief   NEDebug::MAX_DEBUG_BUFFER_SIZE
@@ -82,7 +82,7 @@ namespace NEDebug
      * \return  Returns one of defined prefixes, depending of priority.
      *          By default, the priority is  NEDebug::PrioDbg
      **/
-    inline const char * getPrioPrefix( NEDebug::DebugPriority priority );
+    inline constexpr std::string_view getPrioPrefix( NEDebug::DebugPriority priority );
 
     /**
      * \brief   NEDebug::outputConsole()
@@ -128,9 +128,9 @@ namespace NEDebug
 //////////////////////////////////////////////////////////////////////////
 // NEDebug namespace inline function implementation.
 //////////////////////////////////////////////////////////////////////////
-inline const char* NEDebug::getPrioPrefix( NEDebug::DebugPriority priority )
+inline constexpr std::string_view NEDebug::getPrioPrefix( NEDebug::DebugPriority priority )
 {
-    return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int>(priority) ].data();
+    return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int32_t>(priority) ];
 }
 
 #endif  // AREG_BASE_PRIVATE_DEBUGDEFS_HPP

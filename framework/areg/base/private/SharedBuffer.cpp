@@ -106,7 +106,7 @@ SharedBuffer::SharedBuffer( const SharedBuffer & src )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     mByteBuffer = src.mByteBuffer;
-    mBufferPosition.setPosition(0, Cursor::eCursorPosition::PositionBegin);
+    mBufferPosition.setPosition(0, Cursor::SeekOrigin::Begin);
 }
 
 SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
@@ -117,7 +117,7 @@ SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     mByteBuffer = src.mByteBuffer;
-    mBufferPosition.setPosition(0, Cursor::eCursorPosition::PositionBegin);
+    mBufferPosition.setPosition(0, Cursor::SeekOrigin::Begin);
     src.invalidate();
 }
 
@@ -132,7 +132,7 @@ SharedBuffer & SharedBuffer::operator = ( const SharedBuffer &src )
         if (src.isValid())
         {
             mByteBuffer = src.mByteBuffer;
-            mBufferPosition.setPosition(0, Cursor::eCursorPosition::PositionBegin);
+            mBufferPosition.setPosition(0, Cursor::SeekOrigin::Begin);
         }
         else
         {
@@ -150,7 +150,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
         if ( src.isValid( ) )
         {
             mByteBuffer = src.mByteBuffer;
-            mBufferPosition.setPosition( 0, Cursor::eCursorPosition::PositionBegin );
+            mBufferPosition.setPosition( 0, Cursor::SeekOrigin::Begin );
             src.invalidate();
         }
         else
@@ -162,7 +162,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
     return (*this);
 }
 
-unsigned int SharedBuffer::setPosition(int offset, Cursor::eCursorPosition startAt) const
+unsigned int SharedBuffer::setPosition(int offset, Cursor::SeekOrigin startAt) const
 {
     return mBufferPosition.setPosition(offset, startAt);
 }

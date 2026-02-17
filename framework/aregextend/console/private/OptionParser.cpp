@@ -531,7 +531,7 @@ inline void OptionParser::_setValue( const String & newValue, sOption & opt, con
         opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
         for ( const std::string_view & entry : range )
         {
-            if ( newValue.compare( entry, false) == NEMath::eCompare::Equal)
+            if ( newValue.compare( entry, false) == NEMath::Ordering::Equal)
             {
                 opt.inField &= ~static_cast<uint32_t>(eValidFlags::ValidationError);
                 break;

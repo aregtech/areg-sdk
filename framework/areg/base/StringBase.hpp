@@ -544,12 +544,12 @@ public:
      *              NEMath::Equal   if strings have equal
      *              NEMath::Bigger  if string is more than given string
      **/
-    NEMath::eCompare compare( const CharType * strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
-    inline NEMath::eCompare compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const;
-    inline NEMath::eCompare compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const;
-    inline NEMath::eCompare compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const;
-    inline NEMath::eCompare compare(const StringBase<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
-    inline NEMath::eCompare compare(const std::basic_string<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    NEMath::Ordering compare( const CharType * strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    inline NEMath::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const;
+    inline NEMath::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const;
+    inline NEMath::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const;
+    inline NEMath::Ordering compare(const StringBase<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    inline NEMath::Ordering compare(const std::basic_string<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
 
     /**
      * \brief   Truncates the starting at zero-based 'startPos' and given number of characters.
@@ -1138,7 +1138,7 @@ protected:
      *              NEMath::Equal   if strings have equal
      *              NEMath::Bigger  if string is more than given string
      **/
-    inline NEMath::eCompare compareString( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true ) const;
+    inline NEMath::Ordering compareString( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true ) const;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
@@ -1155,7 +1155,7 @@ protected:
      *              NEMath::Equal   if strings have equal
      *              NEMath::Bigger  if string is more than given string
      **/
-    inline NEMath::eCompare compareStringExact(NEString::CharPos startPos, const CharType* strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline NEMath::Ordering compareStringExact(NEString::CharPos startPos, const CharType* strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
      * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
@@ -1172,7 +1172,7 @@ protected:
      *              NEMath::Equal   if strings have equal
      *              NEMath::Bigger  if string is more than given string
      **/
-    inline NEMath::eCompare compareStringIgnoreCase(NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline NEMath::Ordering compareStringIgnoreCase(NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by exact match.
@@ -1934,7 +1934,7 @@ inline NEString::CharPos StringBase<CharType>::findLast(const CharType* phrase, 
     startPos = (startPos == NEString::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
     for (NEString::CharPos pos = startPos; pos >= 0; --pos)
     {
-        if ((compareString(pos, phrase, count, caseSensitive) == NEMath::eCompare::Equal))
+        if ((compareString(pos, phrase, count, caseSensitive) == NEMath::Ordering::Equal))
         {
             result = pos;
             break;
@@ -1957,9 +1957,9 @@ NEString::CharPos StringBase<CharType>::findLast(const StringBase<CharType> & ph
 }
 
 template<typename CharType>
-NEMath::eCompare StringBase<CharType>::compare(const CharType* what, NEString::CharPos startAt /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/, bool caseSensitive /*= true*/) const
+NEMath::Ordering StringBase<CharType>::compare(const CharType* what, NEString::CharPos startAt /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/, bool caseSensitive /*= true*/) const
 {
-    NEMath::eCompare result{ NEMath::eCompare::Smaller };
+    NEMath::Ordering result{ NEMath::Ordering::Smaller };
     if (isValidPosition(startAt) == false)
         return result;
 
@@ -1974,7 +1974,7 @@ NEMath::eCompare StringBase<CharType>::compare(const CharType* what, NEString::C
         const CharType* current = getBuffer(startAt);
         const CharType* other = what;
 
-        result = NEMath::eCompare::Equal;
+        result = NEMath::Ordering::Equal;
 
         CharType ch1{ EmptyChar };
         CharType ch2{ EmptyChar };
@@ -1997,38 +1997,38 @@ NEMath::eCompare StringBase<CharType>::compare(const CharType* what, NEString::C
 
 
         if (ch1 < ch2)
-            result = NEMath::eCompare::Smaller;
+            result = NEMath::Ordering::Smaller;
         else if (ch1 > ch2)
-            result = NEMath::eCompare::Bigger;
+            result = NEMath::Ordering::Bigger;
     }
     else if (length > count)
     {
-        result = NEMath::eCompare::Bigger;
+        result = NEMath::Ordering::Bigger;
     }
 
     return result;
 }
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compare(const StringBase<CharType>& other, bool caseSensitive /*= true*/) const
+inline NEMath::Ordering StringBase<CharType>::compare(const StringBase<CharType>& other, bool caseSensitive /*= true*/) const
 {
     return compare(other.mData, caseSensitive);
 }
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const
+inline NEMath::Ordering StringBase<CharType>::compare(const std::basic_string<CharType>& other, bool caseSensitive /*= true*/) const
 {
     return compare(other.c_str(), NEString::START_POS, static_cast<NEString::CharCount>(other.length()), caseSensitive);
 }
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const
+inline NEMath::Ordering StringBase<CharType>::compare(const std::basic_string_view<CharType>& other, bool caseSensitive /*= true*/) const
 {
     return compare(other.data(), NEString::START_POS, static_cast<NEString::CharCount>(other.length()), caseSensitive);
 }
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compare( const StringBase<CharType>& other
+inline NEMath::Ordering StringBase<CharType>::compare( const StringBase<CharType>& other
                                                    , NEString::CharPos startPos /*= NEString::START_POS*/
                                                    , NEString::CharCount count  /*= NEString::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const
@@ -2037,7 +2037,7 @@ inline NEMath::eCompare StringBase<CharType>::compare( const StringBase<CharType
 }
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compare( const std::basic_string<CharType>& other
+inline NEMath::Ordering StringBase<CharType>::compare( const std::basic_string<CharType>& other
                                                    , NEString::CharPos startAt  /*= NEString::START_POS*/
                                                    , NEString::CharCount count  /*= NEString::COUNT_ALL*/
                                                    , bool caseSensitive         /*= true*/) const
@@ -2869,7 +2869,7 @@ inline StringBase<CharType>& StringBase<CharType>::makeAlphanumeric()
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compareString( NEString::CharPos startPos
+inline NEMath::Ordering StringBase<CharType>::compareString( NEString::CharPos startPos
                                                          , const CharType * strOther
                                                          , NEString::CharCount count/*= NEString::COUNT_ALL */
                                                          , bool caseSensitive       /*= true                */ ) const
@@ -2885,11 +2885,11 @@ inline NEMath::eCompare StringBase<CharType>::compareString( NEString::CharPos s
 }
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compareStringExact( NEString::CharPos startPos
+inline NEMath::Ordering StringBase<CharType>::compareStringExact( NEString::CharPos startPos
                                                               , const CharType * strOther
                                                               , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
 {
-    NEMath::eCompare result = NEMath::eCompare::Smaller;
+    NEMath::Ordering result = NEMath::Ordering::Smaller;
     count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strOther) : count;
     if (isValidPosition(startPos))
     {
@@ -2904,11 +2904,11 @@ inline NEMath::eCompare StringBase<CharType>::compareStringExact( NEString::Char
 }
 
 template<typename CharType>
-inline NEMath::eCompare StringBase<CharType>::compareStringIgnoreCase( NEString::CharPos startPos
+inline NEMath::Ordering StringBase<CharType>::compareStringIgnoreCase( NEString::CharPos startPos
                                                                    , const CharType * strOther
                                                                    , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
 {
-    NEMath::eCompare result = NEMath::eCompare::Smaller;
+    NEMath::Ordering result = NEMath::Ordering::Smaller;
     count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strOther) : count;
     if (isValidPosition(startPos))
     {
@@ -2932,9 +2932,9 @@ inline NEMath::eCompare StringBase<CharType>::compareStringIgnoreCase( NEString:
             }
 
             if (chLeft == chRight)
-                result = NEMath::eCompare::Equal;
+                result = NEMath::Ordering::Equal;
             else if (chLeft > chRight)
-                result = NEMath::eCompare::Bigger;
+                result = NEMath::Ordering::Bigger;
         }
     }
 

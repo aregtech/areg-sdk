@@ -116,34 +116,34 @@ bool File::_osOpenFile()
             unsigned long creation  = 0;
             unsigned long attributes= FILE_ATTRIBUTE_NORMAL;
 
-            if ((mFileMode & FileBase::FOB_READ) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitRead)) != 0)
                 access |= GENERIC_READ;
 
-            if ((mFileMode & FileBase::FOB_WRITE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitWrite)) != 0)
                 access |= GENERIC_WRITE;
             
-            if ((mFileMode & FileBase::FOB_SHARE_READ) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareRead)) != 0)
                 shared |= FILE_SHARE_READ;
             
-            if ((mFileMode & FileBase::FOB_SHARE_WRITE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareWrite)) != 0)
                 shared |= FILE_SHARE_WRITE;
             
-            if ((mFileMode & FileBase::FOB_CREATE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
                 creation |= CREATE_ALWAYS;
             
-            if ((mFileMode & FileBase::FOB_EXIST) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) != 0)
                 creation |= OPEN_EXISTING;
             
-            if ((mFileMode & FileBase::FOB_TRUNCATE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0)
                 creation |= TRUNCATE_EXISTING;
             
-            if ((mFileMode & FileBase::FOB_TEMP_FILE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTemp)) != 0)
                 attributes = FILE_ATTRIBUTE_TEMPORARY;
             
-            if ((mFileMode & FileBase::FOB_WRITE_DIRECT) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitDirect)) != 0)
                 attributes |= FILE_FLAG_WRITE_THROUGH;
             
-            if ((mFileMode & FileBase::FOB_CREATE ) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
             {
                 File::createDirCascaded( File::getFileDirectory(mFileName) );
             }
@@ -183,7 +183,7 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     return static_cast<unsigned int>(sizeWrite);
 }
 
-unsigned int File::_osSetPositionFile(int offset, Cursor::eCursorPosition startAt) const
+unsigned int File::_osSetPositionFile(int offset, Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
 
@@ -191,20 +191,20 @@ unsigned int File::_osSetPositionFile(int offset, Cursor::eCursorPosition startA
     unsigned long moveOffset = static_cast<unsigned long>(offset);
     switch (startAt)
     {
-    case    Cursor::eCursorPosition::PositionBegin:
+    case    Cursor::SeekOrigin::Begin:
         moveMethod = FILE_BEGIN;
         break;
 
-    case    Cursor::eCursorPosition::PositionCurrent:
+    case    Cursor::SeekOrigin::Current:
         moveMethod = FILE_CURRENT;
         break;
 
-    case    Cursor::eCursorPosition::PositionEnd:
+    case    Cursor::SeekOrigin::End:
         moveMethod = FILE_END;
         break;
 
     default:
-        AREG_OUTPUT_ERR("Unexpected FileBase::eCursorPosition type.");
+        AREG_OUTPUT_ERR("Unexpected FileBase::SeekOrigin type.");
         moveMethod = FILE_CURRENT;
         moveOffset = 0;
     }
@@ -255,7 +255,7 @@ unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const
  * \return  If function succeeds, the return value is full path of special folder.
  *          Otherwise, it returns empty string.
  **/
-unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder)
+unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
     buffer[0] = NEString::EndOfString;
@@ -263,19 +263,19 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const eSp
     int csidl = -1;
     switch (specialFolder)
     {
-    case File::eSpecialFolder::SpecialUserHome:
+    case File::SpecialFolder::UserHome:
         csidl = CSIDL_PROFILE;
         break;
 
-    case File::eSpecialFolder::SpecialPersonal:
+    case File::SpecialFolder::Personal:
         csidl = CSIDL_PERSONAL;
         break;
 
-    case File::eSpecialFolder::SpecialAppData:
+    case File::SpecialFolder::AppData:
         csidl = CSIDL_APPDATA;
         break;
 
-    case File::eSpecialFolder::SpecialTemp:
+    case File::SpecialFolder::Temp:
         GetTempPathA(length, buffer);
         break;
 

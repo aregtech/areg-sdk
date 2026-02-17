@@ -37,14 +37,14 @@ class AREG_API Cursor
 public:
 
     /**
-     * \brief   Cursor::eCursorPosition
+     * \brief   Cursor::SeekOrigin
      *          Cursor positions, required during moving cursor position back or forward
      **/
-    typedef enum class E_CursorPosition : int8_t
+    enum class SeekOrigin   : int8_t
     {
-          PositionBegin     = 0 //!< Set cursor position relative to begging of streaming data
-        , PositionCurrent       //!< Set cursor position relative to current position in streaming data
-        , PositionEnd           //!< Set cursor position relative to end of streaming data
+          Begin     = 0 //!< Set cursor position relative to begging of streaming data
+        , Current       //!< Set cursor position relative to current position in streaming data
+        , End           //!< Set cursor position relative to end of streaming data
 
     } eCursorPosition;
 
@@ -95,13 +95,13 @@ public:
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  Cursor::eCursorPosition::PositionBegin   -- position from the beginning of data
-     *                  Cursor::eCursorPosition::PositionCurrent -- position from current pointer position
-     *                  Cursor::eCursorPosition::PositionEnd     -- position from the end of file
+     *                  Cursor::SeekOrigin::Begin   -- position from the beginning of data
+     *                  Cursor::SeekOrigin::Current -- position from current pointer position
+     *                  Cursor::SeekOrigin::End     -- position from the end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition( int offset, Cursor::eCursorPosition startAt ) const = 0;
+    virtual unsigned int setPosition( int offset, Cursor::SeekOrigin startAt ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -144,12 +144,12 @@ inline bool Cursor::isPositionValid() const
 
 inline bool Cursor::moveToBegin() const
 {
-    return (setPosition(0, Cursor::eCursorPosition::PositionBegin) != Cursor::INVALID_CURSOR_POSITION);
+    return (setPosition(0, Cursor::SeekOrigin::Begin) != Cursor::INVALID_CURSOR_POSITION);
 }
 
 inline bool Cursor::moveToEnd() const
 {
-    return (setPosition(0, Cursor::eCursorPosition::PositionEnd)   != Cursor::INVALID_CURSOR_POSITION);
+    return (setPosition(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
 }
 
 #endif  // AREG_BASE_CURSOR_HPP

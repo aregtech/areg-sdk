@@ -384,28 +384,28 @@ TEST_P(StringTestCompare, CompareStrings)
     const char* left{ param.left.data() };
     const char* right{ param.right.data() };
 
-    NEMath::eCompare result{};
+    NEMath::Ordering result{};
 
     result = NEString::compare<char, char>(left, right);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resAllSens));
+    EXPECT_EQ(result, static_cast<NEMath::Ordering>(param.resAllSens));
 
     result = NEString::compareIgnoreCase<char>(left, right);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resAllIgnore));
+    EXPECT_EQ(result, static_cast<NEMath::Ordering>(param.resAllIgnore));
 
     result = NEString::compare<char, char>(left, right, param.count);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+    EXPECT_EQ(result, static_cast<NEMath::Ordering>(param.resCountSens));
 
     result = NEString::compareIgnoreCase<char, char>(left, right, param.count);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountIgnore));
+    EXPECT_EQ(result, static_cast<NEMath::Ordering>(param.resCountIgnore));
 
     result = NEString::compareFast<char>(left, right, param.count);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+    EXPECT_EQ(result, static_cast<NEMath::Ordering>(param.resCountSens));
 
     result = NEString::compareStrings<char, char>(left, right, param.count, true);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+    EXPECT_EQ(result, static_cast<NEMath::Ordering>(param.resCountSens));
 
     result = NEString::compareStrings<char, char>(left, right, param.count, false);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountIgnore));
+    EXPECT_EQ(result, static_cast<NEMath::Ordering>(param.resCountIgnore));
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
@@ -477,17 +477,17 @@ TEST_P(StringTestTrim, TrimStrings)
     count = NEString::copyString<char, char>(buffer, 64, param.noTrim.data(), NEString::COUNT_ALL);
     EXPECT_EQ(count, static_cast<NEString::CharCount>(param.noTrim.length()));
     NEString::trimLeft<char>(buffer, param.count);
-    EXPECT_EQ(NEString::compare(buffer, param.trimLeft.data()), NEMath::eCompare::Equal);
+    EXPECT_EQ(NEString::compare(buffer, param.trimLeft.data()), NEMath::Ordering::Equal);
 
     count = NEString::copyString<char, char>(buffer, 64, param.noTrim.data(), NEString::COUNT_ALL);
     EXPECT_EQ(count, static_cast<NEString::CharCount>(param.noTrim.length()));
     NEString::trimRight<char>(buffer, param.count);
-    EXPECT_EQ(NEString::compare(buffer, param.trimRight.data()), NEMath::eCompare::Equal);
+    EXPECT_EQ(NEString::compare(buffer, param.trimRight.data()), NEMath::Ordering::Equal);
 
     count = NEString::copyString<char, char>(buffer, 64, param.noTrim.data(), NEString::COUNT_ALL);
     EXPECT_EQ(count, static_cast<NEString::CharCount>(param.noTrim.length()));
     NEString::trimAll<char>(buffer, param.count);
-    EXPECT_EQ(NEString::compare(buffer, param.trimAll.data()), NEMath::eCompare::Equal);
+    EXPECT_EQ(NEString::compare(buffer, param.trimAll.data()), NEMath::Ordering::Equal);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
@@ -543,20 +543,20 @@ TEST_P(StringTestTrimCopy, TrimCopyStrings)
     const TrimStringsParams& param = GetParam();
     wchar_t wide[64];
 
-    NEMath::eCompare compare{};
+    NEMath::Ordering compare{};
 
     NEString::trimLeft<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
+    EXPECT_EQ(compare, NEMath::Ordering::Equal);
     compare = NEString::compare<wchar_t, char>(wide, param.trimLeft.data());
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
+    EXPECT_EQ(compare, NEMath::Ordering::Equal);
 
     NEString::trimRight<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
     compare = NEString::compare<wchar_t, char>(wide, param.trimRight.data());
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
+    EXPECT_EQ(compare, NEMath::Ordering::Equal);
 
     NEString::trimAll<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
     compare = NEString::compare<wchar_t, char>(wide, param.trimAll.data());
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
+    EXPECT_EQ(compare, NEMath::Ordering::Equal);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
@@ -608,7 +608,7 @@ TEST_P(StringTestRemoveChar, RemoveChar)
 
     EXPECT_EQ(NEString::copyString<char>(buffer, 64, param.source.data(), NEString::COUNT_ALL), static_cast<NEString::CharCount>(param.source.length()));
     const char* all = NEString::removeChar<char>(param.remove, buffer, true);
-    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL), NEMath::eCompare::Equal);
+    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL), NEMath::Ordering::Equal);
     EXPECT_TRUE(all != nullptr);
     EXPECT_TRUE(NEString::isEndOfString<char>(*all));
 
@@ -617,7 +617,7 @@ TEST_P(StringTestRemoveChar, RemoveChar)
 
     EXPECT_EQ(NEString::copyString<char>(buffer, 64, param.source.data(), NEString::COUNT_ALL), static_cast<NEString::CharCount>(param.source.length()));
     char* one = NEString::removeChar<char>(param.remove, buffer, false);
-    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resOne.data(), NEString::COUNT_ALL), NEMath::eCompare::Equal);
+    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resOne.data(), NEString::COUNT_ALL), NEMath::Ordering::Equal);
     EXPECT_TRUE(one != nullptr);
 
     for ( ;count > 1; --count)
@@ -629,7 +629,7 @@ TEST_P(StringTestRemoveChar, RemoveChar)
     }
 
     // no more character to remove, check it
-    EXPECT_TRUE(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL) == NEMath::eCompare::Equal);
+    EXPECT_TRUE(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL) == NEMath::Ordering::Equal);
 
     // the `one` might not reach end of string, call `removeChar` one more time and make sure that end of string reached
     one = NEString::removeChar<char>(param.remove, buffer, false);
@@ -887,8 +887,8 @@ TEST_P(StringTestFindFirstPhrase, FindFirstString)
 
         pos = NEString::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        NEMath::Ordering comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, NEMath::Ordering::Equal);
         EXPECT_TRUE(result == next);
         pos += phraseCount;
     }
@@ -896,8 +896,8 @@ TEST_P(StringTestFindFirstPhrase, FindFirstString)
     pos = NEString::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
     if (pos != NEString::INVALID_POS)
     {
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        NEMath::Ordering comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, NEMath::Ordering::Equal);
     }
 
     EXPECT_TRUE(NEString::isEmpty<char>(next));
@@ -978,16 +978,16 @@ TEST_P(StringTestFindLastPhrase, FindLastString)
 
         pos = NEString::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        NEMath::Ordering comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, NEMath::Ordering::Equal);
         EXPECT_TRUE(result == next);
     }
 
     pos = NEString::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
     if (pos != NEString::INVALID_POS)
     {
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        NEMath::Ordering comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, NEMath::Ordering::Equal);
     }
 
     EXPECT_TRUE(NEString::isEmpty<char>(next));

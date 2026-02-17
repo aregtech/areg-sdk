@@ -457,7 +457,7 @@ TEST(StackTest, TestLockAndNolockStackStreaming)
 /**
  * \brief   Tests ascending sorting of stack.
  **/
-TEST(StackTest, TestSortAscending)
+TEST(StackTest, TestAscending)
 {
     using Stack = Stack<int>;
 
@@ -476,7 +476,7 @@ TEST(StackTest, TestSortAscending)
 /**
  * \brief   Tests descending sorting of fixed array.
  **/
-TEST(StackTest, TestSortDescending)
+TEST(StackTest, TestDescending)
 {
     using Stack = Stack<int>;
 

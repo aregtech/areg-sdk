@@ -88,12 +88,11 @@ int main()
 {
     std::cout << "Demo to show file functionalities ..." << std::endl;
 
-    constexpr unsigned int mode = FileBase::FO_MODE_WRITE
-                                | FileBase::FO_MODE_TEXT
-                                | FileBase::FO_MODE_CREATE
-                                | FileBase::FO_MODE_SHARE_READ
-                                | FileBase::FO_MODE_SHARE_WRITE;
-
+    constexpr uint32_t mode = static_cast<uint32_t>(FileBase::OpenMode::Write)
+                            | static_cast<uint32_t>(FileBase::OpenMode::Text)
+                            | static_cast<uint32_t>(FileBase::OpenMode::Create)
+                            | static_cast<uint32_t>(FileBase::OpenMode::ShareRead)
+                            | static_cast<uint32_t>(FileBase::OpenMode::ShareWrite);
     // Create a text file on file system
     File txtFile("./Debug/hello.txt", mode);
     if (txtFile.open())
@@ -119,7 +118,7 @@ int main()
     }
 
     // Binary file (text mode removed)
-    File binary("./Debug/binary.dat", mode & ~FileBase::FO_MODE_TEXT);
+    File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
     if (binary.open())
     {
         binary.write(buffer.getDataBuffer(), buffer.getLength());

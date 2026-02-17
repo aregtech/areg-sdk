@@ -317,7 +317,7 @@ namespace NEApplication
     extern AREG_API const std::vector<Identifier> LogScopePriorityIndentifiers;
 
     /**
-     * \brief   NEApplication::eApplicationState
+     * \brief   NEApplication::AppState
      *          Describes the application states.
      *          -   Initially, the application is in undefined state.
      *          -   The application is in initialization state, when Service Manager did not started yet and it
@@ -325,14 +325,14 @@ namespace NEApplication
      *          -   Application is in ready state only when Service Manager is started.
      *          -   Application is in release state when it is going to stop Service Manager.
      **/
-    typedef enum class E_AppState
+    enum class AppState : uint8_t
     {
-          AppStateStopped       //!< Application state is undefined
-        , AppStateInitializing  //!< Application is initializing
-        , AppStateReady         //!< Application is ready. The application is ready only when Service Manager runs.
-        , AppStateReleasing     //!< Application is releasing.
-        , AppStateFailure       //!< Application is failure state and cannot be continued
-    } eApplicationState;
+          Stopped       //!< Application state is undefined
+        , Initializing  //!< Application is initializing
+        , Ready         //!< Application is ready. The application is ready only when Service Manager runs.
+        , Releasing     //!< Application is releasing.
+        , Failure       //!< Application is failure state and cannot be continued
+    };
 
 }
 

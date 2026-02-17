@@ -342,7 +342,7 @@ namespace NEString
      * \note    The results are based 'charCount' and 'caseSensitive' parameters.
      **/
     template<typename CharLhs, typename CharRhs>
-    NEMath::eCompare compareStrings( const CharLhs *leftSide
+    NEMath::Ordering compareStrings( const CharLhs *leftSide
                                    , const CharRhs * rightSide
                                    , CharCount charCount = NEString::END_POS
                                    , bool caseSensitive  = true);
@@ -364,7 +364,7 @@ namespace NEString
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::eCompare compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide, NEString::CharCount count = NEString::COUNT_ALL);
+    inline NEMath::Ordering compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
      * \brief   Compares 2 string. Compares first count characters.
@@ -383,7 +383,7 @@ namespace NEString
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::eCompare compare(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count);
+    inline NEMath::Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count);
 
     /**
      * \brief   Compares 2 string. The comparing is done until first match of null-termination
@@ -402,7 +402,7 @@ namespace NEString
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::eCompare compare(const CharLhs* leftSide, const CharRhs* rightSide);
+    inline NEMath::Ordering compare(const CharLhs* leftSide, const CharRhs* rightSide);
 
     /**
      * \brief   Fast compares first count symbols of 2 string. The comparing case sensitive.
@@ -420,7 +420,7 @@ namespace NEString
      * \tparam  CharType    The type of characters. Either `char` or `wchar_t`.
      **/
     template<typename CharType>
-    inline NEMath::eCompare compareFast( const CharType * leftSide, const CharType * rightSide, NEString::CharCount count );
+    inline NEMath::Ordering compareFast( const CharType * leftSide, const CharType * rightSide, NEString::CharCount count );
 
     /**
      * \brief   Returns true if given character is a letter.
@@ -988,21 +988,21 @@ void NEString::revertString( CharType * strDst, NEString::CharCount charCount /*
 template<typename CharType>
 int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
 {
-    NEMath::eDigitSign sign = NEMath::eDigitSign::SignUndefined;
+    NEMath::NumericSign sign = NEMath::NumericSign::Undefined;
     uint32_t result = 0;
     if (isEmpty<CharType>(strNumber) == false)
     {
-        CharType negative = getChar(NEMath::eDigitSign::SignNegative);
-        CharType positive = getChar(NEMath::eDigitSign::SignPositive);
+        CharType negative = getChar(NEMath::NumericSign::Negative);
+        CharType positive = getChar(NEMath::NumericSign::Positive);
         for ( CharType ch = *strNumber; *strNumber != static_cast<CharType>(EndOfString); ++ strNumber )
         {
             ch = *strNumber;
             if (isWhitespace<CharType>(ch))
                 continue;
 
-            if (sign == NEMath::eDigitSign::SignUndefined)
+            if (sign == NEMath::NumericSign::Undefined)
             {
-                sign = ch == negative ? NEMath::eDigitSign::SignNegative : NEMath::eDigitSign::SignPositive;
+                sign = ch == negative ? NEMath::NumericSign::Negative : NEMath::NumericSign::Positive;
                 if ((ch == negative) || (ch == positive))
                 {
                     // the sign is '-' or '+'
@@ -2105,16 +2105,16 @@ NEString::CharCount NEString::copyStringFast(CharType*            strDst
 }
 
 template<typename CharLhs, typename CharRhs>
-NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
+NEMath::Ordering NEString::compareStrings( const CharLhs *leftSide
                                          , const CharRhs * rightSide
                                          , NEString::CharCount charCount    /*= COUNT_ALL*/
                                          , bool caseSensitive               /*= true*/)
 {
-    NEMath::eCompare result = NEMath::eCompare::Bigger;
+    NEMath::Ordering result = NEMath::Ordering::Bigger;
 
     if (reinterpret_cast<const void*>(leftSide) == reinterpret_cast<const void*>(rightSide))
     {
-        result = NEMath::eCompare::Equal;
+        result = NEMath::Ordering::Equal;
     }
     else if ((leftSide != nullptr) && (rightSide != nullptr))
     {
@@ -2154,9 +2154,9 @@ NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
             }
 
             if (chLeft == static_cast<CharLhs>(chRight))
-                result = NEMath::eCompare::Equal;
+                result = NEMath::Ordering::Equal;
             else if (chLeft < static_cast<CharLhs>(chRight))
-                result = NEMath::eCompare::Smaller;
+                result = NEMath::Ordering::Smaller;
         }
         else
         {
@@ -2196,48 +2196,48 @@ NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
             }
 
             if (charCount == 0)
-                result = NEMath::eCompare::Equal;
+                result = NEMath::Ordering::Equal;
             else if (chLeft < static_cast<CharLhs>(chRight))
-                result = NEMath::eCompare::Smaller;
+                result = NEMath::Ordering::Smaller;
         }
     }
     else if ( rightSide != nullptr )
     {
-        result = NEMath::eCompare::Smaller;
+        result = NEMath::Ordering::Smaller;
     }
 
     return result;
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::eCompare NEString::compareIgnoreCase(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline NEMath::Ordering NEString::compareIgnoreCase(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
     return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, count, false);
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::eCompare NEString::compare(const CharLhs* leftSide, const CharRhs* rightSide)
+inline NEMath::Ordering NEString::compare(const CharLhs* leftSide, const CharRhs* rightSide)
 {
     return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, NEString::COUNT_ALL, true);
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::eCompare NEString::compare(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count)
+inline NEMath::Ordering NEString::compare(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count)
 {
     return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, count, true);
 }
 
 template<typename CharType>
-inline NEMath::eCompare NEString::compareFast(const CharType* leftSide, const CharType* rightSide, NEString::CharCount count)
+inline NEMath::Ordering NEString::compareFast(const CharType* leftSide, const CharType* rightSide, NEString::CharCount count)
 {
-    NEMath::eCompare result = NEMath::eCompare::Bigger;
+    NEMath::Ordering result = NEMath::Ordering::Bigger;
     if (count == NEString::COUNT_ALL)
     {
         result = NEString::compareStrings<CharType, CharType>(leftSide, rightSide, NEString::COUNT_ALL, true);
     }
     else if (leftSide == rightSide)
     {
-        result = NEMath::eCompare::Equal;
+        result = NEMath::Ordering::Equal;
     }
     else if ((leftSide != nullptr) && (rightSide != nullptr))
     {
@@ -2245,7 +2245,7 @@ inline NEMath::eCompare NEString::compareFast(const CharType* leftSide, const Ch
     }
     else if (rightSide != nullptr)
     {
-        result = NEMath::eCompare::Smaller;
+        result = NEMath::Ordering::Smaller;
     }
 
     return result;

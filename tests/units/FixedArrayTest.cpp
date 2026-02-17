@@ -198,7 +198,7 @@ TEST(FixedArrayTest, TestElemPosition)
 /**
  * \brief   Tests ascending sorting of fixed array.
  **/
-TEST(FixedArrayTest, TestSortAscending)
+TEST(FixedArrayTest, TestAscending)
 {
     using FixedArray = FixedArray<int>;
 
@@ -217,7 +217,7 @@ TEST(FixedArrayTest, TestSortAscending)
 /**
  * \brief   Tests descending sorting of fixed array.
  **/
-TEST(FixedArrayTest, TestSortDescending)
+TEST(FixedArrayTest, TestDescending)
 {
     using FixedArray = FixedArray<int>;
 

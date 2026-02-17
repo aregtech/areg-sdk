@@ -45,47 +45,60 @@ class ByteBuffer;
  * 
  *          Some use of File Open Mode:
  *
- *          1. FO_MODE_INVALID      - Invalid mode. No operation should be performed. Prevent caller setting this mode;
+ *          1. Invalid      - Invalid mode. No operation should be performed. Prevent caller setting this mode;
  *
- *          2. FO_MODE_READ         - File opened for reading. By default, all files should be opened with this flag.
+ *          2. OnlyRead     - File opened exclusively for reading.
  *
- *          3. FO_MODE_WRITE        - File opened for writing and reading. If flag is missed, the write functionality will be disabled.
+ *          3. OnlyWrite    - File opened exclusively for writing.
  *
- *          4. FO_MODE_BINARY       - File opened in binary mode. All data will be read and written as binary data.
- *                                    For strings, the null-terminate symbol will be also written / read.
+ *          4. Read         - File opened for reading. By default, all files should be opened with this flag.
  *
- *          5. FO_MODE_TEXT         - File opened int text mode. All data will be written as plain text, 
- *                                    until does not match null-terminate symbol.
+ *          5. Write        - File opened for writing and reading. If flag is missed, the write functionality will be disabled.
+ *
+ *          6. Binary       - File opened in binary mode. All data will be read and written as binary data.
+ *                            For strings, the null-terminate symbol will be also written / read.
+ *
+ *          7. Text         - File opened int text mode. All data will be written as plain text, 
+ *                            until does not match null-terminate symbol.
  *              
- *          6. FO_MODE_SHARE_READ   - File is opened in share read mode. The other File object is able to read.
- *                                    This flag makes sense for FS File object. For memory file it does not make sense,
- *                                    since buffer pointer may change address and File object is not able to control 
- *                                    memory access by other functionality.
+ *          8. ShareRead    - File is opened in share read mode. The other File object is able to read.
+ *                            This flag makes sense for FS File object. For memory file it does not make sense,
+ *                            since buffer pointer may change address and File object is not able to control 
+ *                            memory access by other functionality.
  *
- *          7. FO_MODE_SHARE_WRITE  - File is opened in share write and read modes. The other File object is able to write and read data.
- *                                    This flag makes sense for FS File object. For memory file it does not make sense,
- *                                    since buffer pointer may change address and File object is not able to control 
- *                                    memory access by other functionality.
+ *          9. ShareWrite   - File is opened in share write and read modes. The other File object is able to write and read data.
+ *                            This flag makes sense for FS File object. For memory file it does not make sense,
+ *                            since buffer pointer may change address and File object is not able to control 
+ *                            memory access by other functionality.
  *    
- *          8. FO_MODE_CREATE       - If file does not exist, the new file will be created. The size will set zero
- *                                    If FO_MODE_EXIST flag is set, will try to open existing file, otherwise creates new file.
+ *          10.Create       - If file does not exist, the new file will be created. The size will set zero
+ *                            If Exist flag is set, will try to open existing file, otherwise creates new file.
  *
- *          9. FO_MODE_EXIST        - Opens only existing file. Opening might fail if file does not exist and 'FO_MODE_CREATE' flag is not set.
- *                                    If FO_MODE_CREATE flag is set and file does not exist, it will create new file.
- *                                    If FO_MODE_TRUNCATE flag is set, opens file for read/write and sets initial size of file to zero.
+ *          11.Exist        - Opens only existing file. Opening might fail if file does not exist and 'Create' flag is not set.
+ *                            If Create flag is set and file does not exist, it will create new file.
+ *                            If Truncate flag is set, opens file for read/write and sets initial size of file to zero.
  *
- *         10. FO_MODE_TRUNCATE     - Opens file in read and write mode, sets initial size of file to zero. 
- *                                    Ignored in mode FO_MODE_ATTACH.
- *                                    Can be used with combination FO_MODE_CREATE and FO_MODE_EXIST.
+ *         12.Truncate      - Opens file in read and write mode, sets initial size of file to zero. 
+ *                            Ignored in mode Attach.
+ *                            Can be used with combination Create and Exist.
  *
- *         11. FO_MODE_ATTACH       - Will use existing file handle / memory buffer pointer only in read mode. 
- *                                    On close neither handle, nor buffer pointer will be closed / deleted.
+ *         13.Attach        - Will use existing file handle / memory buffer pointer only in read mode. 
+ *                            On close neither handle, nor buffer pointer will be closed / deleted.
  *
- *         12. FO_MODE_DETACH       - Will open file / memory buffer for read and write access.
- *                                    On close neither handle, nor buffer pointer will be closed / deleted.
+ *         14.Detach        - Will open file / memory buffer for read and write access.
+ *                            On close neither handle, nor buffer pointer will be closed / deleted.
  *
- *         13. FO_MODE_FOR_DELETE - Will force to delete on close even if buffer is attached or marked as detached.
+ *         15.Delete        - Will force to delete on close even if buffer is attached or marked as detached.
  *
+ *         16.WriteDirect   - Will open file for writing access without buffering or caching.
+ *                            Read and write flags are set automatically.
+ *                            Write operations will not go through any intermediate cache,
+ *                            they will go directly to disk. 
+ *
+ *         15.CreateTemp    - Will create and open file for temporary storage.
+ *                            File systems avoid writing data back to mass storage if sufficient cache memory is available,
+ *                            because an application deletes a temporary file after a handle is closed.
+ *                            In that case, the system can entirely avoid writing the data.
  **/
 class AREG_API FileBase : public IOStream
                         , public Cursor
@@ -97,52 +110,67 @@ protected:
     /**
      * \brief   File open bits specifying opening mode, access rights and attributes
      **/
-    typedef enum E_FileOpenBits : unsigned int
+    enum class OpenFlag : uint32_t
     {
-          FOB_INVALID       = 0     //!< 0000000000000000 <= invalid
-        , FOB_READ          = 1     //!< 0000000000000001 <= read bit
-        , FOB_WRITE         = 2     //!< 0000000000000010 <= write bit
-        , FOB_BINARY        = 4     //!< 0000000000000100 <= binary bit
-        , FOB_TEXT          = 8     //!< 0000000000001000 <= text bit
-        , FOB_SHARE_READ    = 16    //!< 0000000000010000 <= shared read bit
-        , FOB_SHARE_WRITE   = 32    //!< 0000000000100000 <= shared write bit
-        , FOB_CREATE        = 64    //!< 0000000001000000 <= create bit
-        , FOB_EXIST         = 128   //!< 0000000010000000 <= must exist bit
-        , FOB_TRUNCATE      = 256   //!< 0000000100000000 <= truncate bit
-        , FOB_ATTACH        = 512   //!< 0000001000000000 <= attached bit
-        , FOB_DETACH        = 1024  //!< 0000010000000000 <= detach bit
-        , FOB_FOR_DELETE    = 2048  //!< 0000100000000000 <= delete on close bit
-        , FOB_WRITE_DIRECT  = 4096  //!< 0001000000000000 <= write direct on disk bit
-        , FOB_TEMP_FILE     = 8192  //!< 0010000000000000 <= create temporary file bit, will be deleted on close.
+          BitNone       = 0u    //!< 0000000000000000 <= invalid
+        , BitRead       = 1u    //!< 0000000000000001 <= read bit
+        , BitWrite      = 2u    //!< 0000000000000010 <= write bit
+        , BitBinary     = 4u    //!< 0000000000000100 <= binary bit
+        , BitText       = 8u    //!< 0000000000001000 <= text bit
+        , BitShareRead  = 16u   //!< 0000000000010000 <= shared read bit
+        , BitShareWrite = 32u   //!< 0000000000100000 <= shared write bit
+        , BitCreate     = 64u   //!< 0000000001000000 <= create bit
+        , BitExist      = 128u  //!< 0000000010000000 <= must exist bit
+        , BitTruncate   = 256u  //!< 0000000100000000 <= truncate bit
+        , BitAttach     = 512u  //!< 0000001000000000 <= attached bit
+        , BitDetach     = 1024u //!< 0000010000000000 <= detach bit
+        , BitDelete     = 2048u //!< 0000100000000000 <= delete on close bit
+        , BitDirect     = 4096u //!< 0001000000000000 <= write direct on disk bit
+        , BitTemp       = 8192u //!< 0010000000000000 <= create temporary file bit, will be deleted on close.
+    };
 
-    } eFileOpenBits;
+private:
+    static constexpr uint32_t   BIT_INVALID     {static_cast<uint32_t>(OpenFlag::BitNone)};
+    static constexpr uint32_t   BIT_READ        { static_cast<uint32_t>(OpenFlag::BitRead) };
+    static constexpr uint32_t   BIT_WRITE       { static_cast<uint32_t>(OpenFlag::BitWrite) };
+    static constexpr uint32_t   BIT_BINARY      { static_cast<uint32_t>(OpenFlag::BitBinary) };
+    static constexpr uint32_t   BIT_TEXT        { static_cast<uint32_t>(OpenFlag::BitText) };
+    static constexpr uint32_t   BIT_SHARE_READ  { static_cast<uint32_t>(OpenFlag::BitShareRead) };
+    static constexpr uint32_t   BIT_SHARE_WRITE { static_cast<uint32_t>(OpenFlag::BitShareWrite) };
+    static constexpr uint32_t   BIT_CREATE      { static_cast<uint32_t>(OpenFlag::BitCreate) };
+    static constexpr uint32_t   BIT_EXIST       { static_cast<uint32_t>(OpenFlag::BitExist) };
+    static constexpr uint32_t   BIT_TRUNCATE    { static_cast<uint32_t>(OpenFlag::BitTruncate) };
+    static constexpr uint32_t   BIT_ATTACH      { static_cast<uint32_t>(OpenFlag::BitAttach) };
+    static constexpr uint32_t   BIT_DETACH      { static_cast<uint32_t>(OpenFlag::BitDetach) };
+    static constexpr uint32_t   BIT_DELETE      { static_cast<uint32_t>(OpenFlag::BitDelete) };
+    static constexpr uint32_t   BIT_DIRECT      { static_cast<uint32_t>(OpenFlag::BitDirect) };
+    static constexpr uint32_t   BIT_FILE        { static_cast<uint32_t>(OpenFlag::BitTemp) };
 
 public:
     /**
      * \brief   File opening modes.
      **/
-    typedef enum E_FileOpenMode : unsigned int
+    enum class OpenMode : uint32_t
     {
-          FO_MODE_INVALID       = (FOB_INVALID)                                                     //!< 0000000000000000 <= invalid mode
+          Invalid       = (BIT_INVALID)                                                     //!< 0000000000000000 <= invalid mode
 
-        , FO_MODE_ONLY_READ     = (FOB_READ)                                                        //!< 0000000000000001 <= exclusive read, contains only read bit
-        , FO_MODE_ONLY_WRITE    = (FOB_WRITE | FOB_READ)                                            //!< 0000000000000011 <= exclusive write, should contain "read" bit
-        , FO_MODE_READ          = (FOB_READ  | FOB_SHARE_READ)                                      //!< 0000000000010001 <= read mode, can share read
-        , FO_MODE_WRITE         = (FOB_WRITE | FOB_READ | FOB_SHARE_READ)                           //!< 0000000000010011 <= write mode, should contain "read" bit and can share read
-        , FO_MODE_BINARY        = (FOB_BINARY)                                                      //!< 0000000000000100 <= binary bit. strings in binary mode will write EOS char, all data will be dumped.
-        , FO_MODE_TEXT          = (FOB_TEXT)                                                        //!< 0000000000001000 <= text bit. EOS char of string will not be written, can write and read line of string
-        , FO_MODE_SHARE_READ    = (FOB_SHARE_READ  | FOB_READ)                                      //!< 0000000000010001 <= share read mode, should contain "read" bit
-        , FO_MODE_SHARE_WRITE   = (FOB_SHARE_WRITE | FOB_SHARE_READ | FOB_WRITE | FOB_READ)         //!< 0000000000110011 <= share write mode, should contain "read", "write" and "share read" bits
-        , FO_MODE_CREATE        = (FOB_CREATE)                                                      //!< 0000000001000000 <= always create file
-        , FO_MODE_EXIST         = (FOB_EXIST)                                                       //!< 0000000010000000 <= file should exist, otherwise it fails
-        , FO_MODE_TRUNCATE      = (FOB_TRUNCATE | FOB_WRITE | FOB_READ)                             //!< 0000000100000011 <= truncate file, i.e. set initial size zero, "read" and "write" bits should be set
-        , FO_MODE_ATTACH        = (FOB_ATTACH | FOB_EXIST | FOB_SHARE_READ | FOB_READ)              //!< 0000001010010001 <= attached handle (buffer). Can only read memory data, cannot change the size or write data. Bits "read", "share read", "exist" are set automatically. Not able to control share mode, the pointer should be passed. Should not free buffer in destructor.
-        , FO_MODE_DETACH        = (FOB_DETACH | FOB_CREATE | FOB_SHARE_READ | FOB_WRITE | FOB_READ) //!< 0000010001010011 <= mode detach buffer. Can read and write memory data. Bits "read", "write", "share read" and "create" are set automatically. Not able to control share modes. Should not free buffer in destructor, it is up to caller to free buffer.
-        , FO_MODE_DELETE        = (FOB_FOR_DELETE)                                                  //!< 0000100000000000 <= mode to delete on close. Can be combined with any mode. The file / buffer will be deleted even if mode attached / detach are set.
-        , FO_MODE_WRITE_DIRECT  = (FOB_WRITE_DIRECT | FOB_WRITE | FOB_READ)                         //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
-        , FO_MODE_CREATE_TEMP   = (FOB_TEMP_FILE | FOB_WRITE | FOB_READ)                            //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
-
-    } eFileOpenMode;
+        , OnlyRead      = (BIT_READ)                                                        //!< 0000000000000001 <= exclusive read, contains only read bit
+        , OnlyWrite     = (BIT_WRITE | BIT_READ)                                            //!< 0000000000000011 <= exclusive write, should contain "read" bit
+        , Read          = (BIT_READ | BIT_SHARE_READ)                                       //!< 0000000000010001 <= read mode, can share read
+        , Write         = (BIT_WRITE | BIT_READ | BIT_SHARE_READ)                           //!< 0000000000010011 <= write mode, should contain "read" bit and can share read
+        , Binary        = (BIT_BINARY)                                                      //!< 0000000000000100 <= binary bit. strings in binary mode will write EOS char, all data will be dumped.
+        , Text          = (BIT_TEXT)                                                        //!< 0000000000001000 <= text bit. EOS char of string will not be written, can write and read line of string
+        , ShareRead     = (BIT_SHARE_READ  | BIT_READ)                                      //!< 0000000000010001 <= share read mode, should contain "read" bit
+        , ShareWrite    = (BIT_SHARE_WRITE | BIT_SHARE_READ | BIT_WRITE | BIT_READ)         //!< 0000000000110011 <= share write mode, should contain "read", "write" and "share read" bits
+        , Create        = (BIT_CREATE)                                                      //!< 0000000001000000 <= always create file
+        , Exist         = (BIT_EXIST)                                                       //!< 0000000010000000 <= file should exist, otherwise it fails
+        , Truncate      = (BIT_TRUNCATE | BIT_WRITE | BIT_READ)                             //!< 0000000100000011 <= truncate file, i.e. set initial size zero, "read" and "write" bits should be set
+        , Attach        = (BIT_ATTACH | BIT_EXIST | BIT_SHARE_READ | BIT_READ)              //!< 0000001010010001 <= attached handle (buffer). Can only read memory data, cannot change the size or write data. Bits "read", "share read", "exist" are set automatically. Not able to control share mode, the pointer should be passed. Should not free buffer in destructor.
+        , Detach        = (BIT_DETACH | BIT_CREATE | BIT_SHARE_READ | BIT_WRITE | BIT_READ) //!< 0000010001010011 <= mode detach buffer. Can read and write memory data. Bits "read", "write", "share read" and "create" are set automatically. Not able to control share modes. Should not free buffer in destructor, it is up to caller to free buffer.
+        , Delete        = (BIT_DELETE)                                                      //!< 0000100000000000 <= mode to delete on close. Can be combined with any mode. The file / buffer will be deleted even if mode attached / detach are set.
+        , WriteDirect   = (BIT_DIRECT | BIT_WRITE | BIT_READ)                               //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
+        , CreateTemp    = (BIT_FILE | BIT_WRITE | BIT_READ)                                 //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // defined constants
@@ -247,7 +275,7 @@ public:
      **/
     friend inline const FileBase & operator >> ( const FileBase & stream, WideString & wide );
 
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -582,8 +610,8 @@ public:
 
     /**
      * \brief	Writes string in file and returns true if succeeded.
-     *          If file was opened in FO_MODE_TEXT, the null-terminate char of string will be skipped.
-     *          If file was opened in FO_MODE_BINARY, the null-terminate char of string will be also written.
+     *          If file was opened in Text, the null-terminate char of string will be skipped.
+     *          If file was opened in Binary, the null-terminate char of string will be also written.
      *
      * \param	buffer  The buffer of string to write.
      * \return	Returns true if operation succeeded.
@@ -677,9 +705,9 @@ public:
      *
      * \param	mode	    The opening modes. The value should be combined with bitwise OR operation.
      *                      Before opening, the conflicting bits are removed.
-     *                      For example, mode cannot contain (FO_MODE_ATTACH | FO_MODE_DETACH) at once.
+     *                      For example, mode cannot contain (Attach | Detach) at once.
      *                      One of bits will be ignored.
-     *                      For more details see description of eFileOpenMode and eFileOpenBits.
+     *                      For more details see description of OpenMode and OpenFlag.
      *
      * \return	Returns true if file was opened with success.
      * \see     close()
@@ -688,10 +716,10 @@ public:
 
     /**
      * \brief   Call to close file object.
-     *          If file was opened in FO_MODE_ATTACH or FO_MODE_DETACH modes, on close the file object will not be deleted
-     *          except if mode is combined with values FO_FOR_DELETE or FO_MODE_CREATE_TEMP. Attach and Detach modes are
+     *          If file was opened in Attach or Detach modes, on close the file object will not be deleted
+     *          except if mode is combined with values FO_FOR_DELETE or CreateTemp. Attach and Detach modes are
      *          valid and meaningful only for memory buffered file object. It has no meaning for File System file object.
-     *          If FO_MODE_CREATE_TEMP is set, file object is always deleted on close.
+     *          If CreateTemp is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      *
      * \see     open()
@@ -824,7 +852,7 @@ protected:
 
     /**
      * \brief	Validates and normalize bits for file open mode.
-     * \param	mode	Integer value of bitwise OR operation of eFileOpenMode values
+     * \param	mode	Integer value of bitwise OR operation of OpenMode values
      * \return	Returns normalized value.
      **/
     virtual unsigned int normalizeMode(unsigned int mode) const;
@@ -919,42 +947,42 @@ inline bool FileBase::isValid() const
 
 inline bool FileBase::isForceDelete() const
 {
-    return (getMode() & static_cast<int>(FOB_FOR_DELETE)) != 0;
+    return (getMode() & static_cast<uint32_t>(OpenFlag::BitDelete)) != 0;
 }
 
 inline bool FileBase::isTemporary() const
 {
-    return (getMode() & static_cast<int>(FO_MODE_CREATE_TEMP)) != 0;
+    return (getMode() & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0;
 }
 
 inline bool FileBase::isAttachMode() const
 {
-    return (getMode() & static_cast<int>(FOB_ATTACH)) != 0;
+    return (getMode() & static_cast<uint32_t>(OpenFlag::BitAttach)) != 0;
 }
 
 inline bool FileBase::isDetachMode() const
 {
-    return (getMode() & static_cast<int>(FOB_DETACH)) != 0;
+    return (getMode() & static_cast<uint32_t>(OpenFlag::BitDetach)) != 0;
 }
 
 inline bool FileBase::isTextMode() const
 {
-    return ( (getMode() & static_cast<int>(FOB_TEXT)) != 0 );
+    return ( (getMode() & static_cast<uint32_t>(OpenFlag::BitText)) != 0 );
 }
 
 inline bool FileBase::isBinaryMode() const
 {
-    return ( (getMode() & static_cast<int>(FOB_BINARY)) != 0 );
+    return ( (getMode() & static_cast<uint32_t>(OpenFlag::BitBinary)) != 0 );
 }
 
 inline bool FileBase::isShareForRead() const
 {
-    return ( (getMode() & static_cast<int>(FOB_SHARE_READ)) != 0 );
+    return ( (getMode() & static_cast<uint32_t>(OpenFlag::BitShareRead)) != 0 );
 }
 
 inline bool FileBase::isSharedForWrite() const
 {
-    return ( (getMode() & static_cast<int>(FOB_SHARE_WRITE)) != 0 );
+    return ( (getMode() & static_cast<uint32_t>(OpenFlag::BitShareWrite)) != 0 );
 }
 
 inline bool FileBase::isEndOfFile() const
@@ -966,13 +994,13 @@ inline bool FileBase::isEndOfFile() const
 inline bool FileBase::canWrite() const
 {
     ASSERT(isOpened());
-    return ( (getMode() & static_cast<int>(FOB_WRITE)) != 0 );
+    return ( (getMode() & static_cast<uint32_t>(OpenFlag::BitWrite)) != 0 );
 }
 
 inline bool FileBase::canRead() const
 {
     ASSERT(isOpened());
-    return ( (getMode() & static_cast<int>(FOB_READ)) != 0 );
+    return ( (getMode() & static_cast<uint32_t>(OpenFlag::BitRead)) != 0 );
 }
 
 inline bool FileBase::moveToBegin() const

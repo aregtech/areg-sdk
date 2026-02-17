@@ -362,12 +362,12 @@ bool String::makeBool( const char * strBoolean, const char ** end /*= nullptr*/ 
     int lenSkip = 0;
     int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
     int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::eCompare::Equal)
+    if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::Ordering::Equal)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::eCompare::Equal)
+    else if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::Ordering::Equal)
     {
         result = false;
         lenSkip= lenFalse;

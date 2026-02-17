@@ -43,7 +43,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
 
     , mScopeController  ( scopeController )
     , mIsEnabled        ( false )
-    , mRingStack        ( 0, NECommon::eRingOverlap::ShiftOnOverlap )
+    , mRingStack        ( 0, NECommon::OverlapPolicy::Shift )
 {
 }
 

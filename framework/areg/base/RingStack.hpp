@@ -50,7 +50,7 @@ template <typename VALUE> class RingStackBase;
  *          The capacity might be changed depending on overlapping flag.
  *          If ring stack is full, whether the capacity remains same or not,
  *          whether new element is pushed or not, depends on overlapping flag.
- *          For more details of capacity flag see NECommon::eRingOverlap
+ *          For more details of capacity flag see NECommon::OverlapPolicy
  *          description. In Ring Stack the start and end position might point
  *          any index withing stack, but they cannot be more than capacity value.
  *
@@ -81,7 +81,7 @@ protected:
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          it is required to insert new element.
      **/
-    explicit RingStackBase( Lockable & syncObject, uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    explicit RingStackBase( Lockable & syncObject, uint32_t initCapacity = 0, NECommon::OverlapPolicy onOverlap = NECommon::OverlapPolicy::Stop );
 
     /**
      * \brief   Destructor. Public
@@ -190,7 +190,7 @@ public:
     /**
      * \brief   Returns the overlapping type of the Ring Stack
      **/
-    NECommon::eRingOverlap getOverlap() const;
+    NECommon::OverlapPolicy getOverlap() const;
 
     /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
@@ -243,11 +243,11 @@ public:
      * \brief   Pushes new element at the end of Ring Stack
      *          If Ring Stack is full, the operation depends on
      *          overlapping flag:
-     *          1.  If overlap flag is StopOnOverlap, the element will not be set.
-     *          2.  If overlap flag is ShiftOnOverlap, the element will be set at the tail of stack,
+     *          1.  If overlap flag is Stop, the element will not be set.
+     *          2.  If overlap flag is Shift, the element will be set at the tail of stack,
      *              but the size of Ring Stack will not be changed. The element on head of stack 
      *              will be lost.
-     *          3.  If overlap flag is ResizeOnOverlap, it will resize ring stack
+     *          3.  If overlap flag is Resize, it will resize ring stack
      *              by increasing capacity twice. If capacity was zero, it will set to 2.
      * \param   newElement  New element to set at the end of Ring Stack.
      * \return  Returns size of stack.
@@ -281,13 +281,13 @@ public:
      * \brief   Adds elements from given source. The elements will be copied at the end of stack.
      *          If capacity of stack is small to copy all elements from the source, the results depends on 
      *          overlapping flag of stack:
-     *          1.  If overlap flag is StopOnOverlap, the elements will be copied until the stack is not full.
+     *          1.  If overlap flag is Stop, the elements will be copied until the stack is not full.
      *              When stack is full, no more elements will be copied.
-     *          2.  If overlap flag is ShiftOnOverlap, the element will be copied until the stack is not full.
+     *          2.  If overlap flag is Shift, the element will be copied until the stack is not full.
      *              Then the elements will be set by removing head of stack until all elements from given source
      *              are not copied. The capacity of stack will remain unchanged. If during copying stack is full,
      *              the elements at head are lost.
-     *          3.  If overlap flag is ResizeOnOverlap and if elements in source are bigger than capacity of stack,
+     *          3.  If overlap flag is Resize and if elements in source are bigger than capacity of stack,
      *              the capacity of stack will be increased that no elements are lost and all elements from source
      *              are copied. No data will be lost.
      * \param   source  The source of Ring stack to get elements.
@@ -355,7 +355,7 @@ protected:
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
      **/
-    const NECommon::eRingOverlap    mOnOverlap;
+    const NECommon::OverlapPolicy    mOnOverlap;
 
     /**
      * \brief   The array of element in stack.
@@ -430,11 +430,11 @@ private:
      * \param   rightCapacity   The capacity of the right ring stack.
      * \param   rightCount      The number of entries in the right ring stack.
      * \return  Returns one of the values:
-     *              1. NEMath::eCompare::Equal  -- if 2 lists are equal.
-     *              2. NEMath::eCompare::Bigger -- if `left` stack is bigger than the `right`.
-     *              2. NEMath::eCompare::Smaller-- if `left` stack is smaller than the `right`.
+     *              1. NEMath::Ordering::Equal  -- if 2 lists are equal.
+     *              2. NEMath::Ordering::Bigger -- if `left` stack is bigger than the `right`.
+     *              2. NEMath::Ordering::Smaller-- if `left` stack is smaller than the `right`.
      **/
-    NEMath::eCompare _compareRings(const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount, const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const;
+    NEMath::Ordering _compareRings(const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount, const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const;
 
     /**
      * \brief   Copies the stack from the given source.
@@ -478,7 +478,7 @@ public:
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          pushing new element is required.
      **/
-    explicit ConcurrentRingStack(uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    explicit ConcurrentRingStack(uint32_t initCapacity = 0, NECommon::OverlapPolicy onOverlap = NECommon::OverlapPolicy::Stop );
 
     /**
      * \brief   Copy constructor.
@@ -567,7 +567,7 @@ public:
      * \param   onOverlap       Overlapping flag, used when ring stack is full and 
      *                          pushing new element is required.
      **/
-    RingStack(uint32_t initCapacity = 0, NECommon::eRingOverlap onOverlap = NECommon::eRingOverlap::StopOnOverlap );
+    RingStack(uint32_t initCapacity = 0, NECommon::OverlapPolicy onOverlap = NECommon::OverlapPolicy::Stop );
 
     /**
      * \brief   Copy constructor.
@@ -639,7 +639,7 @@ private:
 // RingStackBase<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-RingStackBase<VALUE>::RingStackBase( Lockable & syncObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+RingStackBase<VALUE>::RingStackBase( Lockable & syncObject, uint32_t initCapacity /*= 0*/, NECommon::OverlapPolicy onOverlap /*= NECommon::OverlapPolicy::Stop*/ )
     : mSyncObj  ( syncObject )
     , mOnOverlap( onOverlap )
     , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
@@ -718,7 +718,7 @@ bool RingStackBase<VALUE>::operator == (const RingStackBase<VALUE>& other) const
 
     if (mElemCount == other.mElemCount)
     {
-        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) == NEMath::eCompare::Equal;
+        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) == NEMath::Ordering::Equal;
     }
 
     return result;
@@ -736,7 +736,7 @@ bool RingStackBase<VALUE>::operator != (const RingStackBase<VALUE>& other) const
 
     if (mElemCount == other.mElemCount)
     {
-        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) != NEMath::eCompare::Equal;
+        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) != NEMath::Ordering::Equal;
     }
 
     return result;
@@ -769,7 +769,7 @@ bool RingStackBase<VALUE>::isEmpty() const
 }
 
 template <typename VALUE>
-NECommon::eRingOverlap RingStackBase<VALUE>::getOverlap() const
+NECommon::OverlapPolicy RingStackBase<VALUE>::getOverlap() const
 {
     return mOnOverlap;
 }
@@ -797,7 +797,7 @@ template <typename VALUE>
 bool RingStackBase<VALUE>::isFull() const
 {
     Lock lock(mSyncObj);
-    return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOverlap) && (mElemCount == mCapacity);
+    return (mOnOverlap != NECommon::OverlapPolicy::Resize) && (mElemCount == mCapacity);
 }
 
 template <typename VALUE>
@@ -921,7 +921,7 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
     {
         switch ( mOnOverlap )
         {
-        case NECommon::eRingOverlap::ShiftOnOverlap:
+        case NECommon::OverlapPolicy::Shift:
             if (mCapacity != 0u)
             {
                 ASSERT(mStackList != nullptr);
@@ -935,7 +935,7 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
             // else capacity == 0 => nothing to do
             break;
 
-        case NECommon::eRingOverlap::ResizeOnOverlap:
+        case NECommon::OverlapPolicy::Resize:
             // grow buffer (double or at least 1)
             if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
             {
@@ -948,7 +948,7 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
             }
             break;
 
-        case NECommon::eRingOverlap::StopOnOverlap:
+        case NECommon::OverlapPolicy::Stop:
             AREG_OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
             break;  // do nothing
 
@@ -1143,16 +1143,16 @@ uint32_t RingStackBase<VALUE>::_ring2NormIndex(uint32_t ring) const
 }
 
 template <typename VALUE>
-NEMath::eCompare RingStackBase<VALUE>::_compareRings( const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount
+NEMath::Ordering RingStackBase<VALUE>::_compareRings( const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount
                                                          , const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const
 {
     ASSERT((leftStart < leftCapacity) && (rightStart < rightCapacity));
-    NEMath::eCompare result{ NEMath::eCompare::Equal };
+    NEMath::Ordering result{ NEMath::Ordering::Equal };
     uint32_t count = std::min(leftCount, rightCount);
     while (count != 0u)
     {
         result = NEMath::compare<VALUE>(left[leftStart], right[rightStart]);
-        if (result != NEMath::eCompare::Equal)
+        if (result != NEMath::Ordering::Equal)
         {
             return result;
         }
@@ -1198,7 +1198,7 @@ void RingStackBase<VALUE>::_copyStack(const RingStackBase<VALUE>& source)
 // ConcurrentRingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-ConcurrentRingStack<VALUE>::ConcurrentRingStack(uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+ConcurrentRingStack<VALUE>::ConcurrentRingStack(uint32_t initCapacity /*= 0*/, NECommon::OverlapPolicy onOverlap /*= NECommon::OverlapPolicy::Stop*/ )
     : RingStackBase<VALUE>    ( mLock, initCapacity, onOverlap )
     , mLock ( false )
 {
@@ -1277,7 +1277,7 @@ bool ConcurrentRingStack<VALUE>::operator != (const RingStackBase<VALUE>& other)
 // RingStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
-RingStack<VALUE>::RingStack(uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
+RingStack<VALUE>::RingStack(uint32_t initCapacity /*= 0*/, NECommon::OverlapPolicy onOverlap /*= NECommon::OverlapPolicy::Stop*/ )
     : RingStackBase<VALUE>    ( mNoLock, initCapacity, onOverlap )
     , mNoLock   ( )
 {

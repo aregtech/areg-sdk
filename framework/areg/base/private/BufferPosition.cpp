@@ -54,7 +54,7 @@ unsigned int BufferPosition::getPosition() const
 /**
  * \brief   Sets the current position of cursor
  **/
-unsigned int BufferPosition::setPosition( int offset, Cursor::eCursorPosition startAt ) const
+unsigned int BufferPosition::setPosition( int offset, Cursor::SeekOrigin startAt ) const
 {
     if (mBuffer.isValid() == false)
     {
@@ -66,16 +66,16 @@ unsigned int BufferPosition::setPosition( int offset, Cursor::eCursorPosition st
 
     switch (startAt)
     {
-    case Cursor::eCursorPosition::PositionBegin:
+    case Cursor::SeekOrigin::Begin:
         curPos = 0;
         offset = offset < 0 ? 0 : std::min(offset, size);
         break;
 
-    case Cursor::eCursorPosition::PositionCurrent:
+    case Cursor::SeekOrigin::Current:
         offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
         break;
 
-    case Cursor::eCursorPosition::PositionEnd:
+    case Cursor::SeekOrigin::End:
         curPos = size;
         offset = offset < 0 ? std::max(offset, -1 * size) : 0;
         break;

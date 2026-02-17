@@ -121,7 +121,7 @@ int ScopeController::addScopeGroupPriority( const String & scopeGroupName, NELog
         for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
         {
             LogScope * scope = mMapLogScope.valueAtPosition( pos );
-            if ( scopeGroupName.compare( scope->getScopeName( ), true ) == NEMath::eCompare::Equal )
+            if ( scopeGroupName.compare( scope->getScopeName( ), true ) == NEMath::Ordering::Equal )
             {
                 scope->addPriority( addPrio );
                 ++ result;
@@ -144,7 +144,7 @@ int ScopeController::removeScopeGroupPriority( const String & scopeGroupName, NE
         for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
         {
             LogScope * scope = mMapLogScope.valueAtPosition( pos );
-            if ( scopeGroupName.compare( scope->getScopeName( ), true ) == NEMath::eCompare::Equal )
+            if ( scopeGroupName.compare( scope->getScopeName( ), true ) == NEMath::Ordering::Equal )
             {
                 scope->removePriority( remPrio );
                 ++ result;

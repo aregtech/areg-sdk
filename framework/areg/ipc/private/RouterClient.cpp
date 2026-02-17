@@ -284,7 +284,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
     if ( msgReceived.isValid() && whichSource.isValid() )
     {
         NEService::eFuncIdRange msgId{ static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
-        NEMemory::eMessageResult result{ static_cast<NEMemory::eMessageResult>(msgReceived.getResult()) };
+        NEMemory::MessageResult result{ static_cast<NEMemory::MessageResult>(msgReceived.getResult()) };
         LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, NEMemory::getString(result));
 
         switch ( msgId )
@@ -308,7 +308,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                         NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
-                        if ( result == NEMemory::eMessageResult::ResultSucceed )
+                        if ( result == NEMemory::MessageResult::Succeed )
                         {
                             mRegisterConsumer.registeredRemoteServiceConsumer(proxy);
                         }
@@ -323,7 +323,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                     {
                         StubAddress stub(msgReceived);
                         stub.setSource( mChannel.getSource() );
-                        if ( result == NEMemory::eMessageResult::ResultSucceed )
+                        if ( result == NEMemory::MessageResult::Succeed )
                         {
                             mRegisterConsumer.registeredRemoteServiceProvider( stub );
                         }

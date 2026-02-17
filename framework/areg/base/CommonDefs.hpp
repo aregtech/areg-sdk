@@ -37,39 +37,38 @@ namespace NECommon
      *          and number of elements in buffer or stack is equal to stack
      *          capacity. On next request to push element, the stack may change
      *          behavior, depending on overlapping flag, which are:
-     *          1.  StopOnOverlap   --  Do not insert any new element if ring is full.
-     *          2.  ShiftOnOverlap  --  Do not change ring capacity if it is full,
-     *                                  but shift start position, i.e. overwrite 
-     *                                  the first element of ring and insert new element.
-     *          3. ResizeOnOverlap  --  Always resize ring if it is full. This changes
-     *                                  the actual capacity of ring, making it bigger.
+     *          1.  Stop  --  Do not insert any new element if ring is full.
+     *          2.  Shift --  Do not change ring capacity if it is full,
+     *                        but shift start position, i.e. overwrite 
+     *                        the first element of ring and insert new element.
+     *          3. Resize --  Always resize ring if it is full. This changes
+     *                        the actual capacity of ring, making it bigger.
      **/
-    enum class eRingOverlap : uint8_t
+    enum class OverlapPolicy  : uint8_t
     {
-          StopOnOverlap     = 0 //!< Do not insert new element, if ring is full. New element is lost.
-        , ShiftOnOverlap    = 1 //!< Shifts start position, if ring is full, insert new element, and do not resize ring. Last element is lost.
-        , ResizeOnOverlap   = 2 //!< Resize ring, if it is full. No element is lost.
-
+          Stop     = 0 //!< Do not insert new element, if ring is full. New element is lost.
+        , Shift    = 1 //!< Shifts start position, if ring is full, insert new element, and do not resize ring. Last element is lost.
+        , Resize   = 2 //!< Resize ring, if it is full. No element is lost.
     };
 
     /**
      * \brief   Sorting criteria for containers
      **/
-    enum class eSort   : uint8_t
+    enum class SortOrder    : uint8_t
     {
-          NoSorting         //!< No sorting.
-        , SortDescending    //!< Sort descending
-        , SortAscending     //!< Sort ascending
+          NoSorting     //!< No sorting.
+        , Descending    //!< Sort descending
+        , Ascending     //!< Sort ascending
     };
 
     /**
      * \brief   Indicates the index of an element in the buffer.
      **/
-    enum class eIndex  : ElemPos
+    enum class Index    : ElemPos
     {
-          InvalidIndex  = -1    //!< Indicates the invalid index in any buffer
-        , FirtIndex     =  0    //!< Indicates the first index in a buffer
-        , LastIndex     = -2    //!< Indicates the end of the buffer, i.e. the last position.
+          Invalid   = -1    //!< Indicates the invalid index in any buffer
+        , First     =  0    //!< Indicates the first index in a buffer
+        , Last      = -2    //!< Indicates the end of the buffer, i.e. the last position.
     };
 
     /**
@@ -80,17 +79,17 @@ namespace NECommon
     /**
      * \brief   The value of invalid position in buffer, list or array.
      **/
-    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(NECommon::eIndex::InvalidIndex) };
+    constexpr ElemPos      INVALID_INDEX            { static_cast<ElemPos>(NECommon::Index::Invalid) };
 
     /**
      * \brief   The first valid index in the buffer.
      **/
-    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(NECommon::eIndex::FirtIndex) };
+    constexpr ElemPos       FIRST_INDEX             { static_cast<ElemPos>(NECommon::Index::First) };
     
     /**
      * \brief   The last valid position in the string.
      **/
-    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(NECommon::eIndex::LastIndex) };
+    constexpr ElemPos       LAST_INDEX              { static_cast<ElemPos>(NECommon::Index::Last) };
     
     /**
      * \brief   The value of all characters in the string
@@ -489,19 +488,18 @@ namespace NECommon
     constexpr char              OBJECT_SEPARATOR                { '.' };
 
     /**
-     * \brief   NECommon::eCookie
+     * \brief   NECommon::Cookie
      *          The list of reserved cookie values
      **/
-    typedef enum class E_Cookies : ITEM_ID
+    enum class  Cookie  : ITEM_ID
     {
-          CookieInvalid     = 0     //!< Invalid cookie value
-        , CookieLocal       = 1     //!< Valid cookie value of local services
-        , CookieRouter      = 2     //!< Valid cookie value of the message routing system service
-        , CookieLogger      = 3     //!< Valid cookie value of the log collector system service
-        , CookieAny         = 255   //!< Any valid cookie
-        , CookieFirstRemote = 256   //!< First valid cookie of any other remote service
-    } eCookies;
-
+          Invalid       = 0     //!< Invalid cookie value
+        , Local         = 1     //!< Valid cookie value of local services
+        , Router        = 2     //!< Valid cookie value of the message routing system service
+        , Logger        = 3     //!< Valid cookie value of the log collector system service
+        , Any           = 255   //!< Any valid cookie
+        , FirstRemote   = 256   //!< First valid cookie of any other remote service
+    };
 }
 
 #endif  // AREG_BASE_COMMONDEFS_HPP

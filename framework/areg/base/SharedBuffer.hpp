@@ -246,13 +246,13 @@ public:
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  Cursor::eCursorPosition::PositionBegin   -- position from the beginning of data
-     *                  Cursor::eCursorPosition::PositionCurrent -- position from current pointer position
-     *                  Cursor::eCursorPosition::PositionEnd     -- position from the end of file
+     *                  Cursor::SeekOrigin::Begin   -- position from the beginning of data
+     *                  Cursor::SeekOrigin::Current -- position from current pointer position
+     *                  Cursor::SeekOrigin::End     -- position from the end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition( int offset, Cursor::eCursorPosition startAt ) const override;
+    virtual unsigned int setPosition( int offset, Cursor::SeekOrigin startAt ) const override;
 
 /************************************************************************/
 // ByteBuffer interface overrides, not implemented in BufferStreamBase

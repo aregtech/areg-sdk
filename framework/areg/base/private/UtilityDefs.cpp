@@ -96,17 +96,17 @@ namespace NEUtilities
 // Local static methods.
 /************************************************************************/
 
-    static NEMath::eCompare _compareLargeIntegers( const NEMath::uLargeInteger & lhs, const NEMath::uLargeInteger & rhs )
+    static NEMath::Ordering _compareLargeIntegers( const NEMath::uLargeInteger & lhs, const NEMath::uLargeInteger & rhs )
     {
-        NEMath::eCompare result = NEMath::eCompare::Equal;
+        NEMath::Ordering result = NEMath::Ordering::Equal;
         if ( lhs.u.highPart < rhs.u.highPart )
-            result = NEMath::eCompare::Smaller;
+            result = NEMath::Ordering::Smaller;
         else if ( lhs.u.highPart > rhs.u.highPart )
-            result = NEMath::eCompare::Bigger;
+            result = NEMath::Ordering::Bigger;
         else if ( lhs.u.lowPart < rhs.u.lowPart )
-            result = NEMath::eCompare::Smaller;
+            result = NEMath::Ordering::Smaller;
         else if ( lhs.u.lowPart > rhs.u.lowPart )
-            result = NEMath::eCompare::Bigger;
+            result = NEMath::Ordering::Bigger;
 
         return result;
     }
@@ -129,7 +129,7 @@ AREG_API_IMPL time_t NEUtilities::convToSeconds(const sSystemTime & sysTime)
             + static_cast<time_t>(static_cast<TIME64>((year + 299) / 400     ) * NEUtilities::DAY_TO_SECS);
 }
 
-AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lhs, const TIME64 & rhs )
+AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const TIME64 & lhs, const TIME64 & rhs )
 {
     NEMath::uLargeInteger lhsLi, rshLi;
     lhsLi.quadPart  = lhs;
@@ -189,21 +189,21 @@ AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, sSystem
     sysTime.stDayOfYear = static_cast<int>(time.tm_yday +    1);
 }
 
-AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lhs, const NEUtilities::sSystemTime & rhs )
+AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const NEUtilities::sSystemTime & lhs, const NEUtilities::sSystemTime & rhs )
 {
     TIME64 lhsTm{ NEUtilities::convToTime(lhs) };
     TIME64 rshTm{ NEUtilities::convToTime(rhs) };
     if (lhsTm > rshTm)
     {
-        return NEMath::eCompare::Bigger;
+        return NEMath::Ordering::Bigger;
     }
     else if (lhsTm < rshTm)
     {
-        return NEMath::eCompare::Smaller;
+        return NEMath::Ordering::Smaller;
     }
     else
     {
-        return NEMath::eCompare::Equal;
+        return NEMath::Ordering::Equal;
     }
 }
 

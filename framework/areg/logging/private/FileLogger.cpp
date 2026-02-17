@@ -34,15 +34,19 @@ bool FileLogger::openLogger()
         if ( fileName.isEmpty() == false )
         {
             bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
-            unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
+            unsigned int mode = static_cast<uint32_t>(File::OpenMode::Write) | 
+                                static_cast<uint32_t>(File::OpenMode::Read) |
+                                static_cast<uint32_t>(File::OpenMode::ShareRead) |
+                                static_cast<uint32_t>(File::OpenMode::ShareWrite) |
+                                static_cast<uint32_t>(File::OpenMode::Text);
 
             if (File::existFile(fileName))
             {
-                mode |= newFile ? File::FO_MODE_TRUNCATE : File::FO_MODE_EXIST;
+                mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
             }
             else
             {
-                mode |= FileBase::FO_MODE_CREATE;
+                mode |= static_cast<uint32_t>(File::OpenMode::Create);
             }
 
             if ( mLogFile.open( fileName, mode) && createLayouts() )

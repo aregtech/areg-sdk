@@ -38,7 +38,7 @@
 Application Application::_theApplication;
 
 Application::Application()
-    : mAppState     ( NEApplication::eApplicationState::AppStateStopped )
+    : mAppState     ( NEApplication::AppState::Stopped )
     , mSetup        ( false )
     , mConfigManager( )
     , mAppQuit      (false, false)
@@ -55,7 +55,7 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
                                   , ConfigListener* configListener /*= nullptr*/)
 {
-    Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
+    Application::_setAppState(NEApplication::AppState::Initializing);
     Application::_osSetupHandlers();
     Application::setWorkingDirectory( nullptr );
     startTimer = startTimer == false ? startServicing : startTimer;
@@ -87,9 +87,9 @@ void Application::initApplication(  bool startTracing   /*= true */
         Application::startMessageRouting(static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip));
     }
 
-    if (Application::getInstance().mAppState == NEApplication::eApplicationState::AppStateInitializing)
+    if (Application::getInstance().mAppState == NEApplication::AppState::Initializing)
     {
-        Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
+        Application::_setAppState(NEApplication::AppState::Ready);
     }
 
     Application::getInstance().mAppQuit.resetEvent();
@@ -97,7 +97,7 @@ void Application::initApplication(  bool startTracing   /*= true */
 
 void Application::releaseApplication()
 {
-    Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
+    Application::_setAppState(NEApplication::AppState::Releasing);
 
     WatchdogManager::stopWatchdogManager(false);
     TimerManager::stopTimerManager(false);
@@ -111,7 +111,7 @@ void Application::releaseApplication()
     ServiceManager::_waitServiceManager();
     NELogging::waitLoggingEnd();
 
-    Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
+    Application::_setAppState(NEApplication::AppState::Stopped);
     Application::_osReleaseHandlers();
 }
 
@@ -153,19 +153,19 @@ void Application::stopLogging()
 
 void Application::stopServiceManager()
 {
-    Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
+    Application::_setAppState(NEApplication::AppState::Releasing);
     
     if ( ServiceManager::isServiceManagerStarted() )
     {
         ServiceManager::_stopServiceManager(true);
     }
     
-    Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
+    Application::_setAppState(NEApplication::AppState::Stopped);
 }
 
 bool Application::startServiceManager()
 {
-    Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
+    Application::_setAppState(NEApplication::AppState::Initializing);
 
     bool result = false;
 
@@ -176,17 +176,17 @@ bool Application::startServiceManager()
             Application::startTimerManager();
             Application::startWatchdogManager();
             result = true;
-            Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
+            Application::_setAppState(NEApplication::AppState::Ready);
         }
         else
         {
-            Application::_setAppState(NEApplication::eApplicationState::AppStateFailure);
+            Application::_setAppState(NEApplication::AppState::Failure);
         }
     }
     else
     {
         result = true;
-        Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
+        Application::_setAppState(NEApplication::AppState::Ready);
     }
 
     return result;
@@ -326,7 +326,7 @@ void Application::signalAppQuit()
 bool Application::isServicingReady()
 {
     Application & theApp = Application::getInstance();
-    return (theApp.mAppState == NEApplication::eApplicationState::AppStateReady);
+    return (theApp.mAppState == NEApplication::AppState::Ready);
 }
 
 void Application::queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive )
@@ -397,50 +397,50 @@ bool Application::isConfigured()
     return Application::getInstance().mConfigManager.isConfigured();
 }
 
-bool Application::_setAppState(NEApplication::eApplicationState newState)
+bool Application::_setAppState(NEApplication::AppState newState)
 {
     bool result = false;
     Application & theApp = Application::getInstance();
-    if (newState == NEApplication::eApplicationState::AppStateFailure)
+    if (newState == NEApplication::AppState::Failure)
     {
         theApp.mAppState = newState;
     }
 
     switch (theApp.mAppState)
     {
-    case NEApplication::eApplicationState::AppStateStopped:
-        if (newState == NEApplication::eApplicationState::AppStateInitializing)
+    case NEApplication::AppState::Stopped:
+        if (newState == NEApplication::AppState::Initializing)
         {
-            theApp.mAppState = NEApplication::eApplicationState::AppStateInitializing;
+            theApp.mAppState = NEApplication::AppState::Initializing;
             result = true;
         }
         break;
 
-    case NEApplication::eApplicationState::AppStateInitializing:
-        if (newState == NEApplication::eApplicationState::AppStateReady)
+    case NEApplication::AppState::Initializing:
+        if (newState == NEApplication::AppState::Ready)
         {
-            theApp.mAppState = NEApplication::eApplicationState::AppStateReady;
+            theApp.mAppState = NEApplication::AppState::Ready;
             result = true;
         }
         break;
 
-    case NEApplication::eApplicationState::AppStateReady:
-        if (newState == NEApplication::eApplicationState::AppStateReleasing)
+    case NEApplication::AppState::Ready:
+        if (newState == NEApplication::AppState::Releasing)
         {
-            theApp.mAppState = NEApplication::eApplicationState::AppStateReleasing;
+            theApp.mAppState = NEApplication::AppState::Releasing;
             result = true;
         }
         break;
 
-    case NEApplication::eApplicationState::AppStateReleasing:
-        if (newState == NEApplication::eApplicationState::AppStateStopped)
+    case NEApplication::AppState::Releasing:
+        if (newState == NEApplication::AppState::Stopped)
         {
-            theApp.mAppState = NEApplication::eApplicationState::AppStateStopped;
+            theApp.mAppState = NEApplication::AppState::Stopped;
             result = true;
         }
         break;
 
-    case NEApplication::eApplicationState::AppStateFailure:
+    case NEApplication::AppState::Failure:
         result = true;
         break; // ignore
 

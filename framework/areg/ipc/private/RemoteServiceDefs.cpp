@@ -95,7 +95,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageHelloS
                   sizeof(NEMemory::sRemoteMessage)          // biBufSize
                 , sizeof(unsigned char)                     // biLength
                 , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
             , NEService::COOKIE_ROUTER                      // rbhTarget
@@ -120,7 +120,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeSer
                   sizeof(NEMemory::sRemoteMessage)          // biBufSize
                 , sizeof(unsigned char)                     // biLength
                 , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
             , NEService::COOKIE_ROUTER                      // rbhTarget
@@ -145,7 +145,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
                   sizeof(NEMemory::sRemoteMessage)          // biBufSize
                 , sizeof(unsigned char)                     // biLength
                 , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
             , NEMemory::INVALID_VALUE                       // rbhTarget
@@ -170,7 +170,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegist
                   sizeof(NEMemory::sRemoteMessage)          // biBufSize
                 , sizeof(unsigned char)                     // biLength
                 , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
             , NEService::COOKIE_ROUTER                      // rbhTarget
@@ -195,7 +195,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageQueryI
                   sizeof(NEMemory::sRemoteMessage)          // biBufSize
                 , sizeof(unsigned char)                     // biLength
                 , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
             , NEMemory::INVALID_VALUE                       // rbhTarget
@@ -221,7 +221,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
                   sizeof(NEMemory::sRemoteMessage)          // biBufSize
                 , sizeof(unsigned char)                     // biLength
                 , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
             , NEService::COOKIE_ROUTER                      // rbhTarget
@@ -246,7 +246,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegist
                   sizeof(NEMemory::sRemoteMessage)          // biBufSize
                 , sizeof(unsigned char)                     // biLength
                 , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
             , NEMemory::INVALID_VALUE                       // rbhTarget

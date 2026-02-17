@@ -40,7 +40,7 @@ File::File()
 {
 }
 
-File::File(const String& fileName, unsigned int mode /* = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY) */)
+File::File(const String& fileName, uint32_t mode /* = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)) */)
     : FileBase    ( )
     , mFileHandle   (File::_osGetInvalidHandle())
 {
@@ -53,7 +53,7 @@ File::~File()
     _osCloseFile();
 
     mFileHandle = File::_osGetInvalidHandle();
-    mFileMode   = FileBase::FO_MODE_INVALID;
+    mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ bool File::remove()
     }
 
     mFileHandle = File::_osGetInvalidHandle();
-    mFileMode   = FileBase::FO_MODE_INVALID;
+    mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
     mFileName   = String::getEmptyString();
 
     return result;
@@ -467,7 +467,7 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int File::setPosition(int offset, Cursor::eCursorPosition startAt) const
+unsigned int File::setPosition(int offset, Cursor::SeekOrigin startAt) const
 {
     return (isOpened() ? _osSetPositionFile(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
@@ -517,7 +517,7 @@ unsigned int File::reserve(unsigned int newSize)
             }
             else
             {
-                result = setPosition(static_cast<int>(curPos), Cursor::eCursorPosition::PositionBegin);
+                result = setPosition(static_cast<int>(curPos), Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -642,7 +642,7 @@ String File::getFileFullPath(const char* filePath)
     return result;
 }
 
-String File::getSpecialDir(File::eSpecialFolder specialFolder)
+String File::getSpecialDir(File::SpecialFolder specialFolder)
 {
     char buffer[File::MAXIMUM_PATH];
     unsigned int space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);

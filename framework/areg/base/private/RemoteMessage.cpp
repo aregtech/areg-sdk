@@ -71,7 +71,7 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
         header.rbhBufHeader.biBufSize   = bufLength;
         header.rbhBufHeader.biLength    = dataLength;
         header.rbhBufHeader.biOffset    = dataOffset;
-        header.rbhBufHeader.biBufType   = NEMemory::eBufferType::BufferRemote;
+        header.rbhBufHeader.biBufType   = NEMemory::BufferType::Remote;
         header.rbhBufHeader.biUsed      = 0;
 
         if (isValid())
@@ -150,7 +150,7 @@ unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader 
         dst.rbhBufHeader.biBufSize  = sizeBuffer;
         dst.rbhBufHeader.biLength   = sizeData;
         dst.rbhBufHeader.biOffset   = getDataOffset();
-        dst.rbhBufHeader.biBufType  = NEMemory::eBufferType::BufferRemote;
+        dst.rbhBufHeader.biBufType  = NEMemory::BufferType::Remote;
         dst.rbhBufHeader.biUsed     = rmHeader.rbhBufHeader.biUsed;
         dst.rbhTarget               = rmHeader.rbhTarget;
         dst.rbhChecksum             = rmHeader.rbhChecksum;

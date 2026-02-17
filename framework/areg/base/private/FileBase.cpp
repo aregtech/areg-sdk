@@ -60,7 +60,7 @@ inline int _readString(const FileBase & file, ClassType & outValue)
             outValue    += str;
             result      += length;
             int newPos   = static_cast<int>(result * sizeof(CharType)) + static_cast<int>(oldPos);
-            file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
+            file.setPosition(newPos, Cursor::SeekOrigin::Begin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -103,7 +103,7 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
             outValue+= str;
             result  += length;
             int newPos  = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-            file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
+            file.setPosition(newPos, Cursor::SeekOrigin::Begin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -136,7 +136,7 @@ inline int _readString(const FileBase & file, CharType * buffer, int charCount)
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
+                file.setPosition(newPos, Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -165,7 +165,7 @@ inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, Cursor::eCursorPosition::PositionBegin);
+                file.setPosition(newPos, Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -211,7 +211,7 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
 }
 
 template<typename DataType>
-NEMath::eCompare _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<NEMath::eCompare( const DataType *, const DataType * )> func )
+NEMath::Ordering _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<NEMath::Ordering( const DataType *, const DataType * )> func )
 {
     return func( memBuffer1, memBuffer2 );
 }
@@ -222,7 +222,7 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
     unsigned int result{ Cursor::INVALID_CURSOR_POSITION };
     if ( file.canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION) )
     {
-        unsigned int posSearch = file.setPosition( static_cast<int>(startPos), Cursor::eCursorPosition::PositionBegin );
+        unsigned int posSearch = file.setPosition( static_cast<int>(startPos), Cursor::SeekOrigin::Begin );
         if ( (NEString::isEmpty<CharType>(text) == false) && (length != 0) )
         {
             unsigned int dataLen = length * 2;
@@ -246,15 +246,15 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
                 readLen += inBuf;
                 for ( unsigned int i = 0; (readLen - i) >= static_cast<unsigned int>(length); ++i )
                 {
-                    NEMath::eCompare comp = _compareData<CharType>( (fileData + i)
+                    NEMath::Ordering comp = _compareData<CharType>( (fileData + i)
                                                                 , text
-                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> NEMath::eCompare
+                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> NEMath::Ordering
                                                                 {
                                                                     return NEString::compareStrings<CharType, CharType>( buf1, buf2, static_cast<NEString::CharCount>(length), sensitive );
                                                                 }
                     );
 
-                    if ( comp == NEMath::eCompare::Equal )
+                    if ( comp == NEMath::Ordering::Equal )
                     {
                         posSearch += i * sizeof(CharType);
                         result = posSearch;
@@ -286,7 +286,7 @@ FileBase::FileBase()
     , Cursor  ( )
 
     , mFileName         (String::getEmptyString())
-    , mFileMode         (static_cast<unsigned int>(FO_MODE_INVALID))
+    , mFileMode         (static_cast<uint32_t>(OpenMode::Invalid))
     , mReadConvert      (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
     , mWriteConvert     (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
 {
@@ -298,78 +298,92 @@ FileBase::FileBase()
 
 unsigned int FileBase::normalizeMode(unsigned int mode) const
 {
-    if ((mode != FO_MODE_INVALID) != 0)
+    if ((mode != static_cast<uint32_t>(OpenMode::Invalid)) != 0)
     {
-        mode |= FO_MODE_READ;
+        mode |= static_cast<uint32_t>(OpenMode::Read);
     }
 
-    if ((mode & FOB_WRITE) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) != 0)
     {
-        mode |= FO_MODE_WRITE;
+        mode |= static_cast<uint32_t>(OpenMode::Write);
     }
 
-    if ((mode & FOB_ATTACH) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitAttach)) != 0)
     {
-        mode &= ~(FOB_DETACH | FOB_TRUNCATE | FOB_TEMP_FILE | FOB_SHARE_WRITE | FOB_WRITE);
-        mode |= FO_MODE_ATTACH;
+        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitDetach)
+                    | static_cast<uint32_t>(OpenFlag::BitTruncate)
+                    | static_cast<uint32_t>(OpenFlag::BitTemp)
+                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
+                    | static_cast<uint32_t>(OpenFlag::BitWrite)
+                );
+        mode |= static_cast<uint32_t>(OpenMode::Attach);
     }
 
-    if ((mode & FOB_DETACH) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitDetach)) != 0)
     {
-        mode &= ~(FOB_ATTACH | FOB_TEMP_FILE | FOB_SHARE_WRITE);
-        mode |= FO_MODE_DETACH;
+        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitAttach)
+                    | static_cast<uint32_t>(OpenFlag::BitTemp)
+                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
+                );
+        mode |= static_cast<uint32_t>(OpenMode::Detach);
     }
 
-    if ((mode & FOB_TEMP_FILE) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0)
     {
-        mode &= ~(FOB_FOR_DELETE | FOB_EXIST | FOB_ATTACH | FOB_DETACH | FOB_SHARE_READ | FOB_SHARE_WRITE);
-        mode |= FO_MODE_CREATE_TEMP;
+        mode &= ~(    static_cast<uint32_t>(OpenFlag::BitDelete)
+                    | static_cast<uint32_t>(OpenFlag::BitExist)
+                    | static_cast<uint32_t>(OpenFlag::BitAttach)
+                    | static_cast<uint32_t>(OpenFlag::BitDetach)
+                    | static_cast<uint32_t>(OpenFlag::BitShareRead)
+                    | static_cast<uint32_t>(OpenFlag::BitShareWrite)
+                );
+        mode |= static_cast<uint32_t>(OpenMode::CreateTemp);
     }
 
-    if ((mode & FOB_TEXT) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitText)) != 0)
     {
-        mode &= ~FOB_BINARY;
-        mode |= FO_MODE_TEXT;
+        mode &= ~static_cast<uint32_t>(OpenFlag::BitBinary);
+        mode |= static_cast<uint32_t>(OpenMode::Text);
     }
     else
     {
-        mode |= FO_MODE_BINARY;
+        mode |= static_cast<uint32_t>(OpenMode::Binary);
     }
 
-    if ((mode & FOB_BINARY) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitBinary)) != 0)
     {
-        mode &= ~FOB_TEXT;
-        mode |= FO_MODE_BINARY;
+        mode &= ~static_cast<uint32_t>(OpenFlag::BitText);
+        mode |= static_cast<uint32_t>(OpenMode::Binary);
     }
 
-    if (((mode & FOB_WRITE) == 0) && ((mode & FOB_READ) != 0))
+    if (((mode & static_cast<uint32_t>(OpenFlag::BitWrite)) == 0) && ((mode & static_cast<uint32_t>(OpenFlag::BitRead)) != 0))
     {
-        mode |= FOB_EXIST;
+        mode |= static_cast<uint32_t>(OpenFlag::BitExist);
     }
-    else if ((mode & FOB_CREATE) != 0)
+    else if ((mode & static_cast<uint32_t>(OpenFlag::BitCreate)) != 0)
     {
-        mode &= ~FO_MODE_EXIST;
-        mode |= FO_MODE_CREATE;
-        mode |= FO_MODE_WRITE;
+        mode &= ~static_cast<uint32_t>(OpenMode::Exist);
+        mode |= static_cast<uint32_t>(OpenMode::Create);
+        mode |= static_cast<uint32_t>(OpenMode::Write);
     }
 
-    if ((mode & FOB_EXIST) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitExist)) != 0)
     {
-        mode |= FO_MODE_EXIST;
+        mode |= static_cast<uint32_t>(OpenMode::Exist);
     }
     else
     {
-        mode &= ~FOB_TRUNCATE;
+        mode &= ~static_cast<uint32_t>(OpenFlag::BitTruncate);
     }
 
-    if ((mode & FOB_TRUNCATE) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitTruncate)) != 0)
     {
-        mode |= FO_MODE_TRUNCATE;
+        mode |= static_cast<uint32_t>(OpenMode::Truncate);
     }
 
-    if ((mode & FOB_WRITE_DIRECT) != 0)
+    if ((mode & static_cast<uint32_t>(OpenFlag::BitDirect)) != 0)
     {
-        mode |= FO_MODE_WRITE_DIRECT;
+        mode |= static_cast<uint32_t>(OpenMode::WriteDirect);
     }
 
     return mode;
@@ -514,7 +528,7 @@ unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillVal
         unsigned int newPos = reserve(newSize);
         if ((newPos != Cursor::INVALID_CURSOR_POSITION) && (newPos > curPos))
         {
-            setPosition(static_cast<int>(curPos), Cursor::eCursorPosition::PositionBegin);
+            setPosition(static_cast<int>(curPos), Cursor::SeekOrigin::Begin);
             for (unsigned int i = 0; i < newPos; ++ i)
             {
                 write( &fillValue, sizeof( unsigned char ) );
@@ -530,7 +544,7 @@ unsigned int FileBase::resizeAndFill(unsigned int newSize, unsigned char fillVal
 
 void FileBase::resetCursor() const
 {
-    setPosition(0, Cursor::eCursorPosition::PositionBegin);
+    setPosition(0, Cursor::SeekOrigin::Begin);
 }
 
 unsigned int FileBase::read(ByteBuffer & buffer) const
@@ -616,7 +630,7 @@ unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * 
     unsigned int result{ Cursor::INVALID_CURSOR_POSITION };
     if ( canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION))
     {
-        unsigned int posSearch = setPosition( static_cast<int>(startPos), Cursor::eCursorPosition::PositionBegin );
+        unsigned int posSearch = setPosition( static_cast<int>(startPos), Cursor::SeekOrigin::Begin );
         if ( (buffer != nullptr) && (length != 0) )
         {
             unsigned int dataLen = length * 2;
@@ -637,15 +651,15 @@ unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * 
 
                 for ( unsigned int i = 0; (readLen - i) >= length; ++i )
                 {
-                    NEMath::eCompare comp = _compareData<unsigned char>( (fileData + i)
+                    NEMath::Ordering comp = _compareData<unsigned char>( (fileData + i)
                                                                        , buffer
-                                                                       , [length]( const unsigned char * buf1, const unsigned char * buf2 ) -> NEMath::eCompare
+                                                                       , [length]( const unsigned char * buf1, const unsigned char * buf2 ) -> NEMath::Ordering
                                                                          {
                                                                              return NEMemory::memCompare( buf1, buf2, length );
                                                                          }
                                                                         );
 
-                    if ( comp == NEMath::eCompare::Equal )
+                    if ( comp == NEMath::Ordering::Equal )
                     {
                         posSearch += i;
                         result = posSearch;
