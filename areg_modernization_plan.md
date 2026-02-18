@@ -328,7 +328,7 @@ Redundant "Service" prefix dropped where namespace or context already implies it
 | `E_EventFired` / `eEventFired`                   | `EventFired`               | `areg::os::` | `areg/base/private/posix/SyncLockAndWaitPosix.hpp` |                                          |
 | `E_EventOrder` / `eEventOrder`                   | `EventOrder`               | `areg::`| `areg/component/private/EventDispatcherBase.hpp`  |                                            |
 | `E_EventPriority` / `eEventPriority`             | `EventPriority`            | `areg::`| `areg/component/Event.hpp`                        |                                            |
-| `E_EventResetInfo` / `eEventResetInfo`           | `EventResetInfo`           | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
+| `E_EventResetInfo` / `ResetMode`           | `EventResetInfo`           | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
 | `E_EventType` / `eEventType`                     | `EventType`                | `areg::`| `areg/component/Event.hpp`                        |                                            |
 | `E_ExitCodes` / `eExitCodes`                     | `ExitCode`                 | `areg::`           | `areg/base/ThreadConsumer.hpp`                  | Singular                                   |
 | `E_FileOpenBits` / `eFileOpenBits`               | `FileOpenBits`             | `areg::`           | `areg/base/FileBase.hpp`                          |                                            |
@@ -338,7 +338,7 @@ Redundant "Service" prefix dropped where namespace or context already implies it
 | `E_Layouts` / `eLayouts`                         | `LayoutTag`                | `areg::`      | `areg/logging/private/LogOptions.hpp`           |                                            |
 | `E_LogStatus` / `eLogStatus`                     | `LogStatus`                | `areg::`      | `areg/logging/private/LogOptions.hpp`           |                                            |
 | `E_LoggingAction` / `eLoggingAction`             | `LoggingAction`            | `areg::`      | `areg/logging/private/LoggingEvent.hpp`           |                                            |
-| `E_MatchCondition` / `eMatchCondition`           | `MatchCondition`           | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
+| `E_MatchCondition` / `WaitCondition`           | `MatchCondition`           | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
 | `E_MessageDataType` / `eMessageDataType`         | `MessageDataType`          | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
 | `E_MessageSource` / `eMessageSource`             | `MessageSource`            | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
 | `E_ProcEnv` / `eProcEnv`                         | `ProcessEnv`               | `areg::`           | `areg/base/Process.hpp`                           |                                            |
@@ -354,7 +354,7 @@ Redundant "Service" prefix dropped where namespace or context already implies it
 | `E_SyncObject` / `eSyncObject`                   | `SyncCategory`             | `areg::`           | `areg/base/SyncObject.hpp`                      | `SyncObject` taken by class                |
 | `E_SyncObjectFired` / `eSyncObjectFired`         | `SyncObjectFired`          | `areg::os::` | `areg/base/private/posix/SyncDefsPosix.hpp` |                                            |
 | `E_ThreadPriority` / `eThreadPriority`           | `ThreadPriority`           | `areg::`           | `areg/base/Thread.hpp`                            |                                            |
-| `E_WaitType` / `eWaitType`                       | `WaitType`                 | `areg::os::` | `areg/base/private/posix/SyncLockAndWaitPosix.hpp` |                                          |
+| `E_WaitType` / `WaitMode`                       | `WaitType`                 | `areg::os::` | `areg/base/private/posix/SyncLockAndWaitPosix.hpp` |                                          |
 | `ResultType`                                     | (keep)                     | `areg::`| `areg/component/ServiceDefs.hpp`                    |                                            |
 | `eBufferType`                                    | `BufferType`               | `areg::`           | `areg/base/MemoryDefs.hpp`                          |                                            |
 | `eColumnType`                                    | `ColumnType`               | `aregext::`      | `aregextend/db/SqliteStatement.hpp`               |                                            |

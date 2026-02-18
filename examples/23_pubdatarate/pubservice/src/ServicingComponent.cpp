@@ -347,12 +347,12 @@ void ServicingComponent::_runImageThread()
     }
 }
 
-void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, Wait::eWaitResult waitResult)
+void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult)
 {
     Lock lock(mLock);
     mDataRate += genData;
     mItemRate += genBlocks;
-    if (waitResult >= Wait::eWaitResult::WaitInMicro)
+    if (waitResult >= Wait::WaitResolution::Microsecond)
     {
         mDidSleep += 1;
     }

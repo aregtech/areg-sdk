@@ -149,7 +149,7 @@ Many enums have both `E_Foo` (inner) and `eFoo` (alias) — keep only the clean 
 | `E_EventFired` / `eEventFired`           | `EventFired`               | `framework/areg/base/private/posix/SyncLockAndWaitPosix.hpp`        |                                            |
 | `E_EventOrder` / `eEventOrder`           | `EventOrder`               | `framework/areg/component/private/EventDispatcherBase.hpp`       |                                            |
 | `E_EventPriority` / `eEventPriority`     | `EventPriority`            | `framework/areg/component/Event.hpp`                             |                                            |
-| `E_EventResetInfo` / `eEventResetInfo`   | `EventResetInfo`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
+| `E_EventResetInfo` / `ResetMode`   | `EventResetInfo`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
 | `E_EventType` / `eEventType`             | `EventType`                | `framework/areg/component/Event.hpp`                             |                                            |
 | `E_ExitCodes` / `eExitCodes`             | `ExitCode`                 | `framework/areg/base/ThreadConsumer.hpp`                       | Singular                                   |
 | `E_FileOpenBits` / `eFileOpenBits`       | `FileOpenBits`             | `framework/areg/base/FileBase.hpp`                               |                                            |
@@ -159,7 +159,7 @@ Many enums have both `E_Foo` (inner) and `eFoo` (alias) — keep only the clean 
 | `E_Layouts` / `eLayouts`                 | `LayoutToken`              | `framework/areg/logging/private/LogOptions.hpp`                | `Layout` too generic                       |
 | `E_LogStatus` / `eLogStatus`             | `LogStatus`                | `framework/areg/logging/private/LogOptions.hpp`                |                                            |
 | `E_LoggingAction` / `eLoggingAction`     | `LoggingAction`            | `framework/areg/logging/private/LoggingEvent.hpp`                |                                            |
-| `E_MatchCondition` / `eMatchCondition`   | `MatchCondition`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
+| `E_MatchCondition` / `WaitCondition`   | `MatchCondition`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
 | `E_MessageDataType` / `eMessageDataType` | `MessageDataType`          | `framework/areg/component/ServiceDefs.hpp`                         |                                            |
 | `E_MessageSource` / `eMessageSource`     | `MessageSource`            | `framework/areg/component/ServiceDefs.hpp`                         |                                            |
 | `E_ProcEnv` / `eProcEnv`                 | `ProcessEnv`               | `framework/areg/base/Process.hpp`                                | Clearer                                    |
@@ -175,7 +175,7 @@ Many enums have both `E_Foo` (inner) and `eFoo` (alias) — keep only the clean 
 | `E_SyncObject` / `eSyncObject`           | `SyncObjectType`           | `framework/areg/base/SyncObject.hpp`                           | `SyncObject` taken by class rename         |
 | `E_SyncObjectFired` / `eSyncObjectFired` | `SyncObjectFired`          | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
 | `E_ThreadPriority` / `eThreadPriority`   | `ThreadPriority`           | `framework/areg/base/Thread.hpp`                                 |                                            |
-| `E_WaitType` / `eWaitType`               | `WaitType`                 | `framework/areg/base/private/posix/SyncLockAndWaitPosix.hpp`        |                                            |
+| `E_WaitType` / `WaitMode`               | `WaitType`                 | `framework/areg/base/private/posix/SyncLockAndWaitPosix.hpp`        |                                            |
 | `ResultType`                             | (keep)                     | `framework/areg/component/ServiceDefs.hpp`                         | Already PascalCase, no prefix              |
 | `eBufferType`                            | `BufferType`               | `framework/areg/base/MemoryDefs.hpp`                               |                                            |
 | `eColumnType`                            | `ColumnType`               | `framework/aregextend/db/SqliteStatement.hpp`                    |                                            |
@@ -192,7 +192,7 @@ Many enums have both `E_Foo` (inner) and `eFoo` (alias) — keep only the clean 
 | `eLoggerOptions`                         | `LoggerOption`             | `framework/logcollector/app/LogCollector.hpp`                    | Singular                                   |
 | `eLoggingAction`                         | `LoggingAction`            | `framework/areg/logging/private/LoggingEvent.hpp`                | (same as E_ alias above)                   |
 | `LoggingType`                           | `LoggingType`              | `framework/areg/logging/LoggingDefs.hpp`                           | Fix typo: Loging -> Logging, singular      |
-| `eMatchCondition`                        | `MatchCondition`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            | (same as E_ alias above)                   |
+| `WaitCondition`                        | `MatchCondition`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            | (same as E_ alias above)                   |
 | `eMessageResult`                         | `MessageResult`            | `framework/areg/base/MemoryDefs.hpp`                               |                                            |
 | `eModelState`                            | `ModelState`               | `framework/areg/component/Model.hpp`                        |                                            |
 | `eNode`                                  | `NodeType`                 | `framework/areg/logging/private/ScopeNodeBase.hpp`               | `Node` too generic                         |

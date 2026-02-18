@@ -27,11 +27,11 @@
 // SyncObject class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-SyncObject::SyncObject(SyncObject::eSyncObject syncObjectType)
+SyncObject::SyncObject(SyncObject::SyncKind syncObjectType)
     : mSyncObject      ( nullptr )
     , mSyncObjectType  (syncObjectType)
 {
-    ASSERT( mSyncObjectType != SyncObject::eSyncObject::SoUnknown );
+    ASSERT( mSyncObjectType != SyncObject::SyncKind::SoUnknown );
 }
 
 SyncObject::~SyncObject()

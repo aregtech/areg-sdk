@@ -166,7 +166,7 @@ void NullDispatcherThread::onThreadRuns()
 int NullDispatcherThread::onThreadExit()
 {
     ASSERT(false);
-    return static_cast<int>(ThreadConsumer::eExitCodes::ExitError);
+    return static_cast<int>(ThreadConsumer::ExitCode::Error);
 }
 
 bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= NECommon::WAIT_INFINITE */ )
@@ -242,7 +242,7 @@ void DispatcherThread::triggerExit()
     mExternalEvents.unlockQueue( );
 }
 
-Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -251,7 +251,7 @@ Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitFor
                 , isRunning() ? "RUNNING" : "NOT RUNNING" );
 
     stopDispatcher( );
-    Thread::eCompletionStatus result = Thread::shutdownThread(waitForStopMs);
+    Thread::ThreadCompletion result = Thread::shutdownThread(waitForStopMs);
     removeAllEvents( );
     return result;
 }

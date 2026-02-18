@@ -118,9 +118,9 @@ void ModuleIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
 {
     static const ITEM_ID _moduleId{ Process::getInstance().getId() };
 #ifdef _BIT64
-    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), NEString::Radix::Hexadecimal) };
 #else   // _BIT32
-    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), NEString::Radix::Hexadecimal) };
 #endif  // _BIT64
 
     if (msgLog.logModuleId != 0)

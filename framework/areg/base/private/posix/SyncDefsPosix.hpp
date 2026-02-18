@@ -45,80 +45,56 @@ namespace NESyncTypesIX
     constexpr int   POSIX_SUCCESS       = 0;
 
     /**
-     * \brief   NESyncTypesIX::eSyncObjectFired
+     * \brief   NESyncTypesIX::SyncSignal
      *          The valid indexes when synchronization event is fired in the waiting list
      *          or error happened.
      **/
-    typedef enum  E_SyncObjectFired : int
+    enum class SyncSignal   : int32_t
     {
-        /**
-         * \brief   Invalid synchronization object.
-         **/
-          SyncObjectInvalid     =  -1
-        /**
-         * \brief   The index of first synchronization object.
-         **/
-        , SyncObject0           =   0
-        /**
-         * \brief   Indicates that all synchronization events where fired.
-         **/
-        , SyncObjectAll         =  NECommon::MAXIMUM_WAITING_OBJECTS
-        /**
-         * \brief   Indicates start of error range
-         **/
-        , SyncObjectError       =  99
-        /**
-         * \brief   There was an error while trying to lock first synchronization object.
-         **/
-        , SyncObject0Error      = 100
-        /**
-         * \brief   Asynchronously signaled.
-         **/
-        , SyncAsyncSignal       = 200
-        /**
-         * \brief   Lock waiting timeout has been expired.
-         **/
-        , SyncObjectTimeout     = 201
-        /**
-         * \brief   The waiting was interrupted by some other event, like timer expired.
-         **/
-        , SyncWaitInterrupted   = 202
-    } eSyncObjectFired;
+          Invalid     =  -1 // Invalid synchronization object.
+        , First       =  0  // First synchronization object in the waiting list is fired.
+        , All         =  NECommon::MAXIMUM_WAITING_OBJECTS // All synchronization objects in the waiting list are fired.
+        , Error       =  99 // Indicates start of error range
+        , FirstError  = 100 // First error index, so that it is possible to detect which event in the waiting list caused the error.
+        , AsyncSignal = 200 // Indicates that the waiting thread is signaled by some asynchronous event.
+        , Timeout     = 201 // Indicates that waiting timeout is expired.
+        , Interrupted = 202 // The waiting was interrupted by some other event, like timer expired.
+    };
 
     /**
-     * \brief   NESyncTypesIX::eEventResetInfo
+     * \brief   NESyncTypesIX::ResetMode
      *          The types of reset for event objects.
      **/
-    typedef enum  class  E_EventResetInfo
+    enum  class  ResetMode
     {
-          EventResetManual      //!< The event is reset manually.
-        , EventResetAutomatic   //!< The event is reset automatically.
-    } eEventResetInfo;
+          Manual    //!< The event is reset manually.
+        , Automatic //!< The event is reset automatically.
+    };
     /**
-     * \brief   Returns string value of NESyncTypesIX::eEventResetInfo
+     * \brief   Returns string value of NESyncTypesIX::ResetMode
      **/
-    inline const char * getString(NESyncTypesIX::eEventResetInfo val);
+    inline const char * getString(NESyncTypesIX::ResetMode val);
 
     /**
-     * \brief   NESyncTypesIX::eMatchCondition
+     * \brief   NESyncTypesIX::WaitCondition
      *          Event matching condition. Either there should be exact match,
      *          i.e. all events are fired, of any event in the list should be fired.
      **/
-    typedef enum class E_MatchCondition
+    enum class WaitCondition
     {
-          MatchConditionExact   //!< The should be exact matchin condition, i.e. all event in the list should be fired.
-        , MatchConditionAny     //!< Any event in the list should be fired to unlock the thread.
-    } eMatchCondition;
+          Exact   //!< The should be exact matchin condition, i.e. all event in the list should be fired.
+        , Any     //!< Any event in the list should be fired to unlock the thread.
+    };
     /**
-     * \brief   Returns string value of NESyncTypesIX::eMatchCondition
+     * \brief   Returns string value of NESyncTypesIX::WaitCondition
      **/
-    inline const char * getString(NESyncTypesIX::eMatchCondition val);
+    inline const char * getString(NESyncTypesIX::WaitCondition val);
 
     /**
-     * \brief   NESyncTypesIX::eSyncObject
+     * \brief   NESyncTypesIX::SyncKind
      *          Type of synchronization objects.
      **/
-    typedef enum class E_SyncObject : unsigned int
+    enum class SyncKind : uint32_t
     {
           SoUndefined       = (0 << 0) | 0  //!< No type, it is undefined and invalid.
         , SoWaitable        = (1 << 0) | 1  //!< Waitiable object
@@ -128,12 +104,11 @@ namespace NESyncTypesIX
         , SoWaitEvent       = (1 << 2) | 1  //!< Waitable event, so that it can be used in the waiting list.
         , SoWaitSemaphore   = (1 << 3) | 1  //!< Waitable semaphore, so that it can be used in the waiting list.
         , SoWaitTimer       = (1 << 4) | 1  //!< Waitable timer, so that it can be used in the waiting list
-
-    } eSyncObject;
+    };
     /**
-     * \brief   Returns string value of NESyncTypesIX::eSyncObject
+     * \brief   Returns string value of NESyncTypesIX::SyncKind
      **/
-    inline const char * getString(NESyncTypesIX::eSyncObject val);
+    inline const char * getString(NESyncTypesIX::SyncKind val);
 
     /**
      * \brief   Calculates the timeout value starting from now.
@@ -183,54 +158,54 @@ inline void NESyncTypesIX::convTimeout( timespec & out_result, unsigned int msTi
     out_result.tv_nsec  = static_cast<int64_t>(ns.count());
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::eEventResetInfo val)
+inline const char * NESyncTypesIX::getString(NESyncTypesIX::ResetMode val)
 {
     switch (val)
     {
-    case NESyncTypesIX::eEventResetInfo::EventResetManual:
-        return "NESyncTypesIX::EventResetManual";
-    case NESyncTypesIX::eEventResetInfo::EventResetAutomatic:
-        return "NESyncTypesIX::EventResetAutomatic";
+    case NESyncTypesIX::ResetMode::Manual:
+        return "NESyncTypesIX::Manual";
+    case NESyncTypesIX::ResetMode::Automatic:
+        return "NESyncTypesIX::Automatic";
     default:
-        return "ERR: Unexpected NESyncTypesIX::eEventResetInfo value!";
+        return "ERR: Unexpected NESyncTypesIX::ResetMode value!";
     }
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::eMatchCondition val)
+inline const char * NESyncTypesIX::getString(NESyncTypesIX::WaitCondition val)
 {
     switch (val)
     {
-    case NESyncTypesIX::eMatchCondition::MatchConditionExact:
-        return "NESyncTypesIX::MatchConditionExact";
-    case NESyncTypesIX::eMatchCondition::MatchConditionAny:
-        return "NESyncTypesIX::MatchConditionAny";
+    case NESyncTypesIX::WaitCondition::Exact:
+        return "NESyncTypesIX::Exact";
+    case NESyncTypesIX::WaitCondition::Any:
+        return "NESyncTypesIX::Any";
     default:
-        return "ERR: Unexpected NESyncTypesIX::eMatchCondition value!";
+        return "ERR: Unexpected NESyncTypesIX::WaitCondition value!";
     }
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::eSyncObject val)
+inline const char * NESyncTypesIX::getString(NESyncTypesIX::SyncKind val)
 {
     switch (val)
     {
-    case NESyncTypesIX::eSyncObject::SoUndefined:
+    case NESyncTypesIX::SyncKind::SoUndefined:
         return "NESyncTypesIX::SoUndefined";
-    case NESyncTypesIX::eSyncObject::SoWaitable:
+    case NESyncTypesIX::SyncKind::SoWaitable:
         return "NESyncTypesIX::SoWaitable";
-    case NESyncTypesIX::eSyncObject::SoMutex:
+    case NESyncTypesIX::SyncKind::SoMutex:
         return "NESyncTypesIX::SoMutex";
-    case NESyncTypesIX::eSyncObject::SoSpinLock:
+    case NESyncTypesIX::SyncKind::SoSpinLock:
         return "NESyncTypesIX::SoSpinLock";
-    case NESyncTypesIX::eSyncObject::SoWaitMutex:
+    case NESyncTypesIX::SyncKind::SoWaitMutex:
         return "NESyncTypesIX::SoWaitMutex";
-    case NESyncTypesIX::eSyncObject::SoWaitEvent:
+    case NESyncTypesIX::SyncKind::SoWaitEvent:
         return "NESyncTypesIX::SoWaitEvent";
-    case NESyncTypesIX::eSyncObject::SoWaitSemaphore:
+    case NESyncTypesIX::SyncKind::SoWaitSemaphore:
         return "NESyncTypesIX::SoWaitSemaphore";
-    case NESyncTypesIX::eSyncObject::SoWaitTimer:
+    case NESyncTypesIX::SyncKind::SoWaitTimer:
         return "NESyncTypesIX::SoWaitTimer";
     default:
-        return "ERR: Unexpected NESyncTypesIX::eSyncObject value!";
+        return "ERR: Unexpected NESyncTypesIX::SyncKind value!";
     }
 }
 

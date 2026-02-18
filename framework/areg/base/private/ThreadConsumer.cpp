@@ -31,5 +31,5 @@ void ThreadConsumer::onThreadUnregistering()
 
 int ThreadConsumer::onThreadExit()
 {
-    return static_cast<int>(ThreadConsumer::eExitCodes::ExitNormal);
+    return static_cast<int>(ThreadConsumer::ExitCode::Normal);
 }

@@ -150,11 +150,11 @@ public:
      *                          -   Set any other value in milliseconds to specify waiting time
      *                              until thread completes the job or timeout expires.
      * \return	Returns the thread completion status. The following statuses are defined:
-     *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
-     *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
-     *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
+     *              Thread::Terminated  -- The waiting timeout expired and thread was terminated;
+     *              Thread::Completed   -- The thread was valid and completed normally;
+     *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    virtual Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.

@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/base/SyncPrimitives.hpp"
+#include <cstdint>
 
 #if  defined(_POSIX) || defined(POSIX)
 
@@ -67,7 +68,7 @@ bool Mutex::_osLockMutex( unsigned int timeout )
     bool result{ false };
     WaitableMutexPosix * syncMutex{ reinterpret_cast<WaitableMutexPosix *>(mSyncObject) };
 
-    if ( NESyncTypesIX::SyncObject0 == SyncLockAndWaitPosix::waitForSingleObject(*syncMutex, timeout) )
+    if ( static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject(*syncMutex, timeout) )
     {
         mOwnerThreadId.store(NEUtilities::convToNum<id_type, pthread_t>(syncMutex->getOwningThreadId()));
         result = true;
@@ -107,7 +108,7 @@ bool SyncEvent::_osUnlockEvent( void * eventHandle )
 bool SyncEvent::_osLockEvent(unsigned int timeout)
 {
     WaitableEventPosix * syncEvent{ reinterpret_cast<WaitableEventPosix *>(mSyncObject) };
-    return (NESyncTypesIX::SyncObject0 == SyncLockAndWaitPosix::waitForSingleObject(*syncEvent, timeout));
+    return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject(*syncEvent, timeout));
 }
 
 bool SyncEvent::_osSetEvent()
@@ -142,7 +143,7 @@ void Semaphore::_osReleaseSemaphore()
 bool Semaphore::_osLock( unsigned int timeout )
 {
     WaitableSemaphorePosix * syncSemaphore{ static_cast<WaitableSemaphorePosix *>(mSyncObject) };
-    return (NESyncTypesIX::SyncObject0 == SyncLockAndWaitPosix::waitForSingleObject( *syncSemaphore, timeout ));
+    return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First)  == SyncLockAndWaitPosix::waitForSingleObject( *syncSemaphore, timeout ));
 }
 
 bool Semaphore::_osUnlock()
@@ -187,7 +188,7 @@ bool CriticalSection::_osTryLock()
 #if 0 // TODO: Probably don't need anymore and should be removed
 
 SpinLock::SpinLock()
-    : Lockable( SyncObject::eSyncObject::SoSpinlock )
+    : Lockable( SyncObject::SyncKind::SoSpinlock )
 {
     mSyncObject    = DEBUG_NEW SpinLockPosix( );
 }
@@ -260,7 +261,7 @@ void SyncTimer::_osReleaseTime()
 
 bool SyncTimer::_osLock( unsigned int timeout )
 {
-    return (SyncLockAndWaitPosix::waitForSingleObject( *reinterpret_cast<WaitablePosix *>(mSyncObject), timeout ) == NESyncTypesIX::SyncObject0);
+    return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject( *reinterpret_cast<WaitablePosix *>(mSyncObject), timeout ));
 }
 
 bool SyncTimer::_osSetTimer()
@@ -292,15 +293,15 @@ int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, boo
 
         switch (result)
         {
-        case static_cast<int>(NESyncTypesIX::SyncObjectAll):
+        case static_cast<int>(NESyncTypesIX::SyncSignal::All):
             index = MultiLock::LOCK_INDEX_ALL;
             for ( int i = 0; i < mSizeCount; ++ i)
             {
-                mLockedStates[i] = MultiLock::eLockedState::StateLocked;
+                mLockedStates[i] = MultiLock::LockState::Locked;
             }
             break;
 
-        case static_cast<int>(NESyncTypesIX::SyncAsyncSignal):
+        case static_cast<int>(NESyncTypesIX::SyncSignal::AsyncSignal):
                 if (isAlertable)
                 {
                     index = MultiLock::LOCK_INDEX_COMPLETION;
@@ -312,15 +313,15 @@ int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, boo
                 }
             break;
 
-        case static_cast<int>(NESyncTypesIX::SyncObjectTimeout):
+        case static_cast<int>(NESyncTypesIX::SyncSignal::Timeout):
             index = MultiLock::LOCK_INDEX_TIMEOUT;
             break;
 
         default:
-            if ( (result >= static_cast<int>(NESyncTypesIX::SyncObject0)) && (result < mSizeCount) )
+            if ( (result >= static_cast<int>(NESyncTypesIX::SyncSignal::First)) && (result < mSizeCount) )
             {
                 index = result;
-                mLockedStates[result] = MultiLock::eLockedState::StateLocked;
+                mLockedStates[result] = MultiLock::LockState::Locked;
             }
             break;
         }
@@ -342,9 +343,9 @@ void Wait::_osReleaseTimer()
 {
 }
 
-Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
+Wait::WaitResolution Wait::_osWaitFor(const Wait::Duration& timeout) const
 {
-    Wait::eWaitResult result{ timeout.count() >= 0 ? Wait::eWaitResult::WaitIgnored : Wait::eWaitResult::WaitInvalid };
+    Wait::WaitResolution result{ timeout.count() >= 0 ? Wait::WaitResolution::Ignored : Wait::WaitResolution::Invalid };
     if (timeout >= Wait::ONE_MUS)
     {
         struct timespec dueTime;
@@ -353,11 +354,11 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
         dueTime.tv_nsec = mus.count() % Wait::ONE_SEC.count();
         if (::nanosleep(&dueTime, nullptr) == NECommon::RETURNED_OK)
         {
-            result = timeout >= Wait::MIN_WAIT ? Wait::eWaitResult::WaitInMilli : Wait::eWaitResult::WaitInMicro;
+            result = timeout >= Wait::MIN_WAIT ? Wait::WaitResolution::Millisecond : Wait::WaitResolution::Microsecond;
         }
         else
         {
-            result = Wait::eWaitResult::WaitInvalid;
+            result = Wait::WaitResolution::Invalid;
         }
     }
 

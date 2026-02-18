@@ -32,7 +32,7 @@ Process & Process::getInstance()
 
 
 Process::Process()
-    : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
+    : mProcEnv          ( static_cast<Process::Bitness>(sizeof(id_type)) )
     , mProcessId        ( Process::UNKNOWN_PROCESS )
     , mProcessHandle    ( nullptr )
     , mAppName          ( )
@@ -62,11 +62,11 @@ void Process::_initPaths( const char * fullPath )
 
 unsigned int Process::getBitness() const
 {
-    if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::eProcEnv::ProcEnv32Bits)) != 0)
+    if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
     {
         return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness32);
     }
-    else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::eProcEnv::ProcEnv64Bits)) != 0)
+    else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits64)) != 0)
     {
         return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness64);
     }

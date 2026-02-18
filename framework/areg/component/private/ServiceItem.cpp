@@ -93,7 +93,7 @@ String ServiceItem::convToString() const
           .append(NECommon::COMPONENT_PATH_SEPARATOR)
           .append(mServiceVersion.convToString())
           .append(NECommon::COMPONENT_PATH_SEPARATOR)
-          .append(String::makeString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal));
+          .append(String::makeString(static_cast<int>(mServiceType), NEString::Radix::Decimal));
 
     return result;
 }

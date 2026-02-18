@@ -302,7 +302,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 32-bit integer
      **/
-    static int32_t makeInt32( const char * strDigit, NEString::eRadix radix = NEString::eRadix::RadixDecimal, const char ** end = nullptr );
+    static int32_t makeInt32( const char * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const char ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 32-bit unsigned integer
      * \param   strDigit    The string with digits.
@@ -310,7 +310,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 32-bit unsigned integer
      **/
-    static uint32_t makeUInt32( const char * strDigit, NEString::eRadix radix = NEString::eRadix::RadixDecimal, const char ** end = nullptr );
+    static uint32_t makeUInt32( const char * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const char ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 64-bit integer
      * \param   strDigit    The string with digits. Can contain negative or positive sign in front
@@ -318,7 +318,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 64-bit integer
      **/
-    static int64_t makeInt64( const char * strDigit, NEString::eRadix radix = NEString::eRadix::RadixDecimal, const char ** end = nullptr );
+    static int64_t makeInt64( const char * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const char ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 64-bit unsigned integer
      * \param   strDigit    The string with digits.
@@ -326,7 +326,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 64-bit unsigned integer
      **/
-    static uint64_t makeUInt64( const char * strDigit, NEString::eRadix radix = NEString::eRadix::RadixDecimal, const char ** end = nullptr );
+    static uint64_t makeUInt64( const char * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const char ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 32-bit digit with floating point
      * \param   strDigit    The string with digits.
@@ -355,28 +355,28 @@ public:
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String makeString( int32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String makeString( int32_t number, NEString::Radix radix = NEString::Radix::Decimal );
     /**
      * \brief   Converts given unsigned 32-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String makeString( uint32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String makeString( uint32_t number, NEString::Radix radix = NEString::Radix::Decimal );
     /**
      * \brief   Converts given signed 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String makeString( int64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String makeString( int64_t number, NEString::Radix radix = NEString::Radix::Decimal );
     /**
      * \brief   Converts given unsigned 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String makeString( uint64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String makeString( uint64_t number, NEString::Radix radix = NEString::Radix::Decimal );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
@@ -563,25 +563,25 @@ public:
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 32-bit integer
      **/
-    inline int32_t toInt32( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline int32_t toInt32( NEString::Radix radix = NEString::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 32-bit unsigned integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 32-bit unsigned integer
      **/
-    inline uint32_t toUInt32( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline uint32_t toUInt32( NEString::Radix radix = NEString::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 64-bit integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 64-bit integer
      **/
-    inline int64_t toInt64( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline int64_t toInt64( NEString::Radix radix = NEString::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 64-bit unsigned integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 64-bit unsigned integer
      **/
-    inline uint64_t toUInt64( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline uint64_t toUInt64( NEString::Radix radix = NEString::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 32-bit digit with floating point
      * \return  Returns the 32-bit digit with floating point
@@ -609,7 +609,7 @@ public:
      *          If need to convert negative number to Hexadecimal or Octal,
      *          might make sense to use FromUInt32 method.
      **/
-    inline String & fromInt32( int32_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromInt32( int32_t value, NEString::Radix radix = NEString::Radix::Decimal );
 
     /**
      * \brief   Converts and sets 32-bit unsigned digit in the string based on radix bases.
@@ -621,7 +621,7 @@ public:
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
      *          are filled with
      **/
-    inline String & fromUInt32( uint32_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromUInt32( uint32_t value, NEString::Radix radix = NEString::Radix::Decimal );
     /**
      * \brief   Converts and sets 64-bit signed digit in the string based on radix bases.
      * \param   value   The 64-bit signed integer value to set in the string.
@@ -633,7 +633,7 @@ public:
      *          If need to convert negative number to Hexadecimal or Octal,
      *          might make sense to use FromUInt32 method.
      **/
-    inline String & fromInt64( int64_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromInt64( int64_t value, NEString::Radix radix = NEString::Radix::Decimal );
     /**
      * \brief   Converts and sets 64-bit unsigned digit in the string based on radix bases.
      * \param   value   The 64-bit unsigned integer value to set in the string.
@@ -644,7 +644,7 @@ public:
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
      *          are filled with
      **/
-    inline String & fromUInt64( uint64_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromUInt64( uint64_t value, NEString::Radix radix = NEString::Radix::Decimal );
     /**
      * \brief   Converts and sets float digit in the string.
      * \param   value   The value of number with floating point to set in the string.
@@ -1012,22 +1012,22 @@ inline OutStream& operator << (OutStream& stream, const String& output)
     return stream;
 }
 
-inline int32_t String::toInt32( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline int32_t String::toInt32( NEString::Radix radix /*= NEString::Decimal */ ) const
 {
     return String::makeInt32(getString(), radix, nullptr );
 }
 
-inline uint32_t String::toUInt32( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline uint32_t String::toUInt32( NEString::Radix radix /*= NEString::Decimal */ ) const
 {
     return String::makeUInt32(getString(), radix, nullptr );
 }
 
-inline int64_t String::toInt64( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline int64_t String::toInt64( NEString::Radix radix /*= NEString::Decimal */ ) const
 {
     return String::makeInt64(getString(), radix, nullptr );
 }
 
-inline uint64_t String::toUInt64( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline uint64_t String::toUInt64( NEString::Radix radix /*= NEString::Decimal */ ) const
 {
     return String::makeUInt64(getString(), radix, nullptr );
 }
@@ -1047,25 +1047,25 @@ inline bool String::toBool() const
     return (isEmpty() || NEString::compareIgnoreCase<char, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::Ordering::Equal ? false : true);
 }
 
-inline String & String::fromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromInt32( int32_t value, NEString::Radix radix /*= NEString::Decimal */ )
 {
     *this = String::makeString(value, radix);
     return (*this);
 }
 
-inline String & String::fromUInt32( uint32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromUInt32( uint32_t value, NEString::Radix radix /*= NEString::Decimal */ )
 {
     (*this) = String::makeString( value, radix );
     return (*this);
 }
 
-inline String & String::fromInt64( int64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromInt64( int64_t value, NEString::Radix radix /*= NEString::Decimal */ )
 {
     (*this) = String::makeString( value, radix );
     return (*this);
 }
 
-inline String & String::fromUInt64( uint64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromUInt64( uint64_t value, NEString::Radix radix /*= NEString::Decimal */ )
 {
     (*this) = String::makeString( value, radix );
     return (*this);

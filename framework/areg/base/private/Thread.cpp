@@ -76,7 +76,7 @@ Thread::MapThreadIDResource& Thread::_getMapThreadId()
 unsigned long Thread::_defaultThreadFunction(void* data)
 {
     Thread* threadObj = reinterpret_cast<Thread *>(data);
-    ThreadConsumer::eExitCodes result= ThreadConsumer::eExitCodes::ExitNoParam;
+    ThreadConsumer::ExitCode result= ThreadConsumer::ExitCode::NoParam;
     if (threadObj != nullptr)
     {
         do 
@@ -89,7 +89,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         // it should be created in the thread context
         Thread::_getThreadLocalStorage(threadObj);
 
-        result = static_cast<ThreadConsumer::eExitCodes>( threadObj->_threadEntry() );
+        result = static_cast<ThreadConsumer::ExitCode>( threadObj->_threadEntry() );
 
         // delete thread local storage.
         Thread::_getThreadLocalStorage(nullptr);
@@ -146,7 +146,7 @@ Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
     , mThreadAddress    (threadName.isEmpty() == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()))
-    , mThreadPriority   (Thread::eThreadPriority::PriorityUndefined)
+    , mThreadPriority   (Thread::ThreadPriority::Undefined)
     , mIsRunning        ( false )
     , mStackSizeKB      ( stackSizeKb )
 
@@ -200,9 +200,9 @@ void Thread::triggerExit()
 {
 }
 
-Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
+Thread::ThreadCompletion Thread::shutdownThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
 {
-    Thread::eCompletionStatus result{ _osDestroyThread( waitForStopMs ) };
+    Thread::ThreadCompletion result{ _osDestroyThread( waitForStopMs ) };
 
     if ( mSyncObject.tryLock( ) )
     {
@@ -213,7 +213,7 @@ Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* 
     return result;
 }
 
-Thread::eCompletionStatus Thread::terminateThread()
+Thread::ThreadCompletion Thread::terminateThread()
 {
     return shutdownThread( NECommon::WAIT_10_MILLISECONDS );
 }
@@ -267,7 +267,7 @@ const size_t Thread::getCurrentStackSize()
 
 int Thread::_threadEntry()
 {
-    ThreadConsumer::eExitCodes result = ThreadConsumer::eExitCodes::ExitTerminated;
+    ThreadConsumer::ExitCode result = ThreadConsumer::ExitCode::Terminated;
 
     if (Thread::_findThreadByHandle(mThreadHandle) != nullptr )
     {
@@ -282,7 +282,7 @@ int Thread::_threadEntry()
 
         _setRunning(false);
 
-        result = static_cast<ThreadConsumer::eExitCodes>(mThreadConsumer.onThreadExit());
+        result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.onThreadExit());
         onPostExitThread();
 
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
@@ -306,7 +306,7 @@ void Thread::_cleanResources(bool unregister)
     mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
     mThreadId       = Thread::INVALID_THREAD_ID;
     mIsRunning      = false;
-    mThreadPriority = Thread::eThreadPriority::PriorityUndefined;
+    mThreadPriority = Thread::ThreadPriority::Undefined;
 
     Thread::_osCloseHandle(handle);
 }

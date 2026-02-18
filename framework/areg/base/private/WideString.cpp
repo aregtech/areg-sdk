@@ -56,7 +56,7 @@ namespace
     {
         wchar_t buffer[ NEString::MSG_MIN_BUF_SIZE ]{ 0 };
         wchar_t * dst  = buffer;
-        DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
+        DigitType base = static_cast<DigitType>(NEString::Radix::Binary);
         bool isNegative = number < 0;
 
         number = NEMath::getAbs<DigitType>(number);
@@ -284,7 +284,7 @@ WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhra
     return result;
 }
 
-int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
+int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
     int result  = static_cast<int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int>(radix) ) : 0);
@@ -296,7 +296,7 @@ int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::eRadix radix 
     return result;
 }
 
-uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
+uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
     unsigned int result = static_cast<unsigned int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoul(strDigit, &temp, static_cast<int>(radix)) : 0);
@@ -308,7 +308,7 @@ uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::eRadix radi
     return result;
 }
 
-int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/ )
+int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
     int64_t result = static_cast<long long int>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int>(radix)) : 0);
@@ -320,7 +320,7 @@ int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::eRadix radix 
     return result;
 }
 
-uint64_t WideString::makeUInt64(const wchar_t * strDigit, NEString::eRadix radix /*= NEString::RadixDecimal*/, const wchar_t ** end /*= nullptr*/)
+uint64_t WideString::makeUInt64(const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/)
 {
     wchar_t * temp = nullptr;
     uint64_t result = static_cast<uint64_t>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoull(strDigit, &temp, static_cast<int>(radix)) : 0);
@@ -381,32 +381,32 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
     return result;
 }
 
-WideString WideString::makeString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(int32_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
     switch ( radix )
     {
-    case NEString::eRadix::RadixBinary:
+    case NEString::Radix::Binary:
         _formatBinary<int32_t>( result, number );
         break;
 
-    case NEString::eRadix::RadixOctal:
+    case NEString::Radix::Octal:
         if ( number < 0)
             _formatDigit<int32_t>( result, L"-%0.11o", -1 * number );
         else
             _formatDigit<int32_t>( result, L"%0.11o", number );
         break;
 
-    case NEString::eRadix::RadixHexadecimal:
+    case NEString::Radix::Hexadecimal:
         if ( number < 0 )
             _formatDigit<int32_t>( result, L"-0x%.8X", -1 * number );
         else
             _formatDigit<int32_t>( result, L"0x%.8X", number );
         break;
 
-    case NEString::eRadix::RadixDecimal:    // fall through
-    case NEString::eRadix::RadixAutomatic:  // fall through
+    case NEString::Radix::Decimal:    // fall through
+    case NEString::Radix::Automatic:  // fall through
     default:
         _formatDigit<int32_t>( result, L"%d", number );
         break;
@@ -415,26 +415,26 @@ WideString WideString::makeString(int32_t number, NEString::eRadix radix /*= NES
     return result;
 }
 
-WideString WideString::makeString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(uint32_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
     switch ( radix )
     {
-    case NEString::eRadix::RadixBinary:
+    case NEString::Radix::Binary:
         _formatBinary<uint32_t>(result, number);
         break;
 
-    case NEString::eRadix::RadixOctal:
+    case NEString::Radix::Octal:
         _formatDigit<uint32_t>(result, L"%0.11o", number);
         break;
 
-    case NEString::eRadix::RadixHexadecimal:
+    case NEString::Radix::Hexadecimal:
         _formatDigit<uint32_t>(result, L"0x%.8X", number);
         break;
 
-    case NEString::eRadix::RadixDecimal:    // fall through
-    case NEString::eRadix::RadixAutomatic:  // fall through
+    case NEString::Radix::Decimal:    // fall through
+    case NEString::Radix::Automatic:  // fall through
     default:
         _formatDigit<uint32_t>( result, L"%u", number );
         break;
@@ -443,32 +443,32 @@ WideString WideString::makeString(uint32_t number, NEString::eRadix radix /*= NE
     return result;
 }
 
-WideString WideString::makeString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(int64_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
     switch (radix)
     {
-    case NEString::eRadix::RadixBinary:
+    case NEString::Radix::Binary:
         _formatBinary<int64_t>(result, number);
         break;
 
-    case NEString::eRadix::RadixOctal:
+    case NEString::Radix::Octal:
         if (number < 0)
             _formatDigit<int64_t>(result, L"-%0.22llo", -1 * number);
         else
             _formatDigit<int64_t>(result, L"%0.22llo", number);
         break;
 
-    case NEString::eRadix::RadixHexadecimal:
+    case NEString::Radix::Hexadecimal:
         if (number < 0)
             _formatDigit<int64_t>(result, L"-0x%.16llX", -1 * number);
         else
             _formatDigit<int64_t>(result, L"0x%.16llX", number);
         break;
 
-    case NEString::eRadix::RadixDecimal:    // fall through
-    case NEString::eRadix::RadixAutomatic:  // fall through
+    case NEString::Radix::Decimal:    // fall through
+    case NEString::Radix::Automatic:  // fall through
     default:
         _formatDigit<int64_t>(result, L"%lld", number);
         break;
@@ -477,26 +477,26 @@ WideString WideString::makeString(int64_t number, NEString::eRadix radix /*= NES
     return result;
 }
 
-WideString WideString::makeString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(uint64_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
     switch ( radix )
     {
-    case NEString::eRadix::RadixBinary:
+    case NEString::Radix::Binary:
         _formatBinary<uint64_t>( result, number );
         break;
 
-    case NEString::eRadix::RadixOctal:
+    case NEString::Radix::Octal:
         _formatDigit<uint64_t>( result, L"%.22llo", number );
         break;
 
-    case NEString::eRadix::RadixHexadecimal:
+    case NEString::Radix::Hexadecimal:
         _formatDigit<uint64_t>( result, L"0x%.16llX", number );
         break;
 
-    case NEString::eRadix::RadixDecimal:    // fall through
-    case NEString::eRadix::RadixAutomatic:  // fall through
+    case NEString::Radix::Decimal:    // fall through
+    case NEString::Radix::Automatic:  // fall through
     default:
         _formatDigit<uint64_t>( result, L"%llu", number );
         break;

@@ -330,7 +330,7 @@ private:
      *                      data or ignored. It is used to compute blocks that were put in 
      *                      sleep or ignored.
      */
-    void _updateData(uint64_t genData, uint32_t genBlocks, Wait::eWaitResult waitResult);
+    void _updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

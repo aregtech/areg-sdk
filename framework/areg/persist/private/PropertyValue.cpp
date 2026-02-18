@@ -47,7 +47,7 @@ PropertyValue::PropertyValue( const char * value )
 }
 
 PropertyValue::PropertyValue(unsigned int intValue)
-    : mValue( String::makeString(intValue, NEString::eRadix::RadixDecimal) )
+    : mValue( String::makeString(intValue, NEString::Radix::Decimal) )
 {
 }
 
@@ -127,7 +127,7 @@ bool PropertyValue::operator != ( const PropertyValue & other ) const
 
 PropertyValue::operator unsigned int() const
 {
-    return getInteger(NEString::eRadix::RadixDecimal);
+    return getInteger(NEString::Radix::Decimal);
 }
 
 PropertyValue::operator const String& () const
@@ -170,9 +170,9 @@ const String & PropertyValue::getString() const
     return mValue;
 }
 
-unsigned int PropertyValue::getInteger( NEString::eRadix radix /*= NEString::RadixDecimal*/ ) const
+unsigned int PropertyValue::getInteger( NEString::Radix radix /*= NEString::Decimal*/ ) const
 {
-    return mValue.toUInt32( static_cast<NEString::eRadix>(radix) );
+    return mValue.toUInt32( static_cast<NEString::Radix>(radix) );
 }
 
 double PropertyValue::getDouble() const
@@ -225,7 +225,7 @@ void PropertyValue::setBoolean(bool newValue)
     mValue = String::makeString(newValue);
 }
 
-void PropertyValue::setInteger(unsigned int intValue, NEString::eRadix radix /*= NEString::RadixDecimal*/ )
+void PropertyValue::setInteger(unsigned int intValue, NEString::Radix radix /*= NEString::Decimal*/ )
 {
     mValue = String::makeString(intValue, radix);
 }

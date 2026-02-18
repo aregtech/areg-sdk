@@ -48,30 +48,29 @@ namespace NEString
      * \brief   Character types. Used bits are defining special meaning of characters.
      *          NEString::eCharDefs
      **/
-    typedef enum E_CharDefs   : uint16_t
+    enum class CharDefs : uint16_t
     {
-          CD_Undefined  =   0   //!< bin = 0000 0000 0000 0000, Undefined character type
-        , CD_EOfS       =   1   //!< bin = 0000 0000 0000 0001, End-of+string character
-        , CD_EndOfLine  =   2   //!< bin = 0000 0000 0000 0010, ENd-of-line character
-        , CD_CarReturn  =   4   //!< bin = 0000 0000 0000 0100, Carriage return character
-        , CD_WhiteSpace =   8   //!< bin = 0000 0000 0000 1000, Whitespace character
-        , CD_Delimiter  =  16   //!< bin = 0000 0000 0001 0000, Syntax Delimiter
-        , CD_Control    =  32   //!< bin = 0000 0000 0010 0000, Control key / value
-        , CD_Printable  =  64   //!< bin = 0000 0000 0100 0000, Printable character or character, which change text layout like space or tab
-        , CD_Number     = 128   //!< bin = 0000 0000 1000 0000, Numeric character
-        , CD_Symbol     = 256   //!< bin = 0000 0001 0000 0000, Symbol
-        , CD_Letter     = 512   //!< bin = 0000 0010 0000 0000, Letter
-        , CD_LetterUp   = 1536  //!< bin = 0000 0110 0000 0000, Upper case letter
-        , CD_LetterLo   = 2560  //!< bin = 0000 1010 0000 0000, Lower case letter
-
-    } eCharDefs;
+          Undefined =   0   //!< bin = 0000 0000 0000 0000, Undefined character type
+        , EOfS      =   1   //!< bin = 0000 0000 0000 0001, End-of+string character
+        , EndOfLine =   2   //!< bin = 0000 0000 0000 0010, ENd-of-line character
+        , CarReturn =   4   //!< bin = 0000 0000 0000 0100, Carriage return character
+        , WhiteSpace=   8   //!< bin = 0000 0000 0000 1000, Whitespace character
+        , Delimiter =  16   //!< bin = 0000 0000 0001 0000, Syntax Delimiter
+        , Control   =  32   //!< bin = 0000 0000 0010 0000, Control key / value
+        , Printable =  64   //!< bin = 0000 0000 0100 0000, Printable character or character, which change text layout like space or tab
+        , Number    = 128   //!< bin = 0000 0000 1000 0000, Numeric character
+        , Symbol    = 256   //!< bin = 0000 0001 0000 0000, Symbol
+        , Letter    = 512   //!< bin = 0000 0010 0000 0000, Letter
+        , LetterUp  = 1536  //!< bin = 0000 0110 0000 0000, Upper case letter
+        , LetterLo  = 2560  //!< bin = 0000 1010 0000 0000, Lower case letter
+    };
 
     /**
      * \brief   Returns the bit-wise value of character definition based on first 256 symbols based on UTF-8 code page.
      *          Reference: https://www.charset.org/utf-8
      * \param   ch      The character value to receive defined value.
      **/
-    AREG_API unsigned short getUTF8_256CharDef( int ch );
+    AREG_API uint16_t getUTF8_256CharDef( int ch );
 
     /**
      * \brief   Returns upper case letters and symbols based on first 256 of UTF-8 code page.
@@ -146,14 +145,14 @@ namespace NEString
      *              - if the first character starts between '1' and '9', then Decimal (RadixDecimal)
      *              - There is no way to determine bases 2, and the RadixBinary is ignored.
      **/
-    typedef enum class E_Radix : int8_t
+    enum class Radix    : uint8_t
     {
-          RadixAutomatic    =  0    //!< Detect automatically
-        , RadixBinary       =  2    //!< Binary conversion, conversion base is 2
-        , RadixOctal        =  8    //!< Octal conversion, conversion base is 8
-        , RadixDecimal      = 10    //!< Decimal conversion, conversion base is 10
-        , RadixHexadecimal  = 16    //!< Hexadecimal conversion, conversion base is 16
-    } eRadix;
+          Automatic    =  0    //!< Detect automatically
+        , Binary       =  2    //!< Binary conversion, conversion base is 2
+        , Octal        =  8    //!< Octal conversion, conversion base is 8
+        , Decimal      = 10    //!< Decimal conversion, conversion base is 10
+        , Hexadecimal  = 16    //!< Hexadecimal conversion, conversion base is 16
+    };
 
     /**
      * \brief   Converts given integer digit to string. The data is written in given buffer.
@@ -173,7 +172,7 @@ namespace NEString
      *          If base differs or RadixDecimal, use conversion of unsigned integer.
      **/
     template<typename CharType, typename IntType>
-    int makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    int makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix = NEString::Radix::Decimal );
 
     /**
      * \brief   Swaps characters in a given string buffer.
@@ -913,7 +912,7 @@ namespace NEString
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType, typename IntType>
-int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::eRadix radix )
+int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix )
 {
     int result = 0;
     IntType num = NEMath::getAbs<IntType>(digit);
@@ -922,9 +921,9 @@ int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntT
         static const CharType _valid[]  = {'0', '1', '2', '3', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', '\0'};
 
         CharType * dst = strDst;
-        radix = radix != NEString::eRadix::RadixAutomatic ? radix : NEString::eRadix::RadixDecimal;
+        radix = radix != NEString::Radix::Automatic ? radix : NEString::Radix::Decimal;
 
-        if ((radix >= NEString::eRadix::RadixBinary) && (radix <= NEString::eRadix::RadixHexadecimal) )
+        if ((radix >= NEString::Radix::Binary) && (radix <= NEString::Radix::Hexadecimal) )
         {
             do
             {
@@ -933,7 +932,7 @@ int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntT
                 -- charCount;
             } while ( (num != 0) && (charCount != 0) );
 
-            if ( (charCount != 0) && (digit < 0) && (radix == NEString::eRadix::RadixDecimal) )
+            if ( (charCount != 0) && (digit < 0) && (radix == NEString::Radix::Decimal) )
                 *dst ++ = '-';
 
             *dst = static_cast<CharType>(NEString::EndOfString);
@@ -944,9 +943,9 @@ int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntT
     }
     else
     {
-        radix = radix != NEString::eRadix::RadixAutomatic ? radix : NEString::eRadix::RadixDecimal;
+        radix = radix != NEString::Radix::Automatic ? radix : NEString::Radix::Decimal;
 
-        if ( (radix >= NEString::eRadix::RadixBinary) && (radix <= NEString::eRadix::RadixHexadecimal) )
+        if ( (radix >= NEString::Radix::Binary) && (radix <= NEString::Radix::Hexadecimal) )
         {
             do
             {
@@ -1842,9 +1841,9 @@ inline bool NEString::isOneOf(CharType ch, const CharType* chSequence)
 template<typename CharType>
 inline bool NEString::isReadable( CharType ch )
 {
-    constexpr unsigned int def = NEString::eCharDefs::CD_Letter | 
-                                 NEString::eCharDefs::CD_Number |
-                                 NEString::eCharDefs::CD_Symbol;
+    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharDefs::Letter) |
+                            static_cast<uint32_t>(NEString::CharDefs::Number) |
+                            static_cast<uint32_t>(NEString::CharDefs::Symbol) };
 
     return (((NEString::getUTF8_256CharDef( ch ) & def) != 0) || (ch == ' '));
 }
@@ -1852,19 +1851,19 @@ inline bool NEString::isReadable( CharType ch )
 template<typename CharType>
 inline bool NEString::isPrintable( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Printable)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Printable)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isEndOfLine( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_EndOfLine)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::EndOfLine)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isCarriageReturn( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_CarReturn)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::CarReturn)) != 0);
 }
 
 template<typename CharType>
@@ -1900,50 +1899,49 @@ bool NEString::isDosEndOfLine(const CharType * source)
 template<typename CharType>
 inline bool NEString::isEndOfString( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_EOfS)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::EOfS)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isControl(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_Control)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::Control)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isSymbol( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_Symbol)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::Symbol)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isWhitespace( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_WhiteSpace)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::WhiteSpace)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isDelimited( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Delimiter)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Delimiter)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isLetter(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Letter)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Letter)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isNumeric(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Number)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Number)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isAlphanumeric(CharType ch)
 {
-    constexpr unsigned int def = NEString::eCharDefs::CD_Letter | 
-                                 NEString::eCharDefs::CD_Number;
+    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharDefs::Letter) | static_cast<uint32_t>(NEString::CharDefs::Number) };
 
     return ((NEString::getUTF8_256CharDef( ch ) & def) != 0);
 }
@@ -1997,13 +1995,13 @@ inline const CharType* NEString::makeUpper(CharType* source)
 template<typename CharType>
 inline bool NEString::isLower(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_LetterLo)) == static_cast<unsigned short>(NEString::eCharDefs::CD_LetterLo));
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::LetterLo)) == static_cast<uint16_t>(NEString::CharDefs::LetterLo));
 }
 
 template<typename CharType>
 inline bool NEString::isUpper(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_LetterUp)) == static_cast<unsigned short>(NEString::eCharDefs::CD_LetterUp));
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::LetterUp)) == static_cast<uint16_t>(NEString::CharDefs::LetterUp));
 }
 
 inline bool NEString::isPositionValid(NEString::CharPos pos)

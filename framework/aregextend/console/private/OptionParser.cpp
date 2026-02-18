@@ -464,7 +464,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
         else if ( OptionParser::isInteger( setup.optField ) )
         {
             const char * end = nullptr;
-            int32_t val = String::makeInt32( newValue.getString( ), NEString::eRadix::RadixDecimal, &end );
+            int32_t val = String::makeInt32( newValue.getString( ), NEString::Radix::Decimal, &end );
             _setValue( val, opt, setup );
             if ( NEString::isEmpty<char>( end ) == false )
             {

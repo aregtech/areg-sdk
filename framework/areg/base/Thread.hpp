@@ -75,36 +75,36 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Thread::eCompletionStatus
+     * \brief   Thread::ThreadCompletion
      *          Thread Completion status used as return value on destroy thread
      **/
-    typedef enum class E_CompletionStatus : int
+    enum class ThreadCompletion : int32_t
     {
-          ThreadTerminated  = -1    //!< The thread was terminate because waiting timeout expired
-        , ThreadCompleted   = 0     //!< The thread was valid and normally completed
-        , ThreadInvalid     = 1     //!< The thread handle is invalid and is not running, nothing to do
-    } eCompletionStatus;
+          Terminated = -1   //!< The thread was terminate because waiting timeout expired
+        , Completed  = 0    //!< The thread was valid and normally completed
+        , Invalid    = 1    //!< The thread handle is invalid and is not running, nothing to do
+    };
 
     /**
-     * \brief   Thread::eThreadPriority
+     * \brief   Thread::ThreadPriority
      *          Defines the thread priorities.
      *          By default, the thread is created by Normal priority.
      *          Increase or decrease thread priority if need.
      **/
-    typedef enum class E_ThreadPriority : int
+    enum class ThreadPriority : int32_t
     {
-          PriorityUndefined = std::numeric_limits<int32_t>::min()    //!< Undefined priority. If thread is created and not valid
-        , PriorityLowest    = -2            //!< Lowest priority level
-        , PriorityLow       = -1            //!< Below normal priority level
-        , PriorityNormal    =  0            //!< Normal priority level. All threads by default are created with normal priority level
-        , PriorityHigh      =  1            //!< Above normal priority level
-        , PriorityHighest   =  2            //!< Highest priority level
-    } eThreadPriority;
+          Undefined = std::numeric_limits<int32_t>::min()    //!< Undefined priority. If thread is created and not valid
+        , Lowest    = -2            //!< Lowest priority level
+        , Low       = -1            //!< Below normal priority level
+        , Normal    =  0            //!< Normal priority level. All threads by default are created with normal priority level
+        , High      =  1            //!< Above normal priority level
+        , Highest   =  2            //!< Highest priority level
+    };
 
     /**
-     * \brief   Converts Thread::eThreadPriority values to string and return string values.
+     * \brief   Converts Thread::ThreadPriority values to string and return string values.
      **/
-    inline static const char * getString( Thread::eThreadPriority threadPriority );
+    inline static const char * getString( Thread::ThreadPriority threadPriority );
 
     /**
      * \brief   Thread::INVALID_THREAD_ID
@@ -194,11 +194,11 @@ public:
      *                          -   Set any other value in milliseconds to specify waiting time
      *                              until thread completes the job or timeout expires.
      * \return	Returns the thread completion status. The following statuses are defined:
-     *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
-     *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
-     *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
+     *              Thread::Terminated  -- The waiting timeout expired and thread was terminated;
+     *              Thread::Completed   -- The thread was valid and completed normally;
+     *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -218,11 +218,11 @@ public:
      *          way of cleaning resources and stacks.
      * 
      * \return	Returns the thread completion status. The following statuses are defined:
-     *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
-     *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
-     *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
+     *              Thread::Terminated  -- The waiting timeout expired and thread was terminated;
+     *              Thread::Completed   -- The thread was valid and completed normally;
+     *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus terminateThread();
+    virtual Thread::ThreadCompletion terminateThread();
 
 /************************************************************************
  * Attributes
@@ -260,28 +260,28 @@ public:
      *          If thread is created and the priority level is Timer::UndefinedPriority, function will do nothing and
      *          return the current priority level.
      * \param   newPriority     New priority level for thread. There are following valid priorities for valid thread available:
-     *                          - Thread::PriorityLowest  -- The lowest priority level
-     *                          - Thread::PriorityLow     -- Priority below Normal and above Lowest
-     *                          - Thread::PriorityNormal  -- Normal priority level, all threads by default are created with Normal priority level
-     *                          - Thread::PriorityHigh    -- Priority above Normal and below Highest
+     *                          - Thread::Lowest  -- The lowest priority level
+     *                          - Thread::Low     -- Priority below Normal and above Lowest
+     *                          - Thread::Normal  -- Normal priority level, all threads by default are created with Normal priority level
+     *                          - Thread::High    -- Priority above Normal and below Highest
      *                          - Thread::PriorityNighest -- The Highest thread priority
      * \return  Returns old thread priority.
      *          If newPriority is Timer::UndefinedPriority, makes not changes and returns current priority level.
      *          If thread is not valid, returns Timer::UndefinedPriority.
      **/
-    inline Thread::eThreadPriority setPriority( Thread::eThreadPriority newPriority );
+    inline Thread::ThreadPriority setPriority( Thread::ThreadPriority newPriority );
 
     /**
      * \brief   Returns thread current priority level. By default, thread is created with Normal priority level
      *          If thread is not created, returns Thread::UndefinedPriority.
      *          If thread is created, returns following values:
-     *              - Thread::PriorityLowest  -- The lowest priority level
-     *              - Thread::PriorityLow     -- Priority below Normal and above Lowest
-     *              - Thread::PriorityNormal  -- Normal priority level, all threads by default are created with Normal priority level
-     *              - Thread::PriorityHigh    -- Priority above Normal and below Highest
+     *              - Thread::Lowest  -- The lowest priority level
+     *              - Thread::Low     -- Priority below Normal and above Lowest
+     *              - Thread::Normal  -- Normal priority level, all threads by default are created with Normal priority level
+     *              - Thread::High    -- Priority above Normal and below Highest
      *              - Thread::PriorityNighest -- The Highest thread priority
      **/
-    inline Thread::eThreadPriority getPriority() const;
+    inline Thread::ThreadPriority getPriority() const;
 
     /**
      * \brief   Returns predefined stack size of the thread.
@@ -474,7 +474,7 @@ protected:
     /**
      * \brief   The thread current priority level.
      **/
-    Thread::eThreadPriority mThreadPriority;
+    Thread::ThreadPriority mThreadPriority;
     /**
      * \brief   Flag indicating whether thread is running or not.
      **/
@@ -637,13 +637,13 @@ private:
      *          milliseconds specifies how long should the caller wait for thread to complete.
      *          If timer expires and thread did not complete, it kills / cancels the thread.
      **/
-    Thread::eCompletionStatus _osDestroyThread( unsigned int waitForStopMs );
+    Thread::ThreadCompletion _osDestroyThread( unsigned int waitForStopMs );
 
     /**
      * \brief   OS specific implementation to set thread new priority.
      *          returns the previous priority of the thread.
      **/
-    Thread::eThreadPriority _osSetPriority( eThreadPriority newPriority );
+    Thread::ThreadPriority _osSetPriority( ThreadPriority newPriority );
 
 private:
 /************************************************************************/
@@ -795,10 +795,10 @@ inline const ThreadAddress & Thread::getCurrentThreadAddress()
     return Thread::getThreadAddress( Thread::_osGetCurrentThreadId() );
 }
 
-inline Thread::eThreadPriority Thread::getPriority() const
+inline Thread::ThreadPriority Thread::getPriority() const
 {
     Lock  lock( mSyncObject );
-    return (isValid( ) ? mThreadPriority : Thread::eThreadPriority::PriorityUndefined);
+    return (isValid( ) ? mThreadPriority : Thread::ThreadPriority::Undefined);
 }
 
 inline uint32_t Thread::getPredefinedStackSize() const
@@ -821,29 +821,29 @@ inline id_type Thread::getCurrentThreadId()
     return _osGetCurrentThreadId( );
 }
 
-inline Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
+inline Thread::ThreadPriority Thread::setPriority( ThreadPriority newPriority )
 {
     return _osSetPriority( newPriority );
 }
 
-inline const char * Thread::getString( Thread::eThreadPriority threadPriority )
+inline const char * Thread::getString( Thread::ThreadPriority threadPriority )
 {
     switch ( threadPriority )
     {
-    case Thread::eThreadPriority::PriorityUndefined:
-        return "Thread::PriorityUndefined";
-    case Thread::eThreadPriority::PriorityLowest:
-        return "Thread::PriorityLowest";
-    case Thread::eThreadPriority::PriorityLow:
-        return "Thread::PriorityLow";
-    case Thread::eThreadPriority::PriorityNormal:
-        return "Thread::PriorityNormal";
-    case Thread::eThreadPriority::PriorityHigh:
-        return "Thread::PriorityHigh";
-    case Thread::eThreadPriority::PriorityHighest:
-        return "Thread::PriorityHighest";
+    case Thread::ThreadPriority::Undefined:
+        return "Thread::ThreadPriority::Undefined";
+    case Thread::ThreadPriority::Lowest:
+        return "Thread::ThreadPriority::Lowest";
+    case Thread::ThreadPriority::Low:
+        return "Thread::ThreadPriority::Low";
+    case Thread::ThreadPriority::Normal:
+        return "Thread::ThreadPriority::Normal";
+    case Thread::ThreadPriority::High:
+        return "Thread::ThreadPriority::High";
+    case Thread::ThreadPriority::Highest:
+        return "Thread::ThreadPriority::Highest";
     default:
-        return "ERR: Invalid Thread::eThreadPriority value!";
+        return "ERR: Invalid Thread::ThreadPriority value!";
     }
 }
 

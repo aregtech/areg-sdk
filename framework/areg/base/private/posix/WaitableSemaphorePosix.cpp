@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 WaitableSemaphorePosix::WaitableSemaphorePosix(int maxCount, int initCount /*= 0*/, const char * asciiName /*= nullptr */)
-    : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitSemaphore, true, asciiName )
+    : WaitablePosix  ( NESyncTypesIX::SyncKind::SoWaitSemaphore, true, asciiName )
 
     , mMaxCount         ( maxCount  )
     , mCurCount         ( initCount )

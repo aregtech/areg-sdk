@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Type of supported Synchronization objects
      **/
-    enum class eSyncObject  : short
+    enum class SyncKind  : short
     {
           SoUnknown     = -1    //!< Unknown type of synchronization object.
         , SoMutex       =  0    //!< Synchronization object is a Mutex.
@@ -60,7 +60,7 @@ protected:
      *          overwritten pure virtual functions.
      * \param	synchObjectType	Type of synchronization object
      **/
-    explicit SyncObject( SyncObject::eSyncObject syncObjectType );
+    explicit SyncObject( SyncObject::SyncKind syncObjectType );
 
 public:
     /**
@@ -91,7 +91,7 @@ public:
     /**
      * \brief   Returns type of synchronization object
      **/
-    inline SyncObject::eSyncObject getObjectType() const;
+    inline SyncObject::SyncKind getObjectType() const;
 
     /**
      * \brief   Returns true if a synchronization object is valid.
@@ -143,7 +143,7 @@ protected:
     /**
      * \brief   Synchronization object type
      **/
-    const SyncObject::eSyncObject mSyncObjectType;
+    const SyncObject::SyncKind mSyncObjectType;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls
@@ -170,14 +170,14 @@ inline SYNCHANDLE SyncObject::getHandle() const
     return mSyncObject;
 }
 
-inline SyncObject::eSyncObject SyncObject::getObjectType() const
+inline SyncObject::SyncKind SyncObject::getObjectType() const
 {
     return mSyncObjectType;
 }
 
 inline bool SyncObject::isValid() const
 {
-    return (mSyncObjectType == SyncObject::eSyncObject::SoNolock) || (mSyncObject != nullptr);
+    return (mSyncObjectType == SyncObject::SyncKind::SoNolock) || (mSyncObject != nullptr);
 }
 
 #endif  // AREG_BASE_SYNCOBJECT_HPP
