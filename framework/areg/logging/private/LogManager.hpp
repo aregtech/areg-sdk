@@ -419,7 +419,7 @@ private:
      * \brief   Sends log event with the preferred priority.
      *          By default, it the priority is Normal.
      **/
-    void sendLogEvent( const LoggingEventData & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
+    void sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Changes the scope priority. It can be either a single scope or scope group.

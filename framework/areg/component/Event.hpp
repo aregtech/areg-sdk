@@ -134,7 +134,7 @@ class AREG_API Event   : public RuntimeObject
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Event::eEventType
+     * \brief   Event::EventType
      *          Event types.
      **/
     typedef enum class E_EventType  : unsigned int
@@ -173,33 +173,33 @@ public:
         , EventCustomInternal       =32785  /*0x8011*/  //!< Custom Notification.     Bit set: 1000 0000 0001 0001
         , EventCustomExternal       =32786  /*0x8012*/  //!< Custom Thread event.     Bit set: 1000 0000 0001 0010
 
-    } eEventType;
+    } EventType;
 
     /**
-     * \return Returns string value of Event::eEventType
+     * \return Returns string value of Event::EventType
      **/
-    static inline const char* getString(Event::eEventType eventType);
+    static inline const char* getString(Event::EventType eventType);
 
     /**
      * \brief   Event::eEventPiority
      *          The priorities of the events.
      **/
-    typedef enum class E_EventPriority  : unsigned int
+    enum class EventPriority  : uint32_t
     {
-          EventPriorityUndefined    //!< Undefined priority, should not be used.
-        , EventPriorityLow          //!< The priority of the event is low, should be processed only if there is no event in the queue.
-        , EventPriorityNormal       //!< The priority of the event is normal, should be processed in FIFO principle.
-        , EventPriorityHigh         //!< The priority of the event is high, should be processed before any other events.
-        , EventPriorityCritical     //!< The priority of the event is critical, should be processed nearly immediately.
-        , EventPriorityIgnore       //!< The priority of event should be ignored. Should be set in event.
-        , EventPriorityExit         //!< The highest priority of the event. Should be processed as soon as possible and should not be removed from the stack.
-    } eEventPriority;
+          UndefinedPrio    //!< Undefined priority, should not be used.
+        , LowPrio          //!< The priority of the event is low, should be processed only if there is no event in the queue.
+        , NormalPrio       //!< The priority of the event is normal, should be processed in FIFO principle.
+        , HighPrio         //!< The priority of the event is high, should be processed before any other events.
+        , CriticalPrio     //!< The priority of the event is critical, should be processed nearly immediately.
+        , IgnorePrio       //!< The priority of event should be ignored. Should be set in event.
+        , ExitPrio         //!< The highest priority of the event. Should be processed as soon as possible and should not be removed from the stack.
+    };
 
     /**
      * \brief   Event::DefaultPriority
      *          The default priority of the events.
      **/
-    static constexpr eEventPriority DefaultPriority     { eEventPriority::EventPriorityNormal };
+    static constexpr EventPriority DefaultPriority  { EventPriority::NormalPrio };
 
     /**
      * \brief   Predefined invalid event object. It has Unknown type with ID 0.
@@ -303,7 +303,7 @@ protected:
      *          Creates event object of specified type.
      * \param   eventType   The type of Event.
      **/
-    Event( Event::eEventType eventType );
+    Event( Event::EventType eventType );
 
     /**
      * \brief   Destructor.
@@ -405,27 +405,27 @@ public:
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Returns the type of Event.
-     *          For more information see description of Event::eEventType
-     * \see Event::eEventType
+     *          For more information see description of Event::EventType
+     * \see Event::EventType
      **/
-    inline Event::eEventType getEventType() const;
+    inline Event::EventType getEventType() const;
     /**
      * \brief   Sets the type of Event.
-     *          For more information see description of Event::eEventType
+     *          For more information see description of Event::EventType
      * \param   eventType   The type of Event.
-     * \see Event::eEventType
+     * \see Event::EventType
      **/
-    inline void setEventType( Event::eEventType eventType );
+    inline void setEventType( Event::EventType eventType );
 
     /**
      * \brief   Returns the priority of the event.
      **/
-    inline eEventPriority getEventPriority() const;
+    inline EventPriority getEventPriority() const;
 
     /**
      * \brief   Sets new priority of the event.
      **/
-    inline void setEventPriority(eEventPriority eventPrio);
+    inline void setEventPriority(EventPriority eventPrio);
 
     /**
      * \brief   Returns pointer of Event Consumer object.
@@ -442,31 +442,31 @@ public:
      * \brief   Checks whether the given event type is internal or not.
      * \param   eventType   The event type to check.
      **/
-    inline static bool isInternal( Event::eEventType eventType );
+    inline static bool isInternal( Event::EventType eventType );
 
     /**
      * \brief   Checks whether the given event type is external or not.
      * \param   eventType   The event type to check.
      **/
-    inline static bool isExternal( Event::eEventType eventType );
+    inline static bool isExternal( Event::EventType eventType );
 
     /**
      * \brief   Checks whether the given event type is local or not.
      * \param   eventType   The event type to check.
      **/
-    inline static bool isLocal( Event::eEventType eventType );
+    inline static bool isLocal( Event::EventType eventType );
 
     /**
      * \brief   Checks whether the given event type is remote or not.
      * \param   eventType   The event type to check.
      **/
-    inline static bool isRemote( Event::eEventType eventType );
+    inline static bool isRemote( Event::EventType eventType );
 
     /**
      * \brief   Checks whether the given event type is developer custom or system predefined.
      * \param   eventType   The event type to check.
      **/
-    inline static bool isCustom( Event::eEventType eventType );
+    inline static bool isCustom( Event::EventType eventType );
 
     /**
      * \brief   Returns true, if event is internal, i.e. should be queued in internal event queue
@@ -520,11 +520,11 @@ protected:
     /**
      * \brief   The event type
      **/
-    eEventType          mEventType;
+    EventType          mEventType;
     /**
      * \brief   The event priority
      **/
-    eEventPriority      mEventPrio;
+    EventPriority      mEventPrio;
     /**
      * \brief   Event consumer.
      **/
@@ -541,18 +541,18 @@ private:
     AREG_NOCOPY_NOMOVE( Event );
 };
 
-AREG_IMPLEMENT_STREAMABLE(Event::eEventType)
+AREG_IMPLEMENT_STREAMABLE(Event::EventType)
 
 //////////////////////////////////////////////////////////////////////////
 // Event class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Event::eEventType Event::getEventType() const
+inline Event::EventType Event::getEventType() const
 {
     return mEventType;
 }
 
-inline void Event::setEventType( Event::eEventType eventType )
+inline void Event::setEventType( Event::EventType eventType )
 {
     mEventType = eventType;
 }
@@ -567,29 +567,29 @@ inline void Event::setEventConsumer( EventConsumer * consumer )
     mConsumer = consumer;
 }
 
-inline bool Event::isInternal( Event::eEventType eventType )
+inline bool Event::isInternal( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventInternal)) != 0;
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventInternal)) != 0;
 }
 
-inline bool Event::isExternal( Event::eEventType eventType )
+inline bool Event::isExternal( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventExternal)) != 0;
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventExternal)) != 0;
 }
 
-inline bool Event::isLocal( Event::eEventType eventType )
+inline bool Event::isLocal( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventLocal)) != 0;
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventLocal)) != 0;
 }
 
-inline bool Event::isRemote( Event::eEventType eventType )
+inline bool Event::isRemote( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventRemote)) != 0;
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventRemote)) != 0;
 }
 
-inline bool Event::isCustom( Event::eEventType eventType )
+inline bool Event::isCustom( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::eEventType::EventCustom)) != 0;
+    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventCustom)) != 0;
 }
 
 inline bool Event::isInternal() const
@@ -617,80 +617,80 @@ inline bool Event::isCustom() const
     return Event::isCustom( mEventType );
 }
 
-inline Event::eEventPriority Event::getEventPriority() const
+inline Event::EventPriority Event::getEventPriority() const
 {
     return mEventPrio;
 }
 
-inline void Event::setEventPriority(Event::eEventPriority eventPrio)
+inline void Event::setEventPriority(Event::EventPriority eventPrio)
 {
     mEventPrio = eventPrio;
 }
 
-inline const char* Event::getString(Event::eEventType eventType)
+inline const char* Event::getString(Event::EventType eventType)
 {
 
     switch ( eventType )
     {
-    case Event::eEventType::EventUnknown:
-        return "Event::eEventType::EventUnknown";
+    case Event::EventType::EventUnknown:
+        return "Event::EventType::EventUnknown";
 
-    case Event::eEventType::EventInternal:
-        return "Event::eEventType::EventInternal";
-    case Event::eEventType::EventExternal:
-        return "Event::eEventType::EventExternal";
+    case Event::EventType::EventInternal:
+        return "Event::EventType::EventInternal";
+    case Event::EventType::EventExternal:
+        return "Event::EventType::EventExternal";
 
-    case Event::eEventType::EventLocal:
-        return "Event::eEventType::EventLocal";
-    case Event::eEventType::EventRemote:
-        return "Event::eEventType::EventRemote";
+    case Event::EventType::EventLocal:
+        return "Event::EventType::EventLocal";
+    case Event::EventType::EventRemote:
+        return "Event::EventType::EventRemote";
 
-    case Event::eEventType::EventNotify:
-        return "Event::eEventType::EventNotify";
-    case Event::eEventType::EventToStub:
-        return "Event::eEventType::EventToStub";
-    case Event::eEventType::EventToProxy:
-        return "Event::eEventType::EventToProxy";
-    case Event::eEventType::EventConnect:
-        return "Event::eEventType::EventConnect";
+    case Event::EventType::EventNotify:
+        return "Event::EventType::EventNotify";
+    case Event::EventType::EventToStub:
+        return "Event::EventType::EventToStub";
+    case Event::EventType::EventToProxy:
+        return "Event::EventType::EventToProxy";
+    case Event::EventType::EventConnect:
+        return "Event::EventType::EventConnect";
 
-    case Event::eEventType::EventNotifyClient:
-        return "Event::eEventType::EventNotifyClient";
+    case Event::EventType::EventNotifyClient:
+        return "Event::EventType::EventNotifyClient";
 
-    case Event::eEventType::EventLocalServiceRequest:
-        return "Event::eEventType::EventLocalServiceRequest";
-    case Event::eEventType::EventRemoteServiceRequest:
-        return "Event::eEventType::EventRemoteServiceRequest";
+    case Event::EventType::EventLocalServiceRequest:
+        return "Event::EventType::EventLocalServiceRequest";
+    case Event::EventType::EventRemoteServiceRequest:
+        return "Event::EventType::EventRemoteServiceRequest";
 
-    case Event::eEventType::EventLocalNotifyRequest:
-        return "Event::eEventType::EventLocalNotifyRequest";
-    case Event::eEventType::EventRemoteNotifyRequest:
-        return "Event::eEventType::EventRemoteNotifyRequest";
+    case Event::EventType::EventLocalNotifyRequest:
+        return "Event::EventType::EventLocalNotifyRequest";
+    case Event::EventType::EventRemoteNotifyRequest:
+        return "Event::EventType::EventRemoteNotifyRequest";
 
-    case Event::eEventType::EventLocalServiceResponse:
-        return "Event::eEventType::EventLocalServiceResponse";
-    case Event::eEventType::EventRemoteServiceResponse:
-        return "Event::eEventType::EventRemoteServiceResponse";
+    case Event::EventType::EventLocalServiceResponse:
+        return "Event::EventType::EventLocalServiceResponse";
+    case Event::EventType::EventRemoteServiceResponse:
+        return "Event::EventType::EventRemoteServiceResponse";
 
-    case Event::eEventType::EventLocalStubConnect:
-        return "Event::eEventType::EventLocalStubConnect";
-    case Event::eEventType::EventRemoteStubConnect:
-        return "Event::eEventType::EventRemoteStubConnect";
+    case Event::EventType::EventLocalStubConnect:
+        return "Event::EventType::EventLocalStubConnect";
+    case Event::EventType::EventRemoteStubConnect:
+        return "Event::EventType::EventRemoteStubConnect";
 
-    case Event::eEventType::EventLocalProxyConnect:
-        return "Event::eEventType::EventLocalProxyConnect";
-    case Event::eEventType::EventRemoteProxyConnect:
-        return "Event::eEventType::EventRemoteProxyConnect";
+    case Event::EventType::EventLocalProxyConnect:
+        return "Event::EventType::EventLocalProxyConnect";
+    case Event::EventType::EventRemoteProxyConnect:
+        return "Event::EventType::EventRemoteProxyConnect";
 
-    case Event::eEventType::EventCustom:
-        return "Event::eEventType::EventCustom";
-    case Event::eEventType::EventCustomInternal:
-        return "Event::eEventType::EventCustomInternal";
-    case Event::eEventType::EventCustomExternal:
-        return "Event::eEventType::EventCustomExternal";
+    case Event::EventType::EventCustom:
+        return "Event::EventType::EventCustom";
+    case Event::EventType::EventCustomInternal:
+        return "Event::EventType::EventCustomInternal";
+    case Event::EventType::EventCustomExternal:
+        return "Event::EventType::EventCustomExternal";
 
     default:
-        return "ERR: Undefined Event::eEventType value!";
+        return "ERR: Undefined Event::EventType value!";
     }
 }
 

@@ -32,7 +32,7 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
                                         , const StubAddress  & target
                                         , unsigned int reqId
                                         , NEService::eRequestType reqType
-                                        , Event::eEventType eventType)
+                                        , Event::EventType eventType)
     : StubEvent     (target, eventType)
     , mProxySource  (proxyAddress)
     , mMessageId    (reqId)

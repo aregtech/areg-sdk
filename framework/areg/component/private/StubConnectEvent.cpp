@@ -25,7 +25,7 @@ StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eS
                             , stubTarget
                             , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                             , NEService::eRequestType::ServiceConnection
-                            , Event::eEventType::EventLocalStubConnect)
+                            , Event::EventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
 }
@@ -35,7 +35,7 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
                             , stubTarget
                             , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                             , NEService::eRequestType::ClientConnection
-                            , Event::eEventType::EventLocalStubConnect)
+                            , Event::EventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
 }

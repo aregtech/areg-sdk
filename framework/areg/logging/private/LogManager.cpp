@@ -368,7 +368,7 @@ bool LogManager::postEvent(Event & eventElem)
     return EventDispatcher::postEvent(eventElem);
 }
 
-inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
 }

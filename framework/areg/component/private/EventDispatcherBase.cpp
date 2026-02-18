@@ -103,7 +103,7 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
     bool result{ false };
     if ( mHasStarted )
     {
-        Event::eEventType eventType = eventElem.getEventType();
+        Event::EventType eventType = eventElem.getEventType();
         if (Event::isInternal(eventType))
         {
             mInternalEvents.pushEvent(eventElem, nullptr);

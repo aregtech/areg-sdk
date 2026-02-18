@@ -100,7 +100,7 @@ protected:
      * \param	toTarget    The address of target Stub
      * \param	eventType   The type of event.
      **/
-    StubEvent(const StubAddress & toTarget, Event::eEventType eventType );
+    StubEvent(const StubAddress & toTarget, Event::EventType eventType );
 
     /**
      * \brief   Destructor.

@@ -86,7 +86,7 @@ protected:
     RequestEvent( const ProxyAddress & fromSource
                 , const StubAddress & toTarget
                 , unsigned int reqId
-                , Event::eEventType eventType);
+                , Event::EventType eventType);
 
     /**
      * \brief	Creates event with data. Initializes event source, target information,  and message ID.
@@ -103,7 +103,7 @@ protected:
                 , const ProxyAddress & fromSource
                 , const StubAddress & toTarget
                 , unsigned int reqId
-                , Event::eEventType eventType
+                , Event::EventType eventType
                 , const String & name = String::getEmptyString());
 
     /**
@@ -376,7 +376,7 @@ protected:
                       , const StubAddress & toStub
                       , unsigned int msgId
                       , NEService::eRequestType reqType
-                      , Event::eEventType eventType );
+                      , Event::EventType eventType );
 
     /**
      * \brief   Initializes object data from streaming object.

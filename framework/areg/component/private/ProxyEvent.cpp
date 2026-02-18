@@ -33,7 +33,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::eEventType eventType )
+ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType )
     : StreamableEvent       (eventType)
     , mTargetProxyAddress   (targetProxy)
 {

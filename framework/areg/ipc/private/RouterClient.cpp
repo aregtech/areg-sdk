@@ -120,7 +120,7 @@ bool RouterClient::registerServiceProvider( const StubAddress & stubService )
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage(NERemoteService::createRouterRegisterService(stubService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::eEventPriority::EventPriorityHigh );
+        result = sendMessage(NERemoteService::createRouterRegisterService(stubService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio );
     }
 
     return result;
@@ -152,7 +152,7 @@ bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage(NERemoteService::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::eEventPriority::EventPriorityHigh);
+        result = sendMessage(NERemoteService::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio);
     }
 
     return result;
@@ -202,7 +202,7 @@ void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & w
             {
                 LOG_DBG("Trying to reconnect");
                 cancelConnection( );
-                sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityNormal );
+                sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::EventPriority::NormalPrio );
             }
         }
         else
@@ -229,7 +229,7 @@ void RouterClient::failedReceiveMessage( Socket & whichSource )
                        , whichSource.isValid() ? "VALID" : "INVALID"
                        , whichSource.isAlive() ? "ALIVE" : "DEAD");
             cancelConnection();
-            sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityNormal);
+            sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::EventPriority::NormalPrio);
         }
         else
         {

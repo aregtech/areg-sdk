@@ -76,7 +76,7 @@ protected:
      * \param   targetProxy The address of target Proxy, which should
      *                      receive and process event.
      **/
-    ProxyEvent( const ProxyAddress & targetProxy, Event::eEventType eventType );
+    ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType );
 
     /**
      * \brief   Initializes event data from streaming object.

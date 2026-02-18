@@ -104,7 +104,7 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, Notificati
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : Event (Event::eEventType::EventNotifyClient)
+    : Event (Event::EventType::EventNotifyClient)
     , mData (data)
 {
     setTargetThread();

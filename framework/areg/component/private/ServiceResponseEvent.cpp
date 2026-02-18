@@ -21,7 +21,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                           , NEService::ResultType result
                                           , unsigned int responseId
-                                          , Event::eEventType eventType
+                                          , Event::EventType eventType
                                           , const SequenceNumber & seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ProxyEvent    (target, eventType)
     , mResponseId   (responseId)

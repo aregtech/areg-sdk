@@ -77,7 +77,7 @@ protected:
     ResponseEvent( const ProxyAddress & proxyTarget
                  , const NEService::ResultType result
                  , unsigned int respId
-                 , Event::eEventType eventType
+                 , Event::EventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
@@ -94,7 +94,7 @@ protected:
                  , const ProxyAddress & proxyTarget
                  , NEService::ResultType result
                  , unsigned int respId
-                 , Event::eEventType eventType
+                 , Event::EventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::getEmptyString() );
 

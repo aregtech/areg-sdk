@@ -34,7 +34,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-StubEvent::StubEvent( const StubAddress& toTarget, Event::eEventType eventType )
+StubEvent::StubEvent( const StubAddress& toTarget, Event::EventType eventType )
     : StreamableEvent   (eventType)
     , mTargetStubAddress(toTarget)
 {

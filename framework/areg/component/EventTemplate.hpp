@@ -115,9 +115,9 @@
  * \param   DATA_CLASS      The name of data object type. Can be any class and should have assigning operator available.
  * \param   EventClass      The event class name.
  * \param   ConsumerClass   The event consumer class name.
- * \param   EventType       The type of event to create.
+ * \param   EventKind       The type of event to create.
  **/
-#define AREG_DEFINE_EVENT_STANDARD(DATA_CLASS, EventClass, ConsumerClass, EventType)                                                     \
+#define AREG_DEFINE_EVENT_STANDARD(DATA_CLASS, EventClass, ConsumerClass, EventKind)                                                     \
 /*****************************************************************************************************************************/             \
 /** Declared classes                                                                                                        **/             \
 /*****************************************************************************************************************************/             \
@@ -188,28 +188,28 @@ protected:                                                                      
     /**                                                                                                                     **/             \
     AregImpl_##EventClass( const DATA_CLASS& data                                                                                                  \
                   , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                                                \
-                  , Event::eEventPriority eventPrio = Event::DefaultPriority );                                                             \
+                  , Event::EventPriority eventPrio = Event::DefaultPriority );                                                             \
     /**                                                                                                                     **/             \
     /** \brief  Constructor, gets event type and data object. Declared for special cases in inter-thread communication.     **/             \
     /**         This constructor is protected and the event type can be directly specified.                                 **/             \
     /**                                                                                                                     **/             \
-    AregImpl_##EventClass( Event::eEventType eventType                                                                                             \
+    AregImpl_##EventClass( Event::EventType eventType                                                                                             \
                   , const DATA_CLASS & data                                                                                                 \
-                  , Event::eEventPriority eventPrio = Event::DefaultPriority );                                                             \
+                  , Event::EventPriority eventPrio = Event::DefaultPriority );                                                             \
     /**                                                                                                                     **/             \
     /** \brief  Constructor, gets event type, data object and consumer.                                                     **/             \
     /**         This constructor is protected and the event type can be directly specified.                                 **/             \
     /**         The consumer object is set directly in event object.                                                        **/             \
     /**                                                                                                                     **/             \
-    AregImpl_##EventClass( Event::eEventType eventType                                                                                             \
+    AregImpl_##EventClass( Event::EventType eventType                                                                                             \
                   , const DATA_CLASS & data                                                                                                 \
                   , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                                                \
-                  , Event::eEventPriority eventPrio = Event::DefaultPriority );                                                             \
+                  , Event::EventPriority eventPrio = Event::DefaultPriority );                                                             \
     /**                                                                                                                     **/             \
     /** \brief  Constructor, sets event data. DataClass can be any class, including Dummy / Empty class                     **/             \
     /**         This constructor is protected. To send an event, used sendEvent(const DATA_CLASS&) function instead.        **/             \
     /**                                                                                                                     **/             \
-    AregImpl_##EventClass(const DATA_CLASS & data, Event::eEventPriority eventPrio = Event::DefaultPriority );                                     \
+    AregImpl_##EventClass(const DATA_CLASS & data, Event::EventPriority eventPrio = Event::DefaultPriority );                                     \
     /**                                                                                                                     **/             \
     /** \brief  Protected destructor. Should not be called directly, call Destroy() instead.                                **/             \
     /**                                                                                                                     **/             \
@@ -224,7 +224,7 @@ public:                                                                         
     /** \param  eventPrio   The priority of the event to set. By default, it is Normal.                                     **/             \
     /** \return Returns true if event successfully was sent.                                                                **/             \
     /**                                                                                                                     **/             \
-    static inline bool sendEvent(const DATA_CLASS & data, Event::eEventPriority eventPrio = Event::DefaultPriority);                        \
+    static inline bool sendEvent(const DATA_CLASS & data, Event::EventPriority eventPrio = Event::DefaultPriority);                        \
     /**                                                                                                                     **/             \
     /** \brief  Sends an Event of specified type. If Internal, make sure that event is send in same thread context.         **/             \
     /**         Before sending, make sure that consumer is registered in thread.                                            **/             \
@@ -236,8 +236,8 @@ public:                                                                         
     /** \return Returns true if event successfully was sent.                                                                **/             \
     /**                                                                                                                     **/             \
     static inline bool sendEvent( const DATA_CLASS & data                                                                                   \
-                                , Event::eEventType eventType                                                                               \
-                                , Event::eEventPriority eventPrio = Event::DefaultPriority);                                                \
+                                , Event::EventType eventType                                                                               \
+                                , Event::EventPriority eventPrio = Event::DefaultPriority);                                                \
     /**                                                                                                                     **/             \
     /** \brief  Sends event to specified consumer within same thread.                                                       **/             \
     /**         Call this method if sure that event should be processed within same thread scope.                           **/             \
@@ -251,7 +251,7 @@ public:                                                                         
     /**                                                                                                                     **/             \
     static inline bool sendEvent( const DATA_CLASS & data                                                                                   \
                                 , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                                  \
-                                , Event::eEventPriority eventPrio = Event::DefaultPriority);                                                \
+                                , Event::EventPriority eventPrio = Event::DefaultPriority);                                                \
     /**                                                                                                                     **/             \
     /** \brief  Sends event of specified type to specified consumer within same thread.                                     **/             \
     /**         If Event is Internal, make sure that it is sent in the same thread context.                                 **/             \
@@ -267,7 +267,7 @@ public:                                                                         
     /**                                                                                                                     **/             \
     static inline bool sendEvent( const DATA_CLASS & data                                                                                   \
                                 , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                                  \
-                                , Event::eEventType eventType, Event::eEventPriority eventPrio = Event::DefaultPriority);                   \
+                                , Event::EventType eventType, Event::EventPriority eventPrio = Event::DefaultPriority);                   \
     /**                                                                                                                     **/             \
     /** \brief  Sends event to specified dispatcher thread, which should already have registered event consumer.            **/             \
     /**         Call this method if sure that event should be processed within specified thread scope and                   **/             \
@@ -283,7 +283,7 @@ public:                                                                         
     /**                                                                                                                     **/             \
     static inline bool sendEvent( const DATA_CLASS & data                                                                                   \
                                 , DispatcherThread & dispThread                                                                             \
-                                , Event::eEventPriority eventPrio = Event::DefaultPriority);                                                \
+                                , Event::EventPriority eventPrio = Event::DefaultPriority);                                                \
     /**                                                                                                                     **/             \
     /** \brief  Sends event to specified consumer within specified thread.                                                  **/             \
     /**         Call this method if sure that event should be processed within specified thread scope.                      **/             \
@@ -300,7 +300,7 @@ public:                                                                         
     static inline bool sendEvent( const DATA_CLASS & data                                                                                   \
                                 , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                                  \
                                 , DispatcherThread & dispThread                                                                             \
-                                , Event::eEventPriority eventPrio = Event::DefaultPriority);                                                \
+                                , Event::EventPriority eventPrio = Event::DefaultPriority);                                                \
     /**                                                                                                                     **/             \
     /** \brief  Registers Consumer in the worker / component thread                                                         **/             \
     /**         Returns true if successfully registered consumer                                                            **/             \
@@ -402,27 +402,27 @@ AREG_IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS>, AregImpl_##EventCla
 template <class DATA_CLASS>                                                                                                                 \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( const DATA_CLASS & data                                                                         \
                                           , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                        \
-                                          , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
-    : Event (EventType), mData(data)                                                                                                        \
+                                          , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
+    : Event (EventKind), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventConsumer(static_cast<EventConsumer *>(&listener));                                                                      \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
 /** Constructor implementation, pass DataClass object and event type. By default, the event is external                     **/             \
 template <class DATA_CLASS>                                                                                                                 \
-AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( Event::eEventType eventType                                                                     \
+AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( Event::EventType eventType                                                                     \
                                           , const DATA_CLASS & data                                                                         \
-                                          , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
+                                          , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
     : Event (eventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
 /** Constructor implementation, pass event type, DataClass and consumer objects.                                            **/             \
 template <class DATA_CLASS>                                                                                                                 \
-AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( Event::eEventType eventType                                                                     \
+AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( Event::EventType eventType                                                                     \
                                           , const DATA_CLASS & data                                                                         \
                                           , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                        \
-                                          , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
+                                          , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
     : Event (eventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventConsumer(static_cast<EventConsumer *>(&listener));                                                                      \
@@ -431,8 +431,8 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( Event::eEventType even
 /** Constructor implementation, pass DataClass object to Event                                                              **/             \
 template <class DATA_CLASS>                                                                                                                 \
 AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( const DATA_CLASS & data                                                                         \
-                                          , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
-    : Event (EventType), mData(data)                                                                                                        \
+                                          , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
+    : Event (EventKind), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
@@ -445,9 +445,9 @@ AregImpl_##EventClass<DATA_CLASS>::~AregImpl_##EventClass()                     
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS& data                                                                   \
-                                                 , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                            \
+                                                 , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
-    return AregImpl_##EventClass<DATA_CLASS>::sendEvent(data, EventType, eventPrio);                                                               \
+    return AregImpl_##EventClass<DATA_CLASS>::sendEvent(data, EventKind, eventPrio);                                                               \
 }                                                                                                                                           \
 /**                                                                                                                         **/             \
 /** Static function, sends event of specified type and pass DataClass object.                                               **/             \
@@ -456,8 +456,8 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS& data
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & data                                                                  \
-                                                 , Event::eEventType eventType                                                              \
-                                                 , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                            \
+                                                 , Event::EventType eventType                                                              \
+                                                 , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
     DispatcherThread* dispThread = DispatcherThread::findEventConsumerThread(_getClassId());                                                \
     return (dispThread != nullptr ? _send(*dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(eventType, data, eventPrio)) : false);          \
@@ -470,9 +470,9 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
 template <class DATA_CLASS>                                                                                                                 \
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & data                                                                  \
                                                  , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                 \
-                                                 , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                            \
+                                                 , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
-    return AregImpl_##EventClass<DATA_CLASS>::sendEvent(data, listener, EventType, eventPrio);                                                     \
+    return AregImpl_##EventClass<DATA_CLASS>::sendEvent(data, listener, EventKind, eventPrio);                                                     \
 }                                                                                                                                           \
 /**                                                                                                                         **/             \
 /** Static function. Sends event to specified consumer within same thread.                                                  **/             \
@@ -482,8 +482,8 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
 template <class DATA_CLASS>                                                                                                                 \
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & data                                                                  \
                                                  , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                 \
-                                                 , Event::eEventType eventType                                                              \
-                                                 , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                            \
+                                                 , Event::EventType eventType                                                              \
+                                                 , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
     DispatcherThread& dispThread = DispatcherThread::getCurrentDispatcherThread( );                                                         \
     return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(eventType, data, listener, eventPrio)) : false);  \
@@ -496,9 +496,9 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
 template <class DATA_CLASS>                                                                                                                 \
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & data                                                           \
                                                  , DispatcherThread & dispThread                                                            \
-                                                 , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                            \
+                                                 , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
-    return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(EventType, data, eventPrio)) : false);     \
+    return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(EventKind, data, eventPrio)) : false);     \
 }                                                                                                                                           \
 /**                                                                                                                         **/             \
 /** Static function. Sends event to specified consumer within specified thread.                                             **/             \
@@ -510,9 +510,9 @@ template <class DATA_CLASS>                                                     
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & data                                                           \
                                                  , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                          \
                                                  , DispatcherThread & dispThread                                                            \
-                                                 , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                            \
+                                                 , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
-    return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(EventType, data, listener, eventPrio)) : false);  \
+    return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(EventKind, data, listener, eventPrio)) : false);  \
 }                                                                                                                                           \
 /**                                                                                                                         **/             \
 /** Adds listener (registers consumer) for specified thread name. The thread should be already running.                     **/             \
@@ -601,13 +601,13 @@ void AregImpl_##ConsumerClass<DATA_CLASS>::startEventProcessing( Event & eventEl
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  * \param   ConsumerThreadName  The name of thread where Event is dispatched and Consumer is registered.
- * \param   EventType           The type of Event. Should be Event::eEventType type. Either Internal or External.
+ * \param   EventKind           The type of Event. Should be Event::EventType type. Either Internal or External.
  **/
-#define AREG_DEFINE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventType)                                             \
+#define AREG_DEFINE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventKind)                                             \
 /**                                                                                                                         **/                     \
 /** First, declare all in standard macro                                                                                    **/                     \
 /**                                                                                                                         **/                     \
-        AREG_DEFINE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventType)                                                                 \
+        AREG_DEFINE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventKind)                                                                 \
 /**                                                                                                                         **/                     \
 /** ---- Extended Part ----                                                                                                 **/                     \
 /** Declaration of Extended version of ConsumerClass, derive from ConsumerClass template                                    **/                     \
@@ -661,13 +661,13 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
  * \param   DataClass           The Event Data class. Should be declared before MACRO.
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
- * \param   EventType           The type of Event. Should be Event::eEventType type. Either Internal or External.
+ * \param   EventKind           The type of Event. Should be Event::EventType type. Either Internal or External.
  **/
-#define AREG_DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventType)                                                                \
+#define AREG_DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventKind)                                                                \
     /**                                                                                             **/                                             \
     /** First declare standard event and event consumer classes                                     **/                                             \
     /**                                                                                             **/                                             \
-    AREG_DEFINE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventType)                                                                     \
+    AREG_DEFINE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, EventKind)                                                                     \
     /**                                                                                             **/                                             \
     /** Since event and event consumer classes are templates, define new types                      **/                                             \
     /** Use 'EventClass' to send event and using event function.                                    **/                                             \
@@ -689,13 +689,13 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  * \param   ConsumerThreadName  The Thread name of Event Consumer.
- * \param   EventType           The type of Event. Should be Event::eEventType type. Either Internal or External.
+ * \param   EventKind           The type of Event. Should be Event::EventType type. Either Internal or External.
  **/
-#define AREG_DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventType)                                            \
+#define AREG_DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventKind)                                            \
     /**                                                                                             **/                                             \
     /** First declare event and extended event consumer classes                                     **/                                             \
     /**                                                                                             **/                                             \
-    AREG_DEFINE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventType)                                                 \
+    AREG_DEFINE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, EventKind)                                                 \
     /**                                                                                             **/                                             \
     /** Since event and event consumer classes are templates, define new types                      **/                                             \
     /** Use 'EventClass' to send event and using event function.                                    **/                                             \
@@ -709,19 +709,19 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
 /**
  * \brief   This MACRO is used to declare internal standard Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be Event::eEventType::EventCustomInternal
+ *          The Event Type by default will be Event::EventType::EventCustomInternal
  *
  * \param   DataClass           The Event Data class. Should be declared before MACRO.
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  **/
 #define AREG_DECLARE_INTERNAL_EVENT(DataClass, EventClass, ConsumerClass)                                                                           \
-    AREG_DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, Event::eEventType::EventCustomInternal)
+    AREG_DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, Event::EventType::EventCustomInternal)
 
 /**
  * \brief   This MACRO is used to declare internal extended Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be Event::eEventType::EventCustomInternal.
+ *          The Event Type by default will be Event::EventType::EventCustomInternal.
  *          The Event Consumer will be automatically registered in
  *          specified Thread.
  *
@@ -731,7 +731,7 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
  * \param   ConsumerThreadName  The Thread name of Event Consumer.
  **/
 #define AREG_DECLARE_INTERNAL_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName)                                              \
-    AREG_DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, Event::eEventType::EventCustomInternal)
+    AREG_DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, Event::EventType::EventCustomInternal)
 
 //////////////////////////////////////////////////////////////////////////
 // AREG_DECLARE_EXTERNAL_EVENT declaration
@@ -739,19 +739,19 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
 /**
  * \brief   This MACRO is used to declare external standard Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be Event::eEventType::EventCustomExternal
+ *          The Event Type by default will be Event::EventType::EventCustomExternal
  *
  * \param   DataClass           The Event Data class. Should be declared before MACRO.
  * \param   EventClass          The Event class, which will be declared after calling this MACRO.
  * \param   ConsumerClass       The Event Consumer class, which will be declared after calling this MACRO.
  **/
 #define AREG_DECLARE_EXTERNAL_EVENT(DataClass, EventClass, ConsumerClass)                                                                           \
-    AREG_DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, Event::eEventType::EventCustomExternal)
+    AREG_DECLARE_EVENT_STANDARD(DataClass, EventClass, ConsumerClass, Event::EventType::EventCustomExternal)
 
 /**
  * \brief   This MACRO is used to declare external extended Event and Event Consumer.
  *          The Event Data class should be declared before using this MACRO.
- *          The Event Type by default will be Event::eEventType::EventCustomExternal.
+ *          The Event Type by default will be Event::EventType::EventCustomExternal.
  *          The Event Consumer will be automatically registered in
  *          specified Thread.
  *
@@ -761,14 +761,14 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
  * \param   ConsumerThreadName  The Thread name of Event Consumer.
  **/
 #define AREG_DECLARE_EXTERNAL_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName)                                              \
-    AREG_DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, Event::eEventType::EventCustomExternal)
+    AREG_DECLARE_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName, Event::EventType::EventCustomExternal)
 
 //////////////////////////////////////////////////////////////////////////
 // AREG_DECLARE_EVENT declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Declares standard Event and Event Consumer classes.
- *          The Event Type is set to Event::eEventType::EventCustomExternal.
+ *          The Event Type is set to Event::EventType::EventCustomExternal.
  *          The DataClass should be already declared before using this MACRO.
  *          Additionally, it will declare and implement 2 classes:
  *          EventClass and ConsumerClass.
@@ -793,7 +793,7 @@ AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extend
 /**
  * \brief   Declares standard Event and Event Consumer classes, and the
  *          Event Consumer is automatically registered in specified Thread.
- *          The Event Type is set to Event::eEventType::EventCustomExternal.
+ *          The Event Type is set to Event::EventType::EventCustomExternal.
  *          In deference to AREG_DECLARE_EVENT, this MACRO is getting Consumer
  *          Thread name. When consumer is instantiated, it will register
  *          automatically in mentioned thread by searching in resource map.

@@ -152,7 +152,7 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 AREG_IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & consumer )
-    : Event             ( Event::eEventType::EventExternal )
+    : Event             ( Event::EventType::EventExternal )
     , mNotifyConsumer   ( consumer )
     , mDelayConnectEvent( 0 )
 {

@@ -172,7 +172,7 @@ void ServiceCommunicationBase::disconnectServiceHost()
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
     if ( isRunning() )
     {
-        sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::eEventPriority::EventPriorityHigh );
+        sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::EventPriority::HighPrio );
         mEventSendStop.lock();
     }
 }
@@ -226,7 +226,7 @@ void ServiceCommunicationBase::connectionLost( SocketAccepted & clientSocket )
     {
         removeInstance(cookie);
         RemoteMessage msgDisconnect = NERemoteService::createDisconnectRequest(cookie, channel);
-        sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::eEventPriority::EventPriorityNormal);
+        sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
     }
 
     mServerConnection.closeConnection(clientSocket);
@@ -352,7 +352,7 @@ void ServiceCommunicationBase::stopConnection()
     mThreadReceive.triggerExit();
 
     disconnectServices( );
-    disconnectService( Event::eEventPriority::EventPriorityNormal );
+    disconnectService( Event::EventPriority::NormalPrio );
 
     // Wait without triggering exit.
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );

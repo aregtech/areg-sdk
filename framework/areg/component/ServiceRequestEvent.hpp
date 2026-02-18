@@ -72,7 +72,7 @@ protected:
                        , const StubAddress & target
                        , unsigned int reqId
                        , NEService::eRequestType reqType
-                       , Event::eEventType eventType );
+                       , Event::EventType eventType );
 
     /**
      * \brief   Creates event from streaming object and initializes data

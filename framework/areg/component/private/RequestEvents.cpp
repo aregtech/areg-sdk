@@ -33,7 +33,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(RequestEvent, ServiceRequestEvent)
 RequestEvent::RequestEvent( const ProxyAddress & fromSource
                           , const StubAddress & toTarget
                           , unsigned int reqId
-                          , Event::eEventType eventType )
+                          , Event::EventType eventType )
     : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::eRequestType::CallFunction, eventType)
     , mData(reqId, Event::isExternal(eventType) ? EventDataStream::eEventData::EventDataExternal : EventDataStream::eEventData::EventDataInternal)
 {
@@ -43,7 +43,7 @@ RequestEvent::RequestEvent( const EventDataStream & args
                           , const ProxyAddress & fromSource
                           , const StubAddress& toTarget
                           , unsigned int reqId
-                          , Event::eEventType eventType
+                          , Event::EventType eventType
                           , const String & name /*= String::getEmptyString()*/ )
     : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::eRequestType::CallFunction, eventType)
     , mData(reqId, args, name)
@@ -83,7 +83,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(LocalRequestEvent, RequestEvent)
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 LocalRequestEvent::LocalRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
-    : RequestEvent(fromSource, toTarget, reqId, Event::eEventType::EventLocalServiceRequest)
+    : RequestEvent(fromSource, toTarget, reqId, Event::EventType::EventLocalServiceRequest)
 {
 }
 
@@ -92,7 +92,7 @@ LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
                                     , const StubAddress & toTarget
                                     , unsigned int reqId
                                     , const String & name /*= String::getEmptyString()*/ )
-    : RequestEvent(args, fromSource, toTarget, reqId, Event::eEventType::EventLocalServiceRequest, name)
+    : RequestEvent(args, fromSource, toTarget, reqId, Event::EventType::EventLocalServiceRequest, name)
 {
 }
 
@@ -114,7 +114,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(RemoteRequestEvent, RequestEvent)
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId )
-    : RequestEvent(fromSource, toTarget, reqId, Event::eEventType::EventRemoteServiceRequest)
+    : RequestEvent(fromSource, toTarget, reqId, Event::EventType::EventRemoteServiceRequest)
 {
 }
 
@@ -123,7 +123,7 @@ RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
                                       , const StubAddress & toTarget
                                       , unsigned int reqId
                                       , const String & name /*= String::getEmptyString()*/ )
-    : RequestEvent(args, fromSource, toTarget, reqId, Event::eEventType::EventRemoteServiceRequest, name)
+    : RequestEvent(args, fromSource, toTarget, reqId, Event::EventType::EventRemoteServiceRequest, name)
 {
 }
 
@@ -149,7 +149,7 @@ NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
                                       , const StubAddress & toStub
                                       , unsigned int msgId
                                       , NEService::eRequestType reqType
-                                      , Event::eEventType eventType)
+                                      , Event::EventType eventType)
     : ServiceRequestEvent ( fromProxy, toStub, msgId, reqType, eventType)
 {
 }
@@ -175,7 +175,7 @@ LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress & fromProxy
                                                 , const StubAddress & toStub
                                                 , unsigned int msgId
                                                 , NEService::eRequestType reqType )
-    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::eEventType::EventLocalNotifyRequest)
+    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::EventType::EventLocalNotifyRequest)
 {
 }
 
@@ -200,7 +200,7 @@ RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress & fromPro
                                                   , const StubAddress & toStub
                                                   , unsigned int msgId
                                                   , NEService::eRequestType reqType )
-    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::eEventType::EventRemoteNotifyRequest)
+    : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::EventType::EventRemoteNotifyRequest)
 {
 }
 

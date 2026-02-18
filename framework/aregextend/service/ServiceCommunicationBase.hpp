@@ -150,7 +150,7 @@ public:
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+    inline bool sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -432,7 +432,7 @@ public:
      * \param   eventPrio   The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommand(ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
+    inline bool sendCommand(ServiceEventData::eServiceEventCommands cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Call to send the event to process.
@@ -440,13 +440,13 @@ public:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommunicationMessage(ServiceEventData::eServiceEventCommands cmd, const RemoteMessage & msg, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+    inline bool sendCommunicationMessage(ServiceEventData::eServiceEventCommands cmd, const RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
      * \param   eventPrio   The priority of set to the event.
      **/
-    inline void disconnectService( Event::eEventPriority eventPrio );
+    inline void disconnectService( Event::EventPriority eventPrio );
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -564,7 +564,7 @@ inline void ServiceCommunicationBase::waitToComplete( )
     shutdownThread( NECommon::DO_NOT_WAIT );
 }
 
-inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::eServiceEventCommands cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -574,7 +574,7 @@ inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::eServiceEve
 
 inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData::eServiceEventCommands cmd
                                                                 , const RemoteMessage & msg
-                                                                , Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+                                                                , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -582,7 +582,7 @@ inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendMessage( const RemoteMessage & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+inline bool ServiceCommunicationBase::sendMessage( const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData( data )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)
@@ -615,7 +615,7 @@ inline bool ServiceCommunicationBase::isCalculateDataRateEnabled() const
     return mDataRateHelper.isVerbose();
 }
 
-inline void ServiceCommunicationBase::disconnectService( Event::eEventPriority eventPrio )
+inline void ServiceCommunicationBase::disconnectService( Event::EventPriority eventPrio )
 {
     SendMessageEvent::sendEvent( SendMessageEventData( )
                                  , static_cast<SendMessageEventConsumer &>(mThreadSend)

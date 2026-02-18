@@ -93,7 +93,7 @@ void NetTcpLogger::logMessage(const NELogging::sLogMessage& logMessage)
     {
         if (mChannel.isValid() && isConnectState())
         {
-            sendMessage(NELogging::createLogMessage(logMessage, NELogging::eLogDataType::LogDataRemote, mChannel.getCookie()), Event::eEventPriority::EventPriorityNormal);
+            sendMessage(NELogging::createLogMessage(logMessage, NELogging::eLogDataType::LogDataRemote, mChannel.getCookie()), Event::EventPriority::NormalPrio);
         }
         else if (mRingStack.capacity() != 0)
         {
@@ -121,7 +121,7 @@ void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
         RemoteMessage msgLog{ mRingStack.pop() };
         msgLog.setSource(cookie);
         reinterpret_cast<NELogging::sLogMessage*>(msgLog.getBuffer())->logCookie = cookie;
-        sendMessage(msgLog, Event::eEventPriority::EventPriorityNormal);
+        sendMessage(msgLog, Event::EventPriority::NormalPrio);
     }
 }
 

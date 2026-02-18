@@ -187,7 +187,7 @@ bool ServiceClientConnectionBase::reconnectServiceHost()
 
 void ServiceClientConnectionBase::disconnectServiceHost()
 {
-    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::eEventPriority::EventPriorityNormal);
+    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::EventPriority::NormalPrio);
 }
 
 bool ServiceClientConnectionBase::isServiceHostConnected() const
@@ -257,7 +257,7 @@ void ServiceClientConnectionBase::onServiceStop()
         sendMessage(createServiceDisconnectMessage(channel.getCookie(), mTarget));
     }
 
-    disconnectService( Event::eEventPriority::EventPriorityNormal );
+    disconnectService( Event::EventPriority::NormalPrio );
 
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
     mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );

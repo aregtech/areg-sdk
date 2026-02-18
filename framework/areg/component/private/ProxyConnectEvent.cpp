@@ -31,7 +31,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAdd
     : ServiceResponseEvent  ( target
                             , NEService::ResultType::DataOK
                             , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
-                            , Event::eEventType::EventLocalProxyConnect )
+                            , Event::EventType::EventLocalProxyConnect )
     , mStubAddress          ( implAddress )
     , mConnectionStatus     ( connectStatus )
 {

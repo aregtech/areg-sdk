@@ -63,7 +63,7 @@ void EventQueue::removeAllEvents()
 
 void EventQueue::removeEvents( bool keepSpecials /*= false*/ )
 {
-    uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? Event::eEventPriority::EventPriorityHigh : Event::eEventPriority::EventPriorityCritical);
+    uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
     mEventListener.signalEvent(remain);
 }
 

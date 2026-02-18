@@ -79,7 +79,7 @@ protected:
     ServiceResponseEvent( const ProxyAddress & target
                         , NEService::ResultType result
                         , unsigned int responseId
-                        , Event::eEventType eventType
+                        , Event::EventType eventType
                         , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**

@@ -52,7 +52,7 @@ protected:
      * \brief   Creates streamable event and defines event type.
      * \param   eventType   The type of event.
      **/
-    explicit StreamableEvent( Event::eEventType eventType );
+    explicit StreamableEvent( Event::EventType eventType );
 
     /**
      * \brief   Creates streamable event and initialize data
