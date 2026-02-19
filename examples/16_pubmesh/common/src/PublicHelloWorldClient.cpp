@@ -37,7 +37,7 @@ PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntr
 {
 }
 
-bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool PublicHelloWorldClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_serviceConnected);
     bool result{ true };
@@ -118,7 +118,7 @@ void PublicHelloWorldClient::responseHelloWorld(unsigned int clientID)
     }
 }
 
-void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::eServiceState ServiceState, NEService::eDataStateType state )
+void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::eServiceState ServiceState, NEService::DataState state )
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
     LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
@@ -127,9 +127,9 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::eServiceState
                , mClient.crID
                , mClient.crName.getString());
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
-        if (ServiceState == SystemShutdown::eServiceState::ServiceShutdown)
+        if (ServiceState == SystemShutdown::eServiceState::Shutdown)
         {
             if ( SystemShutdownClientBase::getProxy()->getStubAddress( ).isSourcePublic( ) )
             {
@@ -176,9 +176,9 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
 
     LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
 
-    NEService::eDataStateType dataState { NEService::eDataStateType::DataIsUndefined };
+    NEService::DataState dataState { NEService::DataState::DataIsUndefined };
     SystemShutdown::eServiceState serviceState = getServiceState( dataState );
-    if ( dataState == NEService::eDataStateType::DataIsOK )
+    if ( dataState == NEService::DataState::DataIsOK )
     {
         if ( serviceState == SystemShutdown::eServiceState::ServiceReady )
         {

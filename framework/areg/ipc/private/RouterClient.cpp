@@ -126,7 +126,7 @@ bool RouterClient::registerServiceProvider( const StubAddress & stubService )
     return result;
 }
 
-void RouterClient::unregisterServiceProvider(const StubAddress & stubService, const NEService::eDisconnectReason reason )
+void RouterClient::unregisterServiceProvider(const StubAddress & stubService, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceProvider);
 
@@ -158,7 +158,7 @@ bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
     return result;
 }
 
-void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, const NEService::eDisconnectReason reason )
+void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 
@@ -305,7 +305,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                 case NEService::eServiceRequestType::RegisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
-                        NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
+                        NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
                         if ( result == NEMemory::MessageResult::Succeed )
@@ -329,7 +329,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                         }
                         else
                         {
-                            mRegisterConsumer.unregisteredRemoteServiceProvider( stub, NEService::eDisconnectReason::ReasonUndefined, NEService::COOKIE_ANY );
+                            mRegisterConsumer.unregisteredRemoteServiceProvider( stub, NEService::DisconnectReason::UndefinedReason, NEService::COOKIE_ANY );
                         }
                     }
                     break;
@@ -337,7 +337,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                 case NEService::eServiceRequestType::UnregisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
-                        NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
+                        NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
                         mRegisterConsumer.unregisteredRemoteServiceConsumer(proxy, reason, NEService::COOKIE_ANY);
@@ -347,7 +347,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                 case NEService::eServiceRequestType::UnregisterStub:
                     {
                         StubAddress stub(msgReceived);
-                        NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+                        NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
                         msgReceived >> reason;
                         stub.setSource( mChannel.getSource() );
                         mRegisterConsumer.unregisteredRemoteServiceProvider(stub, reason, NEService::COOKIE_ANY);

@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************
  * Response HelloUnblock
@@ -105,7 +105,7 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state ) override;
+    virtual void onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 

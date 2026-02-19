@@ -18,7 +18,7 @@ The service is stopped and the application is shutdown when there is no more pen
                 <EnumEntry ID="22" Name="ServiceActive">
                     <Description>Service is up and running, ready to process.</Description>
                 </EnumEntry>
-                <EnumEntry ID="23" Name="ServiceShutdown">
+                <EnumEntry ID="23" Name="Shutdown">
                     <Description>Service completed job and will not process anymore. </Description>
                 </EnumEntry>
             </FieldList>

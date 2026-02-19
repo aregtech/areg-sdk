@@ -8,7 +8,7 @@ This service demonstrates the usage of attribute.</Description>
         <DataType ID="4" Name="eServiceState" Type="Enumeration" Values="default">
             <Description>Describes the service availability states</Description>
             <FieldList>
-                <EnumEntry ID="6" Name="ServiceShutdown">
+                <EnumEntry ID="6" Name="Shutdown">
                     <Value>0</Value>
                     <Description>Service shutdown state.</Description>
                 </EnumEntry>

@@ -37,7 +37,7 @@ WorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & consum
     }
 }
 
-bool PatientClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool PatientClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     bool result = PatientInformationClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
@@ -53,9 +53,9 @@ bool PatientClient::serviceConnected( NEService::eServiceConnection status, Prox
     return result;
 }
 
-void PatientClient::onPatientUpdate(const PatientInformation::PatientInfo & Patient, NEService::eDataStateType state)
+void PatientClient::onPatientUpdate(const PatientInformation::PatientInfo & Patient, NEService::DataState state)
 {
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         PatientInfoEvent::sendEvent( PatientInfoEventData(Patient) );
     }

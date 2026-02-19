@@ -41,22 +41,22 @@ const ClientInfo & ClientInfo::getInvalidClientInfo()
 
 ClientInfo::ClientInfo()
     : mClientAddress( )
-    , mClientState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mClientState  ( NEService::ServiceConnectionState::Unknown )
 {
 }
 
 ClientInfo::ClientInfo( const ProxyAddress & client )
     : mClientAddress( client )
-    , mClientState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mClientState  ( NEService::ServiceConnectionState::Unknown )
 {
-    setConnectionStatus( NEService::eServiceConnection::ServicePending);
+    setConnectionStatus( NEService::ServiceConnectionState::Pending);
 }
 
 ClientInfo::ClientInfo( ProxyAddress && client ) noexcept
     : mClientAddress( static_cast<ProxyAddress &&>(client) )
-    , mClientState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mClientState  ( NEService::ServiceConnectionState::Unknown )
 {
-    setConnectionStatus( NEService::eServiceConnection::ServicePending );
+    setConnectionStatus( NEService::ServiceConnectionState::Pending );
 }
 
 ClientInfo::ClientInfo( const ClientInfo & src )
@@ -94,14 +94,14 @@ ClientInfo & ClientInfo::operator = ( ClientInfo && src ) noexcept
 ClientInfo & ClientInfo::operator = ( const ProxyAddress & client )
 {
     mClientAddress  = client;
-    setConnectionStatus(NEService::eServiceConnection::ServicePending);
+    setConnectionStatus(NEService::ServiceConnectionState::Pending);
     return (*this);
 }
 
 ClientInfo & ClientInfo::operator = ( ProxyAddress && client ) noexcept
 {
     mClientAddress  = std::move(client);
-    setConnectionStatus( NEService::eServiceConnection::ServicePending );
+    setConnectionStatus( NEService::ServiceConnectionState::Pending );
     return (*this);
 }
 
@@ -123,15 +123,15 @@ bool ClientInfo::operator == (const StubAddress & server) const
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-void ClientInfo::setConnectionStatus( NEService::eServiceConnection newConnection )
+void ClientInfo::setConnectionStatus( NEService::ServiceConnectionState newConnection )
 {
     if ( mClientAddress.getSource() != NEService::SOURCE_UNKNOWN )
     {
-        mClientState = mClientAddress.getTarget() != NEService::TARGET_UNKNOWN ? newConnection : NEService::eServiceConnection::ServicePending;
+        mClientState = mClientAddress.getTarget() != NEService::TARGET_UNKNOWN ? newConnection : NEService::ServiceConnectionState::Pending;
     }
     else
     {
-        mClientState = NEService::eServiceConnection::ServiceConnectionUnknown;
+        mClientState = NEService::ServiceConnectionState::Unknown;
     }
 }
 

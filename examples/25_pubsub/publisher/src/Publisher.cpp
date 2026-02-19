@@ -109,7 +109,7 @@ void Publisher::shutdownComponent(ComponentThread & comThread)
     Component::shutdownComponent(comThread);
 }
 
-bool Publisher::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+bool Publisher::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_25_publisher_Publisher_clientConnected);
     bool result = PubSubStub::clientConnected(client, status);

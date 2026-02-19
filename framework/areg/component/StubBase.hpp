@@ -313,7 +313,7 @@ public:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status );
+    virtual bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status );
 
 /************************************************************************/
 // StubBase overrides. Public pure virtual methods 
@@ -401,18 +401,18 @@ protected:
 
     /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
-     *          registration status. If succeeded, the value is NEService::ServiceConnected
+     *          registration status. If succeeded, the value is NEService::Connected
      * \param   stubTarget  The address of registered service provider
      * \param   status      The connection status of the service provider.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection status ) override;
+    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState status ) override;
 
     /**
      * \brief   Send by system when client is requested connect / disconnect
      * \param   proxyAddress    The address of the service consumer proxy.
      * \param   status          The service consumer connection status.
      **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status ) override;
+    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status ) override;
 
     /**
      * \brief   Triggered to process generic stub event.
@@ -669,7 +669,7 @@ protected:
     /**
      * \brief   The service connection status
      **/
-    NEService::eServiceConnection       mConnectionStatus;
+    NEService::ServiceConnectionState       mConnectionStatus;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)

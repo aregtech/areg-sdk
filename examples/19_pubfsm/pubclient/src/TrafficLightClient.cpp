@@ -27,11 +27,11 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 {
 }
 
-void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state)
+void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::DataState state)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(TrafficSouthNorth.lightVehicle), fsm::getName(TrafficSouthNorth.lightPedestrian));
         
@@ -46,11 +46,11 @@ void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTra
     }
 }
 
-void TrafficLightClient::onTrafficEastWestUpdate(const TrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state)
+void TrafficLightClient::onTrafficEastWestUpdate(const TrafficController::sTrafficLight & TrafficEastWest, NEService::DataState state)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(TrafficEastWest.lightVehicle), fsm::getName(TrafficEastWest.lightPedestrian));
 
@@ -79,7 +79,7 @@ void TrafficLightClient::broadcastEastWest(TrafficController::eVehicleTrafficLig
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(LightVehicle), fsm::getName(LightPedestrian));
 }
 
-bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 

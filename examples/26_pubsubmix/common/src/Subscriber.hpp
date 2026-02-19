@@ -67,7 +67,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains
@@ -78,7 +78,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::eDataStateType state) override;
+    virtual void onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::DataState state) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -89,7 +89,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state) override;
+    virtual void onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::DataState state) override;
 
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -100,7 +100,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state) override;
+    virtual void onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::DataState state) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

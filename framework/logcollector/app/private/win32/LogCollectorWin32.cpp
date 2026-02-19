@@ -102,7 +102,7 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceShutdown);
+        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::Shutdown);
         break;
 
     default:

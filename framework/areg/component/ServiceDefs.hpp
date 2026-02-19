@@ -53,7 +53,7 @@ namespace NEService
      *          Used when sending response service event
      *          and needs to define validation of execution.
      **/
-    typedef enum class ResultType : uint16_t
+    enum class ResultType   : uint16_t
     {
         /* not used */
           Undefined          =     0 /*0x0000*/  //!< undefined result. not used             Bits: 0000 0000 0000 0000
@@ -82,8 +82,7 @@ namespace NEService
         , ServiceUnavailable = 32833 /*0x8041*/  //!< service is unavailable.                Bits: 1000 0000 0100 0001
         , ServiceInvalid     = 32897 /*0x8081*/  //!< service invalid (check cookie).        Bits: 1000 0000 1000 0001
         , ServiceRejected    = 32899 /*0x8083*/  //!< service rejected (unsupported).        Bits: 1000 0000 1000 0011
-
-    } ResultType;
+    };
 
     /**
      * \brief   Returns string value of NEService::ResultType type
@@ -94,25 +93,24 @@ namespace NEService
      * \brief   Data types
      *          Used getting data
      **/
-    typedef enum class E_DataStateType  : uint16_t
+    enum class DataState    : uint16_t
     {
           DataIsUndefined       =     0 /*0x0000*/  //!< undefined type, not used
         , DataIsOK              = 16384 /*0x4000*/  //!< data valid
         , DataIsInvalid         = 16385 /*0x4001*/  //!< data is invalid
         , DataIsUnavailable     = 16387 /*0x4003*/  //!< data is unavailable, no such data
         , DataUnexpectedError   = 16389 /*0x4005*/  //!< other errors
-
-    } eDataStateType;
+    };
     /**
-     * \brief   Returns string value of NEService::eDataStateType type
+     * \brief   Returns string value of NEService::DataState type
      **/
-    inline const char* getString(NEService::eDataStateType dataState);
+    inline const char* getString(NEService::DataState dataState);
 
     /**
      * \brief   Type of request.
      *          Used sending request event by proxy
      **/
-    typedef enum class E_RequestType : uint16_t
+    enum class RequestType : uint16_t
     {
           Unprocessed       =     0 /*0x0000*/  //!< request is unprocessed
         , StartNotify       =  8193 /*0x2001*/  //!< request start notify on attribute update
@@ -122,11 +120,11 @@ namespace NEService
         , ServiceConnection = 16387 /*0x4003*/  //!< request connection status update
         , ClientConnection  = 16389 /*0x4005*/  //!< request client connection status update
         , LoadComponent     = 16391 /*0x4007*/  //!< request load component
-    } eRequestType;
+    };
     /**
-     * \brief   Returns string value of NEService::eRequestType type
+     * \brief   Returns string value of NEService::RequestType type
      **/
-    inline const char* getString( NEService::eRequestType resultType );
+    inline const char* getString( NEService::RequestType resultType );
 
     /**
      * \brief   Message Data types
@@ -134,96 +132,96 @@ namespace NEService
      *          used either in service request or in service response
      *          event objects
      **/
-    typedef enum class E_MessageDataType : uint16_t
+    enum class MessageDataType  : uint16_t
     {
-          UndefinedDataType = 0x0000u   //!< data type is undefined
-        , RequestDataType   = 0x1000u   //!< data type of request event
-        , ResponseDataType  = 0x2000u   //!< data type response event
-        , AttributeDataType = 0x4000u   //!< data type of attribute event
-        , ServiceDataType   = 0x8000u   //!< data type service call
+          UndefinedData = 0x0000u   //!< data type is undefined
+        , RequestData   = 0x1000u   //!< data type of request event
+        , ResponseData  = 0x2000u   //!< data type response event
+        , AttributeData = 0x4000u   //!< data type of attribute event
+        , ServiceData   = 0x8000u   //!< data type service call
 
-    } eMessageDataType;
+    };
     /**
-     * \brief   Returns string value of NEService::eMessageDataType type
+     * \brief   Returns string value of NEService::MessageDataType type
      **/
-    inline const char* getString( NEService::eMessageDataType dataType );
+    inline const char* getString( NEService::MessageDataType dataType );
 
     /**
      * \brief   From passed message ID finds data type
      **/
-    inline NEService::eMessageDataType getMessageDataType( unsigned int msgId );
+    inline NEService::MessageDataType getMessageDataType( unsigned int msgId );
 
     /**
-     * \brief   NEService::eServiceConnection
+     * \brief   NEService::ServiceConnectionState
      *          Service Connections. Used in service calls
      **/
-    typedef enum class E_ServiceConnection : uint16_t
+    enum class ServiceConnectionState   : uint16_t
     {
-          ServiceConnectionUnknown  =    0  /*0x0000*/  //!< Connection is unknown.             Bit set: 0000 0000 0000 0000
-        , ServiceConnected          =    1  /*0x0001*/  //!< Service connected, ready to serve. Bit set: 0000 0000 0000 0001
-        , ServiceDisconnected       =  256  /*0x0100*/  //!< Service disconnected.              Bit set: 0000 0001 0000 0000
-        , ServicePending            =  257  /*0x0101*/  //!< Service connection is pending.     Bit set: 0000 0001 0000 0001
-        , ServiceConnectionLost     =  768  /*0x0300*/  //!< Service lost connection.           Bit set: 0000 0011 0000 0000
-        , ServiceRejected           = 1280  /*0x0500*/  //!< Service connection rejected.       Bit set: 0000 0101 0000 0000
-        , ServiceFailed             = 2304  /*0x0900*/  //!< Service connection failed.         Bit set: 0000 1001 0000 0000
-        , ServiceShutdown           = 4352  /*0x1100*/  //!< Service shut down, no connection.  Bit set: 0001 0001 0000 0000
-    } eServiceConnection;
+          Unknown           =    0  /*0x0000*/  //!< Connection is unknown.             Bit set: 0000 0000 0000 0000
+        , Connected         =    1  /*0x0001*/  //!< Service connected, ready to serve. Bit set: 0000 0000 0000 0001
+        , Disconnected      =  256  /*0x0100*/  //!< Service disconnected.              Bit set: 0000 0001 0000 0000
+        , Pending           =  257  /*0x0101*/  //!< Service connection is pending.     Bit set: 0000 0001 0000 0001
+        , ConnectionLost    =  768  /*0x0300*/  //!< Service lost connection.           Bit set: 0000 0011 0000 0000
+        , Rejected          = 1280  /*0x0500*/  //!< Service connection rejected.       Bit set: 0000 0101 0000 0000
+        , Failed            = 2304  /*0x0900*/  //!< Service connection failed.         Bit set: 0000 1001 0000 0000
+        , Shutdown          = 4352  /*0x1100*/  //!< Service shut down, no connection.  Bit set: 0001 0001 0000 0000
+    };
 
     /**
      * \brief   Returns string value of NEService::eDataType type
      **/
-    inline const char* getString( NEService::eServiceConnection serviceConnection );
+    inline const char* getString( NEService::ServiceConnectionState serviceConnection );
 
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnected( NEService::eServiceConnection connectionStatus );
+    inline bool isServiceConnected( NEService::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnectionPending( NEService::eServiceConnection connectionStatus );
+    inline bool isServiceConnectionPending( NEService::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is rejected.
      **/
-    inline bool isServiceRejected( NEService::eServiceConnection connectionStatus );
+    inline bool isServiceRejected( NEService::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is connection lost.
      **/
-    inline bool isServiceConnectionLost( NEService::eServiceConnection connectionStatus );
+    inline bool isServiceConnectionLost( NEService::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the status is not connected.
      **/
-    inline bool isServiceDisconnected( NEService::eServiceConnection connectionStatus );
+    inline bool isServiceDisconnected( NEService::ServiceConnectionState connectionStatus );
 
     /**
-     * \brief   NEService::eDisconnectReason
+     * \brief   NEService::DisconnectReason
      *          The service provider and service consumer disconnect reason.
      *          Valid only when service is not connected. Otherwise, it should be ignored.
      **/
-    typedef enum class E_DisconnectReason : uint16_t
+    enum class DisconnectReason : uint16_t
     {
-          ReasonUndefined               = 0     //!< Undefined disconnect reason.
-        , ReasonServiceDisconnected     = 1     //!< The service is disconnected.
-        , ReasonServiceLost             = 2     //!< The service connection is lost.
-        , ReasonServiceRejected         = 4     //!< The service rejected connection.
-        , ReasonProviderDisconnected    = 8     //!< The service provider disconnected.
-        , ReasonProviderLost            = 16    //!< The connection with service provider is lost.
-        , ReasonProviderRejected        = 32    //!< The service provider rejected the service consumer.
-        , ReasonConsumerDisconnected    = 64    //!< The service consumer is disconnected.
-        , ReasonConsumerLost            = 128   //!< The connection with service consumer is lost.
-        , ReasonConsumerNotSupported    = 256   //!< The service consumer is rejected because is not supported (wrong version, for example).
-        , ReasonSystemShutdown          = 512   //!< The system is shutting down.
-        , ReasonClientConnectionLost    = 1024  //!< The system lost connection with the client. General reason.
-        , ReasonClientConnectionClosed  = 2048  //!< The client requested to disconnect. General reason.
-    } eDisconnectReason;
+          UndefinedReason       = 0     //!< Undefined disconnect reason.
+        , ServiceDisconnected   = 1     //!< The service is disconnected.
+        , ServiceLost           = 2     //!< The service connection is lost.
+        , ServiceRejected       = 4     //!< The service rejected connection.
+        , ProviderDisconnected  = 8     //!< The service provider disconnected.
+        , ProviderLost          = 16    //!< The connection with service provider is lost.
+        , ProviderRejected      = 32    //!< The service provider rejected the service consumer.
+        , ConsumerDisconnected  = 64    //!< The service consumer is disconnected.
+        , ConsumerLost          = 128   //!< The connection with service consumer is lost.
+        , ConsumerNotSupported  = 256   //!< The service consumer is rejected because is not supported (wrong version, for example).
+        , SystemShutdown        = 512   //!< The system is shutting down.
+        , ClientConnectionLost  = 1024  //!< The system lost connection with the client. General reason.
+        , ClientConnectionClosed= 2048  //!< The client requested to disconnect. General reason.
+    };
 
-    inline const char * getString( NEService::eDisconnectReason reason );
+    inline const char * getString( NEService::DisconnectReason reason );
 
-    inline NEService::eServiceConnection serviceConnection( NEService::eDisconnectReason reason );
+    inline NEService::ServiceConnectionState serviceConnection( NEService::DisconnectReason reason );
 
     /**
      * \brief   NEService::eServiceRequestType
@@ -367,11 +365,11 @@ namespace NEService
      **/
     typedef enum class E_ServiceCall  : uint16_t
     {
-          ServiceCallNoFunction = static_cast<uint16_t>(eMessageDataType::UndefinedDataType) //!< No function call
-        , ServiceCallRequest    = static_cast<uint16_t>(eMessageDataType::RequestDataType  ) //!< Call of service request function
-        , ServiceCallResponse   = static_cast<uint16_t>(eMessageDataType::ResponseDataType ) //!< Call of service response function
-        , ServiceCallAttribute  = static_cast<uint16_t>(eMessageDataType::AttributeDataType) //!< Call of service attribute update function
-        , ServiceCallRegistery  = static_cast<uint16_t>(eMessageDataType::ServiceDataType  ) //!< Call of service registration
+          ServiceCallNoFunction = static_cast<uint16_t>(MessageDataType::UndefinedData) //!< No function call
+        , ServiceCallRequest    = static_cast<uint16_t>(MessageDataType::RequestData  ) //!< Call of service request function
+        , ServiceCallResponse   = static_cast<uint16_t>(MessageDataType::ResponseData ) //!< Call of service response function
+        , ServiceCallAttribute  = static_cast<uint16_t>(MessageDataType::AttributeData) //!< Call of service attribute update function
+        , ServiceCallRegistery  = static_cast<uint16_t>(MessageDataType::ServiceData  ) //!< Call of service registration
     } eServiceCalls;
 
     /**
@@ -593,7 +591,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    using StateArrayBase    = FixedArray<NEService::eDataStateType>;
+    using StateArrayBase    = FixedArray<NEService::DataState>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/
@@ -628,11 +626,11 @@ namespace NEService
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline const NEService::eDataStateType& operator [] (unsigned int index) const;
+        inline const NEService::DataState& operator [] (unsigned int index) const;
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline NEService::eDataStateType& operator [] (unsigned int index);
+        inline NEService::DataState& operator [] (unsigned int index);
 
         /**
          * \brief   Returns the number of elements in the array.
@@ -654,13 +652,13 @@ namespace NEService
          * \param   whichIndex  The index of entry in array which state should be changed
          * \param   newState    The state to set
          **/
-        inline void setState(int whichIndex, NEService::eDataStateType newState);
+        inline void setState(int whichIndex, NEService::DataState newState);
 
         /**
          * \brief   All entries are set to the same given state
          * \param   newState    The state to set for all entries
          **/
-        inline void setAllState(NEService::eDataStateType newState);
+        inline void setAllState(NEService::DataState newState);
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -869,7 +867,7 @@ namespace NEService
          *                  First parameter has index zero
          * \return  The state of parameter in call.
          **/
-        inline NEService::eDataStateType getAt(unsigned int row, unsigned int col) const;
+        inline NEService::DataState getAt(unsigned int row, unsigned int col) const;
 
         /**
          * \brief   Sets state of parameter of certain response.
@@ -879,7 +877,7 @@ namespace NEService
          *                      First parameter has index zero
          * \param   newValue    The state to set for parameter
          **/
-        inline void setAt(unsigned int row, unsigned int col, NEService::eDataStateType newValue);
+        inline void setAt(unsigned int row, unsigned int col, NEService::DataState newValue);
 
         /**
          * \brief   Returns true if specified response index has parameters.
@@ -912,7 +910,7 @@ namespace NEService
          * \param   whichParam  The index of entry, should be calculated by NEService::respIndex('response ID')
          * \param   newState    The state to set
          **/
-        inline void setParamState(unsigned int whichParam, NEService::eDataStateType newState);
+        inline void setParamState(unsigned int whichParam, NEService::DataState newState);
 
         /**
          * \brief   Resets all states of parameter of specified entry index.
@@ -1013,12 +1011,12 @@ namespace NEService
          *                      it will set state for all parameters of that response, 
          *                      if any exist.
          **/
-        void setDataState(unsigned int msgId, NEService::eDataStateType newState);
+        void setDataState(unsigned int msgId, NEService::DataState newState);
 
         /**
          * \brief   Returns data state of given message (attribute or response) ID.
          **/
-        NEService::eDataStateType getDataState(unsigned int msgId) const;
+        NEService::DataState getDataState(unsigned int msgId) const;
 
         /**
          * \brief   Returns the response message ID of given request message ID.
@@ -1030,12 +1028,12 @@ namespace NEService
         /**
          * \brief   Returns data state of given attribute ID
          **/
-        inline NEService::eDataStateType getAttributeState(unsigned int msgId) const;
+        inline NEService::DataState getAttributeState(unsigned int msgId) const;
 
         /**
          * \brief   Returns parameter state of given response ID
          **/
-        inline NEService::eDataStateType getParamState(unsigned int msgId) const;
+        inline NEService::DataState getParamState(unsigned int msgId) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -1045,7 +1043,7 @@ namespace NEService
         /**
          * \brief   Implementation version
          **/
-        NEService::eDataStateType           mImplVersion;   // implementation version
+        NEService::DataState           mImplVersion;   // implementation version
 
         /**
          * \brief   Service Interface data
@@ -1101,11 +1099,11 @@ namespace NEService
 // Global namespace NEService inline function implementation
 //////////////////////////////////////////////////////////////////////////
 AREG_IMPLEMENT_STREAMABLE(NEService::ResultType)
-AREG_IMPLEMENT_STREAMABLE(NEService::eDataStateType)
-AREG_IMPLEMENT_STREAMABLE(NEService::eRequestType)
-AREG_IMPLEMENT_STREAMABLE(NEService::eMessageDataType)
-AREG_IMPLEMENT_STREAMABLE(NEService::eServiceConnection)
-AREG_IMPLEMENT_STREAMABLE(NEService::eDisconnectReason)
+AREG_IMPLEMENT_STREAMABLE(NEService::DataState)
+AREG_IMPLEMENT_STREAMABLE(NEService::RequestType)
+AREG_IMPLEMENT_STREAMABLE(NEService::MessageDataType)
+AREG_IMPLEMENT_STREAMABLE(NEService::ServiceConnectionState)
+AREG_IMPLEMENT_STREAMABLE(NEService::DisconnectReason)
 AREG_IMPLEMENT_STREAMABLE(NEService::eServiceRequestType)
 AREG_IMPLEMENT_STREAMABLE(NEService::eServiceType)
 AREG_IMPLEMENT_STREAMABLE(NEService::eInstanceBitness)
@@ -1116,60 +1114,60 @@ AREG_IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 // namespace NEService inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NEService::isServiceConnected(NEService::eServiceConnection connectionStatus)
+inline bool NEService::isServiceConnected(NEService::ServiceConnectionState connectionStatus)
 {
-    return (connectionStatus == NEService::eServiceConnection::ServiceConnected);
+    return (connectionStatus == NEService::ServiceConnectionState::Connected);
 }
 
-inline bool NEService::isServiceConnectionPending( NEService::eServiceConnection connectionStatus )
+inline bool NEService::isServiceConnectionPending( NEService::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus == NEService::eServiceConnection::ServicePending);
+    return (connectionStatus == NEService::ServiceConnectionState::Pending);
 }
 
-inline bool NEService::isServiceRejected( NEService::eServiceConnection connectionStatus )
+inline bool NEService::isServiceRejected( NEService::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus == NEService::eServiceConnection::ServiceRejected);
+    return (connectionStatus == NEService::ServiceConnectionState::Rejected);
 }
 
-inline bool NEService::isServiceConnectionLost( NEService::eServiceConnection connectionStatus )
+inline bool NEService::isServiceConnectionLost( NEService::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus == NEService::eServiceConnection::ServiceConnectionLost);
+    return (connectionStatus == NEService::ServiceConnectionState::ConnectionLost);
 }
 
-inline bool NEService::isServiceDisconnected( NEService::eServiceConnection connectionStatus )
+inline bool NEService::isServiceDisconnected( NEService::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus != NEService::eServiceConnection::ServiceConnected);
+    return (connectionStatus != NEService::ServiceConnectionState::Connected);
 }
 
-inline NEService::eServiceConnection NEService::serviceConnection( NEService::eDisconnectReason reason )
+inline NEService::ServiceConnectionState NEService::serviceConnection( NEService::DisconnectReason reason )
 {
     switch ( reason )
     {
-    case NEService::eDisconnectReason::ReasonUndefined:
-        return NEService::eServiceConnection::ServiceConnectionUnknown;
+    case NEService::DisconnectReason::UndefinedReason:
+        return NEService::ServiceConnectionState::Unknown;
     
-    case NEService::eDisconnectReason::ReasonServiceDisconnected:
-    case NEService::eDisconnectReason::ReasonServiceLost:
-    case NEService::eDisconnectReason::ReasonProviderLost:
-    case NEService::eDisconnectReason::ReasonConsumerLost:
-    case NEService::eDisconnectReason::ReasonClientConnectionLost:
-        return NEService::eServiceConnection::ServiceConnectionLost;
+    case NEService::DisconnectReason::ServiceDisconnected:
+    case NEService::DisconnectReason::ServiceLost:
+    case NEService::DisconnectReason::ProviderLost:
+    case NEService::DisconnectReason::ConsumerLost:
+    case NEService::DisconnectReason::ClientConnectionLost:
+        return NEService::ServiceConnectionState::ConnectionLost;
 
-    case NEService::eDisconnectReason::ReasonServiceRejected:
-    case NEService::eDisconnectReason::ReasonProviderRejected:
-    case NEService::eDisconnectReason::ReasonConsumerNotSupported:
-        return NEService::eServiceConnection::ServiceRejected;
+    case NEService::DisconnectReason::ServiceRejected:
+    case NEService::DisconnectReason::ProviderRejected:
+    case NEService::DisconnectReason::ConsumerNotSupported:
+        return NEService::ServiceConnectionState::Rejected;
 
-    case NEService::eDisconnectReason::ReasonConsumerDisconnected:
-    case NEService::eDisconnectReason::ReasonProviderDisconnected:
-    case NEService::eDisconnectReason::ReasonClientConnectionClosed:
-        return NEService::eServiceConnection::ServiceDisconnected;
+    case NEService::DisconnectReason::ConsumerDisconnected:
+    case NEService::DisconnectReason::ProviderDisconnected:
+    case NEService::DisconnectReason::ClientConnectionClosed:
+        return NEService::ServiceConnectionState::Disconnected;
 
-    case NEService::eDisconnectReason::ReasonSystemShutdown:
-        return NEService::eServiceConnection::ServiceShutdown;
+    case NEService::DisconnectReason::SystemShutdown:
+        return NEService::ServiceConnectionState::Shutdown;
 
     default:
-        return NEService::eServiceConnection::ServiceConnected;
+        return NEService::ServiceConnectionState::Connected;
     }
 }
 
@@ -1217,30 +1215,30 @@ inline bool NEService::isExecutableId(unsigned int msgId)
 }
 
 
-inline NEService::eMessageDataType NEService::getMessageDataType( unsigned int msgId )
+inline NEService::MessageDataType NEService::getMessageDataType( unsigned int msgId )
 {
     if ( NEService::isRequestId(msgId) )
-        return NEService::eMessageDataType::RequestDataType;
+        return NEService::MessageDataType::RequestData;
     else if (NEService::isResponseId(msgId))
-        return NEService::eMessageDataType::ResponseDataType;
+        return NEService::MessageDataType::ResponseData;
     else if (NEService::isAttributeId(msgId))
-        return NEService::eMessageDataType::AttributeDataType;
+        return NEService::MessageDataType::AttributeData;
     else if (NEService::isServiceRegistryId(msgId))
-        return NEService::eMessageDataType::ServiceDataType;
+        return NEService::MessageDataType::ServiceData;
     else
-        return NEService::eMessageDataType::UndefinedDataType;
+        return NEService::MessageDataType::UndefinedData;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // class NEService::StateArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::eDataStateType& NEService::StateArray::operator [] (unsigned int index) const
+inline const NEService::DataState& NEService::StateArray::operator [] (unsigned int index) const
 {
     return StateArrayBase::operator[](index);
 }
 
-inline NEService::eDataStateType& NEService::StateArray::operator [] (unsigned int index)
+inline NEService::DataState& NEService::StateArray::operator [] (unsigned int index)
 {
     return StateArrayBase::operator[](index);
 }
@@ -1252,7 +1250,7 @@ inline uint32_t NEService::StateArray::getSize() const
 
 inline void NEService::StateArray::resetStates()
 {
-    setAllState(NEService::eDataStateType::DataIsUnavailable);
+    setAllState(NEService::DataState::DataIsUnavailable);
 }
 
 inline bool NEService::StateArray::hasParams() const
@@ -1260,12 +1258,12 @@ inline bool NEService::StateArray::hasParams() const
     return (isEmpty() == false);
 }
 
-inline void NEService::StateArray::setState(int whichIndex, NEService::eDataStateType newState)
+inline void NEService::StateArray::setState(int whichIndex, NEService::DataState newState)
 {
     mValueList[whichIndex] = newState;
 }
 
-inline void NEService::StateArray::setAllState(NEService::eDataStateType newState)
+inline void NEService::StateArray::setAllState(NEService::DataState newState)
 {
     for ( uint32_t i = 0; i < this->mElemCount; ++ i )
         mValueList[i] = newState;
@@ -1286,13 +1284,13 @@ inline const NEService::StateArray& NEService::ParameterArray::operator [] ( uns
     return *(mParamList[index]);
 }
 
-inline NEService::eDataStateType NEService::ParameterArray::getAt( unsigned int row, unsigned int col ) const
+inline NEService::DataState NEService::ParameterArray::getAt( unsigned int row, unsigned int col ) const
 {
     ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
     return mParamList[row]->getAt(static_cast<uint32_t>(col));
 }
 
-inline void NEService::ParameterArray::setAt( unsigned int row, unsigned int col, NEService::eDataStateType newValue )
+inline void NEService::ParameterArray::setAt( unsigned int row, unsigned int col, NEService::DataState newValue )
 {
     ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
     mParamList[row]->setAt(static_cast<uint32_t>(col), newValue);
@@ -1317,7 +1315,7 @@ inline bool NEService::ParameterArray::isValidParamIndex(unsigned int whichRespI
     return ((static_cast<int>(whichRespIndex) >= 0) && (static_cast<int>(whichRespIndex) < mElemCount));
 }
 
-inline void NEService::ParameterArray::setParamState(unsigned int whichParam, NEService::eDataStateType newState)
+inline void NEService::ParameterArray::setParamState(unsigned int whichParam, NEService::DataState newState)
 {
     ASSERT(isValidParamIndex(whichParam));
     mParamList[whichParam]->setAllState(newState);
@@ -1327,15 +1325,15 @@ inline void NEService::ParameterArray::setParamState(unsigned int whichParam, NE
 // class NEService::ProxyData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::eDataStateType NEService::ProxyData::getAttributeState( unsigned int msgId ) const
+inline NEService::DataState NEService::ProxyData::getAttributeState( unsigned int msgId ) const
 {
     return NEService::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[NEService::attrIndex(msgId)];
 }
 
-inline NEService::eDataStateType NEService::ProxyData::getParamState( unsigned int msgId ) const
+inline NEService::DataState NEService::ProxyData::getParamState( unsigned int msgId ) const
 {
     const NEService::StateArray& param = mParamState[NEService::respIndex(msgId)];
-    return (param.hasParams() ? param[0u] : NEService::eDataStateType::DataIsUnavailable);
+    return (param.hasParams() ? param[0u] : NEService::DataState::DataIsUnavailable);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1417,137 +1415,137 @@ inline const char* NEService::getString(NEService::ResultType resultType)
     }
 }
 
-inline const char* NEService::getString(NEService::eDataStateType dataState)
+inline const char* NEService::getString(NEService::DataState dataState)
 {
     switch (dataState)
     {
-    case    NEService::eDataStateType::DataIsUndefined:
-        return "NEService::eDataStateType::DataIsUndefined";
+    case    NEService::DataState::DataIsUndefined:
+        return "NEService::DataState::DataIsUndefined";
 
-    case    NEService::eDataStateType::DataIsOK:
-        return "NEService::eDataStateType::DataIsOK";
+    case    NEService::DataState::DataIsOK:
+        return "NEService::DataState::DataIsOK";
 
-    case    NEService::eDataStateType::DataIsInvalid:
-        return "NEService::eDataStateType::DataIsInvalid";
+    case    NEService::DataState::DataIsInvalid:
+        return "NEService::DataState::DataIsInvalid";
 
-    case    NEService::eDataStateType::DataIsUnavailable:
-        return "NEService::eDataStateType::DataIsUnavailable";
+    case    NEService::DataState::DataIsUnavailable:
+        return "NEService::DataState::DataIsUnavailable";
 
-    case    NEService::eDataStateType::DataUnexpectedError:
-        return "NEService::eDataStateType::DataUnexpectedError";
+    case    NEService::DataState::DataUnexpectedError:
+        return "NEService::DataState::DataUnexpectedError";
 
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::eDataStateType value!";
+        return "ERR: Undefined NEService::DataState value!";
     }
 }
 
-inline const char* NEService::getString( NEService::eRequestType resultType )
+inline const char* NEService::getString( NEService::RequestType resultType )
 {
     switch (resultType)
     {
-    case    NEService::eRequestType::Unprocessed:
-        return "NEService::eRequestType::Unprocessed";
-    case    NEService::eRequestType::StartNotify:
-        return "NEService::eRequestType::StartNotify";
-    case    NEService::eRequestType::StopNotify:
-        return "NEService::eRequestType::StopNotify";        
-    case    NEService::eRequestType::RemoveAllNotify:
-        return "NEService::eRequestType::RemoveAllNotify";
-    case    NEService::eRequestType::CallFunction:
-        return "NEService::eRequestType::CallFunction";
-    case    NEService::eRequestType::ServiceConnection:
-        return "NEService::eRequestType::ServiceConnection";
-    case    NEService::eRequestType::ClientConnection:
-        return "NEService::eRequestType::ClientConnection";
-    case    NEService::eRequestType::LoadComponent:
-        return "NEService::eRequestType::LoadComponent";
+    case    NEService::RequestType::Unprocessed:
+        return "NEService::RequestType::Unprocessed";
+    case    NEService::RequestType::StartNotify:
+        return "NEService::RequestType::StartNotify";
+    case    NEService::RequestType::StopNotify:
+        return "NEService::RequestType::StopNotify";        
+    case    NEService::RequestType::RemoveAllNotify:
+        return "NEService::RequestType::RemoveAllNotify";
+    case    NEService::RequestType::CallFunction:
+        return "NEService::RequestType::CallFunction";
+    case    NEService::RequestType::ServiceConnection:
+        return "NEService::RequestType::ServiceConnection";
+    case    NEService::RequestType::ClientConnection:
+        return "NEService::RequestType::ClientConnection";
+    case    NEService::RequestType::LoadComponent:
+        return "NEService::RequestType::LoadComponent";
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::eRequestType value!";
+        return "ERR: Undefined NEService::RequestType value!";
     }
 }
 
-inline const char* NEService::getString( NEService::eMessageDataType dataType )
+inline const char* NEService::getString( NEService::MessageDataType dataType )
 {
     switch (dataType)
     {
-    case NEService::eMessageDataType::UndefinedDataType:
-        return "NEService::eMessageDataType::UndefinedDataType";
-    case NEService::eMessageDataType::RequestDataType:
-        return "NEService::eMessageDataType::RequestDataType";
-    case NEService::eMessageDataType::ResponseDataType:
-        return "NEService::eMessageDataType::ResponseDataType";
-    case NEService::eMessageDataType::AttributeDataType:
-        return "NEService::eMessageDataType::AttributeDataType";
-    case NEService::eMessageDataType::ServiceDataType:
-        return "NEService::eMessageDataType::ServiceDataType";
+    case NEService::MessageDataType::UndefinedData:
+        return "NEService::MessageDataType::UndefinedData";
+    case NEService::MessageDataType::RequestData:
+        return "NEService::MessageDataType::RequestData";
+    case NEService::MessageDataType::ResponseData:
+        return "NEService::MessageDataType::ResponseData";
+    case NEService::MessageDataType::AttributeData:
+        return "NEService::MessageDataType::AttributeData";
+    case NEService::MessageDataType::ServiceData:
+        return "NEService::MessageDataType::ServiceData";
 
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::eMessageDataType value!";
+        return "ERR: Undefined NEService::MessageDataType value!";
     }
 }
 
-inline const char* NEService::getString( NEService::eServiceConnection serviceConnection )
+inline const char* NEService::getString( NEService::ServiceConnectionState serviceConnection )
 {
     switch (serviceConnection)
     {
-    case NEService::eServiceConnection::ServiceConnectionUnknown:
-        return "NEService::eServiceConnection::ServiceConnectionUnknown";
-    case NEService::eServiceConnection::ServiceConnected:
-        return "NEService::eServiceConnection::ServiceConnected";
-    case NEService::eServiceConnection::ServicePending:
-        return "NEService::eServiceConnection::ServicePending";
-    case NEService::eServiceConnection::ServiceDisconnected:
-        return "NEService::eServiceConnection::ServiceDisconnected";
-    case NEService::eServiceConnection::ServiceConnectionLost:
-        return "NEService::eServiceConnection::ServiceConnectionLost";
-    case NEService::eServiceConnection::ServiceRejected:
-        return "NEService::eServiceConnection::ServiceRejected";
-    case NEService::eServiceConnection::ServiceFailed:
-        return "NEService::eServiceConnection::ServiceFailed";
-    case NEService::eServiceConnection::ServiceShutdown:
-        return "NEService::eServiceConnection::ServiceShutdown";
+    case NEService::ServiceConnectionState::Unknown:
+        return "NEService::ServiceConnectionState::Unknown";
+    case NEService::ServiceConnectionState::Connected:
+        return "NEService::ServiceConnectionState::Connected";
+    case NEService::ServiceConnectionState::Pending:
+        return "NEService::ServiceConnectionState::Pending";
+    case NEService::ServiceConnectionState::Disconnected:
+        return "NEService::ServiceConnectionState::Disconnected";
+    case NEService::ServiceConnectionState::ConnectionLost:
+        return "NEService::ServiceConnectionState::ConnectionLost";
+    case NEService::ServiceConnectionState::Rejected:
+        return "NEService::ServiceConnectionState::Rejected";
+    case NEService::ServiceConnectionState::Failed:
+        return "NEService::ServiceConnectionState::Failed";
+    case NEService::ServiceConnectionState::Shutdown:
+        return "NEService::ServiceConnectionState::Shutdown";
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::eServiceConnection value!";
+        return "ERR: Undefined NEService::ServiceConnectionState value!";
     }
 }
 
-inline const char * NEService::getString( NEService::eDisconnectReason reason )
+inline const char * NEService::getString( NEService::DisconnectReason reason )
 {
     switch ( reason )
     {
-    case NEService::eDisconnectReason::ReasonUndefined:
-        return "NEService::eDisconnectReason::ReasonUndefined";
-    case NEService::eDisconnectReason::ReasonServiceDisconnected:
-        return "NEService::eDisconnectReason::ReasonServiceDisconnected";
-    case NEService::eDisconnectReason::ReasonServiceLost:
-        return "NEService::eDisconnectReason::ReasonServiceLost";
-    case NEService::eDisconnectReason::ReasonServiceRejected:
-        return "NEService::eDisconnectReason::ReasonServiceRejected";
-    case NEService::eDisconnectReason::ReasonProviderDisconnected:
-        return "NEService::eDisconnectReason::ReasonProviderDisconnected";
-    case NEService::eDisconnectReason::ReasonProviderLost:
-        return "NEService::eDisconnectReason::ReasonProviderLost";
-    case NEService::eDisconnectReason::ReasonProviderRejected:
-        return "NEService::eDisconnectReason::ReasonProviderRejected";
-    case NEService::eDisconnectReason::ReasonConsumerDisconnected:
-        return "NEService::eDisconnectReason::ReasonConsumerDisconnected";
-    case NEService::eDisconnectReason::ReasonConsumerLost:
-        return "NEService::eDisconnectReason::ReasonConsumerLost";
-    case NEService::eDisconnectReason::ReasonConsumerNotSupported:
-        return "NEService::eDisconnectReason::ReasonConsumerNotSupported";
-    case NEService::eDisconnectReason::ReasonSystemShutdown:
-        return "NEService::eDisconnectReason::ReasonSystemShutdown";
-    case NEService::eDisconnectReason::ReasonClientConnectionLost:
-        return "NEService::eDisconnectReason::ReasonClientConnectionLost";
-    case NEService::eDisconnectReason::ReasonClientConnectionClosed:
-        return "NEService::eDisconnectReason::ReasonClientConnectionClosed";
+    case NEService::DisconnectReason::UndefinedReason:
+        return "NEService::DisconnectReason::UndefinedReason";
+    case NEService::DisconnectReason::ServiceDisconnected:
+        return "NEService::DisconnectReason::ServiceDisconnected";
+    case NEService::DisconnectReason::ServiceLost:
+        return "NEService::DisconnectReason::ServiceLost";
+    case NEService::DisconnectReason::ServiceRejected:
+        return "NEService::DisconnectReason::ServiceRejected";
+    case NEService::DisconnectReason::ProviderDisconnected:
+        return "NEService::DisconnectReason::ProviderDisconnected";
+    case NEService::DisconnectReason::ProviderLost:
+        return "NEService::DisconnectReason::ProviderLost";
+    case NEService::DisconnectReason::ProviderRejected:
+        return "NEService::DisconnectReason::ProviderRejected";
+    case NEService::DisconnectReason::ConsumerDisconnected:
+        return "NEService::DisconnectReason::ConsumerDisconnected";
+    case NEService::DisconnectReason::ConsumerLost:
+        return "NEService::DisconnectReason::ConsumerLost";
+    case NEService::DisconnectReason::ConsumerNotSupported:
+        return "NEService::DisconnectReason::ConsumerNotSupported";
+    case NEService::DisconnectReason::SystemShutdown:
+        return "NEService::DisconnectReason::SystemShutdown";
+    case NEService::DisconnectReason::ClientConnectionLost:
+        return "NEService::DisconnectReason::ClientConnectionLost";
+    case NEService::DisconnectReason::ClientConnectionClosed:
+        return "NEService::DisconnectReason::ClientConnectionClosed";
     default:
         ASSERT( false );
-        return "ERR: Undefined NEService::eDisconnectReason value!";
+        return "ERR: Undefined NEService::DisconnectReason value!";
     }
 }
 

@@ -101,7 +101,7 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason )
+void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
 
@@ -133,7 +133,7 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason )
+void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
     LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
@@ -340,12 +340,12 @@ void ServiceManager::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
     ServiceManager::requestRegisterClient(proxy);
 }
 
-void ServiceManager::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & /*cookie*/ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterServer(stub, reason);
 }
 
-void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & /* cookie */ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterClient(proxy, reason);
 }

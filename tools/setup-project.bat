@@ -166,7 +166,7 @@ if "%APP_MODE%"=="1" (
     echo     {   }
     echo.
     echo protected:
-    echo     virtual bool serviceConnected^(NEService^:^:eServiceConnection status, ProxyBase^& proxy^) override
+    echo     virtual bool serviceConnected^(NEService^:^:ServiceConnectionState status, ProxyBase^& proxy^) override
     echo     ^{
     echo         if ^(HelloServiceClientBase^:^:serviceConnected^(status, proxy^) ^&^& NEService^:^:isServiceConnected^(status^)^)
     echo             requestHelloService^(^);
@@ -257,7 +257,7 @@ if "%APP_MODE%"=="1" (
     echo         , HelloServiceClientBase^(entry.mDependencyServices[0].mRoleName, owner^)
     echo     { }
     echo.
-    echo     virtual bool serviceConnected^(NEService^:^:eServiceConnection status, ProxyBase^& proxy^) override
+    echo     virtual bool serviceConnected^(NEService^:^:ServiceConnectionState status, ProxyBase^& proxy^) override
     echo     ^{
     echo         if ^(HelloServiceClientBase^:^:serviceConnected^(status, proxy^) ^&^& NEService^:^:isServiceConnected^(status^)^)
     echo             requestHelloService^(^);

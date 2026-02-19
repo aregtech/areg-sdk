@@ -51,7 +51,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onStringOnChangeUpdate( const String & StringOnChange, NEService::eDataStateType state ) override;
+    virtual void onStringOnChangeUpdate( const String & StringOnChange, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -62,7 +62,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onIntegerAlwaysUpdate( unsigned int IntegerAlways, NEService::eDataStateType state ) override;
+    virtual void onIntegerAlwaysUpdate( unsigned int IntegerAlways, NEService::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

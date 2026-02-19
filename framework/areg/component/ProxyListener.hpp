@@ -68,7 +68,7 @@ public:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) = 0;
+    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) = 0;
 
     /**
      * \brief   Notification event processing function.

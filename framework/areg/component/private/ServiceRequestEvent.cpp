@@ -31,7 +31,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, StubEvent)
 ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
                                         , const StubAddress  & target
                                         , unsigned int reqId
-                                        , NEService::eRequestType reqType
+                                        , NEService::RequestType reqType
                                         , Event::EventType eventType)
     : StubEvent     (target, eventType)
     , mProxySource  (proxyAddress)
@@ -45,7 +45,7 @@ ServiceRequestEvent::ServiceRequestEvent(const InStream & stream)
     : StubEvent     (stream)
     , mProxySource  (stream)
     , mMessageId    (NEService::INVALID_MESSAGE_ID)
-    , mRequestType  (NEService::eRequestType::Unprocessed)
+    , mRequestType  (NEService::RequestType::Unprocessed)
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
 {
     stream >> mMessageId;

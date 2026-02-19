@@ -279,7 +279,7 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
     , mProxyData        ( serviceIfData )
 
     , mDispatcherThread ( (ownerThread != nullptr) && (ownerThread->isValid()) ? *ownerThread : DispatcherThread::getDispatcherThread( mProxyAddress.getThread()) )
-    , mConnectionStatus ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectionStatus ( NEService::ServiceConnectionState::Unknown )
     , mIsConnected      ( false )
 {
     ASSERT(mDispatcherThread.isValid());
@@ -306,7 +306,7 @@ void ProxyBase::freeProxy( ProxyListener & connect )
     if ( exists >= 0 )
     {
         mListConnect.removeAt(static_cast<uint32_t>(exists));
-        connect.serviceConnected(NEService::eServiceConnection::ServiceDisconnected, self());
+        connect.serviceConnected(NEService::ServiceConnectionState::Disconnected, self());
     }
 
     removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
@@ -323,11 +323,11 @@ void ProxyBase::freeProxy( ProxyListener & connect )
             unregisterServiceListeners( );
             mListenerList.clear();
 
-            ServiceManager::requestUnregisterClient( getProxyAddress( ), NEService::eDisconnectReason::ReasonConsumerDisconnected );
+            ServiceManager::requestUnregisterClient( getProxyAddress( ), NEService::DisconnectReason::ConsumerDisconnected );
             mDispatcherThread.removeConsumer( *this );
         }
 
-        setConnectionStatus( NEService::eServiceConnection::ServiceDisconnected );
+        setConnectionStatus( NEService::ServiceConnectionState::Disconnected );
         mIsStopped   = true;
 
         mProxyInstCount = 0;
@@ -347,10 +347,10 @@ void ProxyBase::terminateSelf()
         mListenerList.clear();
         if (mIsStopped == false)
         {
-            ServiceManager::requestUnregisterClient(getProxyAddress(), NEService::eDisconnectReason::ReasonConsumerDisconnected );
+            ServiceManager::requestUnregisterClient(getProxyAddress(), NEService::DisconnectReason::ConsumerDisconnected );
         }
 
-        setConnectionStatus( NEService::eServiceConnection::ServiceDisconnected );
+        setConnectionStatus( NEService::ServiceConnectionState::Disconnected );
         mIsStopped      = true;
         mProxyInstCount = 0;
 
@@ -358,7 +358,7 @@ void ProxyBase::terminateSelf()
     }
 }
 
-void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::eServiceConnection status )
+void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::ServiceConnectionState status )
 {
     LOG_SCOPE(areg_component_ProxyBase_serviceConnectionUpdated);
 
@@ -370,7 +370,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
                     , NEService::getString(status)
                     , StubAddress::convAddressToPath(server).getString());
 
-        ASSERT(channel.getTarget() == server.getSource() || status != NEService::eServiceConnection::ServiceConnected);
+        ASSERT(channel.getTarget() == server.getSource() || status != NEService::ServiceConnectionState::Connected);
         mProxyAddress.setChannel(channel);
         setConnectionStatus( status );
         bool proxyConnected{ isConnected() };
@@ -430,7 +430,7 @@ void ProxyBase::setNotification( unsigned int msgId, NotificationConsumer* calle
             if (NEService::isAttributeId(msgId))
             {
                 sendNotificationEvent( msgId
-                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOK : NEService::ResultType::DataInvalid
+                                     , mProxyData.getAttributeState(msgId) == NEService::DataState::DataIsOK ? NEService::ResultType::DataOK : NEService::ResultType::DataInvalid
                                      , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
 
@@ -446,10 +446,10 @@ void ProxyBase::setNotification( unsigned int msgId, NotificationConsumer* calle
             if ( NEService::isAttributeId(msgId) )
             {
                 sendNotificationEvent( msgId
-                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::ResultType::DataOK : NEService::ResultType::DataInvalid
+                                     , mProxyData.getAttributeState(msgId) == NEService::DataState::DataIsOK ? NEService::ResultType::DataOK : NEService::ResultType::DataInvalid
                                      , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
-            else if ( NEService::isResponseId(msgId) && (mProxyData.getParamState(msgId) == NEService::eDataStateType::DataIsOK) )
+            else if ( NEService::isResponseId(msgId) && (mProxyData.getParamState(msgId) == NEService::DataState::DataIsOK) )
             {
                 sendNotificationEvent(  msgId, NEService::ResultType::RequestOK, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
             }
@@ -471,7 +471,7 @@ void ProxyBase::clearNotification( unsigned int msgId, NotificationConsumer* cal
     if (hasNotificationListener(msgId) == false)
     {
         stopNotification(msgId);
-        mProxyData.setDataState(msgId, NEService::eDataStateType::DataIsUnavailable);
+        mProxyData.setDataState(msgId, NEService::DataState::DataIsUnavailable);
     }
 }
 
@@ -493,7 +493,7 @@ void ProxyBase::unregisterListener( NotificationConsumer *consumer )
             if (hasNotificationListener(msgId) == false)
             {
                 stopNotification(msgId);
-                mProxyData.setDataState(msgId, NEService::eDataStateType::DataIsUnavailable);
+                mProxyData.setDataState(msgId, NEService::DataState::DataIsUnavailable);
             }
         }
         else
@@ -598,7 +598,7 @@ void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& arg
     }
 }
 
-void ProxyBase::sendNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType )
+void ProxyBase::sendNotificationRequestEvent( unsigned int msgId, NEService::RequestType reqType )
 {
     ServiceRequestEvent* notifyEvent = createNotificationRequestEvent(msgId, reqType);
     if (notifyEvent != nullptr)
@@ -672,18 +672,18 @@ void ProxyBase::stopProxy()
         {
             ProxyListener * listener = mListConnect.getAt(i);
             ASSERT(listener != nullptr);
-            listener->serviceConnected( NEService::eServiceConnection::ServiceDisconnected, *this);
+            listener->serviceConnected( NEService::ServiceConnectionState::Disconnected, *this);
         }
 
         mListConnect.clear();
 
-        setConnectionStatus( NEService::eServiceConnection::ServiceDisconnected );
+        setConnectionStatus( NEService::ServiceConnectionState::Disconnected );
         mIsStopped = true;
 
         stopAllServiceNotifications( );
         unregisterServiceListeners( );
         mListenerList.clear();
-        ServiceManager::requestUnregisterClient( getProxyAddress( ), NEService::eDisconnectReason::ReasonConsumerDisconnected );
+        ServiceManager::requestUnregisterClient( getProxyAddress( ), NEService::DisconnectReason::ConsumerDisconnected );
         mDispatcherThread.removeConsumer( *this );
 
         mStubAddress = StubAddress::getInvalidStubAddress();

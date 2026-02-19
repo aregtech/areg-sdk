@@ -79,15 +79,15 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
 
     msgReceived.moveToBegin();
     ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
-    NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
+    NEService::ServiceConnectionState connection{ NEService::ServiceConnectionState::Unknown };
     msgReceived >> cookie;
     msgReceived >> connection;
     LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
 
     switch (connection)
     {
-    case NEService::eServiceConnection::ServiceConnected:
-    case NEService::eServiceConnection::ServicePending:
+    case NEService::ServiceConnectionState::Connected:
+    case NEService::ServiceConnectionState::Pending:
         {
             if (msgReceived.getResult() == NEMemory::MESSAGE_SUCCESS)
             {
@@ -106,9 +106,9 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
         }
         break;
 
-    case NEService::eServiceConnection::ServiceConnectionLost:
-    case NEService::eServiceConnection::ServiceDisconnected:
-    case NEService::eServiceConnection::ServiceFailed:
+    case NEService::ServiceConnectionState::ConnectionLost:
+    case NEService::ServiceConnectionState::Disconnected:
+    case NEService::ServiceConnectionState::Failed:
         {
             cancelConnection();
             onChannelConnected(NEService::COOKIE_UNKNOWN);
@@ -116,9 +116,9 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
         }
         break;
 
-    case NEService::eServiceConnection::ServiceConnectionUnknown:   // fall through
-    case NEService::eServiceConnection::ServiceRejected:            // fall through
-    case NEService::eServiceConnection::ServiceShutdown:            // fall through
+    case NEService::ServiceConnectionState::Unknown:   // fall through
+    case NEService::ServiceConnectionState::Rejected:            // fall through
+    case NEService::ServiceConnectionState::Shutdown:            // fall through
     default:
         {
             cancelConnection();

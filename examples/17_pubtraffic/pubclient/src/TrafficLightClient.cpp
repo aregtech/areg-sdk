@@ -20,7 +20,7 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 {
 }
 
-bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
 
@@ -41,17 +41,17 @@ bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status,
     return result;
 }
 
-void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state)
+void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::eTrafficLight SouthNorth, NEService::DataState state)
 {
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         outputState(SouthNorth);
     }
 }
 
-void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state)
+void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::eTrafficLight EastWest, NEService::DataState state)
 {
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         outputState(EastWest);
     }

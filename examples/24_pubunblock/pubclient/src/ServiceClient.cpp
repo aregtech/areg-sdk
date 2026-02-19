@@ -39,7 +39,7 @@ ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, Componen
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
     bool result = HelloUnblockClientBase::serviceConnected( status, proxy );
@@ -47,7 +47,7 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     notifyOnHelloServiceStateUpdate( isConnected( ) );
     if ( isConnected( ) == false )
     {
-        ASSERT((status == NEService::eServiceConnection::ServiceConnectionLost) || (mReqCount == 2)); // Only in debug build
+        ASSERT((status == NEService::ServiceConnectionState::ConnectionLost) || (mReqCount == 2)); // Only in debug build
         mTimer.stopTimer( );
         Application::signalAppQuit( );
     }
@@ -128,12 +128,12 @@ void ServiceClient::requestHelloUblockFailed( NEService::ResultType FailureReaso
     ASSERT( FailureReason != NEService::ResultType::RequestBusy );
 }
 
-void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state )
+void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::DataState state )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
     LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::getString( HelloServiceState ), NEService::getString( state ) );
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         if ( HelloServiceState == HelloUnblock::eServiceState::ServiceActive )
         {
@@ -146,7 +146,7 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::eServiceState Hello
             ASSERT(++mReqCount == getProxy()->getListenerCount());
             ASSERT(mReqCount == 3);
         }
-        else if ( HelloServiceState == HelloUnblock::eServiceState::ServiceShutdown )
+        else if ( HelloServiceState == HelloUnblock::eServiceState::Shutdown )
         {
             LOG_WARN( "The service is unavailable, shutting down application." );
             mTimer.stopTimer( );

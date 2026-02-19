@@ -33,7 +33,7 @@ public:
 	virtual ~PageConnections();
 
 public:
-    void ServiceConnected( bool isConnected );
+    void Connected( bool isConnected );
 
     void OutputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, LPARAM data );
 

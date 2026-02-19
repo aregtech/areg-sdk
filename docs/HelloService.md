@@ -78,7 +78,7 @@ void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)
 
 **Service Component:**
 ```cpp
-bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)
+bool clientConnected(const ProxyAddress& client, NEService::ServiceConnectionState connectionStatus)
 ```
 
 ---

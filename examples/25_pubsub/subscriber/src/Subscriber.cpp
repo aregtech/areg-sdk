@@ -51,7 +51,7 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
@@ -83,11 +83,11 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
+void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
         console.outputMsg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.getString(), StringOnChange.getString());
@@ -110,12 +110,12 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
     console.refreshScreen();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
+void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
         console.outputMsg(_coordInteger, "%s%s => %u { %s }"
@@ -144,10 +144,10 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
     console.refreshScreen();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onServiceProviderStateUpdate);
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {

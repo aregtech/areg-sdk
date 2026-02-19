@@ -99,7 +99,7 @@ public:
      * \param   addrProxy   The address of the service consumer to unregister.
      * \param   reason      The reason to unregister or disconnect the service consumer.
      **/
-    static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy, NEService::eDisconnectReason reason );
+    static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy, NEService::DisconnectReason reason );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register Stub
@@ -111,7 +111,7 @@ public:
      * \param   addrStub    The address of the service provider to unregister / disconnect.
      * \param   reason      The reason to unregister or disconnect the service provider.
      **/
-    static ServiceManagerEventData unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason );
+    static ServiceManagerEventData unregisterStub( const StubAddress & addrStub, NEService::DisconnectReason reason );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to configure connection.

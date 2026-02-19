@@ -67,12 +67,12 @@ const ServiceProxy & ServiceRegistry::getProxyService(const ProxyAddress & addPr
     return getProxyServiceList( static_cast<const ServiceAddress &>(addProxy) ).getService(addProxy);
 }
 
-NEService::eServiceConnection ServiceRegistry::getServiceStatus(const StubAddress & addrStub) const
+NEService::ServiceConnectionState ServiceRegistry::getServiceStatus(const StubAddress & addrStub) const
 {
     return getStubService(addrStub).getServiceStatus();
 }
 
-NEService::eServiceConnection ServiceRegistry::getServiceStatus(const ProxyAddress & addrProxy) const
+NEService::ServiceConnectionState ServiceRegistry::getServiceStatus(const ProxyAddress & addrProxy) const
 {
     return getProxyService(addrProxy).getServiceStatus();
 }
@@ -154,12 +154,12 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
         LOG_DBG("Registered new service [ %s ], there are no proxies yet waiting for service"
                     , StubAddress::convAddressToPath(addrStub).getString());
 
-        result.setServiceStatus( NEService::eServiceConnection::ServiceConnected );
+        result.setServiceStatus( NEService::ServiceConnectionState::Connected );
         out_listProxies = proxies;
     }
     else
     {
-        result.setService( addrStub, NEService::eServiceConnection::ServiceConnected );
+        result.setService( addrStub, NEService::ServiceConnectionState::Connected );
         proxies.stubServiceAvailable(addrStub);
         out_listProxies = proxies;
 
@@ -181,7 +181,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & a
         ServiceStub & stub = keyAtPosition(pos);
         ListServiceProxies & proxies = valueAtPosition(pos);
 
-        stub.setServiceStatus( NEService::eServiceConnection::ServicePending );
+        stub.setServiceStatus( NEService::ServiceConnectionState::Pending );
         proxies.stubServiceUnavailable( );
         if ( proxies.isEmpty() )
         {

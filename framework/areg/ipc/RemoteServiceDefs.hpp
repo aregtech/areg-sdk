@@ -178,7 +178,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the request message to unregister service provider.
      * \see     createRouterRegisterService
      **/
-    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::createRouterRegisterClient
@@ -199,7 +199,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the request message to unregister service consumer.
      * \see     createRouterRegisterClient
      **/
-    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::createServiceRegisteredNotification
@@ -220,7 +220,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the service provider is unregistered notification message.
      * \see     createServiceRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::createServiceClientRegisteredNotification
@@ -241,7 +241,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the service consumer is unregistered notification message.
      * \see     createServiceClientRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::isMessageHelloServer

@@ -228,7 +228,7 @@ void SystemServiceBase::controlService(SystemServiceBase::eServiceControl contro
     switch (control)
     {
     case SystemServiceBase::eServiceControl::ServiceStop:
-    case SystemServiceBase::eServiceControl::ServiceShutdown:
+    case SystemServiceBase::eServiceControl::Shutdown:
         serviceStop();
         break;
 

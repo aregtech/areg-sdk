@@ -77,7 +77,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                     const ClientInfo & client = clientList.valueAtPosition( listPos );
                     if ( client.isConnected( ) )
                     {
-                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::eServiceConnection::ServiceDisconnected );
+                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::ServiceConnectionState::Disconnected );
                     }
                 }
             }
@@ -104,7 +104,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         {
             ProxyAddress  addrProxy;
             Channel       channel;
-            NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+            NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
             stream >> addrProxy;
             stream >> channel;
             stream >> reason;
@@ -128,7 +128,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         {
             StubAddress   addrstub;
             Channel       channel;
-            NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+            NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
             stream >> addrstub;
             stream >> channel;
             stream >> reason;
@@ -235,10 +235,10 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                 }
             }
 
-            NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonProviderDisconnected };
+            NEService::DisconnectReason reason { NEService::DisconnectReason::ProviderDisconnected };
             if ( cmdService == ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection )
             {
-                reason = NEService::eDisconnectReason::ReasonServiceLost;
+                reason = NEService::DisconnectReason::ServiceLost;
             }
 
             for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
@@ -309,7 +309,7 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
@@ -334,7 +334,7 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
 
 #endif  // AREG_LOGS
 
-    NEService::eServiceConnection status = NEService::serviceConnection( reason );
+    NEService::ServiceConnectionState status = NEService::serviceConnection( reason );
     for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
     {
         const ClientInfo & client{ clientList.valueAtPosition( pos ) };
@@ -372,7 +372,7 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 
@@ -409,7 +409,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
                    , StubAddress::convAddressToPath( server ).getString( )
                    , ProxyAddress::convAddressToPath( client ).getString( ) );
 
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
         if ( clientConnect != nullptr )
         {
             server.deliverServiceEvent( *clientConnect );
@@ -422,7 +422,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
                    , ProxyAddress::convAddressToPath( client ).getString( )
                    , StubAddress::convAddressToPath( server ).getString( ) );
 
-        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
         if ( proxyConnect != nullptr )
         {
             client.deliverServiceEvent( *proxyConnect );
@@ -432,7 +432,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
 
 void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
                                                              , const StubAddress & server
-                                                             , const NEService::eServiceConnection status ) const
+                                                             , const NEService::ServiceConnectionState status ) const
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
 

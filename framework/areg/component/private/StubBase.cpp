@@ -78,7 +78,7 @@ StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & si
     , mComponent            (masterComp)
     , mInterface            (siData)
     , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName())
-    , mConnectionStatus     ( NEService::eServiceConnection::ServiceDisconnected )
+    , mConnectionStatus     ( NEService::ServiceConnectionState::Disconnected )
     , mListListener         ( )
     , mCurrListener         (mListListener.invalidPosition())
     , mSessionId            (0)
@@ -480,7 +480,7 @@ void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddres
     }
 }
 
-bool StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status )
+bool StubBase::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status )
 {
     bool result{ false };
     if (mAddress == client)
@@ -500,12 +500,12 @@ bool StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceC
     return result;
 }
 
-void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status )
+void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status )
 {
     clientConnected( proxyAddress, status );
 }
 
-void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::eServiceConnection status )
+void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::ServiceConnectionState status )
 {
     if ( NEService::isServiceConnected( status) )
     {

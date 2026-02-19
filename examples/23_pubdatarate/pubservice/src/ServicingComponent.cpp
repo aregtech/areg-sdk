@@ -131,7 +131,7 @@ void ServicingComponent::shutdownServiceInterface(Component& holder)
     LargeDataStub::shutdownServiceInterface(holder);
 }
 
-bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus )
+bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::ServiceConnectionState connectionStatus )
 {
     bool result = LargeDataStub::clientConnected(client, connectionStatus );
     mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);

@@ -39,7 +39,7 @@ ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
 void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgReceived)
 {
     ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
-    NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
+    NEService::ServiceConnectionState connection{ NEService::ServiceConnectionState::Unknown };
     msgReceived.moveToBegin();
     msgReceived >> cookie;
     msgReceived >> connection;
@@ -48,28 +48,28 @@ void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgR
     _initLocalLogMessage(log, cookie, 0);
     switch (connection)
     {
-    case NEService::eServiceConnection::ServiceConnected:
+    case NEService::ServiceConnectionState::Connected:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer connected to log collector service.");
         break;
-    case NEService::eServiceConnection::ServicePending:
+    case NEService::ServiceConnectionState::Pending:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is pending.");
         break;
-    case NEService::eServiceConnection::ServiceConnectionLost:
+    case NEService::ServiceConnectionState::ConnectionLost:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is lost.");
         break;
-    case NEService::eServiceConnection::ServiceDisconnected:
+    case NEService::ServiceConnectionState::Disconnected:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer disconnected from log collector service.");
         break;
-    case NEService::eServiceConnection::ServiceFailed:
+    case NEService::ServiceConnectionState::Failed:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Failed to connect to the log collector service.");
         break;
-    case NEService::eServiceConnection::ServiceRejected:
+    case NEService::ServiceConnectionState::Rejected:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is rejected.");
         break;
-    case NEService::eServiceConnection::ServiceShutdown:
+    case NEService::ServiceConnectionState::Shutdown:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The log collector service is shutting down.");
         break;
-    case NEService::eServiceConnection::ServiceConnectionUnknown:
+    case NEService::ServiceConnectionState::Unknown:
     default:
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Undefined log collector service connection event...");
         break;

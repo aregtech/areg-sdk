@@ -51,7 +51,7 @@ PageConnections::~PageConnections()
     mTypingList.clear();
 }
 
-void PageConnections::ServiceConnected( bool /*isConnected*/)
+void PageConnections::Connected( bool /*isConnected*/)
 {
 }
 

@@ -309,6 +309,6 @@ inline void Component::_shutdownServices()
         ASSERT(stub != nullptr);
 
         stub->shutdownServiceInterface(self());
-        ServiceManager::requestUnregisterServer(stub->getAddress(), NEService::eDisconnectReason::ReasonProviderDisconnected);
+        ServiceManager::requestUnregisterServer(stub->getAddress(), NEService::DisconnectReason::ProviderDisconnected);
     }
 }

@@ -101,7 +101,7 @@ void ServiceComponent::processTimer( Timer & /* timer */ )
     if ( mSessionList.isEmpty( ) )
     {
         mTimer.stopTimer( );
-        setHelloServiceState( HelloUnblock::eServiceState::ServiceShutdown );
+        setHelloServiceState( HelloUnblock::eServiceState::Shutdown );
 
         LOG_WARN( "No more saved sessions in the list, quit application!" );
         Application::signalAppQuit( );

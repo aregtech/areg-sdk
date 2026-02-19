@@ -101,7 +101,7 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceShutdown);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::Shutdown);
         break;
 
     default:

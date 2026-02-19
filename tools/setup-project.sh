@@ -168,7 +168,7 @@ public:
     {   }
 
 protected:
-    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
+    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
     {
         if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
             requestHelloService();
@@ -259,7 +259,7 @@ public:
         , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner)
     { }
 
-    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
+    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
     {
         if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
             requestHelloService();

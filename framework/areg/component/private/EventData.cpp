@@ -51,7 +51,7 @@ EventData::EventData( EventData && src ) noexcept
 }
 
 EventData::EventData(const InStream & stream)
-    : mDataType ( NEService::eMessageDataType::UndefinedDataType )
+    : mDataType ( NEService::MessageDataType::UndefinedData )
     , mData     ( EventDataStream::EventDataKind::External )
 {
     stream >> mDataType;

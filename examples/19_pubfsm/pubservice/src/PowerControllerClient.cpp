@@ -143,7 +143,7 @@ void PowerControllerClient::processEvent(const PowerControllerEventData & data)
     }
 }
 
-bool PowerControllerClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool PowerControllerClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
 

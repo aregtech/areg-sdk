@@ -25,7 +25,7 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
@@ -59,12 +59,12 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    String publisherState = state == NEService::eDataStateType::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
+    String publisherState = state == NEService::DataState::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
@@ -83,7 +83,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProvi
                       , mStateEventCount);
     console.refreshScreen();
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
 
         if (isIntegerAlwaysValid() == false)

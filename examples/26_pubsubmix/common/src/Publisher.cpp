@@ -60,7 +60,7 @@ Publisher::Publisher( Component & owner )
 {
 }
 
-bool Publisher::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+bool Publisher::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
     bool result = PubSubMixStub::clientConnected(client, status);

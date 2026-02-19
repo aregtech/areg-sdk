@@ -17,7 +17,7 @@ ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, Compo
 {
 }
 
-bool ClientComponent::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool ClientComponent::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     bool result{ false };
     if ( HelloServiceClientBase::serviceConnected(status, proxy) )

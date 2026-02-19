@@ -30,7 +30,7 @@ namespace
 
     inline static void _createRegisterRequest( RemoteMessage & out_msgRegister
                                              , NEService::eServiceRequestType reqType
-                                             , NEService::eDisconnectReason reason
+                                             , NEService::DisconnectReason reason
                                              , const StubAddress & addrService)
     {
         if (out_msgRegister.initMessage(NERemoteService::getMessageRegisterService().rbHeader) != nullptr)
@@ -44,7 +44,7 @@ namespace
 
     inline static void _createRegisterRequest( RemoteMessage & out_msgRegister
                                              , NEService::eServiceRequestType reqType
-                                             , NEService::eDisconnectReason reason
+                                             , NEService::DisconnectReason reason
                                              , const ProxyAddress & addrService)
     {
         if (out_msgRegister.initMessage(NERemoteService::getMessageRegisterService().rbHeader) != nullptr)
@@ -58,7 +58,7 @@ namespace
 
     inline static void _createRegisterNotify( RemoteMessage & out_msgNotify
                                             , NEService::eServiceRequestType reqType
-                                            , NEService::eDisconnectReason reason
+                                            , NEService::DisconnectReason reason
                                             , const StubAddress & addrService)
     {
         if (out_msgNotify.initMessage(NERemoteService::getMessageRegisterNotify().rbHeader) != nullptr)
@@ -72,7 +72,7 @@ namespace
 
     inline static void _createRegisterNotify( RemoteMessage & out_msgNotify
                                             , NEService::eServiceRequestType reqType
-                                            , NEService::eDisconnectReason reason
+                                            , NEService::DisconnectReason reason
                                             , const ProxyAddress & addrService)
     {
         if (out_msgNotify.initMessage(NERemoteService::getMessageRegisterNotify().rbHeader) != nullptr)
@@ -269,7 +269,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterRegisterService( const 
     {
         StubAddress temp( stub );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, NEService::eServiceRequestType::RegisterStub, NEService::eDisconnectReason::ReasonUndefined, temp);
+        _createRegisterRequest(msgResult, NEService::eServiceRequestType::RegisterStub, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -285,7 +285,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterRegisterClient( const P
     {
         ProxyAddress temp( proxy );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, NEService::eServiceRequestType::RegisterClient, NEService::eDisconnectReason::ReasonUndefined, temp);
+        _createRegisterRequest(msgResult, NEService::eServiceRequestType::RegisterClient, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -294,7 +294,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterRegisterClient( const P
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NERemoteService::createRouterUnregisterService( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL RemoteMessage NERemoteService::createRouterUnregisterService( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(source) )
@@ -310,7 +310,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterUnregisterService( cons
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NERemoteService::createRouterUnregisterClient( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL RemoteMessage NERemoteService::createRouterUnregisterClient( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(source) )
@@ -381,7 +381,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceRegisteredNotification
     if ( stub.isServicePublic() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegisterNotify(msgResult, NEService::eServiceRequestType::RegisterStub, NEService::eDisconnectReason::ReasonUndefined, temp);
+        _createRegisterNotify(msgResult, NEService::eServiceRequestType::RegisterStub, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -396,7 +396,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientRegisteredNotifi
     if ( proxy.isServicePublic() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegisterNotify(msgResult, NEService::eServiceRequestType::RegisterClient, NEService::eDisconnectReason::ReasonUndefined, temp);
+        _createRegisterNotify(msgResult, NEService::eServiceRequestType::RegisterClient, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -405,7 +405,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientRegisteredNotifi
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NERemoteService::createServiceUnregisteredNotification(const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL RemoteMessage NERemoteService::createServiceUnregisteredNotification(const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(target) )
@@ -420,7 +420,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceUnregisteredNotificati
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(target) )
@@ -481,7 +481,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectNotify( const ITEM_ID 
         msgNotifyConnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
         msgNotifyConnect << target;
-        msgNotifyConnect << NEService::eServiceConnection::ServiceConnected;
+        msgNotifyConnect << NEService::ServiceConnectionState::Connected;
     }
 
     return msgNotifyConnect;
@@ -497,7 +497,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createDisconnectNotify(const ITEM_I
         msgNotifyDisconnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
         msgNotifyDisconnect << target;
-        msgNotifyDisconnect << NEService::eServiceConnection::ServiceDisconnected;
+        msgNotifyDisconnect << NEService::ServiceConnectionState::Disconnected;
     }
 
     return msgNotifyDisconnect;
@@ -513,7 +513,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRejectNotify(const ITEM_ID & 
         msgNotifyReject.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
         msgNotifyReject << target;
-        msgNotifyReject << NEService::eServiceConnection::ServiceRejected;
+        msgNotifyReject << NEService::ServiceConnectionState::Rejected;
     }
 
     return msgNotifyReject;

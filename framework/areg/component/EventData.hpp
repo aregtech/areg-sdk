@@ -139,7 +139,7 @@ public:
      *          It is either request or response. The update messages
      *          are classified as response.
      **/
-    inline NEService::eMessageDataType getDataType() const;
+    inline NEService::MessageDataType getDataType() const;
     
     /**
      * \brief   Returns reference of data input streaming object
@@ -166,7 +166,7 @@ private:
     /**
      * \brief   The type of data
      **/
-    NEService::eMessageDataType    mDataType;
+    NEService::MessageDataType    mDataType;
     /**
      * \brief   Streaming object, containing data in binary format.
      **/
@@ -177,7 +177,7 @@ private:
 // EventData class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::eMessageDataType EventData::getDataType() const
+inline NEService::MessageDataType EventData::getDataType() const
 {
     return mDataType;
 }

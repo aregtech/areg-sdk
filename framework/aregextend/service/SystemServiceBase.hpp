@@ -87,7 +87,7 @@ public:
           ServiceStop       = 1 //!< The service received control to stop.
         , ServicePause          //!< The service received control to pause.
         , ServiceContinue       //!< The service received control to resume paused service.
-        , ServiceShutdown       //!< The service received control to shutdown.
+        , Shutdown       //!< The service received control to shutdown.
     } eServiceControl;
 
 //////////////////////////////////////////////////////////////////////////

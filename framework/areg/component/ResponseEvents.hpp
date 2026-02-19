@@ -128,7 +128,7 @@ public:
     /**
      * \brief   Returns data type of request data
      **/
-    inline NEService::eMessageDataType getDataType() const;
+    inline NEService::MessageDataType getDataType() const;
 
     /**
      * \brief   Returns reference of data input streaming object
@@ -368,7 +368,7 @@ inline const EventData & ResponseEvent::getData() const
     return mData;
 }
 
-inline NEService::eMessageDataType ResponseEvent::getDataType() const
+inline NEService::MessageDataType ResponseEvent::getDataType() const
 {
     return mData.getDataType();
 }

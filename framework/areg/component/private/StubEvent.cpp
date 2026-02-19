@@ -134,7 +134,7 @@ inline void StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & not
 {
     if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
     {
-        if (notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection)
+        if (notifyConnect.getRequestType() == NEService::RequestType::ServiceConnection)
         {
             processStubRegisteredEvent(notifyConnect.getTargetStub(), notifyConnect.getConnectionStatus());
         }

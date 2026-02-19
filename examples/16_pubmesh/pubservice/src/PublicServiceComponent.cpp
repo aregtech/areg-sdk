@@ -36,7 +36,7 @@ void PublicServiceComponent::startupComponent( ComponentThread & comThread )
     SystemShutdownStub::setServiceState( SystemShutdown::eServiceState::ServiceReady );
 }
 
-bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
     LOG_INFO("The consumer [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(client).getString(), NEService::getString(status));
@@ -44,12 +44,12 @@ bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEServ
     bool result{ true };
     if (SystemShutdownStub::clientConnected(client, status))
     {
-        if (status == NEService::eServiceConnection::ServiceConnected)
+        if (status == NEService::ServiceConnectionState::Connected)
         {
             if (SystemShutdownStub::isServiceStateValid() == false)
             {
                 SystemShutdown::eServiceState state = mNumMessages >= PublicHelloWorld::MaximumOutputs ?
-                    SystemShutdown::eServiceState::ServiceShutdown :
+                    SystemShutdown::eServiceState::Shutdown :
                     SystemShutdown::eServiceState::ServiceReady;
                 LOG_INFO("The service state is invalid, updating to the state [ %s ]", SystemShutdown::getString(state));
                 SystemShutdownStub::setServiceState(state);
@@ -75,7 +75,7 @@ void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
         LOG_WARN( "Reached maximum outputs [ %d ], preparing to shutdown", mNumMessages );
         printf( ">>> Reached maximum outputs [ %d ] <<<\n", mNumMessages );
         // Notify the service unavailable state, so that the clients stop sending requests
-        SystemShutdownStub::setServiceState( SystemShutdown::eServiceState::ServiceShutdown );
+        SystemShutdownStub::setServiceState( SystemShutdown::eServiceState::Shutdown );
     }
 }
 

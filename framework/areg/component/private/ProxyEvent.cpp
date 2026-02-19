@@ -100,17 +100,17 @@ inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & event
 {
     switch (eventResponse.getDataType() )
     {
-    case NEService::eMessageDataType::RequestDataType:      // fall through
-    case NEService::eMessageDataType::ResponseDataType:
+    case NEService::MessageDataType::RequestData:      // fall through
+    case NEService::MessageDataType::ResponseData:
         processResponseEvent(eventResponse);
         break;
 
-    case NEService::eMessageDataType::AttributeDataType:
+    case NEService::MessageDataType::AttributeData:
         processAttributeEvent(eventResponse);
         break;
 
-    case NEService::eMessageDataType::ServiceDataType:      // fall through
-    case NEService::eMessageDataType::UndefinedDataType:
+    case NEService::MessageDataType::ServiceData:      // fall through
+    case NEService::MessageDataType::UndefinedData:
         ASSERT(false);
         break;
 

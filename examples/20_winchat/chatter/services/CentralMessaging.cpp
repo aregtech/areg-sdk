@@ -28,7 +28,7 @@ CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ow
 {
 }
 
-bool CentralMessaging::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool CentralMessaging::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
     bool result = CentralMessagerClientBase::serviceConnected( status, proxy );

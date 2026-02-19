@@ -16,7 +16,7 @@ public:
 	virtual ~PageBrokerSetup() = default;
 
 public:
-    void ServiceConnected( bool isConnected );
+    void Connected( bool isConnected );
 
     void OnDefaultClicked();
 
