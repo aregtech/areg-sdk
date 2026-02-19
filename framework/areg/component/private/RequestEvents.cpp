@@ -35,7 +35,7 @@ RequestEvent::RequestEvent( const ProxyAddress & fromSource
                           , unsigned int reqId
                           , Event::EventType eventType )
     : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::eRequestType::CallFunction, eventType)
-    , mData(reqId, Event::isExternal(eventType) ? EventDataStream::eEventData::EventDataExternal : EventDataStream::eEventData::EventDataInternal)
+    , mData(reqId, Event::isExternal(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
 {
 }
 

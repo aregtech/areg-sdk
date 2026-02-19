@@ -1706,11 +1706,11 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
         friend class ComponentLoader;
 
-        enum class eModelState : unsigned char
+        enum class ModelState : uint8_t
         {
-              ModelInitialized
-            , ModelLoaded
-            , ModelUnloaded
+              Initialized
+            , Loaded
+            , Unloaded
         };
 
     //////////////////////////////////////////////////////////////////////////
@@ -1916,7 +1916,7 @@ namespace NERegistry
         /**
          * \brief   The Flag, indicating whether model is loaded or not.
          **/
-        eModelState             mLoadState;
+        ModelState             mLoadState;
 
         /**
          * \brief   The duration of time where model was loaded and alive.
@@ -2015,7 +2015,7 @@ inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::
 
 inline TIME64 NERegistry::Model::getAliveDuration() const
 {
-    return (mLoadState == eModelState::ModelInitialized ? 0 : mAliveDuration.durationSinceStart());
+    return (mLoadState == ModelState::Initialized ? 0 : mAliveDuration.durationSinceStart());
 }
 
 template<typename ComponentType>

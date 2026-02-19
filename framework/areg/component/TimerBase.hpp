@@ -47,10 +47,10 @@ public:
      * \brief   The types of supported timers.
      *          At the moment it supports normal timer and watchdog.
      */
-    enum class eTimerType : uint8_t
+    enum class TimerType    : uint8_t
     {
-          TimerTypeNormal       //! Normal timer
-        , TimerTypeWatchdog     //! Watchdog timer.
+          PerThreadTimer       //! Normal timer
+        , WatchdogTimer     //! Watchdog timer.
     };
 
     /**
@@ -88,7 +88,7 @@ protected:
      *                      If values is zero, does not run the timer.
      *                      Any other number defines the amount of timeout events to fire.
      **/
-    TimerBase( const eTimerType timerType
+    TimerBase( const TimerType timerType
              , const String & timerName
              , unsigned int timeoutMs   = NECommon::INVALID_TIMEOUT
              , unsigned int eventCount  = TimerBase::CONTINUOUSLY );
@@ -156,7 +156,7 @@ public:
     /**
      * \brief   Returns the type of the timer.
      **/
-    inline TimerBase::eTimerType getTimerType() const;
+    inline TimerBase::TimerType getTimerType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -200,7 +200,7 @@ protected:
     /**
      * \brief   The type of the timer.
      */
-    const eTimerType    mTimerType;
+    const TimerType     mTimerType;
     /**
      * \brief   The timer handle.
      */
@@ -275,7 +275,7 @@ inline bool TimerBase::isActive() const
     return mActive;
 }
 
-inline TimerBase::eTimerType TimerBase::getTimerType() const
+inline TimerBase::TimerType TimerBase::getTimerType() const
 {
     return mTimerType;
 }

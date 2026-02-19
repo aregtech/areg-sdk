@@ -38,16 +38,16 @@ bool TimerManagerBase::runDispatcher()
 
     SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(syncObjects, 2, false);
-    int whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
+    int whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
     do
     {
         whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false, true);
-        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
+        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
         if (static_cast<const Event*>(eventElem) != static_cast<const Event*>(&exitEvent))
         {
-            if (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue))
+            if (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue))
             {
                 // proceed one external event.
                 if (prepareDispatchEvent(eventElem))
@@ -62,17 +62,17 @@ bool TimerManagerBase::runDispatcher()
         }
         else
         {
-            whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+            whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Exit);
         }
 
-    } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
+    } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
 
     readyForEvents(false);
     removeAllEvents();
 
     ASSERT(static_cast<EventQueue&>(mInternalEvents).isEmpty());
 
-    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
+    return (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Exit));
 }
 
 void TimerManagerBase::readyForEvents(bool isReady)

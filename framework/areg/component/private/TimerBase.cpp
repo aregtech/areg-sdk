@@ -22,7 +22,7 @@ unsigned int TimerBase::getTickCount()
     return static_cast<unsigned int>(DateTime::getSystemTickCount());
 }
 
-TimerBase::TimerBase( const eTimerType timerType
+TimerBase::TimerBase( const TimerType timerType
                     , const String& timerName
                     , unsigned int timeoutMs    /*= NECommon::INVALID_TIMEOUT*/
                     , unsigned int eventCount   /*= TimerBase::CONTINUOUSLY*/)

@@ -949,7 +949,7 @@ bool NERegistry::ComponentThreadList::isValid() const
 NERegistry::Model::Model()
     : mModelName    ( )
     , mModelThreads ( )
-    , mLoadState    ( Model::eModelState::ModelInitialized )
+    , mLoadState    ( Model::ModelState::Initialized )
     , mAliveDuration( )
 {
 }
@@ -957,7 +957,7 @@ NERegistry::Model::Model()
 NERegistry::Model::Model( const String & modelName )
     : mModelName    (modelName)
     , mModelThreads ( )
-    , mLoadState    ( Model::eModelState::ModelInitialized )
+    , mLoadState    ( Model::ModelState::Initialized )
     , mAliveDuration( )
 {
 }
@@ -965,7 +965,7 @@ NERegistry::Model::Model( const String & modelName )
 NERegistry::Model::Model( const String & modelName, const ComponentThreadList & threadList  )
     : mModelName    (modelName)
     , mModelThreads (threadList)
-    , mLoadState    ( Model::eModelState::ModelInitialized )
+    , mLoadState    ( Model::ModelState::Initialized )
     , mAliveDuration( )
 {
 }
@@ -1071,12 +1071,12 @@ bool NERegistry::Model::hasRegisteredComponent( const String & roleName ) const
 
 bool NERegistry::Model::isModelLoaded() const
 {
-    return (mLoadState == NERegistry::Model::eModelState::ModelLoaded);
+    return (mLoadState == NERegistry::Model::ModelState::Loaded);
 }
 
 void NERegistry::Model::markModelLoaded( bool isLoaded /*= true */ )
 {
-    mLoadState = isLoaded ? Model::eModelState::ModelLoaded : Model::eModelState::ModelUnloaded;
+    mLoadState = isLoaded ? Model::ModelState::Loaded : Model::ModelState::Unloaded;
 }
 
 void NERegistry::Model::markModelAlive( bool isAlive )

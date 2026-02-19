@@ -37,7 +37,7 @@ Timer::Timer( TimerConsumer& timerConsumer
             , const String & timerName  /*= String::getEmptyString()*/
             , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
             , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
-    : TimerBase         ( TimerBase::eTimerType::TimerTypeNormal, NEUtilities::generateName(timerName), timeoutMs )
+    : TimerBase         (TimerBase::TimerType::PerThreadTimer, NEUtilities::generateName(timerName), timeoutMs)
     , mConsumer         (timerConsumer)
 
     , mCurrentQueued    (0)
