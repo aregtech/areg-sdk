@@ -30,7 +30,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
 ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, NEService::ServiceConnectionState connectStatus )
     : ServiceResponseEvent  ( target
                             , NEService::ResultType::DataOK
-                            , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
+                            , static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection)
                             , Event::EventType::EventLocalProxyConnect )
     , mStubAddress          ( implAddress )
     , mConnectionStatus     ( connectStatus )

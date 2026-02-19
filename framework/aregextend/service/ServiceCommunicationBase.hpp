@@ -319,7 +319,7 @@ public:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const override;
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.

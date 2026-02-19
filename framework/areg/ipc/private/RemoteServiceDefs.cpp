@@ -29,7 +29,7 @@ namespace
     }
 
     inline static void _createRegisterRequest( RemoteMessage & out_msgRegister
-                                             , NEService::eServiceRequestType reqType
+                                             , NEService::RegistrationAction reqType
                                              , NEService::DisconnectReason reason
                                              , const StubAddress & addrService)
     {
@@ -43,7 +43,7 @@ namespace
     }
 
     inline static void _createRegisterRequest( RemoteMessage & out_msgRegister
-                                             , NEService::eServiceRequestType reqType
+                                             , NEService::RegistrationAction reqType
                                              , NEService::DisconnectReason reason
                                              , const ProxyAddress & addrService)
     {
@@ -57,7 +57,7 @@ namespace
     }
 
     inline static void _createRegisterNotify( RemoteMessage & out_msgNotify
-                                            , NEService::eServiceRequestType reqType
+                                            , NEService::RegistrationAction reqType
                                             , NEService::DisconnectReason reason
                                             , const StubAddress & addrService)
     {
@@ -71,7 +71,7 @@ namespace
     }
 
     inline static void _createRegisterNotify( RemoteMessage & out_msgNotify
-                                            , NEService::eServiceRequestType reqType
+                                            , NEService::RegistrationAction reqType
                                             , NEService::DisconnectReason reason
                                             , const ProxyAddress & addrService)
     {
@@ -101,7 +101,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageHelloS
             , NEService::COOKIE_ROUTER                      // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEMemory::INVALID_VALUE                       // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceConnect) // rbhMessageId
+            , static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceConnect) // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -126,7 +126,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeSer
             , NEService::COOKIE_ROUTER                      // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEMemory::INVALID_VALUE                       // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceDisconnect) // rbhMessageId
+            , static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceDisconnect) // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_ANY                // rbhSequenceNr
         }
@@ -151,7 +151,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
             , NEMemory::INVALID_VALUE                       // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEService::COOKIE_ROUTER                      // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceNotifyConnection)   // rbhMessageId
+            , static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceNotifyConnection)   // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -176,7 +176,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegist
             , NEService::COOKIE_ROUTER                      // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEMemory::INVALID_VALUE                       // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceRequestRegister) // rbhMessageId
+            , static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceRequestRegister) // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -201,7 +201,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageQueryI
             , NEMemory::INVALID_VALUE                       // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEMemory::INVALID_VALUE                       // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceQueryInstances)    // rbhMessageId
+            , static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceQueryInstances)    // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -227,7 +227,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
             , NEService::COOKIE_ROUTER                      // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEMemory::INVALID_VALUE                       // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceNotifyInstances)    // rbhMessageId
+            , static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceNotifyInstances)    // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -252,7 +252,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegist
             , NEMemory::INVALID_VALUE                       // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEService::COOKIE_ROUTER                      // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceNotifyRegister)   // rbhMessageId
+            , static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceNotifyRegister)   // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -269,7 +269,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterRegisterService( const 
     {
         StubAddress temp( stub );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, NEService::eServiceRequestType::RegisterStub, NEService::DisconnectReason::UndefinedReason, temp);
+        _createRegisterRequest(msgResult, NEService::RegistrationAction::RegisterStub, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -285,7 +285,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterRegisterClient( const P
     {
         ProxyAddress temp( proxy );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, NEService::eServiceRequestType::RegisterClient, NEService::DisconnectReason::UndefinedReason, temp);
+        _createRegisterRequest(msgResult, NEService::RegistrationAction::RegisterClient, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -301,7 +301,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterUnregisterService( cons
     {
         StubAddress temp( stub );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, NEService::eServiceRequestType::UnregisterStub, reason, temp);
+        _createRegisterRequest(msgResult, NEService::RegistrationAction::UnregisterStub, reason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -317,7 +317,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRouterUnregisterClient( const
     {
         ProxyAddress temp( proxy );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, NEService::eServiceRequestType::UnregisterClient, reason, temp);
+        _createRegisterRequest(msgResult, NEService::RegistrationAction::UnregisterClient, reason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -331,7 +331,7 @@ AREG_API_IMPL bool NERemoteService::isMessageHelloServer(const RemoteMessage & m
     bool result = false;
     if ( msgHelloServer.isChecksumValid() )
     {
-        result = (msgHelloServer.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceConnect)) &&
+        result = (msgHelloServer.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceConnect)) &&
                  (msgHelloServer.getSource()    == NEService::COOKIE_UNKNOWN);
     }
 
@@ -343,7 +343,7 @@ AREG_API_IMPL bool NERemoteService::isMessageByeServer(const RemoteMessage & msg
     bool result = false;
     if ( msgByeServer.isChecksumValid() )
     {
-        result = (msgByeServer.getMessageId()   == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceDisconnect)) &&
+        result = (msgByeServer.getMessageId()   == static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceDisconnect)) &&
                  (msgByeServer.getSource()      != NEService::COOKIE_UNKNOWN);
     }
 
@@ -355,7 +355,7 @@ AREG_API_IMPL bool NERemoteService::isMessagNotifyClient(const RemoteMessage & m
     bool result = false;
     if ( msgNotifyClient.isChecksumValid() )
     {
-        result = (msgNotifyClient.getMessageId()== static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceNotifyConnection)) &&
+        result = (msgNotifyClient.getMessageId()== static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceNotifyConnection)) &&
                  (msgNotifyClient.getSource()   == NEService::COOKIE_ROUTER);
     }
 
@@ -367,7 +367,7 @@ AREG_API_IMPL bool NERemoteService::isMessageRegisterService(const RemoteMessage
     bool result = false;
     if ( msgRegisterService.isChecksumValid() )
     {
-        result =(msgRegisterService.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceRequestRegister) ) &&
+        result =(msgRegisterService.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceRequestRegister) ) &&
                 (msgRegisterService.getSource()    != NEService::COOKIE_UNKNOWN     ) &&
                 (msgRegisterService.getTarget()    == NEService::COOKIE_ROUTER      );
     }
@@ -381,7 +381,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceRegisteredNotification
     if ( stub.isServicePublic() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegisterNotify(msgResult, NEService::eServiceRequestType::RegisterStub, NEService::DisconnectReason::UndefinedReason, temp);
+        _createRegisterNotify(msgResult, NEService::RegistrationAction::RegisterStub, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -396,7 +396,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientRegisteredNotifi
     if ( proxy.isServicePublic() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegisterNotify(msgResult, NEService::eServiceRequestType::RegisterClient, NEService::DisconnectReason::UndefinedReason, temp);
+        _createRegisterNotify(msgResult, NEService::RegistrationAction::RegisterClient, NEService::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -411,7 +411,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceUnregisteredNotificati
     if ( stub.isServicePublic() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegisterNotify(msgResult, NEService::eServiceRequestType::UnregisterStub, reason, temp);
+        _createRegisterNotify(msgResult, NEService::RegistrationAction::UnregisterStub, reason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -426,7 +426,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientUnregisteredNoti
     if ( proxy.isServicePublic() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegisterNotify(msgResult, NEService::eServiceRequestType::UnregisterClient, reason, temp);
+        _createRegisterNotify(msgResult, NEService::RegistrationAction::UnregisterClient, reason, temp);
 
         msgResult.setSource(source);
         msgResult.setTarget(target);
@@ -435,7 +435,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientUnregisteredNoti
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource)
+AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource)
 {
     RemoteMessage msgHelloServer;
     if ( msgHelloServer.initMessage( NERemoteService::getMessageHelloServer().rbHeader ) != nullptr )
@@ -445,7 +445,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID 
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         NEService::sServiceConnectedInstance instance{ };
         instance.ciSource   = msgSource;
-        instance.ciBitness  = static_cast<NEService::eInstanceBitness>(Process::getInstance().getBitness());
+        instance.ciBitness  = static_cast<NEService::InstanceBitness>(Process::getInstance().getBitness());
         instance.ciCookie   = source;
         instance.ciTimestamp= static_cast<TIME64>(DateTime::getNow());
         instance.ciInstance = Process::getInstance().getName();

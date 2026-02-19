@@ -424,7 +424,7 @@ void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgR
         const ITEM_ID & cookie = mServerConnection.getCookie(whichSource.getHandle());
         const ITEM_ID & source = msgReceived.getSource();
         const ITEM_ID & target = msgReceived.getTarget();
-        NEService::eFuncIdRange msgId  = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
+        NEService::FuncIdRange msgId  = static_cast<NEService::FuncIdRange>( msgReceived.getMessageId() );
 
         LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
                         , NEService::getString(msgId)
@@ -443,26 +443,26 @@ void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgR
                 sendMessage(msgReceived);
             }
         }
-        else if ( (source == cookie) && (msgId != NEService::eFuncIdRange::SystemServiceConnect) )
+        else if ( (source == cookie) && (msgId != NEService::FuncIdRange::SystemServiceConnect) )
         {
             LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
-            if ( msgId == NEService::eFuncIdRange::SystemServiceDisconnect )
+            if ( msgId == NEService::FuncIdRange::SystemServiceDisconnect )
             {
                 removeInstance( cookie );
             }
 
             sendCommunicationMessage( ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgReceived );
         }
-        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::eFuncIdRange::SystemServiceConnect) )
+        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::FuncIdRange::SystemServiceConnect) )
         {
             NEService::sServiceConnectedInstance instance{};
             msgReceived >> instance;
             instance.ciTimestamp = static_cast<TIME64>(DateTime::getNow());
             instance.ciCookie = cookie;
             addInstance(cookie, instance);
-            RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, NEService::eMessageSource::MessageSourceService));
+            RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, NEService::MessageSource::SourceService));
             LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
-                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgConnect.getMessageId()))
+                        , NEService::getString( static_cast<NEService::FuncIdRange>(msgConnect.getMessageId()))
                         , static_cast<uint32_t>(msgConnect.getMessageId())
                         , static_cast<uint32_t>(msgConnect.getTarget())
                         , static_cast<uint32_t>(whichSource.getHandle())
@@ -503,7 +503,7 @@ bool ServiceCommunicationBase::postEvent( Event & eventElem )
     return EventDispatcher::postEvent( eventElem );
 }
 
-RemoteMessage ServiceCommunicationBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const
+RemoteMessage ServiceCommunicationBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const
 {
     RemoteMessage result{ NERemoteService::createConnectNotify(source, target) };
     result.moveToEnd();

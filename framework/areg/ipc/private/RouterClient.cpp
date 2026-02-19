@@ -48,7 +48,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
     : ServiceClientConnectionBase   ( NEService::COOKIE_ROUTER
                                     , NERemoteService::eRemoteServices::ServiceRouter
                                     , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
-                                    , NEService::eMessageSource::MessageSourceClient
+                                    , NEService::MessageSource::SourceClient
                                     , connectionConsumer
                                     , static_cast<RemoteMessageHandler &>(self())
                                     , static_cast<DispatcherThread &>(self())
@@ -283,26 +283,26 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
     LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
     if ( msgReceived.isValid() && whichSource.isValid() )
     {
-        NEService::eFuncIdRange msgId{ static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
+        NEService::FuncIdRange msgId{ static_cast<NEService::FuncIdRange>(msgReceived.getMessageId()) };
         NEMemory::MessageResult result{ static_cast<NEMemory::MessageResult>(msgReceived.getResult()) };
         LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, NEMemory::getString(result));
 
         switch ( msgId )
         {
-        case NEService::eFuncIdRange::SystemServiceNotifyConnection:
+        case NEService::FuncIdRange::SystemServiceNotifyConnection:
             serviceConnectionEvent(msgReceived);
             break;
 
-        case NEService::eFuncIdRange::SystemServiceNotifyRegister:
+        case NEService::FuncIdRange::SystemServiceNotifyRegister:
             {
                 ASSERT( mClientConnection.getCookie() == msgReceived.getTarget() );
-                NEService::eServiceRequestType reqType;
+                NEService::RegistrationAction reqType;
                 msgReceived >> reqType;
                 LOG_DBG("Remote routing service registration notification of type [ %s ]", NEService::getString(reqType));
 
                 switch ( reqType )
                 {
-                case NEService::eServiceRequestType::RegisterClient:
+                case NEService::RegistrationAction::RegisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
                         NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
@@ -319,7 +319,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                     }
                     break;
 
-                case NEService::eServiceRequestType::RegisterStub:
+                case NEService::RegistrationAction::RegisterStub:
                     {
                         StubAddress stub(msgReceived);
                         stub.setSource( mChannel.getSource() );
@@ -334,7 +334,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                     }
                     break;
 
-                case NEService::eServiceRequestType::UnregisterClient:
+                case NEService::RegistrationAction::UnregisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
                         NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
@@ -344,7 +344,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                     }
                     break;
 
-                case NEService::eServiceRequestType::UnregisterStub:
+                case NEService::RegistrationAction::UnregisterStub:
                     {
                         StubAddress stub(msgReceived);
                         NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
@@ -361,34 +361,34 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
             }
             break;
 
-        case NEService::eFuncIdRange::ServiceLastId:                    // fall through
-        case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
-        case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
-        case NEService::eFuncIdRange::SystemServiceDisconnect:          // fall through
-        case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
-        case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
-        case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
-        case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
-        case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
-        case NEService::eFuncIdRange::RequestRegisterService:           // fall through
-        case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
-        case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
-        case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
-        case NEService::eFuncIdRange::ServiceLogUpdateScopes:           // fall through
-        case NEService::eFuncIdRange::ServiceLogQueryScopes:            // fall through
-        case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
-        case NEService::eFuncIdRange::ServiceSaveLogConfiguration:      // fall through
-        case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
-        case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
+        case NEService::FuncIdRange::ServiceLastId:                    // fall through
+        case NEService::FuncIdRange::SystemServiceQueryInstances:      // fall through
+        case NEService::FuncIdRange::SystemServiceRequestRegister:     // fall through
+        case NEService::FuncIdRange::SystemServiceDisconnect:          // fall through
+        case NEService::FuncIdRange::SystemServiceConnect:             // fall through
+        case NEService::FuncIdRange::ResponseServiceProviderConnection:// fall through
+        case NEService::FuncIdRange::RequestServiceProviderConnection: // fall through
+        case NEService::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case NEService::FuncIdRange::RequestServiceProviderVersion:    // fall through
+        case NEService::FuncIdRange::RequestRegisterService:           // fall through
+        case NEService::FuncIdRange::ComponentCleanup:                 // fall through
+        case NEService::FuncIdRange::SystemServiceNotifyInstances:     // fall through
+        case NEService::FuncIdRange::ServiceLogRegisterScopes:         // fall through
+        case NEService::FuncIdRange::ServiceLogUpdateScopes:           // fall through
+        case NEService::FuncIdRange::ServiceLogQueryScopes:            // fall through
+        case NEService::FuncIdRange::ServiceLogScopesUpdated:          // fall through
+        case NEService::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+        case NEService::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case NEService::FuncIdRange::ServiceLogMessage:                // fall through
             break;
 
-        case NEService::eFuncIdRange::AttributeLastId:          // fall through
-        case NEService::eFuncIdRange::AttributeFirstId:         // fall through
-        case NEService::eFuncIdRange::ResponseLastId:           // fall through
-        case NEService::eFuncIdRange::ResponseFirstId:          // fall through
-        case NEService::eFuncIdRange::RequestLastId:            // fall through
-        case NEService::eFuncIdRange::RequestFirstId:           // fall through
-        case NEService::eFuncIdRange::EmptyFunctionId:          // fall through
+        case NEService::FuncIdRange::AttributeLastId:          // fall through
+        case NEService::FuncIdRange::AttributeFirstId:         // fall through
+        case NEService::FuncIdRange::ResponseLastId:           // fall through
+        case NEService::FuncIdRange::ResponseFirstId:          // fall through
+        case NEService::FuncIdRange::RequestLastId:            // fall through
+        case NEService::FuncIdRange::RequestFirstId:           // fall through
+        case NEService::FuncIdRange::EmptyFunctionId:          // fall through
         default:
             {
                 if ( NEService::isExecutableId(static_cast<unsigned int>(msgId)) )

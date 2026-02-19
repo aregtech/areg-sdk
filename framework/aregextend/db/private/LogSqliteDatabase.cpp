@@ -556,8 +556,8 @@ inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuff
 
 inline void LogSqliteDatabase::_copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance& inst)
 {
-    inst.ciSource   = static_cast<NEService::eMessageSource>(  stmt.getUint32(0));
-    inst.ciBitness  = static_cast<NEService::eInstanceBitness>(stmt.getUint32(1));
+    inst.ciSource   = static_cast<NEService::MessageSource>(  stmt.getUint32(0));
+    inst.ciBitness  = static_cast<NEService::InstanceBitness>(stmt.getUint32(1));
     inst.ciCookie   = static_cast<ITEM_ID>(stmt.getInt64(2));
     inst.ciTimestamp= static_cast<TIME64>( stmt.getInt64(3));
     inst.ciInstance = stmt.getText(4);

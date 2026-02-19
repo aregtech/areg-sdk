@@ -64,15 +64,15 @@ unsigned int Process::getBitness() const
 {
     if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
     {
-        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness32);
+        return static_cast<unsigned int>(NEService::InstanceBitness::Bitness32);
     }
     else if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits64)) != 0)
     {
-        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness64);
+        return static_cast<unsigned int>(NEService::InstanceBitness::Bitness64);
     }
     else
     {
-        return static_cast<unsigned int>(NEService::eInstanceBitness::BitnessUnknown);
+        return static_cast<unsigned int>(NEService::InstanceBitness::BitnessUnknown);
     }
 }
 

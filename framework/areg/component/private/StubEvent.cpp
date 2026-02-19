@@ -132,7 +132,7 @@ inline void StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEve
 
 inline void StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
+    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
     {
         if (notifyConnect.getRequestType() == NEService::RequestType::ServiceConnection)
         {

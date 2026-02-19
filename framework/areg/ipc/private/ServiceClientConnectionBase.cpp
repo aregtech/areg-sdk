@@ -41,7 +41,7 @@ DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , NERemoteService::eRemoteServices service
                                                         , unsigned int connectTypes
-                                                        , NEService::eMessageSource msgSource
+                                                        , NEService::MessageSource msgSource
                                                         , ConnectionConsumer& connectionConsumer
                                                         , RemoteMessageHandler & messageHandler
                                                         , DispatcherThread & messageDispatcher
@@ -208,7 +208,7 @@ bool ServiceClientConnectionBase::isServiceHostSetup() const
     return mClientConnection.getAddress().isValid();
 }
 
-RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const
+RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const
 {
     return NERemoteService::createConnectRequest(source, target, msgSource);
 }

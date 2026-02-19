@@ -248,7 +248,7 @@ AREG_API_IMPL NEService::SInterfaceData & NEService::getEmptyInterface()
     {
           NEService::EmptyServiceName
         , NEService::EmptyServiceVersion
-        , NEService::eServiceType::ServicePublic
+        , NEService::ServiceType::Public
         , 0
         , 0
         , 0

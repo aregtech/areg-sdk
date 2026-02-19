@@ -1149,7 +1149,7 @@ inline void ProxyBase::stopAllServiceNotifications()
 {
     if (isConnected()) 
     {
-        sendNotificationRequestEvent( static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId), NEService::RequestType::RemoveAllNotify );
+        sendNotificationRequestEvent( static_cast<unsigned int>(NEService::FuncIdRange::EmptyFunctionId), NEService::RequestType::RemoveAllNotify );
     }
 }
 

@@ -27,7 +27,7 @@ LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerSer
 
 void LogCollectorMessageProcessor::queryConnectedInstances(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceQueryInstances));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceQueryInstances));
 
     const ITEM_ID & source{ msgReceived.getSource() };
     const ITEM_ID& target{ msgReceived.getTarget() };
@@ -124,7 +124,7 @@ void LogCollectorMessageProcessor::notifyDisconnectedInstances(const ArrayList<I
 
 void LogCollectorMessageProcessor::registerScopesAtObserver(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogRegisterScopes));
     msgReceived.moveToBegin();
     uint32_t scopeCount{ 0 };
     msgReceived >> scopeCount;
@@ -140,19 +140,19 @@ void LogCollectorMessageProcessor::registerScopesAtObserver(const RemoteMessage 
 
 void LogCollectorMessageProcessor::updateLogSourceScopes(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogUpdateScopes));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogUpdateScopes));
     _forwardMessageToLogSources(msgReceived);
 }
 
 void LogCollectorMessageProcessor::queryLogSourceScopes(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogQueryScopes));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogQueryScopes));
     _forwardMessageToLogSources(msgReceived);
 }
 
 void LogCollectorMessageProcessor::saveLogSourceConfiguration(const RemoteMessage & msgReceived)
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceSaveLogConfiguration));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceSaveLogConfiguration));
 
     ITEM_ID target{ NEService::COOKIE_UNKNOWN };
     msgReceived >> target;
@@ -180,14 +180,14 @@ void LogCollectorMessageProcessor::saveLogSourceConfiguration(const RemoteMessag
 
 void LogCollectorMessageProcessor::logSourceScopesUpadated(const RemoteMessage& msgReceived)
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogScopesUpdated));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogScopesUpdated));
     _forwardMessageToObservers(msgReceived);
 }
 
 #ifdef      DEBUG
 void LogCollectorMessageProcessor::logSourceConfigurationSaved(const RemoteMessage& msgReceived)
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogConfigurationSaved));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogConfigurationSaved));
     processNextSaveConfig();
 }
 #else   // DEBUG
@@ -220,31 +220,31 @@ void LogCollectorMessageProcessor::clientDisconnected(const ITEM_ID& cookie)
 
 void LogCollectorMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogMessage));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogMessage));
     ASSERT(NELogging::eLogDataType::LogDataRemote == reinterpret_cast<const NELogging::sLogMessage *>(msgReceived.getBuffer())->logDataType);
     _forwardMessageToObservers(msgReceived);
 }
 
-bool LogCollectorMessageProcessor::isLogSource(NEService::eMessageSource msgSource)
+bool LogCollectorMessageProcessor::isLogSource(NEService::MessageSource msgSource)
 {
     switch (msgSource)
     {
-    case NEService::eMessageSource::MessageSourceClient:    // fall through
-    case NEService::eMessageSource::MessageSourceSimulation:// fall through
-    case NEService::eMessageSource::MessageSourceTest:
+    case NEService::MessageSource::SourceClient:    // fall through
+    case NEService::MessageSource::SourceSimulation:// fall through
+    case NEService::MessageSource::SourceTest:
         return true;
 
-    case NEService::eMessageSource::MessageSourceUndefined: // fall through
-    case NEService::eMessageSource::MessageSourceService:   // fall through
-    case NEService::eMessageSource::MessageSourceObserver:  // fall through
+    case NEService::MessageSource::SourceUndefined: // fall through
+    case NEService::MessageSource::SourceService:   // fall through
+    case NEService::MessageSource::SourceObserver:  // fall through
     default:
         return false;
     }
 }
 
-bool LogCollectorMessageProcessor::isLogObserver(NEService::eMessageSource msgSource)
+bool LogCollectorMessageProcessor::isLogObserver(NEService::MessageSource msgSource)
 {
-    return ((static_cast<uint32_t>(NEService::eMessageSource::MessageSourceObserver) & static_cast<uint32_t>(msgSource)) != 0);
+    return ((static_cast<uint32_t>(NEService::MessageSource::SourceObserver) & static_cast<uint32_t>(msgSource)) != 0);
 }
 
 inline void LogCollectorMessageProcessor::_forwardMessageToLogSources(const RemoteMessage& msgReceived) const

@@ -98,7 +98,7 @@ public:
      * \param   serviceVersion  The service version to set.
      * \param   serviceType     The type of service
      **/
-    ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::eServiceType serviceType );
+    ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::ServiceType serviceType );
 
     /**
      * \brief   Creates service item and initializes data from given stream.
@@ -207,12 +207,12 @@ public:
     /**
      * \brief   Returns service type
      **/
-    inline NEService::eServiceType getServiceType() const;
+    inline NEService::ServiceType getServiceType() const;
 
     /**
      * \brief   Sets the service type
      **/
-    inline void setServiceType( NEService::eServiceType serviceType );
+    inline void setServiceType( NEService::ServiceType serviceType );
 
     /**
      * \brief   Returns true if service is remote
@@ -265,7 +265,7 @@ protected:
     /**
      * \brief   Service type
      **/
-    NEService::eServiceType mServiceType;
+    NEService::ServiceType mServiceType;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -322,20 +322,20 @@ inline void ServiceItem::setServiceVersion( const Version & serviceVersion )
     mServiceVersion = serviceVersion;
 }
 
-inline NEService::eServiceType ServiceItem::getServiceType() const
+inline NEService::ServiceType ServiceItem::getServiceType() const
 {
     return mServiceType;
 }
 
-inline void ServiceItem::setServiceType( NEService::eServiceType serviceType )
+inline void ServiceItem::setServiceType( NEService::ServiceType serviceType )
 {
     mServiceType = serviceType;
-    mMagicNum    = serviceType != NEService::eServiceType::ServiceInvalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
+    mMagicNum    = serviceType != NEService::ServiceType::Invalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
 }
 
 inline bool ServiceItem::isServicePublic() const
 {
-    return (mServiceType == NEService::eServiceType::ServicePublic);
+    return (mServiceType == NEService::ServiceType::Public);
 }
 
 inline bool ServiceItem::isValid() const
@@ -348,7 +348,7 @@ inline bool ServiceItem::isValidated() const
     return (mServiceName.isEmpty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
            (mServiceVersion         != Version::getInvalidVersion()             ) && 
-           (mServiceType            != NEService::eServiceType::ServiceInvalid  );
+           (mServiceType            != NEService::ServiceType::Invalid  );
 }
 
 inline ServiceItem & ServiceItem::operator = ( const ServiceItem & source )

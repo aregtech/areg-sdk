@@ -34,7 +34,7 @@ ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char*
 ServiceItem::ServiceItem()
     : mServiceName      ( ServiceItem::INVALID_SERVICE )
     , mServiceVersion   ( Version::getInvalidVersion() )
-    , mServiceType      ( NEService::eServiceType::ServiceLocal )
+    , mServiceType      ( NEService::ServiceType::Local )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
 }
@@ -42,14 +42,14 @@ ServiceItem::ServiceItem()
 ServiceItem::ServiceItem(const String & serviceName)
     : mServiceName      ( serviceName )
     , mServiceVersion   ( Version::getInvalidVersion() )
-    , mServiceType      ( NEService::eServiceType::ServiceLocal )
+    , mServiceType      ( NEService::ServiceType::Local )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
     mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
     mMagicNum = ServiceItem::_magicNumber(*this);
 }
 
-ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::eServiceType serviceType )
+ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::ServiceType serviceType )
     : mServiceName      ( serviceName )
     , mServiceVersion   ( serviceVersion )
     , mServiceType      ( serviceType )
@@ -62,7 +62,7 @@ ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVer
 ServiceItem::ServiceItem( const InStream & stream )
     : mServiceName      ( stream )
     , mServiceVersion   ( stream )
-    , mServiceType      ( NEService::eServiceType::ServiceLocal )
+    , mServiceType      ( NEService::ServiceType::Local )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
     stream >> mServiceType;
@@ -104,7 +104,7 @@ void ServiceItem::convFromString(  const char* pathService, const char** out_nex
     mServiceName        = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceVersion     = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     String serviceType  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    mServiceType        = static_cast<NEService::eServiceType>(serviceType.toInt32());
+    mServiceType        = static_cast<NEService::ServiceType>(serviceType.toInt32());
     mMagicNum           = ServiceItem::_magicNumber(*this);
 
     if (out_nextPart != nullptr)

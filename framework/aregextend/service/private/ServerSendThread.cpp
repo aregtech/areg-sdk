@@ -61,7 +61,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         SocketAccepted client{ mConnection.getClientByCookie(target) };
 
         LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
-                    , NEService::getString(static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()))
+                    , NEService::getString(static_cast<NEService::FuncIdRange>(msgSend.getMessageId()))
                     , static_cast<unsigned int>(msgSend.getMessageId())
                     , client.getAddress().getHostAddress().getString()
                     , client.getAddress().getHostPort()

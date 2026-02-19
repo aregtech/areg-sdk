@@ -62,7 +62,7 @@ ProxyBase::MapThreadProxyList   ProxyBase::_mapThreadProxies;
 // ProxyBase::Listener class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyBase::Listener::Listener()
-    : mMessageId    (static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId))
+    : mMessageId    (static_cast<unsigned int>(NEService::FuncIdRange::EmptyFunctionId))
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
     , mListener     (nullptr)
 {
@@ -206,7 +206,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
             {
                 LOG_DBG("Add Service Connect notification for client [ %p ]", &connect);
 
-                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
+                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection)
                                                     , NEService::SEQUENCE_NUMBER_NOTIFY
                                                     , static_cast<NotificationConsumer *>(&connect), true ));
                 ++ proxy->mProxyInstCount;
@@ -309,7 +309,7 @@ void ProxyBase::freeProxy( ProxyListener & connect )
         connect.serviceConnected(NEService::ServiceConnectionState::Disconnected, self());
     }
 
-    removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
+    removeListener( static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection)
                   , NEService::SEQUENCE_NUMBER_NOTIFY
                   , static_cast<NotificationConsumer *>(&connect));
 
