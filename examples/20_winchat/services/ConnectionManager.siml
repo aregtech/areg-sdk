@@ -22,20 +22,20 @@
             <ImportedObject>MapConnections</ImportedObject>
             <Description>Connection map</Description>
         </DataType>
-        <DataType ID="15" Name="eConnectionResult" Type="Enumeration" Values="default">
+        <DataType ID="15" Name="ConnectionResult" Type="Enumeration" Values="default">
             <Description>The result of connection</Description>
             <FieldList>
-                <EnumEntry ID="16" Name="ConnectionAccepted">
+                <EnumEntry ID="16" Name="Accepted">
                     <Value>0</Value>
                     <Description>The connection is accepted by system</Description>
                 </EnumEntry>
-                <EnumEntry ID="17" Name="ConnectionClientExist">
+                <EnumEntry ID="17" Name="ClientExist">
                     <Description>The connection is rejected, client exists</Description>
                 </EnumEntry>
-                <EnumEntry ID="18" Name="ConnectionNameReserved">
+                <EnumEntry ID="18" Name="NameReserved">
                     <Description>The name is reserved and cannot be used.</Description>
                 </EnumEntry>
-                <EnumEntry ID="19" Name="ConnectionClosed">
+                <EnumEntry ID="19" Name="Closed">
                     <Description>The connection is closed by system.</Description>
                 </EnumEntry>
                 <EnumEntry ID="20" Name="InvalidClient">
@@ -62,7 +62,7 @@
                 <Parameter ID="54" Name="dateTime" DataType="DateTime">
                     <Description>The client service connection time-stamp in UTC</Description>
                 </Parameter>
-                <Parameter ID="55" Name="conResult" DataType="eConnectionResult">
+                <Parameter ID="55" Name="conResult" DataType="ConnectionResult">
                     <Description>The connection operation result</Description>
                 </Parameter>
             </ParamList>

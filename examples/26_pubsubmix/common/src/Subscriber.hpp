@@ -100,7 +100,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::DataState state) override;
+    virtual void onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, NEService::DataState state) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

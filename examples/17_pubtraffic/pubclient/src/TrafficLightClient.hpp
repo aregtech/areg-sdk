@@ -57,7 +57,7 @@ protected:
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onSouthNorthUpdate( SimpleTrafficLight::eTrafficLight SouthNorth, NEService::DataState state ) override;
+    virtual void onSouthNorthUpdate( SimpleTrafficLight::TrafficLight SouthNorth, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered, when EastWest attribute is updated. The function contains
@@ -68,7 +68,7 @@ protected:
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onEastWestUpdate( SimpleTrafficLight::eTrafficLight EastWest, NEService::DataState state ) override;
+    virtual void onEastWestUpdate( SimpleTrafficLight::TrafficLight EastWest, NEService::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
@@ -86,11 +86,11 @@ private:
     /**
      * \brief   Makes message outputs on console.
      **/
-    inline void outputState(SimpleTrafficLight::eTrafficLight lightState);
+    inline void outputState(SimpleTrafficLight::TrafficLight lightState);
 
 private:
     /**
      * \brief   The symbolic traffic direction that is South-North or East-West.
      **/
-    traffic::eTrafficDirection  mTrafficDirection;
+    traffic::TrafficDirection  mTrafficDirection;
 };

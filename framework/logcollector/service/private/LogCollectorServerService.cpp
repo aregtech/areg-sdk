@@ -29,7 +29,7 @@ LogCollectorServerService::LogCollectorServerService()
                                 , NERemoteService::RemoteServiceKind::Logger
                                 , static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)
                                 , NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
-                                , ServiceCommunicationBase::eConnectionBehavior::DefaultAccept )
+                                , ServiceCommunicationBase::ConnectionPolicy::Accept )
     , TimerConsumer           ( )
 
     , mLoggerProcessor          ( self() )

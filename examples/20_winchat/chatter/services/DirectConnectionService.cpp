@@ -127,7 +127,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
                 DirectConnection::sInitiator      * wParam    = new DirectConnection::sInitiator(initiator);
                 DirectConnection::ListParticipants * lParam   = new DirectConnection::ListParticipants(listParticipants);
 
-                DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdSetDirectConnection, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+                DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdSetDirectConnection, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
             }
             else
             {
@@ -177,7 +177,7 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
             responseAddParticipant( true, listRegistered );
             DirectConnection::sInitiator      * wParam = new DirectConnection::sInitiator(initiator);
             DirectConnection::ListParticipants* lParam = new DirectConnection::ListParticipants(listRegistered);
-            DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdDirectConnectionAdd, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+            DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdDirectConnectionAdd, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
         }
         else
         {
@@ -233,7 +233,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
             responseRemoveParticipant( true, listRegistered );
             DirectConnection::sInitiator      * wParam = new DirectConnection::sInitiator(initiator);
             DirectConnection::ListParticipants* lParam = new DirectConnection::ListParticipants(listRegistered);
-            DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdDirectConnectionRemove, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+            DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdDirectConnectionRemove, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
         }
         else
         {
@@ -257,5 +257,5 @@ void DirectConnectionService::requestCloseConnection( const DirectConnection::sI
     mapParticipants.removeAt(initiator);
     DirectConnection::sInitiator      * wParam = new DirectConnection::sInitiator( initiator );
     DirectConnection::ListParticipants* lParam = nullptr;
-    DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdDirectConnectionClose, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+    DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdDirectConnectionClose, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
 }

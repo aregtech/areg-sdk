@@ -664,7 +664,7 @@ bool LogSqliteDatabase::logMessage(const NELogging::sLogMessage& message)
     mStmtLogs.bindUint64(11, static_cast<uint64_t>(message.logReceived));
     mStmtLogs.bindUint32(12, static_cast<uint64_t>(message.logDuration));
 
-    bool result{ mStmtLogs.next() == SqliteStatement::eQueryResult::HasNoMore };
+    bool result{ mStmtLogs.next() == SqliteStatement::QueryResult::HasNoMore };
     mStmtLogs.reset();
     mStmtLogs.clearBindings();
     return result;
@@ -727,7 +727,7 @@ uint32_t LogSqliteDatabase::logScopesActivate(const NELogging::ScopeNames& scope
         stmt.bindUint32(2, static_cast<uint32_t>(scope.scopePrio));
         stmt.bindText(  3, scope.scopeName.getString());
         stmt.bindUint64(4, static_cast<uint64_t>(timestamp.getTime()));
-        result += stmt.next() == SqliteStatement::eQueryResult::HasMore ? 1 : 0;
+        result += stmt.next() == SqliteStatement::QueryResult::HasMore ? 1 : 0;
         stmt.reset();
         stmt.clearBindings();
     }
@@ -789,7 +789,7 @@ void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& names)
     SqliteStatement stmt(mDatabase, _sqlGetInstanceName);
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             String instName{ stmt.getText(0) };
             if (instName.isEmpty() == false)
@@ -816,7 +816,7 @@ void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& ids)
     SqliteStatement stmt(mDatabase, _sqlGetInstanceIds);
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
             ids.push_back(instId);
@@ -840,7 +840,7 @@ void LogSqliteDatabase::getLogThreadNames(std::vector<String>& names)
     SqliteStatement stmt(mDatabase, _sqlGetThreadNames);
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             String instName{ stmt.getText(0) };
             names.push_back(instName);
@@ -864,7 +864,7 @@ void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& ids)
     SqliteStatement stmt(mDatabase, _sqlGetThreadIds);
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
             ids.push_back(instId);
@@ -909,7 +909,7 @@ void LogSqliteDatabase::getLogInstanceInfos(std::vector<NEService::sServiceConne
     SqliteStatement stmt(mDatabase, _sqlGetLogInstances);
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             NEService::sServiceConnectedInstance inst;
             _copyLogInstances(stmt, inst);
@@ -935,7 +935,7 @@ void LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& sco
     if (stmt.isValid())
     {
         stmt.bindUint64(0, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             NELogging::sScopeInfo scope;
             _copyLogScopes(stmt, scope);
@@ -960,7 +960,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages)
     SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
@@ -992,7 +992,7 @@ void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& messages, 
     if (stmt.isValid())
     {
         stmt.bindUint64(0, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
@@ -1024,7 +1024,7 @@ void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& messages,
     if (stmt.isValid())
     {
         stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
@@ -1053,7 +1053,7 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint
     {
         stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
         stmt.bindUint64(1, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
@@ -1088,7 +1088,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM
     {
         stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
         stmt.bindUint64(1, static_cast<uint64_t>(instId));
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer buf;
             _copyLogMessage(stmt, buf);
@@ -1104,7 +1104,7 @@ int LogSqliteDatabase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& scop
     int result{ 0 };
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             NELogging::sScopeInfo scope;
             _copyLogScopes(stmt, scope);
@@ -1123,7 +1123,7 @@ int LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& logs, SqliteSta
     int result{ 0 };
     if (stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             SharedBuffer log;
             _copyLogMessage(stmt, log);
@@ -1142,7 +1142,7 @@ int LogSqliteDatabase::fillLogInstances(std::vector<NEService::sServiceConnected
     int result{ 0 };
     if ((static_cast<uint32_t>(infos.size()) != 0) && stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ASSERT(static_cast<uint32_t>(infos.size()) > static_cast<uint32_t>(result));
             NEService::sServiceConnectedInstance& inst{ infos[result] };
@@ -1159,7 +1159,7 @@ int LogSqliteDatabase::fillInstScopes(std::vector<NELogging::sScopeInfo>& scopes
     int result{ 0 };
     if ((static_cast<uint32_t>(scopes.size()) > startAt) && stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ASSERT(static_cast<uint32_t>(scopes.size()) > (startAt + static_cast<uint32_t>(result)));
             NELogging::sScopeInfo& scope{ scopes[startAt + static_cast<uint32_t>(result)] };
@@ -1178,7 +1178,7 @@ int LogSqliteDatabase::fillLogMessages(std::vector<SharedBuffer>& logs, SqliteSt
     int result{ 0 };
     if ((static_cast<uint32_t>(logs.size()) > startAt) && stmt.isValid())
     {
-        while (stmt.next() == SqliteStatement::eQueryResult::HasMore)
+        while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ASSERT(static_cast<uint32_t>(logs.size()) > (startAt + static_cast<uint32_t>(result)));
             SharedBuffer& log{ logs[startAt + static_cast<uint32_t>(result)] };
@@ -1335,7 +1335,7 @@ uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
         stmt.bindInt64(0, instId);
     }
 
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
 }
 
 uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
@@ -1354,7 +1354,7 @@ uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
         stmt.bindInt64(0, instId);
     }
 
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
 }
 
 uint32_t LogSqliteDatabase::countLogInstances()
@@ -1364,7 +1364,7 @@ uint32_t LogSqliteDatabase::countLogInstances()
         return 0;
 
     SqliteStatement stmt(mDatabase, _sqlCountInstances);
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
 }
 
 uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
@@ -1383,7 +1383,7 @@ uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
         stmt.bindInt64(0, instId);
     }
 
-    return (stmt.next() != SqliteStatement::eQueryResult::Failed ? stmt.getUint32(0) : 0);
+    return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
 }
 
 bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= NEService::TARGET_ALL*/)
@@ -1433,7 +1433,7 @@ bool LogSqliteDatabase::tableExists(const char* table, const char* master /*= nu
         String sql;
         sql.format(_sqlCheckTable.data(), master, table);
         SqliteStatement stmt(mDatabase, sql);
-        result = (SqliteStatement::eQueryResult::HasMore == stmt.next());
+        result = (SqliteStatement::QueryResult::HasMore == stmt.next());
     }
 
     return result;

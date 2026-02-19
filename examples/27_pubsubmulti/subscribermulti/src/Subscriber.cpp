@@ -59,7 +59,7 @@ bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, Pro
     return true;
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::DataState state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
@@ -98,9 +98,9 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProvi
             notifyOnStringOnChangeUpdate(true);
         }
 
-        mSecond.notifyOnServiceProviderStateUpdate(ServiceProviderState != PubSub::eServiceState::Shutdown);
+        mSecond.notifyOnServiceProviderStateUpdate(ServiceProviderState != PubSub::RunState::Shutdown);
 
-        if (ServiceProviderState == PubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::RunState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

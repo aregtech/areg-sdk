@@ -201,7 +201,7 @@ public:
     /**
      * \brief   Returns the property key type value.
      **/
-    NEPersistence::eConfigKeys getPropertyType() const;
+    NEPersistence::ConfigEntry getPropertyType() const;
 
     /**
      * \brief   Returns string value of the Key. 

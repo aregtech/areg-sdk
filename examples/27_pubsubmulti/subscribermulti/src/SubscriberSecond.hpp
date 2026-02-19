@@ -69,7 +69,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    virtual void onServiceProviderStateUpdate( PubSub::eServiceState ServiceProviderState, NEService::DataState state ) override;
+    virtual void onServiceProviderStateUpdate( PubSub::RunState ServiceProviderState, NEService::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

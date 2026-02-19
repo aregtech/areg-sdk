@@ -158,52 +158,52 @@ public:
     /**
      * \brief   The flags of options
      **/
-    enum class eValidFlags : unsigned int
+    enum class OptionFlag : uint32_t
     {
-          ValidationInvalid     = 0     //!< Invalid option,         Bits: 0000 0000
-        , ValidationError       = 1     //!< The option with error,  Bits: 0000 0001
-        , ValidationInRange     = 2     //!< The option has range,   Bits: 0000 0010
-        , ValidationNoData      = 16    //!< The option has no data, Bits: 0001 0000
-        , ValidationInteger     = 32    //!< The option is integer,  Bits: 0010 0000
-        , ValidationFloat       = 64    //!< The option is float,    Bits: 0100 0000
-        , ValidationString      = 128   //!< The option is string,   Bits: 1000 0000
+          Invalid   = 0     //!< Invalid option,         Bits: 0000 0000
+        , Error     = 1     //!< The option with error,  Bits: 0000 0001
+        , InRange   = 2     //!< The option has range,   Bits: 0000 0010
+        , NoData    = 16    //!< The option has no data, Bits: 0001 0000
+        , Integer   = 32    //!< The option is integer,  Bits: 0010 0000
+        , Float     = 64    //!< The option is float,    Bits: 0100 0000
+        , String    = 128   //!< The option is string,   Bits: 1000 0000
     };
 
     /**
      * \brief   The Option setup or option has no data.
      **/
-    static constexpr uint32_t   NO_DATA         { static_cast<uint32_t>(eValidFlags::ValidationNoData) };
+    static constexpr uint32_t   NO_DATA         { static_cast<uint32_t>(OptionFlag::NoData) };
 
     /**
      * \brief   The Option setup or option is any integer with sign.
      **/
-    static constexpr uint32_t   INTEGER_NO_RANGE{ static_cast<uint32_t>(eValidFlags::ValidationInteger)};
+    static constexpr uint32_t   INTEGER_NO_RANGE{ static_cast<uint32_t>(OptionFlag::Integer)};
 
     /**
      * \brief   The Option setup or option is any signed digit with floating point.
      **/
-    static constexpr uint32_t   FLOAT_NO_RANGE  { static_cast<uint32_t>(eValidFlags::ValidationFloat) };
+    static constexpr uint32_t   FLOAT_NO_RANGE  { static_cast<uint32_t>(OptionFlag::Float) };
 
     /**
      * \brief   The Option setup or option is any string or list of strings.
      **/
-    static constexpr uint32_t   STRING_NO_RANGE { static_cast<uint32_t>(eValidFlags::ValidationString) };
+    static constexpr uint32_t   STRING_NO_RANGE { static_cast<uint32_t>(OptionFlag::String) };
 
     /**
      * \brief   The Option setup or option is an integer with sign, which should be in the range.
      **/
-    static constexpr uint32_t   INTEGER_IN_RANGE{ INTEGER_NO_RANGE | static_cast<uint32_t>(eValidFlags::ValidationInRange) };
+    static constexpr uint32_t   INTEGER_IN_RANGE{ INTEGER_NO_RANGE | static_cast<uint32_t>(OptionFlag::InRange) };
 
     /**
      * \brief   The Option setup or option is a signed digit with floating point, which should be in the range.
      **/
-    static constexpr uint32_t   FLOAT_IN_RANGE  { FLOAT_NO_RANGE   | static_cast<uint32_t>(eValidFlags::ValidationInRange) };
+    static constexpr uint32_t   FLOAT_IN_RANGE  { FLOAT_NO_RANGE   | static_cast<uint32_t>(OptionFlag::InRange) };
 
     /**
      * \brief   The Option setup or option is a string or list of string that should match of the possible entry.
      *          The strings are not case-sensitive.
      **/
-    static constexpr uint32_t   STRING_IN_RANGE { STRING_NO_RANGE  | static_cast<uint32_t>(eValidFlags::ValidationInRange) };
+    static constexpr uint32_t   STRING_IN_RANGE { STRING_NO_RANGE  | static_cast<uint32_t>(OptionFlag::InRange) };
 
     /**
      * \brief   The Option setup or option is any string, same as STRING_NO_RANGE.
@@ -535,38 +535,38 @@ private:
 
 inline bool OptionParser::hasInputError( uint32_t flags  )
 {
-    return (flags & static_cast<uint32_t>(eValidFlags::ValidationError)) != 0;
+    return (flags & static_cast<uint32_t>(OptionFlag::Error)) != 0;
 }
 
 inline bool OptionParser::hasRange( uint32_t flags  )
 {
-    return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationInRange)) != 0);
+    return  ((flags & static_cast<uint32_t>(OptionFlag::InRange)) != 0);
 }
 
 inline bool OptionParser::isEmptyData( uint32_t flags )
 {
-    return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationNoData)) != 0);
+    return  ((flags & static_cast<uint32_t>(OptionFlag::NoData)) != 0);
 }
 
 inline bool OptionParser::isFreestyle( uint32_t flags )
 {
-    return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationString))  != 0) &&
-            ((flags & static_cast<uint32_t>(eValidFlags::ValidationInRange)) == 0);
+    return  ((flags & static_cast<uint32_t>(OptionFlag::String))  != 0) &&
+            ((flags & static_cast<uint32_t>(OptionFlag::InRange)) == 0);
 }
 
 inline bool OptionParser::isInteger( uint32_t flags )
 {
-    return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationInteger)) != 0);
+    return  ((flags & static_cast<uint32_t>(OptionFlag::Integer)) != 0);
 }
 
 inline bool OptionParser::isFloat( uint32_t flags )
 {
-    return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationFloat)) != 0);
+    return  ((flags & static_cast<uint32_t>(OptionFlag::Float)) != 0);
 }
 
 inline bool OptionParser::isString( uint32_t flags )
 {
-    return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationString)) != 0);
+    return  ((flags & static_cast<uint32_t>(OptionFlag::String)) != 0);
 }
 
 inline const OptionParser::InputOptionList & OptionParser::getOptions() const

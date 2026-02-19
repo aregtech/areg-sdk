@@ -361,10 +361,10 @@ namespace NEService
     constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(NECommon::Cookie::FirstRemote) };
 
     /**
-     * \brief   NEService::ServiceCall
+     * \brief   NEService::ServiceCallType
      *          Specifies the service call type
      **/
-    enum class ServiceCall  : uint16_t
+    enum class ServiceCallType : uint16_t
     {
           NoFunction            = static_cast<uint16_t>(MessageDataType::UndefinedData) //!< No function call
         , RequestFunction       = static_cast<uint16_t>(MessageDataType::RequestData  ) //!< Call of service request function
@@ -381,13 +381,13 @@ namespace NEService
     /**
      * \brief   The first ID of valid service interface function call
      **/
-    constexpr unsigned int  SERVICE_FUNCTION    { static_cast<uint32_t>(ServiceCall::RequestFunction) };    /*0x1000*/
+    constexpr unsigned int  SERVICE_FUNCTION    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };    /*0x1000*/
 
     /**
      * \brief   NEService::REQUEST_ID_FIRST
      *          The first ID in request call.
      **/
-    constexpr unsigned int  REQUEST_ID_FIRST    { static_cast<uint32_t>(ServiceCall::RequestFunction) };
+    constexpr unsigned int  REQUEST_ID_FIRST    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };
     /**
      * \brief   NEService::REQUEST_ID_LAST
      *          The last ID in request call.
@@ -398,7 +398,7 @@ namespace NEService
      * \brief   NEService::RESPONSE_ID_FIRST
      *          The first ID in response call.
      **/
-    constexpr unsigned int  RESPONSE_ID_FIRST   { static_cast<uint32_t>(ServiceCall::ResponseFunction) };
+    constexpr unsigned int  RESPONSE_ID_FIRST   { static_cast<uint32_t>(ServiceCallType::ResponseFunction) };
     /**
      * \brief   NEService::RESPONSE_ID_LAST
      *          The last ID in response call.
@@ -409,7 +409,7 @@ namespace NEService
      * \brief   NEService::ATTRIBUTE_ID_FIRST
      *          The first ID in attribute call.
      **/
-    constexpr unsigned int  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(ServiceCall::AttributeUpdate) };
+    constexpr unsigned int  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(ServiceCallType::AttributeUpdate) };
     /**
      * \brief   NEService::ATTRIBUTE_ID_LAST
      *          The last ID in attribute call.
@@ -420,7 +420,7 @@ namespace NEService
      * \brief   NEService::SERVICE_ID_FIRST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::ServiceCall::ServiceRegisteration) };
+    constexpr unsigned int  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::ServiceCallType::ServiceRegisteration) };
     /**
      * \brief   NEService::SERVICE_ID_LAST
      *          The last ID in service call.
@@ -431,7 +431,7 @@ namespace NEService
      * \brief   NEService::RESPONSE_ID_NONE
      *          Constant no response. Used to indicate that the request has no response.
      **/
-    constexpr unsigned int  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCall::NoFunction) };
+    constexpr unsigned int  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCallType::NoFunction) };
 
     /**
      * \brief   NEService::INVALID_MESSAGE_ID
@@ -1174,22 +1174,22 @@ inline NEService::ServiceConnectionState NEService::serviceConnection( NEService
 
 inline bool NEService::isRequestId(unsigned int msgId)
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCall::RequestFunction)) != 0);
+    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::RequestFunction)) != 0);
 }
 
 inline bool NEService::isResponseId(unsigned int msgId)
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCall::ResponseFunction)) != 0);
+    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::ResponseFunction)) != 0);
 }
 
 inline bool NEService::isAttributeId(unsigned int msgId)
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCall::AttributeUpdate)) != 0);
+    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::AttributeUpdate)) != 0);
 }
 
 inline bool NEService::isServiceRegistryId( unsigned int msgId )
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCall::ServiceRegisteration)) != 0);
+    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::ServiceRegisteration)) != 0);
 }
 
 inline bool NEService::isEmptyFunctionId(unsigned int msgId)
@@ -1209,10 +1209,10 @@ inline bool NEService::isConnectNotifyId( unsigned int msgId )
 
 inline bool NEService::isExecutableId(unsigned int msgId)
 {
-    return ( (msgId  & static_cast<unsigned int>(NEService::ServiceCall::RequestFunction)     ) != 0 ||
-             (msgId  & static_cast<unsigned int>(NEService::ServiceCall::ResponseFunction)    ) != 0 ||
-             (msgId  & static_cast<unsigned int>(NEService::ServiceCall::AttributeUpdate)   ) != 0 ||
-             (msgId == static_cast<unsigned int>(NEService::ServiceCall::NoFunction)  ) );
+    return ( (msgId  & static_cast<unsigned int>(NEService::ServiceCallType::RequestFunction)     ) != 0 ||
+             (msgId  & static_cast<unsigned int>(NEService::ServiceCallType::ResponseFunction)    ) != 0 ||
+             (msgId  & static_cast<unsigned int>(NEService::ServiceCallType::AttributeUpdate)   ) != 0 ||
+             (msgId == static_cast<unsigned int>(NEService::ServiceCallType::NoFunction)  ) );
 }
 
 

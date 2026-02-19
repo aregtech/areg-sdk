@@ -12,7 +12,7 @@ namespace NEDistributedApp
 {
     const char * const  THREAD_DISTRIBUTED      = "ThreadMessager";
 
-    enum class eWndCommands : unsigned int
+    enum class WindowCommand : uint32_t
     {
           CmdFirst              = 0u
 

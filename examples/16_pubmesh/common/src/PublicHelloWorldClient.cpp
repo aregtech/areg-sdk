@@ -118,7 +118,7 @@ void PublicHelloWorldClient::responseHelloWorld(unsigned int clientID)
     }
 }
 
-void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::eServiceState ServiceState, NEService::DataState state )
+void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState ServiceState, NEService::DataState state )
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
     LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
@@ -129,7 +129,7 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::eServiceState
 
     if (state == NEService::DataState::DataIsOK)
     {
-        if (ServiceState == SystemShutdown::eServiceState::Shutdown)
+        if (ServiceState == SystemShutdown::RunState::Shutdown)
         {
             if ( SystemShutdownClientBase::getProxy()->getStubAddress( ).isSourcePublic( ) )
             {
@@ -177,10 +177,10 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
     LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
 
     NEService::DataState dataState { NEService::DataState::DataIsUndefined };
-    SystemShutdown::eServiceState serviceState = getServiceState( dataState );
+    SystemShutdown::RunState serviceState = getServiceState( dataState );
     if ( dataState == NEService::DataState::DataIsOK )
     {
-        if ( serviceState == SystemShutdown::eServiceState::ServiceReady )
+        if ( serviceState == SystemShutdown::RunState::ServiceReady )
         {
             LOG_DBG( "Client [ %s ] sends hello world request.", PublicHelloWorldClientBase::getServiceRole( ).getString( ) );
             requestHelloWorld( mClient.crID );

@@ -75,21 +75,21 @@ bool SqliteStatement::execute()
     return (isValid() && (SQLITE_DONE == sqlite3_step(_sqlite_stmt(mStatement))));
 }
 
-SqliteStatement::eQueryResult SqliteStatement::next()
+SqliteStatement::QueryResult SqliteStatement::next()
 {
     int result = isValid() ? sqlite3_step(_sqlite_stmt(mStatement)) : SQLITE_ERROR;
     if (result == SQLITE_DONE)
     {
-        return SqliteStatement::eQueryResult::HasNoMore;
+        return SqliteStatement::QueryResult::HasNoMore;
     }
     else if (result == SQLITE_ROW)
     {
         mRowPos += 1;
-        return SqliteStatement::eQueryResult::HasMore;
+        return SqliteStatement::QueryResult::HasMore;
     }
     else
     {
-        return SqliteStatement::eQueryResult::Failed;
+        return SqliteStatement::QueryResult::Failed;
     }
 }
 
@@ -278,7 +278,7 @@ int SqliteStatement::getColumnIndex(const String& columnName) const
     return NECommon::INVALID_INDEX; // Column not found
 }
 
-SqliteStatement::eColumnType SqliteStatement::getColumnType(int index) const
+SqliteStatement::ColumnType SqliteStatement::getColumnType(int index) const
 {
     ASSERT(isValid());
     ASSERT(index >= 0);
@@ -286,16 +286,16 @@ SqliteStatement::eColumnType SqliteStatement::getColumnType(int index) const
     switch (type)
     {
         case SQLITE_INTEGER:
-            return eColumnType::ColumnInteger;
+            return ColumnType::Integer;
         case SQLITE_FLOAT:
-            return eColumnType::ColumnDouble;
+            return ColumnType::Double;
         case SQLITE_TEXT:
-            return eColumnType::ColumnText;
+            return ColumnType::Text;
         case SQLITE_BLOB:
-            return eColumnType::ColumnBlob;
+            return ColumnType::Blob;
         case SQLITE_NULL:
-            return eColumnType::ColumnNull;
+            return ColumnType::Null;
         default:
-            return eColumnType::ColumnUnknown;
+            return ColumnType::Unknown;
     }
 }

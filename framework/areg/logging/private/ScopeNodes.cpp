@@ -29,12 +29,12 @@
 //////////////////////////////////////////////////////////////////////////
 
 ScopeLeaf::ScopeLeaf()
-    : ScopeNodeBase ( ScopeNodeBase::eNode::Leaf )
+    : ScopeNodeBase ( ScopeNodeBase::NodeType::Leaf )
 {
 }
 
 ScopeLeaf::ScopeLeaf( const ScopeNodeBase & base )
-    : ScopeNodeBase( ScopeNodeBase::eNode::Leaf, base.getNodeName(), base.getPriority() )
+    : ScopeNodeBase( ScopeNodeBase::NodeType::Leaf, base.getNodeName(), base.getPriority() )
 {
 }
 
@@ -66,14 +66,14 @@ unsigned int ScopeLeaf::updateConfigNode(ConfigManager& config, const String & p
 //////////////////////////////////////////////////////////////////////////
 
 ScopeNode::ScopeNode()
-    : ScopeNodeBase ( ScopeNodeBase::eNode::Node )
+    : ScopeNodeBase ( ScopeNodeBase::NodeType::Node )
     , mChildNodes   ( true )
     , mChildLeafs   ( true )
 {
 }
 
 ScopeNode::ScopeNode( const ScopeNodeBase & base )
-    : ScopeNodeBase ( ScopeNodeBase::eNode::Node, base.getNodeName( ), base.getPriority() )
+    : ScopeNodeBase ( ScopeNodeBase::NodeType::Node, base.getNodeName( ), base.getPriority() )
     , mChildNodes   ( true )
     , mChildLeafs   ( true )
 {
@@ -93,7 +93,7 @@ ScopeNode::ScopeNode( ScopeNode && src ) noexcept
 {
 }
 
-ScopeNode::ScopeNode( ScopeNodeBase::eNode nodeType, const String & name, unsigned int prio )
+ScopeNode::ScopeNode( ScopeNodeBase::NodeType nodeType, const String & name, unsigned int prio )
     : ScopeNodeBase( nodeType, name, prio )
     , mChildNodes( true )
     , mChildLeafs( true )
@@ -202,7 +202,7 @@ unsigned int ScopeNode::groupChildNodes()
     unsigned int sameNodes{ mChildNodes.getSize() };
     unsigned int prioNode{ mPrioStates };
 
-    mGrouping = static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping);
+    mGrouping = static_cast<unsigned int>(ScopeNodeBase::Grouping::None);
 
     if ( sameNodes > 0 )
     {
@@ -218,7 +218,7 @@ unsigned int ScopeNode::groupChildNodes()
 
         if ( sameNodes == mChildNodes.getSize( ) )
         {
-            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingNodes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::Nodes);
             result += mChildNodes.getSize( );
             mChildNodes.clear( );
 
@@ -245,7 +245,7 @@ unsigned int ScopeNode::groupChildNodes()
 
         if (sameLeafs == mChildLeafs.getSize( ))
         {
-            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingLeafes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::Leaves);
             result += mChildLeafs.getSize( );
             mChildLeafs.clear( );
             result += removePriorityNodesRecursive( prioNode );
@@ -259,7 +259,7 @@ unsigned int ScopeNode::updateConfigNode( ConfigManager & config, const String &
 {
     unsigned int result{ 0 };
     String thisScope = makeScopePath( parentPath );
-    if ( (mGrouping & static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingAll)) != 0 )
+    if ( (mGrouping & static_cast<unsigned int>(ScopeNodeBase::Grouping::All)) != 0 )
     {
         config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
         result = 1;
@@ -328,7 +328,7 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
 
         if ( mChildLeafs.isEmpty( ) )
         {
-            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingLeafes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::Leaves);
         }
     }
 
@@ -356,7 +356,7 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
 
         if ( mChildNodes.isEmpty( ) )
         {
-            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::GrouppingNodes);
+            mGrouping |= static_cast<unsigned int>(ScopeNodeBase::Grouping::Nodes);
         }
     }
 
@@ -373,7 +373,7 @@ bool ScopeNode::isEmpty() const
 //////////////////////////////////////////////////////////////////////////
 
 ScopeRoot::ScopeRoot()
-    : ScopeNode     ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) )
+    : ScopeNode     ( ScopeNodeBase::NodeType::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) )
 {
 }
 

@@ -187,7 +187,7 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     console.unlockConsole();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::DataState state)
+void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, NEService::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::DataState::DataIsOK)
@@ -204,7 +204,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServicePr
             notifyOnStringOnChangeUpdate(true);
         }
 
-        if (ServiceProviderState == PubSubMix::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSubMix::RunState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

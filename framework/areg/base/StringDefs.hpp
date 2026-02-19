@@ -46,9 +46,9 @@ namespace NEString
 
     /**
      * \brief   Character types. Used bits are defining special meaning of characters.
-     *          NEString::eCharDefs
+     *          NEString::CharCategory
      **/
-    enum class CharDefs : uint16_t
+    enum class CharCategory : uint16_t
     {
           Undefined =   0   //!< bin = 0000 0000 0000 0000, Undefined character type
         , EOfS      =   1   //!< bin = 0000 0000 0000 0001, End-of+string character
@@ -1841,9 +1841,9 @@ inline bool NEString::isOneOf(CharType ch, const CharType* chSequence)
 template<typename CharType>
 inline bool NEString::isReadable( CharType ch )
 {
-    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharDefs::Letter) |
-                            static_cast<uint32_t>(NEString::CharDefs::Number) |
-                            static_cast<uint32_t>(NEString::CharDefs::Symbol) };
+    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharCategory::Letter) |
+                            static_cast<uint32_t>(NEString::CharCategory::Number) |
+                            static_cast<uint32_t>(NEString::CharCategory::Symbol) };
 
     return (((NEString::getUTF8_256CharDef( ch ) & def) != 0) || (ch == ' '));
 }
@@ -1851,19 +1851,19 @@ inline bool NEString::isReadable( CharType ch )
 template<typename CharType>
 inline bool NEString::isPrintable( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Printable)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharCategory::Printable)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isEndOfLine( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::EndOfLine)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharCategory::EndOfLine)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isCarriageReturn( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::CarReturn)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharCategory::CarReturn)) != 0);
 }
 
 template<typename CharType>
@@ -1899,49 +1899,49 @@ bool NEString::isDosEndOfLine(const CharType * source)
 template<typename CharType>
 inline bool NEString::isEndOfString( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::EOfS)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharCategory::EOfS)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isControl(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::Control)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharCategory::Control)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isSymbol( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::Symbol)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharCategory::Symbol)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isWhitespace( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::WhiteSpace)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharCategory::WhiteSpace)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isDelimited( CharType ch )
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Delimiter)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharCategory::Delimiter)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isLetter(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Letter)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharCategory::Letter)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isNumeric(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharDefs::Number)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<uint16_t>(NEString::CharCategory::Number)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isAlphanumeric(CharType ch)
 {
-    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharDefs::Letter) | static_cast<uint32_t>(NEString::CharDefs::Number) };
+    constexpr uint32_t def{ static_cast<uint32_t>(NEString::CharCategory::Letter) | static_cast<uint32_t>(NEString::CharCategory::Number) };
 
     return ((NEString::getUTF8_256CharDef( ch ) & def) != 0);
 }
@@ -1995,13 +1995,13 @@ inline const CharType* NEString::makeUpper(CharType* source)
 template<typename CharType>
 inline bool NEString::isLower(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::LetterLo)) == static_cast<uint16_t>(NEString::CharDefs::LetterLo));
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharCategory::LetterLo)) == static_cast<uint16_t>(NEString::CharCategory::LetterLo));
 }
 
 template<typename CharType>
 inline bool NEString::isUpper(CharType ch)
 {
-    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharDefs::LetterUp)) == static_cast<uint16_t>(NEString::CharDefs::LetterUp));
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<uint16_t>(NEString::CharCategory::LetterUp)) == static_cast<uint16_t>(NEString::CharCategory::LetterUp));
 }
 
 inline bool NEString::isPositionValid(NEString::CharPos pos)

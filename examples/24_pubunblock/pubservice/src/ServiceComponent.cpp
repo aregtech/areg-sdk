@@ -31,7 +31,7 @@ ServiceComponent::ServiceComponent( const NERegistry::ComponentEntry & entry, Co
     , mSessionList      ( )
     , mTimer            ( static_cast<TimerConsumer &>(self()), entry.mRoleName )
 {
-    setHelloServiceState( HelloUnblock::eServiceState::ServiceUndefined );
+    setHelloServiceState( HelloUnblock::RunState::ServiceUndefined );
 }
 
 void ServiceComponent::startupServiceInterface( Component & holder )
@@ -39,7 +39,7 @@ void ServiceComponent::startupServiceInterface( Component & holder )
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_startupServiceInterface );
 
     HelloUnblockStub::startupServiceInterface( holder );
-    setHelloServiceState( HelloUnblock::eServiceState::ServiceActive );
+    setHelloServiceState( HelloUnblock::RunState::ServiceActive );
     LOG_DBG( "The service [ %s ] is up and running", getRoleName( ).getString( ) );
 }
 
@@ -101,7 +101,7 @@ void ServiceComponent::processTimer( Timer & /* timer */ )
     if ( mSessionList.isEmpty( ) )
     {
         mTimer.stopTimer( );
-        setHelloServiceState( HelloUnblock::eServiceState::Shutdown );
+        setHelloServiceState( HelloUnblock::RunState::Shutdown );
 
         LOG_WARN( "No more saved sessions in the list, quit application!" );
         Application::signalAppQuit( );

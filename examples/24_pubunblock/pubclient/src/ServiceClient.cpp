@@ -128,14 +128,14 @@ void ServiceClient::requestHelloUblockFailed( NEService::ResultType FailureReaso
     ASSERT( FailureReason != NEService::ResultType::RequestBusy );
 }
 
-void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::DataState state )
+void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, NEService::DataState state )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
     LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::getString( HelloServiceState ), NEService::getString( state ) );
 
     if (state == NEService::DataState::DataIsOK)
     {
-        if ( HelloServiceState == HelloUnblock::eServiceState::ServiceActive )
+        if ( HelloServiceState == HelloUnblock::RunState::ServiceActive )
         {
             ASSERT( mClientId == HelloUnblock::InvalidId );
             // send the request only if client has no valid ID
@@ -146,7 +146,7 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::eServiceState Hello
             ASSERT(++mReqCount == getProxy()->getListenerCount());
             ASSERT(mReqCount == 3);
         }
-        else if ( HelloServiceState == HelloUnblock::eServiceState::Shutdown )
+        else if ( HelloServiceState == HelloUnblock::RunState::Shutdown )
         {
             LOG_WARN( "The service is unavailable, shutting down application." );
             mTimer.stopTimer( );

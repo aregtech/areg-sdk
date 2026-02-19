@@ -61,7 +61,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
 
 #if AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState ServiceState, NEService::DataState state )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
     LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
@@ -69,7 +69,7 @@ void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState ServiceState, NE
 
 #else  // AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState /*ServiceState*/, NEService::DataState /*state*/ )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*ServiceState*/, NEService::DataState /*state*/ )
 {
 }
 

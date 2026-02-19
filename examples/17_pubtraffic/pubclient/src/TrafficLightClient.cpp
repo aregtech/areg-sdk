@@ -16,7 +16,7 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
     : Component                     ( entry, owner )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
 
-    , mTrafficDirection             ( std::any_cast<traffic::eTrafficDirection>(entry.getData()) )
+    , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.getData()) )
 {
 }
 
@@ -24,7 +24,7 @@ bool TrafficLightClient::serviceConnected( NEService::ServiceConnectionState sta
 {
     bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
 
-    if ( mTrafficDirection == traffic::eTrafficDirection::DirectionSouthNorth )
+    if ( mTrafficDirection == traffic::TrafficDirection::SouthNorth )
     {
         notifyOnSouthNorthUpdate( isConnected( ) );
     }
@@ -41,7 +41,7 @@ bool TrafficLightClient::serviceConnected( NEService::ServiceConnectionState sta
     return result;
 }
 
-void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::eTrafficLight SouthNorth, NEService::DataState state)
+void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::TrafficLight SouthNorth, NEService::DataState state)
 {
     if (state == NEService::DataState::DataIsOK)
     {
@@ -49,7 +49,7 @@ void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::eTrafficLight So
     }
 }
 
-void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::eTrafficLight EastWest, NEService::DataState state)
+void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::TrafficLight EastWest, NEService::DataState state)
 {
     if (state == NEService::DataState::DataIsOK)
     {
@@ -57,20 +57,20 @@ void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::eTrafficLight East
     }
 }
 
-inline void TrafficLightClient::outputState(SimpleTrafficLight::eTrafficLight lightState)
+inline void TrafficLightClient::outputState(SimpleTrafficLight::TrafficLight lightState)
 {
     switch (lightState)
     {
-    case SimpleTrafficLight::eTrafficLight::LightRed:
+    case SimpleTrafficLight::TrafficLight::LightRed:
         printf("Light: RED ...\r\n");
         break;
-    case SimpleTrafficLight::eTrafficLight::LightYellow:
+    case SimpleTrafficLight::TrafficLight::LightYellow:
         printf("Light: Yellow ...\r\n");
         break;
-    case SimpleTrafficLight::eTrafficLight::LightGreen:
+    case SimpleTrafficLight::TrafficLight::LightGreen:
         printf("Light: GREEN ...\r\n");
         break;
-    case SimpleTrafficLight::eTrafficLight::LightOff:
+    case SimpleTrafficLight::TrafficLight::LightOff:
     default:
         printf("Light: OFF ...\r\n");
         break;

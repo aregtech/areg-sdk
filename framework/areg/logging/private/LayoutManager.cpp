@@ -99,21 +99,21 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
         {
             char ch = *(pos + 1);
             LogLayout* newLayout{ nullptr };
-            switch (static_cast<NELogOptions::eLayouts>(ch))
+            switch (static_cast<NELogOptions::LayoutToken>(ch))
             {
-            case NELogOptions::eLayouts::LayoutTickCount:
+            case NELogOptions::LayoutToken::TickCount:
                 newLayout = DEBUG_NEW TickCountLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutDayTime:
+            case NELogOptions::LayoutToken::DayTime:
                 newLayout = DEBUG_NEW DayTimeLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutExecutableId:
+            case NELogOptions::LayoutToken::ExecutableId:
                 newLayout = DEBUG_NEW ModuleIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutMessage:
+            case NELogOptions::LayoutToken::Message:
                 if (hasExclusive == false)
                 {
                     newLayout = DEBUG_NEW MessageLayout();
@@ -121,31 +121,31 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 }
                 break;
 
-            case NELogOptions::eLayouts::LayoutEndOfLine:
+            case NELogOptions::LayoutToken::EndOfLine:
                 newLayout = DEBUG_NEW EndOfLineLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutPriority:
+            case NELogOptions::LayoutToken::Priority:
                 newLayout = DEBUG_NEW PriorityLayout();
                 break;
 
-            case NELogOptions::eLayouts::LaytoutScopeId:
+            case NELogOptions::LayoutToken::ScopeId:
                 newLayout = DEBUG_NEW ScopeIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutThreadId:
+            case NELogOptions::LayoutToken::ThreadId:
                 newLayout = DEBUG_NEW ThreadIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutExecutableName:
+            case NELogOptions::LayoutToken::ExecutableName:
                 newLayout = DEBUG_NEW ModuleNameLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutThreadName:
+            case NELogOptions::LayoutToken::ThreadName:
                 newLayout = DEBUG_NEW ThreadNameLayout();
                 break;
 
-            case NELogOptions::eLayouts::LaytoutScopeName:
+            case NELogOptions::LayoutToken::ScopeName:
                 if (hasExclusive == false)
                 {
                     newLayout = DEBUG_NEW ScopeNameLayout();
@@ -153,12 +153,12 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 }
                 break;
 
-            case NELogOptions::eLayouts::LayoutCookieId:
+            case NELogOptions::LayoutToken::CookieId:
                 newLayout = DEBUG_NEW CookieIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutUndefined:  // fall through
-            case NELogOptions::eLayouts::LayoutAnyText:    // fall through
+            case NELogOptions::LayoutToken::Undefined:  // fall through
+            case NELogOptions::LayoutToken::AnyText:    // fall through
             default:
                 if (ch == NELogOptions::SYNTAX_SPECIAL_FORMAT)
                 {

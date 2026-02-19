@@ -32,20 +32,20 @@ public:
     /**
      * \brief   The actions to trigger, i.e. the event data.
      **/
-    typedef enum class E_Actions
+    enum class Action   : uint8_t
     {
-          NoAction          //!< No action
-        , ActionPowerOff    //!< Power OFF the traffic lights
-        , ActionPowerOn     //!< Power ON the traffic lights
-        , ActionStartLight  //!< Start the traffic lights
-        , ActionStopLight   //!< Stop the traffic lights.
-    } eAction;
+          None          //!< No action
+        , PowerOff      //!< Power OFF the traffic lights
+        , PowerOn       //!< Power ON the traffic lights
+        , StartLight    //!< Start the traffic lights
+        , StopLight     //!< Stop the traffic lights.
+    };
 
     /**
-     * \brief   Converts the value of PowerControllerEventData::eAction into the string.
+     * \brief   Converts the value of PowerControllerEventData::Action into the string.
      *          Used to make logging.
      **/
-    inline static const char * getString( PowerControllerEventData::eAction action );
+    inline static const char * getString( PowerControllerEventData::Action action );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors, destructor, operators, attributes
@@ -58,7 +58,7 @@ public:
     /**
      * \brief   Set the initial value of event data.
      **/
-    inline PowerControllerEventData( PowerControllerEventData::eAction action );
+    inline PowerControllerEventData( PowerControllerEventData::Action action );
     /**
      * \brief   Copy the data from given source
      **/
@@ -78,10 +78,10 @@ public:
     /**
      * \brief   Returns the event data value.
      **/
-    inline PowerControllerEventData::eAction getAction() const;
+    inline PowerControllerEventData::Action getAction() const;
 
 private:
-    PowerControllerEventData::eAction     mAction;  //!< The power controller event data value.
+    PowerControllerEventData::Action     mAction;  //!< The power controller event data value.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,11 +234,11 @@ inline PowerControllerClient & PowerControllerClient::self()
 }
 
 inline PowerControllerEventData::PowerControllerEventData()
-    : mAction   (PowerControllerEventData::eAction::NoAction)
+    : mAction   (PowerControllerEventData::Action::None)
 {
 }
 
-inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData::eAction action)
+inline PowerControllerEventData::PowerControllerEventData(PowerControllerEventData::Action action)
     : mAction   ( action )
 {
 }
@@ -253,26 +253,26 @@ inline void PowerControllerEventData::operator = (const PowerControllerEventData
     mAction = src.mAction;
 }
 
-inline PowerControllerEventData::eAction PowerControllerEventData::getAction() const
+inline PowerControllerEventData::Action PowerControllerEventData::getAction() const
 {
     return mAction;
 }
 
-const char * PowerControllerEventData::getString(PowerControllerEventData::eAction action)
+const char * PowerControllerEventData::getString(PowerControllerEventData::Action action)
 {
     switch (action)
     {
-    case PowerControllerEventData::eAction::NoAction:
-        return "PowerControllerEventData::NoAction";
-    case PowerControllerEventData::eAction::ActionPowerOff:
-        return "PowerControllerEventData::ActionPowerOff";
-    case PowerControllerEventData::eAction::ActionPowerOn:
-        return "PowerControllerEventData::ActionPowerOn";
-    case PowerControllerEventData::eAction::ActionStartLight:
-        return "PowerControllerEventData::ActionStartLight";
-    case PowerControllerEventData::eAction::ActionStopLight:
-        return "PowerControllerEventData::ActionStopLight";
+    case PowerControllerEventData::Action::None:
+        return "PowerControllerEventData::None";
+    case PowerControllerEventData::Action::PowerOff:
+        return "PowerControllerEventData::PowerOff";
+    case PowerControllerEventData::Action::PowerOn:
+        return "PowerControllerEventData::PowerOn";
+    case PowerControllerEventData::Action::StartLight:
+        return "PowerControllerEventData::StartLight";
+    case PowerControllerEventData::Action::StopLight:
+        return "PowerControllerEventData::StopLight";
     default:
-        return "ERR: Undefined PowerControllerEventData::eAction value!";
+        return "ERR: Undefined PowerControllerEventData::Action value!";
     }
 }

@@ -60,7 +60,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastSouthNorth( TrafficController::eVehicleTrafficLight LightVehicle, TrafficController::ePedestrianTrafficLight LightPedestrian ) override;
+    virtual void broadcastSouthNorth( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
 
     /**
      * \brief   Server broadcast.
@@ -70,7 +70,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastEastWest( TrafficController::eVehicleTrafficLight LightVehicle, TrafficController::ePedestrianTrafficLight LightPedestrian ) override;
+    virtual void broadcastEastWest( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

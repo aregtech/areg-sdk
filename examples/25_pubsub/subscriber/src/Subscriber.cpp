@@ -144,7 +144,7 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::Da
     console.refreshScreen();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::DataState state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::DataState::DataIsOK)
@@ -161,7 +161,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProvi
             notifyOnStringOnChangeUpdate(true);
         }
 
-        if (ServiceProviderState == PubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::RunState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

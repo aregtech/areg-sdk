@@ -198,7 +198,7 @@ void ServiceApplicationBase::_osDeleteService()
 
 bool ServiceApplicationBase::_osRegisterService()
 {
-    if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Service)
+    if (mSystemServiceOption == NESystemService::ServiceOption::CMD_Service)
     {
         _statusHandle = ::RegisterServiceCtrlHandler(getServiceName(), &::_win32ServiceCtrlHandler);
     }
@@ -206,7 +206,7 @@ bool ServiceApplicationBase::_osRegisterService()
     return (_statusHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState newState)
+bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
 {
     bool result{ true };
 
@@ -217,40 +217,40 @@ bool ServiceApplicationBase::_osSetState(NESystemService::eSystemServiceState ne
     {
         switch (newState)
         {
-        case NESystemService::eSystemServiceState::ServiceStopped:
+        case NESystemService::ServicePhase::Stopped:
             _serviceStatus.dwCurrentState       = SERVICE_STOPPED;
             _serviceStatus.dwControlsAccepted   = 0;
             _serviceStatus.dwCheckPoint         = 7;
             _serviceStatus.dwWin32ExitCode      = ERROR_SUCCESS;
             break;
 
-        case NESystemService::eSystemServiceState::ServiceStarting:
+        case NESystemService::ServicePhase::Starting:
             _serviceStatus.dwCurrentState       = SERVICE_START_PENDING;
             _serviceStatus.dwCheckPoint         = 1;
             break;
 
-        case NESystemService::eSystemServiceState::ServiceStopping:
+        case NESystemService::ServicePhase::Stopping:
             _serviceStatus.dwCurrentState       = SERVICE_STOP_PENDING;
             _serviceStatus.dwCheckPoint         = 6;
             break;
 
-        case NESystemService::eSystemServiceState::ServiceRunning:
+        case NESystemService::ServicePhase::Running:
             _serviceStatus.dwCurrentState       = SERVICE_RUNNING;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 2;
             break;
 
-        case NESystemService::eSystemServiceState::ServiceContinuing:
+        case NESystemService::ServicePhase::Continuing:
             _serviceStatus.dwCurrentState       = SERVICE_CONTINUE_PENDING;
             _serviceStatus.dwCheckPoint         = 5;
             break;
 
-        case NESystemService::eSystemServiceState::ServicePausing:
+        case NESystemService::ServicePhase::Pausing:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSE_PENDING;
             _serviceStatus.dwCheckPoint         = 3;
             break;
 
-        case NESystemService::eSystemServiceState::ServicePaused:
+        case NESystemService::ServicePhase::Paused:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSED;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 4;

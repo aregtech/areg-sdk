@@ -187,7 +187,7 @@ void ScopeController::configureScopes( const Property & prop )
     const PropertyKey & Key = prop.getKey( );
     const PropertyValue & Value = prop.getValue( );
     ASSERT( Key.isValid( ) );
-    ASSERT( Key.getKeyType() == NEPersistence::eConfigKeys::EntryLogScope );
+    ASSERT( Key.getKeyType() == NEPersistence::ConfigEntry::LogScope );
 
     unsigned int prio = Value.getIndetifier( NEApplication::LogScopePriorityIndentifiers );
     configureScopes(Key.getPosition(), prio);

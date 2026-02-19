@@ -75,16 +75,16 @@ namespace
 
 const OptionParser::sOptionSetup LogObserver::ValidOptions[ ]
 {
-      { "-e", "--query"     , static_cast<int>(eLoggerOptions::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-f", "--config"    , static_cast<int>(eLoggerOptions::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int>(eLoggerOptions::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int>(eLoggerOptions::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(eLoggerOptions::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-o", "--scope"     , static_cast<int>(eLoggerOptions::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int>(eLoggerOptions::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(eLoggerOptions::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(eLoggerOptions::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-x", "--stop"      , static_cast<int>(eLoggerOptions::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-e", "--query"     , static_cast<int>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-x", "--stop"      , static_cast<int>(LoggerOption::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 LogObserver & LogObserver::getInstance()
@@ -329,7 +329,7 @@ void LogObserver::logMain( int argc, char ** argv )
     OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
     {
-        uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::eLoggerOptions::CMD_LogLoad));
+        uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
         if (pos != NECommon::INVALID_POSITION)
         {
             String filePath{ parser.getOptions().getAt(pos).inString[0] };
@@ -366,54 +366,54 @@ bool LogObserver::_checkCommand(const String& cmd)
             bool processed{ false };
             const LogObserver::sObserverStatus* status{ nullptr };
             const OptionParser::sOption & opt = opts[ i ];
-            switch ( static_cast<LogObserver::eLoggerOptions>(opt.inCommand) )
+            switch ( static_cast<LogObserver::LoggerOption>(opt.inCommand) )
             {
-            case LogObserver::eLoggerOptions::CMD_LogQueryScopes:
+            case LogObserver::LoggerOption::CMD_LogQueryScopes:
                 processed = LogObserver::_processQueryScopes(opt);
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogQueryScopes)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogQueryScopes)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogSaveConfig:
+            case LogObserver::LoggerOption::CMD_LogSaveConfig:
                 processed = LogObserver::_processSaveConfig(opt);
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogSaveConfig)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogSaveConfig)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogPrintHelp:
+            case LogObserver::LoggerOption::CMD_LogPrintHelp:
                 processed = LogObserver::_processPrintHelp();
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogPrintHelp)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogPrintHelp)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogInstances:
+            case LogObserver::LoggerOption::CMD_LogInstances:
                 processed = LogObserver::_processInfoInstances();
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogInstances)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogInstances)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogUpdateScope:
+            case LogObserver::LoggerOption::CMD_LogUpdateScope:
                 processed = LogObserver::_processUpdateScopes(opt);
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogUpdateScope)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogUpdateScope)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogPause:
+            case LogObserver::LoggerOption::CMD_LogPause:
                 processed = LogObserver::_processPauseLogging();
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogPause)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogPause)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogQuit:
+            case LogObserver::LoggerOption::CMD_LogQuit:
                 quit = true;
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogRestart:
+            case LogObserver::LoggerOption::CMD_LogRestart:
                 processed = LogObserver::_processStartLogging(true);
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogRestart)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogRestart)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogStop:
+            case LogObserver::LoggerOption::CMD_LogStop:
                 processed = LogObserver::_processStartLogging(false);
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogStop)];
+                status = &ObserverStatus[static_cast<uint32_t>(LoggerOption::CMD_LogStop)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogLoad:      // fall through
-            case LogObserver::eLoggerOptions::CMD_LogUndefined: // fall through
+            case LogObserver::LoggerOption::CMD_LogLoad:      // fall through
+            case LogObserver::LoggerOption::CMD_LogUndefined: // fall through
             default:
                 hasError = true;
                 break;
@@ -421,7 +421,7 @@ bool LogObserver::_checkCommand(const String& cmd)
 
             if (status != nullptr)
             {
-                ASSERT(static_cast<eLoggerOptions>(opt.inCommand) == status->osOption);
+                ASSERT(static_cast<LoggerOption>(opt.inCommand) == status->osOption);
                 console.lockConsole();
                 if (processed && (status->osStatus.empty() == false))
                 {
@@ -601,7 +601,7 @@ bool LogObserver::_processInfoInstances()
 bool LogObserver::_processUpdateScopes(const OptionParser::sOption& optScope)
 {
     bool result{ false };
-    ASSERT(optScope.inCommand == static_cast<int>(eLoggerOptions::CMD_LogUpdateScope));
+    ASSERT(optScope.inCommand == static_cast<int>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
 
     const OptionParser::StrList& optValues{ optScope.inString };
@@ -696,7 +696,7 @@ bool LogObserver::_processQueryScopes(const OptionParser::sOption& optScope)
 
 String LogObserver::_normalizeScopeProperty(const String & scope)
 {
-    const NEPersistence::sPropertyKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::eConfigKeys::EntryLogScope)] };
+    const NEPersistence::sPropertyKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::ConfigEntry::LogScope)] };
     String result;
     if (scope.startsWith(propKey.property))
     {
@@ -744,7 +744,7 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
     if (scope.isEmpty() == false)
     {
         Property prop(LogObserver::_normalizeScopeProperty(scope));
-        if (prop.isValid() && prop.getPropertyType() == NEPersistence::eConfigKeys::EntryLogScope)
+        if (prop.isValid() && prop.getPropertyType() == NEPersistence::ConfigEntry::LogScope)
         {
             const PropertyKey& key{ prop.getKey() };
             ITEM_ID target{ key.isAllModules() ? NEService::TARGET_ALL : key.getModule().toUInt32() };
@@ -766,7 +766,7 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
 
 inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable */)
 {
-    constexpr NEPersistence::eConfigKeys prioConfKey{ NEPersistence::eConfigKeys::EntryLogScope };
+    constexpr NEPersistence::ConfigEntry prioConfKey{ NEPersistence::ConfigEntry::LogScope };
     const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
     unsigned int prios = static_cast<unsigned int>(NELogging::LogPriority::PrioNotset);
     const String prio{ NELogging::makePrioString(prios) };

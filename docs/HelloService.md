@@ -73,7 +73,7 @@ Components receive notifications when connections change:
 
 **Client Component:**
 ```cpp
-void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)
+void serviceConnected(NEService::NetConnection status, ProxyBase& proxy)
 ```
 
 **Service Component:**

@@ -458,7 +458,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
         if ( OptionParser::isEmptyData( setup.optField ) )
         {
             // the option should not have data. It is an error
-            opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
             opt.inString.push_back( newValue );
         }
         else if ( OptionParser::isInteger( setup.optField ) )
@@ -468,7 +468,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
             _setValue( val, opt, setup );
             if ( NEString::isEmpty<char>( end ) == false )
             {
-                opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+                opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
             }
         }
         else if ( OptionParser::isFloat( setup.optField ) )
@@ -478,7 +478,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
             _setValue( val, opt, setup );
             if ( NEString::isEmpty<char>( end ) == false )
             {
-                opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+                opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
             }
         }
         else if ( OptionParser::isString( setup.optField ) )
@@ -494,7 +494,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
 
     if ( cleaned == false )
     {
-        opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+        opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
     }
 }
 
@@ -505,7 +505,7 @@ inline void OptionParser::_setValue( int newValue, sOption & opt, const sOptionS
     {
         if ( (newValue < setup.optRangeInt.valMin) || (newValue > setup.optRangeInt.valMax) )
         {
-            opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
         }
     }
 }
@@ -517,7 +517,7 @@ inline void OptionParser::_setValue( float newValue, sOption & opt, const sOptio
     {
         if ( (newValue < setup.optRangeFloat.valMin) || (newValue > setup.optRangeFloat.valMax) )
         {
-            opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
         }
     }
 }
@@ -528,12 +528,12 @@ inline void OptionParser::_setValue( const String & newValue, sOption & opt, con
     if ( OptionParser::isFreestyle(setup.optField) == false )
     {
         const std::vector<std::string_view> & range = setup.optRangeStrings;
-        opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+        opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
         for ( const std::string_view & entry : range )
         {
             if ( newValue.compare( entry, false) == NEMath::Ordering::Equal)
             {
-                opt.inField &= ~static_cast<uint32_t>(eValidFlags::ValidationError);
+                opt.inField &= ~static_cast<uint32_t>(OptionFlag::Error);
                 break;
             }
         }

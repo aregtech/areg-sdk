@@ -145,46 +145,46 @@ namespace NEPersistence
     /**
      * \brief   Types of the configuration keys.
      **/
-    enum eConfigKeys    : int
+    enum class ConfigEntry  : int32_t
     {
-          EntryInvalid              = -1    //!< Invalid key of the configuration
-        , EntryConfigVersion        = 0     //!< The configuration version.
+          Invalid              = -1    //!< Invalid key of the configuration
+        , ConfigVersion        = 0     //!< The configuration version.
 
-        , EntryLogVersion           = 1     //!< The logging version.
-        , EntryLogTarget            = 2     //!< The logging types (targets).
-        , EntryLogStatus            = 3     //!< The logging enabled / disabled status.
-        , EntryLogEnable            = 4     //!< The logging type (in target) enabled / disabled flag.
-        , EntryLogFileLocation      = 5     //!< The log file location and file name mask.
-        , EntryLogFileAppend        = 6     //!< The flag to append logs into the file.
-        , EntryLogRemoteQueueSize   = 7     //!< The queue size of remote logging.
-        , EntryLogRemoteService     = 8     //!< The service name of the remote logging.
+        , LogVersion           = 1     //!< The logging version.
+        , LogTarget            = 2     //!< The logging types (targets).
+        , LogStatus            = 3     //!< The logging enabled / disabled status.
+        , LogEnable            = 4     //!< The logging type (in target) enabled / disabled flag.
+        , LogFileLocation      = 5     //!< The log file location and file name mask.
+        , LogFileAppend        = 6     //!< The flag to append logs into the file.
+        , LogRemoteQueueSize   = 7     //!< The queue size of remote logging.
+        , LogRemoteService     = 8     //!< The service name of the remote logging.
 
-        , EntryLogDatabaseEngine    = 9     //!< The log database name.
-        , EntryLogDatabaseName      = 10    //!< The log database name.
-        , EntryLogDatabaseLocation  = 11    //!< The log database location.
-        , EntryLogDatabaseDriver    = 12    //!< The log database driver.
-        , EntryLogDatabaseAddress   = 13    //!< The log database address.
-        , EntryLogDatabasePort      = 14    //!< The log database port.
-        , EntryLogDatabaseUsername  = 15    //!< The log database user-name.
-        , EntryLogDatabasePassword  = 16    //!< The log database user-password.
+        , LogDatabaseEngine    = 9     //!< The log database name.
+        , LogDatabaseName      = 10    //!< The log database name.
+        , LogDatabaseLocation  = 11    //!< The log database location.
+        , LogDatabaseDriver    = 12    //!< The log database driver.
+        , LogDatabaseAddress   = 13    //!< The log database address.
+        , LogDatabasePort      = 14    //!< The log database port.
+        , LogDatabaseUsername  = 15    //!< The log database user-name.
+        , LogDatabasePassword  = 16    //!< The log database user-password.
 
-        , EntryLogLayoutEnter       = 17    //!< The layout of enter scope message.
-        , EntryLogLayoutMessage     = 18    //!< The layout of log message.
-        , EntryLogLayoutExit        = 19    //!< The layout of exit scope message.
-        , EntryLogScope             = 20    //!< The log scope enable / disable flag.
+        , LogLayoutEnter       = 17    //!< The layout of enter scope message.
+        , LogLayoutMessage     = 18    //!< The layout of log message.
+        , LogLayoutExit        = 19    //!< The layout of exit scope message.
+        , LogScope             = 20    //!< The log scope enable / disable flag.
 
-        , EntryServiceList          = 21    //!< The list of supported remote services.
+        , ServiceList          = 21    //!< The list of supported remote services.
 
-        , EntryServiceName          = 22    //!< The process name of the remote service.
-        , EntryServiceConnection    = 23    //!< The list of connection type of the remote service.
-        , EntryServiceEnable        = 24    //!< The connection enable / disable flag of the remote service.
-        , EntryServiceAddress       = 25    //!< The connection address of the remote service.
-        , EntryServicePort          = 26    //!< The connection port number of the remote service.
+        , ServiceName          = 22    //!< The process name of the remote service.
+        , ServiceConnection    = 23    //!< The list of connection type of the remote service.
+        , ServiceEnable        = 24    //!< The connection enable / disable flag of the remote service.
+        , ServiceAddress       = 25    //!< The connection address of the remote service.
+        , ServicePort          = 26    //!< The connection port number of the remote service.
 
-        , EntryDefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(NEMemory::uAlignt)`
-        , EntryDefaultMessageQueue  = 28    //!< The default size of message queue in the dispatcher thread. The default `0` means to ignore the limitation, increase by need.
+        , DefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(NEMemory::uAlignt)`
+        , DefaultMessageQueue  = 28    //!< The default size of message queue in the dispatcher thread. The default `0` means to ignore the limitation, increase by need.
 
-        , EntryAnyKey               = 29    //!< Indicates any key type.
+        , AnyKey               = 29    //!< Indicates any key type.
     };
 
     /**
@@ -379,142 +379,142 @@ namespace NEPersistence
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getConfigVersion()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryConfigVersion)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ConfigVersion)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceList()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServiceList)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceList)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogVersion()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogVersion)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogVersion)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogTarget()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogTarget)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogTarget)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogStatus()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogStatus)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogStatus)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogEnable()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogEnable)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogEnable)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogFileLocation()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogFileLocation)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogFileLocation)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogFileAppend()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogFileAppend)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogFileAppend)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogRemoteQueueSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogRemoteQueueSize)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogRemoteQueueSize)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogLayoutEnter()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogLayoutEnter)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogLayoutEnter)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogLayoutMessage()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogLayoutMessage)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogLayoutMessage)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogLayoutExit()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogLayoutExit)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogLayoutExit)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogScope()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogScope)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogScope)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceConnection()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServiceConnection)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceConnection)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceEnable()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServiceEnable)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceEnable)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceName()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServiceName)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceName)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceAddress()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServiceAddress)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceAddress)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServicePort()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServicePort)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServicePort)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseEngine()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseEngine)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseEngine)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseName()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseName)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseName)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseLocation()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseLocation)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseLocation)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseDriver()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseDriver)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseDriver)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseAddress()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseAddress)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseAddress)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabasePort()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabasePort)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabasePort)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseUser()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseUsername)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseUsername)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabasePassword()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabasePassword)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabasePassword)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getDefaultBufferBlockSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryDefaultBufferBlock)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::DefaultBufferBlock)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getDefaultMessageQueueSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryDefaultMessageQueue)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::DefaultMessageQueue)];
 }
 
 #endif  // AREG_PERSIST_PERSISTENCEDEFS_HPP

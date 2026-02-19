@@ -71,7 +71,7 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::ServiceC
 
     if (isServiceProviderStateValid() == false)
     {
-        setServiceProviderState(PubSubMix::eServiceState::Uninitialized);
+        setServiceProviderState(PubSubMix::RunState::Uninitialized);
     }
 
     return result;
@@ -87,7 +87,7 @@ void Publisher::start()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(PubSubMix::eServiceState::Running);
+    setServiceProviderState(PubSubMix::RunState::Running);
     const String & roleName = PubSubMixStub::getServiceRole();
 
     if (isIntegerAlwaysValid() == false)
@@ -116,7 +116,7 @@ void Publisher::stop()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(PubSubMix::eServiceState::Stopped);
+    setServiceProviderState(PubSubMix::RunState::Stopped);
 }
 
 void Publisher::invalidate()
@@ -131,7 +131,7 @@ void Publisher::invalidate()
     mSeqString = 0;
     mSeqInteger = 0;
 
-    setServiceProviderState(PubSubMix::eServiceState::Uninitialized);
+    setServiceProviderState(PubSubMix::RunState::Uninitialized);
 
     invalidateIntegerAlways();
     invalidateStringOnChange();
@@ -147,7 +147,7 @@ void Publisher::quit()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(PubSubMix::eServiceState::Shutdown);
+    setServiceProviderState(PubSubMix::RunState::Shutdown);
     Application::signalAppQuit();
 }
 

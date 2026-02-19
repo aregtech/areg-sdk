@@ -62,13 +62,13 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
     return result;
 }
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState ServiceState, NEService::DataState state )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state )
 {
     LOG_SCOPE(examples_22_pubclient_ServiceClient_onServiceStateUpdate);
     LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
     if (state == NEService::DataState::DataIsOK)
     {
-        if (ServiceState == HelloWatchdog::eState::Stopped)
+        if (ServiceState == HelloWatchdog::ComponentState::Stopped)
         {
             printf("Sending request to shutdown and quit application");
             requestShutdownService();

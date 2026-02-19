@@ -35,11 +35,11 @@ ConnectionService::ConnectionService( const NERegistry::ComponentEntry & entry, 
 void ConnectionService::startupComponent( ComponentThread & comThread )
 {
     Component::startupComponent(comThread);
-    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
+    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
 }
 
 void ConnectionService::shutdownComponent( ComponentThread & comThread )
 {
-    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceStartup, 0, 0 );
+    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 0, 0 );
     Component::shutdownComponent(comThread);
 }

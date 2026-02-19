@@ -27,27 +27,27 @@ namespace
 // No special meaning, only short meanings
 /************************************************************************/
 // Dummy
-constexpr uint16_t DUMMY   { static_cast<uint16_t>(NEString::CharDefs::Undefined) };
+constexpr uint16_t DUMMY   { static_cast<uint16_t>(NEString::CharCategory::Undefined) };
 // End of string, null-termination
-constexpr uint16_t EOFS    { static_cast<uint16_t>(NEString::CharDefs::EOfS) };
+constexpr uint16_t EOFS    { static_cast<uint16_t>(NEString::CharCategory::EOfS) };
 // End of line, regardless only '\n' is defining, but using to make binary buffer readable
-constexpr uint16_t EOFL    { static_cast<uint16_t>(NEString::CharDefs::EndOfLine) | static_cast<uint16_t>(NEString::CharDefs::WhiteSpace) };
+constexpr uint16_t EOFL    { static_cast<uint16_t>(NEString::CharCategory::EndOfLine) | static_cast<uint16_t>(NEString::CharCategory::WhiteSpace) };
 // DOS End of Line, used only for carriage return
-constexpr uint16_t DEOL    { static_cast<uint16_t>(NEString::CharDefs::CarReturn)  | static_cast<uint16_t>(NEString::CharDefs::EndOfLine) };
+constexpr uint16_t DEOL    { static_cast<uint16_t>(NEString::CharCategory::CarReturn)  | static_cast<uint16_t>(NEString::CharCategory::EndOfLine) };
 // White space, used for trimming, as we as syntax separator
-constexpr uint16_t SPACE   { static_cast<uint16_t>(NEString::CharDefs::WhiteSpace) | static_cast<uint16_t>(NEString::CharDefs::Delimiter) };
+constexpr uint16_t SPACE   { static_cast<uint16_t>(NEString::CharCategory::WhiteSpace) | static_cast<uint16_t>(NEString::CharCategory::Delimiter) };
 // Control key value, also used to specify white space in conversion of binary buffer to readable
-constexpr uint16_t CTRL    { static_cast<uint16_t>(NEString::CharDefs::Control)    | static_cast<uint16_t>(NEString::CharDefs::WhiteSpace) };
+constexpr uint16_t CTRL    { static_cast<uint16_t>(NEString::CharCategory::Control)    | static_cast<uint16_t>(NEString::CharCategory::WhiteSpace) };
 // All printable characters, symbols and numbers, which may change text, including tab and whitespace
-constexpr uint16_t PRINT   { static_cast<uint16_t>(NEString::CharDefs::Printable) };
+constexpr uint16_t PRINT   { static_cast<uint16_t>(NEString::CharCategory::Printable) };
 // All numbers
-constexpr uint16_t NUMBER{ static_cast<uint16_t>(NEString::CharDefs::Number) | static_cast<uint16_t>(NEString::CharDefs::Printable) };
+constexpr uint16_t NUMBER{ static_cast<uint16_t>(NEString::CharCategory::Number) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
 // All symbols
-constexpr uint16_t SYMBOL{ static_cast<uint16_t>(NEString::CharDefs::Symbol) | static_cast<uint16_t>(NEString::CharDefs::Printable) };
+constexpr uint16_t SYMBOL{ static_cast<uint16_t>(NEString::CharCategory::Symbol) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
 // All upper case letters 
-constexpr uint16_t LET_UP{ static_cast<uint16_t>(NEString::CharDefs::LetterUp) | static_cast<uint16_t>(NEString::CharDefs::Printable) };
+constexpr uint16_t LET_UP{ static_cast<uint16_t>(NEString::CharCategory::LetterUp) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
 // All lower case letters
-constexpr uint16_t LET_LO{ static_cast<uint16_t>(NEString::CharDefs::LetterLo) | static_cast<uint16_t>(NEString::CharDefs::Printable) };
+constexpr uint16_t LET_LO{ static_cast<uint16_t>(NEString::CharCategory::LetterLo) | static_cast<uint16_t>(NEString::CharCategory::Printable) };
 
 /**
  * \brief   The table of first 256 symbols based on UTF-8 code page.

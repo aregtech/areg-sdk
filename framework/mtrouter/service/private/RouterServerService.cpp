@@ -37,7 +37,7 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 //////////////////////////////////////////////////////////////////////////
 
 RouterServerService::RouterServerService()
-    : ServiceCommunicationBase   ( NEService::COOKIE_ROUTER, NERemoteService::RemoteServiceKind::Router, static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicationBase::eConnectionBehavior::DefaultAccept )
+    : ServiceCommunicationBase   ( NEService::COOKIE_ROUTER, NERemoteService::RemoteServiceKind::Router, static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicationBase::ConnectionPolicy::Accept )
     , RegistrationConsumer ( )
     , RegistrationProvider ( )
 

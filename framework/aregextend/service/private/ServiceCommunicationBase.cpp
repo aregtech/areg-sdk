@@ -48,7 +48,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , NERemoteService::RemoteServiceKind service
                                                 , unsigned int connectTypes
                                                 , const String & dispatcher
-                                                , ServiceCommunicationBase::eConnectionBehavior behavior /*= ServiceCommunicationBase::eConnectionBehavior::DefaultAccept*/ )
+                                                , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
     : RemoteMessageHandler        ( )
     , ConnectionConsumer   ( )
     , ConnectionProvider   ( )
@@ -202,8 +202,8 @@ bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & client
     {
         Lock lock(mLock);
         const String & ipAddress = clientSocket.getAddress( ).getHostAddress( );
-        result =  ((mConnectBehavior == eConnectionBehavior::DefaultAccept) && (mBlackList.contains( ipAddress ) == false)) ||
-                  ((mConnectBehavior == eConnectionBehavior::DefaultReject) && (mWhiteList.contains( ipAddress ) == true ));
+        result =  ((mConnectBehavior == ConnectionPolicy::Accept) && (mBlackList.contains( ipAddress ) == false)) ||
+                  ((mConnectBehavior == ConnectionPolicy::Reject) && (mWhiteList.contains( ipAddress ) == true ));
 
     }
 

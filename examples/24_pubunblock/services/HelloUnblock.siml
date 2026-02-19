@@ -9,7 +9,7 @@ and when timeout is expired, sends the response.
 The service is stopped and the application is shutdown when there is no more pending request.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="20" Name="eServiceState" Type="Enumeration" Values="default">
+        <DataType ID="20" Name="RunState" Type="Enumeration" Values="default">
             <Description>The state of the service</Description>
             <FieldList>
                 <EnumEntry ID="21" Name="ServiceUndefined">
@@ -25,7 +25,7 @@ The service is stopped and the application is shutdown when there is no more pen
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute ID="24" Name="HelloServiceState" DataType="eServiceState" Notify="OnChange">
+        <Attribute ID="24" Name="HelloServiceState" DataType="RunState" Notify="OnChange">
             <Description>The state of the service.</Description>
         </Attribute>
     </AttributeList>

@@ -30,10 +30,10 @@
 namespace NESystemService
 {
     /**
-     * \brief   NESystemService::eServiceOption
+     * \brief   NESystemService::ServiceOption
      *          Message routing service options.
      **/
-    enum class eServiceOption   : int32_t
+    enum class ServiceOption    : int32_t
     {
           CMD_Undefined     //!< Option is undefined.
         , CMD_Help          //!< Option is to display help on console.
@@ -48,9 +48,9 @@ namespace NESystemService
     };
 
     /**
-     * \brief   Converts and returns string value of NESystemService::eServiceOption type.
+     * \brief   Converts and returns string value of NESystemService::ServiceOption type.
      **/
-    inline const char * getString( NESystemService::eServiceOption cmdService );
+    inline const char * getString( NESystemService::ServiceOption cmdService );
 
     /**
      * \brief   The default setup for the system service executable options.
@@ -58,47 +58,47 @@ namespace NESystemService
     const OptionParser::sOptionSetup ServiceOptionSetup[ ]
     {
           //!< Default command.
-          { ""  , ""            , static_cast<int>(eServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+          { ""  , ""            , static_cast<int>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a console application.
-        , { "-c", "--console"   , static_cast<int>(eServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-c", "--console"   , static_cast<int>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display help on console.
-        , { "-h", "--help"      , static_cast<int>(eServiceOption::CMD_Help)        , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-h", "--help"      , static_cast<int>(ServiceOption::CMD_Help)        , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display the error message.
-        , { "-l", "--load"      , static_cast<int>(eServiceOption::CMD_Load)        , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+        , { "-l", "--load"      , static_cast<int>(ServiceOption::CMD_Load)        , OptionParser::STRING_NO_RANGE , {}, {}, {} }
           //!< Command to install service. Valid for Windows OS, ignored in other cases.
-        , { "-i", "--install"   , static_cast<int>(eServiceOption::CMD_Install)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-i", "--install"   , static_cast<int>(ServiceOption::CMD_Install)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a system service process.
-        , { "-s", "--service"   , static_cast<int>(eServiceOption::CMD_Service)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-s", "--service"   , static_cast<int>(ServiceOption::CMD_Service)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to uninstall service. Valid for Windows OS, ignored in other cases.
-        , { "-u", "--uninstall" , static_cast<int>(eServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA          , {}, {}, {} }
+        , { "-u", "--uninstall" , static_cast<int>(ServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA          , {}, {}, {} }
           //!< Command to display data rate when run as console application.
-        , { "-v", "--verbose"   , static_cast<int>(eServiceOption::CMD_Verbose)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-v", "--verbose"   , static_cast<int>(ServiceOption::CMD_Verbose)     , OptionParser::NO_DATA         , {}, {}, {} }
     };
 
     /**
-     * \brief   NESystemService::eSystemServiceState
+     * \brief   NESystemService::ServicePhase
      *          Describes the system service state.
      **/
-    enum class eSystemServiceState : int32_t
+    enum class ServicePhase : int32_t
     {
-          ServiceStopped    //!< Service is stopped.
-        , ServiceStarting   //!< Service is in starting process.
-        , ServiceStopping   //!< Service is in stopping process.
-        , ServiceRunning    //!< Service is up and running.
-        , ServiceContinuing //!< Service was paused and in continuing state.
-        , ServicePausing    //!< Service is in pausing state.
-        , ServicePaused     //!< Service is paused.
+          Stopped       //!< Service is stopped.
+        , Starting      //!< Service is in starting process.
+        , Stopping      //!< Service is in stopping process.
+        , Running       //!< Service is up and running.
+        , Continuing    //!< Service was paused and now is continuing.
+        , Pausing       //!< Service is in pausing state.
+        , Paused        //!< Service is paused.
     };
 
     /**
      * \brief   Returns the human readable string of NESystemService::eSystemState value
      **/
-    inline const char * getString( NESystemService::eSystemServiceState serviceState );
+    inline const char * getString( NESystemService::ServicePhase serviceState );
 
     /**
      * \brief   The default option to run Multitarget System as a console application.
      **/
-    constexpr eServiceOption   DEFAULT_OPTION   { eServiceOption::CMD_Console };
+    constexpr ServiceOption   DEFAULT_OPTION   { ServiceOption::CMD_Console };
 
     /**
      * \brief   The default option to run the Log Collector in verbose mode to output send and receive data rate.
@@ -188,55 +188,55 @@ namespace NESystemService
 // NESystemService namespace inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * NESystemService::getString( NESystemService::eServiceOption cmdService )
+inline const char * NESystemService::getString( NESystemService::ServiceOption cmdService )
 {
     switch ( cmdService )
     {
-    case NESystemService::eServiceOption::CMD_Undefined:
+    case NESystemService::ServiceOption::CMD_Undefined:
         return "NESystemService::CMD_Undefined";
-    case NESystemService::eServiceOption::CMD_Console:
+    case NESystemService::ServiceOption::CMD_Console:
         return "NESystemService::CMD_Console";
-    case NESystemService::eServiceOption::CMD_Help:
+    case NESystemService::ServiceOption::CMD_Help:
         return "NESystemService::CMD_Help";
-    case NESystemService::eServiceOption::CMD_Load:
+    case NESystemService::ServiceOption::CMD_Load:
         return "NESystemService::CMD_Load";
-    case NESystemService::eServiceOption::CMD_Install:
+    case NESystemService::ServiceOption::CMD_Install:
         return "NESystemService::CMD_Install";
-    case NESystemService::eServiceOption::CMD_Service:
+    case NESystemService::ServiceOption::CMD_Service:
         return "NESystemService::CMD_Service";
-    case NESystemService::eServiceOption::CMD_Uninstall:
-        return "NESystemService::eServiceOption::CMD_Uninstall";
-    case NESystemService::eServiceOption::CMD_Verbose:
-        return "NESystemService::eServiceOption::CMD_Verbose";
-    case NESystemService::eServiceOption::CMD_Custom:
-        return "NESystemService::eServiceOption::CMD_Custom";
+    case NESystemService::ServiceOption::CMD_Uninstall:
+        return "NESystemService::ServiceOption::CMD_Uninstall";
+    case NESystemService::ServiceOption::CMD_Verbose:
+        return "NESystemService::ServiceOption::CMD_Verbose";
+    case NESystemService::ServiceOption::CMD_Custom:
+        return "NESystemService::ServiceOption::CMD_Custom";
     default:
         ASSERT( false );
-        return "ERR: Unexpected NESystemService::eServiceOption value!";
+        return "ERR: Unexpected NESystemService::ServiceOption value!";
     }
 }
 
-inline const char * NESystemService::getString( NESystemService::eSystemServiceState serviceState )
+inline const char * NESystemService::getString( NESystemService::ServicePhase serviceState )
 {
     switch ( serviceState )
     {
-    case NESystemService::eSystemServiceState::ServiceStopped:
+    case NESystemService::ServicePhase::Stopped:
         return "NESystemService::ServiceStopped";
-    case NESystemService::eSystemServiceState::ServiceStarting:
+    case NESystemService::ServicePhase::Starting:
         return "NESystemService::ServiceStarting";
-    case NESystemService::eSystemServiceState::ServiceStopping:
+    case NESystemService::ServicePhase::Stopping:
         return "NESystemService::ServiceStopping";
-    case NESystemService::eSystemServiceState::ServiceRunning:
+    case NESystemService::ServicePhase::Running:
         return "NESystemService::ServiceRunning";
-    case NESystemService::eSystemServiceState::ServiceContinuing:
+    case NESystemService::ServicePhase::Continuing:
         return "NESystemService::ServiceContinuing";
-    case NESystemService::eSystemServiceState::ServicePausing:
+    case NESystemService::ServicePhase::Pausing:
         return "NESystemService::ServicePausing";
-    case NESystemService::eSystemServiceState::ServicePaused:
+    case NESystemService::ServicePhase::Paused:
         return "NESystemService::ServicePaused";
     default:
         ASSERT( false );
-        return "ERR: Undefined NESystemService::eSystemServiceState value!!!";
+        return "ERR: Undefined NESystemService::ServicePhase value!!!";
     }
 }
 

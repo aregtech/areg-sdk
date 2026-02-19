@@ -66,11 +66,11 @@ public:
      *              -   If the default behavior is to rejected the connection,
      *                  the connection is accepted if it IP-address white-listed.
      **/
-    typedef enum class E_ConnectionBehavior : uint16_t
+    enum class ConnectionPolicy : uint8_t
     {
-          DefaultAccept //!< The default behavior is to accept the connection.
-        , DefaultReject //!< The default behavior is to reject the connection.
-    } eConnectionBehavior;
+          Accept    //!< The default behavior is to accept the connection.
+        , Reject    //!< The default behavior is to reject the connection.
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -86,7 +86,7 @@ public:
                             , NERemoteService::RemoteServiceKind service
                             , unsigned int connectTypes
                             , const String & dispatcher
-                            , ServiceCommunicationBase::eConnectionBehavior behavior = ServiceCommunicationBase::eConnectionBehavior::DefaultAccept );
+                            , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
     /**
      * \brief   Destructor
      **/
@@ -488,7 +488,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 protected:
-    const eConnectionBehavior               mConnectBehavior;   //!< The default connection behavior.
+    const ConnectionPolicy               mConnectBehavior;   //!< The default connection behavior.
     const NERemoteService::RemoteServiceKind  mService;           //!< The remote service type.
     const unsigned int                      mConnectTypes;      //!< The bitwise flags of remote service connections.
     ServerConnection                        mServerConnection;  //!< The instance of server connection object.

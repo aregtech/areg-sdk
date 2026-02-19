@@ -76,7 +76,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( SystemShutdown::eServiceState ServiceState, NEService::DataState state ) override;
+    virtual void onServiceStateUpdate( SystemShutdown::RunState ServiceState, NEService::DataState state ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

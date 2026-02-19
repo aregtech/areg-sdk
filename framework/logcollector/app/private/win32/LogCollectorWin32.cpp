@@ -73,11 +73,11 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     try
     {
         LogCollector& logger = LogCollector::getInstance();
-        logger.setState(NESystemService::eSystemServiceState::ServiceStarting);
+        logger.setState(NESystemService::ServicePhase::Starting);
         char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int>(argc));
-        logger.serviceMain(NESystemService::eServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+        logger.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
         NESystemService::deleteArguments(argvTemp, static_cast<int>(argc));
-        logger.setState(NESystemService::eSystemServiceState::ServiceStopped);
+        logger.setState(NESystemService::ServicePhase::Stopped);
     }
     catch (const std::exception& /*ex*/)
     {
@@ -90,19 +90,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch (CtrlCode)
     {
     case SERVICE_CONTROL_STOP:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceStop);
+        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServicePause);
+        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceContinue);
+        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        LogCollector::getInstance().controlService(SystemServiceBase::eServiceControl::Shutdown);
+        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

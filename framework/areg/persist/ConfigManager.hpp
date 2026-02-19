@@ -149,7 +149,7 @@ public:
     const Property * getProperty( const String& section
                                 , const String& property
                                 , const String& position
-                                , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -175,7 +175,7 @@ public:
     const Property * getModuleProperty( const String& section
                                       , const String& property
                                       , const String& position
-                                      , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                      , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -206,7 +206,7 @@ public:
                           , const String& property
                           , const String& position
                           , const String& value
-                          , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey
+                          , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey
                           , bool isTemporary = false);
 
     /**
@@ -235,7 +235,7 @@ public:
     inline const PropertyValue * getPropertyValue( const String& section
                                                  , const String& property
                                                  , const String& position = String::EmptyString
-                                                 , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                                 , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer to the value of the property searched by specified parameters.
@@ -259,11 +259,11 @@ public:
     inline const PropertyValue * getModulePropertyValue( const String& section
                                                        , const String& property
                                                        , const String& position = String::EmptyString
-                                                       , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                                       , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
     inline PropertyValue * getModulePropertyValue( const String& section
                                                  , const String& property
                                                  , const String& position = String::EmptyString
-                                                 , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey);
+                                                 , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Returns the pointer to the value of the module specific property searched by specified key parameter.
@@ -298,7 +298,7 @@ public:
     void removeModuleProperty( const String& section
                              , const String& property
                              , const String& position = String::EmptyString
-                             , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey);
+                             , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes the existing configuration entry from the writable list.
@@ -314,7 +314,7 @@ public:
      * \param   keyType     The property key type.
      * \return  Returns the number of entries removed from the writable list.
      **/
-    int removeModuleProperties(const String& section, const String& property, NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey);
+    int removeModuleProperties(const String& section, const String& property, NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes all configuration entries from the writable list matching the specified section.
@@ -892,7 +892,7 @@ inline void ConfigManager::setModuleProperty(const PropertyKey& key, const Strin
 inline const PropertyValue * ConfigManager::getPropertyValue( const String& section
                                                             , const String& property
                                                             , const String& position /*= String::EmptyString*/
-                                                            , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                                            , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -913,7 +913,7 @@ inline const PropertyValue* ConfigManager::getModulePropertyValue(const Property
 inline const PropertyValue * ConfigManager::getModulePropertyValue( const String& section
                                                                   , const String& property
                                                                   , const String& position /*= String::EmptyString*/
-                                                                  , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                                                  , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -929,7 +929,7 @@ inline PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& k
 inline PropertyValue * ConfigManager::getModulePropertyValue( const String& section
                                                            , const String& property
                                                            , const String& position /*= String::EmptyString*/
-                                                           , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/)
+                                                           , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/)
 {
     Lock lock(mLock);
 
@@ -983,7 +983,7 @@ inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= 
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogStatus;
+    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogStatus;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogStatus();
 
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
@@ -998,7 +998,7 @@ inline void ConfigManager::setLogEnabled(const String& logType, bool newValue, b
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogEnable;
+    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogEnable;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogEnable();
     setModuleProperty(key.section, key.property, logType, String::makeString(newValue), confKey, isTemporary);
 }
@@ -1012,7 +1012,7 @@ inline void ConfigManager::setLogFileLocation(const String& newValue, bool isTem
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileLocation;
+    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogFileLocation;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileLocation();
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }

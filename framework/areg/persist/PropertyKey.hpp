@@ -85,8 +85,8 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    PropertyKey(const String& section, const String& module, const String& property, const String& position, NEPersistence::eConfigKeys keyType);
-    PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, NEPersistence::eConfigKeys keyType);
+    PropertyKey(const String& section, const String& module, const String& property, const String& position, NEPersistence::ConfigEntry keyType);
+    PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, NEPersistence::ConfigEntry keyType);
 
     /**
      * \brief   Moves data from given source
@@ -161,7 +161,7 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    void setValues(const String& section, const String& property, const String& module, const String& position, NEPersistence::eConfigKeys keyType);
+    void setValues(const String& section, const String& property, const String& module, const String& position, NEPersistence::ConfigEntry keyType);
 
     /**
      * \brief   Returns section part of the Key
@@ -186,7 +186,7 @@ public:
     /**
      * \brief   Returns the type of the property key.
      **/
-    NEPersistence::eConfigKeys getKeyType() const;
+    NEPersistence::ConfigEntry getKeyType() const;
 
     /**
      * \brief   Returns true if the Key is valid.
@@ -320,7 +320,7 @@ private:
      * \param   position    The position part of the property key.
      * \return  Returns the key type, wich syntax matches the specified data.
      **/
-    inline static NEPersistence::eConfigKeys _findKey(const String& section, const String& module, const String& property, const String& position);
+    inline static NEPersistence::ConfigEntry _findKey(const String& section, const String& module, const String& property, const String& position);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -343,7 +343,7 @@ private:
      **/
     String  mPosition;     // pos 4
 
-    NEPersistence::eConfigKeys mKeyType;
+    NEPersistence::ConfigEntry mKeyType;
 };
 
 //////////////////////////////////////////////////////////////////////////

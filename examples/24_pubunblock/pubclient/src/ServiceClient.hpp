@@ -105,7 +105,7 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::DataState state ) override;
+    virtual void onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 

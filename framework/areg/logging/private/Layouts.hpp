@@ -69,7 +69,7 @@ protected:
     /**
      * \brief   Initializes the layout type
      **/
-    LogLayout( NELogOptions::eLayouts layout );
+    LogLayout( NELogOptions::LayoutToken layout );
 
 public:
     /**
@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Returns the layout type
      **/
-    inline NELogOptions::eLayouts getLayoutType() const;
+    inline NELogOptions::LayoutToken getLayoutType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -109,7 +109,7 @@ protected:
     /**
      * \brief   Layout type. Cannot be modified.
      **/
-    const NELogOptions::eLayouts  mLayout;
+    const NELogOptions::LayoutToken  mLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -1006,7 +1006,7 @@ public:
 // LogLayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogOptions::eLayouts LogLayout::getLayoutType() const
+inline NELogOptions::LayoutToken LogLayout::getLayoutType() const
 {
     return mLayout;
 }

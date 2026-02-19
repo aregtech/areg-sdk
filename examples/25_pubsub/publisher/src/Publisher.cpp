@@ -120,7 +120,7 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::ServiceC
 
     if (isServiceProviderStateValid() == false)
     {
-        setServiceProviderState(PubSub::eServiceState::Uninitialized);
+        setServiceProviderState(PubSub::RunState::Uninitialized);
     }
 
     return result;
@@ -136,7 +136,7 @@ void Publisher::start()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(PubSub::eServiceState::Running);
+    setServiceProviderState(PubSub::RunState::Running);
 
     if (isIntegerAlwaysValid() == false)
     {
@@ -164,7 +164,7 @@ void Publisher::stop()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(PubSub::eServiceState::Stopped);
+    setServiceProviderState(PubSub::RunState::Stopped);
 }
 
 void Publisher::invalidate()
@@ -179,7 +179,7 @@ void Publisher::invalidate()
     mSeqString = 0;
     mSeqInteger = 0;
 
-    setServiceProviderState(PubSub::eServiceState::Uninitialized);
+    setServiceProviderState(PubSub::RunState::Uninitialized);
 
     invalidateIntegerAlways();
     invalidateStringOnChange();
@@ -195,7 +195,7 @@ void Publisher::quit()
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
-    setServiceProviderState(PubSub::eServiceState::Shutdown);
+    setServiceProviderState(PubSub::RunState::Shutdown);
     Application::signalAppQuit();
 }
 

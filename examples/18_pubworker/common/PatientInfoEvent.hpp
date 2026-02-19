@@ -23,11 +23,11 @@ public:
     /**
      * \brief   Defines the data type contained in buffer.
      **/
-    typedef enum E_UpdateCommands
+    enum class UpdateCommands : uint8_t
     {
-          CMD_Undefined     = 0 //!< No information is in buffer or it is undefined.
+          CMD_Undefined = 0     //!< No information is in buffer or it is undefined.
         , CMD_PatientInfo       //!< The buffer contains patient information data.
-    } eUpdateCommands;
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors, destructor, operators and the attributes.
@@ -75,9 +75,9 @@ public:
     inline const SharedBuffer & getData() const;
 
     /**
-     * \brief   Declare PatientInfoEventData::eUpdateCommands as streamable.
+     * \brief   Declare PatientInfoEventData::UpdateCommands as streamable.
      **/
-    AREG_DECLARE_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+    AREG_DECLARE_STREAMABLE( PatientInfoEventData::UpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -88,9 +88,9 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Implement PatientInfoEventData::eUpdateCommands streamable.
+// Implement PatientInfoEventData::UpdateCommands streamable.
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE( PatientInfoEventData::eUpdateCommands );
+AREG_IMPLEMENT_STREAMABLE( PatientInfoEventData::UpdateCommands );
 
 //////////////////////////////////////////////////////////////////////////
 // Define custom event and the event consumer.
@@ -112,7 +112,7 @@ inline PatientInfoEventData::PatientInfoEventData()
 inline PatientInfoEventData::PatientInfoEventData( const PatientInformation::PatientInfo & infoPatient )
     : mData ( )
 {
-    mData << PatientInfoEventData::CMD_PatientInfo;
+    mData << PatientInfoEventData::UpdateCommands::CMD_PatientInfo;
     mData << infoPatient;
 }
 
