@@ -32,7 +32,7 @@ ScopeNodeBase & ScopeNodeBase::invalidNode()
 
 ScopeNodeBase::ScopeNodeBase()
     : mNodeType     ( ScopeNodeBase::eNode::Invalid )
-    , mPrioStates   ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
+    , mPrioStates   ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
     , mNodeName     ( )
     , mGrouping     ( static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping) )
 {
@@ -40,13 +40,13 @@ ScopeNodeBase::ScopeNodeBase()
 
 ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType )
     : mNodeType     ( nodeType )
-    , mPrioStates   ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
+    , mPrioStates   ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
     , mNodeName     ( )
     , mGrouping    ( static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping) )
 {
 }
 
-ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & nodeName, unsigned int prio /*= static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset)*/ )
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & nodeName, unsigned int prio /*= static_cast<unsigned int>(NELogging::LogPriority::PrioNotset)*/ )
     : mNodeType     ( nodeType )
     , mPrioStates   ( prio )
     , mNodeName     ( nodeName )

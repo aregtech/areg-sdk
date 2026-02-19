@@ -45,7 +45,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessa
 //////////////////////////////////////////////////////////////////////////
 
 ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
-                                                , NERemoteService::eRemoteServices service
+                                                , NERemoteService::RemoteServiceKind service
                                                 , unsigned int connectTypes
                                                 , const String & dispatcher
                                                 , ServiceCommunicationBase::eConnectionBehavior behavior /*= ServiceCommunicationBase::eConnectionBehavior::DefaultAccept*/ )
@@ -92,14 +92,14 @@ void ServiceCommunicationBase::removeAllInstances()
     mInstanceMap.release();
 }
 
-bool ServiceCommunicationBase::setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes)
+bool ServiceCommunicationBase::setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
 {
     bool result{ false };
     if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
     {
-        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) != 0)
+        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)) != 0)
         {
-            ConnectionConfiguration config(mService, NERemoteService::eConnectionTypes::ConnectTcpip);
+            ConnectionConfiguration config(mService, NERemoteService::ConnectionType::Tcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 String address{ config.getConnectionAddress() };
@@ -129,7 +129,7 @@ bool ServiceCommunicationBase::connectServiceHost()
         if ( createThread( NECommon::WAIT_INFINITE ) && waitForDispatcherStart(NECommon::WAIT_INFINITE) )
         {
             result = true;
-            sendCommand( ServiceEventData::eServiceEventCommands::CMD_StartService );
+            sendCommand( ServiceEventData::ServiceCommand::CMD_StartService );
         }
 
         LOG_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
@@ -153,7 +153,7 @@ bool ServiceCommunicationBase::reconnectServiceHost()
     {
         if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
         {
-            result = sendCommand( ServiceEventData::eServiceEventCommands::CMD_RestartService );
+            result = sendCommand( ServiceEventData::ServiceCommand::CMD_RestartService );
         }
 
         LOG_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
@@ -161,7 +161,7 @@ bool ServiceCommunicationBase::reconnectServiceHost()
     else
     {
         LOG_WARN("The servicing thread is running, restarting servicing.");
-        result = sendCommand( ServiceEventData::eServiceEventCommands::CMD_RestartService );
+        result = sendCommand( ServiceEventData::ServiceCommand::CMD_RestartService );
     }
 
     return result;
@@ -172,7 +172,7 @@ void ServiceCommunicationBase::disconnectServiceHost()
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
     if ( isRunning() )
     {
-        sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::EventPriority::HighPrio );
+        sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::HighPrio );
         mEventSendStop.lock();
     }
 }
@@ -226,7 +226,7 @@ void ServiceCommunicationBase::connectionLost( SocketAccepted & clientSocket )
     {
         removeInstance(cookie);
         RemoteMessage msgDisconnect = NERemoteService::createDisconnectRequest(cookie, channel);
-        sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
+        sendCommunicationMessage(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
     }
 
     mServerConnection.closeConnection(clientSocket);
@@ -451,7 +451,7 @@ void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgR
                 removeInstance( cookie );
             }
 
-            sendCommunicationMessage( ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgReceived );
+            sendCommunicationMessage( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
         }
         else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::FuncIdRange::SystemServiceConnect) )
         {

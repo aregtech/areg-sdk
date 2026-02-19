@@ -44,39 +44,39 @@ void ServiceClientConsumer::processEvent(const ServiceEventData& data)
 {
     switch (data.getCommand())
     {
-    case ServiceEventData::eServiceEventCommands::CMD_StartService:
+    case ServiceEventData::ServiceCommand::CMD_StartService:
         mServiceEventConsumer.onServiceStart();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_StopService:
+    case ServiceEventData::ServiceCommand::CMD_StopService:
         mServiceEventConsumer.onServiceStop();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_RestartService:
+    case ServiceEventData::ServiceCommand::CMD_RestartService:
         mServiceEventConsumer.onServiceRestart();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceStarted:
+    case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
         mServiceEventConsumer.onServiceConnectionStarted();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceStopped:
+    case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
         mServiceEventConsumer.onServiceConnectionStopped();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceLost:
+    case ServiceEventData::ServiceCommand::CMD_ServiceLost:
         mServiceEventConsumer.onServiceConnectionLost();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceExit:
+    case ServiceEventData::ServiceCommand::CMD_ServiceExit:
         mServiceEventConsumer.onServiceExit();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg:
+    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
         mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceSendMsg:
+    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
         mServiceEventConsumer.onServiceMessageSend(data.getMessage());
         break;
 
@@ -100,39 +100,39 @@ void ServiceServerConsumer::processEvent(const ServiceEventData& data)
 {
     switch (data.getCommand())
     {
-    case ServiceEventData::eServiceEventCommands::CMD_StartService:
+    case ServiceEventData::ServiceCommand::CMD_StartService:
         mServiceEventConsumer.onServiceStart();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_StopService:
+    case ServiceEventData::ServiceCommand::CMD_StopService:
         mServiceEventConsumer.onServiceStop();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_RestartService:
+    case ServiceEventData::ServiceCommand::CMD_RestartService:
         mServiceEventConsumer.onServiceRestart();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceStarted:
+    case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
         mServiceEventConsumer.onServiceConnectionStarted();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceStopped:
+    case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
         mServiceEventConsumer.onServiceConnectionStopped();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceLost:
+    case ServiceEventData::ServiceCommand::CMD_ServiceLost:
         mServiceEventConsumer.onServiceConnectionLost();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceExit:
+    case ServiceEventData::ServiceCommand::CMD_ServiceExit:
         mServiceEventConsumer.onServiceExit();
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg:
+    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
         mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
         break;
 
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceSendMsg:
+    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
         mServiceEventConsumer.onServiceMessageSend(data.getMessage());
         break;
 

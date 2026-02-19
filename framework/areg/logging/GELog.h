@@ -72,25 +72,25 @@
 //////////////////////////////////////////////////////////////////////////
 
     //!< Priority to log everything
-    #define PRIO_LOG_ALL        (static_cast<unsigned int>(NELogging::eLogPriority::PrioDebug)    | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_LOG_ALL        (static_cast<unsigned int>(NELogging::LogPriority::PrioDebug)    | static_cast<unsigned int>(NELogging::LogPriority::PrioScope))
 
     //!< Priority to log info, warnings, error and fatal
-    #define PRIO_INFO           (static_cast<unsigned int>(NELogging::eLogPriority::PrioInfo)     | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_INFO           (static_cast<unsigned int>(NELogging::LogPriority::PrioInfo)     | static_cast<unsigned int>(NELogging::LogPriority::PrioScope))
 
     //!< Priority to log warnings, error and fatal
-    #define PRIO_WARNING        (static_cast<unsigned int>(NELogging::eLogPriority::PrioWarning)  | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_WARNING        (static_cast<unsigned int>(NELogging::LogPriority::PrioWarning)  | static_cast<unsigned int>(NELogging::LogPriority::PrioScope))
 
     //!< Priority to log error and fatal
-    #define PRIO_ERROR          (static_cast<unsigned int>(NELogging::eLogPriority::PrioError)    | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_ERROR          (static_cast<unsigned int>(NELogging::LogPriority::PrioError)    | static_cast<unsigned int>(NELogging::LogPriority::PrioScope))
 
     //!< Priority to log only fatal
-    #define PRIO_FATAL          (static_cast<unsigned int>(NELogging::eLogPriority::PrioFatal)    | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_FATAL          (static_cast<unsigned int>(NELogging::LogPriority::PrioFatal)    | static_cast<unsigned int>(NELogging::LogPriority::PrioScope))
 
     //!< Unset logging scopes in priorities
-    #define PRIO_NOSCOPES(x)    ((x) & (~static_cast<unsigned int>(NELogging::eLogPriority::PrioScope)))
+    #define PRIO_NOSCOPES(x)    ((x) & (~static_cast<unsigned int>(NELogging::LogPriority::PrioScope)))
 
     //!< No logging
-    #define PRIO_NOLOGS         (static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset))
+    #define PRIO_NOLOGS         (static_cast<unsigned int>(NELogging::LogPriority::PrioNotset))
 
 //////////////////////////////////////////////////////////////////////////
 // if AREG_LOGS is defined and not zero

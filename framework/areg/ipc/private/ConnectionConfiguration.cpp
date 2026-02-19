@@ -28,9 +28,9 @@ ConnectionConfiguration::ConnectionConfiguration(const String& service, const St
 {
 }
 
-ConnectionConfiguration::ConnectionConfiguration(NERemoteService::eRemoteServices service, NERemoteService::eConnectionTypes connectType)
-    : mServiceName  (Identifier::convToString(static_cast<unsigned int>(service), NEApplication::RemoteServiceIdentifiers, static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown)))
-    , mConnectType  (Identifier::convToString(static_cast<unsigned int>(connectType), NEApplication::ConnectionIdentifiers, static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined)))
+ConnectionConfiguration::ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType)
+    : mServiceName  (Identifier::convToString(static_cast<unsigned int>(service), NEApplication::RemoteServiceIdentifiers, static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown)))
+    , mConnectType  (Identifier::convToString(static_cast<unsigned int>(connectType), NEApplication::ConnectionIdentifiers, static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined)))
 {
 }
 

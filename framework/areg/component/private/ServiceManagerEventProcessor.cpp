@@ -139,8 +139,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection:
         {
-            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            NERemoteService::RemoteServiceKind service{ NERemoteService::RemoteServiceKind::Unknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined) };
             stream >> service;
             stream >> connectTypes;
 
@@ -150,8 +150,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection:
         {
-            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            NERemoteService::RemoteServiceKind service{ NERemoteService::RemoteServiceKind::Unknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined) };
             stream >> service;
             stream >> connectTypes;
 

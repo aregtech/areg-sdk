@@ -174,9 +174,9 @@ void LogObserver::callbackConnectedInstances(const sLogInstance* instances, uint
         {
             TIME64 now{ DateTime::getNow() };
             NELogging::sLogMessage log{ };
-            log.logDataType     = NELogging::eLogDataType::LogDataLocal;
-            log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
-            log.logMessagePrio  = NELogging::eLogPriority::PrioAny;
+            log.logDataType     = NELogging::LogDataType::Local;
+            log.logMsgType      = NELogging::LogMessageType::MessageText;
+            log.logMessagePrio  = NELogging::LogPriority::PrioAny;
             log.logSource       = inst.liSource;
             log.logTarget       = NEService::COOKIE_LOCAL;
             log.logCookie       = inst.liCookie;
@@ -214,9 +214,9 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
             {
                 TIME64 now{ DateTime::getNow() };
                 NELogging::sLogMessage log{ };
-                log.logDataType     = NELogging::eLogDataType::LogDataLocal;
-                log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
-                log.logMessagePrio  = NELogging::eLogPriority::PrioAny;
+                log.logDataType     = NELogging::LogDataType::Local;
+                log.logMsgType      = NELogging::LogMessageType::MessageText;
+                log.logMessagePrio  = NELogging::LogPriority::PrioAny;
                 log.logSource       = inst.liSource;
                 log.logTarget       = NEService::COOKIE_LOCAL;
                 log.logCookie       = inst.liCookie;
@@ -251,9 +251,9 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uin
         if (cookie == inst.liCookie)
         {
             NELogging::sLogMessage log{ };
-            log.logDataType     = NELogging::eLogDataType::LogDataLocal;
-            log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
-            log.logMessagePrio  = NELogging::eLogPriority::PrioAny;
+            log.logDataType     = NELogging::LogDataType::Local;
+            log.logMsgType      = NELogging::LogMessageType::MessageText;
+            log.logMessagePrio  = NELogging::LogPriority::PrioAny;
             log.logSource       = inst.liSource;
             log.logTarget       = NEService::COOKIE_LOCAL;
             log.logCookie       = inst.liCookie;
@@ -768,9 +768,9 @@ inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable *
 {
     constexpr NEPersistence::eConfigKeys prioConfKey{ NEPersistence::eConfigKeys::EntryLogScope };
     const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
-    unsigned int prios = static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset);
+    unsigned int prios = static_cast<unsigned int>(NELogging::LogPriority::PrioNotset);
     const String prio{ NELogging::makePrioString(prios) };
 
     config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-    config.setLogEnabled(NELogging::LoggingType::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::LogTarget::Remote, false, true);
 }

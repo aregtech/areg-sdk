@@ -373,7 +373,7 @@ bool ScopeNode::isEmpty() const
 //////////////////////////////////////////////////////////////////////////
 
 ScopeRoot::ScopeRoot()
-    : ScopeNode     ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) )
+    : ScopeNode     ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) )
 {
 }
 

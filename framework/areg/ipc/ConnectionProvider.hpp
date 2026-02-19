@@ -72,7 +72,7 @@ public:
      * \param   connectTypes    The bitwise set of connection types like 'tcpip' or 'udp'.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionData( NERemoteService::eRemoteServices service, uint32_t connectTypes ) = 0;
+    virtual bool setupServiceConnectionData( NERemoteService::RemoteServiceKind service, uint32_t connectTypes ) = 0;
 
     /**
      * \brief   Call manually to set router service host name and port number.

@@ -107,10 +107,10 @@ namespace
 }
 #endif // AREG_LOGS
 
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
-    : logDataType   { NELogging::eLogDataType::LogDataLocal }
+NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType)
+    : logDataType   { NELogging::LogDataType::Local }
     , logMsgType    { msgType }
-    , logMessagePrio{ NELogging::eLogPriority::PrioNotset }
+    , logMessagePrio{ NELogging::LogPriority::PrioNotset }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
     , logCookie     { NEService::COOKIE_LOCAL }
@@ -131,8 +131,8 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
 }
 
 #if AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen)
-    : logDataType   { NELogging::eLogDataType::LogDataLocal }
+NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, unsigned int msgLen)
+    : logDataType   { NELogging::LogDataType::Local }
     , logMsgType    { msgType }
     , logMessagePrio{ msgPrio }
     , logSource     { NEService::COOKIE_LOCAL }
@@ -156,10 +156,10 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int /*scopeId*/, unsigned int /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
-    : logDataType{ NELogging::eLogDataType::LogDataLocal }
+NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, unsigned int /*scopeId*/, unsigned int /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
+    : logDataType{ NELogging::LogDataType::Local }
     , logMsgType{ msgType }
-    , logMessagePrio{ NELogging::eLogPriority::PrioNotset }
+    , logMessagePrio{ NELogging::LogPriority::PrioNotset }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
     , logCookie     { NEService::COOKIE_LOCAL }
@@ -223,7 +223,7 @@ NELogging::sLogMessage & NELogging::sLogMessage::operator = (const NELogging::sL
         logSessionId    = src.logSessionId;
         logMessageLen   = src.logMessageLen;
 
-        if (logDataType == NELogging::eLogDataType::LogDataRemote)
+        if (logDataType == NELogging::LogDataType::Remote)
         {
             logThreadLen = 0;
             logThread[0] = String::EmptyChar;
@@ -306,7 +306,7 @@ AREG_API_IMPL unsigned int NELogging::getScopePriority( const char * scopeName )
     return LogManager::getScopePriority( scopeName );
 }
 
-AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage& logMessage, NELogging::eLogDataType dataType, const ITEM_ID& srcCookie)
+AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage& logMessage, NELogging::LogDataType dataType, const ITEM_ID& srcCookie)
 {
     RemoteMessage msgLog;
     if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NELogging::sLogMessage)) != nullptr)
@@ -323,7 +323,7 @@ AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMes
         NEMemory::memCopy(log->logModule, NELogging::LOG_NAMES_SIZE, module.getString(), static_cast<uint32_t>(module.getLength()) + 1);
         log->logModuleLen   = static_cast<uint32_t>(module.getLength());
 
-        if (NELogging::eLogDataType::LogDataLocal != dataType)
+        if (NELogging::LogDataType::Local != dataType)
         {
             const String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
             NEMemory::memCopy(log->logThread, NELogging::LOG_NAMES_SIZE, threadName.getString(), static_cast<uint32_t>(threadName.getLength()) + 1);
@@ -515,13 +515,13 @@ AREG_API_IMPL const ITEM_ID & NELogging::getCookie()
 
 AREG_API_IMPL String NELogging::makePrioString(unsigned int priorities)
 {
-    return Identifier::convToString(priorities, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset));
+    return Identifier::convToString(priorities, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::LogPriority::PrioNotset));
 }
 
 AREG_API_IMPL unsigned int NELogging::makePriorities(const String& prioString)
 {
-    uint16_t id = static_cast<uint16_t>(Identifier::convFromString(prioString, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid)));
-    return static_cast<NELogging::eLogPriority>(id);
+    uint16_t id = static_cast<uint16_t>(Identifier::convFromString(prioString, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid)));
+    return static_cast<NELogging::LogPriority>(id);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -587,10 +587,10 @@ AREG_API_IMPL unsigned int NELogging::setScopePriority( const char * /*scopeName
 
 AREG_API_IMPL unsigned int NELogging::getScopePriority( const char * /*scopeName*/ )
 {
-    return static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid);
+    return static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid);
 }
 
-AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage & /*logMessage*/, NELogging::eLogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
+AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage & /*logMessage*/, NELogging::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
 {
     RemoteMessage msgLog;
     return msgLog;
@@ -682,7 +682,7 @@ AREG_API_IMPL String NELogging::makePrioString(unsigned int /*priorities*/)
 
 AREG_API_IMPL unsigned int NELogging::makePriorities(const String& /*prioString*/)
 {
-    return static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset);
+    return static_cast<unsigned int>(NELogging::LogPriority::PrioNotset);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -71,10 +71,10 @@ private:
     static constexpr ITEM_ID                            TARGET_ID   { NEService::COOKIE_LOGGER };
 
     //!< The type of the service. It is a log collector service.
-    static constexpr NERemoteService::eRemoteServices   SERVICE_TYPE{ NERemoteService::eRemoteServices::ServiceLogger };
+    static constexpr NERemoteService::RemoteServiceKind   SERVICE_TYPE{ NERemoteService::RemoteServiceKind::Logger };
 
     //!< The connection type. At the moment only TCP/IP
-    static constexpr NERemoteService::eConnectionTypes  CONNECT_TYPE{ NERemoteService::eConnectionTypes::ConnectTcpip };
+    static constexpr NERemoteService::ConnectionType  CONNECT_TYPE{ NERemoteService::ConnectionType::Tcpip };
 
     //!< The message source. It is marked as an observer.
     static constexpr NEService::MessageSource          SOURCE_TYPE { NEService::MessageSource::SourceObserver };

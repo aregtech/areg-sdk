@@ -40,20 +40,20 @@ LogManager & LogManager::getInstance()
 
 void LogManager::logMessage(const NELogging::sLogMessage& logData )
 {
-    LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::eLoggingAction::LoggingLogMessage, logData) );
+    LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
 }
 
 void LogManager::logMessage(const SharedBuffer& logData)
 {
-    LogManager::getInstance().sendLogEvent(LoggingEventData(LoggingEventData::eLoggingAction::LoggingLogMessage, logData));
+    LogManager::getInstance().sendLogEvent(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
 }
 
 void LogManager::logMessage(const RemoteMessage& logData)
 {
-    LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::eLoggingAction::LoggingLogMessage, logData) );
+    LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
 }
 
-void LogManager::sendCommandMessage(LoggingEventData::eLoggingAction cmd, const SharedBuffer& data)
+void LogManager::sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data)
 {
     LogManager::getInstance().sendLogEvent(LoggingEventData(cmd, data));
 }
@@ -112,7 +112,7 @@ bool LogManager::forceActivateLogging()
     {
         Lock lock( logManager.mLock );
         logManager.mLogConfig.setStatus(true);
-        logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
+        logManager.mLogConfig.setLogEnabled(NELogging::LogTarget::File, true);
         logManager.mScopeController.activateDefaults( );
         result = logManager.startLoggingThread( );
     }
@@ -154,7 +154,7 @@ unsigned int LogManager::getScopePriority( const char * scopeName )
     ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
     unsigned int scopeId = NELogging::makeScopeId( scopeName );
     const LogScope * scope = ctrScope.getScope( scopeId );
-    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid));
+    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid));
 }
 
 void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
@@ -176,7 +176,7 @@ void LogManager::forceEnableLogging()
 {
     LogManager& logManager = LogManager::getInstance();
     logManager.mLogConfig.setStatus(true);
-    logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
+    logManager.mLogConfig.setLogEnabled(NELogging::LogTarget::File, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ bool LogManager::startLoggingThread()
     {
         if ( waitForDispatcherStart(NECommon::WAIT_INFINITE) )
         {
-            sendLogEvent( LoggingEventData(LoggingEventData::eLoggingAction::LoggingStartLogs) );
+            sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StartLogs) );
             mLogStarted.lock( NECommon::WAIT_INFINITE );
         }
     }
@@ -260,7 +260,7 @@ bool LogManager::startLoggingThread()
 
 void LogManager::stopLoggingThread(bool waitComplete)
 {
-    sendLogEvent( LoggingEventData(LoggingEventData::eLoggingAction::LoggingStopLogs) );
+    sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
     mIsStarted = false;
 
     if (waitComplete)

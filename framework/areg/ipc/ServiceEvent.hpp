@@ -37,7 +37,7 @@ public:
     /**
      * \brief   The list of service connections and communication events
      **/
-    enum class eServiceEventCommands
+    enum class ServiceCommand
     {
           CMD_StartService          //!< Start service and connection.
         , CMD_StopService           //!< Stop service and connection.
@@ -51,9 +51,9 @@ public:
     };
 
     /**
-     * \brief   Converts ServiceEventData:eServiceEventCommands values to string.
+     * \brief   Converts ServiceEventData:ServiceCommand values to string.
      **/
-    static inline const char * getString( ServiceEventData::eServiceEventCommands cmdService );
+    static inline const char * getString( ServiceEventData::ServiceCommand cmdService );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -63,13 +63,13 @@ public:
      * \brief   Initializes service event data, sets command.
      * \param   cmdService  The command to set in event data.
      **/
-    explicit inline ServiceEventData( ServiceEventData::eServiceEventCommands cmdService );
+    explicit inline ServiceEventData( ServiceEventData::ServiceCommand cmdService );
     /**
      * \brief   Initializes service event data, sets command and message data buffer.
      * \param   cmdService  The command to set in event data.
      * \param   msgService  The message data buffer to initialize.
      **/
-    inline ServiceEventData(ServiceEventData::eServiceEventCommands cmdService, const RemoteMessage& msgService);
+    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
     /**
      * \brief   Copies the event data from given source.
      * \param   source  The source to copy data.
@@ -104,7 +104,7 @@ public:
     /**
      * \brief   Returns command saved in event data.
      **/
-    inline ServiceEventData::eServiceEventCommands getCommand() const;
+    inline ServiceEventData::ServiceCommand getCommand() const;
 
     /**
      * \brief   Returns message data buffer object saved in event data.
@@ -118,7 +118,7 @@ private:
     /**
      * \brief   The command of client service event.
      **/
-    ServiceEventData::eServiceEventCommands    mServiceCommand;
+    ServiceEventData::ServiceCommand    mServiceCommand;
 
     /**
      * \brief   The message data buffer saved in service event.
@@ -147,19 +147,19 @@ AREG_DECLARE_EVENT(ServiceEventData, ServiceServerEvent, ServiceServerEventConsu
 // ServiceEventData class inline methods
 //////////////////////////////////////////////////////////////////////////////
 
-inline ServiceEventData::ServiceEventData( ServiceEventData::eServiceEventCommands cmdService )
+inline ServiceEventData::ServiceEventData( ServiceEventData::ServiceCommand cmdService )
     : mServiceCommand   ( cmdService )
     , mMessageData      ( )
 {
 }
 
-inline ServiceEventData::ServiceEventData(ServiceEventData::eServiceEventCommands cmdService, const RemoteMessage& msgService)
+inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService)
     : mServiceCommand   ( cmdService )
     , mMessageData      ( msgService )
 {
 }
 
-inline ServiceEventData::eServiceEventCommands ServiceEventData::getCommand() const
+inline ServiceEventData::ServiceCommand ServiceEventData::getCommand() const
 {
     return mServiceCommand;
 }
@@ -169,30 +169,30 @@ inline const RemoteMessage& ServiceEventData::getMessage() const
     return mMessageData;
 }
 
-inline const char * ServiceEventData::getString( ServiceEventData::eServiceEventCommands cmdService )
+inline const char * ServiceEventData::getString( ServiceEventData::ServiceCommand cmdService )
 {
     switch ( cmdService )
     {
-    case ServiceEventData::eServiceEventCommands::CMD_StartService:
+    case ServiceEventData::ServiceCommand::CMD_StartService:
         return "ServiceEventData::CMD_StartService";
-    case ServiceEventData::eServiceEventCommands::CMD_StopService:
+    case ServiceEventData::ServiceCommand::CMD_StopService:
         return "ServiceEventData::CMD_StopService";
-    case ServiceEventData::eServiceEventCommands::CMD_RestartService:
+    case ServiceEventData::ServiceCommand::CMD_RestartService:
         return "ServiceEventData::CMD_RestartService";
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceStarted:
+    case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
         return "ServiceEventData::CMD_ServiceStarted";
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceStopped:
+    case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
         return "ServiceEventData::CMD_ServiceStopped";
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceLost:
+    case ServiceEventData::ServiceCommand::CMD_ServiceLost:
         return "ServiceEventData::CMD_ServiceLost";
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceExit:
+    case ServiceEventData::ServiceCommand::CMD_ServiceExit:
         return "ServiceEventData::CMD_ServiceExit";
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceSendMsg:
+    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
         return "ServiceEventData::CMD_ServiceSendMsg";
-    case ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg:
+    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
         return "ServiceEventData::CMD_ServiceReceivedMsg";
     default:
-        return "ERR: Undefined ServiceEventData::eServiceEventCommands value!!!";
+        return "ERR: Undefined ServiceEventData::ServiceCommand value!!!";
     }
 }
 

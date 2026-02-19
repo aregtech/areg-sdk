@@ -230,14 +230,14 @@ char* MultitargetRouter::getServiceDescriptionA() const
     return NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII;
 }
 
-NERemoteService::eRemoteServices MultitargetRouter::getServiceType() const
+NERemoteService::RemoteServiceKind MultitargetRouter::getServiceType() const
 {
-    return NERemoteService::eRemoteServices::ServiceRouter;
+    return NERemoteService::RemoteServiceKind::Router;
 }
 
-NERemoteService::eConnectionTypes MultitargetRouter::getConnectionType() const
+NERemoteService::ConnectionType MultitargetRouter::getConnectionType() const
 {
-    return NERemoteService::eConnectionTypes::ConnectTcpip;
+    return NERemoteService::ConnectionType::Tcpip;
 }
 
 void MultitargetRouter::printHelp( bool /* isCmdLine */ )

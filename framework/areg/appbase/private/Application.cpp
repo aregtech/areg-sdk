@@ -84,7 +84,7 @@ void Application::initApplication(  bool startTracing   /*= true */
 
     if (startRouting)
     {
-        Application::startMessageRouting(static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip));
+        Application::startMessageRouting(static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip));
     }
 
     if (Application::getInstance().mAppState == NEApplication::AppState::Initializing)

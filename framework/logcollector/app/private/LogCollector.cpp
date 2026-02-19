@@ -247,14 +247,14 @@ char* LogCollector::getServiceDescriptionA() const
     return NELogCollectorSettings::SERVICE_DESCRIBE_ASCII;
 }
 
-NERemoteService::eRemoteServices LogCollector::getServiceType() const
+NERemoteService::RemoteServiceKind LogCollector::getServiceType() const
 {
-    return NERemoteService::eRemoteServices::ServiceLogger;
+    return NERemoteService::RemoteServiceKind::Logger;
 }
 
-NERemoteService::eConnectionTypes LogCollector::getConnectionType() const
+NERemoteService::ConnectionType LogCollector::getConnectionType() const
 {
-    return NERemoteService::eConnectionTypes::ConnectTcpip;
+    return NERemoteService::ConnectionType::Tcpip;
 }
 
 void LogCollector::postReadConfiguration(ConfigManager& config)
@@ -764,10 +764,10 @@ inline void LogCollector::_enableLocalLogs(ConfigManager& config, bool enable)
     constexpr NEPersistence::eConfigKeys prioConfKey{ NEPersistence::eConfigKeys::EntryLogScope };
     const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
     unsigned int prios = enable
-                ? static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) | static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset)
-                : static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset);
+                ? static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) | static_cast<unsigned int>(NELogging::LogPriority::PrioNotset)
+                : static_cast<unsigned int>(NELogging::LogPriority::PrioNotset);
     const String prio{ NELogging::makePrioString(prios) };
 
     config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-    config.setLogEnabled(NELogging::LoggingType::LogTypeRemote, false, true);
+    config.setLogEnabled(NELogging::LogTarget::Remote, false, true);
 }

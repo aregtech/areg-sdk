@@ -57,7 +57,7 @@ public:
      * \param   scopeName   The unique name of the log scope.
      * \param   priority    The message priority of log scope.
      **/
-    LogScope( const char * scopeName, NELogging::eLogPriority priority = NELogging::eLogPriority::PrioNotset );
+    LogScope( const char * scopeName, NELogging::LogPriority priority = NELogging::LogPriority::PrioNotset );
 
     /**
      * \brief   Initializes the logging scope object from the stream.
@@ -113,7 +113,7 @@ public:
      *          The priority level is added bitwise.
      * \param   addPrio     The log message priority level to add.
      **/
-    inline void addPriority( NELogging::eLogPriority addPrio );
+    inline void addPriority( NELogging::LogPriority addPrio );
 
     /**
      * \brief   Adds priority level to the existing priority level of the scope,
@@ -129,7 +129,7 @@ public:
      *          The operation is made bitwise.
      * \param   remPrio     The log priority level to remove.
      **/
-    inline void removePriority( NELogging::eLogPriority remPrio );
+    inline void removePriority( NELogging::LogPriority remPrio );
 
     /**
      * \brief   Removes priority level from the existing priority level of the scope,
@@ -268,7 +268,7 @@ inline void LogScope::setPriority( unsigned int newPrio )
     mScopePrio  = newPrio;
 }
 
-inline void LogScope::addPriority( NELogging::eLogPriority addPrio )
+inline void LogScope::addPriority( NELogging::LogPriority addPrio )
 {
     mScopePrio  |= static_cast<unsigned int>(addPrio);
 }
@@ -283,7 +283,7 @@ void LogScope::addPriority( const String & addPrio )
     addPriority( NELogging::stringToLogPrio(addPrio) );
 }
 
-inline void LogScope::removePriority( NELogging::eLogPriority remPrio )
+inline void LogScope::removePriority( NELogging::LogPriority remPrio )
 {
     mScopePrio  &= ~static_cast<unsigned int>(remPrio);
 }

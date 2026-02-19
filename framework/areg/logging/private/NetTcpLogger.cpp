@@ -31,8 +31,8 @@
 NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread)
     : LoggerBase                    (logConfig)
     , ServiceClientConnectionBase   ( NEService::COOKIE_LOGGER
-                                    , NERemoteService::eRemoteServices::ServiceLogger
-                                    , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
+                                    , NERemoteService::RemoteServiceKind::Logger
+                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)
                                     , NEService::MessageSource::SourceClient
                                     , static_cast<ConnectionConsumer &>(self())
                                     , static_cast<RemoteMessageHandler &>(self())
@@ -93,11 +93,11 @@ void NetTcpLogger::logMessage(const NELogging::sLogMessage& logMessage)
     {
         if (mChannel.isValid() && isConnectState())
         {
-            sendMessage(NELogging::createLogMessage(logMessage, NELogging::eLogDataType::LogDataRemote, mChannel.getCookie()), Event::EventPriority::NormalPrio);
+            sendMessage(NELogging::createLogMessage(logMessage, NELogging::LogDataType::Remote, mChannel.getCookie()), Event::EventPriority::NormalPrio);
         }
         else if (mRingStack.capacity() != 0)
         {
-            mRingStack.push(NELogging::createLogMessage(logMessage, NELogging::eLogDataType::LogDataRemote, mChannel.getCookie()));
+            mRingStack.push(NELogging::createLogMessage(logMessage, NELogging::LogDataType::Remote, mChannel.getCookie()));
         }
     }
 }
@@ -146,12 +146,12 @@ void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /
         mRingStack.push(msgFailed);
     }
 
-    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedReceiveMessage(Socket & /* whichSource */)
 {
-    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)

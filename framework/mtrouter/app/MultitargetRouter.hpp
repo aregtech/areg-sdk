@@ -196,13 +196,13 @@ protected:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eRemoteServices getServiceType() const override;
+    virtual NERemoteService::RemoteServiceKind getServiceType() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eConnectionTypes getConnectionType() const override;
+    virtual NERemoteService::ConnectionType getConnectionType() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

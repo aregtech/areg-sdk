@@ -86,7 +86,7 @@ enum eLogType
     /* The enter scope log message */
       LogScopeEnter     = 1
     /* The log message text */
-    , LogMessageText    = 2
+    , MessageText    = 2
     /* The exit scope log message */
     , LogScopeExit      = 4
 };
@@ -94,7 +94,7 @@ enum eLogType
 /**
  * \brief   The priority of logs. Can be in combination with PrioScope
  **/
-enum eLogPriority
+enum LogPriority
 {
     /* Invalid priority log message. */
       PrioInvalid   = 0x0000
@@ -125,7 +125,7 @@ struct sLogScope
 {
     /* The ID of the scope. Can be 0 if unknown or if indicates to scope group. */
     uint32_t    lsId;
-    /* The priority of the scope to log messages. These are values of eLogPriority. Can be set bitwise. */
+    /* The priority of the scope to log messages. These are values of LogPriority. Can be set bitwise. */
     uint32_t    lsPrio;
     /* The name of the scope or scope group. The scope groups are ending with '*'. For example 'areg_base_*' */
     char        lsName[LENGTH_SCOPE];
@@ -139,7 +139,7 @@ struct sLogMessage
     /* The type of the message: scope enter, scope exit or message text. */
     eLogType        msgType;
     /* The priority of the message to log. */
-    eLogPriority    msgPriority;
+    LogPriority    msgPriority;
     /* The ID of the message source. This value is indicated in the sLogInstance::liCookie */
     ITEM_ID         msgSource;
     /* The cookie ID of the message. This value is indicated in the sLogInstance::liCookie */

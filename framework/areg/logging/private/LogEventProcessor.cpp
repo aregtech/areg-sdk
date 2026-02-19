@@ -31,39 +31,39 @@ LogEventProcessor::LogEventProcessor( LogManager & logManager )
 {
 }
 
-void LogEventProcessor::processLogEvent( LoggingEventData::eLoggingAction cmdLog, const SharedBuffer & stream )
+void LogEventProcessor::processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
 {
     stream.moveToBegin( );
 
     switch ( cmdLog )
     {
-    case LoggingEventData::eLoggingAction::LoggingStartLogs:
+    case LoggingEventData::LogAction::StartLogs:
         _loggingStartLogs( );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingStopLogs:
+    case LoggingEventData::LogAction::StopLogs:
         _loggingStopLogs( );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingSetEnableLogs:
+    case LoggingEventData::LogAction::EnableLogs:
         _loggingSetEnableLogs( true );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingSetDisableLogs:
+    case LoggingEventData::LogAction::DisableLogs:
         _loggingSetEnableLogs( false );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingSaveScopes:
+    case LoggingEventData::LogAction::SaveScopes:
         _loggingSaveScopes( );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingLogMessage:
+    case LoggingEventData::LogAction::LogMessage:
         _loggingLogMessage( stream );
         break;
 
-    case LoggingEventData::eLoggingAction::LoggingUpdateScopes:   // fall through
-    case LoggingEventData::eLoggingAction::LoggingQueryScopes:    // fall through
-    case LoggingEventData::eLoggingAction::LoggingUndefined:      // fall through
+    case LoggingEventData::LogAction::UpdateScopes:   // fall through
+    case LoggingEventData::LogAction::QueryScopes:    // fall through
+    case LoggingEventData::LogAction::Undefined:      // fall through
     default:
         break; // ignore, do nothing
     }

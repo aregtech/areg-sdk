@@ -389,8 +389,8 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     String dbLocation;
     String dbUser;
 
-    config.setLogEnabled(NELogging::LoggingType::LogTypeFile, true, true);
-    config.setLogEnabled(NELogging::LoggingType::LogTypeRemote, true, true);
+    config.setLogEnabled(NELogging::LogTarget::File, true, true);
+    config.setLogEnabled(NELogging::LogTarget::Remote, true, true);
 
     do
     {
@@ -410,14 +410,14 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     if (LogObserverBase::_theLogObserver != nullptr)
     {
         LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
-        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(NELogging::LoggingType::LogTypeDatabase), dbName.getData(), dbLocation.getData(), dbUser.getData());
+        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(NELogging::LogTarget::Database), dbName.getData(), dbLocation.getData(), dbUser.getData());
     }
     else
     {
         if (callbackConf != nullptr)
             callbackConf(true, address.getString(), port);
         if (callbackConfDb != nullptr)
-            callbackConfDb(config.getLogEnabled(NELogging::LoggingType::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
+            callbackConfDb(config.getLogEnabled(NELogging::LogTarget::Database), dbName.getString(), dbLocation.getString(), dbUser.getString());
     }
 }
 
@@ -438,12 +438,12 @@ void LoggerClient::readyForEvents(bool isReady)
     {
         registerForServiceClientCommands();
         DispatcherThread::readyForEvents(true);
-        setConnectionState(ServiceClientConnectionBase::eConnectionState::DisconnectState);
+        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
     else
     {
         DispatcherThread::readyForEvents(false);
-        setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
+        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
         unregisterForServiceClientCommands();
     }
 }

@@ -50,26 +50,26 @@ class LoggingEventData
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   LoggingEventData::eLoggingAction
+     * \brief   LoggingEventData::LogAction
      *          The list of supported actions for logging.
      **/
-    typedef enum class E_LoggingAction
+    enum class LogAction    : uint8_t
     {
-          LoggingUndefined      //!< Action is undefined, do nothing
-        , LoggingStartLogs      //!< Action to notify to start logging
-        , LoggingStopLogs       //!< Action to notify to stop logging
-        , LoggingSetEnableLogs  //!< Action to notify to enable logging
-        , LoggingSetDisableLogs //!< Action to notify to stop logging
-        , LoggingSaveScopes     //!< Action to notify to save scope list
-        , LoggingLogMessage     //!< Action to output logging message
-        , LoggingUpdateScopes   //!< Action to update scope priorities
-        , LoggingQueryScopes    //!< Action to send the list of scopes.
-    } eLoggingAction;
+          Undefined     //!< Action is undefined, do nothing
+        , StartLogs     //!< Action to notify to start logging
+        , StopLogs      //!< Action to notify to stop logging
+        , EnableLogs    //!< Action to notify to enable logging
+        , DisableLogs   //!< Action to notify to stop logging
+        , SaveScopes    //!< Action to notify to save scope list
+        , LogMessage    //!< Action to output logging message
+        , UpdateScopes  //!< Action to update scope priorities
+        , QueryScopes   //!< Action to send the list of scopes.
+    };
 
     /**
-     * \brief   Converts and returns the string of LoggingEventData::eLoggingAction value
+     * \brief   Converts and returns the string of LoggingEventData::LogAction value
      **/
-    static inline const char * getString( LoggingEventData::eLoggingAction action );
+    static inline const char * getString( LoggingEventData::LogAction action );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -84,21 +84,21 @@ public:
      * \brief   Creates the logging even data with specified action
      * \param   action  The action ID to set in event data
      **/
-    explicit LoggingEventData( LoggingEventData::eLoggingAction action );
+    explicit LoggingEventData( LoggingEventData::LogAction action );
     
     /**
      * \brief   Creates the logging even data with specified action and data
      * \param   action      The action ID to set in event data
      * \param   dataBuffer  The buffer of data set.
      **/
-    LoggingEventData( LoggingEventData::eLoggingAction action, const SharedBuffer & dataBuffer );
+    LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer );
 
     /**
      * \brief   Creates the logging even data with specified action and logging message data
      * \param   action  The action ID to set in event data
      * \param   logData The buffer of logging message data set.
      **/
-    LoggingEventData( LoggingEventData::eLoggingAction action, const NELogging::sLogMessage & logData );
+    LoggingEventData( LoggingEventData::LogAction action, const NELogging::sLogMessage & logData );
 
     /**
      * \brief   Copies logging event data from given source.
@@ -140,7 +140,7 @@ public:
     /**
      * \brief   Returns the value of action set in event data.
      **/
-    inline LoggingEventData::eLoggingAction getLoggingAction() const;
+    inline LoggingEventData::LogAction getLoggingAction() const;
 
     /**
      * \brief   Returns the streaming buffer for writing.
@@ -156,7 +156,7 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    LoggingEventData::eLoggingAction  mAction;
+    LoggingEventData::LogAction   mAction;
     SharedBuffer                  mDataBuffer;
 };
 
@@ -174,7 +174,7 @@ AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 // LoggingEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline LoggingEventData::eLoggingAction LoggingEventData::getLoggingAction() const
+inline LoggingEventData::LogAction LoggingEventData::getLoggingAction() const
 {
     return mAction;
 }
@@ -189,31 +189,31 @@ inline const SharedBuffer & LoggingEventData::getReadableStream() const
     return mDataBuffer;
 }
 
-inline const char * LoggingEventData::getString( LoggingEventData::eLoggingAction action )
+inline const char * LoggingEventData::getString( LoggingEventData::LogAction action )
 {
     switch ( action )
     {
-    case LoggingEventData::eLoggingAction::LoggingUndefined:
-        return "LoggingEventData::eLoggingAction::LoggingUndefined";
-    case LoggingEventData::eLoggingAction::LoggingStartLogs:
-        return "LoggingEventData::eLoggingAction::LoggingStartLogs";
-    case LoggingEventData::eLoggingAction::LoggingStopLogs:
-        return "LoggingEventData::eLoggingAction::LoggingStopLogs";
-    case LoggingEventData::eLoggingAction::LoggingSetEnableLogs:
-        return "LoggingEventData::eLoggingAction::LoggingSetEnableLogs";
-    case LoggingEventData::eLoggingAction::LoggingSetDisableLogs:
-        return "LoggingEventData::eLoggingAction::LoggingSetDisableLogs";
-    case LoggingEventData::eLoggingAction::LoggingSaveScopes:
-        return "LoggingEventData::eLoggingAction::LoggingSaveScopes";
-    case LoggingEventData::eLoggingAction::LoggingLogMessage:
-        return "LoggingEventData::eLoggingAction::LoggingLogMessage";
-    case LoggingEventData::eLoggingAction::LoggingUpdateScopes:
-        return "LoggingEventData::eLoggingAction::LoggingUpdateScopes";
-    case LoggingEventData::eLoggingAction::LoggingQueryScopes:
-        return "LoggingEventData::eLoggingAction::LoggingQueryScopes";
+    case LoggingEventData::LogAction::Undefined:
+        return "LoggingEventData::LogAction::Undefined";
+    case LoggingEventData::LogAction::StartLogs:
+        return "LoggingEventData::LogAction::StartLogs";
+    case LoggingEventData::LogAction::StopLogs:
+        return "LoggingEventData::LogAction::StopLogs";
+    case LoggingEventData::LogAction::EnableLogs:
+        return "LoggingEventData::LogAction::EnableLogs";
+    case LoggingEventData::LogAction::DisableLogs:
+        return "LoggingEventData::LogAction::DisableLogs";
+    case LoggingEventData::LogAction::SaveScopes:
+        return "LoggingEventData::LogAction::SaveScopes";
+    case LoggingEventData::LogAction::LogMessage:
+        return "LoggingEventData::LogAction::LogMessage";
+    case LoggingEventData::LogAction::UpdateScopes:
+        return "LoggingEventData::LogAction::UpdateScopes";
+    case LoggingEventData::LogAction::QueryScopes:
+        return "LoggingEventData::LogAction::QueryScopes";
     default:
         ASSERT(false);
-        return "ERR: Undefined LoggingEventData::eLoggingAction value!";
+        return "ERR: Undefined LoggingEventData::LogAction value!";
     }
 }
 

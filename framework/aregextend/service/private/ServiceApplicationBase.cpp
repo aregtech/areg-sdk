@@ -149,9 +149,9 @@ bool ServiceApplicationBase::serviceStart()
     LOG_DBG("Starting [ %s ] system service", getServiceNameA());
 
     bool result{ false };
-    NERemoteService::eRemoteServices serviceType = getServiceType();
-    NERemoteService::eConnectionTypes connectType = getConnectionType();
-    if (serviceType != NERemoteService::eRemoteServices::ServiceUnknown)
+    NERemoteService::RemoteServiceKind serviceType = getServiceType();
+    NERemoteService::ConnectionType connectType = getConnectionType();
+    if (serviceType != NERemoteService::RemoteServiceKind::Unknown)
     {
         if (mCommunication.setupServiceConnectionData(serviceType, static_cast<uint32_t>(connectType)) &&
             mCommunication.connectServiceHost())

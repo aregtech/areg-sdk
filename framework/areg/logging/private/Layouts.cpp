@@ -302,7 +302,7 @@ ModuleNameLayout::ModuleNameLayout( ModuleNameLayout && /*src*/ ) noexcept
 
 void ModuleNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const
 {
-    if (msgLog.logDataType == NELogging::eLogDataType::LogDataLocal)
+    if (msgLog.logDataType == NELogging::LogDataType::Local)
     {
         static const String& _module{ Process::getInstance().getAppName() };
         stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
@@ -350,7 +350,7 @@ void ThreadNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStr
     const char* name{ nullptr };
     uint32_t len{ 0 };
 
-    if (msgLog.logDataType == NELogging::eLogDataType::LogDataLocal)
+    if (msgLog.logDataType == NELogging::LogDataType::Local)
     {
         const String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
         name = thread.getString();

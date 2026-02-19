@@ -28,7 +28,7 @@
     #define SCOPE_PRIORITY_GET(scope)           NELogging::getScopePriority(#scope)
 #else
     #define SCOPE_PRIORITY_CHANGE(scope, prio)  ((3-2) > 0)
-    #define SCOPE_PRIORITY_GET(scope)           static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid)
+    #define SCOPE_PRIORITY_GET(scope)           static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid)
 #endif
 
 namespace

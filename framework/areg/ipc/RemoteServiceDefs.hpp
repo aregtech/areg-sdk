@@ -43,36 +43,36 @@ class Channel;
 namespace NERemoteService
 {
     /**
-     * \brief   NERemoteService::eConnectionTypes
+     * \brief   NERemoteService::ConnectionType
      *          Remote services connection types.
      **/
-    enum eConnectionTypes : uint32_t
+    enum ConnectionType : uint32_t
     {
-          ConnectUndefined  = 0 //!< Undefined connection
-        , ConnectTcpip      = 1 //!< Service connection via TCP/IP
-        , ConnectUdp        = 2 //!< Service connection via UDP, not implemented at the moment
-        , ConnectWeb        = 4 //!< Service connection via Web socket
-        , ConnectSM         = 8 //!< Service connection via Shared Memory
+          Undefined     = 0 //!< Undefined connection
+        , Tcpip         = 1 //!< Service connection via TCP/IP
+        , Udp           = 2 //!< Service connection via UDP, not implemented at the moment
+        , Web           = 4 //!< Service connection via Web socket
+        , SharedMemory  = 8 //!< Service connection via Shared Memory
     };
 
     /**
-     * \brief   NERemoteService::eRemoteServices
+     * \brief   NERemoteService::RemoteServiceKind
      *          Remote services
      **/
-    enum eRemoteServices : uint32_t
+    enum RemoteServiceKind : uint32_t
     {
-          ServiceUnknown    = 0 //!< Undefined service.
-        , ServiceRouter     = 1 //!< Message routing service.
-        , ServiceLogger     = 2 //!< Message logging service.
+          Unknown = 0 //!< Undefined service.
+        , Router  = 1 //!< Message routing service.
+        , Logger  = 2 //!< Message logging service.
     };
 
     /**
      * \brief   Indicates the connect or disconnect of the remote instance.
      **/
-    enum eRemoteConnection : uint32_t
+    enum RemoteConnectionState : uint32_t
     {
-          RemoteDisconnected    = 0 //!< Remote instance is disconnected.
-        , RemoteConnected       = 1 //!< Remote instance is connected.
+          Disconnected  = 0 //!< Remote instance is disconnected.
+        , Connected     = 1 //!< Remote instance is connected.
     };
 
     /**
@@ -277,10 +277,10 @@ namespace NERemoteService
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Make eRemoteServices and eConnectionTypes streamable
+// Make RemoteServiceKind and ConnectionType streamable
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteServices);
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::eConnectionTypes);
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteConnection);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::RemoteServiceKind);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::ConnectionType);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::RemoteConnectionState);
 
 #endif  // AREG_IPC_REMOTESERVICEDEFS_HPP

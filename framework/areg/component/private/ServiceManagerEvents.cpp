@@ -72,7 +72,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddre
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
+ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection );
     OutStream & stream = data.getWriteStream();
@@ -81,7 +81,7 @@ ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteSer
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
+ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection );
     OutStream & stream = data.getWriteStream();

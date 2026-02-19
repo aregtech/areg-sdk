@@ -53,7 +53,7 @@ void ScopeController::setScopePriority( unsigned int scopeId, unsigned int newPr
     mMapLogScope.unlock( );
 }
 
-void ScopeController::addScopePriority( unsigned int scopeId, NELogging::eLogPriority addPrio )
+void ScopeController::addScopePriority( unsigned int scopeId, NELogging::LogPriority addPrio )
 {
     mMapLogScope.lock( );
 
@@ -66,7 +66,7 @@ void ScopeController::addScopePriority( unsigned int scopeId, NELogging::eLogPri
     mMapLogScope.unlock( );
 }
 
-void ScopeController::removeScopePriority( unsigned int scopeId, NELogging::eLogPriority remPrio )
+void ScopeController::removeScopePriority( unsigned int scopeId, NELogging::LogPriority remPrio )
 {
     mMapLogScope.lock( );
 
@@ -111,7 +111,7 @@ int ScopeController::setScopeGroupPriority( const String & scopeGroupName, unsig
     return result;
 }
 
-int ScopeController::addScopeGroupPriority( const String & scopeGroupName, NELogging::eLogPriority addPrio )
+int ScopeController::addScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority addPrio )
 {
     int result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
@@ -134,7 +134,7 @@ int ScopeController::addScopeGroupPriority( const String & scopeGroupName, NELog
     return result;
 }
 
-int ScopeController::removeScopeGroupPriority( const String & scopeGroupName, NELogging::eLogPriority remPrio )
+int ScopeController::removeScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority remPrio )
 {
     int result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
@@ -165,7 +165,7 @@ void ScopeController::resetScopes()
     {
         LogScope * scope = mMapLogScope.valueAtPosition(pos);
         ASSERT(scope != nullptr);
-        scope->setPriority(static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset));
+        scope->setPriority(static_cast<unsigned int>(NELogging::LogPriority::PrioNotset));
     }
 
     mConfigScopeList.clear();
@@ -280,7 +280,7 @@ void ScopeController::changeScopeActivityStatus( bool makeActive )
     {
         for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
         {
-            mMapLogScope.valueAtPosition( pos )->setPriority( NELogging::eLogPriority::PrioNotset );
+            mMapLogScope.valueAtPosition( pos )->setPriority( NELogging::LogPriority::PrioNotset );
         }
     }
 

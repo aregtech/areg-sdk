@@ -104,7 +104,7 @@ public:
      * \param   cmd     The command to execute.
      * \param   data    The binary data to pass in the command.
      **/
-    static void sendCommandMessage(LoggingEventData::eLoggingAction cmd, const SharedBuffer& data);
+    static void sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data);
 
     /**
      * \brief   Call to configure logging. The passed configuration file name should be either
@@ -248,7 +248,7 @@ public:
      * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
      * \param   scopeName   The name of the existing scope.
      * \return  Is found the scope, returns the actual priority of the scope.
-     *          Otherwise, returns invalid priority (NELogging::eLogPriority::PrioInvalid).
+     *          Otherwise, returns invalid priority (NELogging::LogPriority::PrioInvalid).
      **/
     static unsigned int getScopePriority( const char * scopeName );
 

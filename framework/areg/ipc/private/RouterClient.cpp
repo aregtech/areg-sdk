@@ -46,8 +46,8 @@ DEF_LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 
 RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer& registerConsumer)
     : ServiceClientConnectionBase   ( NEService::COOKIE_ROUTER
-                                    , NERemoteService::eRemoteServices::ServiceRouter
-                                    , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
+                                    , NERemoteService::RemoteServiceKind::Router
+                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)
                                     , NEService::MessageSource::SourceClient
                                     , connectionConsumer
                                     , static_cast<RemoteMessageHandler &>(self())
@@ -106,7 +106,7 @@ void RouterClient::onServiceExit()
 bool RouterClient::isServiceHostPending() const
 {
     Lock lock(mLock);
-    return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::eConnectionState::ConnectionStarting)));
+    return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting)));
 }
 
 bool RouterClient::registerServiceProvider( const StubAddress & stubService )
@@ -202,7 +202,7 @@ void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & w
             {
                 LOG_DBG("Trying to reconnect");
                 cancelConnection( );
-                sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::EventPriority::NormalPrio );
+                sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio );
             }
         }
         else
@@ -229,7 +229,7 @@ void RouterClient::failedReceiveMessage( Socket & whichSource )
                        , whichSource.isValid() ? "VALID" : "INVALID"
                        , whichSource.isAlive() ? "ALIVE" : "DEAD");
             cancelConnection();
-            sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::EventPriority::NormalPrio);
+            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio);
         }
         else
         {
@@ -521,12 +521,12 @@ void RouterClient::readyForEvents(bool isReady)
     {
         registerForServiceClientCommands();
         DispatcherThread::readyForEvents(true);
-        setConnectionState(ServiceClientConnectionBase::eConnectionState::DisconnectState);
+        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
     else
     {
         DispatcherThread::readyForEvents(false);
-        setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
+        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
         unregisterForServiceClientCommands();
     }
 }

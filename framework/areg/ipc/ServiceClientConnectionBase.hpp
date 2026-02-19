@@ -51,10 +51,10 @@ class AREG_API ServiceClientConnectionBase  : public    ConnectionProvider
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   ServiceClientConnectionBase::eConnectionState
+     * \brief   ServiceClientConnectionBase::ConnectionPhase
      *          Defines connection state values
      **/
-    enum class eConnectionState : unsigned short
+    enum class ConnectionPhase : uint16_t
     {
           DisconnectState       = 1     //!< 0000 0001, The disconnect state
         , ConnectionStopped     = 3     //!< 0000 0011, The connection is stopped, i.e. not connected.
@@ -65,9 +65,9 @@ protected:
     };
 
     /**
-     * \brief   Returns the string value of ServiceClientConnectionBase::eConnectionState type
+     * \brief   Returns the string value of ServiceClientConnectionBase::ConnectionPhase type
      **/
-    static inline const char * getString(ServiceClientConnectionBase::eConnectionState val);
+    static inline const char * getString(ServiceClientConnectionBase::ConnectionPhase val);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -85,7 +85,7 @@ public:
      * \param   prefixName          The prefix to add to the names of message receive and send threads.
      **/
     ServiceClientConnectionBase(  const ITEM_ID & target
-                                , NERemoteService::eRemoteServices service
+                                , NERemoteService::RemoteServiceKind service
                                 , unsigned int connectTypes
                                 , NEService::MessageSource msgSource
                                 , ConnectionConsumer& connectionConsumer
@@ -186,7 +186,7 @@ protected:
      * \param   connectTypes    The type of connection to setup.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes) override;
+    virtual bool setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -328,7 +328,7 @@ protected:
      * \param   cmd         The command to send and process.
      * \param   eventPrio   The priority of the event. By default, the priority is normal.
      */
-    inline void sendCommand(ServiceEventData::eServiceEventCommands cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline void sendCommand(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues the message for sending
@@ -351,12 +351,12 @@ protected:
      * \brief   Sets client socket connection state.
      * \param   newState    The connection state to set.
      **/
-    inline void setConnectionState( ServiceClientConnectionBase::eConnectionState newState );
+    inline void setConnectionState( ServiceClientConnectionBase::ConnectionPhase newState );
 
     /**
      * \brief   Returns current client socket connection state.
      **/
-    inline ServiceClientConnectionBase::eConnectionState getConnectionState() const;
+    inline ServiceClientConnectionBase::ConnectionPhase getConnectionState() const;
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
@@ -386,7 +386,7 @@ protected:
     /**
      * \brief   The remote target service to communicate.
      **/
-    const NERemoteService::eRemoteServices  mService;
+    const NERemoteService::RemoteServiceKind  mService;
 
     /**
      * \brief   The bitwise set of connection types supported by remote service.
@@ -420,7 +420,7 @@ protected:
     /**
      * \brief   The sate of connection
      **/
-    eConnectionState                        mConnectionState;
+    ConnectionPhase                        mConnectionState;
 
     /**
      * \brief   The Client Service event consumer
@@ -506,17 +506,17 @@ inline bool ServiceClientConnectionBase::isCalculateDataRateEnabled() const
 
 inline bool ServiceClientConnectionBase::isConnectState() const
 {
-    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::ConnectState)) != 0;
+    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::ConnectState)) != 0;
 }
 
 inline bool ServiceClientConnectionBase::isConnectedState() const
 {
-    return (mConnectionState == ServiceClientConnectionBase::eConnectionState::ConnectionStarted);
+    return (mConnectionState == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted);
 }
 
 inline bool ServiceClientConnectionBase::isDisconnectState() const
 {
-    return ((static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::DisconnectState)) != 0);
+    return ((static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::ConnectionPhase::DisconnectState)) != 0);
 }
 
 inline void ServiceClientConnectionBase::registerForServiceClientCommands()
@@ -529,24 +529,24 @@ inline void ServiceClientConnectionBase::unregisterForServiceClientCommands()
     ServiceClientEvent::removeListener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
-inline const char * ServiceClientConnectionBase::getString(ServiceClientConnectionBase::eConnectionState val)
+inline const char * ServiceClientConnectionBase::getString(ServiceClientConnectionBase::ConnectionPhase val)
 {
     switch (val)
     {
-    case ServiceClientConnectionBase::eConnectionState::DisconnectState:
+    case ServiceClientConnectionBase::ConnectionPhase::DisconnectState:
         return "ServiceClientConnectionBase::DisconnectState";
-    case ServiceClientConnectionBase::eConnectionState::ConnectionStopped:
+    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped:
         return "ServiceClientConnectionBase::ConnectionStopped";
-    case ServiceClientConnectionBase::eConnectionState::ConnectionStarting:
+    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting:
         return "ServiceClientConnectionBase::ConnectionStarting";
-    case ServiceClientConnectionBase::eConnectionState::ConnectionStarted:
+    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted:
         return "ServiceClientConnectionBase::ConnectionStarted";
-    case ServiceClientConnectionBase::eConnectionState::ConnectionStopping:
+    case ServiceClientConnectionBase::ConnectionPhase::ConnectionStopping:
         return "ServiceClientConnectionBase::ConnectionStopping";
-    case ServiceClientConnectionBase::eConnectionState::ConnectState:
+    case ServiceClientConnectionBase::ConnectionPhase::ConnectState:
         return "ServiceClientConnectionBase::ConnectState";
     default:
-        return "ERR: Invalid value of ServiceClientConnectionBase::eConnectionState type";
+        return "ERR: Invalid value of ServiceClientConnectionBase::ConnectionPhase type";
     }
 }
 
@@ -556,17 +556,17 @@ inline bool ServiceClientConnectionBase::isConnectionStarted() const
     return (mClientConnection.isValid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
 }
 
-inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::eConnectionState newState)
+inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::ConnectionPhase newState)
 {
     mConnectionState = newState;
 }
 
-inline ServiceClientConnectionBase::eConnectionState ServiceClientConnectionBase::getConnectionState() const
+inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase::getConnectionState() const
 {
     return mConnectionState;
 }
 
-inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::eServiceEventCommands cmd
+inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::ServiceCommand cmd
                                                     , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     ServiceClientEvent::sendEvent( ServiceEventData( cmd )

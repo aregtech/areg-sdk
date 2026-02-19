@@ -504,8 +504,8 @@ inline void LogSqliteDatabase::_initialize()
                         , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
                         , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
                         , static_cast<uint32_t>(0u)
-                        , static_cast<uint32_t>(NELogging::eLogMessageType::LogMessageText)
-                        , static_cast<uint32_t>(NELogging::eLogPriority::PrioIgnore)
+                        , static_cast<uint32_t>(NELogging::LogMessageType::MessageText)
+                        , static_cast<uint32_t>(NELogging::LogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
                         , static_cast<uint64_t>(threadId)
                         , "Starting database logging..."
@@ -527,12 +527,12 @@ inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuff
     NELogging::sLogMessage* log = reinterpret_cast<NELogging::sLogMessage*>(buf.getBuffer());
 
     ASSERT(log != nullptr);
-    log->logDataType = NELogging::eLogDataType::LogDataRemote;
+    log->logDataType = NELogging::LogDataType::Remote;
     log->logSource = NEService::COOKIE_ANY;
     log->logTarget = NEService::COOKIE_ANY;
 
-    log->logMsgType     = static_cast<NELogging::eLogMessageType>(stmt.getUint32(0));
-    log->logMessagePrio = static_cast<NELogging::eLogPriority>(stmt.getUint32(1));
+    log->logMsgType     = static_cast<NELogging::LogMessageType>(stmt.getUint32(0));
+    log->logMessagePrio = static_cast<NELogging::LogPriority>(stmt.getUint32(1));
     log->logCookie      = static_cast<ITEM_ID>( stmt.getInt64(2));
     log->logModuleId    = static_cast<ITEM_ID>( stmt.getInt64(3));
     log->logThreadId    = static_cast<ITEM_ID>( stmt.getInt64(4));
@@ -878,13 +878,13 @@ std::vector<String> LogSqliteDatabase::getPriorityNames()
 {
     std::vector<String> result{
         { 
-          NELogging::logPrioToString(NELogging::eLogPriority::PrioAny)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioScope)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioDebug)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioInfo)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioWarning)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioError)
-        , NELogging::logPrioToString(NELogging::eLogPriority::PrioFatal)
+          NELogging::logPrioToString(NELogging::LogPriority::PrioAny)
+        , NELogging::logPrioToString(NELogging::LogPriority::PrioScope)
+        , NELogging::logPrioToString(NELogging::LogPriority::PrioDebug)
+        , NELogging::logPrioToString(NELogging::LogPriority::PrioInfo)
+        , NELogging::logPrioToString(NELogging::LogPriority::PrioWarning)
+        , NELogging::logPrioToString(NELogging::LogPriority::PrioError)
+        , NELogging::logPrioToString(NELogging::LogPriority::PrioFatal)
         }
     };
     return result;

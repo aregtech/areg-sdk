@@ -119,7 +119,7 @@ public:
      * \param   connectTypes    The bitwise set of connections to configure.
      * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes );
+    static ServiceManagerEventData configureConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection
@@ -127,7 +127,7 @@ public:
      * \param   connectTypes    The bitwise set of connections to start.
      * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes);
+    static ServiceManagerEventData startConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes);
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection.

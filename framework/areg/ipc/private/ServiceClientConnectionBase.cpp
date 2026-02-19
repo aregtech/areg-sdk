@@ -39,7 +39,7 @@ DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 //////////////////////////////////////////////////////////////////////////
 
 ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
-                                                        , NERemoteService::eRemoteServices service
+                                                        , NERemoteService::RemoteServiceKind service
                                                         , unsigned int connectTypes
                                                         , NEService::MessageSource msgSource
                                                         , ConnectionConsumer& connectionConsumer
@@ -57,7 +57,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mConnectionConsumer   (connectionConsumer)
     , mMessageDispatcher    (messageDispatcher)
     , mChannel              ( )
-    , mConnectionState      ( eConnectionState::ConnectionStopped )
+    , mConnectionState      ( ConnectionPhase::ConnectionStopped )
     , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
     , mLock                 ( )
 
@@ -95,13 +95,13 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
                 ASSERT(cookie == msgReceived.getTarget());
                 mClientConnection.setCookie(cookie);
                 onChannelConnected(cookie);
-                sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStarted);
+                sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceStarted);
             }
             else
             {
                 cancelConnection();
                 onChannelConnected(NEService::COOKIE_UNKNOWN);
-                sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+                sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
             }
         }
         break;
@@ -112,7 +112,7 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
         {
             cancelConnection();
             onChannelConnected(NEService::COOKIE_UNKNOWN);
-            sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
         }
         break;
 
@@ -123,22 +123,22 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
         {
             cancelConnection();
             onChannelConnected(NEService::COOKIE_UNKNOWN);
-            sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStopped);
+            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceStopped);
         }
         break;
     }
 }
 
-bool ServiceClientConnectionBase::setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes)
+bool ServiceClientConnectionBase::setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
 {
     Lock lock( mLock );
 
     bool result{ false };
     if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
     {
-        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) != 0)
+        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)) != 0)
         {
-            ConnectionConfiguration config(service, NERemoteService::eConnectionTypes::ConnectTcpip);
+            ConnectionConfiguration config(service, NERemoteService::ConnectionType::Tcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 String address{ config.getConnectionAddress() };
@@ -163,13 +163,13 @@ bool ServiceClientConnectionBase::connectServiceHost()
     bool result{ false };
     if (mClientConnection.isValid() == false)
     {
-        if ((mConnectTypes & static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)) != 0)
+        if ((mConnectTypes & static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip)) != 0)
         {
-            ConnectionConfiguration config(mService, NERemoteService::eConnectionTypes::ConnectTcpip);
+            ConnectionConfiguration config(mService, NERemoteService::ConnectionType::Tcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 result = true;
-                sendCommand(ServiceEventData::eServiceEventCommands::CMD_StartService);
+                sendCommand(ServiceEventData::ServiceCommand::CMD_StartService);
             }
         }
     }
@@ -180,14 +180,14 @@ bool ServiceClientConnectionBase::connectServiceHost()
 bool ServiceClientConnectionBase::reconnectServiceHost()
 {
     disconnectServiceHost( );
-    sendCommand(ServiceEventData::eServiceEventCommands::CMD_StartService );
+    sendCommand(ServiceEventData::ServiceCommand::CMD_StartService );
 
     return true;
 }
 
 void ServiceClientConnectionBase::disconnectServiceHost()
 {
-    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::EventPriority::NormalPrio);
+    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::NormalPrio);
 }
 
 bool ServiceClientConnectionBase::isServiceHostConnected() const
@@ -199,7 +199,7 @@ bool ServiceClientConnectionBase::isServiceHostConnected() const
 bool ServiceClientConnectionBase::isServiceHostPending() const
 {
     Lock lock(mLock);
-    return ((mClientConnection.isValid() == false) && (getConnectionState() == ServiceClientConnectionBase::eConnectionState::ConnectionStarting));
+    return ((mClientConnection.isValid() == false) && (getConnectionState() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting));
 }
 
 bool ServiceClientConnectionBase::isServiceHostSetup() const
@@ -234,7 +234,7 @@ void ServiceClientConnectionBase::onServiceStart()
     mChannel.setTarget( NEService::TARGET_UNKNOWN );
     if ( startConnection( ) )
     {
-        setConnectionState( ServiceClientConnectionBase::eConnectionState::ConnectionStarting );
+        setConnectionState( ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting );
     }
 }
 
@@ -243,7 +243,7 @@ void ServiceClientConnectionBase::onServiceStop()
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStop);
     LOG_DBG("Stopping remote servicing");
 
-    setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopping);
+    setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopping);
 
     mTimerConnect.stopTimer( );
 
@@ -284,7 +284,7 @@ void ServiceClientConnectionBase::onServiceConnectionStarted()
         mChannel.setCookie( mClientConnection.getCookie() );
         mChannel.setSource( mMessageDispatcher.getId());
         mChannel.setTarget( mTarget );
-        setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStarted);
+        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStarted);
         mConnectionConsumer.connectedRemoteServiceChannel(mChannel);
     }
 }
@@ -294,7 +294,7 @@ void ServiceClientConnectionBase::onServiceConnectionStopped()
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
     LOG_DBG("Client service is stopped. Resetting cookie");
 
-    setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
+    setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
     mTimerConnect.stopTimer( );
 
     Channel channel = mChannel;
@@ -318,7 +318,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost()
     LOG_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
                 , ServiceClientConnectionBase::getString(getConnectionState()));
 
-    setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
+    setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
     Channel channel = mChannel;
     mChannel.invalidate();
 

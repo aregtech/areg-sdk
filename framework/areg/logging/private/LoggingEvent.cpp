@@ -31,24 +31,24 @@ namespace
 }
 
 LoggingEventData::LoggingEventData()
-    : mAction       ( LoggingEventData::eLoggingAction::LoggingUndefined )
+    : mAction       ( LoggingEventData::LogAction::Undefined )
     , mDataBuffer   ( )
 {
 }
 
-LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action )
+LoggingEventData::LoggingEventData( LoggingEventData::LogAction action )
     : mAction       ( action )
     , mDataBuffer   ( )
 {
 }
 
-LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action, const SharedBuffer & dataBuffer )
+LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer )
     : mAction       ( action )
     , mDataBuffer   ( dataBuffer )
 {
 }
 
-LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action, const NELogging::sLogMessage & logData )
+LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const NELogging::sLogMessage & logData )
     : mAction       ( action )
     , mDataBuffer   (_logMessageSize, reinterpret_cast<const unsigned char *>(&logData), _logLocalMessage)
 {

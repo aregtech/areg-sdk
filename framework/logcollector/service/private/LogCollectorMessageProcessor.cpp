@@ -57,7 +57,7 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::Map
 
     if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
     {
-        msgInstances << NERemoteService::eRemoteConnection::RemoteConnected;
+        msgInstances << NERemoteService::RemoteConnectionState::Connected;
         uint32_t count{ 0 };
         uint32_t pos = msgInstances.getPosition();
         msgInstances << count; // reserves space, initially set 0
@@ -103,7 +103,7 @@ void LogCollectorMessageProcessor::notifyDisconnectedInstances(const ArrayList<I
     RemoteMessage msgInstances;
     if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
     {
-        msgInstances << NERemoteService::eRemoteConnection::RemoteDisconnected;
+        msgInstances << NERemoteService::RemoteConnectionState::Disconnected;
         msgInstances << listIds;
         if (target == NEService::TARGET_ALL)
         {
@@ -221,7 +221,7 @@ void LogCollectorMessageProcessor::clientDisconnected(const ITEM_ID& cookie)
 void LogCollectorMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogMessage));
-    ASSERT(NELogging::eLogDataType::LogDataRemote == reinterpret_cast<const NELogging::sLogMessage *>(msgReceived.getBuffer())->logDataType);
+    ASSERT(NELogging::LogDataType::Remote == reinterpret_cast<const NELogging::sLogMessage *>(msgReceived.getBuffer())->logDataType);
     _forwardMessageToObservers(msgReceived);
 }
 

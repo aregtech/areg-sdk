@@ -93,7 +93,7 @@ protected:
      * \param   nodeName    The name of the node.
      * \param   prio        The logging priority flags set bitwise.
      **/
-    ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & nodeName, unsigned int prio = static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) );
+    ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & nodeName, unsigned int prio = static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) );
 
     //!< Copies, moves and destroys the node object.
     ScopeNodeBase( const ScopeNodeBase & src );
@@ -436,37 +436,37 @@ inline bool ScopeNodeBase::isValid() const
 
 inline bool ScopeNodeBase::hasPrioDebug() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioDebug)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioDebug)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioInfo() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioInfo)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioInfo)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioWarning() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioWarning)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioWarning)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioError() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioError)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioError)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioFatal() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioFatal)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioFatal)) != 0;
 }
 
 inline bool ScopeNodeBase::hasLogsEneabled() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioLogs)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioLogs)) != 0;
 }
 
 inline bool ScopeNodeBase::hasLogScopes() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioScope)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioScope)) != 0;
 }
 
 #endif  // AREG_LOGS

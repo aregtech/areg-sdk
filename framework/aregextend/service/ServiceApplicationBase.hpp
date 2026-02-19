@@ -125,13 +125,13 @@ public:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eRemoteServices getServiceType() const = 0;
+    virtual NERemoteService::RemoteServiceKind getServiceType() const = 0;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eConnectionTypes getConnectionType() const = 0;
+    virtual NERemoteService::ConnectionType getConnectionType() const = 0;
 
 /************************************************************************/
 // SystemServiceBase overrides

@@ -75,20 +75,20 @@ void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgR
         break;
     }
 
-    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, cookie);
+    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, cookie);
     notifyLogMessage(msgLog);
 }
 
 void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgReceived)
 {
-    NERemoteService::eRemoteConnection remConnect{ NERemoteService::eRemoteConnection::RemoteDisconnected };
+    NERemoteService::RemoteConnectionState remConnect{ NERemoteService::RemoteConnectionState::Disconnected };
 
     do
     {
         Lock lock(mLoggerClient.mLock);
         msgReceived >> remConnect;
 
-        if (remConnect == NERemoteService::eRemoteConnection::RemoteConnected)
+        if (remConnect == NERemoteService::RemoteConnectionState::Connected)
         {
             _clientsConnected(msgReceived);
         }
@@ -133,7 +133,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         NELogging::sLogMessage log;
         _initLocalLogMessage(log, NEService::COOKIE_LOGGER, now);
         log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
-        RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, NEService::COOKIE_LOGGER);
+        RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
         notifyLogMessage(msgLog);
 
         mLoggerClient.mLogDatabase.commit(true);
@@ -239,7 +239,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 callback = mLoggerClient.mCallbacks->evtLogMessage;
 
                 msgLog.msgType      = static_cast<eLogType>(msgRemote->logMsgType);
-                msgLog.msgPriority  = static_cast<eLogPriority>(msgRemote->logMessagePrio);
+                msgLog.msgPriority  = static_cast<LogPriority>(msgRemote->logMessagePrio);
                 msgLog.msgSource    = static_cast<unsigned long long>(msgRemote->logSource);
                 msgLog.msgCookie    = static_cast<unsigned long long>(msgRemote->logCookie);
                 msgLog.msgModuleId  = static_cast<unsigned long long>(msgRemote->logModuleId);
@@ -307,7 +307,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
                                                             , static_cast<uint64_t>(client.ciCookie));
-                    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, NEService::COOKIE_LOGGER);
+                    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
             }
@@ -335,7 +335,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
                                                             , static_cast<uint64_t>(client.ciCookie));
-                    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::eLogDataType::LogDataLocal, NEService::COOKIE_LOGGER);
+                    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
 
@@ -442,9 +442,9 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::sLogMessag
     String instance  = process.getName();
     DateTime now     = DateTime::getNow();
 
-    log.logDataType     = NELogging::eLogDataType::LogDataLocal;
-    log.logMsgType      = NELogging::eLogMessageType::LogMessageText;
-    log.logMessagePrio  = NELogging::eLogPriority::PrioAny;
+    log.logDataType     = NELogging::LogDataType::Local;
+    log.logMsgType      = NELogging::LogMessageType::MessageText;
+    log.logMessagePrio  = NELogging::LogPriority::PrioAny;
     log.logSource       = NEService::SOURCE_LOCAL;
     log.logTarget       = NEService::TARGET_LOCAL;
     log.logCookie       = cookie;

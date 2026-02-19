@@ -39,12 +39,12 @@ namespace NELogOptions
      * \brief   NELogging::eLogStatus
      *          Defines logging status
      **/
-    typedef enum class E_LogStatus
+    enum class LogStatus    : uint8_t
     {
           StatusUndefined   //!< Logging status is undefined
         , StatusDisabled    //!< Logging status is disabled, no messages are output
         , StatusEnabled     //!< Logging status is enabled, the enabled scope can output message.
-    } eLogStatus;
+    };
 
     /**
      * \brief   NELogging::eConfigKey
@@ -151,7 +151,7 @@ namespace NELogOptions
      **/
     constexpr std::pair<std::string_view, unsigned int>  DEFAULT_LOG_ENABLED_SCOPES[]
     {
-          { {"*"}       , static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) }
+          { {"*"}       , static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) }
     };
 }
 
