@@ -48,7 +48,7 @@ Areg SDK follows modern C++ conventions optimized for cross-platform development
 | Enum Values               | PascalCase                    | `ConnectionState::Connected`              |
 | Macros                    | `AREG_` + UPPER_SNAKE         | `AREG_ASSERT`                             |
 | Template Parameters       | PascalCase                    | `template<typename MessageType>`          |
-| Namespaces                | snake_case                    | `areg::ipc`                               |
+| Namespaces                | snake_case                    | `areg`, `aregext`, `areg::os`             |
 
 ---
 
@@ -341,28 +341,39 @@ class Container { };
 
 ### 1.8 Namespaces
 
-**RULE:** Namespaces use snake_case.
+**RULE:** Namespaces use snake_case and short namespace names. All `.hpp` and `.cpp` files of `areg` framework should be wrapped in `areg` namespace:
 
 ```cpp
 // ✅ CORRECT
-NAMESPACE_AREG_BEGIN
-namespace ipc::internal
+namespace areg
 {
     // Implementation
-}   // ipc::internal
-NAMESPACE_AREG_END
-
-NAMESPACE_AREG_BEGIN
-namespace logging
-{
-    // declarations
-}
-NAMESPACE_AREG_END
+}   // IPC, utilies, etc.
 
 ```
 
-Include in `.hpp` header files `AREG_NAMESPACE_BEGIN` and `AREG_NAMESPACE_END` macros to ensure proper namespace handling across different build configurations.  
-Include in `.cpp` source file `AREG_NAMESPACE_USE` macro to ensure proper namespace usage.
+Exceptions are `areg` framework OS/Platform specific implementations, they should be wrapped in `areg::os` namespace.
+```cpp
+namespace areg::os
+{
+    // OS specific classes and methods.
+}
+```
+
+These OS specific implementations are normally located in the files with suffix such as `Posix` and `Win32`. The list will grow when integrated in new OS.
+
+The other modules can have namespace names different from `areg`. For example, the areg extended objects, located in `framework/aregextend` directory should have namespace `aregext`.  
+Here is the list of namespace names and modules:
+
+| Namespace name    | Modules, locations and meanings                                                                   |
+|-------------------|---------------------------------------------------------------------------------------------------|
+| `areg`            | All files located in `framework/areg`. These are `areg` framework files.                          |
+| `areg::os`        | All OS specific implementations. Typically located in files with suffix `Posix` or `Win32`.       |
+| `aregext`         | All files of areg extended library located in `framework/aregextend` sub-directory                |
+| `areglog`         | All files of areg logger library located in `framework/areglogger`sub-directory                   |
+
+Since `logcollector`, `logobserver` and `mtrouter` are stand-alone applications and they are not supposed to be integrated in other applications,
+having namespace name for them is optional and can be escaped, or the same name of module should be used like `logcollector`, `logobserver` and `mtrouter`.
 
 ---
 
@@ -867,12 +878,11 @@ ServiceManager.cpp
 #ifndef AREG_IPC_SERVICE_MANAGER_HPP
 #define AREG_IPC_SERVICE_MANAGER_HPP
 
-AREG_NAMESPACE_BEGIN
-namespace ipc
+namespace areg
 {
-    class ServiceManager { };
-}
-AREG_NAMESPACE_END
+class ServiceManager { };
+} // namespace areg
+
 #endif  // AREG_IPC_SERVICE_MANAGER_HPP
 
 // ❌ WRONG - Do not use #pragma once
@@ -1118,8 +1128,7 @@ inline void Connection::set_count(int32_t value)
 #include <memory>
 #include <vector>
 
-AREG_NAMESPACE_BEGIN
-namespace ipc
+namespace areg
 {
 
 class Connection;
@@ -1219,8 +1228,7 @@ inline bool ServiceManager::is_running() const
     return mState == ServiceState::Running;
 }
 
-}  // namespace ipc
-AREG_NAMESPACE_END
+}  // namespace areg
 
 #endif  // AREG_IPC_SERVICE_MANAGER_HPP
 ```
@@ -1233,8 +1241,7 @@ AREG_NAMESPACE_END
 
 #include <algorithm>
 
-AREG_NAMESPACE_USE
-namespace ipc
+namespace areg
 {
 
 ServiceManager::ServiceManager()
@@ -1294,7 +1301,7 @@ void ServiceManager::cleanup()
     mConnections.clear();
 }
 
-}  // namespace ipc
+}  // namespace areg
 ```
 
 ---
