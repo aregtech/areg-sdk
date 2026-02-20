@@ -19,9 +19,9 @@ class ComponentThread;
  * \brief   Connection manager, server component implementation
  *          to register all client applications connections.
  **/
-class ConnectionController : public    Component
-                        , public    ConnectionManagerStub
-                        , public    CentralMessagerStub
+class ConnectionController  : public    Component
+                            , public    ConnectionManagerStub
+                            , public    CentralMessagerStub
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
@@ -131,7 +131,6 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    static ConnectionController *    sService;
     HWND        mWnd;
     uint32_t    mCookies;
 

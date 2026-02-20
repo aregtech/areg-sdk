@@ -35,11 +35,14 @@ BEGIN_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
 END_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
-ConnectionController *   ConnectionController::sService   = nullptr;
+namespace
+{
+    ConnectionController* _thisService{ nullptr };
+}
 
 ConnectionController * ConnectionController::getService()
 {
-    return ConnectionController::sService;
+    return _thisService;
 }
 
 ConnectionController::ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
@@ -50,12 +53,12 @@ ConnectionController::ConnectionController( const NERegistry::ComponentEntry & e
     , mWnd                  ( std::any_cast<HWND>(entry.getData()) )
     , mCookies              ( ConnectionManager::InvalidCookie )
 {
-    ConnectionController::sService   = this;
+    _thisService = this;
 }
 
 ConnectionController::~ConnectionController()
 {
-    ConnectionController::sService = nullptr;
+    _thisService = nullptr;
     mWnd    =   0;
 }
 
