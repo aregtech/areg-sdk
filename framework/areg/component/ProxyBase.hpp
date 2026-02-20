@@ -1042,7 +1042,7 @@ private:
     /**
      * \brief   Flag, indicating whether the proxy is connected or not.
      **/
-    bool                            mIsConnected;
+    bool                                mIsConnected;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

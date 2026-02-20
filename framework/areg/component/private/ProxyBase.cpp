@@ -154,13 +154,13 @@ ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & 
 // ProxyBase class, static methods
 //////////////////////////////////////////////////////////////////////////
 
-inline ProxyBase::MapProxyResource& ProxyBase::map_proxies()
+ProxyBase::MapProxyResource& ProxyBase::map_proxies()
 {
     static MapProxyResource _mapProxies;
     return _mapProxies;
 }
 
-inline ProxyBase::MapThreadProxyList& ProxyBase::thread_proxies()
+ProxyBase::MapThreadProxyList& ProxyBase::thread_proxies()
 {
     static MapThreadProxyList   _threadProxies;
     return _threadProxies;
