@@ -92,7 +92,7 @@ private:
      *                      processing. As soon as event is finished processing
      *                      it will be destroyed.
      **/
-    virtual void startEventProcessing( Event & eventElem ) override;
+    void startEventProcessing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

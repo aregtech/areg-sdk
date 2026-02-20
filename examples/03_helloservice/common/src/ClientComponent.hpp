@@ -25,13 +25,13 @@ protected:
      * \brief   The response indicating success status to output a greeting
      * \param   success Flag, indicates the success of output.
      **/
-    virtual void responseHelloService( bool success ) override;
+    void responseHelloService( bool success ) override;
 
     /**
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloServiceFailed( NEService::ResultType FailureReason ) override;
+    void requestHelloServiceFailed( NEService::ResultType FailureReason ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -47,7 +47,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls

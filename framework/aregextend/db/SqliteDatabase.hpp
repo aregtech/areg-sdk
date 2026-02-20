@@ -73,7 +73,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    virtual bool isOperable() const override;
+    bool isOperable() const override;
 
     /**
      * \brief   Connects to the specified database.
@@ -85,25 +85,25 @@ public:
      * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    virtual bool connect(const String& dbPath, bool readOnly) override;
+    bool connect(const String& dbPath, bool readOnly) override;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
      **/
-    virtual void disconnect() override;
+    void disconnect() override;
 
     /**
      * \brief   Execute the SQL script.
      * \param   sql     The SQL script to execute.
      * \return  Returns true if succeeds to execute the SQL script.
      **/
-    virtual bool execute(const String & sql) override;
+    bool execute(const String & sql) override;
 
     /**
      * \brief   Call if need to make multiple operation. This call starts the transaction,
      *          that is required either commit or rollback call to complete the transaction.
      **/
-    virtual bool begin() override;
+    bool begin() override;
 
     /**
      * \brief   Commits or rolls back the SqliteDatabase changes and returns true if succeeded.
@@ -111,12 +111,12 @@ public:
      *                      Otherwise, the SqliteDatabase engine should rollback the changes.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
-    virtual bool commit(bool doCommit) override;
+    bool commit(bool doCommit) override;
 
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
      **/
-    virtual bool rollback() override;
+    bool rollback() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

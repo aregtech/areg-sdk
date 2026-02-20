@@ -65,7 +65,7 @@ private:
      *          Overwrite if there is any special action should be performed
      *          before destroying event object.
      **/
-    virtual void destroy() override;
+    void destroy() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

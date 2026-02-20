@@ -69,7 +69,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent(ComponentThread & comThread) override;
+    void startupComponent(ComponentThread & comThread) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -77,7 +77,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( ComponentThread & comThread ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -90,7 +90,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns() override;
+    void onThreadRuns() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

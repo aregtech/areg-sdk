@@ -83,7 +83,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent(ComponentThread & comThread) override;
+    void startupComponent(ComponentThread & comThread) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -91,7 +91,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( ComponentThread & comThread ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -103,7 +103,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -116,7 +116,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns() override;
+    void onThreadRuns() override;
 
 /************************************************************************/
 // StubBase overrides.
@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
+    bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

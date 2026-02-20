@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************
  * Response HelloUnblock
@@ -72,7 +72,7 @@ protected:
      * \param   clientId    Generated ID for the client used when send request to unblock.
      * \see     requestIdentifier
      **/
-    virtual void responseIdentifier( unsigned int clientId ) override;
+    void responseIdentifier( unsigned int clientId ) override;
     /**
      * \brief   Response callback.
      *          The response to hello world request.
@@ -83,7 +83,7 @@ protected:
      *          the client can check that all sequences exist.
      * \see     requestHelloUblock
      **/
-    virtual void responseHelloUnblock( unsigned int clientId, unsigned int seqNr ) override;
+    void responseHelloUnblock( unsigned int clientId, unsigned int seqNr ) override;
 
     /**
      * \brief   This method is triggered if requestHelloUblock call fails.
@@ -94,7 +94,7 @@ protected:
      *          if the request is still pending.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloUblockFailed( NEService::ResultType FailureReason ) override;
+    void requestHelloUblockFailed( NEService::ResultType FailureReason ) override;
 
     /**
      * \brief   Triggered, when HelloServiceState attribute is updated. The function contains
@@ -105,13 +105,13 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, NEService::DataState state ) override;
+    void onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

@@ -608,13 +608,13 @@ public:
      *          the lock() function accept a specified time-out interval.
      * \return  In case of critical section, always return true.
      **/
-    virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/) override;
+    bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/) override;
 
     /**
      * \brief   Releases ownership of the specified critical section object.
      * \return	In case of critical section, always return true
      **/
-    virtual bool unlock() override;
+    bool unlock() override;
 
     /**
      * \brief   Attempts to enter a critical section without blocking thread.
@@ -626,7 +626,7 @@ public:
      *          If another thread already owns the critical section,
      *          the return value is false.
      **/
-    virtual bool tryLock() override;
+    bool tryLock() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden or OS specific calls
@@ -719,7 +719,7 @@ public:
      *          the lock() function accept a specified time-out interval.
      * \return  Spin-lock always return true.
      **/
-    virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
+    bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
 
     /**
      * \brief   Releases ownership of the spin-lock object.

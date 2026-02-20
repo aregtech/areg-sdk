@@ -89,7 +89,7 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( const char * hostName, unsigned short portNr ) override;
+    bool createSocket( const char * hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Before sending or receiving any data from remote host,
@@ -98,7 +98,7 @@ public:
      *          and port number should be already set in socket address.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket() override;
+    bool createSocket() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

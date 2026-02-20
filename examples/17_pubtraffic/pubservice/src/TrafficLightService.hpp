@@ -79,7 +79,7 @@ private:
          * \brief  Override operation. Implement this function to receive events and make processing
          * \param  data    The data, which was passed as an event.
          **/
-        virtual void processEvent( const TrafficSwitchData & data ) override;
+        void processEvent( const TrafficSwitchData & data ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -116,7 +116,7 @@ private:
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   timer   The Timer Event Data object containing Timer object.
          **/
-        virtual void processTimer( Timer & timer ) override;
+        void processTimer( Timer & timer ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -152,7 +152,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -160,7 +160,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    virtual void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.

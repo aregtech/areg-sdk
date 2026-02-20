@@ -85,7 +85,7 @@ protected:
      * \brief   Automatically triggered when event is dispatched by thread.
      * \param   data    The Timer Event Data object containing Timer object.
      **/
-    virtual void processEvent( const TimerEventData & data) override;
+    void processEvent( const TimerEventData & data) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden overrides
@@ -95,7 +95,7 @@ private:
      * \brief	Triggered when dispatcher starts to dispatch Timer Event.
      * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
      **/
-    virtual void startEventProcessing( Event & eventElem) override;
+    void startEventProcessing( Event & eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

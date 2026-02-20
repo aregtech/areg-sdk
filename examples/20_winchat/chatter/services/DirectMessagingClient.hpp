@@ -37,7 +37,7 @@ protected:
      * \param   timeConnected   Time-stamp when the request to join was accepted and new participants was registered.
      * \see     requestChatJoin
      **/
-    virtual void responseChatJoin( bool succeed, const DirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected ) override;
+    void responseChatJoin( bool succeed, const DirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected ) override;
 
     /**
      * \brief   Server broadcast.
@@ -48,7 +48,7 @@ protected:
      * \param   msgText     The message, which was sent.
      * \param   timeSent    The time-stamp when the message was sent.
      **/
-    virtual void broadcastMessageSent( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void broadcastMessageSent( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Server broadcast.
@@ -58,7 +58,7 @@ protected:
      * \param   participant The structure of participant, who initiated message during typing.
      * \param   msgText     The text message while typing.
      **/
-    virtual void broadcastMessageTyped( const DirectMessager::sParticipant & participant, const String & msgText ) override;
+    void broadcastMessageTyped( const DirectMessager::sParticipant & participant, const String & msgText ) override;
 
     /**
      * \brief   Server broadcast.
@@ -68,7 +68,7 @@ protected:
      * \param   participant The structure of participant, joined chat-room.
      * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
-    virtual void broadcastParticipantJoined( const DirectMessager::sParticipant & participant, const DateTime & timeJoined ) override;
+    void broadcastParticipantJoined( const DirectMessager::sParticipant & participant, const DateTime & timeJoined ) override;
 
     /**
      * \brief   Server broadcast.
@@ -78,7 +78,7 @@ protected:
      * \param   participant The structure of participant, who left the chat-room.
      * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
-    virtual void broadcastParticipantLeft( const DirectMessager::sParticipant & participant, const DateTime & timeLeft ) override;
+    void broadcastParticipantLeft( const DirectMessager::sParticipant & participant, const DateTime & timeLeft ) override;
 
     /**
      * \brief   Server broadcast.
@@ -86,7 +86,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastChatClosed() override;
+    void broadcastChatClosed() override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -102,7 +102,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

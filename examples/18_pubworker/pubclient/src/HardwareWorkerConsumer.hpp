@@ -51,7 +51,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    virtual void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) override;
+    void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) override;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -59,13 +59,13 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    virtual void unregisterEventConsumers( WorkerThread & workThread ) override;
+    void unregisterEventConsumers( WorkerThread & workThread ) override;
 
     /**
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    virtual void processEvent( const PatientInfoEventData & data ) override;
+    void processEvent( const PatientInfoEventData & data ) override;
 
 private:
 

@@ -101,7 +101,7 @@ public:
      * \brief   Sends the event to target thread. If target thread
      *          is nullptr, it searches target thread, registered in system.
      **/
-    virtual void deliverEvent() override;
+    void deliverEvent() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -123,14 +123,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const InStream & readStream( const InStream & stream ) override;
+    const InStream & readStream( const InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual OutStream & writeStream( OutStream & stream ) const override;
+    OutStream & writeStream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -230,7 +230,7 @@ private:
      *          Event processing function
      * \param   eventElem   The generic Event object to process.
      **/
-    virtual void startEventProcessing( Event & eventElem ) override;
+    void startEventProcessing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations

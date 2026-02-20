@@ -44,7 +44,7 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
      * \see     responseStartSleep
      **/
-    virtual void requestStartSleep( unsigned int timeoutSleep ) override;
+    void requestStartSleep( unsigned int timeoutSleep ) override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -57,7 +57,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

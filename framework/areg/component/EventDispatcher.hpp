@@ -73,23 +73,23 @@ public:
      *                      which contains this consumer.
      * \return	Return true if thread should run. Return false, it should not run.
      **/
-    virtual bool onThreadRegistered( Thread * threadObj ) override;
+    bool onThreadRegistered( Thread * threadObj ) override;
 
     /**
      * \brief   Function is triggered from thread object when it is going to be destroyed.
      **/
-    virtual void onThreadUnregistering() override;
+    void onThreadUnregistering() override;
 
     /**
      * \brief   Function is called from Thread object, when it is running and fully operable.
      **/
-    virtual void onThreadRuns() override;
+    void onThreadRuns() override;
 
     /**
      * \brief   Function is called from Thread object when it is going to exit.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit() override;
+    int onThreadExit() override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -101,7 +101,7 @@ public:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool postEvent(Event& eventElem) override;
+    bool postEvent(Event& eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

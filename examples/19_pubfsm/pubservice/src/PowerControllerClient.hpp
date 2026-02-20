@@ -145,7 +145,7 @@ protected:
      *          This flag is 'false' if lights are OFF.
      * \see     requestStartTrafficLight
      **/
-    virtual void responseStartTrafficLight( bool Success ) override;
+    void responseStartTrafficLight( bool Success ) override;
 
 /************************************************************************
  * Response StopTrafficLight
@@ -160,7 +160,7 @@ protected:
      *          This flag is 'false' if traffic lights are OFF.
      * \see     requestStopTrafficLight
      **/
-    virtual void responseStopTrafficLight( bool Success ) override;
+    void responseStopTrafficLight( bool Success ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -173,7 +173,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns() override;
+    void onThreadRuns() override;
 
 /************************************************************************/
 // IEPowerControllerEventConsumer overrides
@@ -183,7 +183,7 @@ protected:
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
-    virtual void processEvent( const PowerControllerEventData & data ) override;
+    void processEvent( const PowerControllerEventData & data ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -199,7 +199,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

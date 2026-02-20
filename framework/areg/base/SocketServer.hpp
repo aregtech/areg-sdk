@@ -100,7 +100,7 @@ public:
      * \param   portNr      The valid port number to bind.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( const char * hostName, unsigned short portNr ) override;
+    bool createSocket( const char * hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Before listening and accepting connection from clients, 
@@ -109,7 +109,7 @@ public:
      *          Both, socket IP-address and port number should be already set.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket() override;
+    bool createSocket() override;
 
     /**
      * \brief   Call to place server socket in a state in which it is listening for an incoming connection.

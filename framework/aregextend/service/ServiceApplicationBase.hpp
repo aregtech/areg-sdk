@@ -146,7 +146,7 @@ public:
      *                      or need to use default value.
      * \return  The result of execution.
      **/
-    virtual int serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
+    int serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
 
     /**
      * \brief   Triggered to initialize the service application.
@@ -156,70 +156,70 @@ public:
      * \return  Returns true if succeeded to initialize application and the application can run.
      *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
      **/
-    virtual bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
+    bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
 
     /**
      * \brief   Triggered when application is going to exit.
      **/
-    virtual void serviceRelease() override;
+    void serviceRelease() override;
 
     /**
      * \brief   Call to install (register) message router service in the system.
      * \return  Returns true if registration succeeded.
      **/
-    virtual bool serviceInstall() override;
+    bool serviceInstall() override;
 
     /**
      * \brief   Call to uninstall (unregister) message router service in the system.
      **/
-    virtual void serviceUninstall() override;
+    void serviceUninstall() override;
 
     /**
      * \brief   Registers system service in the system.
      **/
-    virtual bool registerService() override;
+    bool registerService() override;
 
     /**
      * \brief   Opens operating system service DB for further processing.
      * \return  Returns true if succeeded.
      **/
-    virtual bool serviceOpen() override;
+    bool serviceOpen() override;
 
     /**
      * \brief   Called to start message router service.
      * \return  Returns true, if started with success.
      **/
-    virtual bool serviceStart() override;
+    bool serviceStart() override;
 
     /**
      * \brief   Called to pause message router service.
      **/
-    virtual void servicePause() override;
+    void servicePause() override;
 
     /**
      * \brief   Called to resume paused message router service.
      **/
-    virtual bool serviceContinue() override;
+    bool serviceContinue() override;
 
     /**
      * \brief   Called to stop message router service.
      **/
-    virtual void serviceStop() override;
+    void serviceStop() override;
 
     /**
      * \brief   Called to shutdown the system service.
      **/
-    virtual void serviceShutdown() override;
+    void serviceShutdown() override;
 
     /**
      * \brief   Sets the state of message router service.
      **/
-    virtual bool setState( NESystemService::ServicePhase newState ) override;
+    bool setState( NESystemService::ServicePhase newState ) override;
 
     /**
      * \brief   Run application as a background process without input or output on console.
      **/
-    virtual void runService() override;
+    void runService() override;
 
     /**
      * \brief   Called to setup service and start service dispatcher.
@@ -228,7 +228,7 @@ public:
      *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
      *          In all other cases it should return RESULT_FAILED_INIT.
      **/
-    virtual int startServiceDispatcher() override;
+    int startServiceDispatcher() override;
 
 protected:
 
@@ -240,25 +240,25 @@ protected:
      * \brief   Called by configuration manager before the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void prepareSaveConfiguration(ConfigManager& config) override;
+    void prepareSaveConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void postSaveConfiguration(ConfigManager& config) override;
+    void postSaveConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager before the configuration is loaded from the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void prepareReadConfiguration(ConfigManager& config) override;
+    void prepareReadConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void postReadConfiguration(ConfigManager& config) override;
+    void postReadConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -267,7 +267,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    virtual void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.

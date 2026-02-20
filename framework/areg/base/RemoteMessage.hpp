@@ -253,17 +253,17 @@ protected:
      *          If no data is copied, it will return position at the beginning of buffer.
      *          If data is copied, will return the position of written data.
      **/
-    virtual unsigned int initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const override;
+    unsigned int initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const override;
 
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset() const override;
+    unsigned int getDataOffset() const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    virtual unsigned int getHeaderSize() const override;
+    unsigned int getHeaderSize() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

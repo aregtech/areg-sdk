@@ -405,25 +405,25 @@ protected:
      * \param   stubTarget  The address of registered service provider
      * \param   status      The connection status of the service provider.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState status ) override;
+    void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState status ) override;
 
     /**
      * \brief   Send by system when client is requested connect / disconnect
      * \param   proxyAddress    The address of the service consumer proxy.
      * \param   status          The service consumer connection status.
      **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status ) override;
+    void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status ) override;
 
     /**
      * \brief   Triggered to process generic stub event.
      *          Usually should not be triggered.
      **/
-    virtual void processStubEvent( StubEvent & eventElem ) override;
+    void processStubEvent( StubEvent & eventElem ) override;
 
     /**
      * \brief   Triggered to process generic event. Usually is not triggered.
      **/
-    virtual void processGenericEvent(Event & eventElem) override;
+    void processGenericEvent(Event & eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations. Protected.

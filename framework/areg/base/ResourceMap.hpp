@@ -530,8 +530,7 @@ inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
 //////////////////////////////////////////////////////////////////////////
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
 ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ResourceMap()
-    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>    (static_cast<Lockable &>(mNoLock))
-
+    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>(static_cast<Lockable &>(mNoLock))
     , mNoLock   ()
 {
 }
@@ -541,8 +540,7 @@ ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ResourceMap()
 //////////////////////////////////////////////////////////////////////////
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
 ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ConcurrentResourceMap()
-    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>    (static_cast<Lockable &>(mLock))
-
+    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>(static_cast<Lockable &>(mLock))
     , mLock ( )
 {
 }

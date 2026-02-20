@@ -98,23 +98,23 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger() override;
+    bool openLogger() override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger() override;
+    void closeLogger() override;
 
     /**
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & logMessage ) override;
+    void logMessage( const NELogging::sLogMessage & logMessage ) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened() const override;
+    bool isLoggerOpened() const override;
 
 public:
     /**
@@ -130,12 +130,12 @@ protected:
      * \brief   Creates message layout objects. Returns true if succeeded.
      *          Overwrite method to change layouts.
      **/
-    virtual bool createLayouts() override;
+    bool createLayouts() override;
 
     /**
      * \brief   Release previously crated layouts
      **/
-    virtual void releaseLayouts() override;
+    void releaseLayouts() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

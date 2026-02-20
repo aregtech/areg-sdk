@@ -44,13 +44,13 @@ protected:
      * \brief   This function is triggered by Component when starts up.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    virtual void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( Component & holder ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -60,7 +60,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body

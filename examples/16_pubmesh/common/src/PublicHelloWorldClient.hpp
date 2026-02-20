@@ -55,7 +55,7 @@ protected:
      * \param   client  The client registration object that contains unique ID.
      * \see     requestRegister
      **/
-    virtual void responseRegister( const PublicHelloWorld::sClientRegister & client ) override;
+    void responseRegister( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Response callback.
@@ -65,7 +65,7 @@ protected:
      * \param   clientID    Indicates the ID client that made message output
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( unsigned int clientID ) override;
+    void responseHelloWorld( unsigned int clientID ) override;
 
     /**
      * \brief   Triggered, when ServiceState attribute is updated. The function contains
@@ -76,7 +76,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( SystemShutdown::RunState ServiceState, NEService::DataState state ) override;
+    void onServiceStateUpdate( SystemShutdown::RunState ServiceState, NEService::DataState state ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -92,7 +92,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -101,7 +101,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

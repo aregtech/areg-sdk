@@ -151,7 +151,7 @@ private:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -200,7 +200,7 @@ protected:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent(const ServiceEventData & data) override;
+    void processEvent(const ServiceEventData & data) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -249,7 +249,7 @@ protected:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent(const ServiceEventData & data) override;
+    void processEvent(const ServiceEventData & data) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables

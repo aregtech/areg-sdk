@@ -141,7 +141,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    virtual bool isOperable() const override;
+    bool isOperable() const override;
 
     /**
      * \brief   Connects to the specified database.
@@ -153,25 +153,25 @@ public:
      * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    virtual bool connect(const String& dbPath, bool readOnly) override;
+    bool connect(const String& dbPath, bool readOnly) override;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
      **/
-    virtual void disconnect() override;
+    void disconnect() override;
 
     /**
      * \brief   Execute the SQL script.
      * \param   sql     The SQL script to execute.
      * \return  Returns true if succeeds to execute the SQL script.
      **/
-    virtual bool execute(const String & sql) override;
+    bool execute(const String & sql) override;
 
     /**
      * \brief   Call if need to make multiple operation. This call starts the transaction,
      *          that is required either commit or rollback call to complete the transaction.
      **/
-    virtual bool begin() override;
+    bool begin() override;
 
     /**
      * \brief   Commits or rolls back the SqliteDatabase changes and returns true if succeeded.
@@ -179,7 +179,7 @@ public:
      *                      Otherwise, the SqliteDatabase engine should rollback the changes.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
-    virtual bool commit(bool doCommit) override;
+    bool commit(bool doCommit) override;
 
 /************************************************************************/
 // LogDatabaseEngine class overrides.
@@ -189,14 +189,14 @@ public:
      * \brief   Returns true if the database and the log tables are initialized,
      *          and ready to log messages.
      **/
-    virtual bool areTablesInitialized() const override;
+    bool areTablesInitialized() const override;
 
     /**
      * \brief   Called when logging message should be saved in the database.
      * \param   message     The structure of the message to log.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    virtual bool logMessage(const NELogging::sLogMessage & message) override;
+    bool logMessage(const NELogging::sLogMessage & message) override;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -204,7 +204,7 @@ public:
      * \param   timestamp   The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    virtual bool logInstanceConnected(const NEService::sServiceConnectedInstance & instance, const DateTime & timestamp) override;
+    bool logInstanceConnected(const NEService::sServiceConnectedInstance & instance, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when an instance of log source is disconnected.
@@ -213,7 +213,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool logInstanceDisconnected(const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logInstanceDisconnected(const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -222,7 +222,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    virtual bool logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -233,7 +233,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    virtual bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the list of scopes in the database.
@@ -242,7 +242,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    virtual uint32_t logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
+    uint32_t logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.
@@ -250,7 +250,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool logScopesDeactivate(const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopesDeactivate(const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Call to deactivate a single scope related with the specified cookie ID.
@@ -259,12 +259,12 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool logScopeDeactivate(const ITEM_ID & cookie, unsigned int scopeId, const DateTime & timestamp) override;
+    bool logScopeDeactivate(const ITEM_ID & cookie, unsigned int scopeId, const DateTime & timestamp) override;
 
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
      **/
-    virtual bool rollback() override;
+    bool rollback() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

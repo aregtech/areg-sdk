@@ -75,22 +75,22 @@ protected:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost() override;
+    bool connectServiceHost() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost() override;
+    void disconnectServiceHost() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit() override;
+    void onServiceExit() override;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
      **/
-    virtual bool isServiceHostPending() const override;
+    bool isServiceHostPending() const override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -101,27 +101,27 @@ protected:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    virtual void failedReceiveMessage( Socket & whichSource ) override;
+    void failedReceiveMessage( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // RegistrationProvider interface overrides
@@ -134,7 +134,7 @@ protected:
      * \param   stubService     The address of service provider to register in the system.
      * \return  Returns true if succeeded registration.
      **/
-    virtual bool registerServiceProvider( const StubAddress & stubService ) override;
+    bool registerServiceProvider( const StubAddress & stubService ) override;
 
     /**
      * \brief   Call to unregister the service provider from the system and disconnect service consumers.
@@ -142,7 +142,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
+    void unregisterServiceProvider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
 
     /**
      * \brief   Call to register the remote service consumer in the system and connect to service provider.
@@ -151,7 +151,7 @@ protected:
      * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
+    bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
 
     /**
      * \brief   Call to unregister the service consumer from the system and disconnect service provider.
@@ -159,7 +159,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
+    void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -174,7 +174,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
 /************************************************************************/
 // RemoteEventConsumer interface overrides
@@ -184,7 +184,7 @@ protected:
      * \brief   Triggered when the Stub receives remote request event to process.
      * \param   requestEvent        The remote request event to be processed.
      **/
-    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
+    void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
 
     /**
      * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -192,7 +192,7 @@ protected:
      *          sending attribute update notifications.
      * \param   requestNotifyEvent  The remote notification request event to be processed.
      **/
-    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
+    void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
 
     /**
      * \brief   Triggered when the Stub receives remote response request event to process.
@@ -200,7 +200,7 @@ protected:
      *          to subscribe on information or response sent by Stub.
      * \param   responseEvent   The remote response event sent on processed request.
      **/
-    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
+    void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -211,7 +211,7 @@ protected:
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes

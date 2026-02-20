@@ -73,23 +73,23 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger() override;
+    bool openLogger() override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger() override;
+    void closeLogger() override;
 
     /**
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & logMessage ) override;
+    void logMessage( const NELogging::sLogMessage & logMessage ) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened() const override;
+    bool isLoggerOpened() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -107,7 +107,7 @@ protected:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char * buffer, unsigned int size ) override;
+    unsigned int write( const unsigned char * buffer, unsigned int size ) override;
 
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -116,7 +116,7 @@ protected:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const ByteBuffer & buffer ) override;
+    unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -124,7 +124,7 @@ protected:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & ascii ) override;
+    unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -132,13 +132,13 @@ protected:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wide ) override;
+    unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief	Flushes cached data to output stream object.
      *          Implement the function is device has caching mechanism
      **/
-    virtual void flush() override;
+    void flush() override;
 
 protected:
     /**
@@ -148,7 +148,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable() const override;
+    unsigned int getSizeWritable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

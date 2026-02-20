@@ -335,7 +335,7 @@ private:
      *          This function is filtering out notification events
      *          and triggers notification event processing function.
      **/
-    virtual void startEventProcessing( Event & eventElem ) override;
+    void startEventProcessing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls

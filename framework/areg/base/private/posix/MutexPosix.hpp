@@ -127,13 +127,13 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid() const override;
+    bool isValid() const override;
 
     /**
      * \brief   Triggered when synchronization object is going to be deleted.
      *          This should free all resources.
      **/
-    virtual void freeResources() override;
+    void freeResources() override;
 
 //////////////////////////////////////////////////////////////////////////
 // MutexPosix class implementation

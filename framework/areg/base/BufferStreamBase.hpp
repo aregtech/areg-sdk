@@ -97,7 +97,7 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override;
+    unsigned int write( const unsigned char* buffer, unsigned int size ) override;
 
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -106,7 +106,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const ByteBuffer & buffer ) override;
+    unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -114,7 +114,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & ascii ) override;
+    unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -122,7 +122,7 @@ public:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wide ) override;
+    unsigned int write( const WideString & wide ) override;
 
 /************************************************************************/
 // InStream interface overrides
@@ -136,7 +136,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( unsigned char* buffer, unsigned int size ) const override;
+    unsigned int read( unsigned char* buffer, unsigned int size ) const override;
 
     /**
      * \brief   Reads data from input stream object, copies into give Byte Buffer object
@@ -146,7 +146,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( ByteBuffer & buffer ) const override;
+    unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -154,7 +154,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & ascii ) const override;
+    unsigned int read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -162,7 +162,7 @@ public:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wide ) const override;
+    unsigned int read( WideString & wide ) const override;
 
 /************************************************************************/
 // ByteBuffer overrides
@@ -184,7 +184,7 @@ public:
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
-    virtual unsigned int reserve(unsigned int size, bool copy) override;
+    unsigned int reserve(unsigned int size, bool copy) override;
 
 protected:
 /************************************************************************/
@@ -197,7 +197,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable() const override;
+    unsigned int getSizeReadable() const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -206,19 +206,19 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable() const override;
+    unsigned int getSizeWritable() const override;
 
     /**
      * \brief	Flushes cached data to output stream object.
      *          Implement the function if device has caching mechanism
      **/
-    virtual void flush() override;
+    void flush() override;
 
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor() const override;
+    void resetCursor() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations

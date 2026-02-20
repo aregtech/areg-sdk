@@ -70,7 +70,7 @@ protected:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
     /**
      * \brief	Triggered when dispatcher starts running. 
@@ -79,14 +79,14 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher() override;
+    bool runDispatcher() override;
 
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
     /**
      * \brief   Starts Timer Manager Thread it is not started yet.

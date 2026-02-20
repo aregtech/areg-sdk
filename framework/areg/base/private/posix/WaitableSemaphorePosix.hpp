@@ -94,7 +94,7 @@ public:
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
      * \param   contextThread   The thread ID where the lock and wait is checked.
      **/
-    virtual bool checkSignaled( pthread_t contextThread ) const override;
+    bool checkSignaled( pthread_t contextThread ) const override;
 
     /**
      * \brief   This call is triggered by the system when a thread completed waiting and released by semaphore.
@@ -103,18 +103,18 @@ public:
      * \param   ownerThread     The ID of POSIX thread that requests to take ownership.
      * \return  In case of sSemaphores this always returns true.
      **/
-    virtual bool notifyRequestOwnership( pthread_t ownerThread ) override;
+    bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
     /**
      * \brief   This method returns true if the count is more than one. Otherwise, it returns false.
      **/
-    virtual bool checkCanSignalMultipleThreads() const override;
+    bool checkCanSignalMultipleThreads() const override;
 
     /**
      * \brief   This callback is called to notify waitable the amount of threads that where released.
      * \param   numThreads  The amount of threads that where released.
      **/
-    virtual void notifyReleasedThreads( int numThreads ) override;
+    void notifyReleasedThreads( int numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

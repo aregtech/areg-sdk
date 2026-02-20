@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    virtual void onPatientUpdate( const PatientInformation::PatientInfo & Patient, NEService::DataState state ) override;
+    void onPatientUpdate( const PatientInformation::PatientInfo & Patient, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
     /**
      * \brief   Returns pointer to Worker Thread Consumer object identified
@@ -85,7 +85,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
+    WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
 
 private:
     /**

@@ -89,7 +89,7 @@ protected:
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -104,7 +104,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
 private:
 /************************************************************************/
@@ -117,7 +117,7 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent( const SendMessageEventData & data ) override;
+    void processEvent( const SendMessageEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

@@ -52,7 +52,7 @@ protected:
      * \param   process The name of process. Optional parameter, used to make output in logs.
      * \see     responseRegister
      **/
-    virtual void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process ) override;
+    void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process ) override;
 
     /**
      * \brief   Request call.
@@ -60,7 +60,7 @@ protected:
      * \param   client  The client registration object indicating the unregistered client.
      * \note    Has no response
      **/
-    virtual void requestUnregister( const PublicHelloWorld::sClientRegister & client ) override;
+    void requestUnregister( const PublicHelloWorld::sClientRegister & client ) override;
 
     /**
      * \brief   Request call.
@@ -68,7 +68,7 @@ protected:
      * \param   clientID    The ID of registered client to make message output
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( unsigned int clientID ) override;
+    void requestHelloWorld( unsigned int clientID ) override;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -76,7 +76,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status ) override;
+    bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

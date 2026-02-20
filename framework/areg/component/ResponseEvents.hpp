@@ -160,14 +160,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    virtual const InStream & readStream( const InStream & stream ) override;
+    const InStream & readStream( const InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    virtual OutStream & writeStream( OutStream & stream ) const override;
+    OutStream & writeStream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

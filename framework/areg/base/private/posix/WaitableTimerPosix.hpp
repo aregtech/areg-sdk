@@ -99,7 +99,7 @@ public:
     /**
      * \brief   Returns true if synchronization object is valid.
      **/
-    virtual bool isValid() const override;
+    bool isValid() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected calls
@@ -113,14 +113,14 @@ protected:
      * \brief   Returns true if the object is signaled. Otherwise, returns false.
      * param    contextThread   The thread ID where lock and check happened.
      **/
-    virtual bool checkSignaled( pthread_t contextThread ) const override;
+    bool checkSignaled( pthread_t contextThread ) const override;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.
      * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
      * \return  Returns true if waitable successfully has taken thread ownership.
      **/
-    virtual bool notifyRequestOwnership( pthread_t ownerThread ) override;
+    bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
     /**
      * \brief   This callback is triggered to when a system needs to know whether waitable
@@ -128,7 +128,7 @@ protected:
      *          multiple threads can get waitable signaled state. For example, waitable Mutex 
      *          signals only one thread, when waitable Event can signal multiple threads.
      **/
-    virtual bool checkCanSignalMultipleThreads() const override;
+    bool checkCanSignalMultipleThreads() const override;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -137,7 +137,7 @@ protected:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    virtual void notifyReleasedThreads( int numThreads ) override;
+    void notifyReleasedThreads( int numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -27,7 +27,7 @@ protected:
      * \param   success         Flag, indicating whether the request to register connection succeeded or not.
      * \see     requestRegisterConnection
      **/
-    virtual void responseRegisterConnection( const ConnectionManager::sConnection & connection, const ConnectionManager::ListConnections & connectionList, bool success ) override;
+    void responseRegisterConnection( const ConnectionManager::sConnection & connection, const ConnectionManager::ListConnections & connectionList, bool success ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when new client connection is accepted
@@ -35,7 +35,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
-    virtual void broadcastClientConnected( const ConnectionManager::sConnection & clientConnected ) override;
+    void broadcastClientConnected( const ConnectionManager::sConnection & clientConnected ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when client is disconnected
@@ -43,7 +43,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/
-    virtual void broadcastClientDisconnected( const ConnectionManager::sConnection & clientLeft ) override;
+    void broadcastClientDisconnected( const ConnectionManager::sConnection & clientLeft ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

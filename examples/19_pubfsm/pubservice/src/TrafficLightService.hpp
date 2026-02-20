@@ -59,28 +59,28 @@ protected:
      *          Called to power ON the traffic lights.
      * \note    Has no response
      **/
-    virtual void requestPowerOn() override;
+    void requestPowerOn() override;
 
     /**
      * \brief   Request call.
      *          Called to power OFF the traffic lights.
      * \note    Has no response
      **/
-    virtual void requestPowerOff() override;
+    void requestPowerOff() override;
 
     /**
      * \brief   Request call.
      *          Triggered to start the traffic light
      * \see     responseStartTrafficLight
      **/
-    virtual void requestStartTrafficLight() override;
+    void requestStartTrafficLight() override;
 
     /**
      * \brief   Request call.
      *          Call to stop the traffic lights and put them in initialization state.
      * \see     responseStopTrafficLight
      **/
-    virtual void requestStopTrafficLight() override;
+    void requestStopTrafficLight() override;
 
 /************************************************************************/
 // IETrafficLightActionHandler action overrides
@@ -89,39 +89,39 @@ protected:
    /**
     * \brief   Action to perform when traffic light is off.
     **/
-   virtual void actionPowerOff() override;
+   void actionPowerOff() override;
 
    /**
     * \brief   Acton to perform when power on the traffic light.
     **/
-   virtual void actionPowerOn() override;
+   void actionPowerOn() override;
 
    /**
     * \brief   Action to perform when vehicle light is yellow.
     **/
-   virtual void actionVehicleYellow() override;
+   void actionVehicleYellow() override;
 
    /**
     * \brief   Action to perform when vehicle light is red.
     **/
-   virtual void actionVehicleRed() override;
+   void actionVehicleRed() override;
 
    /**
     * \brief   Action to perform when pedestrian light is red.
     **/
-   virtual void actionPedestrianRed() override;
+   void actionPedestrianRed() override;
 
    /**
     * \brief   Action to perform when vehicle light is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   virtual void actionVehicleGreen( bool isEastWest ) override;
+   void actionVehicleGreen( bool isEastWest ) override;
 
    /**
     * \brief   Action to perform when pedestrian light state is green.
     * \param   isEastWest    Flag, indicating whether this action is triggered for East-West or South-North direction. The default direction is South-North.
     **/
-   virtual void actionPedestrianGreen( bool isEastWest ) override;
+   void actionPedestrianGreen( bool isEastWest ) override;
 
 /************************************************************************/
 // Component overrides
@@ -132,7 +132,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( ComponentThread & comThread ) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -140,7 +140,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( ComponentThread & comThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

@@ -715,14 +715,14 @@ protected:
      *          and should processed by proxy object.
      * \param   eventElem   Proxy event to process
      **/
-    virtual void processProxyEvent( ProxyEvent & eventElem ) override;
+    void processProxyEvent( ProxyEvent & eventElem ) override;
 
     /**
      * \brief   Triggered, when current dispatching event is not an instance of
      *          Proxy Event and should be processed by Proxy object.
      * \param   eventElem   Event object to process.
      **/
-    virtual void processGenericEvent( Event & eventElem ) override;
+    void processGenericEvent( Event & eventElem ) override;
 
     /**
      * \brief   Triggered, when received server connection status changed.
@@ -732,7 +732,7 @@ protected:
      *                      The connection status should be NEService::Connected
      *                      To be able to send message to service target from Proxy client.
      **/
-    virtual void serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::ServiceConnectionState status ) override;
+    void serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ProxyBase interface overrides

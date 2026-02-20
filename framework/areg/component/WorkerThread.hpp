@@ -147,7 +147,7 @@ public:
      *          destroyed.
      * \param   eventElem   The event object to post.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
 protected:
 /************************************************************************/
@@ -158,7 +158,7 @@ protected:
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // Dispatcher Thread overrides
@@ -173,7 +173,7 @@ protected:
      * \return  If found, returns valid pointer of dispatching thread. 
      *          Otherwise returns nullptr
      **/
-    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
+    DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
 /************************************************************************/
 // EventDispatcherBase overrides
@@ -187,7 +187,7 @@ protected:
      * \return	Returns true if at least one consumer processed event.
      *          Otherwise it returns false.
      **/
-    virtual bool dispatchEvent( Event & eventElem ) override;
+    bool dispatchEvent( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
