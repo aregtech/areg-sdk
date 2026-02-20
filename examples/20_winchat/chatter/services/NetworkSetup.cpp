@@ -17,13 +17,13 @@ NetworkSetup::NetworkSetup( const char * roleName, Component & owner, Connection
 {
 }
 
-void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, ConnectionManager::eConnectionResult result )
+void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
     LOG_SCOPE(chatter_NetworkSetup_responseConnect);
     LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, ConnectionManager::getString(result));
     DateTime timeConnected = DateTime::getNow();
 
-    if (result == ConnectionManager::eConnectionResult::ConnectionAccepted)
+    if (result == ConnectionManager::ConnectionResult::Accepted)
     {
         mConnectionHandler.SetNickName(nickName);
         mConnectionHandler.SetConnectCookie(cookie);
@@ -40,25 +40,25 @@ void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie
     }
 
     mConnectionHandler.SetRegistered( false );
-    bool isConnected = result == ConnectionManager::eConnectionResult::ConnectionAccepted;
+    bool isConnected = result == ConnectionManager::ConnectionResult::Accepted;
     DispatcherThread *dispThread = getDispatcherThread();
-    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
+    DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool NetworkSetup::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool NetworkSetup::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 
     bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
-        LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::eWndCommands::CmdServiceNetwork message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
+        LOG_DBG("The service is connected, network setup can start. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
     }
     else
     {
-        LOG_DBG("The service is disconnected, network setup stops. posting NEDistributedApp::eWndCommands::CmdServiceNetwork message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 0, 0 );
+        LOG_DBG("The service is disconnected, network setup stops. posting NEDistributedApp::WindowCommand::CmdServiceNetwork message");
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceNetwork, 0, 0 );
     }
 
     return result;

@@ -46,9 +46,9 @@ void WaitableTimerPosix::_posixTimerRoutine(union sigval si)
 
 
 WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
-    : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitTimer, false, name )
+    : WaitablePosix  ( NESyncTypesIX::SyncKind::SoWaitTimer, false, name )
 
-    , mResetInfo        ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
+    , mResetInfo        ( isAutoReset ? NESyncTypesIX::ResetMode::Automatic : NESyncTypesIX::ResetMode::Manual )
 #ifdef __APPLE__
     , mTimerSource      ( nullptr )
     , mTimerQueue       ( nullptr )
@@ -219,7 +219,7 @@ bool WaitableTimerPosix::checkCanSignalMultipleThreads() const
 void WaitableTimerPosix::notifyReleasedThreads(int /* numThreads */)
 {
     ObjectLockPosix lock(*this);
-    if (mResetInfo == NESyncTypesIX::eEventResetInfo::EventResetAutomatic)
+    if (mResetInfo == NESyncTypesIX::ResetMode::Automatic)
     {
         AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
         mIsSignaled = false;

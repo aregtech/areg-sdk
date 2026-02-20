@@ -33,7 +33,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::eEventType eventType )
+ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType )
     : StreamableEvent       (eventType)
     , mTargetProxyAddress   (targetProxy)
 {
@@ -100,17 +100,17 @@ inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & event
 {
     switch (eventResponse.getDataType() )
     {
-    case NEService::eMessageDataType::RequestDataType:      // fall through
-    case NEService::eMessageDataType::ResponseDataType:
+    case NEService::MessageDataType::RequestData:      // fall through
+    case NEService::MessageDataType::ResponseData:
         processResponseEvent(eventResponse);
         break;
 
-    case NEService::eMessageDataType::AttributeDataType:
+    case NEService::MessageDataType::AttributeData:
         processAttributeEvent(eventResponse);
         break;
 
-    case NEService::eMessageDataType::ServiceDataType:      // fall through
-    case NEService::eMessageDataType::UndefinedDataType:
+    case NEService::MessageDataType::ServiceData:      // fall through
+    case NEService::MessageDataType::UndefinedData:
         ASSERT(false);
         break;
 
@@ -121,7 +121,7 @@ inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & event
 
 inline void ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
-    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
+    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
     {
         serviceConnectionUpdated( eventConnect.getStubAddress(), eventConnect.getTargetProxy().getChannel(), eventConnect.getConnectionStatus() );
     }

@@ -1064,12 +1064,12 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
         return()
     endif()
 
-    # Run the code generator tool
-    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --doc=${interface_doc} --root=${codegen_root} --target=${output_path})
-
     # Set path for generated files
     set(_generate "${codegen_root}/${output_path}")
     
+    # Run the code generator tool
+    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --doc=${interface_doc} --root=${codegen_root} --target=${output_path})
+
     # List of generated source and header files
     list(APPEND _sources
         ${_generate}/private/${_interface_name}ClientBase.cpp

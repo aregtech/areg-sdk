@@ -83,7 +83,7 @@ protected:
      * \brief   Protected constructor. Should not be accessed directly.
      *          Only via derived classes
      **/
-    Lockable( SyncObject::eSyncObject syncObjectType );
+    Lockable( SyncObject::SyncKind syncObjectType );
 
 public:
     /**
@@ -1228,13 +1228,13 @@ class AREG_API MultiLock
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   MultiLock::eLockedState
+     * \brief   MultiLock::LockState
      *          The current locking state of every single synchronization object
      **/
-    enum class eLockedState : int
+    enum class LockState : uint8_t
     {
-          StateUnlocked = 0     //!< Unlocked state
-        , StateLocked   = 1     //!< Locked state
+          Unlocked  = 0 //!< Unlocked state
+        , Locked    = 1 //!< Locked state
     };
 
 public:
@@ -1351,7 +1351,7 @@ private:
     /**
      * \brief   Locking state of every object within array.
      **/
-    eLockedState            mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
+    LockState            mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
@@ -1421,12 +1421,12 @@ public:
 #endif  // _MSC_VER
 
     //!< The waiting results
-    enum class eWaitResult
+    enum class WaitResolution
     {
-          WaitInvalid   = 0 //!< No waiting, due to invalid timeout
-        , WaitIgnored   = 1 //!< The waiting timeout is value, but ignored waiting, because timeout in nanoseconds
-        , WaitInMilli   = 2 //!< Wait thread in milliseconds or longer
-        , WaitInMicro   = 3 //!< Wait thread in microseconds up to MIN_WAIT.
+          Invalid       = 0 //!< No waiting, due to invalid timeout
+        , Ignored       = 1 //!< The waiting timeout is set, but ignored, because timeout in nanoseconds
+        , Millisecond   = 2 //!< Wait thread in milliseconds or longer
+        , Microsecond   = 3 //!< Wait thread in microseconds up to MIN_WAIT.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1486,10 +1486,10 @@ public:
      *          in milliseconds.
      * 
      * \param   ms      The timeout in milliseconds.
-     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
      *          is considered successful operation.
      **/
-    inline Wait::eWaitResult wait(uint32_t ms) const;
+    inline Wait::WaitResolution wait(uint32_t ms) const;
 
     /**
      * \brief   Suspends the thread from further execution for specified timeout
@@ -1501,10 +1501,10 @@ public:
      *          of the hardware.
      *
      * \param   timeout     The timeout in microseconds with nanoseconds duration.
-     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
      *          is considered successful operation.
      **/
-    inline Wait::eWaitResult waitFor(Wait::Duration timeout) const;
+    inline Wait::WaitResolution waitFor(Wait::Duration timeout) const;
 
     /**
      * \brief   Suspends the thread from execution until reached the steady high 
@@ -1515,10 +1515,10 @@ public:
      *                  the time when the method is called or the difference
      *                  is in nanoseconds. The minimum timeout should be
      *                  1 microsecond.
-     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
      *          is considered successful operation.
      **/
-    inline Wait::eWaitResult waitUntil(const Wait::SteadyTime& future) const;
+    inline Wait::WaitResolution waitUntil(const Wait::SteadyTime& future) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden OS dependent calls
@@ -1536,10 +1536,10 @@ private:
      * \brief   OS dependent implementation of thread waiting.
      *          The accuracy depends on the OS and hardware provided features.
      * \param   timeout     The time in the future to suspend thread and wait.
-     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     * \return  Returns waiting results. Any value, which is not equal to WaitResolution::Invalid
      *          is considered successful operation.
      **/
-    eWaitResult _osWaitFor(const Wait::Duration& timeout) const;
+    WaitResolution _osWaitFor(const Wait::Duration& timeout) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1825,17 +1825,17 @@ inline Wait::Duration Wait::untilNow(const Wait::SteadyTime& passed)
     return (std::chrono::steady_clock::now() - passed);
 }
 
-inline Wait::eWaitResult Wait::wait(uint32_t ms) const
+inline Wait::WaitResolution Wait::wait(uint32_t ms) const
 {
     return _osWaitFor(Wait::Duration{ ms * Wait::ONE_MS });
 }
 
-inline Wait::eWaitResult Wait::waitFor(Wait::Duration timeout) const
+inline Wait::WaitResolution Wait::waitFor(Wait::Duration timeout) const
 {
     return _osWaitFor(timeout);
 }
 
-inline Wait::eWaitResult Wait::waitUntil(const Wait::SteadyTime& future) const
+inline Wait::WaitResolution Wait::waitUntil(const Wait::SteadyTime& future) const
 {
     return _osWaitFor(future - std::chrono::steady_clock::now());
 }

@@ -133,7 +133,7 @@ bool ReadConverter::readLine( String & Value ) const
         {
             if (getChar(ch) && (NEString::isCarriageReturn<char>(ch) == false) && (NEString::isEndOfString<char>(ch) == false))
             {
-                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(char)), Cursor::eCursorPosition::PositionCurrent);
+                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(char)), Cursor::SeekOrigin::Current);
             }
 
             break;
@@ -156,7 +156,7 @@ bool ReadConverter::readLine( WideString & Value ) const
         {
             if ( getChar( ch ) && (NEString::isCarriageReturn<wchar_t>( ch ) == false) && (NEString::isEndOfString<wchar_t>( ch ) == false) )
             {
-                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(wchar_t)), Cursor::eCursorPosition::PositionCurrent);
+                mReadPosition.setPosition(-1 * static_cast<int>(sizeof(wchar_t)), Cursor::SeekOrigin::Current);
             }
 
             break;

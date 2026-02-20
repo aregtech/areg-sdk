@@ -578,7 +578,7 @@ TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
 //!< Example of options to pass Geometry figures, passed as a string separated with space, with and without quotes.
 TEST( OptionParserTest, OptionFiguresWithData )
 {
-    enum Figure
+    enum class Figure
     {
           Triangle = 1
         , Rectangle = 2

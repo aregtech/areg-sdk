@@ -249,7 +249,7 @@ public:
     : Component(entry, owner)
     , HelloServiceClientBase(entry.mDependencyServices[0].mRoleName, owner) {}
 
-  bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override {
+  bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override {
     HelloServiceClientBase::serviceConnected(status, proxy);
     if (NEService::isServiceConnected(status))
       requestHelloService();  // Service found, call it now

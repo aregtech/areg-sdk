@@ -29,11 +29,11 @@ namespace traffic
     /**
      * \brief   These are symbolic directions of traffics.
      **/
-    enum class eTrafficDirection
+    enum class TrafficDirection
     {
-          DirectionUnknown      //!< The direction is unknown
-        , DirectionSouthNorth   //!< The direction is South-North
-        , DirectionEastWest     //!< The direction is East-West.
+          Undefined    //!< The direction is unknown
+        , SouthNorth   //!< The direction is South-North
+        , EastWest     //!< The direction is East-West.
 
     };
 }

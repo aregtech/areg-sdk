@@ -31,9 +31,9 @@
 NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread)
     : LoggerBase                    (logConfig)
     , ServiceClientConnectionBase   ( NEService::COOKIE_LOGGER
-                                    , NERemoteService::eRemoteServices::ServiceLogger
-                                    , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
-                                    , NEService::eMessageSource::MessageSourceClient
+                                    , NERemoteService::RemoteServiceKind::Logger
+                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)
+                                    , NEService::MessageSource::SourceClient
                                     , static_cast<ConnectionConsumer &>(self())
                                     , static_cast<RemoteMessageHandler &>(self())
                                     , dispatchThread
@@ -43,7 +43,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
 
     , mScopeController  ( scopeController )
     , mIsEnabled        ( false )
-    , mRingStack        ( 0, NECommon::eRingOverlap::ShiftOnOverlap )
+    , mRingStack        ( 0, NECommon::OverlapPolicy::Shift )
 {
 }
 
@@ -93,11 +93,11 @@ void NetTcpLogger::logMessage(const NELogging::sLogMessage& logMessage)
     {
         if (mChannel.isValid() && isConnectState())
         {
-            sendMessage(NELogging::createLogMessage(logMessage, NELogging::eLogDataType::LogDataRemote, mChannel.getCookie()), Event::eEventPriority::EventPriorityNormal);
+            sendMessage(NELogging::createLogMessage(logMessage, NELogging::LogDataType::Remote, mChannel.getCookie()), Event::EventPriority::NormalPrio);
         }
         else if (mRingStack.capacity() != 0)
         {
-            mRingStack.push(NELogging::createLogMessage(logMessage, NELogging::eLogDataType::LogDataRemote, mChannel.getCookie()));
+            mRingStack.push(NELogging::createLogMessage(logMessage, NELogging::LogDataType::Remote, mChannel.getCookie()));
         }
     }
 }
@@ -121,7 +121,7 @@ void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
         RemoteMessage msgLog{ mRingStack.pop() };
         msgLog.setSource(cookie);
         reinterpret_cast<NELogging::sLogMessage*>(msgLog.getBuffer())->logCookie = cookie;
-        sendMessage(msgLog, Event::eEventPriority::EventPriorityNormal);
+        sendMessage(msgLog, Event::EventPriority::NormalPrio);
     }
 }
 
@@ -146,12 +146,12 @@ void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /
         mRingStack.push(msgFailed);
     }
 
-    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedReceiveMessage(Socket & /* whichSource */)
 {
-    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
@@ -162,14 +162,14 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
 {
     if (msgReceived.isValid() && whichSource.isValid())
     {
-        NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId());
+        NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>(msgReceived.getMessageId());
         switch (msgId)
         {
-        case NEService::eFuncIdRange::SystemServiceNotifyConnection:
+        case NEService::FuncIdRange::SystemServiceNotifyConnection:
             serviceConnectionEvent(msgReceived);
             break;
 
-        case NEService::eFuncIdRange::ServiceLogUpdateScopes:
+        case NEService::FuncIdRange::ServiceLogUpdateScopes:
             {
                 uint32_t scopeCount{ 0 };
                 NELogging::sScopeInfo scopeInfo{};
@@ -188,7 +188,7 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
             }
             break;
 
-        case NEService::eFuncIdRange::ServiceLogQueryScopes:
+        case NEService::FuncIdRange::ServiceLogQueryScopes:
             {
                 const NELogging::ScopeList & scopes{ static_cast<const NELogging::ScopeList &>(mScopeController.getScopeList()) };
                 const ITEM_ID & targetId{ msgReceived.getSource() };
@@ -196,37 +196,37 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
             }
             break;
 
-        case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
+        case NEService::FuncIdRange::ServiceSaveLogConfiguration:
             if (LogManager::saveLogConfig())
             {
                 sendMessage(NELogging::messageConfigurationSaved());
             }
             break;
 
-        case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
-        case NEService::eFuncIdRange::ServiceLastId:                    // fall through
-        case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
-        case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
-        case NEService::eFuncIdRange::SystemServiceDisconnect:          // fall through
-        case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
-        case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
-        case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
-        case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
-        case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
-        case NEService::eFuncIdRange::RequestRegisterService:           // fall through
-        case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
-        case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
-        case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
-        case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
-        case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
-        case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
-        case NEService::eFuncIdRange::AttributeLastId:                  // fall through
-        case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
-        case NEService::eFuncIdRange::ResponseLastId:                   // fall through
-        case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
-        case NEService::eFuncIdRange::RequestLastId:                    // fall through
-        case NEService::eFuncIdRange::RequestFirstId:                   // fall through
-        case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
+        case NEService::FuncIdRange::SystemServiceNotifyRegister:      // fall through
+        case NEService::FuncIdRange::ServiceLastId:                    // fall through
+        case NEService::FuncIdRange::SystemServiceQueryInstances:      // fall through
+        case NEService::FuncIdRange::SystemServiceRequestRegister:     // fall through
+        case NEService::FuncIdRange::SystemServiceDisconnect:          // fall through
+        case NEService::FuncIdRange::SystemServiceConnect:             // fall through
+        case NEService::FuncIdRange::ResponseServiceProviderConnection:// fall through
+        case NEService::FuncIdRange::RequestServiceProviderConnection: // fall through
+        case NEService::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case NEService::FuncIdRange::RequestServiceProviderVersion:    // fall through
+        case NEService::FuncIdRange::RequestRegisterService:           // fall through
+        case NEService::FuncIdRange::ComponentCleanup:                 // fall through
+        case NEService::FuncIdRange::SystemServiceNotifyInstances:     // fall through
+        case NEService::FuncIdRange::ServiceLogRegisterScopes:         // fall through
+        case NEService::FuncIdRange::ServiceLogScopesUpdated:          // fall through
+        case NEService::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case NEService::FuncIdRange::ServiceLogMessage:                // fall through
+        case NEService::FuncIdRange::AttributeLastId:                  // fall through
+        case NEService::FuncIdRange::AttributeFirstId:                 // fall through
+        case NEService::FuncIdRange::ResponseLastId:                   // fall through
+        case NEService::FuncIdRange::ResponseFirstId:                  // fall through
+        case NEService::FuncIdRange::RequestLastId:                    // fall through
+        case NEService::FuncIdRange::RequestFirstId:                   // fall through
+        case NEService::FuncIdRange::EmptyFunctionId:                  // fall through
         default:
             ASSERT(false);
         }

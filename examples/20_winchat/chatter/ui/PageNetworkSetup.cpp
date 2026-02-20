@@ -16,7 +16,7 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
 
 // PageNetworkSetup dialog
@@ -209,7 +209,7 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
     if ( mNetworkSetup )
     {
         CWnd * wnd = GetParentSheet();
-        ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdDisconnectTriggered), 0, 0);
+        ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdDisconnectTriggered), 0, 0);
         mConnectionHandler.ResetConnectionList();
 
         Application::unloadModel(chat::MODEL_NAME_DISTRIBUTED_CLIENT);
@@ -381,7 +381,7 @@ BOOL PageNetworkSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    ConnectionConfiguration config(NERemoteService::eRemoteServices::ServiceRouter, NERemoteService::eConnectionTypes::ConnectTcpip);
+    ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
     unsigned char field0, field1, field2, field3;
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {

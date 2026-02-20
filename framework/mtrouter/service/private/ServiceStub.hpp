@@ -166,7 +166,7 @@ public:
     /**
      * \brief   Returns the current connection status of Stub service
      **/
-    inline NEService::eServiceConnection getServiceStatus() const;
+    inline NEService::ServiceConnectionState getServiceStatus() const;
 
     /**
      * \brief   Returns Stub remote address of service
@@ -181,14 +181,14 @@ public:
     /**
      * \brief   Sets new connection status of Stub service
      **/
-    void setServiceStatus( NEService::eServiceConnection newStatus );
+    void setServiceStatus( NEService::ServiceConnectionState newStatus );
 
     /**
      * \brief   Sets service data. Sets Stub address and connection status.
      * \param   addrStub        The address of remote Stub to set.
      * \param   connectStatus   The connection status to set.
      **/
-    void setService( const StubAddress & addrStub, NEService::eServiceConnection connectStatus = NEService::eServiceConnection::ServiceConnected );
+    void setService( const StubAddress & addrStub, NEService::ServiceConnectionState connectStatus = NEService::ServiceConnectionState::Connected );
 
 private:
     /**
@@ -198,7 +198,7 @@ private:
     /**
      * \brief   The connection status of service.
      **/
-    NEService::eServiceConnection   mConnectStatus;
+    NEService::ServiceConnectionState   mConnectStatus;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -236,15 +236,15 @@ namespace std
 
 inline bool ServiceStub::isConnected() const
 {
-    return ( mConnectStatus == NEService::eServiceConnection::ServiceConnected );
+    return ( mConnectStatus == NEService::ServiceConnectionState::Connected );
 }
 
 inline bool ServiceStub::isWaiting() const
 {
-    return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
+    return ( mConnectStatus == NEService::ServiceConnectionState::Pending );
 }
 
-inline NEService::eServiceConnection ServiceStub::getServiceStatus() const
+inline NEService::ServiceConnectionState ServiceStub::getServiceStatus() const
 {
     return mConnectStatus;
 }

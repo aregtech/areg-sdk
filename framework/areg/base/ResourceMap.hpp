@@ -29,27 +29,27 @@
  * Hierarchies. Following class are declared.
  ************************************************************************/
 // HashMap 
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter> class ResourceMapBase;
-        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter> class ConcurrentResourceMap;
-        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter> class ResourceMap;
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ResourceMapBase;
+        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ConcurrentResourceMap;
+        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ResourceMap;
 
 /************************************************************************
  * \brief   This file contains declarations of following class templates:
  *
- *              1.  ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>,
+ *              1.  ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>,
  *                  which is a generic resource mapping class template;
  *
- *              2.  ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>,
+ *              2.  ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>,
  *                  which is a resource mapping class template, but thread safe.
  *
- *              3.  ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>,
+ *              3.  ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>,
  *                  which is a resource mapping class template, but no thread safe;
  *
  *          For more information, see descriptions bellow
  ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template declaration
+// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   ResourceListMapBase is a class template of Hash Map container used to keep
@@ -66,16 +66,16 @@
  *
  * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
  * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the map.
- * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
  * \tparam  Deleter             Helper class to track the resource cleanup procedure.
  *
  * \see    ConcurrentResourceMap, ResourceMap
  **/
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
-         , class HashMap = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
-         , class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
-class ResourceMapBase     : protected HashMap
+         , class MapContainer   = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
+         , class Deleter        = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+class ResourceMapBase   : protected MapContainer
                         , protected Deleter
 {
 //////////////////////////////////////////////////////////////////////////
@@ -247,14 +247,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ResourceMapBase() = delete;
-    ResourceMapBase( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & /*src*/) = delete;
-    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & operator = ( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & /*src*/ ) = delete;
-    ResourceMapBase( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> && /*src*/ ) noexcept = delete;
-    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> & operator = ( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> && /*src*/ ) noexcept = delete;
+    ResourceMapBase( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/) = delete;
+    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/ ) = delete;
+    ResourceMapBase( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
+    ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template declaration
+// ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -264,13 +264,13 @@ private:
  *
  * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
  * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the map.
- * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
  * \tparam  Deleter             Helper class to track the resource cleanup procedure.
  *
  * \see    ConcurrentResourceMap, ResourceMap
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
-class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -302,7 +302,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template declaration
+// ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -311,13 +311,13 @@ private:
  *
  * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
  * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the map.
- * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
  * \tparam  Deleter             Helper class to track the resource cleanup procedure.
  *
  * \see    ConcurrentResourceMap
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -353,97 +353,97 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter> class template implementation
+// ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::ResourceMapBase( Lockable & syncObject )
-    : HashMap   ( )
-    , Deleter   ( )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ResourceMapBase( Lockable & syncObject )
+    : MapContainer  ( )
+    , Deleter       ( )
     , mSyncObj  (syncObject)
 {
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
 {
     Lock lock(mSyncObj);
-    HashMap::setAt(Key, Resource);
+    MapContainer::setAt(Key, Resource);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unregisterResourceObject(const RESOURCE_KEY & Key)
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::unregisterResourceObject(const RESOURCE_KEY & Key)
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    HashMap::removeAt(Key, result);
+    MapContainer::removeAt(Key, result);
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::findResourceObject(const RESOURCE_KEY & Key) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::findResourceObject(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    if (HashMap::isEmpty())
+    if (MapContainer::isEmpty())
         return result;
 
-    HashMap::find(Key, result);
+    MapContainer::find(Key, result);
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::existResource(const RESOURCE_KEY & Key) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::existResource(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSyncObj);
-    return HashMap::contains(Key);
+    return MapContainer::contains(Key);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::lock() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::lock() const
 {
     mSyncObj.lock(NECommon::WAIT_INFINITE);
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unlock() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::unlock() const
 {
     mSyncObj.unlock( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::tryLock() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::tryLock() const
 {
     return mSyncObj.tryLock( );
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::getSize() const
 {
     Lock lock(mSyncObj);
-    return HashMap::getSize();
+    return MapContainer::getSize();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::isEmpty() const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::isEmpty() const
 {
     Lock lock(mSyncObj);
-    return HashMap::isEmpty();
+    return MapContainer::isEmpty();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceObject( RESOURCE_OBJECT Resource )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::removeResourceObject( RESOURCE_OBJECT Resource )
 {
     Lock lock(mSyncObj);
 
     bool result{ false };
-    for ( auto pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
+    for ( auto pos = MapContainer::firstPosition(); pos != nullptr; pos = MapContainer::nextPosition(pos))
     {
-        if ( Resource == HashMap::valueAtPosition(pos) )
+        if ( Resource == MapContainer::valueAtPosition(pos) )
         {
-            HashMap::removePosition(pos);
+            MapContainer::removePosition(pos);
             result = true;
             break;
         }
@@ -452,75 +452,75 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::re
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeAllResources()
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::removeAllResources()
 {
     Lock lock(mSyncObj);
 
-    for ( auto pos = HashMap::firstPosition(); HashMap::isValidPosition(pos); pos = HashMap::nextPosition(pos))
+    for ( auto pos = MapContainer::firstPosition(); MapContainer::isValidPosition(pos); pos = MapContainer::nextPosition(pos))
     {
         RESOURCE_KEY Key;
         RESOURCE_OBJECT Value{ nullptr };
-        HashMap::getAtPosition(pos, Key, Value);
+        MapContainer::getAtPosition(pos, Key, Value);
         cleanResourceEntry(Key, Value);
     }
 
-    HashMap::clear();
+    MapContainer::clear();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
 {
     Lock lock(mSyncObj);
     bool result{ false };
-    typename HashMap::MAPPOS pos  = HashMap::firstPosition();
-    if (HashMap::isValidPosition(pos))
+    typename MapContainer::MAPPOS pos  = MapContainer::firstPosition();
+    if (MapContainer::isValidPosition(pos))
     {
         result = true;
-        HashMap::removePosition(pos, firstElement.first, firstElement.second);
+        MapContainer::removePosition(pos, firstElement.first, firstElement.second);
     }
 
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & firstKey ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resourceFirstKey( RESOURCE_KEY & firstKey ) const
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    typename HashMap::MAPPOS pos = HashMap::firstPosition();
-    if (HashMap::isValidPosition(pos))
+    typename MapContainer::MAPPOS pos = MapContainer::firstPosition();
+    if (MapContainer::isValidPosition(pos))
     {
-        HashMap::getAtPosition(pos, firstKey, result);
+        MapContainer::getAtPosition(pos, firstKey, result);
     }
 
     return result;
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & nextKey ) const
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resourceNextKey( RESOURCE_KEY & nextKey ) const
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(nextKey);
-    if (HashMap::isValidPosition(pos))
+    typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(nextKey);
+    if (MapContainer::isValidPosition(pos))
     {
-        HashMap::nextEntry(pos, nextKey, result);
+        MapContainer::nextEntry(pos, nextKey, result);
     }
 
     return result;
 }
 
-template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getData() const
+template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::getData() const
 {
-    return HashMap::getData();
+    return MapContainer::getData();
 }
 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
 {
     Deleter::implCleanResource(Key, Resource);
 }
@@ -528,9 +528,9 @@ inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::cl
 //////////////////////////////////////////////////////////////////////////
 // ResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::ResourceMap()
-    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<Lockable &>(mNoLock))
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ResourceMap()
+    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>    (static_cast<Lockable &>(mNoLock))
 
     , mNoLock   ()
 {
@@ -539,9 +539,9 @@ ResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::ResourceMap()
 //////////////////////////////////////////////////////////////////////////
 // ConcurrentResourceMap class template implementation
 //////////////////////////////////////////////////////////////////////////
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::ConcurrentResourceMap()
-    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>    (static_cast<Lockable &>(mLock))
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+ConcurrentResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ConcurrentResourceMap()
+    : ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>    (static_cast<Lockable &>(mLock))
 
     , mLock ( )
 {

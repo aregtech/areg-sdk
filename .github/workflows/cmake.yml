@@ -4,7 +4,7 @@ on:
   push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
     branches: [ master ]
   pull_request: # Set to master to run only when merge with master branch
-    branches: [ master ]
+    # branches: [ master ], temporary enable build on all PR while refactoring. Later, when merge, need to enable only on master. 
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

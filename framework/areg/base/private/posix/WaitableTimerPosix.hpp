@@ -146,7 +146,7 @@ protected:
     /**
      * \brief   Waitable timer reset information. Either manual- or auto-reset.
      **/
-    const NESyncTypesIX::eEventResetInfo mResetInfo;
+    const NESyncTypesIX::ResetMode mResetInfo;
 #ifdef __APPLE__
     /**
      * \brief   GCD dispatch timer source for macOS.

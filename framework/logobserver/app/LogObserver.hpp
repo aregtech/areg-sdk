@@ -65,7 +65,7 @@ private:
     /**
      * \brief   The commands to handle the Log Observer.
      **/
-    enum class eLoggerOptions : int32_t
+    enum class LoggerOption : int32_t
     {
           CMD_LogUndefined   = 0//!< Undefined command.
         , CMD_LogPrintHelp      //!< Output help message.
@@ -85,7 +85,7 @@ private:
      **/
     struct sObserverStatus
     {
-        eLoggerOptions      osOption;   //!< The action
+        LoggerOption      osOption;   //!< The action
         std::string_view    osStatus;   //!< The status message to display when action succeeds
         std::string_view    osError;    //!< The error message when action fails.
     };
@@ -104,27 +104,27 @@ private:
           // | Option                           |  status                                           |  error    |
           // ----------------------------------------------------------------------------------------------------
           //!< No status, no error
-          { eLoggerOptions::CMD_LogUndefined    , ""                                                , "" }
+          { LoggerOption::CMD_LogUndefined    , ""                                                , "" }
           //!< No status or error when output print help
-        , { eLoggerOptions::CMD_LogPrintHelp    , ""                                                , "" }
+        , { LoggerOption::CMD_LogPrintHelp    , ""                                                , "" }
           //!< No status or error when Start the application by loading initialization instructions from configuration file.
-        , { eLoggerOptions::CMD_LogLoad         , ""                                                , "The configuration file does not exist or wrong, make default initialization." }
+        , { LoggerOption::CMD_LogLoad         , ""                                                , "The configuration file does not exist or wrong, make default initialization." }
           //!< The status or error message when request to pause logging.
-        , { eLoggerOptions::CMD_LogPause        , "Log observer is paused, type \'-r\' to resume."  , "" }
+        , { LoggerOption::CMD_LogPause        , "Log observer is paused, type \'-r\' to resume."  , "" }
           //!< The status or error  message when request to start or resume log observer.
-        , { eLoggerOptions::CMD_LogRestart      , "Log observer triggered connection."              , "Log observer failed to trigger connection. Check initialization." }
+        , { LoggerOption::CMD_LogRestart      , "Log observer triggered connection."              , "Log observer failed to trigger connection. Check initialization." }
           //!< The status or error message when request to output list of  connected instances.
-        , { eLoggerOptions::CMD_LogInstances    , "List of connected instances ..."                 , "" }
+        , { LoggerOption::CMD_LogInstances    , "List of connected instances ..."                 , "" }
           //!< No status or error when request to quit log observer
-        , { eLoggerOptions::CMD_LogQuit         , "", "" }
+        , { LoggerOption::CMD_LogQuit         , "", "" }
           //!< The status and error message when query scopes.
-        , { eLoggerOptions::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
+        , { LoggerOption::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
           //!< The status or error message when request to update scopes.
-        , { eLoggerOptions::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
+        , { LoggerOption::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
           //!< The status and error message when request to save configuration
-        , { eLoggerOptions::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
+        , { LoggerOption::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
           //!< The status or error message when request to stop logging.
-        , { eLoggerOptions::CMD_LogStop         , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
+        , { LoggerOption::CMD_LogStop         , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
     };
 
     //!< The initialized status.

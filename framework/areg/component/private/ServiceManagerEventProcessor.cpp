@@ -48,14 +48,14 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 {
 }
 
-void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::eServiceManagerCommands cmdService
+void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
                                                         , const InStream& stream
                                                         , ConnectionProvider& connectProvider
                                                         , RegistrationProvider& registerProvider )
 {
     switch ( cmdService )
     {
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
         {
             mServerList.clear( );
             connectProvider.disconnectServiceHost( );
@@ -64,7 +64,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
         {
             for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
             {
@@ -77,7 +77,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                     const ClientInfo & client = clientList.valueAtPosition( listPos );
                     if ( client.isConnected( ) )
                     {
-                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::eServiceConnection::ServiceDisconnected );
+                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::ServiceConnectionState::Disconnected );
                     }
                 }
             }
@@ -89,7 +89,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterProxy:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
         {
             ProxyAddress  addrProxy;
             Channel       channel;
@@ -100,11 +100,11 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
         {
             ProxyAddress  addrProxy;
             Channel       channel;
-            NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+            NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
             stream >> addrProxy;
             stream >> channel;
             stream >> reason;
@@ -113,7 +113,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterStub:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
         {
             StubAddress   addrstub;
             Channel       channel;
@@ -124,11 +124,11 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
         {
             StubAddress   addrstub;
             Channel       channel;
-            NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+            NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
             stream >> addrstub;
             stream >> channel;
             stream >> reason;
@@ -137,10 +137,10 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
         {
-            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            NERemoteService::RemoteServiceKind service{ NERemoteService::RemoteServiceKind::Unknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined) };
             stream >> service;
             stream >> connectTypes;
 
@@ -148,10 +148,10 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
         {
-            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            NERemoteService::RemoteServiceKind service{ NERemoteService::RemoteServiceKind::Unknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined) };
             stream >> service;
             stream >> connectTypes;
 
@@ -162,7 +162,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
         {
             String   ipAddress;
             unsigned short portNr = 0;
@@ -177,13 +177,13 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
         {
             connectProvider.disconnectServiceHost( );
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
         {
             for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
             {
@@ -207,8 +207,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection:
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
         {
             // Create service provider and service consumer list
             // to be able to unregister entries, because they are removing
@@ -235,10 +235,10 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                 }
             }
 
-            NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonProviderDisconnected };
-            if ( cmdService == ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection )
+            NEService::DisconnectReason reason { NEService::DisconnectReason::ProviderDisconnected };
+            if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection )
             {
-                reason = NEService::eDisconnectReason::ReasonServiceLost;
+                reason = NEService::DisconnectReason::ServiceLost;
             }
 
             for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
@@ -253,7 +253,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
         {
             String threadName;
             stream >> threadName;
@@ -264,7 +264,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread:
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
         {
             String threadName;
             stream >> threadName;
@@ -309,7 +309,7 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
@@ -334,7 +334,7 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
 
 #endif  // AREG_LOGS
 
-    NEService::eServiceConnection status = NEService::serviceConnection( reason );
+    NEService::ServiceConnectionState status = NEService::serviceConnection( reason );
     for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
     {
         const ClientInfo & client{ clientList.valueAtPosition( pos ) };
@@ -372,7 +372,7 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 
@@ -409,7 +409,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
                    , StubAddress::convAddressToPath( server ).getString( )
                    , ProxyAddress::convAddressToPath( client ).getString( ) );
 
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
         if ( clientConnect != nullptr )
         {
             server.deliverServiceEvent( *clientConnect );
@@ -422,7 +422,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
                    , ProxyAddress::convAddressToPath( client ).getString( )
                    , StubAddress::convAddressToPath( server ).getString( ) );
 
-        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
         if ( proxyConnect != nullptr )
         {
             client.deliverServiceEvent( *proxyConnect );
@@ -432,7 +432,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
 
 void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
                                                              , const StubAddress & server
-                                                             , const NEService::eServiceConnection status ) const
+                                                             , const NEService::ServiceConnectionState status ) const
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
 

@@ -44,19 +44,18 @@ namespace NETrafficLightFSM
 // Available predefined events of TrafficLight State Machine
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NETrafficLightFSM::eFsmEventValue
+     * \brief   NETrafficLightFSM::FsmEventValue
      *          TrafficLight State Machine available Event IDs
      **/
-    enum class eFsmEventData
+    enum class FsmEventValue
     {
         EVENT_StartTrafficLight /** DESCRIPTION MISSED **/
-
     };
    
     /**
-     * \brief   Returns human readable string of NETrafficLightFSM::eFsmEventValue event values
+     * \brief   Returns human readable string of NETrafficLightFSM::FsmEventValue event values
      **/
-    inline const char* getString( const NETrafficLightFSM::eFsmEventData value );
+    inline const char* getString( const NETrafficLightFSM::FsmEventValue value );
 
     //////////////////////////////////////////////////////////////////////////
     // NETrafficLightFSM::FsmEventData class declaration
@@ -72,7 +71,7 @@ namespace NETrafficLightFSM
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        FsmEventData( const NETrafficLightFSM::eFsmEventData & data )
+        FsmEventData( NETrafficLightFSM::FsmEventValue data )
             : mData ( data )
         {
         }
@@ -84,7 +83,7 @@ namespace NETrafficLightFSM
         /**
          * \brief   Returns event data value.
          **/
-        inline const NETrafficLightFSM::eFsmEventData & getData() const
+        inline const NETrafficLightFSM::FsmEventValue& getData() const
         {
             return mData;
         }
@@ -96,7 +95,7 @@ namespace NETrafficLightFSM
         /**
          * \brief   The Event Data
          **/
-        const NETrafficLightFSM::eFsmEventData  mData;
+        const NETrafficLightFSM::FsmEventValue  mData;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden methods
@@ -121,11 +120,11 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   NETrafficLightFSM::eFsmTimerData
+     * \brief   NETrafficLightFSM::FsmTimer
                 TrafficLight State Machine available Timer IDs
      *          
      **/
-    enum class eFsmTimerData
+    enum class FsmTimer
     {
         Red            /** DESCRIPTION MISSED **/
       , YellowRed      /** DESCRIPTION MISSED **/
@@ -136,9 +135,9 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
     };
    
     /**
-     * \brief   Returns human readable string of NETrafficLightFSM::eFsmTimerData timer values
+     * \brief   Returns human readable string of NETrafficLightFSM::FsmTimer timer values
      **/
-    inline const char* getString( const NETrafficLightFSM::eFsmTimerData value );
+    inline const char* getString( const NETrafficLightFSM::FsmTimer value );
 
 };
 
@@ -148,37 +147,37 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 /**
  * Returns human readable string of event data
  **/
-inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::eFsmEventData value )
+inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::FsmEventValue value )
 {
     switch ( value )
     {
-    case NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight:
-        return "NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight";
+    case NETrafficLightFSM::FsmEventValue::EVENT_StartTrafficLight:
+        return "NETrafficLightFSM::FsmEventValue::EVENT_StartTrafficLight";
     default:
-        return "ERR: Unexpected NETrafficLightFSM::eFsmEventData event value!";
+        return "ERR: Unexpected NETrafficLightFSM::FsmEventValue event value!";
     }
 }
 
 /**
  * Returns human readable string of timers
  **/
-inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::eFsmTimerData value )
+inline const char * NETrafficLightFSM::getString( const NETrafficLightFSM::FsmTimer value )
 {
     switch ( value )
     {
-    case NETrafficLightFSM::eFsmTimerData::Red:
-        return "NETrafficLightFSM::eFsmTimerData::Red";
-    case NETrafficLightFSM::eFsmTimerData::YellowRed:
-        return "NETrafficLightFSM::eFsmTimerData::YellowRed";
-    case NETrafficLightFSM::eFsmTimerData::Green:
-        return "NETrafficLightFSM::eFsmTimerData::Green";
-    case NETrafficLightFSM::eFsmTimerData::YellowGreen:
-        return "NETrafficLightFSM::eFsmTimerData::YellowGreen";
-    case NETrafficLightFSM::eFsmTimerData::PedestrianWalk:
-        return "NETrafficLightFSM::eFsmTimerData::PedestrianWalk";
-    case NETrafficLightFSM::eFsmTimerData::VehicleWait:
-        return "NETrafficLightFSM::eFsmTimerData::VehicleWait";
+    case NETrafficLightFSM::FsmTimer::Red:
+        return "NETrafficLightFSM::FsmTimer::Red";
+    case NETrafficLightFSM::FsmTimer::YellowRed:
+        return "NETrafficLightFSM::FsmTimer::YellowRed";
+    case NETrafficLightFSM::FsmTimer::Green:
+        return "NETrafficLightFSM::FsmTimer::Green";
+    case NETrafficLightFSM::FsmTimer::YellowGreen:
+        return "NETrafficLightFSM::FsmTimer::YellowGreen";
+    case NETrafficLightFSM::FsmTimer::PedestrianWalk:
+        return "NETrafficLightFSM::FsmTimer::PedestrianWalk";
+    case NETrafficLightFSM::FsmTimer::VehicleWait:
+        return "NETrafficLightFSM::FsmTimer::VehicleWait";
     default:
-        return "ERR: Unexpected NETrafficLightFSM::eFsmTimerData timer value!";
+        return "ERR: Unexpected NETrafficLightFSM::FsmTimer timer value!";
     }
 }

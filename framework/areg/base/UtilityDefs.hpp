@@ -391,7 +391,7 @@ namespace   NEUtilities
      *              - NEMath::Equal if both operands are equal
      *              - NEMath::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API NEMath::eCompare compareTimes( const sSystemTime & lhs, const sSystemTime & rhs );
+    AREG_API NEMath::Ordering compareTimes( const sSystemTime & lhs, const sSystemTime & rhs );
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
@@ -403,7 +403,7 @@ namespace   NEUtilities
      *              - NEMath::Equal if both operands are equal
      *              - NEMath::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API NEMath::eCompare compareTimes( const TIME64 & lhs, const TIME64 & rhs );
+    AREG_API NEMath::Ordering compareTimes( const TIME64 & lhs, const TIME64 & rhs );
 
     /**
      * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.

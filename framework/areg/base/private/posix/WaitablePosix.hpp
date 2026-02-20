@@ -47,7 +47,7 @@ protected:
      * \brief   Protected instantiation constructor. Call to set the synchronization
      *          object type, recursive flag and the name.
      **/
-    WaitablePosix( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char* asciiName = nullptr );
+    WaitablePosix( NESyncTypesIX::SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
 
 public:
     /**

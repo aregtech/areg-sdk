@@ -40,9 +40,9 @@ class AREG_API SendMessageEventData
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The command to process when send message.
-    enum eSendMessage
+    enum class SendCommand  : uint8_t
     {
-          MessageForward    //!< Forward message to target.
+          ForwardMessage    //!< Forward message to target.
         , ExitThread        //!< Stop sending message and exit the thread.
     };
 
@@ -105,7 +105,7 @@ public:
     /**
      * \brief   Returns the command instruction to handle messages.
      **/
-    inline SendMessageEventData::eSendMessage getCommand() const;
+    inline SendMessageEventData::SendCommand getCommand() const;
 
     /**
      * \brief   Returns true if message is with instruction to forward the message.
@@ -129,7 +129,7 @@ private:
     /**
      * \brief   The action to perform on the message.
      **/
-    eSendMessage    mCmdSendMessage;
+    SendCommand    mCmdSendMessage;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,13 +144,13 @@ AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsu
 
 inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMessage)
     : mRemoteMessage    (remoteMessage)
-    , mCmdSendMessage   ( SendMessageEventData::eSendMessage::MessageForward )
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
 {
 }
 
 inline SendMessageEventData::SendMessageEventData()
     : mRemoteMessage    ( )
-    , mCmdSendMessage   ( SendMessageEventData::eSendMessage::ExitThread )
+    , mCmdSendMessage   ( SendMessageEventData::SendCommand::ExitThread )
 {
 }
 
@@ -185,19 +185,19 @@ inline const RemoteMessage & SendMessageEventData::getRemoteMessage() const
     return mRemoteMessage;
 }
 
-inline SendMessageEventData::eSendMessage SendMessageEventData::getCommand() const
+inline SendMessageEventData::SendCommand SendMessageEventData::getCommand() const
 {
     return mCmdSendMessage;
 }
 
 inline bool SendMessageEventData::isForwardMessage() const
 {
-    return (mCmdSendMessage == eSendMessage::MessageForward);
+    return (mCmdSendMessage == SendCommand::ForwardMessage);
 }
 
 inline bool SendMessageEventData::isExitThreadMessage() const
 {
-    return (mCmdSendMessage == eSendMessage::ExitThread);
+    return (mCmdSendMessage == SendCommand::ExitThread);
 }
 
 #endif  // AREG_IPC_SENDMESSAGEEVENT_HPP

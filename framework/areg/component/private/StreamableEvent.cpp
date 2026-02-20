@@ -27,13 +27,13 @@ AREG_IMPLEMENT_RUNTIME_EVENT(StreamableEvent, Event)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-StreamableEvent::StreamableEvent( Event::eEventType eventType )
+StreamableEvent::StreamableEvent( Event::EventType eventType )
     : Event (eventType)
 {
 }
 
 StreamableEvent::StreamableEvent( const InStream & stream )
-    : Event ( Event::eEventType::EventUnknown )
+    : Event ( Event::EventType::EventUnknown )
 {
     stream >> Event::mEventType;
 }

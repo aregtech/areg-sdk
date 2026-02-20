@@ -36,7 +36,7 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
     pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
 }
 
-bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
     PubSubMixClientBase::serviceConnected( status, proxy );
@@ -76,13 +76,13 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::eDataStateType state)
+void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         ASSERT(StringOnChange.name == mOldString.name);
 
@@ -131,14 +131,14 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
     console.unlockConsole();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
+void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     String oldInt = mOldState ? String::makeString(mOldInteger.value) : pubsub::Invalid;
     console.saveCursorPosition();
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         bool isChanged = mOldInteger == IntegerAlways;
         LOG_INFO("The [ %s ] names INTEGER (Always) data is OK, old is [ %s ], new [ %u ], { %s }"
@@ -187,10 +187,10 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     console.unlockConsole();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, NEService::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {
@@ -204,7 +204,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServicePr
             notifyOnStringOnChangeUpdate(true);
         }
 
-        if (ServiceProviderState == PubSubMix::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSubMix::RunState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

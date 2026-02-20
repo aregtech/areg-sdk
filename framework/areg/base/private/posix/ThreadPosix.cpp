@@ -137,10 +137,10 @@ id_type Thread::_osGetCurrentThreadId()
     return NEUtilities::convToNum<id_type, pthread_t>(pthread_self());
 }
 
-Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
+Thread::ThreadCompletion Thread::_osDestroyThread(unsigned int waitForStopMs)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
-    Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
+    Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
     pthread_t threadId  = NEUtilities::convToPtr<pthread_t, id_type>(Thread::INVALID_THREAD_ID);
 
     do
@@ -148,7 +148,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         Lock lock(mSyncObject);
         if (mThreadHandle == Thread::INVALID_THREAD_HANDLE)
         {
-            return Thread::eCompletionStatus::ThreadInvalid;
+            return Thread::ThreadCompletion::Invalid;
         }
 
         threadId = NEUtilities::convToPtr<pthread_t, id_type>(mThreadId);
@@ -161,7 +161,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
         AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
-        result = Thread::eCompletionStatus::ThreadTerminated;
+        result = Thread::ThreadCompletion::Terminated;
         pthread_cancel(threadId);
         mWaitForRun.resetEvent();
         mWaitForExit.setEvent();
@@ -170,7 +170,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     {
         // The thread completed job normally
         AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
-        result = Thread::eCompletionStatus::ThreadCompleted;
+        result = Thread::ThreadCompletion::Completed;
         ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
     }
 
@@ -202,7 +202,7 @@ bool Thread::_osCreateSystemThread()
                     result          = true;
                     mThreadHandle   = static_cast<THREADHANDLE>(handle);
                     mThreadId       = NEUtilities::convToNum<id_type, pthread_t>(handle->pthreadId);
-                    mThreadPriority = Thread::eThreadPriority::PriorityNormal;
+                    mThreadPriority = Thread::ThreadPriority::Normal;
 
                     if (_registerThread() == false)
                     {
@@ -226,7 +226,7 @@ bool Thread::_osCreateSystemThread()
     return result;
 }
 
-Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
+Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
 {
     /**
      * if priority of a thread is changed, a real-time scheduling policy must be used,
@@ -238,30 +238,30 @@ Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
     static const int deltaPrio  { (maxPriority - minPriority) / 4 };
 
     Lock  lock(mSyncObject);
-    Thread::eThreadPriority oldPrio = mThreadPriority;
+    Thread::ThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
         int schedPrio       { std::numeric_limits<int32_t>::min() };
         pthread_t threadId  { NEUtilities::convToPtr<pthread_t, id_type>(mThreadId) };
         switch (newPriority)
         {
-        case Thread::eThreadPriority::PriorityLowest:
+        case Thread::ThreadPriority::Lowest:
             schedPrio  = minPriority;
             break;
 
-        case Thread::eThreadPriority::PriorityLow:
+        case Thread::ThreadPriority::Low:
             schedPrio  = minPriority + 1 * deltaPrio;
             break;
 
-        case Thread::eThreadPriority::PriorityNormal:
+        case Thread::ThreadPriority::Normal:
             schedPrio  = minPriority + 2 * deltaPrio;
             break;
 
-        case Thread::eThreadPriority::PriorityHigh:
+        case Thread::ThreadPriority::High:
             schedPrio  = minPriority + 3 * deltaPrio;
             break;
 
-        case Thread::eThreadPriority::PriorityHighest:
+        case Thread::ThreadPriority::Highest:
             schedPrio  = maxPriority;
             break;
 

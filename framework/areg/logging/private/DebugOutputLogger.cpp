@@ -48,7 +48,7 @@ bool DebugOutputLogger::openLogger()
             if (mIsOpened)
             {
                 Process& curProcess = Process::getInstance();
-                NELogging::sLogMessage logMsgHello(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+                NELogging::sLogMessage logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
                 String::formatString( logMsgHello.logMessage
                                     , NELogging::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
@@ -71,7 +71,7 @@ void DebugOutputLogger::closeLogger()
     if ( mIsOpened )
     {
         Process & curProcess = Process::getInstance();
-        NELogging::sLogMessage logMsgGoodbye(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+        NELogging::sLogMessage logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
         String::formatString( logMsgGoodbye.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
@@ -94,15 +94,15 @@ void DebugOutputLogger::logMessage(const NELogging::sLogMessage & logMessage)
     {
         switch (logMessage.logMsgType)
         {
-        case NELogging::eLogMessageType::LogMessageText:
+        case NELogging::LogMessageType::MessageText:
             getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(*this));
             break;
 
-        case NELogging::eLogMessageType::LogMessageScopeEnter:
+        case NELogging::LogMessageType::ScopeEnter:
             getLayoutEnterScope().logMessage(logMessage, static_cast<OutStream&>(*this));
             break;
 
-        case NELogging::eLogMessageType::LogMessageScopeExit:
+        case NELogging::LogMessageType::ScopeExit:
             getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(*this) );
             break;
 

@@ -101,7 +101,7 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason )
+void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
 
@@ -133,7 +133,7 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason )
+void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
     LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
@@ -162,7 +162,7 @@ void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
 bool ServiceManager::_routingServiceConfigure()
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEventData data(ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices::ServiceRouter, static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)));
+    ServiceManagerEventData data(ServiceManagerEventData::configureConnection(NERemoteService::RemoteServiceKind::Router, static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip)));
 
     return ServiceManagerEvent::sendEvent( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager) 
@@ -172,7 +172,7 @@ bool ServiceManager::_routingServiceConfigure()
 bool ServiceManager::_routingServiceStart( unsigned int connectTypes )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEventData data(ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices::ServiceRouter, connectTypes));
+    ServiceManagerEventData data(ServiceManagerEventData::startConnection(NERemoteService::RemoteServiceKind::Router, connectTypes));
     return ServiceManagerEvent::sendEvent( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager)
                                          , static_cast<DispatcherThread &>(serviceManager));
@@ -244,7 +244,7 @@ ServiceManager::ServiceManager()
 void ServiceManager::processEvent( const ServiceManagerEventData & data )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
-    ServiceManagerEventData::eServiceManagerCommands cmdService { data.getCommand( ) };
+    ServiceManagerEventData::ServiceManagerCommand cmdService { data.getCommand( ) };
     LOG_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::getString( cmdService ) );
 
     mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnectionProvider( ), getServiceRegisterProvider() );
@@ -340,12 +340,12 @@ void ServiceManager::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
     ServiceManager::requestRegisterClient(proxy);
 }
 
-void ServiceManager::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & /*cookie*/ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterServer(stub, reason);
 }
 
-void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & /* cookie */ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterClient(proxy, reason);
 }

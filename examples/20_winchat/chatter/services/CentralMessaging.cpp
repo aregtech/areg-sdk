@@ -28,7 +28,7 @@ CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ow
 {
 }
 
-bool CentralMessaging::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool CentralMessaging::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
     bool result = CentralMessagerClientBase::serviceConnected( status, proxy );
@@ -64,7 +64,7 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned i
             data->timeReceived  = DateTime::getNow();
             data->timeSend      = dateTime;
 
-            DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
+            DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
         }
     }
 }
@@ -85,7 +85,7 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int
             data->timeReceived  = 0;
             data->timeSend      = 0;
 
-            DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdTypeMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
+            DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdTypeMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
         }
     }
 }
@@ -103,7 +103,7 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
         data->timeReceived  = DateTime::getNow();
         data->timeSend      = dateTime;
 
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );
     }
 }
 

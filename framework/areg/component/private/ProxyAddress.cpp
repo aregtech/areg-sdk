@@ -89,7 +89,7 @@ ProxyAddress::ProxyAddress()
 
 ProxyAddress::ProxyAddress( const String & serviceName
                           , const Version & serviceVersion
-                          , NEService::eServiceType serviceType
+                          , NEService::ServiceType serviceType
                           , const String & roleName
                           , const String & threadName /*= String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )

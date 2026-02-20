@@ -21,39 +21,39 @@ namespace fsm
 
     constexpr char  SerivceLightClient[]        { "LightUser" };
 
-    inline const char * getName(TrafficController::eVehicleTrafficLight value);
+    inline const char * getName(TrafficController::VehicleTrafficLight value);
 
-    inline const char * getName(TrafficController::ePedestrianTrafficLight value);
+    inline const char * getName(TrafficController::PedestrianTrafficLight value);
 }
 
-inline const char * fsm::getName(TrafficController::eVehicleTrafficLight value)
+inline const char * fsm::getName(TrafficController::VehicleTrafficLight value)
 {
     switch (value)
     {
-    case TrafficController::eVehicleTrafficLight::VehicleLightsInit:
+    case TrafficController::VehicleTrafficLight::Initializing:
         return "Blink YELLOW";
-    case TrafficController::eVehicleTrafficLight::VehicleLightRed:
+    case TrafficController::VehicleTrafficLight::Red:
         return "RED";
-    case TrafficController::eVehicleTrafficLight::VehicleLightYellow:
+    case TrafficController::VehicleTrafficLight::Yellow:
         return "YELLOW";
-    case TrafficController::eVehicleTrafficLight::VehicleLightGreen:
+    case TrafficController::VehicleTrafficLight::Green:
         return "GREEN";
 
-    case TrafficController::eVehicleTrafficLight::VehicleLightOFF:
+    case TrafficController::VehicleTrafficLight::Off:
     default:
         return "OFF";
     }
 }
 
-inline const char * fsm::getName(TrafficController::ePedestrianTrafficLight value)
+inline const char * fsm::getName(TrafficController::PedestrianTrafficLight value)
 {
     switch (value)
     {
-    case TrafficController::ePedestrianTrafficLight::PedestrianLightRed:
+    case TrafficController::PedestrianTrafficLight::Red:
         return "RED";
-    case TrafficController::ePedestrianTrafficLight::PedestrianLightGreen:
+    case TrafficController::PedestrianTrafficLight::Green:
         return "GREEN";
-    case TrafficController::ePedestrianTrafficLight::PedestrianLightOFF:
+    case TrafficController::PedestrianTrafficLight::Off:
     default:
         return "OFF";
     }

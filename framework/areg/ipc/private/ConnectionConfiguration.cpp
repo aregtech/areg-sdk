@@ -28,9 +28,9 @@ ConnectionConfiguration::ConnectionConfiguration(const String& service, const St
 {
 }
 
-ConnectionConfiguration::ConnectionConfiguration(NERemoteService::eRemoteServices service, NERemoteService::eConnectionTypes connectType)
-    : mServiceName  (Identifier::convToString(static_cast<unsigned int>(service), NEApplication::RemoteServiceIdentifiers, static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown)))
-    , mConnectType  (Identifier::convToString(static_cast<unsigned int>(connectType), NEApplication::ConnectionIdentifiers, static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined)))
+ConnectionConfiguration::ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType)
+    : mServiceName  (Identifier::convToString(static_cast<unsigned int>(service), NEApplication::RemoteServiceIdentifiers, static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown)))
+    , mConnectType  (Identifier::convToString(static_cast<unsigned int>(connectType), NEApplication::ConnectionIdentifiers, static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined)))
 {
 }
 
@@ -89,19 +89,19 @@ bool ConnectionConfiguration::getConnectionIpAddress( unsigned char & field0
         const char * buffer = addr.getString( );
         const char * next   = nullptr;
 
-        uint32_t f0 = String::makeUInt32(buffer, NEString::eRadix::RadixDecimal, &next);
+        uint32_t f0 = String::makeUInt32(buffer, NEString::Radix::Decimal, &next);
         if ( (buffer != next) && (f0 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
         {
             buffer = next + 1;
-            uint32_t f1 = String::makeUInt32( buffer, NEString::eRadix::RadixDecimal, &next );
+            uint32_t f1 = String::makeUInt32( buffer, NEString::Radix::Decimal, &next );
             if ( (buffer != next) && (f1 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
             {
                 buffer = next + 1;
-                uint32_t f2 = String::makeUInt32( buffer, NEString::eRadix::RadixDecimal, &next );
+                uint32_t f2 = String::makeUInt32( buffer, NEString::Radix::Decimal, &next );
                 if ( (buffer != next) && (f2 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
                 {
                     buffer = next + 1;
-                    uint32_t f3 = String::makeUInt32( buffer, NEString::eRadix::RadixDecimal, &next );
+                    uint32_t f3 = String::makeUInt32( buffer, NEString::Radix::Decimal, &next );
                     if ( (buffer != next) && (f3 <= 0xFFu) )
                     {
                         field0 = static_cast<unsigned char>(f0);

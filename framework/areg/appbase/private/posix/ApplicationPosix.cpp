@@ -56,7 +56,7 @@ namespace
 
         for (int i = 0; i < count && pid < 0; ++i)
         {
-            if (NEString::compareIgnoreCase<char, char>(procName, procs[i].kp_proc.p_comm) == NEMath::eCompare::Equal)
+            if (NEString::compareIgnoreCase<char, char>(procName, procs[i].kp_proc.p_comm) == NEMath::Ordering::Equal)
             {
                 pid = procs[i].kp_proc.p_pid;
             }
@@ -98,7 +98,7 @@ namespace
                         if (NEString::isPositionValid(pos))
                         {
                             char* procPath = buffer + pos + 1;
-                            if (NEString::compareIgnoreCase<char, char>(procName, procPath) == NEMath::eCompare::Equal)
+                            if (NEString::compareIgnoreCase<char, char>(procName, procPath) == NEMath::Ordering::Equal)
                             {
                                 pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
                             }

@@ -28,7 +28,7 @@
 
 // const int    SyncObjectPosix::_MAX_NAME_LENGTH      = 32;
 
-SyncObjectPosix::SyncObjectPosix( NESyncTypesIX::eSyncObject syncType, const char* asciiName /* = nullptr */ )
+SyncObjectPosix::SyncObjectPosix( NESyncTypesIX::SyncKind syncType, const char* asciiName /* = nullptr */ )
     : mSyncType ( syncType )
     , mSyncName ( asciiName != nullptr ? asciiName : NEString::EmptyStringA )
 {

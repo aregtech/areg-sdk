@@ -21,7 +21,7 @@ SubscriberSecond::SubscriberSecond( const NERegistry::DependencyEntry & entry, C
 {
 }
 
-bool SubscriberSecond::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool SubscriberSecond::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
@@ -35,10 +35,10 @@ bool SubscriberSecond::serviceConnected( NEService::eServiceConnection status, P
     return PubSubClientBase::serviceConnected( status, proxy );
 }
 
-void SubscriberSecond::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == NEService::DataState::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {
@@ -52,7 +52,7 @@ void SubscriberSecond::onServiceProviderStateUpdate(PubSub::eServiceState Servic
             notifyOnStringOnChangeUpdate(true);
         }
 
-        if (ServiceProviderState == PubSub::eServiceState::Shutdown)
+        if (ServiceProviderState == PubSub::RunState::Shutdown)
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);

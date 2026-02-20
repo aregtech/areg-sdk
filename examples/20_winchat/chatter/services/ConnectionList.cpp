@@ -24,19 +24,19 @@ ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispTh
 
 }
 
-bool ConnectionList::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool ConnectionList::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
     bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
     {
-        LOG_DBG("The service is connected, posting DistributedApp::eWndCommands::CmdServiceConnection message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
+        LOG_DBG("The service is connected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
     }
     else
     {
-        LOG_DBG("The service is disconnected, posting DistributedApp::eWndCommands::CmdServiceConnection message");
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 0, 0 );
+        LOG_DBG("The service is disconnected, posting DistributedApp::WindowCommand::CmdServiceConnection message");
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceConnection, 0, 0 );
     }
 
     return result;
@@ -47,7 +47,7 @@ void ConnectionList::broadcastClientDisconnected( const ConnectionManager::sConn
     if (mConnectionHandler.RemoveConnection(clientData))
     {
         ConnectionManager::sConnection * data = new ConnectionManager::sConnection( clientData );
-        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdRemoveConnection, 1, reinterpret_cast<LPARAM>(data) );
+        DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdRemoveConnection, 1, reinterpret_cast<LPARAM>(data) );
     }
 }
 
@@ -56,7 +56,7 @@ void ConnectionList::broadcastClientConnected( const ConnectionManager::sConnect
     if (mConnectionHandler.AddConnection(newClient))
     {
         ConnectionManager::sConnection * data = new ConnectionManager::sConnection(newClient);
-        DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdAddConnection, 1, reinterpret_cast<LPARAM>(data));
+        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdAddConnection, 1, reinterpret_cast<LPARAM>(data));
     }
 }
 
@@ -73,7 +73,7 @@ void ConnectionList::responseRegisterConnection( const ConnectionManager::sConne
         mConnectionHandler.SetTimeConnected( connection.connectedTime );
         mConnectionHandler.AddConnections(connectionList);
         mConnectionHandler.SetRegistered( true );
-        DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(getDispatcherThread()));
+        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 1, reinterpret_cast<LPARAM>(getDispatcherThread()));
     }
     else
     {
@@ -82,6 +82,6 @@ void ConnectionList::responseRegisterConnection( const ConnectionManager::sConne
         mConnectionHandler.SetTimeConnect( DateTime( ) );
         mConnectionHandler.SetTimeConnected( DateTime( ) );
         mConnectionHandler.RemoveConnections();
-        DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdClientRegistration, 0, 0);
+        DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 0, 0);
     }
 }

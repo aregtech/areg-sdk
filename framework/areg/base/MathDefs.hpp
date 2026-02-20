@@ -33,34 +33,34 @@ namespace NEMath
 // NEMath types
 /************************************************************************/
     /**
-     * \brief   NEMath::eDigitSign
+     * \brief   NEMath::NumericSign
      *          The enumeration of digit signs
      *          
      **/
-    typedef enum class E_DigitSign : int8_t
+    enum class NumericSign    : int8_t
     {
-          SignNegative  = -1    //!< The sign is negative
-        , SignUndefined =  0    //!< The sign is undefined.<br>By default, undefined is considered as positive.
-        , SignPositive  =  1    //!< The sign is positive
-    } eDigitSign;
+          Negative  = -1    //!< The sign is negative
+        , Undefined =  0    //!< The sign is undefined.<br>By default, undefined is considered as positive.
+        , Positive  =  1    //!< The sign is positive
+    };
 
     /**
      * \brief   Returns the value of character for specified sign
      * \param   sign    Passed sign value to get character
      * \return  Returns '-' for negative sign, '+' for positive sign and '\0' (empty) for undefined.
      */
-    inline char getChar(NEMath::eDigitSign sign );
+    inline char getChar(NEMath::NumericSign sign );
 
     /**
-     * \brief   NEMath::eCompare
+     * \brief   NEMath::Ordering
      *          The enum defines comparing results
      **/
-    typedef enum class E_CompareResult : int8_t
+    enum class Ordering : int8_t
     {
           Smaller   = -1    //!< Comparing result is smaller
         , Equal     =  0    //!< Comparing result is equal
         , Bigger    =  1    //!< Comparing result is greater
-    } eCompare;
+    };
 
     /**
      * \brief   NEMath::sRect
@@ -308,7 +308,7 @@ namespace NEMath
      *              c. NEMath::SignUndefined    if the object is equal to zero
      **/
     template<typename Type>
-    inline NEMath::eDigitSign getSign( const Type & val );
+    inline NEMath::NumericSign getSign( const Type & val );
 
 /************************************************************************/
 // NEMath namespace utility functions, operations with Large Number
@@ -451,15 +451,15 @@ namespace NEMath
 
     /**
      * \brief   Compares 2 type of objects (primitives of objects) and return:
-     *          -- NEMath::eCompare::Equal if `left` and `right` objects are equal.
-     *          -- NEMath::eCompare::Bigger if `left object is bigger than the `right` object.
-     *          -- NEMath::eCompare::Smaller if `left object is smaller than the `right` object.
+     *          -- NEMath::Ordering::Equal if `left` and `right` objects are equal.
+     *          -- NEMath::Ordering::Bigger if `left object is bigger than the `right` object.
+     *          -- NEMath::Ordering::Smaller if `left object is smaller than the `right` object.
      * \param   left    The left side object to compare.
      * \param   right   The right side object to compare.
      * \tparam  Type    Any type of object that is possible to compare with the comparing operator.
      **/
     template<typename Type>
-    inline NEMath::eCompare compare(const Type & left, const Type & right);
+    inline NEMath::Ordering compare(const Type & left, const Type & right);
 
 /************************************************************************/
 // Numeric utility functions
@@ -612,26 +612,26 @@ inline Type NEMath::getAbs( const Type & val )
 }
 
 template<typename Type>
-inline NEMath::eDigitSign NEMath::getSign( const Type & val )
+inline NEMath::NumericSign NEMath::getSign( const Type & val )
 {
-    return static_cast<eDigitSign>((val > 0) - (val < 0));
+    return static_cast<NumericSign>((val > 0) - (val < 0));
 }
 
 template<typename Type>
-inline NEMath::eCompare NEMath::compare(const Type & left, const Type & right)
+inline NEMath::Ordering NEMath::compare(const Type & left, const Type & right)
 {
-    return (left == right ? NEMath::eCompare::Equal : (left > right ? NEMath::eCompare::Bigger : NEMath::eCompare::Smaller));
+    return (left == right ? NEMath::Ordering::Equal : (left > right ? NEMath::Ordering::Bigger : NEMath::Ordering::Smaller));
 }
 
-inline char NEMath::getChar(NEMath::eDigitSign sign)
+inline char NEMath::getChar(NEMath::NumericSign sign)
 {
     switch (sign)
     {
-    case NEMath::eDigitSign::SignNegative:
+    case NEMath::NumericSign::Negative:
         return '-';
-    case NEMath::eDigitSign::SignPositive:
+    case NEMath::NumericSign::Positive:
         return '+';
-    case NEMath::eDigitSign::SignUndefined: // fall through
+    case NEMath::NumericSign::Undefined: // fall through
     default:
         return '\0';
     }

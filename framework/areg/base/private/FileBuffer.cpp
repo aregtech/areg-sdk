@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-FileBuffer::FileBuffer( unsigned int mode       /*= (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)*/
+FileBuffer::FileBuffer( unsigned int mode       /*= (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))*/
                       , const char * name       /*= nullptr*/
                       , unsigned int blockSize  /*= BLOCK_SIZE*/)
     : FileBase      ( )
@@ -31,7 +31,7 @@ FileBuffer::FileBuffer( unsigned int mode       /*= (FileBase::FO_MODE_WRITE | F
     , mSharedBuffer (blockSize)
     , mIsOpened     (false)
 {
-    mFileMode = mode & (~ static_cast<unsigned int>(FileBase::FOB_ATTACH) );  // FOB_MODE_ATTACH
+    mFileMode = mode & (~static_cast<uint32_t>(FileBase::OpenMode::Attach) );  // FOB_MODE_ATTACH
     mFileName = name;
 }
 
@@ -41,7 +41,7 @@ FileBuffer::FileBuffer(SharedBuffer & sharedBuffer, const char* name /*= nullptr
     , mSharedBuffer (sharedBuffer)
     , mIsOpened     (false)
 {
-    mFileMode = FileBase::FO_MODE_ATTACH;
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Attach);
     mFileName = name;
 }
 
@@ -51,7 +51,7 @@ FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= n
     , mSharedBuffer (sharedBuffer)
     , mIsOpened     ( sharedBuffer.isValid() )
 {
-    mFileMode = FileBase::FO_MODE_ATTACH | FileBase::FO_MODE_READ;
+    mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Attach) | static_cast<uint32_t>(FileBase::OpenMode::Read);
     mFileName = name;
 }
 
@@ -67,7 +67,7 @@ inline void FileBuffer::_setName(const char* name)
 
 bool FileBuffer::open()
 {
-    if ((isOpened() == false) && (mFileMode != FileBase::FO_MODE_INVALID))
+    if ((isOpened() == false) && (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid)))
     {
         mFileMode = normalizeMode(mFileMode);
         if (isAttachMode() == false)
@@ -92,11 +92,11 @@ bool FileBuffer::open(const String& fileName, unsigned int mode)
     {
         if (isValid() == false)
         {
-            mode &= ~FileBase::FOB_ATTACH;
+            mode &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
         }
 
-        mFileMode = mode != FileBase::FO_MODE_INVALID ? mode : mFileMode;
-        if (mFileMode != FileBase::FO_MODE_INVALID)
+        mFileMode = mode != static_cast<uint32_t>(FileBase::OpenMode::Invalid) ? mode : mFileMode;
+        if (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid))
         {
             _setName(fileName);
             result = open();
@@ -111,7 +111,7 @@ void FileBuffer::close()
     // keep file name and mode that it can be again reopened.
     // remove 'attached' flag, since the buffer is not valid any mode
     mIsOpened   = false;
-    mFileMode  &= ~FileBase::FOB_ATTACH;
+    mFileMode  &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
     mSharedBuffer.invalidate();
 }
 
@@ -153,7 +153,7 @@ bool FileBuffer::remove()
     mSharedBuffer.invalidate();
 
     mFileName   = String::getEmptyString();
-    mFileMode   = FileBase::FO_MODE_INVALID;
+    mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
     mIsOpened   = false;
 
     return true;
@@ -189,7 +189,7 @@ bool FileBuffer::truncate()
     return result;
 }
 
-unsigned int FileBuffer::setPosition( int offset, Cursor::eCursorPosition startAt ) const
+unsigned int FileBuffer::setPosition( int offset, Cursor::SeekOrigin startAt ) const
 {
     return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
@@ -203,11 +203,11 @@ unsigned int FileBuffer::normalizeMode( unsigned int mode ) const
 {
     if (mSharedBuffer.isShared())
     {
-        mode |= FileBase::FO_MODE_ATTACH;
+        mode |= static_cast<uint32_t>(FileBase::OpenMode::Attach);
     }
     else
     {
-        mode &= ~FileBase::FOB_ATTACH;
+        mode &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
     }
 
     return FileBase::normalizeMode(mode);

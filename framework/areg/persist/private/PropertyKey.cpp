@@ -46,21 +46,21 @@ PropertyKey::PropertyKey(const std::string_view& section, const std::string_view
 {
 }
 
-PropertyKey::PropertyKey(const String& section, const String& module, const String& property, const String& position, NEPersistence::eConfigKeys keyType)
+PropertyKey::PropertyKey(const String& section, const String& module, const String& property, const String& position, NEPersistence::ConfigEntry keyType)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( keyType == NEPersistence::eConfigKeys::EntryAnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    , mKeyType  ( keyType == NEPersistence::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
 {
 }
 
-PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, NEPersistence::eConfigKeys keyType)
+PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, NEPersistence::ConfigEntry keyType)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( keyType == NEPersistence::eConfigKeys::EntryAnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    , mKeyType  ( keyType == NEPersistence::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
 {
 }
 
@@ -78,7 +78,7 @@ PropertyKey::PropertyKey()
     , mModule   ( )
     , mProperty ( )
     , mPosition ( )
-    , mKeyType  ( NEPersistence::eConfigKeys::EntryInvalid )
+    , mKeyType  ( NEPersistence::ConfigEntry::Invalid )
 {
 }
 
@@ -87,7 +87,7 @@ PropertyKey::PropertyKey( const String & key )
     , mModule   ( )
     , mProperty ( )
     , mPosition ( )
-    , mKeyType  ( NEPersistence::eConfigKeys::EntryInvalid )
+    , mKeyType  ( NEPersistence::ConfigEntry::Invalid )
 {
     parseKey( key );
 }
@@ -97,7 +97,7 @@ PropertyKey::PropertyKey( String && key )
     , mModule   ( )
     , mProperty ( )
     , mPosition ( )
-    , mKeyType  (NEPersistence::eConfigKeys::EntryInvalid)
+    , mKeyType  (NEPersistence::ConfigEntry::Invalid)
 {
     parseKey( std::move(key) );
 }
@@ -280,7 +280,7 @@ void PropertyKey::setValues(const String& section, const String& property, const
     mKeyType    = PropertyKey::_findKey(section, module, property, position);
 }
 
-void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position, NEPersistence::eConfigKeys keyType)
+void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position, NEPersistence::ConfigEntry keyType)
 {
     mSection    = section;
     mModule     = module;
@@ -309,7 +309,7 @@ const String & PropertyKey::getPosition() const
     return mPosition;
 }
 
-NEPersistence::eConfigKeys PropertyKey::getKeyType() const
+NEPersistence::ConfigEntry PropertyKey::getKeyType() const
 {
     return mKeyType;
 }
@@ -355,7 +355,7 @@ void PropertyKey::resetKey()
     mProperty.clear();
     mModule.clear();
     mPosition.clear();
-    mKeyType = NEPersistence::eConfigKeys::EntryInvalid;
+    mKeyType = NEPersistence::ConfigEntry::Invalid;
 }
 
 inline void PropertyKey::_parseKey(const String& key)
@@ -415,11 +415,11 @@ inline bool PropertyKey::_isCompatible(const String& left, const String& right)
     return result;
 }
 
-inline NEPersistence::eConfigKeys PropertyKey::_findKey(const String& section, const String& module, const String& property, const String& position)
+inline NEPersistence::ConfigEntry PropertyKey::_findKey(const String& section, const String& module, const String& property, const String& position)
 {
-    NEPersistence::eConfigKeys result{ NEPersistence::eConfigKeys::EntryInvalid };
+    NEPersistence::ConfigEntry result{ NEPersistence::ConfigEntry::Invalid };
 
-    for (int i = static_cast<int>(NEPersistence::eConfigKeys::EntryConfigVersion); i <= static_cast<int>(NEPersistence::eConfigKeys::EntryAnyKey); ++i)
+    for (int i = static_cast<int>(NEPersistence::ConfigEntry::ConfigVersion); i <= static_cast<int>(NEPersistence::ConfigEntry::AnyKey); ++i)
     {
         const auto& key = NEPersistence::DefaultPropertyKeys[i];
         if (((NEPersistence::SYNTAX_ALL_MODULES == key.section) || (section == key.section))  &&
@@ -427,7 +427,7 @@ inline NEPersistence::eConfigKeys PropertyKey::_findKey(const String& section, c
             ((NEPersistence::SYNTAX_ALL_MODULES == key.property)|| (property == key.property))&&
             ((NEPersistence::SYNTAX_ALL_MODULES == key.position)|| (position == key.position)))
         {
-            result = static_cast<NEPersistence::eConfigKeys>(i);
+            result = static_cast<NEPersistence::ConfigEntry>(i);
             break;
         }
     }

@@ -89,7 +89,7 @@ public:
      * \param   cookie  The cookie of source that has initiated to unregister provider.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered from the system.
@@ -98,7 +98,7 @@ public:
      * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

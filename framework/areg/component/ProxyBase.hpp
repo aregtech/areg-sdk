@@ -301,7 +301,7 @@ private:
 
     /**
      * \brief   ProxyBase::MapThreadProxyList
-     *          The Map of the lits, where the key is a string and values are list of proxies.
+     *          The Map of the list, where the key is a string and values are list of proxies.
      **/
     using MapThreadProxyList= ConcurrentResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
@@ -495,18 +495,12 @@ public:
     /**
      * \brief   Locks the resources of proxy object. Use if need to search and access cached resource.
      **/
-    static inline void lockProxyResource()
-    {
-        ProxyBase::_mapRegisteredProxies.lock();
-    }
+    static inline void lockProxyResource();
 
     /**
      * \brief   Unlocks the resources of proxy object. Use if need to unlock the access of cached resource.
      **/
-    static inline void unlockProxyResource()
-    {
-        ProxyBase::_mapRegisteredProxies.unlock();
-    }
+    static inline void unlockProxyResource();
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, Constructor / Destructor.
@@ -552,7 +546,7 @@ public:
     /**
      * \brief   Returns the connection status of the proxy.
      **/
-    inline NEService::eServiceConnection getConnectionStatus() const;
+    inline NEService::ServiceConnectionState getConnectionStatus() const;
 
     /**
      * \brief   Checks whether there are more listener objects
@@ -692,7 +686,7 @@ protected:
      * \param   reqType     The type of request.
      * \return  Returns valid pointer of created service request event object.
      **/
-    virtual ServiceRequestEvent * createNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType ) = 0;
+    virtual ServiceRequestEvent * createNotificationRequestEvent( unsigned int msgId, NEService::RequestType reqType ) = 0;
 
     /**
      * \brief   Overwrite method to create response event from streaming object for 
@@ -735,10 +729,10 @@ protected:
      * \param   server      The address of connected service stub server.
      * \param   channel     Communication channel object to deliver events.
      * \param   status      The service connection status. 
-     *                      The connection status should be NEService::ServiceConnected
+     *                      The connection status should be NEService::Connected
      *                      To be able to send message to service target from Proxy client.
      **/
-    virtual void serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::eServiceConnection status ) override;
+    virtual void serviceConnectionUpdated( const StubAddress & server, const Channel & channel, NEService::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ProxyBase interface overrides
@@ -887,12 +881,12 @@ protected:
      * \param   msgId       Message ID, which data state should be set
      * \param   newState    The state to set.
      **/
-    inline void setState( unsigned int msgId, NEService::eDataStateType newState );
+    inline void setState( unsigned int msgId, NEService::DataState newState );
 
     /**
      * \brief   Sets the connection status of the proxy
      **/
-    inline void setConnectionStatus(NEService::eServiceConnection status);
+    inline void setConnectionStatus(NEService::ServiceConnectionState status);
 
     /**
      * \brief   Checks whether there is already listener of Notification Event
@@ -958,9 +952,9 @@ protected:
      * \param   msgId       The message ID to start or stop receiving updates. It should be either attribute ID or response (info). 
      * \param   reqType     The type of request. Should be either request to 
      *                      call function or to get attribute update notification.
-     *                      See details in NEService::eRequestType
+     *                      See details in NEService::RequestType
      **/
-    void sendNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType );
+    void sendNotificationRequestEvent( unsigned int msgId, NEService::RequestType reqType );
 
     /**
      * \brief   Returns true if specified consumer is registered in the listener list.
@@ -1043,29 +1037,12 @@ private:
     /**
      * \brief   Indicates the Service connection status.
      **/
-    NEService::eServiceConnection   mConnectionStatus;
+    NEService::ServiceConnectionState   mConnectionStatus;
 
     /**
      * \brief   Flag, indicating whether the proxy is connected or not.
      **/
-    bool                            mIsConnected;
-
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
-    /**
-     * \brief   Resource of registered Proxies in the system.
-     **/
-    static MapProxyResource     _mapRegisteredProxies;
-    /**
-     * \brief   The list of proxies per thread.
-     **/
-    static MapThreadProxyList   _mapThreadProxies;
-
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    bool                                mIsConnected;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -1075,6 +1052,15 @@ private:
      * \brief   Return reference to Proxy object
      **/
     inline ProxyBase & self();
+
+    /**
+     * \brief   Resource of registered Proxies in the system.
+     **/
+    static MapProxyResource&     map_proxies();
+    /**
+     * \brief   The list of proxies per thread.
+     **/
+    static MapThreadProxyList&   thread_proxies();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -1093,6 +1079,16 @@ inline ProxyBase & ProxyBase::self()
     return (*this);
 }
 
+inline void ProxyBase::lockProxyResource()
+{
+    ProxyBase::map_proxies().lock();
+}
+
+inline void ProxyBase::unlockProxyResource()
+{
+    ProxyBase::map_proxies().unlock();
+}
+
 inline const ProxyAddress& ProxyBase::getProxyAddress() const
 {
     return mProxyAddress;
@@ -1108,13 +1104,13 @@ inline bool ProxyBase::isConnected() const
     return mIsConnected;
 }
 
-inline void ProxyBase::setConnectionStatus(NEService::eServiceConnection status)
+inline void ProxyBase::setConnectionStatus(NEService::ServiceConnectionState status)
 {
     mConnectionStatus = status;
     mIsConnected = NEService::isServiceConnected(status);
 }
 
-inline NEService::eServiceConnection ProxyBase::getConnectionStatus() const
+inline NEService::ServiceConnectionState ProxyBase::getConnectionStatus() const
 {
     return mConnectionStatus;
 }
@@ -1133,7 +1129,7 @@ inline void ProxyBase::startNotification( unsigned int msgId )
 {
     if (isConnected())
     {
-        sendNotificationRequestEvent( msgId, NEService::eRequestType::StartNotify );
+        sendNotificationRequestEvent( msgId, NEService::RequestType::StartNotify );
     }
 }
 
@@ -1141,7 +1137,7 @@ inline void ProxyBase::stopNotification( unsigned int msgId )
 {
     if (isConnected()) 
     {
-        sendNotificationRequestEvent( msgId, NEService::eRequestType::StopNotify );
+        sendNotificationRequestEvent( msgId, NEService::RequestType::StopNotify );
     }
 }
 
@@ -1149,7 +1145,7 @@ inline void ProxyBase::stopAllServiceNotifications()
 {
     if (isConnected()) 
     {
-        sendNotificationRequestEvent( static_cast<unsigned int>(NEService::eFuncIdRange::EmptyFunctionId), NEService::eRequestType::RemoveAllNotify );
+        sendNotificationRequestEvent( static_cast<unsigned int>(NEService::FuncIdRange::EmptyFunctionId), NEService::RequestType::RemoveAllNotify );
     }
 }
 
@@ -1201,7 +1197,7 @@ inline void ProxyBase::unregisterForEvent( const RuntimeClassID & eventClass )
     Event::removeListener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
-inline void ProxyBase::setState( unsigned int msgId, NEService::eDataStateType newState )
+inline void ProxyBase::setState( unsigned int msgId, NEService::DataState newState )
 {
     mProxyData.setDataState( msgId, newState );
 }

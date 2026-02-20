@@ -30,7 +30,7 @@ LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry 
 {
 }
 
-bool LocalHelloWorldClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool LocalHelloWorldClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 

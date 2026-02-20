@@ -34,7 +34,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
 /**
  * \brief   Predefined Bad Event object
  **/
-const Event Event::BAD_EVENT(Event::eEventType::EventUnknown);
+const Event Event::BAD_EVENT(Event::EventType::EventUnknown);
 
 bool Event::addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
 {
@@ -72,14 +72,14 @@ bool Event::removeListener( const RuntimeClassID & classId, EventConsumer & even
 
 Event::Event()
     : RuntimeObject ( )
-    , mEventType    ( Event::eEventType::EventUnknown )
+    , mEventType    ( Event::EventType::EventUnknown )
     , mEventPrio    ( DefaultPriority )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
 }
 
-Event::Event( Event::eEventType eventType )
+Event::Event( Event::EventType eventType )
     : RuntimeObject ( )
     , mEventType    ( eventType )
     , mEventPrio    ( DefaultPriority )

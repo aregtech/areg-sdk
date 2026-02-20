@@ -45,7 +45,7 @@ ServiceAddress::ServiceAddress()
 
 ServiceAddress::ServiceAddress( const String & serviceName
                               , const Version & serviceVersion
-                              , NEService::eServiceType serviceType
+                              , NEService::ServiceType serviceType
                               , const String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )

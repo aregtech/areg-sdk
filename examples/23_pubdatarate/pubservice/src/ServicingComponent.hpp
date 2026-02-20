@@ -225,7 +225,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
+    virtual bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -330,7 +330,7 @@ private:
      *                      data or ignored. It is used to compute blocks that were put in 
      *                      sleep or ignored.
      */
-    void _updateData(uint64_t genData, uint32_t genBlocks, Wait::eWaitResult waitResult);
+    void _updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

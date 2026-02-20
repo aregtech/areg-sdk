@@ -41,21 +41,21 @@ public:
     /**
      * \brief   Enum representing the type of a column in the result set.
      */
-    enum class eColumnType
+    enum class ColumnType  : uint8_t
     {
-          ColumnUnknown     = 0 //!< Unknown column type.
-        , ColumnInteger         //!< 32-bit integer column.
-        , ColumnInteger64       //!< 64-bit integer column.
-        , ColumnDouble          //!< Double-precision floating point column.
-        , ColumnText            //!< Text (string) column.
-        , ColumnBlob            //!< Binary large object column.
-        , ColumnNull            //!< Null column.
+          Unknown   = 0 //!< Unknown column type.
+        , Integer       //!< 32-bit integer column.
+        , Integer64     //!< 64-bit integer column.
+        , Double        //!< Double-precision floating point column.
+        , Text          //!< Text (string) column.
+        , Blob          //!< Binary large object column.
+        , Null          //!< Null column.
     };
 
     /**
      * \brief   Values set when getting the next row in the result set.
      **/
-    enum class eQueryResult
+    enum class QueryResult  : uint8_t
     {
           Failed    = 0 //!< The query failed to execute.
         , HasMore   = 1 //!< The query executed successfully and has rows to process.
@@ -105,11 +105,11 @@ public:
     /**
      * \brief   Advances to the next row in the result set.
      * \return  One of the results to execute the query.
-     *              - The returned value `eQueryResult::Failed` means error.
-     *              - The returned value `eQueryResult::HasMore` means there is data in the row to extract.
-     *              - The returned value `eQueryResult::HasNoMore` means all data are extracted, reached the end and there is no more data to extract.
+     *              - The returned value `QueryResult::Failed` means error.
+     *              - The returned value `QueryResult::HasMore` means there is data in the row to extract.
+     *              - The returned value `QueryResult::HasNoMore` means all data are extracted, reached the end and there is no more data to extract.
      **/
-    SqliteStatement::eQueryResult next();
+    SqliteStatement::QueryResult next();
 
     /**
      * \brief   Resets the statement to its initial state, ready for re-execution.
@@ -276,9 +276,9 @@ public:
     /**
      * \brief   Returns the type of the specified column.
      * \param   index  The 0-based column index.
-     * \return  The column type as eColumnType.
+     * \return  The column type as ColumnType.
      */
-    SqliteStatement::eColumnType getColumnType(int index) const;
+    SqliteStatement::ColumnType getColumnType(int index) const;
 
     /**
      * \brief   Returns a SqliteRow object representing the current row.

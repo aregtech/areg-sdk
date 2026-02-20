@@ -163,7 +163,7 @@ public:
     /**
      * \brief   Returns true the service connection status value
      **/
-    inline NEService::eServiceConnection getServiceStatus() const;
+    inline NEService::ServiceConnectionState getServiceStatus() const;
 
     /**
      * \brief   Returns the address of remote proxy
@@ -195,13 +195,13 @@ private:
      * \brief   Sets servicing new status. The call is ignored if proxy target is unknown.
      * \param   newStatus   New status of proxy to set.
      **/
-    void _setServiceStatus( NEService::eServiceConnection newStatus );
+    void _setServiceStatus( NEService::ServiceConnectionState newStatus );
     /**
      * \brief   Sets servicing proxy address and the connection status.
      * \param   addrProxy       The remote servicing proxy address to set.
      * \param   connectStatus   The connection status to update.
      **/
-    void _setService( const ProxyAddress & addrProxy, NEService::eServiceConnection connectStatus = NEService::eServiceConnection::ServicePending );
+    void _setService( const ProxyAddress & addrProxy, NEService::ServiceConnectionState connectStatus = NEService::ServiceConnectionState::Pending );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -214,7 +214,7 @@ private:
     /**
      * \brief   The remote servicing connection status.
      **/
-    NEService::eServiceConnection   mConnectStatus;
+    NEService::ServiceConnectionState   mConnectStatus;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -226,7 +226,7 @@ inline const ProxyAddress & ServiceProxy::getServiceAddress() const
     return mProxyAddress;
 }
 
-inline NEService::eServiceConnection ServiceProxy::getServiceStatus() const
+inline NEService::ServiceConnectionState ServiceProxy::getServiceStatus() const
 {
     return mConnectStatus;
 }
@@ -238,12 +238,12 @@ inline bool ServiceProxy::isValid() const
 
 inline bool ServiceProxy::isConnected() const
 {
-    return ( mConnectStatus == NEService::eServiceConnection::ServiceConnected );
+    return ( mConnectStatus == NEService::ServiceConnectionState::Connected );
 }
 
 inline bool ServiceProxy::isWaiting() const
 {
-    return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
+    return ( mConnectStatus == NEService::ServiceConnectionState::Pending );
 }
 
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICEPROXY_HPP

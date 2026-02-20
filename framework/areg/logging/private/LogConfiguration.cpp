@@ -36,28 +36,28 @@ bool LogConfiguration::isLoggingEnabled() const
 bool LogConfiguration::isRemoteLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeRemote);
+    return config.getLogEnabled(NELogging::LogTarget::Remote);
 }
 
 bool LogConfiguration::isFileLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeFile);
+    return config.getLogEnabled(NELogging::LogTarget::File);
 }
 
 bool LogConfiguration::isDatabaseLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeDatabase);
+    return config.getLogEnabled(NELogging::LogTarget::Database);
 }
 
 bool LogConfiguration::isDebugOutputLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeDebug);
+    return config.getLogEnabled(NELogging::LogTarget::Debug);
 }
 
-void LogConfiguration::setLogEnabled(NELogging::LoggingType logType, bool isEnabled)
+void LogConfiguration::setLogEnabled(NELogging::LogTarget logType, bool isEnabled)
 {
     ConfigManager& config = Application::getConfigManager();
     if (isEnabled && config.getLoggingStatus() == false)
@@ -148,43 +148,43 @@ void LogConfiguration::setLogFile(const String& prop)
 
 bool LogConfiguration::getRemoteTcpEnable() const
 {
-    return (Application::getConfigManager().getLogEnabled(NELogging::LoggingType::LogTypeRemote) &&
-            Application::getConfigManager().getRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip));
+    return (Application::getConfigManager().getLogEnabled(NELogging::LogTarget::Remote) &&
+            Application::getConfigManager().getRemoteServiceEnable(NERemoteService::RemoteServiceKind::Logger, NERemoteService::ConnectionType::Tcpip));
 }
 
 void LogConfiguration::setRemoteTcpEnable(bool prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+    Application::getConfigManager().setRemoteServiceEnable(NERemoteService::RemoteServiceKind::Logger, NERemoteService::ConnectionType::Tcpip, prop, isTemporary);
 }
 
 String LogConfiguration::getRemoteTcpAddress() const
 {
-    return Application::getConfigManager().getRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
+    return Application::getConfigManager().getRemoteServiceAddress(NERemoteService::RemoteServiceKind::Logger, NERemoteService::ConnectionType::Tcpip);
 }
 
 void LogConfiguration::setRemoteTcpAddress(const String & prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+    Application::getConfigManager().setRemoteServiceAddress(NERemoteService::RemoteServiceKind::Logger, NERemoteService::ConnectionType::Tcpip, prop, isTemporary);
 }
 
 uint16_t LogConfiguration::getRemoteTcpPort() const
 {
-    return Application::getConfigManager().getRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
+    return Application::getConfigManager().getRemoteServicePort(NERemoteService::RemoteServiceKind::Logger, NERemoteService::ConnectionType::Tcpip);
 }
 
 void LogConfiguration::setRemoteTcpPort(uint16_t prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+    Application::getConfigManager().setRemoteServicePort(NERemoteService::RemoteServiceKind::Logger, NERemoteService::ConnectionType::Tcpip, prop, isTemporary);
 }
 
 bool LogConfiguration::getDatabaseEnable() const
 {
-    return Application::getConfigManager().getLogEnabled(NELogging::LoggingType::LogTypeDatabase);
+    return Application::getConfigManager().getLogEnabled(NELogging::LogTarget::Database);
 }
 
 void LogConfiguration::setDatabaseEnable(bool prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setLogEnabled(NELogging::LoggingType::LogTypeDatabase, prop, isTemporary);
+    Application::getConfigManager().setLogEnabled(NELogging::LogTarget::Database, prop, isTemporary);
 }
 
 uint32_t LogConfiguration::getModuleScopes(std::vector<Property>& scopeList)

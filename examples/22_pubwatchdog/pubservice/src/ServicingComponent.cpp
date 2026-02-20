@@ -33,7 +33,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
 
     HelloWatchdogStub::startupServiceInterface(holder);
-    setServiceState(HelloWatchdog::eState::Initialized);
+    setServiceState(HelloWatchdog::ComponentState::Initialized);
 }
 
 void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
@@ -42,10 +42,10 @@ void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
 
     LOG_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, HelloWatchdog::TimeoutWatchdog);
 
-    if (getServiceState() != HelloWatchdog::eState::Stopped )
+    if (getServiceState() != HelloWatchdog::ComponentState::Stopped )
     {
         printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog );
-        setServiceState( HelloWatchdog::eState::Started );
+        setServiceState( HelloWatchdog::ComponentState::Started );
         Thread::sleep( timeoutSleep );
         responseStartSleep( timeoutSleep );
     }
@@ -61,7 +61,7 @@ void ServicingComponent::requestStopService()
     LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
     LOG_DBG("Received request to stop service");
     printf("Requested to stop the service.\n");
-    setServiceState( HelloWatchdog::eState::Stopped );
+    setServiceState( HelloWatchdog::ComponentState::Stopped );
 }
 
 void ServicingComponent::requestShutdownService()
@@ -69,6 +69,6 @@ void ServicingComponent::requestShutdownService()
     LOG_SCOPE( examples_22_pubservice_ServicingComponent_requestStopService );
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
-    setServiceState( HelloWatchdog::eState::Stopped );
+    setServiceState( HelloWatchdog::ComponentState::Stopped );
     Application::signalAppQuit();
 }

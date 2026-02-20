@@ -31,16 +31,18 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, static members
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Predefined Empty Data object.
- **/
-const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::EventDataEmpty, String("EventDataStream::EmptyData"));
+
+const EventDataStream& EventDataStream::empty_data()
+{
+    static const EventDataStream _data(EventDataStream::EventDataKind::Empty, String("EmptyData"));
+    return _data;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::getEmptyString()*/ )
-    : IOStream    ( )
+EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name /*= String::getEmptyString()*/ )
+    : IOStream      ( )
 
     , mEventDataType(evetDataType)
     , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
@@ -83,7 +85,7 @@ EventDataStream::EventDataStream( EventDataStream && src ) noexcept
 EventDataStream::EventDataStream(const InStream & stream)
     : IOStream    ( )
 
-    , mEventDataType( EventDataStream::eEventData::EventDataExternal)
+    , mEventDataType( EventDataStream::EventDataKind::External)
     , mBufferName   ( DefaultStreamName)
     , mDataBuffer   ( )
     , mSharedList   ( )
@@ -135,7 +137,7 @@ unsigned int EventDataStream::read( unsigned char* buffer, unsigned int size ) c
 unsigned int EventDataStream::read( ByteBuffer & buffer ) const
 {
     unsigned int result = 0;
-    if (mEventDataType == EventDataStream::eEventData::EventDataInternal && mSharedList.isEmpty() == false)
+    if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.isEmpty() == false)
     {
         static_cast<SharedBuffer &>(buffer) = mSharedList.popFirst();
         result = buffer.getSizeUsed();
@@ -171,7 +173,7 @@ unsigned int EventDataStream::write( const unsigned char* buffer, unsigned int s
 unsigned int EventDataStream::write( const ByteBuffer & buffer )
 {
     unsigned int result = 0;
-    if (mEventDataType == EventDataStream::eEventData::EventDataInternal)
+    if (mEventDataType == EventDataStream::EventDataKind::Internal)
     {
         mSharedList.pushLast( static_cast<const SharedBuffer &>(buffer) );
         result = buffer.getSizeUsed();

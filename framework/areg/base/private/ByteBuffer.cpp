@@ -103,7 +103,7 @@ unsigned int ByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bufL
         buffer->bufHeader.biBufSize = bufLength;
         buffer->bufHeader.biLength  = dataLength;
         buffer->bufHeader.biOffset  = dataOffset;
-        buffer->bufHeader.biBufType = NEMemory::eBufferType::BufferInternal;
+        buffer->bufHeader.biBufType = NEMemory::BufferType::Internal;
 
         if (makeCopy && (mByteBuffer.get() != nullptr))
         {

@@ -28,7 +28,7 @@
 // LogLayout interface implementation
 //////////////////////////////////////////////////////////////////////////
 
-LogLayout::LogLayout(const NELogOptions::eLayouts layout)
+LogLayout::LogLayout(const NELogOptions::LayoutToken layout)
     : mLayout   ( layout )
 {
 }
@@ -38,17 +38,17 @@ LogLayout::LogLayout(const NELogOptions::eLayouts layout)
 //////////////////////////////////////////////////////////////////////////
 
 TickCountLayout::TickCountLayout()
-    : LogLayout     ( NELogOptions::eLayouts::LayoutTickCount )
+    : LogLayout     ( NELogOptions::LayoutToken::TickCount )
 {
 }
 
 TickCountLayout::TickCountLayout( const TickCountLayout & /*src*/ )
-    : LogLayout     ( NELogOptions::eLayouts::LayoutTickCount )
+    : LogLayout     ( NELogOptions::LayoutToken::TickCount )
 {
 }
 
 TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
-    : LogLayout     ( NELogOptions::eLayouts::LayoutTickCount )
+    : LogLayout     ( NELogOptions::LayoutToken::TickCount )
 {
 }
 
@@ -71,17 +71,17 @@ void TickCountLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, Out
 
 
 DayTimeLayout::DayTimeLayout()
-    : LogLayout ( NELogOptions::eLayouts::LayoutDayTime )
+    : LogLayout ( NELogOptions::LayoutToken::DayTime )
 {
 }
 
 DayTimeLayout::DayTimeLayout( const DayTimeLayout & /*src*/ )
-    : LogLayout ( NELogOptions::eLayouts::LayoutDayTime )
+    : LogLayout ( NELogOptions::LayoutToken::DayTime )
 {
 }
 
 DayTimeLayout::DayTimeLayout( DayTimeLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutDayTime )
+    : LogLayout ( NELogOptions::LayoutToken::DayTime )
 {
 }
 
@@ -100,17 +100,17 @@ void DayTimeLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream
 //////////////////////////////////////////////////////////////////////////
 
 ModuleIdLayout::ModuleIdLayout()
-    : LogLayout      ( NELogOptions::eLayouts::LayoutExecutableId )
+    : LogLayout      ( NELogOptions::LayoutToken::ExecutableId )
 {
 }
 
 ModuleIdLayout::ModuleIdLayout(const ModuleIdLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LayoutExecutableId )
+    : LogLayout ( NELogOptions::LayoutToken::ExecutableId )
 {
 }
 
 ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutExecutableId )
+    : LogLayout ( NELogOptions::LayoutToken::ExecutableId )
 {
 }
 
@@ -118,9 +118,9 @@ void ModuleIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
 {
     static const ITEM_ID _moduleId{ Process::getInstance().getId() };
 #ifdef _BIT64
-    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), NEString::Radix::Hexadecimal) };
 #else   // _BIT32
-    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), NEString::Radix::Hexadecimal) };
 #endif  // _BIT64
 
     if (msgLog.logModuleId != 0)
@@ -148,17 +148,17 @@ void ModuleIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
 //////////////////////////////////////////////////////////////////////////
 
 MessageLayout::MessageLayout()
-    : LogLayout ( NELogOptions::eLayouts::LayoutMessage )
+    : LogLayout ( NELogOptions::LayoutToken::Message )
 {
 }
 
 MessageLayout::MessageLayout(const MessageLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LayoutMessage )
+    : LogLayout ( NELogOptions::LayoutToken::Message )
 {
 }
 
 MessageLayout::MessageLayout( MessageLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutMessage )
+    : LogLayout ( NELogOptions::LayoutToken::Message )
 {
 }
 
@@ -173,17 +173,17 @@ void MessageLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream
 //////////////////////////////////////////////////////////////////////////
 
 EndOfLineLayout::EndOfLineLayout()
-    : LogLayout ( NELogOptions::eLayouts::LayoutEndOfLine )
+    : LogLayout ( NELogOptions::LayoutToken::EndOfLine )
 {
 }
 
 EndOfLineLayout::EndOfLineLayout(const EndOfLineLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LayoutEndOfLine )
+    : LogLayout ( NELogOptions::LayoutToken::EndOfLine )
 {
 }
 
 EndOfLineLayout::EndOfLineLayout( EndOfLineLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutEndOfLine )
+    : LogLayout ( NELogOptions::LayoutToken::EndOfLine )
 {
 }
 
@@ -197,17 +197,17 @@ void EndOfLineLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, Out
 //////////////////////////////////////////////////////////////////////////
 
 PriorityLayout::PriorityLayout()
-    : LogLayout ( NELogOptions::eLayouts::LayoutPriority )
+    : LogLayout ( NELogOptions::LayoutToken::Priority )
 {
 }
 
 PriorityLayout::PriorityLayout(const PriorityLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LayoutPriority )
+    : LogLayout ( NELogOptions::LayoutToken::Priority )
 {
 }
 
 PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutPriority )
+    : LogLayout ( NELogOptions::LayoutToken::Priority )
 {
 }
 
@@ -222,17 +222,17 @@ void PriorityLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
 //////////////////////////////////////////////////////////////////////////
 
 ScopeIdLayout::ScopeIdLayout()
-    : LogLayout ( NELogOptions::eLayouts::LaytoutScopeId )
+    : LogLayout ( NELogOptions::LayoutToken::ScopeId )
 {
 }
 
 ScopeIdLayout::ScopeIdLayout(const ScopeIdLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LaytoutScopeId )
+    : LogLayout ( NELogOptions::LayoutToken::ScopeId )
 {
 }
 
 ScopeIdLayout::ScopeIdLayout( ScopeIdLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LaytoutScopeId )
+    : LogLayout ( NELogOptions::LayoutToken::ScopeId )
 {
 }
 
@@ -251,17 +251,17 @@ void ScopeIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream
 //////////////////////////////////////////////////////////////////////////
 
 ThreadIdLayout::ThreadIdLayout()
-    : LogLayout ( NELogOptions::eLayouts::LayoutThreadId )
+    : LogLayout ( NELogOptions::LayoutToken::ThreadId )
 {
 }
 
 ThreadIdLayout::ThreadIdLayout(const ThreadIdLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LayoutThreadId )
+    : LogLayout ( NELogOptions::LayoutToken::ThreadId )
 {
 }
 
 ThreadIdLayout::ThreadIdLayout( ThreadIdLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutThreadId )
+    : LogLayout ( NELogOptions::LayoutToken::ThreadId )
 {
 }
 
@@ -286,23 +286,23 @@ void ThreadIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
 //////////////////////////////////////////////////////////////////////////
 
 ModuleNameLayout::ModuleNameLayout()
-    : LogLayout ( NELogOptions::eLayouts::LayoutExecutableName )
+    : LogLayout ( NELogOptions::LayoutToken::ExecutableName )
 {
 }
 
 ModuleNameLayout::ModuleNameLayout(const ModuleNameLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LayoutExecutableName )
+    : LogLayout ( NELogOptions::LayoutToken::ExecutableName )
 {
 }
 
 ModuleNameLayout::ModuleNameLayout( ModuleNameLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutExecutableName )
+    : LogLayout ( NELogOptions::LayoutToken::ExecutableName )
 {
 }
 
 void ModuleNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const
 {
-    if (msgLog.logDataType == NELogging::eLogDataType::LogDataLocal)
+    if (msgLog.logDataType == NELogging::LogDataType::Local)
     {
         static const String& _module{ Process::getInstance().getAppName() };
         stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
@@ -331,17 +331,17 @@ void ModuleNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStr
 //////////////////////////////////////////////////////////////////////////
 
 ThreadNameLayout::ThreadNameLayout()
-    : LogLayout ( NELogOptions::eLayouts::LayoutThreadName )
+    : LogLayout ( NELogOptions::LayoutToken::ThreadName )
 {
 }
 
 ThreadNameLayout::ThreadNameLayout(const ThreadNameLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LayoutThreadName )
+    : LogLayout ( NELogOptions::LayoutToken::ThreadName )
 {
 }
 
 ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LayoutThreadName )
+    : LogLayout ( NELogOptions::LayoutToken::ThreadName )
 {
 }
 
@@ -350,7 +350,7 @@ void ThreadNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStr
     const char* name{ nullptr };
     uint32_t len{ 0 };
 
-    if (msgLog.logDataType == NELogging::eLogDataType::LogDataLocal)
+    if (msgLog.logDataType == NELogging::LogDataType::Local)
     {
         const String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
         name = thread.getString();
@@ -378,17 +378,17 @@ void ThreadNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStr
 //////////////////////////////////////////////////////////////////////////
 
 ScopeNameLayout::ScopeNameLayout()
-    : LogLayout ( NELogOptions::eLayouts::LaytoutScopeName )
+    : LogLayout ( NELogOptions::LayoutToken::ScopeName )
 {
 }
 
 ScopeNameLayout::ScopeNameLayout(const ScopeNameLayout & /*src*/)
-    : LogLayout ( NELogOptions::eLayouts::LaytoutScopeName )
+    : LogLayout ( NELogOptions::LayoutToken::ScopeName )
 {
 }
 
 ScopeNameLayout::ScopeNameLayout( ScopeNameLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::eLayouts::LaytoutScopeName )
+    : LogLayout ( NELogOptions::LayoutToken::ScopeName )
 {
 }
 
@@ -402,31 +402,31 @@ void ScopeNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStre
 //////////////////////////////////////////////////////////////////////////
 
 AnyTextLayout::AnyTextLayout()
-    : LogLayout      ( NELogOptions::eLayouts::LayoutAnyText )
+    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
     , mTextMessage  ( )
 {
 }
 
 AnyTextLayout::AnyTextLayout(const AnyTextLayout & src)
-    : LogLayout      ( NELogOptions::eLayouts::LayoutAnyText )
+    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
     , mTextMessage  ( src.mTextMessage )
 {
 }
 
 AnyTextLayout::AnyTextLayout( AnyTextLayout && src ) noexcept
-    : LogLayout      ( NELogOptions::eLayouts::LayoutAnyText )
+    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
     , mTextMessage  ( std::move(src.mTextMessage) )
 {
 }
 
 AnyTextLayout::AnyTextLayout(const String & anyMessage)
-    : LogLayout      ( NELogOptions::eLayouts::LayoutAnyText )
+    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
     , mTextMessage  ( anyMessage )
 {
 }
 
 AnyTextLayout::AnyTextLayout(const char * anyMessage)
-    : LogLayout      ( NELogOptions::eLayouts::LayoutAnyText )
+    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
     , mTextMessage  ( anyMessage != nullptr ? anyMessage : NEString::EmptyStringA )
 {
 }
@@ -441,17 +441,17 @@ void AnyTextLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, OutSt
 //////////////////////////////////////////////////////////////////////////
 
 CookieIdLayout::CookieIdLayout()
-    : LogLayout(NELogOptions::eLayouts::LayoutCookieId)
+    : LogLayout(NELogOptions::LayoutToken::CookieId)
 {
 }
 
 CookieIdLayout::CookieIdLayout(const CookieIdLayout& /* src */)
-    : LogLayout(NELogOptions::eLayouts::LayoutCookieId)
+    : LogLayout(NELogOptions::LayoutToken::CookieId)
 {
 }
 
 CookieIdLayout::CookieIdLayout(CookieIdLayout&& /* src */) noexcept
-    : LogLayout(NELogOptions::eLayouts::LayoutCookieId)
+    : LogLayout(NELogOptions::LayoutToken::CookieId)
 {
 }
 

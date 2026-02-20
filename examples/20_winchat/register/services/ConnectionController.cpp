@@ -12,7 +12,7 @@
 #include "areg/component/Model.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
@@ -35,11 +35,9 @@ BEGIN_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
 END_MODEL(chat::MODEL_NAME_CENTRAL_SERVER)
 
-ConnectionController *   ConnectionController::sService   = nullptr;
-
-ConnectionController * ConnectionController::getService()
+namespace
 {
-    return ConnectionController::sService;
+    ConnectionController* _thisService{ nullptr };
 }
 
 ConnectionController::ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
@@ -50,12 +48,12 @@ ConnectionController::ConnectionController( const NERegistry::ComponentEntry & e
     , mWnd                  ( std::any_cast<HWND>(entry.getData()) )
     , mCookies              ( ConnectionManager::InvalidCookie )
 {
-    ConnectionController::sService   = this;
+    _thisService = this;
 }
 
 ConnectionController::~ConnectionController()
 {
-    ConnectionController::sService = nullptr;
+    _thisService = nullptr;
     mWnd    =   0;
 }
 
@@ -92,24 +90,24 @@ void ConnectionController::requestConnect( const String & nickName, const DateTi
                         , connection.connectTime.formatTime( ).getString()
                         , static_cast<uint32_t>(connection.connectTime.getTime())
                         , cookie);
-                responseConnect(nickName, cookie, dateTime, ConnectionManager::eConnectionResult::ConnectionAccepted);
+                responseConnect(nickName, cookie, dateTime, ConnectionManager::ConnectionResult::Accepted);
             }
             else
             {
                 LOG_WARN( "There is already connected client [ %s ], which was accepted at [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
-                responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::eConnectionResult::ConnectionClientExist );
+                responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::ClientExist );
             }
         }
         else
         {
             LOG_WARN( "The name [ %s ] is reserved by system and cannot be registered", static_cast<const char *>(nickName) );
-            responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::eConnectionResult::ConnectionNameReserved );
+            responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::NameReserved );
         }
     }
     else
     {
         LOG_ERR("The requested to connect client name [ %s ] cannot be empty or invalid characters, it should be valid name.", static_cast<const char *>(nickName));
-        responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::eConnectionResult::InvalidClient );
+        responseConnect( nickName, ConnectionManager::InvalidCookie, dateTime, ConnectionManager::ConnectionResult::InvalidClient );
     }
 }
 
@@ -164,7 +162,7 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
                         data->timeReceived  = connection.connectedTime;
                         data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
 
-                        ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdRegistered), 0, reinterpret_cast<LPARAM>(data) );
+                        ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdRegistered), 0, reinterpret_cast<LPARAM>(data) );
                     }
                 }
                 else
@@ -219,7 +217,7 @@ void ConnectionController::requestDisconnect( const String & nickName, unsigned 
                 data->timeReceived  = connection.connectedTime;
                 data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
 
-                ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdUnregistered), 0, reinterpret_cast<LPARAM>(data) );
+                ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdUnregistered), 0, reinterpret_cast<LPARAM>(data) );
             }
         }
         else
@@ -263,7 +261,7 @@ void ConnectionController::requestSendMessage( const String & nickName, unsigned
             data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
             NEString::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
 
-            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
+            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
     }
     else
@@ -295,7 +293,7 @@ void ConnectionController::requestKeyTyping( const String & nickName, unsigned i
             data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
             NEString::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
 
-            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
+            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
     }
     else
@@ -331,6 +329,11 @@ bool ConnectionController::IsReservedNickname( const String & nickName ) const
         return true;
     else
         return false;
+}
+
+ConnectionController* ConnectionController::getConnectionService()
+{
+    return _thisService;
 }
 
 inline bool ConnectionController::connectionExist( uint32_t cookie ) const

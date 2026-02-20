@@ -203,11 +203,11 @@ namespace NEApplication
      **/
     constexpr sEntryTypesEnabling DefaultLogTypes []
         {
-              { static_cast<unsigned int>(NELogging::LoggingType::LogTypeUndefined)  , {"unknown"}, false }
-            , { static_cast<unsigned int>(NELogging::LoggingType::LogTypeRemote)     , {"remote" }, false }
-            , { static_cast<unsigned int>(NELogging::LoggingType::LogTypeFile)       , {"file"   }, true  }
-            , { static_cast<unsigned int>(NELogging::LoggingType::LogTypeDebug)      , {"debug"  }, false }
-            , { static_cast<unsigned int>(NELogging::LoggingType::LogTypeDatabase)   , {"db"     }, false}
+              { static_cast<unsigned int>(NELogging::LogTarget::Undefined)  , {"unknown"}, false }
+            , { static_cast<unsigned int>(NELogging::LogTarget::Remote)     , {"remote" }, false }
+            , { static_cast<unsigned int>(NELogging::LogTarget::File)       , {"file"   }, true  }
+            , { static_cast<unsigned int>(NELogging::LogTarget::Debug)      , {"debug"  }, false }
+            , { static_cast<unsigned int>(NELogging::LogTarget::Database)   , {"db"     }, false}
         };
 
     /**
@@ -217,11 +217,11 @@ namespace NEApplication
      **/
     constexpr sEntryTypesEnabling DefaultConnections[]
         {
-              { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined)  , {"unknown"}, false }
-            , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)      , {"tcpip"  }, true  }
-            , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUdp)        , {"udp"    }, false }
-            , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectWeb)        , {"web"    }, false }
-            , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectSM)         , {"sm"     }, false }
+              { static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined)   , {"unknown"}, false }
+            , { static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
+            , { static_cast<unsigned int>(NERemoteService::ConnectionType::Udp)         , {"udp"    }, false }
+            , { static_cast<unsigned int>(NERemoteService::ConnectionType::Web)         , {"web"    }, false }
+            , { static_cast<unsigned int>(NERemoteService::ConnectionType::SharedMemory), {"sm"     }, false }
         };
 
     /**
@@ -230,12 +230,12 @@ namespace NEApplication
      **/
     constexpr sEntryTypesEnabling DefaultRemotetServices[]
         {
-              { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown) , {"unknown"}, false }
-            , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceRouter)  , {"router" }, true  }
+              { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown) , {"unknown"}, false }
+            , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Router)  , {"router" }, true  }
 #ifdef DEBUG
-            , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceLogger)  , {"logger" }, true  }
+            , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Logger)  , {"logger" }, true  }
 #else   // DEBUG
-            , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceLogger)  , {"logger" }, false }
+            , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Logger)  , {"logger" }, false }
 #endif  // DEBUG
         };
 
@@ -294,30 +294,30 @@ namespace NEApplication
 
     /**
      * \brief   NEApplication::LogTypeIdentifiers
-     *          The list of logging type identifiers to convert to string or NELogging::LoggingType types
+     *          The list of logging type identifiers to convert to string or NELogging::LogTarget types
      **/
     extern AREG_API const std::vector<Identifier> LogTypeIdentifiers;
 
     /**
      * \brief   NEApplication::ConnectionIdentifiers
-     *          The list of connection type identifiers to convert to string or NERemoteService::eConnectionTypes types
+     *          The list of connection type identifiers to convert to string or NERemoteService::ConnectionType types
      **/
     extern AREG_API const std::vector<Identifier> ConnectionIdentifiers;
 
     /**
      * \brief   NEApplication::RemoteServiceIdentifiers
-     *          The list of remote servicing type identifiers to convert to string or NERemoteService::eRemoteServices types
+     *          The list of remote servicing type identifiers to convert to string or NERemoteService::RemoteServiceKind types
      **/
     extern AREG_API const std::vector<Identifier> RemoteServiceIdentifiers;
 
     /**
      * \brief   NEApplication::LogScopePriorityIndentifiers
-     *          The list of logging priority type identifiers to convert to string or NELogging::eLogPriority types
+     *          The list of logging priority type identifiers to convert to string or NELogging::LogPriority types
      **/
     extern AREG_API const std::vector<Identifier> LogScopePriorityIndentifiers;
 
     /**
-     * \brief   NEApplication::eApplicationState
+     * \brief   NEApplication::AppState
      *          Describes the application states.
      *          -   Initially, the application is in undefined state.
      *          -   The application is in initialization state, when Service Manager did not started yet and it
@@ -325,14 +325,14 @@ namespace NEApplication
      *          -   Application is in ready state only when Service Manager is started.
      *          -   Application is in release state when it is going to stop Service Manager.
      **/
-    typedef enum class E_AppState
+    enum class AppState : uint8_t
     {
-          AppStateStopped       //!< Application state is undefined
-        , AppStateInitializing  //!< Application is initializing
-        , AppStateReady         //!< Application is ready. The application is ready only when Service Manager runs.
-        , AppStateReleasing     //!< Application is releasing.
-        , AppStateFailure       //!< Application is failure state and cannot be continued
-    } eApplicationState;
+          Stopped       //!< Application state is undefined
+        , Initializing  //!< Application is initializing
+        , Ready         //!< Application is ready. The application is ready only when Service Manager runs.
+        , Releasing     //!< Application is releasing.
+        , Failure       //!< Application is failure state and cannot be continued
+    };
 
 }
 

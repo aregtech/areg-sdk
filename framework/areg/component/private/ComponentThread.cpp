@@ -225,7 +225,7 @@ inline void ComponentThread::_shutdownComponents()
     }
 }
 
-Thread::eCompletionStatus ComponentThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition( );
     while ( mListComponent.isValidPosition( pos ) )

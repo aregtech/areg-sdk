@@ -55,7 +55,7 @@ protected:
     /**
      * \brief   The types of the node. Set when object is created and cannot be changed.
      **/
-    enum class eNode    : unsigned char
+    enum class NodeType : uint8_t
     {
           Invalid   = 0 // The node is invalid,             bits: 0000 0000
         , Leaf      = 2 // The node is root, has no parent, bits: 0000 0010
@@ -66,13 +66,13 @@ protected:
     /**
      * \brief   The grouping flags to set bitwise.
      **/
-    enum class Grouping   : unsigned char
+    enum class Grouping   : uint8_t
     {
-          NoGroupping           = 0 // Bits: 0000 0000
-        , GrouppingPartially    = 4 // Bits: 0000 0100
-        , GrouppingLeafes       = 5 // Bits: 0000 0101
-        , GrouppingNodes        = 6 // Bits: 0000 0110
-        , GrouppingAll          = 7 // Bits: 0000 0111
+          None      = 0 // Bits: 0000 0000
+        , Partial   = 4 // Bits: 0000 0100
+        , Leaves    = 5 // Bits: 0000 0101
+        , Nodes     = 6 // Bits: 0000 0110
+        , All       = 7 // Bits: 0000 0111
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ protected:
      *          The type depends on the passed parameter and cannot be changed later.
      * \param   nodeType    The type of node to set when initialized. Cannot be changed.
      **/
-    explicit ScopeNodeBase( ScopeNodeBase::eNode nodeType );
+    explicit ScopeNodeBase( ScopeNodeBase::NodeType nodeType );
 
     /**
      * \brief   Creates a node and sets the node type, node name and priority flags.
@@ -93,7 +93,7 @@ protected:
      * \param   nodeName    The name of the node.
      * \param   prio        The logging priority flags set bitwise.
      **/
-    ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & nodeName, unsigned int prio = static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) );
+    ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, unsigned int prio = static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) );
 
     //!< Copies, moves and destroys the node object.
     ScopeNodeBase( const ScopeNodeBase & src );
@@ -364,7 +364,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
     //!< The type of the node. Cannot be changed.
-    const ScopeNodeBase::eNode  mNodeType;
+    const ScopeNodeBase::NodeType  mNodeType;
     
     //!< The priority flags set bitwise.
     unsigned int                mPrioStates;
@@ -416,57 +416,57 @@ inline void ScopeNodeBase::addPriority( unsigned int prio )
 
 inline bool ScopeNodeBase::isRoot() const
 {
-    return (mNodeType == ScopeNodeBase::eNode::Root);
+    return (mNodeType == ScopeNodeBase::NodeType::Root);
 }
 
 inline bool ScopeNodeBase::isNode() const
 {
-    return (mNodeType == ScopeNodeBase::eNode::Node);
+    return (mNodeType == ScopeNodeBase::NodeType::Node);
 }
 
 inline bool ScopeNodeBase::isLeaf() const
 {
-    return (mNodeType == ScopeNodeBase::eNode::Leaf);
+    return (mNodeType == ScopeNodeBase::NodeType::Leaf);
 }
 
 inline bool ScopeNodeBase::isValid() const
 {
-    return (mNodeType != ScopeNodeBase::eNode::Invalid);
+    return (mNodeType != ScopeNodeBase::NodeType::Invalid);
 }
 
 inline bool ScopeNodeBase::hasPrioDebug() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioDebug)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioDebug)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioInfo() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioInfo)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioInfo)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioWarning() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioWarning)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioWarning)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioError() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioError)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioError)) != 0;
 }
 
 inline bool ScopeNodeBase::hasPrioFatal() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioFatal)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioFatal)) != 0;
 }
 
 inline bool ScopeNodeBase::hasLogsEneabled() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioLogs)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioLogs)) != 0;
 }
 
 inline bool ScopeNodeBase::hasLogScopes() const
 {
-    return (mPrioStates & static_cast<uint32_t>(NELogging::eLogPriority::PrioScope)) != 0;
+    return (mPrioStates & static_cast<uint32_t>(NELogging::LogPriority::PrioScope)) != 0;
 }
 
 #endif  // AREG_LOGS

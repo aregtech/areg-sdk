@@ -607,7 +607,7 @@ protected:
     /**
      * \brief   The sorting criteria of linked list.
      **/
-    NECommon::eSort     mSorting;
+    NECommon::SortOrder mSorting;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -618,7 +618,7 @@ template <typename VALUE >
 SortedLinkedList<VALUE>::SortedLinkedList(bool sortAscending /*= true*/)
     : Constless<std::list<VALUE>> ( )
     , mValueList( )
-    , mSorting  (sortAscending ? NECommon::eSort::SortAscending : NECommon::eSort::SortDescending )
+    , mSorting  (sortAscending ? NECommon::SortOrder::Ascending : NECommon::SortOrder::Descending )
 {
 }
 
@@ -677,13 +677,13 @@ inline uint32_t SortedLinkedList<VALUE>::getSize() const
 template<typename VALUE>
 inline bool SortedLinkedList<VALUE>::isAscending() const
 {
-    return (mSorting == NECommon::eSort::SortAscending);
+    return (mSorting == NECommon::SortOrder::Ascending);
 }
 
 template<typename VALUE>
 inline bool SortedLinkedList<VALUE>::isDescending() const
 {
-    return (mSorting == NECommon::eSort::SortDescending);
+    return (mSorting == NECommon::SortOrder::Descending);
 }
 
 template <typename VALUE >
@@ -901,7 +901,7 @@ template <typename VALUE >
 typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::add(const VALUE& newElement)
 {
 	auto it = mValueList.begin();
-    if ( mSorting == NECommon::eSort::SortAscending )
+    if ( mSorting == NECommon::SortOrder::Ascending )
     {
         for (; it != mValueList.end(); ++it)
         {
@@ -925,7 +925,7 @@ template <typename VALUE >
 typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::add(VALUE&& newElement)
 {
 	auto it = mValueList.begin();
-    if (mSorting == NECommon::eSort::SortAscending)
+    if (mSorting == NECommon::SortOrder::Ascending)
     {
         for (; it != mValueList.end(); ++it)
         {
@@ -949,7 +949,7 @@ template <typename VALUE >
 std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
-    if (mSorting == NECommon::eSort::SortAscending)
+    if (mSorting == NECommon::SortOrder::Ascending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
         {
@@ -982,7 +982,7 @@ template <typename VALUE >
 std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
-    if (mSorting == NECommon::eSort::SortAscending)
+    if (mSorting == NECommon::SortOrder::Ascending)
     {
         while ((it != mValueList.end()) && (*it < newElement))
         {
@@ -1223,7 +1223,7 @@ const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input)
     stream >> size;
     stream >> sort;
     input.mValueList.resize(size);
-    input.mSorting = static_cast<NECommon::eSort>(sort);
+    input.mSorting = static_cast<NECommon::SortOrder>(sort);
 
     for (auto& elem : input.mValueList)
     {

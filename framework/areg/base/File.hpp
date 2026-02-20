@@ -45,14 +45,13 @@ public:
     /**
      * \brief   Special folder definitions
      **/
-    typedef enum class E_SpecialFolder : uint8_t
+    enum class SpecialFolder    : uint8_t
     {
-          SpecialUserHome       //!< Current user home folder path.
-        , SpecialPersonal       //!< The user's document folder path.
-        , SpecialAppData        //!< Application data folder path.
-        , SpecialTemp           //!< USER or System temp folder path.
-
-    } eSpecialFolder;
+          UserHome  = 0 //!< Current user home folder path.
+        , Personal      //!< The user's document folder path.
+        , AppData       //!< Application data folder path.
+        , Temp          //!< USER or System temp folder path.
+    };
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
@@ -135,7 +134,7 @@ public:
      * \param	mode	    file open mode. 
      *                      For modes, see description in FileBase class 
      **/
-    explicit File(const String& fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY));
+    explicit File(const String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)));
 
     /**
      * \brief   Destructor
@@ -176,9 +175,9 @@ public:
      *
      * \param	mode	    The opening modes. The value should be combined with bitwise OR operation.
      *                      Before opening, the conflicting bits are removed.
-     *                      For example, mode cannot contain (FO_MODE_ATTACH | FO_MODE_DETACH) at once.
+     *                      For example, mode cannot contain (Attach | Detach) at once.
      *                      One of bits will be ignored.
-     *                      For more details see description of eFileOpenMode and eFileOpenBits.
+     *                      For more details see description of OpenMode and OpenFlag.
      *
      * \return	Returns true if file was opened with success.
      **/
@@ -186,10 +185,10 @@ public:
 
     /**
      * \brief   Call to close file object.
-     *          If file was opened in FO_MODE_ATTACH or FO_MODE_DETACH modes, on close the file object will not be deleted
-     *          except if mode is combined with values FO_FOR_DELETE or FO_MODE_CREATE_TEMP. Attach and Detach modes are
+     *          If file was opened in Attach or Detach modes, on close the file object will not be deleted
+     *          except if mode is combined with values FO_FOR_DELETE or CreateTemp. Attach and Detach modes are
      *          valid and meaningful only for memory buffered file object. It has no meaning for File System file object.
-     *          If FO_MODE_CREATE_TEMP is set, file object is always deleted on close.
+     *          If CreateTemp is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      **/
     virtual void close() override;
@@ -204,17 +203,17 @@ public:
      * \brief	Sets the file pointer position and returns current position. 
      *          The positive value of offset means move pointer forward.
      *          The negative value of offset means move pointer back.
-     *          For memory buffered file the pointer cannot move more than Cursor::eCursorPosition::PositionEnd.
+     *          For memory buffered file the pointer cannot move more than Cursor::SeekOrigin::End.
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  Cursor::eCursorPosition::PositionBegin   -- position from beginning of file
-     *                  Cursor::eCursorPosition::PositionCurrent -- from current pointer position
-     *                  Cursor::eCursorPosition::PositionEnd     -- from end of file
+     *                  Cursor::SeekOrigin::Begin   -- position from beginning of file
+     *                  Cursor::SeekOrigin::Current -- from current pointer position
+     *                  Cursor::SeekOrigin::End     -- from end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition(int offset, Cursor::eCursorPosition startAt) const override;
+    virtual unsigned int setPosition(int offset, Cursor::SeekOrigin startAt) const override;
 
     /**
      * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
@@ -526,7 +525,7 @@ public:
      * \return  If function succeeds, the return value is full path of special folder.
      *          Otherwise, it returns empty string.
      **/
-    static String getSpecialDir(const eSpecialFolder specialFolder);
+    static String getSpecialDir(const File::SpecialFolder specialFolder);
 
     /**
      * \brief   Returns the parent directory of given path, which can be either file or directory.
@@ -666,7 +665,7 @@ private:
      * \return  If succeeded, returns the new position of the cursor. Otherwise, returns
      *          invalid position (Cursor::INVALID_CURSOR_POSITION).
      */
-    unsigned int _osSetPositionFile(int offset, Cursor::eCursorPosition startAt) const;
+    unsigned int _osSetPositionFile(int offset, Cursor::SeekOrigin startAt) const;
 
     /**
      * \brief   If file is opened, return the current cursor position in the file.
@@ -709,7 +708,7 @@ private:
      * \param   specialFolder   THe flag indicating the uniqueness and specialty of the file.
      * \return  Return the length of the path in the 'buffer'.
      */
-    static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder);
+    static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const File::SpecialFolder specialFolder);
 
     /**
      * \brief   Returns OS specific invalid file handle.

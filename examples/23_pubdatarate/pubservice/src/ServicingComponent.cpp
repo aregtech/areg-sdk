@@ -78,7 +78,7 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
     mOptions.mLines     = NEUtilities::LINES_PER_BLOCK;
     mOptions.mPixelTime = NEUtilities::DWELL_TIME;
     mOptions.mChannels  = NEUtilities::CHANNELS_SOURCE;
-    mOptions.mFlags     = static_cast<uint32_t>(NEUtilities::eOptionFlags::CmdStop);
+    mOptions.mFlags     = static_cast<uint32_t>(NEUtilities::OptionFlag::CmdStop);
 }
 
 void ServicingComponent::startupServiceInterface( Component & holder )
@@ -131,7 +131,7 @@ void ServicingComponent::shutdownServiceInterface(Component& holder)
     LargeDataStub::shutdownServiceInterface(holder);
 }
 
-bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus )
+bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::ServiceConnectionState connectionStatus )
 {
     bool result = LargeDataStub::clientConnected(client, connectionStatus );
     mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);
@@ -347,12 +347,12 @@ void ServicingComponent::_runImageThread()
     }
 }
 
-void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, Wait::eWaitResult waitResult)
+void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult)
 {
     Lock lock(mLock);
     mDataRate += genData;
     mItemRate += genBlocks;
-    if (waitResult >= Wait::eWaitResult::WaitInMicro)
+    if (waitResult >= Wait::WaitResolution::Microsecond)
     {
         mDidSleep += 1;
     }

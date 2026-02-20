@@ -45,22 +45,22 @@ class AREG_API ThreadConsumer
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   ThreadConsumer::eExitCodes
+     * \brief   ThreadConsumer::ExitCode
      *          Defines thread exit codes.
      **/
-    typedef enum class E_ExitCodes  : int8_t
+    enum class ExitCode : int8_t
     {
-          ExitNoParam       = -2    //!< Thread failed running, it had no parameter
-        , ExitTerminated    = -1    //!< Thread is abnormally terminated
-        , ExitNormal        =  0    //!< Thread normally completed execution
-        , ExitError         =  1    //!< Thread exits with generic error
+          NoParam       = -2    //!< Thread failed running, it had no parameter
+        , Terminated    = -1    //!< Thread is abnormally terminated
+        , Normal        =  0    //!< Thread normally completed execution
+        , Error         =  1    //!< Thread exits with generic error
 
-    } eExitCodes;
+    };
 
     /**
      * \brief   Returns string value of eExistingCode types. Used for debugging.
      **/
-    static inline const char * getString( ThreadConsumer::eExitCodes code);
+    static inline const char * getString( ThreadConsumer::ExitCode code);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -127,20 +127,20 @@ private:
 // ThreadConsumer inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * ThreadConsumer::getString(ThreadConsumer::eExitCodes code)
+inline const char * ThreadConsumer::getString(ThreadConsumer::ExitCode code)
 {
     switch (code)
     {
-    case ThreadConsumer::eExitCodes::ExitNoParam:
-        return "ThreadConsumer::ExitNoParam";
-    case ThreadConsumer::eExitCodes::ExitTerminated:
-        return "ThreadConsumer::ExitTerminated";
-    case ThreadConsumer::eExitCodes::ExitNormal:
-        return "ThreadConsumer::ExitNormal";
-    case ThreadConsumer::eExitCodes::ExitError:
-        return "ThreadConsumer::ExitError";
+    case ThreadConsumer::ExitCode::NoParam:
+        return "ThreadConsumer::NoParam";
+    case ThreadConsumer::ExitCode::Terminated:
+        return "ThreadConsumer::Terminated";
+    case ThreadConsumer::ExitCode::Normal:
+        return "ThreadConsumer::Normal";
+    case ThreadConsumer::ExitCode::Error:
+        return "ThreadConsumer::Error";
     default:
-        return "ERR: Unexpected value of type ThreadConsumer::eExitCodes";
+        return "ERR: Unexpected value of type ThreadConsumer::ExitCode";
     }
 }
 

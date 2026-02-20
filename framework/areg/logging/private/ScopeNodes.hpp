@@ -141,7 +141,7 @@ protected:
     /**
      * \brief   Protected constructor required by root node.
      **/
-    ScopeNode( ScopeNodeBase::eNode nodeType, const String & name, unsigned int prio );
+    ScopeNode( ScopeNodeBase::NodeType nodeType, const String & name, unsigned int prio );
 
 //////////////////////////////////////////////////////////////////////////
 // Assigning operators

@@ -5,7 +5,7 @@
 This service will demonstrate how the system watchdog works in case of public service.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="27" Name="eState" Type="Enumeration" Values="default">
+        <DataType ID="27" Name="ComponentState" Type="Enumeration" Values="default">
             <Description>The state of component to start a timer and output &quot;Hello Watchdog&quot; message.</Description>
             <FieldList>
                 <EnumEntry ID="29" Name="Initialized">
@@ -21,7 +21,7 @@ This service will demonstrate how the system watchdog works in case of public se
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute ID="33" Name="ServiceState" DataType="eState" Notify="OnChange">
+        <Attribute ID="33" Name="ServiceState" DataType="ComponentState" Notify="OnChange">
             <Description>The state of the service.</Description>
         </Attribute>
     </AttributeList>

@@ -72,11 +72,11 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     try
     {
         MultitargetRouter& router = MultitargetRouter::getInstance();
-        router.setState(NESystemService::eSystemServiceState::ServiceStarting);
+        router.setState(NESystemService::ServicePhase::Starting);
         char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int>(argc));
-        router.serviceMain(NESystemService::eServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+        router.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
         NESystemService::deleteArguments(argvTemp, static_cast<int>(argc));
-        router.setState(NESystemService::eSystemServiceState::ServiceStopped);
+        router.setState(NESystemService::ServicePhase::Stopped);
     }
     catch (const std::exception & /*ex*/)
     {
@@ -89,19 +89,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch ( CtrlCode )
     {
     case SERVICE_CONTROL_STOP:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceStop);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServicePause);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceContinue);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::eServiceControl::ServiceShutdown);
+        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

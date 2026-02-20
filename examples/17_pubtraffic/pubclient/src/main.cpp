@@ -35,7 +35,7 @@ int main()
 {
     constexpr char const _modelName[]{ "TheModel" };
 
-    traffic::eTrafficDirection trafficDirection = traffic::eTrafficDirection::DirectionUnknown;
+    traffic::TrafficDirection trafficDirection = traffic::TrafficDirection::Undefined;
     std::string_view directions[]
     {
           {"sn"}
@@ -62,23 +62,23 @@ int main()
     console.waitForInput( [&]( const String cmd ) -> bool
         {
             bool result{ false };
-            if ( cmd.compare( directions[0], false ) == NEMath::eCompare::Equal )
+            if ( cmd.compare( directions[0], false ) == NEMath::Ordering::Equal )
             {
-                trafficDirection = traffic::eTrafficDirection::DirectionSouthNorth;
+                trafficDirection = traffic::TrafficDirection::SouthNorth;
                 roleName += "SouthNorth";
                 roleName = NEUtilities::generateName( roleName, name, 128 );
                 result = true;
                 console.outputTxt( { 0, 8 }, "Selected direction is South - North" );
             }
-            else if ( cmd.compare( directions[1], false ) == NEMath::eCompare::Equal )
+            else if ( cmd.compare( directions[1], false ) == NEMath::Ordering::Equal )
             {
-                trafficDirection = traffic::eTrafficDirection::DirectionEastWest;
+                trafficDirection = traffic::TrafficDirection::EastWest;
                 roleName += "EastWest";
                 roleName = NEUtilities::generateName( roleName, name, 128 );
                 result = true;
                 console.outputTxt( { 0, 8 }, "Selected direction is East - West" );
             }
-            else if ( cmd.compare( directions[2], false ) == NEMath::eCompare::Equal )
+            else if ( cmd.compare( directions[2], false ) == NEMath::Ordering::Equal )
             {
                 result = true; // do not set the direction, just stop input
             }
@@ -86,7 +86,7 @@ int main()
             return result;
         } );
 
-    if ( trafficDirection == traffic::eTrafficDirection::DirectionUnknown )
+    if ( trafficDirection == traffic::TrafficDirection::Undefined )
         return 0; // quit
 
     console.moveToLine( 10 );
@@ -104,7 +104,7 @@ int main()
     component.addDependencyService( traffic::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.
-    std::any data = std::make_any< traffic::eTrafficDirection>(trafficDirection);
+    std::any data = std::make_any< traffic::TrafficDirection>(trafficDirection);
     component.setData( data );
     
     // Add created model to the model list.

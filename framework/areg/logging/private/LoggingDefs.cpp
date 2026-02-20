@@ -46,13 +46,13 @@ namespace
                       sizeof(NEMemory::sRemoteMessage)          // biBufSize
                     , sizeof(unsigned char)                     // biLength
                     , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                    , NEMemory::eBufferType::BufferRemote       // biBufType
+                    , NEMemory::BufferType::Remote       // biBufType
                     , 0                                         // biUsed
                 }
                 , NEService::COOKIE_LOGGER                      // rbhTarget
                 , NEMemory::INVALID_VALUE                       // rbhChecksum
                 , NEMemory::INVALID_VALUE                       // rbhSource
-                , static_cast<uint32_t>(NEService::eFuncIdRange::EmptyFunctionId)   // rbhMessageId
+                , static_cast<uint32_t>(NEService::FuncIdRange::EmptyFunctionId)   // rbhMessageId
                 , NEMemory::MESSAGE_SUCCESS                     // rbhResult
                 , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
             }
@@ -77,13 +77,13 @@ namespace
                       sizeof(NEMemory::sRemoteMessage)          // biBufSize
                     , sizeof(unsigned char)                     // biLength
                     , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                    , NEMemory::eBufferType::BufferRemote       // biBufType
+                    , NEMemory::BufferType::Remote       // biBufType
                     , 0                                         // biUsed
                 }
                 , NEService::COOKIE_LOGGER                      // rbhTarget
                 , NEMemory::INVALID_VALUE                       // rbhChecksum
                 , NEMemory::INVALID_VALUE                       // rbhSource
-                , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogMessage)   // rbhMessageId
+                , static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogMessage)   // rbhMessageId
                 , NEMemory::MESSAGE_SUCCESS                     // rbhResult
                 , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
             }
@@ -107,10 +107,10 @@ namespace
 }
 #endif // AREG_LOGS
 
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
-    : logDataType   { NELogging::eLogDataType::LogDataLocal }
+NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType)
+    : logDataType   { NELogging::LogDataType::Local }
     , logMsgType    { msgType }
-    , logMessagePrio{ NELogging::eLogPriority::PrioNotset }
+    , logMessagePrio{ NELogging::LogPriority::PrioNotset }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
     , logCookie     { NEService::COOKIE_LOCAL }
@@ -131,8 +131,8 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType)
 }
 
 #if AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen)
-    : logDataType   { NELogging::eLogDataType::LogDataLocal }
+NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, unsigned int msgLen)
+    : logDataType   { NELogging::LogDataType::Local }
     , logMsgType    { msgType }
     , logMessagePrio{ msgPrio }
     , logSource     { NEService::COOKIE_LOCAL }
@@ -156,10 +156,10 @@ NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::eLogMessageType msgType, unsigned int /*scopeId*/, unsigned int /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
-    : logDataType{ NELogging::eLogDataType::LogDataLocal }
+NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, unsigned int /*scopeId*/, unsigned int /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
+    : logDataType{ NELogging::LogDataType::Local }
     , logMsgType{ msgType }
-    , logMessagePrio{ NELogging::eLogPriority::PrioNotset }
+    , logMessagePrio{ NELogging::LogPriority::PrioNotset }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
     , logCookie     { NEService::COOKIE_LOCAL }
@@ -223,7 +223,7 @@ NELogging::sLogMessage & NELogging::sLogMessage::operator = (const NELogging::sL
         logSessionId    = src.logSessionId;
         logMessageLen   = src.logMessageLen;
 
-        if (logDataType == NELogging::eLogDataType::LogDataRemote)
+        if (logDataType == NELogging::LogDataType::Remote)
         {
             logThreadLen = 0;
             logThread[0] = String::EmptyChar;
@@ -306,7 +306,7 @@ AREG_API_IMPL unsigned int NELogging::getScopePriority( const char * scopeName )
     return LogManager::getScopePriority( scopeName );
 }
 
-AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage& logMessage, NELogging::eLogDataType dataType, const ITEM_ID& srcCookie)
+AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage& logMessage, NELogging::LogDataType dataType, const ITEM_ID& srcCookie)
 {
     RemoteMessage msgLog;
     if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NELogging::sLogMessage)) != nullptr)
@@ -323,7 +323,7 @@ AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMes
         NEMemory::memCopy(log->logModule, NELogging::LOG_NAMES_SIZE, module.getString(), static_cast<uint32_t>(module.getLength()) + 1);
         log->logModuleLen   = static_cast<uint32_t>(module.getLength());
 
-        if (NELogging::eLogDataType::LogDataLocal != dataType)
+        if (NELogging::LogDataType::Local != dataType)
         {
             const String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
             NEMemory::memCopy(log->logThread, NELogging::LOG_NAMES_SIZE, threadName.getString(), static_cast<uint32_t>(threadName.getLength()) + 1);
@@ -349,7 +349,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageRegisterScopes(const ITEM_ID & sou
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
     {
-        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
+        msgScope.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogRegisterScopes));
         msgScope.setTarget(target != NEService::COOKIE_UNKNOWN ? target : NEService::COOKIE_LOGGER);
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NELogging::getCookie());
 
@@ -371,7 +371,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageUpdateScopes(const ITEM_ID& source
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
     {
-        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogUpdateScopes));
+        msgScope.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogUpdateScopes));
         msgScope.setTarget(target);
         msgScope.setSource(source);
         msgScope << scopeNames.getSize();
@@ -397,7 +397,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageUpdateScope(const ITEM_ID& source,
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
     {
-        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogUpdateScopes));
+        msgScope.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogUpdateScopes));
         msgScope.setTarget(target);
         msgScope.setSource(source);
         msgScope << 1u;
@@ -414,7 +414,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageQueryInstances(const ITEM_ID& sour
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgQuery.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
     {
-        msgQuery.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceQueryInstances));
+        msgQuery.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::SystemServiceQueryInstances));
         msgQuery.setTarget(target);
         msgQuery.setSource(source);
         msgQuery << target;
@@ -430,7 +430,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageQueryScopes(const ITEM_ID& source,
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgQuery.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
     {
-        msgQuery.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogQueryScopes));
+        msgQuery.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogQueryScopes));
         msgQuery.setTarget(target);
         msgQuery.setSource(source);
         msgQuery << target;
@@ -444,7 +444,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageScopesUpdated(const ITEM_ID& sourc
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
     {
-        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogScopesUpdated));
+        msgScope.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogScopesUpdated));
         msgScope.setTarget(target);
         msgScope.setSource(source);
 
@@ -461,7 +461,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageSaveConfiguration(const ITEM_ID& s
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgRequest.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
     {
-        msgRequest.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceSaveLogConfiguration));
+        msgRequest.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::ServiceSaveLogConfiguration));
         msgRequest.setTarget(target);
         msgRequest.setSource(source);
         msgRequest << target;
@@ -475,7 +475,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageConfigurationSaved()
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
     {
-        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogConfigurationSaved));
+        msgScope.setMessageId(static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogConfigurationSaved));
         msgScope.setTarget(NEService::COOKIE_LOGGER);
         msgScope.setSource(NELogging::getCookie());
     }
@@ -515,13 +515,13 @@ AREG_API_IMPL const ITEM_ID & NELogging::getCookie()
 
 AREG_API_IMPL String NELogging::makePrioString(unsigned int priorities)
 {
-    return Identifier::convToString(priorities, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset));
+    return Identifier::convToString(priorities, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::LogPriority::PrioNotset));
 }
 
 AREG_API_IMPL unsigned int NELogging::makePriorities(const String& prioString)
 {
-    uint16_t id = static_cast<uint16_t>(Identifier::convFromString(prioString, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid)));
-    return static_cast<NELogging::eLogPriority>(id);
+    uint16_t id = static_cast<uint16_t>(Identifier::convFromString(prioString, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid)));
+    return static_cast<uint32_t>(static_cast<NELogging::LogPriority>(id));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -587,10 +587,10 @@ AREG_API_IMPL unsigned int NELogging::setScopePriority( const char * /*scopeName
 
 AREG_API_IMPL unsigned int NELogging::getScopePriority( const char * /*scopeName*/ )
 {
-    return static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid);
+    return static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid);
 }
 
-AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage & /*logMessage*/, NELogging::eLogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
+AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage & /*logMessage*/, NELogging::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
 {
     RemoteMessage msgLog;
     return msgLog;
@@ -682,7 +682,7 @@ AREG_API_IMPL String NELogging::makePrioString(unsigned int /*priorities*/)
 
 AREG_API_IMPL unsigned int NELogging::makePriorities(const String& /*prioString*/)
 {
-    return static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset);
+    return static_cast<unsigned int>(NELogging::LogPriority::PrioNotset);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -5,10 +5,10 @@
 This service demonstrates the usage of attribute.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="4" Name="eServiceState" Type="Enumeration" Values="default">
+        <DataType ID="4" Name="RunState" Type="Enumeration" Values="default">
             <Description>Describes the service availability states</Description>
             <FieldList>
-                <EnumEntry ID="6" Name="ServiceShutdown">
+                <EnumEntry ID="6" Name="Shutdown">
                     <Value>0</Value>
                     <Description>Service shutdown state.</Description>
                 </EnumEntry>
@@ -20,7 +20,7 @@ This service demonstrates the usage of attribute.</Description>
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute ID="11" Name="ServiceState" DataType="eServiceState" Notify="OnChange">
+        <Attribute ID="11" Name="ServiceState" DataType="RunState" Notify="OnChange">
             <Description>Describes the system availability state</Description>
         </Attribute>
     </AttributeList>

@@ -33,7 +33,7 @@ ScopeMessage::ScopeMessage( const LogScope & logScope )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeEnter, mScopeId, mSessionId, 0u, NELogging::PrioScope, mScopeName };
+        LogMessage msg{ NELogging::LogMessageType::ScopeEnter, mScopeId, mSessionId, 0u, NELogging::LogPriority::PrioScope, mScopeName };
         LogManager::logMessage(msg);
     }
 }
@@ -42,7 +42,7 @@ ScopeMessage::~ScopeMessage()
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg{ NELogging::eLogMessageType::LogMessageScopeExit, mScopeId, mSessionId, mTimestamp, NELogging::PrioScope, mScopeName };
+        LogMessage msg{ NELogging::LogMessageType::ScopeExit, mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioScope, mScopeName };
         LogManager::logMessage(msg);
     }
 }
@@ -53,7 +53,7 @@ void ScopeMessage::logDebug( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioDebug, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioDebug, format, args);
         va_end(args);
     }
 }
@@ -64,7 +64,7 @@ void ScopeMessage::logInfo( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioInfo, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioInfo, format, args);
         va_end(args);
     }
 }
@@ -75,7 +75,7 @@ void ScopeMessage::logWarning(const char * format, ...) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioWarning, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioWarning, format, args);
         va_end(args);
     }
 }
@@ -86,7 +86,7 @@ void ScopeMessage::logError( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioError, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioError, format, args);
         va_end(args);
     }
 }
@@ -97,12 +97,12 @@ void ScopeMessage::logFatal( const char * format, ... ) const
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::PrioFatal, format, args);
+        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioFatal, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logMessage(NELogging::eLogPriority logPrio, const char * format, ...)
+void ScopeMessage::logMessage(NELogging::LogPriority logPrio, const char * format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -110,7 +110,7 @@ void ScopeMessage::logMessage(NELogging::eLogPriority logPrio, const char * form
     va_end(args);
 }
 
-void ScopeMessage::log( NELogging::eLogPriority logPrio, const char * format, ... ) 
+void ScopeMessage::log( NELogging::LogPriority logPrio, const char * format, ... ) 
 {
     va_list args;
     va_start(args, format);
@@ -118,9 +118,9 @@ void ScopeMessage::log( NELogging::eLogPriority logPrio, const char * format, ..
     va_end(args);
 }
 
-inline void ScopeMessage::_sendLog( unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * format, va_list args )
+inline void ScopeMessage::_sendLog( unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * format, va_list args )
 {
-    LogMessage logData(NELogging::eLogMessageType::LogMessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
+    LogMessage logData(NELogging::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
     logData.logMessageLen = static_cast<uint32_t>(String::formatStringList( logData.logMessage, NELogging::LOG_MESSAGE_IZE, format, args ));
     LogManager::logMessage( logData );
 }

@@ -174,7 +174,7 @@ public:
      * \brief   Returns type of byte buffer. 
      *          If valid, it should be either internal or external (for RPC)
      **/
-    inline NEMemory::eBufferType getType() const;
+    inline NEMemory::BufferType getType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected internal members
@@ -303,9 +303,9 @@ inline unsigned int ByteBuffer::getSizeAvailable() const
     return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
-inline NEMemory::eBufferType ByteBuffer::getType() const
+inline NEMemory::BufferType ByteBuffer::getType() const
 {
-    return (isValid() ? mByteBuffer->bufHeader.biBufType : NEMemory::eBufferType::BufferUnknown);
+    return (isValid() ? mByteBuffer->bufHeader.biBufType : NEMemory::BufferType::Unknown);
 }
 
 inline void ByteBuffer::setSizeUsed(unsigned int newSize)

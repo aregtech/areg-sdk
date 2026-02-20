@@ -45,20 +45,20 @@ class LogCollector : public ServiceApplicationBase
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   NELogCollectorSettings::eRouterOptions
+     * \brief   NELogCollectorSettings::LoggerOption
      *          The commands to handle the log collector.
      **/
-    enum class eLoggerOptions : int32_t
+    enum class LoggerOption : int32_t
     {
-          CMD_LogUndefined      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Undefined)  //!< Undefined command.
-        , CMD_LogPrintHelp      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Help)       //!< Output help message.
-        , CMD_LogLoad           = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
-        , CMD_LogVerbose        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features.
-        , CMD_LogUninstall      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS.
-        , CMD_LogInstall        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS.
-        , CMD_LogService        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Service)    //!< Start logcollector as a service. Valid only as a command line option in Windows OS.
-        , CMD_LogConsole        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option.
-        , CMD_LogPause          = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Custom)     //!< Pause logcollector.
+          CMD_LogUndefined      = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Undefined)  //!< Undefined command.
+        , CMD_LogPrintHelp      = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Help)       //!< Output help message.
+        , CMD_LogLoad           = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_LogVerbose        = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features.
+        , CMD_LogUninstall      = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogInstall        = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS.
+        , CMD_LogService        = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Service)    //!< Start logcollector as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogConsole        = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option.
+        , CMD_LogPause          = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Custom)     //!< Pause logcollector.
         , CMD_LogRestart                                                                                //!< Restart logcollector.
         , CMD_LogInstances                                                                              //!< Display the names of connected log provider and log observer instances.
         , CMD_LogSilent                                                                                 //!< Silent mode, no data rate is displayed.
@@ -205,13 +205,13 @@ protected:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eRemoteServices getServiceType() const override;
+    virtual NERemoteService::RemoteServiceKind getServiceType() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eConnectionTypes getConnectionType() const override;
+    virtual NERemoteService::ConnectionType getConnectionType() const override;
 
 /************************************************************************/
 // ConfigListener protected overrides

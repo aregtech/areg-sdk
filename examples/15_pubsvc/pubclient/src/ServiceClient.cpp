@@ -28,7 +28,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( examples_15_pubclient_ServiceClient_serviceConnected );
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );

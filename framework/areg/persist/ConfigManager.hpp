@@ -149,7 +149,7 @@ public:
     const Property * getProperty( const String& section
                                 , const String& property
                                 , const String& position
-                                , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -175,7 +175,7 @@ public:
     const Property * getModuleProperty( const String& section
                                       , const String& property
                                       , const String& position
-                                      , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                      , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -206,7 +206,7 @@ public:
                           , const String& property
                           , const String& position
                           , const String& value
-                          , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey
+                          , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey
                           , bool isTemporary = false);
 
     /**
@@ -235,7 +235,7 @@ public:
     inline const PropertyValue * getPropertyValue( const String& section
                                                  , const String& property
                                                  , const String& position = String::EmptyString
-                                                 , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                                 , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer to the value of the property searched by specified parameters.
@@ -259,11 +259,11 @@ public:
     inline const PropertyValue * getModulePropertyValue( const String& section
                                                        , const String& property
                                                        , const String& position = String::EmptyString
-                                                       , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey) const;
+                                                       , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
     inline PropertyValue * getModulePropertyValue( const String& section
                                                  , const String& property
                                                  , const String& position = String::EmptyString
-                                                 , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey);
+                                                 , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Returns the pointer to the value of the module specific property searched by specified key parameter.
@@ -298,7 +298,7 @@ public:
     void removeModuleProperty( const String& section
                              , const String& property
                              , const String& position = String::EmptyString
-                             , NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey);
+                             , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes the existing configuration entry from the writable list.
@@ -314,7 +314,7 @@ public:
      * \param   keyType     The property key type.
      * \return  Returns the number of entries removed from the writable list.
      **/
-    int removeModuleProperties(const String& section, const String& property, NEPersistence::eConfigKeys keyType = NEPersistence::eConfigKeys::EntryAnyKey);
+    int removeModuleProperties(const String& section, const String& property, NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes all configuration entries from the writable list matching the specified section.
@@ -417,7 +417,7 @@ public:
     Version getLogVersion() const;
 
     /**
-     * \brief   Returns list of logging targets specified in the NELogging::LoggingType.
+     * \brief   Returns list of logging targets specified in the NELogging::LogTarget.
      **/
     std::vector<Identifier> getLogTargets() const;
 
@@ -437,15 +437,15 @@ public:
     inline void setLoggingStatus(bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NELogging::LoggingType.
-     * \param   logType     The string value of NELogging::LoggingType.
+     * \brief   Returns log enable or disable state for the target defined in NELogging::LogTarget.
+     * \param   logType     The string value of NELogging::LogTarget.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     bool getLogEnabled(const String& logType) const;
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NELogging::LoggingType.
-     * \param   logType     The Identifier object containing NELogging::LoggingType value and string equivalent.
+     * \brief   Returns log enable or disable state for the target defined in NELogging::LogTarget.
+     * \param   logType     The Identifier object containing NELogging::LogTarget value and string equivalent.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     inline bool getLogEnabled(const Identifier& logType) const;
@@ -455,11 +455,11 @@ public:
      * \param   logType     The logging target to check.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
-    bool getLogEnabled(NELogging::LoggingType logType) const;
+    bool getLogEnabled(NELogging::LogTarget logType) const;
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::LoggingType.
-     * \param   logType     The Identifier object containing NELogging::LoggingType value and string equivalent.
+     * \brief   Sets the logging state for the target defined in NELogging::LogTarget.
+     * \param   logType     The Identifier object containing NELogging::LogTarget value and string equivalent.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -467,8 +467,8 @@ public:
     inline void setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::LoggingType.
-     * \param   logType     The string value of NELogging::LoggingType.
+     * \brief   Sets the logging state for the target defined in NELogging::LogTarget.
+     * \param   logType     The string value of NELogging::LogTarget.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -476,13 +476,13 @@ public:
     inline void setLogEnabled(const String& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::LoggingType.
+     * \brief   Sets the logging state for the target defined in NELogging::LogTarget.
      * \param   logType     The logging target to set enabling flag.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setLogEnabled(NELogging::LoggingType logType, bool newValue, bool isTemporary = false);
+    void setLogEnabled(NELogging::LogTarget logType, bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the path of the log file that contains messages.
@@ -640,7 +640,7 @@ public:
      * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
-    String getRemoteServiceName(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const;
+    String getRemoteServiceName(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
 
     /**
      * \brief   Returns the remote service connection enabled or disabled flag.
@@ -658,7 +658,7 @@ public:
      * \return  If returns true, the specified remote service supports the specified connection type.
      *          Otherwise, it does not support
      **/
-    bool getRemoteServiceEnable(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const;
+    bool getRemoteServiceEnable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
 
     /**
      * \brief   Sets the enabled flag of the specified connection of the remote service.
@@ -676,7 +676,7 @@ public:
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setRemoteServiceEnable(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, bool newValue, bool isTemporary = false);
+    void setRemoteServiceEnable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the address of the remote service that supports the specified connection.
@@ -690,7 +690,7 @@ public:
      * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
-    String getRemoteServiceAddress(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const;
+    String getRemoteServiceAddress(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
 
     /**
      * \brief   Sets the address of the remote service to establish specified connection.
@@ -708,7 +708,7 @@ public:
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setRemoteServiceAddress(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, const String& newValue, bool isTemporary = false);
+    void setRemoteServiceAddress(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, const String& newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the port number the remote service that supports the specified connection.
@@ -722,7 +722,7 @@ public:
      * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
-    uint16_t getRemoteServicePort(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const;
+    uint16_t getRemoteServicePort(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
 
     /**
      * \brief   Sets the port number of the remote service to establish specified connection.
@@ -740,7 +740,7 @@ public:
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setRemoteServicePort(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, uint16_t newValue, bool isTemporary = false);
+    void setRemoteServicePort(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, uint16_t newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the log database property entry of specified position.
@@ -892,7 +892,7 @@ inline void ConfigManager::setModuleProperty(const PropertyKey& key, const Strin
 inline const PropertyValue * ConfigManager::getPropertyValue( const String& section
                                                             , const String& property
                                                             , const String& position /*= String::EmptyString*/
-                                                            , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                                            , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -913,7 +913,7 @@ inline const PropertyValue* ConfigManager::getModulePropertyValue(const Property
 inline const PropertyValue * ConfigManager::getModulePropertyValue( const String& section
                                                                   , const String& property
                                                                   , const String& position /*= String::EmptyString*/
-                                                                  , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                                                  , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -929,7 +929,7 @@ inline PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& k
 inline PropertyValue * ConfigManager::getModulePropertyValue( const String& section
                                                            , const String& property
                                                            , const String& position /*= String::EmptyString*/
-                                                           , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/)
+                                                           , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/)
 {
     Lock lock(mLock);
 
@@ -983,7 +983,7 @@ inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= 
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogStatus;
+    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogStatus;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogStatus();
 
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
@@ -998,7 +998,7 @@ inline void ConfigManager::setLogEnabled(const String& logType, bool newValue, b
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogEnable;
+    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogEnable;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogEnable();
     setModuleProperty(key.section, key.property, logType, String::makeString(newValue), confKey, isTemporary);
 }
@@ -1012,7 +1012,7 @@ inline void ConfigManager::setLogFileLocation(const String& newValue, bool isTem
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileLocation;
+    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogFileLocation;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileLocation();
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }

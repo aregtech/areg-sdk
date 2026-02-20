@@ -43,36 +43,36 @@ class Channel;
 namespace NERemoteService
 {
     /**
-     * \brief   NERemoteService::eConnectionTypes
+     * \brief   NERemoteService::ConnectionType
      *          Remote services connection types.
      **/
-    enum eConnectionTypes : uint32_t
+    enum class ConnectionType   : uint32_t
     {
-          ConnectUndefined  = 0 //!< Undefined connection
-        , ConnectTcpip      = 1 //!< Service connection via TCP/IP
-        , ConnectUdp        = 2 //!< Service connection via UDP, not implemented at the moment
-        , ConnectWeb        = 4 //!< Service connection via Web socket
-        , ConnectSM         = 8 //!< Service connection via Shared Memory
+          Undefined     = 0 //!< Undefined connection
+        , Tcpip         = 1 //!< Service connection via TCP/IP
+        , Udp           = 2 //!< Service connection via UDP, not implemented at the moment
+        , Web           = 4 //!< Service connection via Web socket
+        , SharedMemory  = 8 //!< Service connection via Shared Memory
     };
 
     /**
-     * \brief   NERemoteService::eRemoteServices
+     * \brief   NERemoteService::RemoteServiceKind
      *          Remote services
      **/
-    enum eRemoteServices : uint32_t
+    enum class RemoteServiceKind : uint32_t
     {
-          ServiceUnknown    = 0 //!< Undefined service.
-        , ServiceRouter     = 1 //!< Message routing service.
-        , ServiceLogger     = 2 //!< Message logging service.
+          Unknown = 0 //!< Undefined service.
+        , Router  = 1 //!< Message routing service.
+        , Logger  = 2 //!< Message logging service.
     };
 
     /**
      * \brief   Indicates the connect or disconnect of the remote instance.
      **/
-    enum eRemoteConnection : uint32_t
+    enum class RemoteConnectionState : uint32_t
     {
-          RemoteDisconnected    = 0 //!< Remote instance is disconnected.
-        , RemoteConnected       = 1 //!< Remote instance is connected.
+          Disconnected  = 0 //!< Remote instance is disconnected.
+        , Connected     = 1 //!< Remote instance is connected.
     };
 
     /**
@@ -125,7 +125,7 @@ namespace NERemoteService
      * \param   target      The ID of the target to send the connect message request.
      * \param   msgSource   The message source of the application to connect to service
      **/
-    AREG_API RemoteMessage createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource);
+    AREG_API RemoteMessage createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource);
 
     /**
      * \brief   NERemoteService::CreateDisconnectRequest
@@ -178,7 +178,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the request message to unregister service provider.
      * \see     createRouterRegisterService
      **/
-    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::createRouterRegisterClient
@@ -199,7 +199,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the request message to unregister service consumer.
      * \see     createRouterRegisterClient
      **/
-    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::createServiceRegisteredNotification
@@ -220,7 +220,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the service provider is unregistered notification message.
      * \see     createServiceRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::createServiceClientRegisteredNotification
@@ -241,7 +241,7 @@ namespace NERemoteService
      * \param   target  The ID of the target to send the service consumer is unregistered notification message.
      * \see     createServiceClientRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   NERemoteService::isMessageHelloServer
@@ -277,10 +277,10 @@ namespace NERemoteService
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Make eRemoteServices and eConnectionTypes streamable
+// Make RemoteServiceKind and ConnectionType streamable
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteServices);
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::eConnectionTypes);
-AREG_IMPLEMENT_STREAMABLE(NERemoteService::eRemoteConnection);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::RemoteServiceKind);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::ConnectionType);
+AREG_IMPLEMENT_STREAMABLE(NERemoteService::RemoteConnectionState);
 
 #endif  // AREG_IPC_REMOTESERVICEDEFS_HPP

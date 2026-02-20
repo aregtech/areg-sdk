@@ -36,30 +36,7 @@
 namespace NELogOptions
 {
     /**
-     * \brief   NELogging::eLogStatus
-     *          Defines logging status
-     **/
-    typedef enum class E_LogStatus
-    {
-          StatusUndefined   //!< Logging status is undefined
-        , StatusDisabled    //!< Logging status is disabled, no messages are output
-        , StatusEnabled     //!< Logging status is enabled, the enabled scope can output message.
-    } eLogStatus;
-
-    /**
-     * \brief   NELogging::eConfigKey
-     *          The configuration key visibility levels
-     **/
-    typedef enum class E_ConfigKey
-    {
-          KeyUndefined  //!< Configuration key visibility is undefined.
-        , KeyGlobal     //!< Configuration key visibility level is global and valid for all modules.
-        , KeyLocal      //!< Configuration key visibility level is local and valid only for specified module.
-
-    } eConfigKey;
-
-    /**
-     * \brief   NELogging::eLayouts
+     * \brief   NELogging::LayoutToken
      *          The syntax of specifiers to parse and create layouts to output messages.
      * 
      * \example Formatting message out for scope:
@@ -70,25 +47,24 @@ namespace NELogOptions
      *          for example like this:
      *          2019-07-04 14:34:47,969: [ 1587.17524  distrbutedapp.distrbutedapp_ConnectionServicing_CreateComponent: Enter --> ]
      **/
-    typedef enum class E_Layouts : char
+    enum class LayoutToken  : char
     {
-          LayoutUndefined       = 0     //!< Undefined specifier, no layout is created
-        , LayoutAnyText         = 1     //!< Create any text layout to output message without formating
+          Undefined     = 0     //!< Undefined specifier, no layout is created
+        , AnyText       = 1     //!< Create any text layout to output message without formating
 
-        , LayoutCookieId        = 'a'   //!< Create layout to output the cookie id of the log message source module
-        , LayoutTickCount       = 'c'   //!< Create layout to output tick-count value since process start
-        , LayoutDayTime         = 'd'   //!< Create layout to output day and time data
-        , LayoutExecutableId    = 'e'   //!< Create layout to output module ID
-        , LayoutMessage         = 'm'   //!< Create layout to output logging message
-        , LayoutEndOfLine       = 'n'   //!< Create layout to output end-of-line character
-        , LayoutPriority        = 'p'   //!< Create layout to output message priority
-        , LaytoutScopeId        = 's'   //!< Create layout to output message scope ID
-        , LayoutThreadId        = 't'   //!< Create layout to output thread ID
-        , LayoutExecutableName  = 'x'   //!< Create layout to output module name
-        , LayoutThreadName      = 'y'   //!< Create layout to output thread name
-        , LaytoutScopeName      = 'z'   //!< Create layout to output scope name
-
-    } eLayouts;
+        , CookieId      = 'a'   //!< Create layout to output the cookie id of the log message source module
+        , TickCount     = 'c'   //!< Create layout to output tick-count value since process start
+        , DayTime       = 'd'   //!< Create layout to output day and time data
+        , ExecutableId  = 'e'   //!< Create layout to output module ID
+        , Message       = 'm'   //!< Create layout to output logging message
+        , EndOfLine     = 'n'   //!< Create layout to output end-of-line character
+        , Priority      = 'p'   //!< Create layout to output message priority
+        , ScopeId       = 's'   //!< Create layout to output message scope ID
+        , ThreadId      = 't'   //!< Create layout to output thread ID
+        , ExecutableName= 'x'   //!< Create layout to output module name
+        , ThreadName    = 'y'   //!< Create layout to output thread name
+        , ScopeName     = 'z'   //!< Create layout to output scope name
+    };
 
   
 //////////////////////////////////////////////////////////////////////////
@@ -144,14 +120,14 @@ namespace NELogOptions
     /**
      * \brief   The default logging priority
      **/
-    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NELogging::PrioNotset) };
+    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate
      **/
     constexpr std::pair<std::string_view, unsigned int>  DEFAULT_LOG_ENABLED_SCOPES[]
     {
-          { {"*"}       , static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) }
+          { {"*"}       , static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) }
     };
 }
 

@@ -26,10 +26,10 @@ DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSen
 
 LogCollectorServerService::LogCollectorServerService()
     : ServiceCommunicationBase   ( NEService::COOKIE_LOGGER
-                                , NERemoteService::eRemoteServices::ServiceLogger
-                                , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
+                                , NERemoteService::RemoteServiceKind::Logger
+                                , static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)
                                 , NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
-                                , ServiceCommunicationBase::eConnectionBehavior::DefaultAccept )
+                                , ServiceCommunicationBase::ConnectionPolicy::Accept )
     , TimerConsumer           ( )
 
     , mLoggerProcessor          ( self() )
@@ -45,7 +45,7 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEServi
     ServiceCommunicationBase::addInstance(cookie, instance);
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
-        NELogging::sLogMessage logMsgHello(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
+        NELogging::sLogMessage logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
         String::formatString( logMsgHello.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
@@ -75,7 +75,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
     mLoggerProcessor.clientDisconnected(cookie);
     if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
-        NELogging::sLogMessage logMsgBye(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
+        NELogging::sLogMessage logMsgBye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgBye.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
@@ -111,7 +111,7 @@ void LogCollectorServerService::removeAllInstances()
             }
         }
 
-        NELogging::sLogMessage logMsgClose(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioAny, nullptr, 0);
+        NELogging::sLogMessage logMsgClose(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgClose.logMessage, NELogging::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
         NELogging::logAnyMessageLocal(logMsgClose);
         ServiceCommunicationBase::removeAllInstances();
@@ -131,46 +131,46 @@ void LogCollectorServerService::dispatchAndForwardLoggerMessage(const RemoteMess
 
     ASSERT(msgForward.isValid());
     ASSERT(msgForward.getSource() == NEService::COOKIE_LOGGER);
-    NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgForward.getMessageId());
+    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>(msgForward.getMessageId());
     switch (msgId)
     {
-    case NEService::eFuncIdRange::ServiceLogUpdateScopes:
+    case NEService::FuncIdRange::ServiceLogUpdateScopes:
         mLoggerProcessor.updateLogSourceScopes(msgForward);
         break;
 
-    case NEService::eFuncIdRange::ServiceLogQueryScopes:
+    case NEService::FuncIdRange::ServiceLogQueryScopes:
         mLoggerProcessor.queryLogSourceScopes(msgForward);
         break;
 
-    case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
+    case NEService::FuncIdRange::ServiceSaveLogConfiguration:
         mLoggerProcessor.saveLogSourceConfiguration(msgForward);
         break;
 
-    case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
-    case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
-    case NEService::eFuncIdRange::RequestRegisterService:           // fall through
-    case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
-    case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
-    case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
-    case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
-    case NEService::eFuncIdRange::SystemServiceDisconnect:          // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
-    case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
-    case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
-    case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
-    case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
-    case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
-    case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
-    case NEService::eFuncIdRange::RequestFirstId:                   // fall through
-    case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
-    case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
-    case NEService::eFuncIdRange::RequestLastId:                    // fall through
-    case NEService::eFuncIdRange::ResponseLastId:                   // fall through
-    case NEService::eFuncIdRange::AttributeLastId:                  // fall through
-    case NEService::eFuncIdRange::ServiceLastId:                    // fall through
+    case NEService::FuncIdRange::EmptyFunctionId:                  // fall through
+    case NEService::FuncIdRange::ComponentCleanup:                 // fall through
+    case NEService::FuncIdRange::RequestRegisterService:           // fall through
+    case NEService::FuncIdRange::RequestServiceProviderVersion:    // fall through
+    case NEService::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+    case NEService::FuncIdRange::RequestServiceProviderConnection: // fall through
+    case NEService::FuncIdRange::ResponseServiceProviderConnection:// fall through
+    case NEService::FuncIdRange::SystemServiceConnect:             // fall through
+    case NEService::FuncIdRange::SystemServiceDisconnect:          // fall through
+    case NEService::FuncIdRange::SystemServiceNotifyConnection:    // fall through
+    case NEService::FuncIdRange::SystemServiceQueryInstances:      // fall through
+    case NEService::FuncIdRange::SystemServiceNotifyInstances:     // fall through
+    case NEService::FuncIdRange::SystemServiceRequestRegister:     // fall through
+    case NEService::FuncIdRange::SystemServiceNotifyRegister:      // fall through
+    case NEService::FuncIdRange::ServiceLogRegisterScopes:         // fall through
+    case NEService::FuncIdRange::ServiceLogScopesUpdated:          // fall through
+    case NEService::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+    case NEService::FuncIdRange::ServiceLogMessage:                // fall through
+    case NEService::FuncIdRange::RequestFirstId:                   // fall through
+    case NEService::FuncIdRange::ResponseFirstId:                  // fall through
+    case NEService::FuncIdRange::AttributeFirstId:                 // fall through
+    case NEService::FuncIdRange::RequestLastId:                    // fall through
+    case NEService::FuncIdRange::ResponseLastId:                   // fall through
+    case NEService::FuncIdRange::AttributeLastId:                  // fall through
+    case NEService::FuncIdRange::ServiceLastId:                    // fall through
     default:
         ASSERT(false);
         break;
@@ -183,7 +183,7 @@ void LogCollectorServerService::onServiceMessageReceived(const RemoteMessage &ms
 
     Lock lock(mLock);
     ASSERT( msgReceived.isValid() );
-    NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
+    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>( msgReceived.getMessageId() );
 
     LOG_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                     , NEService::getString(msgId)
@@ -193,62 +193,62 @@ void LogCollectorServerService::onServiceMessageReceived(const RemoteMessage &ms
 
     switch (msgId)
     {
-    case NEService::eFuncIdRange::SystemServiceQueryInstances:
+    case NEService::FuncIdRange::SystemServiceQueryInstances:
         mLoggerProcessor.queryConnectedInstances(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::ServiceLogRegisterScopes:
+    case NEService::FuncIdRange::ServiceLogRegisterScopes:
         mLoggerProcessor.registerScopesAtObserver(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::ServiceLogUpdateScopes:
+    case NEService::FuncIdRange::ServiceLogUpdateScopes:
         mLoggerProcessor.updateLogSourceScopes(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::ServiceLogQueryScopes:
+    case NEService::FuncIdRange::ServiceLogQueryScopes:
         mLoggerProcessor.queryLogSourceScopes(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::ServiceLogScopesUpdated:
+    case NEService::FuncIdRange::ServiceLogScopesUpdated:
         mLoggerProcessor.logSourceScopesUpadated(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
+    case NEService::FuncIdRange::ServiceSaveLogConfiguration:
         mLoggerProcessor.saveLogSourceConfiguration(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::ServiceLogConfigurationSaved:
+    case NEService::FuncIdRange::ServiceLogConfigurationSaved:
         mLoggerProcessor.logSourceConfigurationSaved(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::ServiceLogMessage:
+    case NEService::FuncIdRange::ServiceLogMessage:
         mLoggerProcessor.logMessage(msgReceived);
         NELogging::logMessage(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::SystemServiceConnect:
-    case NEService::eFuncIdRange::SystemServiceDisconnect:
+    case NEService::FuncIdRange::SystemServiceConnect:
+    case NEService::FuncIdRange::SystemServiceDisconnect:
         break;
 
-    case NEService::eFuncIdRange::SystemServiceNotifyInstances:
+    case NEService::FuncIdRange::SystemServiceNotifyInstances:
 
-    case NEService::eFuncIdRange::RequestRegisterService:           // fall through
-    case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
-    case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
-    case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
-    case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
-    case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
-    case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
-    case NEService::eFuncIdRange::RequestFirstId:                   // fall through
-    case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
-    case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
-    case NEService::eFuncIdRange::RequestLastId:                    // fall through
-    case NEService::eFuncIdRange::ResponseLastId:                   // fall through
-    case NEService::eFuncIdRange::AttributeLastId:                  // fall through
-    case NEService::eFuncIdRange::ServiceLastId:                    // fall through
+    case NEService::FuncIdRange::RequestRegisterService:           // fall through
+    case NEService::FuncIdRange::RequestServiceProviderVersion:    // fall through
+    case NEService::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+    case NEService::FuncIdRange::RequestServiceProviderConnection: // fall through
+    case NEService::FuncIdRange::ResponseServiceProviderConnection:// fall through
+    case NEService::FuncIdRange::SystemServiceNotifyConnection:    // fall through
+    case NEService::FuncIdRange::SystemServiceRequestRegister:     // fall through
+    case NEService::FuncIdRange::SystemServiceNotifyRegister:      // fall through
+    case NEService::FuncIdRange::EmptyFunctionId:                  // fall through
+    case NEService::FuncIdRange::ComponentCleanup:                 // fall through
+    case NEService::FuncIdRange::RequestFirstId:                   // fall through
+    case NEService::FuncIdRange::ResponseFirstId:                  // fall through
+    case NEService::FuncIdRange::AttributeFirstId:                 // fall through
+    case NEService::FuncIdRange::RequestLastId:                    // fall through
+    case NEService::FuncIdRange::ResponseLastId:                   // fall through
+    case NEService::FuncIdRange::AttributeLastId:                  // fall through
+    case NEService::FuncIdRange::ServiceLastId:                    // fall through
     default:
         LOG_ERR("Unexpected Log Collector service message!");
         ASSERT(false);
@@ -264,7 +264,7 @@ void LogCollectorServerService::onServiceMessageSend(const RemoteMessage &msgSen
 {
     LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSend);
 
-    NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgSend.getMessageId() );
+    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>( msgSend.getMessageId() );
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
                     , NEService::getString(msgId)
                     , static_cast<uint32_t>(msgId)

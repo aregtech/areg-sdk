@@ -56,17 +56,17 @@ public:
     /**
      * \brief   Process environment. Currently support only 32- or 64-bit processes.
      **/
-    typedef enum class E_ProcEnv : int
+    enum class Bitness : int
     {
-          ProcEnvUnknown    = 0
-        , ProcEnv32Bits     = sizeof(uint32_t)
-        , ProcEnv64Bits     = sizeof(uint64_t)
-    } eProcEnv;
+          BitsUnknown   = 0
+        , Bits32        = sizeof(uint32_t)
+        , Bits64        = sizeof(uint64_t)
+    };
 
     /**
-     * \brief   Converts and returns the string value of Process::eProcEnv;
+     * \brief   Converts and returns the string value of Process::Bitness;
      **/
-    static inline const char * getString( Process::eProcEnv  val );
+    static inline const char * getString( Process::Bitness  val );
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -135,7 +135,7 @@ public:
     /**
      * \brief   Returns process environment. It is either 32- or 64-bits.
      **/
-    inline Process::eProcEnv getEnvironment() const;
+    inline Process::Bitness getEnvironment() const;
 
     unsigned int getBitness() const;
 
@@ -175,7 +175,7 @@ private:
     /**
      * \brief   The process environment
      **/
-    const eProcEnv  mProcEnv;
+    const Bitness  mProcEnv;
     /**
      * \brief   The ID of process
      **/
@@ -250,23 +250,23 @@ inline id_type Process::getId() const
     return mProcessId;
 }
 
-inline Process::eProcEnv Process::getEnvironment() const
+inline Process::Bitness Process::getEnvironment() const
 {
     return mProcEnv;
 }
 
-inline const char * Process::getString( Process::eProcEnv  val )
+inline const char * Process::getString( Process::Bitness  val )
 {
     switch (val)
     {
-    case Process::eProcEnv::ProcEnv32Bits:
+    case Process::Bitness::Bits32:
         return "32-bits";
-    case Process::eProcEnv::ProcEnv64Bits:
+    case Process::Bitness::Bits64:
         return "64-bits";
-    case Process::eProcEnv::ProcEnvUnknown:
+    case Process::Bitness::BitsUnknown:
         return "unknown bits";
     default:
-        return "ERR: Unexpected Process::eProcEnv value";
+        return "ERR: Unexpected Process::Bitness value";
     }
 }
 

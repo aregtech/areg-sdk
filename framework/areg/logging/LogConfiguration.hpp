@@ -91,7 +91,7 @@ public:
      *                      is enabled or disabled. If true, the logging for specified type
      *                      is enabled.
      **/
-    void setLogEnabled(NELogging::LoggingType logType, bool isEnabled);
+    void setLogEnabled(NELogging::LogTarget logType, bool isEnabled);
 
     /**
      * \brief   Gets and sets the property value of logging version.

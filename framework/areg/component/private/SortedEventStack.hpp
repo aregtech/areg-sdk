@@ -73,11 +73,11 @@ public:
 
     /**
      * \brief   Deletes all events with priorities lower than the specified, except "Exit" event.
-     * \param   eventPrio   The priority to check. Set Event::eEventPriority::EventPriorityIgnore
+     * \param   eventPrio   The priority to check. Set Event::EventPriority::IgnorePrio
      *                      to remove all events. Only "Exit" events are untouched if they are present.
      * \return  Returns number of elements in the stack. Returns zero if empty.
      **/
-    uint32_t deleteAllLowerPriority(Event::eEventPriority eventPrio);
+    uint32_t deleteAllLowerPriority(Event::EventPriority eventPrio);
 
     /**
      * \brief   Deletes all events, except those that are with the specified class ID, except "Exit" event.
@@ -91,7 +91,7 @@ public:
      * \param   eventPrio   The priority of events to delete.
      * \return  Returns number of elements in the stack. Returns zero if empty.
      **/
-    uint32_t deleteAllMatchPriority(Event::eEventPriority eventPrio);
+    uint32_t deleteAllMatchPriority(Event::EventPriority eventPrio);
 
     /**
      * \brief   Deletes all events, which match the specified class ID.
@@ -161,7 +161,7 @@ private:
      * \param   newEvent    The event object to insert.
      * \param   eventPrio   The priority of event to search in the stack.
      **/
-    inline void _insertAfterPrio(Event * newEvent, Event::eEventPriority eventPrio);
+    inline void _insertAfterPrio(Event * newEvent, Event::EventPriority eventPrio);
 
     /**
      * \brief   Inserts the event object before the elements of specified are queued.
@@ -171,7 +171,7 @@ private:
      * \param   newEvent    The event object to insert.
      * \param   eventPrio   The priority of event to search in the stack.
      **/
-    inline void _insertBeforePrio(Event * newEvent, Event::eEventPriority eventPrio);
+    inline void _insertBeforePrio(Event * newEvent, Event::EventPriority eventPrio);
 
     /**
      * \brief   Inserts the event element at the very begin of the stack, so that it is

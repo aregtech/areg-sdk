@@ -67,7 +67,7 @@ int EventDispatcher::onThreadExit()
 {
     exitDispatcher( );
     mDispatcherThread   = nullptr;
-    return static_cast<int>(ThreadConsumer::eExitCodes::ExitNormal);
+    return static_cast<int>(ThreadConsumer::ExitCode::Normal);
 }
 
 bool EventDispatcher::postEvent( Event& eventElem )

@@ -37,7 +37,7 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 //////////////////////////////////////////////////////////////////////////
 
 RouterServerService::RouterServerService()
-    : ServiceCommunicationBase   ( NEService::COOKIE_ROUTER, NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicationBase::eConnectionBehavior::DefaultAccept )
+    : ServiceCommunicationBase   ( NEService::COOKIE_ROUTER, NERemoteService::RemoteServiceKind::Router, static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicationBase::ConnectionPolicy::Accept )
     , RegistrationConsumer ( )
     , RegistrationProvider ( )
 
@@ -52,7 +52,7 @@ bool RouterServerService::registerServiceProvider(const StubAddress & /* stubSer
     return false;
 }
 
-void RouterServerService::unregisterServiceProvider(const StubAddress & /* stubService */, const NEService::eDisconnectReason /*reason*/ )
+void RouterServerService::unregisterServiceProvider(const StubAddress & /* stubService */, const NEService::DisconnectReason /*reason*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceProvider);
     LOG_ERR("Method is not implemented, this should not be called");
@@ -65,7 +65,7 @@ bool RouterServerService::registerServiceConsumer(const ProxyAddress & /* proxyS
     return false;
 }
 
-void RouterServerService::unregisterServiceConsumer(const ProxyAddress & /* proxyService */, const NEService::eDisconnectReason /*reason*/ )
+void RouterServerService::unregisterServiceConsumer(const ProxyAddress & /* proxyService */, const NEService::DisconnectReason /*reason*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceConsumer);
     LOG_ERR("Method is not implemented, this should not be called");
@@ -76,7 +76,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageReceived);
 
     ASSERT( msgReceived.isValid() );
-    NEService::eFuncIdRange msgId { static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
+    NEService::FuncIdRange msgId { static_cast<NEService::FuncIdRange>(msgReceived.getMessageId()) };
     const ITEM_ID & source{ msgReceived.getSource() };
 
     LOG_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -87,14 +87,14 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
     switch( msgId )
     {
-    case NEService::eFuncIdRange::SystemServiceRequestRegister:
+    case NEService::FuncIdRange::SystemServiceRequestRegister:
         {
-            NEService::eServiceRequestType reqType;
+            NEService::RegistrationAction reqType;
             msgReceived >> reqType;
             LOG_DBG("Routing service received registration request message [ %s ]", NEService::getString(reqType));
             switch ( reqType )
             {
-            case NEService::eServiceRequestType::RegisterStub:
+            case NEService::RegistrationAction::RegisterStub:
                 {
                     StubAddress stubService(msgReceived);
                     stubService.setSource(source);
@@ -102,7 +102,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
                 }
                 break;
 
-            case NEService::eServiceRequestType::RegisterClient:
+            case NEService::RegistrationAction::RegisterClient:
                 {
                     ProxyAddress proxyService(msgReceived);
                     proxyService.setSource(source);
@@ -110,20 +110,20 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
                 }
                 break;
 
-            case NEService::eServiceRequestType::UnregisterStub:
+            case NEService::RegistrationAction::UnregisterStub:
                 {
                     StubAddress stubService(msgReceived);
-                    NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+                    NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
                     msgReceived >> reason;
                     stubService.setSource(source);
                     unregisteredRemoteServiceProvider(stubService, reason, stubService.getCookie());
                 }
                 break;
 
-            case NEService::eServiceRequestType::UnregisterClient:
+            case NEService::RegistrationAction::UnregisterClient:
                 {
                     ProxyAddress proxyService(msgReceived);
-                    NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
+                    NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
                     msgReceived >> reason;
                     proxyService.setSource(source);
                     unregisteredRemoteServiceConsumer(proxyService, reason, proxyService.getCookie());
@@ -137,7 +137,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         }
         break;
 
-    case NEService::eFuncIdRange::SystemServiceDisconnect:
+    case NEService::FuncIdRange::SystemServiceDisconnect:
         {
             ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
             msgReceived >> cookie;
@@ -155,44 +155,44 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
             for (uint32_t i = 0; i < listProxies.getSize(); ++i)
             {
-                unregisteredRemoteServiceConsumer(listProxies[i], NEService::eDisconnectReason::ReasonConsumerDisconnected, cookie);
+                unregisteredRemoteServiceConsumer(listProxies[i], NEService::DisconnectReason::ConsumerDisconnected, cookie);
             }
 
             for (uint32_t i = 0; i < listStubs.getSize(); ++i)
             {
-                unregisteredRemoteServiceProvider(listStubs[i], NEService::eDisconnectReason::ReasonProviderDisconnected, cookie);
+                unregisteredRemoteServiceProvider(listStubs[i], NEService::DisconnectReason::ProviderDisconnected, cookie);
             }
         }
         break;
 
-    case NEService::eFuncIdRange::ServiceLastId:                    // fall through
-    case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
-    case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
-    case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
-    case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
-    case NEService::eFuncIdRange::RequestRegisterService:           // fall through
-    case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
-    case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
-    case NEService::eFuncIdRange::ServiceLogUpdateScopes:           // fall through
-    case NEService::eFuncIdRange::ServiceLogQueryScopes:            // fall through
-    case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
-    case NEService::eFuncIdRange::ServiceSaveLogConfiguration:      // fall through
-    case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
-    case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
+    case NEService::FuncIdRange::ServiceLastId:                    // fall through
+    case NEService::FuncIdRange::SystemServiceQueryInstances:      // fall through
+    case NEService::FuncIdRange::SystemServiceConnect:             // fall through
+    case NEService::FuncIdRange::RequestServiceProviderConnection: // fall through
+    case NEService::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+    case NEService::FuncIdRange::RequestServiceProviderVersion:    // fall through
+    case NEService::FuncIdRange::RequestRegisterService:           // fall through
+    case NEService::FuncIdRange::ComponentCleanup:                 // fall through
+    case NEService::FuncIdRange::SystemServiceNotifyRegister:      // fall through
+    case NEService::FuncIdRange::SystemServiceNotifyConnection:    // fall through
+    case NEService::FuncIdRange::SystemServiceNotifyInstances:     // fall through
+    case NEService::FuncIdRange::ServiceLogRegisterScopes:         // fall through
+    case NEService::FuncIdRange::ServiceLogUpdateScopes:           // fall through
+    case NEService::FuncIdRange::ServiceLogQueryScopes:            // fall through
+    case NEService::FuncIdRange::ServiceLogScopesUpdated:          // fall through
+    case NEService::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+    case NEService::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+    case NEService::FuncIdRange::ServiceLogMessage:                // fall through
         break;
 
-    case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
-    case NEService::eFuncIdRange::AttributeLastId:                  // fall through
-    case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
-    case NEService::eFuncIdRange::ResponseLastId:                   // fall through
-    case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
-    case NEService::eFuncIdRange::RequestLastId:                    // fall through
-    case NEService::eFuncIdRange::RequestFirstId:                   // fall through
-    case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
+    case NEService::FuncIdRange::ResponseServiceProviderConnection:// fall through
+    case NEService::FuncIdRange::AttributeLastId:                  // fall through
+    case NEService::FuncIdRange::AttributeFirstId:                 // fall through
+    case NEService::FuncIdRange::ResponseLastId:                   // fall through
+    case NEService::FuncIdRange::ResponseFirstId:                  // fall through
+    case NEService::FuncIdRange::RequestLastId:                    // fall through
+    case NEService::FuncIdRange::RequestFirstId:                   // fall through
+    case NEService::FuncIdRange::EmptyFunctionId:                  // fall through
     default:
         if ( NEService::isExecutableId(static_cast<uint32_t>(msgId)) || NEService::isConnectNotifyId( static_cast<uint32_t>(msgId)) )
         {
@@ -222,7 +222,7 @@ void RouterServerService::onServiceMessageSend(const RemoteMessage &msgSend)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 
-    NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgSend.getMessageId() );
+    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>( msgSend.getMessageId() );
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
                     , NEService::getString(msgId)
                     , static_cast<uint32_t>(msgId)
@@ -253,12 +253,12 @@ void RouterServerService::disconnectServices()
 
     for ( uint32_t i = 0; i < stubList.getSize(); ++ i )
     {
-        unregisteredRemoteServiceProvider( stubList[i], NEService::eDisconnectReason::ReasonServiceDisconnected, NEService::COOKIE_ANY );
+        unregisteredRemoteServiceProvider( stubList[i], NEService::DisconnectReason::ServiceDisconnected, NEService::COOKIE_ANY );
     }
 
     for ( uint32_t i = 0; i < proxyList.getSize(); ++ i )
     {
-        unregisteredRemoteServiceConsumer( proxyList[i], NEService::eDisconnectReason::ReasonServiceDisconnected, NEService::COOKIE_ANY );
+        unregisteredRemoteServiceConsumer( proxyList[i], NEService::DisconnectReason::ServiceDisconnected, NEService::COOKIE_ANY );
     }
 
     mServiceRegistry.clear( );
@@ -275,11 +275,11 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
     ASSERT(stub.isServicePublic());
 
     LOG_DBG("Going to register remote stub [ %s ]", StubAddress::convAddressToPath(stub).getString());
-    if ( mServiceRegistry.getServiceStatus(stub) != NEService::eServiceConnection::ServiceConnected )
+    if ( mServiceRegistry.getServiceStatus(stub) != NEService::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
         const ServiceStub & stubService = mServiceRegistry.registerServiceStub(stub, listProxies);
-        if ( stubService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected && listProxies.isEmpty() == false )
+        if ( stubService.getServiceStatus() == NEService::ServiceConnectionState::Connected && listProxies.isEmpty() == false )
         {
             LOG_DBG("Stub [ %s ] is connected, sending notification messages to [ %d ] waiting proxies"
                         , StubAddress::convAddressToPath(stubService.getServiceAddress()).getString()
@@ -290,7 +290,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
             {
                 const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
                 const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
-                if ( (proxyService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (addrProxy.getSource() != stub.getSource()) )
+                if ( (proxyService.getServiceStatus() == NEService::ServiceConnectionState::Connected) && (addrProxy.getSource() != stub.getSource()) )
                 {
                     RemoteMessage msgRegisterProxy = NERemoteService::createServiceClientRegisteredNotification(addrProxy, mServerConnection.getChannelId(), stub.getSource());
                     sendMessage(msgRegisterProxy);
@@ -298,7 +298,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
                     LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                                 , stub.convToString().getString()
                                 , addrProxy.convToString().getString()
-                                , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
+                                , NEService::getString( static_cast<NEService::FuncIdRange>(msgRegisterProxy.getMessageId()))
                                 , static_cast<uint32_t>(msgRegisterProxy.getMessageId())
                                 , static_cast<uint32_t>(msgRegisterProxy.getSource())
                                 , static_cast<uint32_t>(msgRegisterProxy.getTarget()));
@@ -311,7 +311,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
                         LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                                     , addrProxy.convToString().getString()
                                     , stub.convToString().getString()
-                                    , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
+                                    , NEService::getString( static_cast<NEService::FuncIdRange>(msgRegisterStub.getMessageId()))
                                     , static_cast<uint32_t>(msgRegisterStub.getMessageId())
                                     , static_cast<uint32_t>(msgRegisterStub.getSource())
                                     , static_cast<uint32_t>(msgRegisterStub.getTarget()));
@@ -349,7 +349,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
 void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceConsumer);
-    if ( mServiceRegistry.getServiceStatus(proxy) != NEService::eServiceConnection::ServiceConnected )
+    if ( mServiceRegistry.getServiceStatus(proxy) != NEService::ServiceConnectionState::Connected )
     {
         ServiceProxy proxyService;
         const ServiceStub & stubService   = mServiceRegistry.registerServiceProxy(proxy, proxyService);
@@ -360,7 +360,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
                     , StubAddress::convAddressToPath(addrStub).getString()
                     , NEService::getString( proxyService.getServiceStatus()));
 
-        if ( (proxyService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()) )
+        if ( (proxyService.getServiceStatus() == NEService::ServiceConnectionState::Connected) && (proxy.getSource() != addrStub.getSource()) )
         {
             RemoteMessage msgRegisterProxy = NERemoteService::createServiceClientRegisteredNotification(proxy, mServerConnection.getChannelId(), addrStub.getSource());
             sendMessage(msgRegisterProxy);
@@ -368,7 +368,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
             LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                         , addrStub.convToString().getString()
                         , proxy.convToString().getString()
-                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterProxy.getMessageId()))
+                        , NEService::getString( static_cast<NEService::FuncIdRange>(msgRegisterProxy.getMessageId()))
                         , static_cast<uint32_t>(msgRegisterProxy.getMessageId())
                         , static_cast<uint32_t>(msgRegisterProxy.getSource())
                         , static_cast<uint32_t>(msgRegisterProxy.getTarget()));
@@ -379,7 +379,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
             LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                         , proxy.convToString().getString()
                         , addrStub.convToString().getString()
-                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgRegisterStub.getMessageId()))
+                        , NEService::getString( static_cast<NEService::FuncIdRange>(msgRegisterStub.getMessageId()))
                         , static_cast<uint32_t>(msgRegisterStub.getMessageId())
                         , static_cast<uint32_t>(msgRegisterStub.getSource())
                         , static_cast<uint32_t>(msgRegisterStub.getTarget()));
@@ -398,10 +398,10 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
     }
 }
 
-void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
+void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceProvider);
-    if ( mServiceRegistry.getServiceStatus(stub) == NEService::eServiceConnection::ServiceConnected )
+    if ( mServiceRegistry.getServiceStatus(stub) == NEService::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
         mServiceRegistry.unregisterServiceStub(stub, listProxies);
@@ -450,7 +450,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
     }
 }
 
-void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
+void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceConsumer);
     LOG_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
@@ -473,7 +473,7 @@ void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress &
     ASSERT(svcStub != nullptr);
     const StubAddress & addrStub    = svcStub->getServiceAddress();
 
-    if ((svcStub->getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()))
+    if ((svcStub->getServiceStatus() == NEService::ServiceConnectionState::Connected) && (proxy.getSource() != addrStub.getSource()))
     {
         sendMessage(NERemoteService::createServiceClientUnregisteredNotification( proxy, reason, mServerConnection.getChannelId(), addrStub.getSource( ) ) );
 

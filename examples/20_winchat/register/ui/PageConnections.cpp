@@ -14,7 +14,7 @@
 
 // PageConnections
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::WindowCommand::CmdFirst))
 #define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
 
 LPCTSTR PageConnections::HEADER_TITILES[] =
@@ -51,7 +51,7 @@ PageConnections::~PageConnections()
     mTypingList.clear();
 }
 
-void PageConnections::ServiceConnected( bool /*isConnected*/)
+void PageConnections::Connected( bool /*isConnected*/)
 {
 }
 
@@ -97,10 +97,10 @@ BEGIN_MESSAGE_MAP(PageConnections, CPropertyPage)
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_BROADCAST, &PageConnections::OnBtnBroadcastUpdate )
     ON_UPDATE_COMMAND_UI( IDC_EDIT_BROADCAST, &PageConnections::OnEditBroadcastUpdate )
     ON_WM_CREATE( )
-    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdRegistered  ), &PageConnections::OnCmdRegistered)
-    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdUnregistered), &PageConnections::OnCmdUnregistered )
-    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdSendMessage ), &PageConnections::OnCmdSendMessage )
-    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdTypeMessage ), &PageConnections::OnCmdTypeMessage )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::WindowCommand::CmdRegistered  ), &PageConnections::OnCmdRegistered)
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::WindowCommand::CmdUnregistered), &PageConnections::OnCmdUnregistered )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::WindowCommand::CmdSendMessage ), &PageConnections::OnCmdSendMessage )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::WindowCommand::CmdTypeMessage ), &PageConnections::OnCmdTypeMessage )
 END_MESSAGE_MAP( )
 
 // PageConnections message handlers
@@ -108,7 +108,7 @@ END_MESSAGE_MAP( )
 void PageConnections::OnClickedButtonBroadcast()
 {
     UpdateData(TRUE);
-    ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getService( ) : nullptr;
+    ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getConnectionService( ) : nullptr;
     if ( service != nullptr )
     {
         DateTime timestamp = DateTime::getNow();

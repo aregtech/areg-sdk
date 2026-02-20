@@ -77,7 +77,7 @@ protected:
     ResponseEvent( const ProxyAddress & proxyTarget
                  , const NEService::ResultType result
                  , unsigned int respId
-                 , Event::eEventType eventType
+                 , Event::EventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
@@ -94,7 +94,7 @@ protected:
                  , const ProxyAddress & proxyTarget
                  , NEService::ResultType result
                  , unsigned int respId
-                 , Event::eEventType eventType
+                 , Event::EventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::getEmptyString() );
 
@@ -128,7 +128,7 @@ public:
     /**
      * \brief   Returns data type of request data
      **/
-    inline NEService::eMessageDataType getDataType() const;
+    inline NEService::MessageDataType getDataType() const;
 
     /**
      * \brief   Returns reference of data input streaming object
@@ -368,7 +368,7 @@ inline const EventData & ResponseEvent::getData() const
     return mData;
 }
 
-inline NEService::eMessageDataType ResponseEvent::getDataType() const
+inline NEService::MessageDataType ResponseEvent::getDataType() const
 {
     return mData.getDataType();
 }

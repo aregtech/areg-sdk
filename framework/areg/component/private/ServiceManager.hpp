@@ -112,7 +112,7 @@ public:
      * \param   whichServer     The address of Stub Server object, which has been.
      * \param   reason          The reason to unregister the service provider.
      **/
-    static void requestUnregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason );
+    static void requestUnregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason );
 
     /**
      * \brief   Static method to be called globally.
@@ -142,7 +142,7 @@ public:
      *                          unregistering at Service Manager Module.
      * \param   reason          The reason to unregister the service consumer
      **/
-    static void requestUnregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason );
+    static void requestUnregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason );
 
     /**
      * \brief   Static method to be called globally.
@@ -387,7 +387,7 @@ private:
      * \param   cookie  The cookie of source that has initiated to unregister provider.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered from the system.
@@ -396,7 +396,7 @@ private:
      * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes

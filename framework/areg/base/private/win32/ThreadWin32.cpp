@@ -103,11 +103,11 @@ id_type Thread::_osGetCurrentThreadId()
     return static_cast<id_type>(::GetCurrentThreadId());
 }
 
-Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
+Thread::ThreadCompletion Thread::_osDestroyThread(unsigned int waitForStopMs)
 {
     mSyncObject.lock(NECommon::WAIT_INFINITE);
 
-    Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
+    Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
 
     THREADHANDLE handle = mThreadHandle;
     if (handle != Thread::INVALID_THREAD_HANDLE)
@@ -136,8 +136,8 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 #endif // _MSC_VER
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
-            result = Thread::eCompletionStatus::ThreadTerminated;
-            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::eExitCodes::ExitTerminated));
+            result = Thread::ThreadCompletion::Terminated;
+            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
             this->mWaitForRun.resetEvent();
             this->mWaitForExit.setEvent();
 #ifdef _MSC_VER
@@ -147,7 +147,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         else
         {
             // The thread completed job normally
-            result = Thread::eCompletionStatus::ThreadCompleted;
+            result = Thread::ThreadCompletion::Completed;
             ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
         }
 
@@ -156,7 +156,7 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
     else
     {
         // The thread is not valid and not running, nothing to destroy
-        result = Thread::eCompletionStatus::ThreadInvalid;
+        result = Thread::ThreadCompletion::Invalid;
     }
 
     mSyncObject.unlock(); // nothing to do, the thread is already destroyed
@@ -186,7 +186,7 @@ bool Thread::_osCreateSystemThread()
             result          = true;
             mThreadHandle   = static_cast<THREADHANDLE>(handle);
             mThreadId       = threadId;
-            mThreadPriority = Thread::eThreadPriority::PriorityNormal;
+            mThreadPriority = Thread::ThreadPriority::Normal;
 
             if (_registerThread() == false)
             {
@@ -199,37 +199,37 @@ bool Thread::_osCreateSystemThread()
     return result;
 }
 
-Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
+Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
 {
     Lock  lock(mSyncObject);
-    Thread::eThreadPriority oldPrio{ mThreadPriority };
+    Thread::ThreadPriority oldPrio{ mThreadPriority };
 
     if (_isValidNoLock() && (newPriority != mThreadPriority))
     {
         int Prio = std::numeric_limits<int32_t>::min();
         switch (newPriority)
         {
-        case Thread::eThreadPriority::PriorityLowest:
+        case Thread::ThreadPriority::Lowest:
             Prio = THREAD_PRIORITY_LOWEST;
             break;
 
-        case Thread::eThreadPriority::PriorityLow:
+        case Thread::ThreadPriority::Low:
             Prio = THREAD_PRIORITY_BELOW_NORMAL;
             break;
 
-        case Thread::eThreadPriority::PriorityNormal:
+        case Thread::ThreadPriority::Normal:
             Prio = THREAD_PRIORITY_NORMAL;
             break;
 
-        case Thread::eThreadPriority::PriorityHigh:
+        case Thread::ThreadPriority::High:
             Prio = THREAD_PRIORITY_ABOVE_NORMAL;
             break;
 
-        case Thread::eThreadPriority::PriorityHighest:
+        case Thread::ThreadPriority::Highest:
             Prio = THREAD_PRIORITY_HIGHEST;
             break;
 
-        case Thread::eThreadPriority::PriorityUndefined:     // fall through
+        case Thread::ThreadPriority::Undefined:     // fall through
         default:
             break;  // do nothing, invalid priority value
         }

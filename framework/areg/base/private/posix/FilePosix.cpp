@@ -132,42 +132,43 @@ bool File::_osOpenFile()
             int     flag = 0;
             mode_t  mode = 0;
 
-            if ((mFileMode & FileBase::FOB_READ) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitRead)) != 0)
             {
                 flag |= O_RDONLY;
             }
 
-            if ((mFileMode & FileBase::FOB_WRITE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitWrite)) != 0)
             {
                 flag &= ~O_RDONLY;
                 flag |= O_RDWR;
             }
 
-            if ((mFileMode & FileBase::FOB_CREATE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
             {
                 flag |= O_CREAT;
             }
 
-            if ((mFileMode & FileBase::FOB_EXIST) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitExist)) != 0)
             {
                 flag &= ~O_CREAT;
             }
 
-            if ( (mFileMode & FileBase::FOB_TRUNCATE) || ((flag & O_CREAT) != 0) )
+            if ( (mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) || ((flag & O_CREAT) != 0) )
             {
                 flag |= O_TRUNC;
             }
 
-            if ((mFileMode & FileBase::FOB_SHARE_READ) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareRead)) != 0)
             {
                 mode |= (S_IRUSR | S_IRGRP | S_IROTH);
             }
 
-            if ((mFileMode & FileBase::FOB_SHARE_WRITE) != 0)
+            if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitShareWrite)) != 0)
             {
                 mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
             }
-            else if (((mFileMode & FileBase::FOB_CREATE) != 0) || ((mFileMode & FileBase::FOB_TRUNCATE) != 0))
+            else if (((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0) ||
+                     ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTruncate)) != 0))
             {
                 mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
             }
@@ -200,7 +201,7 @@ bool File::_osOpenFile()
                 }
             }
 
-            if (mFileMode & FileBase::FOB_TEMP_FILE)
+            if (mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTemp))
             {
                 file->fd =  ::mkstemp(mFileName.getBuffer());
             }
@@ -273,7 +274,7 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int File::_osSetPositionFile(int offset, Cursor::eCursorPosition startAt) const
+unsigned int File::_osSetPositionFile(int offset, Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
     unsigned int result = Cursor::INVALID_CURSOR_POSITION;
@@ -281,15 +282,15 @@ unsigned int File::_osSetPositionFile(int offset, Cursor::eCursorPosition startA
     sPosixFile* file = reinterpret_cast<sPosixFile*>(mFileHandle);
     switch (startAt)
     {
-    case Cursor::eCursorPosition::PositionBegin:
+    case Cursor::SeekOrigin::Begin:
         result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_SET));
         break;
 
-    case Cursor::eCursorPosition::PositionCurrent:
+    case Cursor::SeekOrigin::Current:
         result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_CUR));
         break;
 
-    case Cursor::eCursorPosition::PositionEnd:
+    case Cursor::SeekOrigin::End:
         result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_END));
         break;
 
@@ -345,7 +346,7 @@ unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const
     return static_cast<unsigned int>(strlen(buffer));
 }
 
-unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const eSpecialFolder specialFolder)
+unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
     buffer[0] = NEString::EndOfString;
@@ -353,19 +354,19 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
 
     switch (specialFolder)
     {
-    case File::eSpecialFolder::SpecialUserHome:
+    case File::SpecialFolder::UserHome:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s", filePath != nullptr ? filePath : "~");
         break;
 
-    case File::eSpecialFolder::SpecialPersonal:
+    case File::SpecialFolder::Personal:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS);
         break;
 
-    case File::eSpecialFolder::SpecialAppData:
+    case File::SpecialFolder::AppData:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c.%s%c%s"
@@ -376,7 +377,7 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
                     , DIR_NAME_APPDATA);
         break;
 
-    case File::eSpecialFolder::SpecialTemp:
+    case File::SpecialFolder::Temp:
         filePath = _getTempDir();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s", filePath);

@@ -94,7 +94,7 @@ public:
      * \return  If found registered remote Stub address, returns the actual service connection status.
      *          Otherwise, returns unknown service connection status.
      **/
-    NEService::eServiceConnection getServiceStatus( const StubAddress & addrStub ) const;
+    NEService::ServiceConnectionState getServiceStatus( const StubAddress & addrStub ) const;
 
     /**
      * \brief   By given remote servicing Proxy address checks and returns the service connection status.
@@ -102,7 +102,7 @@ public:
      * \return  If found registered remote Stub address as Proxy target, returns the actual service connection status.
      *          Otherwise, returns unknown service connection status.
      **/
-    NEService::eServiceConnection getServiceStatus( const ProxyAddress & addrProxy ) const;
+    NEService::ServiceConnectionState getServiceStatus( const ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Returns the list of connected proxies address or empty list if no proxy is connected yet.

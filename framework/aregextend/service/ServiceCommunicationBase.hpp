@@ -66,11 +66,11 @@ public:
      *              -   If the default behavior is to rejected the connection,
      *                  the connection is accepted if it IP-address white-listed.
      **/
-    typedef enum class E_ConnectionBehavior : uint16_t
+    enum class ConnectionPolicy : uint8_t
     {
-          DefaultAccept //!< The default behavior is to accept the connection.
-        , DefaultReject //!< The default behavior is to reject the connection.
-    } eConnectionBehavior;
+          Accept    //!< The default behavior is to accept the connection.
+        , Reject    //!< The default behavior is to reject the connection.
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -83,10 +83,10 @@ public:
      * \param   behavior    Connection default behavior. By default, all connections are accepted.
      **/
     ServiceCommunicationBase( const ITEM_ID & serviceId
-                            , NERemoteService::eRemoteServices service
+                            , NERemoteService::RemoteServiceKind service
                             , unsigned int connectTypes
                             , const String & dispatcher
-                            , ServiceCommunicationBase::eConnectionBehavior behavior = ServiceCommunicationBase::eConnectionBehavior::DefaultAccept );
+                            , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
     /**
      * \brief   Destructor
      **/
@@ -150,7 +150,7 @@ public:
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+    inline bool sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -267,7 +267,7 @@ public:
      * \param   connectTypes    The bitwise set of connections.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes) override;
+    virtual bool setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -319,7 +319,7 @@ public:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const override;
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -432,7 +432,7 @@ public:
      * \param   eventPrio   The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommand(ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
+    inline bool sendCommand(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Call to send the event to process.
@@ -440,13 +440,13 @@ public:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommunicationMessage(ServiceEventData::eServiceEventCommands cmd, const RemoteMessage & msg, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+    inline bool sendCommunicationMessage(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
      * \param   eventPrio   The priority of set to the event.
      **/
-    inline void disconnectService( Event::eEventPriority eventPrio );
+    inline void disconnectService( Event::EventPriority eventPrio );
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -488,8 +488,8 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 protected:
-    const eConnectionBehavior               mConnectBehavior;   //!< The default connection behavior.
-    const NERemoteService::eRemoteServices  mService;           //!< The remote service type.
+    const ConnectionPolicy               mConnectBehavior;   //!< The default connection behavior.
+    const NERemoteService::RemoteServiceKind  mService;           //!< The remote service type.
     const unsigned int                      mConnectTypes;      //!< The bitwise flags of remote service connections.
     ServerConnection                        mServerConnection;  //!< The instance of server connection object.
     Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
@@ -564,7 +564,7 @@ inline void ServiceCommunicationBase::waitToComplete( )
     shutdownThread( NECommon::DO_NOT_WAIT );
 }
 
-inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -572,9 +572,9 @@ inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::eServiceEve
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData::eServiceEventCommands cmd
+inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData::ServiceCommand cmd
                                                                 , const RemoteMessage & msg
-                                                                , Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+                                                                , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -582,7 +582,7 @@ inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendMessage( const RemoteMessage & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+inline bool ServiceCommunicationBase::sendMessage( const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData( data )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)
@@ -615,7 +615,7 @@ inline bool ServiceCommunicationBase::isCalculateDataRateEnabled() const
     return mDataRateHelper.isVerbose();
 }
 
-inline void ServiceCommunicationBase::disconnectService( Event::eEventPriority eventPrio )
+inline void ServiceCommunicationBase::disconnectService( Event::EventPriority eventPrio )
 {
     SendMessageEvent::sendEvent( SendMessageEventData( )
                                  , static_cast<SendMessageEventConsumer &>(mThreadSend)

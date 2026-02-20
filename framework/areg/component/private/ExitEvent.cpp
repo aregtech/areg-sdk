@@ -20,9 +20,9 @@
 AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 
 ExitEvent::ExitEvent()
-    : Event   ( Event::eEventType::EventExternal )
+    : Event   ( Event::EventType::EventExternal )
 {
-    mEventPrio = Event::eEventPriority::EventPriorityExit;
+    mEventPrio = Event::EventPriority::ExitPrio;
 }
 
 ExitEvent & ExitEvent::getExitEvent()

@@ -125,13 +125,13 @@ public:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eRemoteServices getServiceType() const = 0;
+    virtual NERemoteService::RemoteServiceKind getServiceType() const = 0;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eConnectionTypes getConnectionType() const = 0;
+    virtual NERemoteService::ConnectionType getConnectionType() const = 0;
 
 /************************************************************************/
 // SystemServiceBase overrides
@@ -140,23 +140,23 @@ public:
     /**
      * \brief   Is the main entry point to install, uninstall, register and start service.
      *          Normally, called from the main() method.
-     * \param   optStartup  Option that is set to start service. Can be eServiceOption::CMD_Undefined
+     * \param   optStartup  Option that is set to start service. Can be ServiceOption::CMD_Undefined
      *                      if need to run with default option.
      * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
      *                      or need to use default value.
      * \return  The result of execution.
      **/
-    virtual int serviceMain(NESystemService::eServiceOption optStartup, const char* argument) override;
+    virtual int serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
 
     /**
      * \brief   Triggered to initialize the service application.
-     * \param   option      The option that was set to run. Can be eServiceOption::CMD_Undefined if unknown or should be ignored.
+     * \param   option      The option that was set to run. Can be ServiceOption::CMD_Undefined if unknown or should be ignored.
      * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
      * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
      * \return  Returns true if succeeded to initialize application and the application can run.
      *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
      **/
-    virtual bool serviceInitialize(NESystemService::eServiceOption option, const char* value, const char* fileConfig) override;
+    virtual bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
 
     /**
      * \brief   Triggered when application is going to exit.
@@ -214,7 +214,7 @@ public:
     /**
      * \brief   Sets the state of message router service.
      **/
-    virtual bool setState( NESystemService::eSystemServiceState newState ) override;
+    virtual bool setState( NESystemService::ServicePhase newState ) override;
 
     /**
      * \brief   Run application as a background process without input or output on console.
@@ -313,7 +313,7 @@ private:
     /**
      * \brief   OS specific implementation of changing the state of the log collector service.
      **/
-    bool _osSetState( NESystemService::eSystemServiceState newState );
+    bool _osSetState( NESystemService::ServicePhase newState );
 
     /**
      * \brief   OS specific implementation to setup the service and start the dispatcher.

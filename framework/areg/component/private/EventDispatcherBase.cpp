@@ -103,7 +103,7 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
     bool result{ false };
     if ( mHasStarted )
     {
-        Event::eEventType eventType = eventElem.getEventType();
+        Event::EventType eventType = eventElem.getEventType();
         if (Event::isInternal(eventType))
         {
             mInternalEvents.pushEvent(eventElem, nullptr);
@@ -210,16 +210,16 @@ bool EventDispatcherBase::runDispatcher()
 
     SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
-    int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
+    int whichEvent  = static_cast<int>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
     do 
     {
         whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false);
-        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
+        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
         if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
         {
-            if ( whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) )
+            if ( whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) )
             {
                 if (eventElem == nullptr)
                 {
@@ -242,7 +242,7 @@ bool EventDispatcherBase::runDispatcher()
                     // there is no request to exit thread.
                     eventElem = nullptr;
                     int eventLock = multiLock.lock(NECommon::DO_NOT_WAIT);
-                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) )
+                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int>(EventDispatcherBase::EventSignal::Queue) )
                     {
                         eventElem = static_cast<EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
                     }
@@ -252,16 +252,16 @@ bool EventDispatcherBase::runDispatcher()
         }
         else
         {
-            whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+            whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Exit);
         }
 
-    } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
+    } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
 
     readyForEvents(false);
     removeAllEvents( );
     _clean();
 
-    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
+    return (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Exit));
 }
 
 void EventDispatcherBase::readyForEvents( bool isReady )

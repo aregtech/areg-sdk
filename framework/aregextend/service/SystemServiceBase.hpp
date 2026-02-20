@@ -79,16 +79,16 @@ public:
     static constexpr int        RESULT_IGNORED          { 4 };
 
     /**
-     * \brief   SystemServiceBase::eServiceControl
+     * \brief   SystemServiceBase::ServiceControl
      *          The control constants of the service.
      **/
-    typedef enum E_ServiceControl
+    enum class ServiceControl   : uint8_t
     {
           ServiceStop       = 1 //!< The service received control to stop.
         , ServicePause          //!< The service received control to pause.
         , ServiceContinue       //!< The service received control to resume paused service.
         , ServiceShutdown       //!< The service received control to shutdown.
-    } eServiceControl;
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -114,17 +114,17 @@ public:
      *          In Linux OS this has no effect.
      * \param   control     The control triggered by system.
      **/
-    void controlService(SystemServiceBase::eServiceControl control);
+    void controlService(SystemServiceBase::ServiceControl control);
 
 /************************************************************************/
 // SystemServiceBase overrides
 /************************************************************************/
 
     /**
-     * \brief   Parses the NESystemService::eServiceOption options passed
+     * \brief   Parses the NESystemService::ServiceOption options passed
      *          in the command line and returns true if succeeded.
      *          Override and implement this method if the options differ than
-     *          NESystemService::eServiceOption
+     *          NESystemService::ServiceOption
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
      * \return  Returns true if succeeded to parse command line options,
@@ -140,7 +140,7 @@ public:
      *          help to use command line options properly.
      *          Override the method if need extra checkups or preparations.
      * \param   opts    The list of options. By default, they are
-     *                  type of NESystemService::eServiceOption.
+     *                  type of NESystemService::ServiceOption.
      * \return  Returns true if found no failure and the application can continue working.
      *          To interrupt the application, return false.
      **/
@@ -157,13 +157,13 @@ public:
     /**
      * \brief   Is the main entry point to install, uninstall, register and start service.
      *          Normally, called from the main() method.
-     * \param   optStartup  Option that is set to start service. Can be eServiceOption::CMD_Undefined
+     * \param   optStartup  Option that is set to start service. Can be ServiceOption::CMD_Undefined
      *                      if need to run with default option.
      * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
      *                      or need to use default value.
      * \return  The result of execution.
      **/
-    virtual int serviceMain(NESystemService::eServiceOption optStartup, const char* argument);
+    virtual int serviceMain(NESystemService::ServiceOption optStartup, const char* argument);
 
     /**
      * \brief   Sends remote message to the target specified in the message structure.
@@ -173,13 +173,13 @@ public:
 
     /**
      * \brief   Triggered to initialize the service application.
-     * \param   option      The option that was set to run. Can be eServiceOption::CMD_Undefined if unknown or should be ignored.
+     * \param   option      The option that was set to run. Can be ServiceOption::CMD_Undefined if unknown or should be ignored.
      * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
      * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
      * \return  Returns true if succeeded to initialize application and the application can run.
      *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
      **/
-    virtual bool serviceInitialize(NESystemService::eServiceOption option, const char* value, const char* fileConfig) = 0;
+    virtual bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) = 0;
 
     /**
      * \brief   Triggered when service application is going to exit.
@@ -237,7 +237,7 @@ public:
     /**
      * \brief   Sets the state of the system service.
      **/
-    virtual bool setState( NESystemService::eSystemServiceState newState ) = 0;
+    virtual bool setState( NESystemService::ServicePhase newState ) = 0;
 
     /**
      * \brief   Called to setup service and start service dispatcher.
@@ -255,18 +255,18 @@ public:
     /**
      * \brief   Returns current command of message router service.
      **/
-    inline NESystemService::eServiceOption getCurrentOption() const;
+    inline NESystemService::ServiceOption getCurrentOption() const;
 
     /**
      * \brief   Sets the current command of message router service.
      * \param   optService  The router service command option to set.
      **/
-    inline void setCurrentOption( NESystemService::eServiceOption optService );
+    inline void setCurrentOption( NESystemService::ServiceOption optService );
 
     /**
      * \brief   Returns the state of message router service.
      **/
-    inline NESystemService::eSystemServiceState getState() const;
+    inline NESystemService::ServicePhase getState() const;
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -341,11 +341,11 @@ protected:
     /**
      * \brief   The message router service state.
      **/
-    NESystemService::eSystemServiceState    mSystemServiceState;
+    NESystemService::ServicePhase    mSystemServiceState;
     /**
      * \brief   The current command to execute by message router service.
      **/
-    NESystemService::eServiceOption         mSystemServiceOption;
+    NESystemService::ServiceOption         mSystemServiceOption;
     /**
      * \brief   OS specific service handle
      **/
@@ -370,7 +370,7 @@ private:
 // SystemServiceBase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NESystemService::eSystemServiceState SystemServiceBase::getState() const
+inline NESystemService::ServicePhase SystemServiceBase::getState() const
 {
     return mSystemServiceState;
 }
@@ -385,12 +385,12 @@ inline ServiceCommunicationBase& SystemServiceBase::getCommunicationController()
     return const_cast<ServiceCommunicationBase&>(mCommunication);
 }
 
-inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption() const
+inline NESystemService::ServiceOption SystemServiceBase::getCurrentOption() const
 {
     return mSystemServiceOption;
 }
 
-inline void SystemServiceBase::setCurrentOption( NESystemService::eServiceOption optService )
+inline void SystemServiceBase::setCurrentOption( NESystemService::ServiceOption optService )
 {
     mSystemServiceOption = optService;
 }

@@ -52,7 +52,7 @@ public:
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
+    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
     {
         if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.

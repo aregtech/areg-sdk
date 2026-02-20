@@ -130,7 +130,7 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
     ClientList& value = ServerListBase::valueAtPosition(pos);
 
     key = server;
-    key.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::eServiceConnection::ServiceConnected : NEService::eServiceConnection::ServicePending );
+    key.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::ServiceConnectionState::Connected : NEService::ServiceConnectionState::Pending );
     value.serverAvailable(key, out_clinetList);
 
     LOG_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
@@ -176,10 +176,10 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
     return result;
 }
 
-NEService::eServiceConnection ServerList::getServerState(const StubAddress & whichServer) const
+NEService::ServiceConnectionState ServerList::getServerState(const StubAddress & whichServer) const
 {
     ServerListBase::MAPPOS pos = findServer(whichServer);
-    return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : NEService::eServiceConnection::ServiceConnectionUnknown);
+    return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : NEService::ServiceConnectionState::Unknown);
 }
 
 const ClientList & ServerList::getClientList(const StubAddress & whichServer) const

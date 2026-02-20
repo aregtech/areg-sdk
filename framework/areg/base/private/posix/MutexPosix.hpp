@@ -78,7 +78,7 @@ protected:
      *                          locked the object.
      * \param   asciiName       The name of synchronization object.
      **/
-    MutexPosix( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char * asciiName = nullptr );
+    MutexPosix( NESyncTypesIX::SyncKind syncType, bool isRecursive, const char * asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

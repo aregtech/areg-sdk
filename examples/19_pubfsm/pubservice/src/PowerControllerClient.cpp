@@ -75,33 +75,33 @@ void PowerControllerClient::onThreadRuns()
 
         }
 
-        if ((NEString::compareIgnoreCase<char, char>(command, "off") == NEMath::eCompare::Equal) || 
-            (NEString::compareIgnoreCase<char, char>(command, "1") == NEMath::eCompare::Equal))
+        if ((NEString::compareIgnoreCase<char, char>(command, "off") == NEMath::Ordering::Equal) || 
+            (NEString::compareIgnoreCase<char, char>(command, "1") == NEMath::Ordering::Equal))
         {
             LOG_DBG("User requested command to power OFF the traffic lights");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionPowerOff) );
+            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::PowerOff) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "on") == NEMath::eCompare::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "2") == NEMath::eCompare::Equal))
+        else if ((NEString::compareIgnoreCase<char, char>(command, "on") == NEMath::Ordering::Equal) || 
+                 (NEString::compareIgnoreCase<char, char>(command, "2") == NEMath::Ordering::Equal))
         {
             LOG_DBG("User requested command to power ON the traffic lights");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionPowerOn) );
+            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::PowerOn) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "stop") == NEMath::eCompare::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "3") == NEMath::eCompare::Equal))
+        else if ((NEString::compareIgnoreCase<char, char>(command, "stop") == NEMath::Ordering::Equal) || 
+                 (NEString::compareIgnoreCase<char, char>(command, "3") == NEMath::Ordering::Equal))
         {
             LOG_DBG("User requested command to stop the traffic light controller.");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionStopLight) );
+            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::StopLight) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "start") == NEMath::eCompare::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "4") == NEMath::eCompare::Equal))
+        else if ((NEString::compareIgnoreCase<char, char>(command, "start") == NEMath::Ordering::Equal) || 
+                 (NEString::compareIgnoreCase<char, char>(command, "4") == NEMath::Ordering::Equal))
         {
             LOG_DBG("User requested command to start the traffic light controller.");
-            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionStartLight) );
+            PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::Action::StartLight) );
         }
-        else if ((NEString::compareIgnoreCase<char, char>(command, "quit") == NEMath::eCompare::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "q") == NEMath::eCompare::Equal) || 
-                 (NEString::compareIgnoreCase<char, char>(command, "5") == NEMath::eCompare::Equal))
+        else if ((NEString::compareIgnoreCase<char, char>(command, "quit") == NEMath::Ordering::Equal) || 
+                 (NEString::compareIgnoreCase<char, char>(command, "q") == NEMath::Ordering::Equal) || 
+                 (NEString::compareIgnoreCase<char, char>(command, "5") == NEMath::Ordering::Equal))
         {
             LOG_DBG("User requested command to quit the traffic light controller application.");
             loop = false;
@@ -121,29 +121,29 @@ void PowerControllerClient::processEvent(const PowerControllerEventData & data)
 
     switch (data.getAction())
     {
-    case PowerControllerEventData::eAction::ActionPowerOff:
+    case PowerControllerEventData::Action::PowerOff:
         requestPowerOff();
         break;
 
-    case PowerControllerEventData::eAction::ActionPowerOn:
+    case PowerControllerEventData::Action::PowerOn:
         requestPowerOn();
         break;
 
-    case PowerControllerEventData::eAction::ActionStopLight:
+    case PowerControllerEventData::Action::StopLight:
         requestStopTrafficLight();
         break;
 
-    case PowerControllerEventData::eAction::ActionStartLight:
+    case PowerControllerEventData::Action::StartLight:
         requestStartTrafficLight();
         break;
 
-    case PowerControllerEventData::eAction::NoAction:   // fall through
+    case PowerControllerEventData::Action::None:   // fall through
     default:
         break;
     }
 }
 
-bool PowerControllerClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool PowerControllerClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
 

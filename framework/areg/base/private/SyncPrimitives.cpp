@@ -24,15 +24,15 @@
 // Lockable class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Lockable::Lockable( SyncObject::eSyncObject syncObjectType )
+Lockable::Lockable( SyncObject::SyncKind syncObjectType )
     : SyncObject   (syncObjectType)
 {
-    ASSERT( syncObjectType == SyncObject::eSyncObject::SoMutex      ||
-            syncObjectType == SyncObject::eSyncObject::SoSemaphore  ||
-            syncObjectType == SyncObject::eSyncObject::SoCritical   ||
-            syncObjectType == SyncObject::eSyncObject::SoSpinlock   ||
-            syncObjectType == SyncObject::eSyncObject::SoReslock    ||
-            syncObjectType == SyncObject::eSyncObject::SoNolock     );
+    ASSERT( syncObjectType == SyncObject::SyncKind::SoMutex      ||
+            syncObjectType == SyncObject::SyncKind::SoSemaphore  ||
+            syncObjectType == SyncObject::SyncKind::SoCritical   ||
+            syncObjectType == SyncObject::SyncKind::SoSpinlock   ||
+            syncObjectType == SyncObject::SyncKind::SoReslock    ||
+            syncObjectType == SyncObject::SyncKind::SoNolock     );
 }
 
 bool Lockable::tryLock()
@@ -48,7 +48,7 @@ bool Lockable::tryLock()
 // Mutex class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Mutex::Mutex( bool initLock /* = true */ )
-    : Lockable( SyncObject::eSyncObject::SoMutex )
+    : Lockable( SyncObject::SyncKind::SoMutex )
     , mOwnerThreadId( 0 )
 {
     _osCreateMutex( initLock );
@@ -67,7 +67,7 @@ Mutex::~Mutex()
 // SyncEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
-    : SyncObject( SyncObject::eSyncObject::SoEvent )
+    : SyncObject( SyncObject::SyncKind::SoEvent )
 
     , mAutoReset( autoReset )
 {
@@ -88,7 +88,7 @@ SyncEvent::~SyncEvent()
 // Semaphore class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Semaphore::Semaphore( int maxCount, int initCount /* = 0 */ )
-    : Lockable( SyncObject::eSyncObject::SoSemaphore )
+    : Lockable( SyncObject::SyncKind::SoSemaphore )
 
     , mMaxCount( std::max( maxCount, 1 ) )
     , mCurrCount( NEMath::isInRange<int>(initCount, 0, mMaxCount) ? initCount : 0 )
@@ -141,7 +141,7 @@ bool Semaphore::tryLock()
 // CriticalSection class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 CriticalSection::CriticalSection()
-    : Lockable( SyncObject::eSyncObject::SoCritical )
+    : Lockable( SyncObject::SyncKind::SoCritical )
 {
     _osCreateCriticalSection( );
 }
@@ -157,7 +157,7 @@ CriticalSection::~CriticalSection()
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock()
-    : Lockable( SyncObject::eSyncObject::SoSpinlock )
+    : Lockable( SyncObject::SyncKind::SoSpinlock )
     , mLock         ( false )
 {
 }
@@ -181,7 +181,7 @@ bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
 //////////////////////////////////////////////////////////////////////////
 
 ResourceLock::ResourceLock( bool initLock /*= false*/ )
-    : Lockable( SyncObject::eSyncObject::SoReslock )
+    : Lockable( SyncObject::SyncKind::SoReslock )
 {
     _osCreateResourceLock( initLock );
 }
@@ -197,7 +197,7 @@ ResourceLock::~ResourceLock()
 //////////////////////////////////////////////////////////////////////////
 
 NolockSyncObject::NolockSyncObject()
-    : Lockable( SyncObject::eSyncObject::SoNolock )
+    : Lockable( SyncObject::SyncKind::SoNolock )
 {
 }
 
@@ -209,7 +209,7 @@ NolockSyncObject::NolockSyncObject()
 // SyncTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 SyncTimer::SyncTimer( unsigned int msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
-    : SyncObject  ( SyncObject::eSyncObject::SoTimer )
+    : SyncObject  ( SyncObject::SyncKind::SoTimer )
 
     , mTimeout      ( msTimeout )
     , mIsPeriodic   ( isPeriodic )
@@ -262,7 +262,7 @@ MultiLock::MultiLock(SyncObject* pObjects[], int count, bool autoLock /* = true 
     , mSizeCount    (std::min(count, NECommon::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
-    NEMemory::memZero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
+    NEMemory::memZero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
     if (autoLock)
     {
         lock(NECommon::WAIT_INFINITE, true);
@@ -281,7 +281,7 @@ bool MultiLock::unlock()
 {
     for (int i = 0; i < mSizeCount; ++ i)
     {
-        if (mLockedStates[i] == MultiLock::eLockedState::StateLocked)
+        if (mLockedStates[i] == MultiLock::LockState::Locked)
         {
             mSyncObjArray[i]->unlock( );
         }
@@ -295,7 +295,7 @@ bool MultiLock::unlock( int index )
     bool result = false;
     if ( (index >= 0) && (index < mSizeCount) )
     {
-        if (mLockedStates[index] == MultiLock::eLockedState::StateLocked)
+        if (mLockedStates[index] == MultiLock::LockState::Locked)
         {
             result = mSyncObjArray[index]->unlock( );
         }

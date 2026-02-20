@@ -36,25 +36,25 @@ ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBas
 {
 }
 
-int ServiceApplicationBase::serviceMain(NESystemService::eServiceOption optStartup, const char* argument)
+int ServiceApplicationBase::serviceMain(NESystemService::ServiceOption optStartup, const char* argument)
 {
     int result{ RESULT_SUCCEEDED };
     Application::setWorkingDirectory(nullptr);
     mSystemServiceOption = optStartup;
     switch (optStartup)
     {
-    case NESystemService::eServiceOption::CMD_Install:
+    case NESystemService::ServiceOption::CMD_Install:
         if (serviceInstall() == false)
         {
             result = ServiceApplicationBase::RESULT_FAILED_INSTALL;
         }
         break;
 
-    case NESystemService::eServiceOption::CMD_Uninstall:
+    case NESystemService::ServiceOption::CMD_Uninstall:
         serviceUninstall();
         break;
 
-    case NESystemService::eServiceOption::CMD_Service:
+    case NESystemService::ServiceOption::CMD_Service:
         result = startServiceDispatcher( );
         if (result == RESULT_IGNORED)
         {
@@ -63,18 +63,18 @@ int ServiceApplicationBase::serviceMain(NESystemService::eServiceOption optStart
         }
         break;
 
-    case NESystemService::eServiceOption::CMD_Load:     // fall through
-    case NESystemService::eServiceOption::CMD_Console:  // fall through
-    case NESystemService::eServiceOption::CMD_Custom:
+    case NESystemService::ServiceOption::CMD_Load:     // fall through
+    case NESystemService::ServiceOption::CMD_Console:  // fall through
+    case NESystemService::ServiceOption::CMD_Custom:
         result = SystemServiceBase::serviceMain(optStartup, argument);
         mCommunication.waitToComplete();
         break;
 
-    case NESystemService::eServiceOption::CMD_Help:
-    case NESystemService::eServiceOption::CMD_Verbose:
+    case NESystemService::ServiceOption::CMD_Help:
+    case NESystemService::ServiceOption::CMD_Verbose:
     break;
 
-    case NESystemService::eServiceOption::CMD_Undefined:
+    case NESystemService::ServiceOption::CMD_Undefined:
     default:
         ASSERT(false);  // unexpected
         break;
@@ -83,7 +83,7 @@ int ServiceApplicationBase::serviceMain(NESystemService::eServiceOption optStart
     return result;
 }
 
-bool ServiceApplicationBase::serviceInitialize(NESystemService::eServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
+bool ServiceApplicationBase::serviceInitialize(NESystemService::ServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
 {
     // Start only tracing and timer manager.
     if (NEString::isEmpty(fileConfig))
@@ -149,14 +149,14 @@ bool ServiceApplicationBase::serviceStart()
     LOG_DBG("Starting [ %s ] system service", getServiceNameA());
 
     bool result{ false };
-    NERemoteService::eRemoteServices serviceType = getServiceType();
-    NERemoteService::eConnectionTypes connectType = getConnectionType();
-    if (serviceType != NERemoteService::eRemoteServices::ServiceUnknown)
+    NERemoteService::RemoteServiceKind serviceType = getServiceType();
+    NERemoteService::ConnectionType connectType = getConnectionType();
+    if (serviceType != NERemoteService::RemoteServiceKind::Unknown)
     {
         if (mCommunication.setupServiceConnectionData(serviceType, static_cast<uint32_t>(connectType)) &&
             mCommunication.connectServiceHost())
         {
-            result = setState(NESystemService::eSystemServiceState::ServiceRunning);
+            result = setState(NESystemService::ServicePhase::Running);
         }
         else
         {
@@ -172,10 +172,10 @@ void ServiceApplicationBase::servicePause()
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
     LOG_DBG("Pausing [ %s ] system service", getServiceNameA());
 
-    setState(NESystemService::eSystemServiceState::ServicePausing);
+    setState(NESystemService::ServicePhase::Pausing);
     mCommunication.disconnectServiceHost();
     mCommunication.waitToComplete();
-    setState(NESystemService::eSystemServiceState::ServicePaused);
+    setState(NESystemService::ServicePhase::Paused);
 }
 
 bool ServiceApplicationBase::serviceContinue()
@@ -184,11 +184,11 @@ bool ServiceApplicationBase::serviceContinue()
     LOG_DBG("Resume and continuing paused [ %s ] system service", getServiceNameA());
 
     bool result = false;
-    setState(NESystemService::eSystemServiceState::ServiceContinuing);
+    setState(NESystemService::ServicePhase::Continuing);
     if (mCommunication.isServiceHostSetup() && mCommunication.connectServiceHost())
     {
         result = true;
-        setState(NESystemService::eSystemServiceState::ServiceRunning);
+        setState(NESystemService::ServicePhase::Running);
     }
     else
     {
@@ -203,7 +203,7 @@ void ServiceApplicationBase::serviceStop()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
     LOG_WARN("Stopping [ %s ] system service", getServiceNameA());
-    setState(NESystemService::eSystemServiceState::ServiceStopping);
+    setState(NESystemService::ServicePhase::Stopping);
     mCommunication.disconnectServiceHost();
     mCommunication.waitToComplete();
     Application::signalAppQuit();
@@ -214,7 +214,7 @@ void ServiceApplicationBase::serviceShutdown()
     serviceStop();
 }
 
-bool ServiceApplicationBase::setState(NESystemService::eSystemServiceState newState)
+bool ServiceApplicationBase::setState(NESystemService::ServicePhase newState)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
     LOG_DBG( "Changing [ %s ] system service state. Old state [ %s ], new state [ %s ]"

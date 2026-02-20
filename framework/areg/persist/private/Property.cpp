@@ -162,7 +162,7 @@ const PropertyKey & Property::getKey() const
     return mProperty.mValue.first;
 }
 
-NEPersistence::eConfigKeys Property::getPropertyType() const
+NEPersistence::ConfigEntry Property::getPropertyType() const
 {
     return mProperty.mValue.first.getKeyType();
 }

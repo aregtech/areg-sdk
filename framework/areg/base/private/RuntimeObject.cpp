@@ -56,23 +56,29 @@ void* RuntimeObject::operator new[](size_t /*size*/, void* ptr)
 }
 
 
+#if defined(_DEBUG) && defined(_MSC_VER)
 void* RuntimeObject::operator new(size_t size, int /*block*/, const char* file, int line)
 {
-#if defined(_DEBUG) && defined(_MSC_VER)
     return ::operator new(size, 1, file, line);
-#else   // _DEBUG
-    return ::operator new (size);
-#endif  // _DEBUG
 }
+#else   // _DEBUG
+void* RuntimeObject::operator new(size_t size, int /*block*/, const char* /*file*/, int /*line*/)
+{
+    return ::operator new (size);
+}
+#endif  // _DEBUG
 
+#if defined(_DEBUG) && defined(_MSC_VER)
 void* RuntimeObject::operator new[](size_t size, int /*block*/, const char* file, int line)
 {
-#if defined(_DEBUG) && defined(_MSC_VER)
     return ::operator new(size, 1, file, line);
-#else   // _DEBUG
-    return ::operator new[](size);
-#endif  // _DEBUG
 }
+#else   // _DEBUG
+void* RuntimeObject::operator new[](size_t size, int /*block*/, const char* /*file*/, int /*line*/)
+{
+    return ::operator new[](size);
+}
+#endif  // _DEBUG
 
 void RuntimeObject::operator delete(void* ptr)
 {

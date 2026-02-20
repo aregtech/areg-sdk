@@ -575,7 +575,7 @@ TEST(LinkedListTest, TestStreaming)
 /**
  * \brief   Test LinkedList streaming operators.
  **/
-TEST(LinkedListTest, TestSortAscending)
+TEST(LinkedListTest, TestAscending)
 {
     using LinkedList = LinkedList<int>;
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
@@ -586,15 +586,15 @@ TEST(LinkedListTest, TestSortAscending)
     LinkedList list1(_arr1, _len), res1(_res1, _len);
     list1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
     list1.getElements(_dat1, _len);
-    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::eCompare::Equal);
+    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::Ordering::Equal);
     EXPECT_EQ(list1.getSize(), _len);
-    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::eCompare::Equal);
+    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::Ordering::Equal);
 }
 
 /**
  * \brief   Test LinkedList streaming operators.
  **/
-TEST(LinkedListTest, TestSortDescending)
+TEST(LinkedListTest, TestDescending)
 {
     using LinkedList = LinkedList<int>;
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -605,7 +605,7 @@ TEST(LinkedListTest, TestSortDescending)
     LinkedList list1(_arr1, _len), res1(_res1, _len);
     list1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });
     list1.getElements(_dat1, _len);
-    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::eCompare::Equal);
+    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::Ordering::Equal);
     EXPECT_EQ(list1.getSize(), _len);
-    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::eCompare::Equal);
+    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::Ordering::Equal);
 }

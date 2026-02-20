@@ -28,18 +28,18 @@ Watchdog::GUARD_ID Watchdog::_generateId()
 }
 
 Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
-    : TimerBase         (TimerBase::eTimerType::TimerTypeWatchdog, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-    , mGuardId          ( _generateId() )
-    , mSequence         ( 0u )
-    , mComponentThread  ( thread )
+    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          (_generateId())
+    , mSequence         (0u)
+    , mComponentThread  (thread)
 {
 }
 
 Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
-    : TimerBase         ( TimerBase::eTimerType::TimerTypeWatchdog, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-    , mGuardId          ( _generateId() )
-    , mSequence         ( 0u )
-    , mComponentThread  ( thread.getBindingComponentThread() )
+    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          (_generateId())
+    , mSequence         (0u)
+    , mComponentThread  (thread.getBindingComponentThread())
 {
 }
 

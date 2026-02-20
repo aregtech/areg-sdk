@@ -63,7 +63,7 @@ protected:
      * \param   syncType    The type of synchronization object.
      * \param   asciiName   The name of synchronization object.
      **/
-    SyncObjectPosix( NESyncTypesIX::eSyncObject syncType, const char* asciiName = nullptr );
+    SyncObjectPosix( NESyncTypesIX::SyncKind syncType, const char* asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Public destructor.
@@ -85,7 +85,7 @@ public:
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline NESyncTypesIX::eSyncObject getSyncType() const;
+    inline NESyncTypesIX::SyncKind getSyncType() const;
 
     /**
      * \brief   Returns synchronization object name.
@@ -115,7 +115,7 @@ protected:
     /**
      * \brief   The type of synchronization object.
      **/
-    const NESyncTypesIX::eSyncObject  mSyncType;
+    const NESyncTypesIX::SyncKind  mSyncType;
 
     /**
      * \brief   The name of synchronization object.
@@ -134,7 +134,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline NESyncTypesIX::eSyncObject SyncObjectPosix::getSyncType() const
+inline NESyncTypesIX::SyncKind SyncObjectPosix::getSyncType() const
 {
     return mSyncType;
 }

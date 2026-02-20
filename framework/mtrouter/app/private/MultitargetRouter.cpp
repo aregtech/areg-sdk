@@ -94,18 +94,18 @@ DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_setState);
 
 const OptionParser::sOptionSetup MultitargetRouter::ValidOptions[ ]
 {
-      { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int>(eRouterOptions::CMD_RouterInstall)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int>(eRouterOptions::CMD_RouterLoad)      , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int>(eRouterOptions::CMD_RouterService)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , { "-t", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int>(eRouterOptions::CMD_RouterUninstall) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-c", "--console"   , static_cast<int>(RouterOption::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int>(RouterOption::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int>(RouterOption::CMD_RouterInstall)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int>(RouterOption::CMD_RouterLoad)      , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(RouterOption::CMD_RouterInstances) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int>(RouterOption::CMD_RouterPause)     , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int>(RouterOption::CMD_RouterQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int>(RouterOption::CMD_RouterRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int>(RouterOption::CMD_RouterService)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int>(RouterOption::CMD_RouterSilent)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int>(RouterOption::CMD_RouterUninstall) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int>(RouterOption::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 MultitargetRouter & MultitargetRouter::getInstance()
@@ -118,7 +118,7 @@ MultitargetRouter & MultitargetRouter::getInstance()
 void MultitargetRouter::printStatus(const String& status)
 {
 
-    if (MultitargetRouter::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
+    if (MultitargetRouter::getInstance().getCurrentOption() == NESystemService::ServiceOption::CMD_Console)
     {
         Console& console{ Console::getInstance() };
         Console::Coord curPos{ console.getCursorCurPosition() };
@@ -230,14 +230,14 @@ char* MultitargetRouter::getServiceDescriptionA() const
     return NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII;
 }
 
-NERemoteService::eRemoteServices MultitargetRouter::getServiceType() const
+NERemoteService::RemoteServiceKind MultitargetRouter::getServiceType() const
 {
-    return NERemoteService::eRemoteServices::ServiceRouter;
+    return NERemoteService::RemoteServiceKind::Router;
 }
 
-NERemoteService::eConnectionTypes MultitargetRouter::getConnectionType() const
+NERemoteService::ConnectionType MultitargetRouter::getConnectionType() const
 {
-    return NERemoteService::eConnectionTypes::ConnectTcpip;
+    return NERemoteService::ConnectionType::Tcpip;
 }
 
 void MultitargetRouter::printHelp( bool /* isCmdLine */ )
@@ -292,50 +292,50 @@ bool MultitargetRouter::_checkCommand(const String& cmd)
         for (uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
             const OptionParser::sOption & opt = opts[ i ];
-            switch ( static_cast<MultitargetRouter::eRouterOptions>(opt.inCommand) )
+            switch ( static_cast<MultitargetRouter::RouterOption>(opt.inCommand) )
             {
-            case MultitargetRouter::eRouterOptions::CMD_RouterPause:
+            case MultitargetRouter::RouterOption::CMD_RouterPause:
                 MultitargetRouter::_outputInfo( "Pausing message router ..." );
                 router.getCommunicationController().disconnectServiceHost( );
                 router.mServiceServer.waitToComplete( );
                 MultitargetRouter::_outputInfo( "Message router is paused ..." );
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterRestart:
+            case MultitargetRouter::RouterOption::CMD_RouterRestart:
                 MultitargetRouter::_outputInfo( "Restarting message router ..." );
                 router.getCommunicationController( ).connectServiceHost( );
                 MultitargetRouter::_outputInfo( "Message router is restarted ..." );
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterInstances:
+            case MultitargetRouter::RouterOption::CMD_RouterInstances:
                 MultitargetRouter::_outputInstances( router.getConnetedInstances() );
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterVerbose:
+            case MultitargetRouter::RouterOption::CMD_RouterVerbose:
                 MultitargetRouter::_setVerboseMode( true );
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterSilent:
+            case MultitargetRouter::RouterOption::CMD_RouterSilent:
                 MultitargetRouter::_setVerboseMode( false );
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterPrintHelp:
+            case MultitargetRouter::RouterOption::CMD_RouterPrintHelp:
                 router.printHelp( false );
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterQuit:
+            case MultitargetRouter::RouterOption::CMD_RouterQuit:
                 quit = true;
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterConsole:    // pass through
-            case MultitargetRouter::eRouterOptions::CMD_RouterInstall:    // pass through
-            case MultitargetRouter::eRouterOptions::CMD_RouterUninstall:  // pass through
-            case MultitargetRouter::eRouterOptions::CMD_RouterService:    // pass through
-            case MultitargetRouter::eRouterOptions::CMD_RouterLoad:
+            case MultitargetRouter::RouterOption::CMD_RouterConsole:    // pass through
+            case MultitargetRouter::RouterOption::CMD_RouterInstall:    // pass through
+            case MultitargetRouter::RouterOption::CMD_RouterUninstall:  // pass through
+            case MultitargetRouter::RouterOption::CMD_RouterService:    // pass through
+            case MultitargetRouter::RouterOption::CMD_RouterLoad:
                 MultitargetRouter::_outputInfo("This command should be used in command line ...");
                 break;
 
-            case MultitargetRouter::eRouterOptions::CMD_RouterUndefined:  // pass through
+            case MultitargetRouter::RouterOption::CMD_RouterUndefined:  // pass through
             default:
                 hasError = true;
                 break;

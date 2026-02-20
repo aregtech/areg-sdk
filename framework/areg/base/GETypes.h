@@ -145,6 +145,6 @@ typedef uint64_t        TIME64;
 /**
  * \brief   The message ID type.
  **/
-typedef uint32_t        msg_id;
+typedef uint32_t        MSG_ID;
 
 #endif  // AREG_BASE_GETYPES_H

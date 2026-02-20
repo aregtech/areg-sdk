@@ -37,12 +37,6 @@ DEF_LOG_SCOPE( areg_component_StubBase_clientConnected );
 DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
 
 //////////////////////////////////////////////////////////////////////////
-// StubBase class statics
-//////////////////////////////////////////////////////////////////////////
-
-StubBase::MapStubResource   StubBase::_mapRegisteredStubs;
-
-//////////////////////////////////////////////////////////////////////////
 // StubBase::Listener implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -72,25 +66,33 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 // StubBase implementation
 //////////////////////////////////////////////////////////////////////////
 
+inline StubBase::MapStubResource& StubBase::map_providers()
+{
+    static StubBase::MapStubResource   _mapProviders;
+    return _mapProviders;
+}
+
+
+
 StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & siData )
     : StubEventConsumer   ( mAddress )
 
     , mComponent            (masterComp)
     , mInterface            (siData)
     , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName())
-    , mConnectionStatus     ( NEService::eServiceConnection::ServiceDisconnected )
+    , mConnectionStatus     ( NEService::ServiceConnectionState::Disconnected )
     , mListListener         ( )
     , mCurrListener         (mListListener.invalidPosition())
     , mSessionId            (0)
     , mMapSessions          ( )
 {
-    _mapRegisteredStubs.registerResourceObject(mAddress, this);
+    map_providers().registerResourceObject(mAddress, this);
     masterComp.registerServerItem(self());
 }
 
 StubBase::~StubBase()
 {
-    _mapRegisteredStubs.unregisterResourceObject(mAddress);
+    map_providers().unregisterResourceObject(mAddress);
 }
 
 bool StubBase::isBusy( unsigned int requestId ) const
@@ -267,7 +269,7 @@ ComponentThread & StubBase::getComponentThread() const
 
 StubBase* StubBase::findStubByAddress( const StubAddress& address )
 {
-    return _mapRegisteredStubs.findResourceObject(address);
+    return map_providers().findResourceObject(address);
 }
 
 void StubBase::startupServiceInterface( Component&  holder )
@@ -379,7 +381,7 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
 void StubBase::sendBusyRespone( const Listener & whichListener )
 {
     LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-    ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::ResultType::RequestBusy, EventDataStream::EmptyData);
+    ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::ResultType::RequestBusy, EventDataStream::empty_data());
     if (eventElem != nullptr)
     {
         LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
@@ -480,7 +482,7 @@ void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddres
     }
 }
 
-bool StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status )
+bool StubBase::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status )
 {
     bool result{ false };
     if (mAddress == client)
@@ -500,23 +502,23 @@ bool StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceC
     return result;
 }
 
-void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status )
+void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status )
 {
     clientConnected( proxyAddress, status );
 }
 
-void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::eServiceConnection status )
+void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::ServiceConnectionState status )
 {
     if ( NEService::isServiceConnected( status) )
     {
         ASSERT( stubTarget.isValid() );
-        _mapRegisteredStubs.lock();
-        _mapRegisteredStubs.unregisterResourceObject(mAddress);
+        map_providers().lock();
+        map_providers().unregisterResourceObject(mAddress);
 
         mAddress = stubTarget;
         
-        _mapRegisteredStubs.registerResourceObject(mAddress, this);
-        _mapRegisteredStubs.unlock();
+        map_providers().registerResourceObject(mAddress, this);
+        map_providers().unlock();
     }
 
     mConnectionStatus = status;

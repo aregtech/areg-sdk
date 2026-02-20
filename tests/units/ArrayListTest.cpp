@@ -651,7 +651,7 @@ TEST(ArrayListTest, TestStream)
 /**
  * \brief   Tests ascending sorting of array.
  **/
-TEST(ArrayListTest, TestSortAscending)
+TEST(ArrayListTest, TestAscending)
 {
     using Array = ArrayList<int>;
 
@@ -670,7 +670,7 @@ TEST(ArrayListTest, TestSortAscending)
 /**
  * \brief   Tests descending sorting of array.
  **/
-TEST(ArrayListTest, TestSortDescending)
+TEST(ArrayListTest, TestDescending)
 {
     using Array = ArrayList<int>;
 

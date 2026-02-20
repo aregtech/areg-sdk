@@ -39,16 +39,16 @@ void HardwareWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
 void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
 {
     const SharedBuffer & buf = data.getData();
-    PatientInfoEventData::eUpdateCommands cmd = PatientInfoEventData::CMD_Undefined;
+    PatientInfoEventData::UpdateCommands cmd = PatientInfoEventData::UpdateCommands::CMD_Undefined;
     buf >> cmd;
 
     switch (cmd)
     {
-    case PatientInfoEventData::CMD_PatientInfo:
+    case PatientInfoEventData::UpdateCommands::CMD_PatientInfo:
         updateInfoPatient(buf);
         break;
 
-    case PatientInfoEventData::CMD_Undefined:
+    case PatientInfoEventData::UpdateCommands::CMD_Undefined:
     default:
         break;
     }

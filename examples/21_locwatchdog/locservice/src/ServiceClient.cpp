@@ -26,7 +26,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
     bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
@@ -61,7 +61,7 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
 
 #if AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState ServiceState, NEService::eDataStateType state )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
     LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
@@ -69,7 +69,7 @@ void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState ServiceState, NE
 
 #else  // AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::eState /*ServiceState*/, NEService::eDataStateType /*state*/ )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*ServiceState*/, NEService::DataState /*state*/ )
 {
 }
 

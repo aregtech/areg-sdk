@@ -61,15 +61,15 @@ class AREG_API EventDispatcherBase  : protected QueueListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   EventDispatcherBase::eEventOrder
+     * \brief   EventDispatcherBase::EventSignal
      *          Used in main loop to identify event signal.
      **/
-    typedef enum class E_EventOrder : int8_t
+    enum class EventSignal : int32_t
     {
-          EventError    = -1    //!< Error happened during waiting for event
-        , EventExit     =  0    //!< Exit event has been signaled.
-        , EventQueue    =  1    //!< Queue event has been signaled.
-    } eEventOrder;
+          Error = -1    //!< Error happened during waiting for event
+        , Exit  =  0    //!< Exit event has been signaled.
+        , Queue =  1    //!< Queue event has been signaled.
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected.

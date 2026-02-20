@@ -34,22 +34,26 @@ bool FileLogger::openLogger()
         if ( fileName.isEmpty() == false )
         {
             bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
-            unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
+            unsigned int mode = static_cast<uint32_t>(File::OpenMode::Write) | 
+                                static_cast<uint32_t>(File::OpenMode::Read) |
+                                static_cast<uint32_t>(File::OpenMode::ShareRead) |
+                                static_cast<uint32_t>(File::OpenMode::ShareWrite) |
+                                static_cast<uint32_t>(File::OpenMode::Text);
 
             if (File::existFile(fileName))
             {
-                mode |= newFile ? File::FO_MODE_TRUNCATE : File::FO_MODE_EXIST;
+                mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
             }
             else
             {
-                mode |= FileBase::FO_MODE_CREATE;
+                mode |= static_cast<uint32_t>(File::OpenMode::Create);
             }
 
             if ( mLogFile.open( fileName, mode) && createLayouts() )
             {
                     
                 Process & curProcess = Process::getInstance();
-                NELogging::sLogMessage logMsgHello(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+                NELogging::sLogMessage logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
                 String::formatString( logMsgHello.logMessage
                                     , NELogging::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
@@ -70,7 +74,7 @@ void FileLogger::closeLogger()
     if ( mLogFile.isOpened() )
     {
         Process & curProcess = Process::getInstance();
-        NELogging::sLogMessage logMsgGoodbye(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+        NELogging::sLogMessage logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
         String::formatString(logMsgGoodbye.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
@@ -91,19 +95,19 @@ void FileLogger::logMessage( const NELogging::sLogMessage & logMessage )
     {
         switch (logMessage.logMsgType)
         {
-        case NELogging::eLogMessageType::LogMessageText:
+        case NELogging::LogMessageType::MessageText:
             getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(mLogFile));
             break;
 
-        case NELogging::eLogMessageType::LogMessageScopeEnter:
+        case NELogging::LogMessageType::ScopeEnter:
             getLayoutEnterScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
-        case NELogging::eLogMessageType::LogMessageScopeExit:
+        case NELogging::LogMessageType::ScopeExit:
             getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
-        case NELogging::eLogMessageType::LogMessageUndefined: // fall through
+        case NELogging::LogMessageType::Undefined: // fall through
         default:
             ASSERT(false);  // unexpected message to log
             break;

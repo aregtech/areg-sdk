@@ -47,27 +47,23 @@ class AREG_API EventDataStream : public IOStream
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   EventDataStream::EmptyData
-     *          Predefined Empty Data object. Can be used when event has
-     *          no data to transfer and no data should be write or read,
-     *          because it is instance of Invalid Buffer and any
-     *          read / write will fail.
-     **/
-    static const EventDataStream  EmptyData;
-
-    /**
-     * \brief   EventDataStream::eEventData
+     * \brief   EventDataStream::EventDataKind
      *          The type of Event Data.
      *          If internal, the Shared Buffer data will not be copied, but shared.
      *          If external, the Shared Buffer data will be copied.
      **/
-    typedef enum class E_EventData : uint8_t
+    enum class EventDataKind : uint8_t
     {
-          EventDataInternal     = 1 //!< Internal Data
-        , EventDataExternal     = 2 //!< External Data
-        , EventDataEmpty        = 3 //!< An empty data
+          Internal  = 1 //!< Internal Data
+        , External  = 2 //!< External Data
+        , Empty     = 3 //!< An empty data
+    };
 
-    } eEventData;
+    /**
+     * \brief   Returns predefined Empty Data object. Can be used when event has
+     *          no data to transfer and no data should write or read.
+     **/
+    static const EventDataStream& empty_data();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -79,7 +75,7 @@ public:
      * \param   evetDataType    The type of event data. Either for internal or for external communication
      * \param   name            The name for streaming object. Can be ignored.
      **/
-    explicit EventDataStream( EventDataStream::eEventData evetDataType, const String & name = String::getEmptyString() );
+    explicit EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name = String::getEmptyString() );
 
     /**
      * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.
@@ -295,7 +291,7 @@ protected:
     /**
      * \brief   The type of Event Data. Either internal or external.
      **/
-    EventDataStream::eEventData mEventDataType;
+    EventDataStream::EventDataKind mEventDataType;
 
     /**
      * \brief   The name of Event Data object.
@@ -322,7 +318,7 @@ protected:
 #endif  // _MSC_VER
 };
 
-AREG_IMPLEMENT_STREAMABLE(EventDataStream::eEventData)
+AREG_IMPLEMENT_STREAMABLE(EventDataStream::EventDataKind)
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream inline functions implementation
@@ -335,7 +331,7 @@ inline bool EventDataStream::isEmpty() const
 
 inline bool EventDataStream::isExternalDataStream() const
 {
-    return (mEventDataType != EventDataStream::eEventData::EventDataInternal);
+    return (mEventDataType != EventDataStream::EventDataKind::Internal);
 }
 
 inline const InStream & EventDataStream::getStreamForRead() const
@@ -358,8 +354,8 @@ inline const InStream & operator >> ( const InStream & stream, EventDataStream &
 
 inline OutStream & operator << ( OutStream & stream, const EventDataStream & output )
 {
-    ASSERT(output.mEventDataType != EventDataStream::eEventData::EventDataInternal);
-    stream << EventDataStream::eEventData::EventDataExternal;
+    ASSERT(output.mEventDataType != EventDataStream::EventDataKind::Internal);
+    stream << EventDataStream::EventDataKind::External;
     stream << output.mBufferName;
     stream << output.mDataBuffer;
     return stream;

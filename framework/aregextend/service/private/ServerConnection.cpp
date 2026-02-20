@@ -63,7 +63,7 @@ void ServerConnection::closeAllConnections()
             {
                 RemoteMessage msgDisconnect{ msgByeClient.clone() };
                 msgDisconnect.setTarget(target);
-                msgDisconnect << target << NEService::eServiceConnection::ServiceDisconnected;
+                msgDisconnect << target << NEService::ServiceConnectionState::Disconnected;
                 sendMessage(msgDisconnect, clientConnection);
             }
         }

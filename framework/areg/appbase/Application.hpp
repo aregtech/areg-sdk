@@ -397,7 +397,7 @@ private:
     /**
      * \brief   The state of application.
      **/
-    NEApplication::eApplicationState    mAppState;
+    NEApplication::AppState    mAppState;
     /**
      * \brief   Flag, indicating application basic handling is setup. In Linux setup signal handling.
      */
@@ -454,7 +454,7 @@ private:
      * \param   newState    The new sate of application to set.
      * \return  Returns true if succeeded to change the application state.
      **/
-    static bool _setAppState(NEApplication::eApplicationState newState);
+    static bool _setAppState(NEApplication::AppState newState);
 
     /**
      * \brief   The OS specific implementation of start a service.

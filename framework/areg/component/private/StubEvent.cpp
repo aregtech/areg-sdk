@@ -34,7 +34,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-StubEvent::StubEvent( const StubAddress& toTarget, Event::eEventType eventType )
+StubEvent::StubEvent( const StubAddress& toTarget, Event::EventType eventType )
     : StreamableEvent   (eventType)
     , mTargetStubAddress(toTarget)
 {
@@ -132,9 +132,9 @@ inline void StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEve
 
 inline void StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
+    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
     {
-        if (notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection)
+        if (notifyConnect.getRequestType() == NEService::RequestType::ServiceConnection)
         {
             processStubRegisteredEvent(notifyConnect.getTargetStub(), notifyConnect.getConnectionStatus());
         }

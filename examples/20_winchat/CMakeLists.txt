@@ -17,10 +17,8 @@ macro_declare_executable(20_chatter
     20_generated
     chatter/res/stdafx.cpp
     chatter/res/chatter.rc
-
     chatter/DistrbutedApp.cpp
     chatter/DistributedAppDefs.cpp
-
     chatter/services/CentralMessaging.cpp
     chatter/services/ChatParticipantService.cpp
     chatter/services/ChatPrticipantHandler.cpp
@@ -32,7 +30,6 @@ macro_declare_executable(20_chatter
     chatter/services/DirectConnectionService.cpp
     chatter/services/DirectMessagingClient.cpp
     chatter/services/NetworkSetup.cpp
-
     chatter/ui/DistributedDialog.cpp
     chatter/ui/PageChat.cpp
     chatter/ui/PageConnections.cpp
@@ -55,15 +52,12 @@ target_compile_options(20_chatter PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")
 macro_declare_executable(20_register    20_generated
     register/res/stdafx.cpp
     register/res/register.rc
-
-    register/CentralApp.cpp
-    register/CentralAppDefs.cpp
-
-    register/services/ConnectionManager.cpp
-    
+    register/services/ConnectionController.cpp
     register/ui/CentralDialog.cpp
     register/ui/PageBrokerSetup.cpp
     register/ui/PageConnections.cpp
+    register/CentralApp.cpp
+    register/CentralAppDefs.cpp
 )
 
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.

@@ -53,7 +53,7 @@ void SortedEventStack::deleteAllEvents()
     }
 }
 
-uint32_t SortedEventStack::deleteAllLowerPriority(Event::eEventPriority eventPrio)
+uint32_t SortedEventStack::deleteAllLowerPriority(Event::EventPriority eventPrio)
 {
     Lock lock(mSyncObject);
 
@@ -83,7 +83,7 @@ uint32_t SortedEventStack::deleteAllExceptClass(const RuntimeClassID& eventClass
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::eEventPriority::EventPriorityExit)
+        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
@@ -101,14 +101,14 @@ uint32_t SortedEventStack::deleteAllExceptClass(const RuntimeClassID& eventClass
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::deleteAllMatchPriority(Event::eEventPriority eventPrio)
+uint32_t SortedEventStack::deleteAllMatchPriority(Event::EventPriority eventPrio)
 {
     Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::eEventPriority::EventPriorityExit)
+        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
@@ -133,7 +133,7 @@ uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassI
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::eEventPriority::EventPriorityExit)
+        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
@@ -157,7 +157,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
     Lock lock(mSyncObject);
     switch (newEvent->getEventPriority())
     {
-    case Event::eEventPriority::EventPriorityLow:
+    case Event::EventPriority::LowPrio:
         if (mValueList.size() < mMaxQueueSize)
         {
             _insertAtEnd(newEvent);
@@ -172,7 +172,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
         }
         break;
 
-    case Event::eEventPriority::EventPriorityNormal:
+    case Event::EventPriority::NormalPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
@@ -188,10 +188,10 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertAfterPrio(newEvent, Event::eEventPriority::EventPriorityNormal);
+        _insertAfterPrio(newEvent, Event::EventPriority::NormalPrio);
         break;
 
-    case Event::eEventPriority::EventPriorityHigh:
+    case Event::EventPriority::HighPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
@@ -207,10 +207,10 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertBeforePrio(newEvent, Event::eEventPriority::EventPriorityNormal);
+        _insertBeforePrio(newEvent, Event::EventPriority::NormalPrio);
         break;
 
-    case Event::eEventPriority::EventPriorityCritical:
+    case Event::EventPriority::CriticalPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
@@ -226,10 +226,10 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertBeforePrio(newEvent, Event::eEventPriority::EventPriorityHigh);
+        _insertBeforePrio(newEvent, Event::EventPriority::HighPrio);
         break;
 
-    case Event::eEventPriority::EventPriorityExit:
+    case Event::EventPriority::ExitPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
@@ -248,8 +248,8 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
         _insertAtBegin(newEvent);
         break;
 
-    case Event::eEventPriority::EventPriorityUndefined: // fall through
-    case Event::eEventPriority::EventPriorityIgnore:    // fall through
+    case Event::EventPriority::UndefinedPrio: // fall through
+    case Event::EventPriority::IgnorePrio:    // fall through
     default:
         ASSERT(false);
         break;
@@ -281,7 +281,7 @@ inline void SortedEventStack::_insertAtEnd(Event* newEvent)
     mValueList.push_back(newEvent);
 }
 
-inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::eEventPriority eventPrio)
+inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::EventPriority eventPrio)
 {
     auto it = mValueList.end();
     if (mValueList.empty() == false)
@@ -302,7 +302,7 @@ inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::eEventPri
     mValueList.insert(it, newEvent);
 }
 
-inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::eEventPriority eventPrio)
+inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::EventPriority eventPrio)
 {
     auto it = mValueList.begin();
     if (mValueList.empty() == false)

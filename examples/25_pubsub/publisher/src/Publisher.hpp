@@ -48,7 +48,7 @@ class Publisher : public    Component
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The commands of PubSub
-    enum class eCommands : int
+    enum class OptionFlag : int
     {
           CMD_Undefined     //!< Undefined command, no command is entered
         , CMD_Error         //!< Error happened
@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected(const ProxyAddress & client, NEService::eServiceConnection status) override;
+    virtual bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -148,7 +148,7 @@ private:
     void quit();
 
     //! Outputs message on console
-    inline void printMessage(const String & message, eCommands cmd);
+    inline void printMessage(const String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
     inline Publisher & self();

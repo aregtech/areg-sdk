@@ -178,7 +178,7 @@ Merge typedef inner/alias pairs into one name.
 | `E_EventFired` / `eEventFired`                   | `EventFired`               | `framework/areg/base/private/posix/SyncLockAndWaitPosix.hpp`        |                                            |
 | `E_EventOrder` / `eEventOrder`                   | `EventOrder`               | `framework/areg/component/private/EventDispatcherBase.hpp`       |                                            |
 | `E_EventPriority` / `eEventPriority`             | `EventPriority`            | `framework/areg/component/Event.hpp`                             |                                            |
-| `E_EventResetInfo` / `eEventResetInfo`           | `EventResetInfo`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
+| `E_EventResetInfo` / `ResetMode`           | `EventResetInfo`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
 | `E_EventType` / `eEventType`                     | `EventType`                | `framework/areg/component/Event.hpp`                             |                                            |
 | `E_ExitCodes` / `eExitCodes`                     | `ExitCode`                 | `framework/areg/base/ThreadConsumer.hpp`                       | Singular                                   |
 | `E_FileOpenBits` / `eFileOpenBits`               | `FileOpenBits`             | `framework/areg/base/FileBase.hpp`                               |                                            |
@@ -188,7 +188,7 @@ Merge typedef inner/alias pairs into one name.
 | `E_Layouts` / `eLayouts`                         | `LayoutTag`                | `framework/areg/logging/private/LogOptions.hpp`                | Identifies layout tokens in format strings |
 | `E_LogStatus` / `eLogStatus`                     | `LogStatus`                | `framework/areg/logging/private/LogOptions.hpp`                |                                            |
 | `E_LoggingAction` / `eLoggingAction`             | `LoggingAction`            | `framework/areg/logging/private/LoggingEvent.hpp`                |                                            |
-| `E_MatchCondition` / `eMatchCondition`           | `MatchCondition`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
+| `E_MatchCondition` / `WaitCondition`           | `MatchCondition`           | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
 | `E_MessageDataType` / `eMessageDataType`         | `MessageDataType`          | `framework/areg/component/ServiceDefs.hpp`                         |                                            |
 | `E_MessageSource` / `eMessageSource`             | `MessageSource`            | `framework/areg/component/ServiceDefs.hpp`                         |                                            |
 | `E_ProcEnv` / `eProcEnv`                         | `ProcessEnv`               | `framework/areg/base/Process.hpp`                                |                                            |
@@ -204,7 +204,7 @@ Merge typedef inner/alias pairs into one name.
 | `E_SyncObject` / `eSyncObject`                   | `SyncCategory`             | `framework/areg/base/SyncObject.hpp`                           | `SyncObject` taken by class                |
 | `E_SyncObjectFired` / `eSyncObjectFired`         | `SyncObjectFired`          | `framework/areg/base/private/posix/SyncDefsPosix.hpp`            |                                            |
 | `E_ThreadPriority` / `eThreadPriority`           | `ThreadPriority`           | `framework/areg/base/Thread.hpp`                                 |                                            |
-| `E_WaitType` / `eWaitType`                       | `WaitType`                 | `framework/areg/base/private/posix/SyncLockAndWaitPosix.hpp`        |                                            |
+| `E_WaitType` / `WaitMode`                       | `WaitType`                 | `framework/areg/base/private/posix/SyncLockAndWaitPosix.hpp`        |                                            |
 | `ResultType`                                     | (keep)                     | `framework/areg/component/ServiceDefs.hpp`                         | Already clean                              |
 | `eBufferType`                                    | `BufferType`               | `framework/areg/base/MemoryDefs.hpp`                               |                                            |
 | `eColumnType`                                    | `ColumnType`               | `framework/aregextend/db/SqliteStatement.hpp`                    |                                            |

@@ -19,17 +19,10 @@ class ComponentThread;
  * \brief   Connection manager, server component implementation
  *          to register all client applications connections.
  **/
-class ConnectionController : public    Component
-                        , public    ConnectionManagerStub
-                        , public    CentralMessagerStub
+class ConnectionController  : public    Component
+                            , public    ConnectionManagerStub
+                            , public    CentralMessagerStub
 {
-//////////////////////////////////////////////////////////////////////////
-// Create and delete component
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    static ConnectionController * getService();
-
 public:
     ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
     virtual ~ConnectionController();
@@ -113,6 +106,8 @@ public:
      **/
     bool IsReservedNickname( const String & nickName ) const;
 
+    static ConnectionController* getConnectionService();
+
 protected:
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -131,7 +126,6 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    static ConnectionController *    sService;
     HWND        mWnd;
     uint32_t    mCookies;
 

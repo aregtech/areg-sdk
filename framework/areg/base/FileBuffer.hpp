@@ -63,7 +63,7 @@ public:
      * \param	mode	    The file open mode. By default file object is opened with write permission and in binary mode
      * \param	blockSize	The block size to increase. By default the block size is 4 x NEMemory::BLOCK_SIZE (default 64 bytes)
      **/
-    explicit FileBuffer( unsigned int mode      = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY)
+    explicit FileBuffer( unsigned int mode      = (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))
                        , const char*  name      = nullptr
                        , unsigned int blockSize = FileBuffer::BLOCK_SIZE);
 
@@ -178,9 +178,9 @@ public:
      *
      * \param	mode	    The opening modes. The value should be combined with bitwise OR operation.
      *                      Before opening, the conflicting bits are removed.
-     *                      For example, mode cannot contain (FO_MODE_ATTACH | FO_MODE_DETACH) at once.
+     *                      For example, mode cannot contain (Attach | Detach) at once.
      *                      One of bits will be ignored.
-     *                      For more details see description of eFileOpenMode and eFileOpenBits.
+     *                      For more details see description of OpenMode and OpenFlag.
      *
      * \return	Returns true if file was opened with success.
      **/
@@ -188,10 +188,10 @@ public:
 
     /**
      * \brief   Call to close file object.
-     *          If file was opened in FO_MODE_ATTACH or FO_MODE_DETACH modes, on close the file object will not be deleted
-     *          except if mode is combined with values FO_FOR_DELETE or FO_MODE_CREATE_TEMP. Attach and Detach modes are
+     *          If file was opened in Attach or Detach modes, on close the file object will not be deleted
+     *          except if mode is combined with values FO_FOR_DELETE or CreateTemp. Attach and Detach modes are
      *          valid and meaningful only for memory buffered file object. It has no meaning for File System file object.
-     *          If FO_MODE_CREATE_TEMP is set, file object is always deleted on close.
+     *          If CreateTemp is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      **/
     virtual void close() override;
@@ -315,17 +315,17 @@ public:
      * \brief	Sets the file pointer position and returns current position. 
      *          The positive value of offset means move pointer forward.
      *          The negative value of offset means move pointer back.
-     *          For memory buffered file the pointer cannot move more than Cursor::eCursorPosition::PositionEnd.
+     *          For memory buffered file the pointer cannot move more than Cursor::SeekOrigin::End.
      *
      * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
      * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  Cursor::eCursorPosition::PositionBegin   -- position from beginning of file
-     *                  Cursor::eCursorPosition::PositionCurrent -- from current pointer position
-     *                  Cursor::eCursorPosition::PositionEnd     -- from end of file
+     *                  Cursor::SeekOrigin::Begin   -- position from beginning of file
+     *                  Cursor::SeekOrigin::Current -- from current pointer position
+     *                  Cursor::SeekOrigin::End     -- from end of file
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition(int offset, Cursor::eCursorPosition startAt) const override;
+    virtual unsigned int setPosition(int offset, Cursor::SeekOrigin startAt) const override;
 
     /**
      * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
@@ -363,7 +363,7 @@ protected:
 /************************************************************************/
     /**
      * \brief	Validates and normalize bits for file open mode.
-     * \param	mode	Integer value of bitwise OR operation of eFileOpenMode values
+     * \param	mode	Integer value of bitwise OR operation of OpenMode values
      * \return	Returns normalized value.
      **/
     virtual unsigned int normalizeMode(unsigned int mode) const override;

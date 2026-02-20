@@ -76,7 +76,7 @@ protected:
      * \param   targetProxy The address of target Proxy, which should
      *                      receive and process event.
      **/
-    ProxyEvent( const ProxyAddress & targetProxy, Event::eEventType eventType );
+    ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType );
 
     /**
      * \brief   Initializes event data from streaming object.
@@ -209,10 +209,10 @@ protected:
      * \param   Server      The address of connected service stub server.
      * \param   Channel     Communication channel object to deliver events.
      * \param   Status      The service connection status. 
-     *                      The connection status should be NEService::ServiceConnected
+     *                      The connection status should be NEService::Connected
      *                      To be able to send message to service target from Proxy client.
      **/
-    virtual void serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, NEService::eServiceConnection Status ) = 0;
+    virtual void serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, NEService::ServiceConnectionState Status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

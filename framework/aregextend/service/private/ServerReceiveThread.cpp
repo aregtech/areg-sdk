@@ -42,7 +42,7 @@ bool ServerReceiveThread::runDispatcher()
     LOG_DBG("Starting dispatcher [ %s ]", getName().getString());
 
     readyForEvents(true);
-    int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
+    int whichEvent{ static_cast<int>(EventDispatcherBase::EventSignal::Error) };
     if ( mConnection.serverListen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
@@ -55,7 +55,7 @@ bool ServerReceiveThread::runDispatcher()
             whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
-                whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
+                whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Queue); // escape quit
                 NESocket::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
 
@@ -67,7 +67,7 @@ bool ServerReceiveThread::runDispatcher()
                         NESocket::socketClose(hSocket);
                     }
 
-                    whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+                    whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Exit);
                 }
                 else if (hSocket == NESocket::FailedSocketHandle)
                 {
@@ -75,7 +75,7 @@ bool ServerReceiveThread::runDispatcher()
                     if (++retryCount >= RETRY_COUNT)
                     {
                         mConnectHandler.connectionFailure();
-                        whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+                        whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Exit);
                     }
                 }
                 else if ( hSocket != NESocket::InvalidSocketHandle )
@@ -159,16 +159,16 @@ bool ServerReceiveThread::runDispatcher()
             }
             else
             {
-                Event * eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
-                whichEvent = isExitEvent(eventElem) ? static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) : whichEvent;
+                Event * eventElem = whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+                whichEvent = isExitEvent(eventElem) ? static_cast<int>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
             }
 
-        } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
+        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
     }
 
     readyForEvents(false);
     removeAllEvents();
 
     LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
-    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
+    return (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Exit));
 }

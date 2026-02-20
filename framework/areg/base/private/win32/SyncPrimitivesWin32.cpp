@@ -180,7 +180,7 @@ bool CriticalSection::_osTryLock()
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock()
-    : Lockable( SyncObject::eSyncObject::SoSpinlock )
+    : Lockable( SyncObject::SyncKind::SoSpinlock )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
     mSyncObject    = DEBUG_NEW SpinLockWin32( );
@@ -340,13 +340,13 @@ int MultiLock::_osLock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bo
         {
             index = static_cast<int>(result - WAIT_OBJECT_0);
             ASSERT((index >= 0) && index < mSizeCount);
-            mLockedStates[index] = MultiLock::eLockedState::StateLocked;
+            mLockedStates[index] = MultiLock::LockState::Locked;
         }
         else
         {
             for (int i = 0; i < mSizeCount; ++ i)
             {
-                mLockedStates[i] = MultiLock::eLockedState::StateLocked;
+                mLockedStates[i] = MultiLock::LockState::Locked;
             }
 
             index = MultiLock::LOCK_INDEX_ALL;
@@ -394,11 +394,11 @@ void Wait::_osReleaseTimer()
     mTimer = nullptr;
 }
 
-Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
+Wait::WaitResolution Wait::_osWaitFor(const Wait::Duration& timeout) const
 {
     static constexpr int64_t _COEF{ -10'000 };
 
-    Wait::eWaitResult result {Wait::eWaitResult::WaitInvalid};
+    Wait::WaitResolution result {Wait::WaitResolution::Invalid};
     if (timeout >= Wait::MIN_WAIT)
     {
         LARGE_INTEGER dueTime{};
@@ -406,7 +406,7 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
         ::SetWaitableTimer(mTimer, &dueTime, 0, nullptr, nullptr, FALSE);
         if (::WaitForSingleObject(mTimer, INFINITE) == WAIT_OBJECT_0)
         {
-            result = Wait::eWaitResult::WaitInMilli;
+            result = Wait::WaitResolution::Millisecond;
         }
     }
     else if (timeout >= Wait::ONE_MUS)
@@ -422,11 +422,11 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
             ::QueryPerformanceCounter(&dueTime);
         } while (dueTime.QuadPart < deadline);
 
-        result = Wait::eWaitResult::WaitInMicro;
+        result = Wait::WaitResolution::Microsecond;
     }
     else if (timeout.count() > 0)
     {
-        result = Wait::eWaitResult::WaitIgnored;
+        result = Wait::WaitResolution::Ignored;
     }
 
     return result;

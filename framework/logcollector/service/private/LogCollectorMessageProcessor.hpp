@@ -162,7 +162,7 @@ public:
      * \param   msgSource   The source of message to check.
      * \return  Returns true if the specified type is a source of log messages.
      **/
-    static bool isLogSource(NEService::eMessageSource msgSource);
+    static bool isLogSource(NEService::MessageSource msgSource);
 
     /**
      * \brief   Checks whether the specified message source is considered as an observer.
@@ -170,7 +170,7 @@ public:
      * \param   msgSource   The source of message to check.
      * \return  Returns true if the specified type is an observer.
      **/
-    static bool isLogObserver(NEService::eMessageSource msgSource);
+    static bool isLogObserver(NEService::MessageSource msgSource);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

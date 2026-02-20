@@ -62,22 +62,22 @@ class LoggerClient  : public    ServiceClientConnectionBase
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The name of the observer dispatcher thread
-    static constexpr std::string_view                   ThreadName      { "AREG_LogObserverThread" };
+    static constexpr std::string_view                   THREAD_NAME { "AREG_LogObserverThread" };
 
     //!< The prefix to add to the send and receive threads.
-    static constexpr std::string_view                   ThreadPrefix    { "Observer" };
+    static constexpr std::string_view                   THREAD_PREFIX{ "Observer" };
 
     //!< The ID of the target to send and receive messages. The target is the log collector service cookie ID.
-    static constexpr ITEM_ID                            TargetID        { NEService::COOKIE_LOGGER };
+    static constexpr ITEM_ID                            TARGET_ID   { NEService::COOKIE_LOGGER };
 
     //!< The type of the service. It is a log collector service.
-    static constexpr NERemoteService::eRemoteServices   ServiceType     { NERemoteService::eRemoteServices::ServiceLogger };
+    static constexpr NERemoteService::RemoteServiceKind   SERVICE_TYPE{ NERemoteService::RemoteServiceKind::Logger };
 
     //!< The connection type. At the moment only TCP/IP
-    static constexpr NERemoteService::eConnectionTypes  ConnectType     { NERemoteService::eConnectionTypes::ConnectTcpip };
+    static constexpr NERemoteService::ConnectionType  CONNECT_TYPE{ NERemoteService::ConnectionType::Tcpip };
 
     //!< The message source. It is marked as an observer.
-    static constexpr NEService::eMessageSource          SourceType      { NEService::eMessageSource::MessageSourceObserver };
+    static constexpr NEService::MessageSource          SOURCE_TYPE { NEService::MessageSource::SourceObserver };
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods.

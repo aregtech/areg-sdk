@@ -20,6 +20,7 @@
   * Includes
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include <cstdint>
 
 #if defined(_POSIX) || defined(POSIX)
 
@@ -138,27 +139,27 @@ class SyncLockAndWaitPosix
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   SyncLockAndWaitPosix::eWaitType
+     * \brief   SyncLockAndWaitPosix::WaitMode
      *          Describes the waiting type.
      **/
-    typedef enum class E_WaitType
+    enum class WaitMode
     {
-          WaitSingleObject      //!< Waits a single object
-        , WaitMultipleObjects   //!< Waits for multiple object
+          Single    //!< Waits a single object
+        , Multiple  //!< Waits for multiple object
 
-    } eWaitType;
+    };
 
     /**
-     * \brief   SyncLockAndWaitPosix::eEventFired
+     * \brief   SyncLockAndWaitPosix::SignalState
      *          Describes the fired state of each event.
      **/
-    typedef enum class E_EventFired
+    enum class SignalState
     {
-          EventFiredNone        //!< No event has been fired.
-        , EventFiredOne         //!< Fired one event.
-        , EventFiredAll         //!< All waiting events are fired.
+          None  //!< No event has been fired.
+        , One   //!< Fired one event.
+        , All   //!< All waiting events are fired.
 
-    } eEventFired;
+    };
     /**
      * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
      **/
@@ -180,10 +181,10 @@ public:
      *                      If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                      Any other value indicates timeout to wait.
      * \return  It returns one of following values:
-     *              - NESyncTypesIX::SyncObject0 if waitable was signaled;
-     *              - NESyncTypesIX::SyncObjectTimeout if waiting timeout is expired;
-     *              - NESyncTypesIX::SyncWaitInterrupted if waiting was interrupted by such event like timer;
-     *              - NESyncTypesIX::SyncObject0Error if error happened. For example, the waitable is invalidated.
+     *              - NESyncTypesIX::SyncSignal::First if waitable was signaled;
+     *              - NESyncTypesIX::SyncSignal::Timeout if waiting timeout is expired;
+     *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
+     *              - NESyncTypesIX::SyncSignal::FirstError if error happened. For example, the waitable is invalidated.
      **/
     static int waitForSingleObject( WaitablePosix & syncWait, unsigned int msTimeout = NECommon::WAIT_INFINITE );
 
@@ -205,11 +206,11 @@ public:
      *                          If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                          Any other value indicates timeout to wait.
      * \return  It returns one of following values:
-     *              - NESyncTypesIX::SyncObject0 + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
-     *              - NESyncTypesIX::SyncObjectAll if 'waitAll' flag is true and all waitables are signaled.
-     *              - NESyncTypesIX::SyncObjectTimeout if waiting timeout is expired;
-     *              - NESyncTypesIX::SyncWaitInterrupted if waiting was interrupted by such event like timer;
-     *              - NESyncTypesIX::SyncObject0Error + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
+     *              - NESyncTypesIX::SyncSignal::First + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
+     *              - NESyncTypesIX::SyncSignal::All if 'waitAll' flag is true and all waitables are signaled.
+     *              - NESyncTypesIX::SyncSignal::Timeout if waiting timeout is expired;
+     *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
+     *              - NESyncTypesIX::SyncSignal::FirstError + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
      **/
     static int waitForMultipleObjects( WaitablePosix ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
 
@@ -262,7 +263,7 @@ private:
      *                          or it should wait for any event to be in signaled state.
      * \param   msTimeout       Initializes the timeout in milliseconds to wait.
      **/
-    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int count, NESyncTypesIX::eMatchCondition matchCondition, unsigned int msTimeout );
+    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int count, NESyncTypesIX::WaitCondition matchCondition, unsigned int msTimeout );
 
     /**
      * \brief   Destructor.
@@ -344,14 +345,14 @@ private:
      * \param   syncObject The waitable object to check.
      * \return  Returns one of event fired state.
      **/
-    NESyncTypesIX::eSyncObjectFired _checkEventFired( WaitablePosix & syncObject );
+    int32_t _checkEventFired( WaitablePosix & syncObject );
 
     /**
      * \brief   Called to notify threads to take fired event ownership.
      * \param   firedEvent  The index of fired event in the list that notifies the threads to take ownership.
      * \return  Returns true if threads are notified or took ownership.
      **/
-    bool _requestOwnership( const NESyncTypesIX::eSyncObjectFired firedEvent );
+    bool _requestOwnership( int32_t firedEvent );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -360,11 +361,11 @@ private:
     /**
      * \brief   Describes the waiting type. Either should wait for all events or for any.
      **/
-    const eWaitType                     mDescribe;
+    const WaitMode                     mDescribe;
     /**
      * \brief   Describes the lock and wait condition.
      **/
-    const NESyncTypesIX::eMatchCondition   mMatchCondition;
+    const NESyncTypesIX::WaitCondition   mMatchCondition;
     /**
      * \brief   Timeout in milliseconds to wait when blocks the thread.
      **/
@@ -408,7 +409,7 @@ private:
     /**
      * \brief   Indicates the fired event object or error code.
      **/
-    NESyncTypesIX::eSyncObjectFired     mFiredEntry;
+    int32_t                             mFiredEntry;
     /**
      * \brief   The list of waitables.
      **/
