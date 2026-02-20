@@ -40,11 +40,6 @@ namespace
     ConnectionController* _thisService{ nullptr };
 }
 
-ConnectionController * ConnectionController::getService()
-{
-    return _thisService;
-}
-
 ConnectionController::ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component             ( entry, ownerThread )
     , ConnectionManagerStub ( static_cast<Component &>(self()) )
@@ -334,6 +329,11 @@ bool ConnectionController::IsReservedNickname( const String & nickName ) const
         return true;
     else
         return false;
+}
+
+ConnectionController* ConnectionController::getConnectionService()
+{
+    return _thisService;
 }
 
 inline bool ConnectionController::connectionExist( uint32_t cookie ) const

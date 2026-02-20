@@ -7,8 +7,9 @@ message(STATUS "Areg: >>> Preparing settings for CLang compiler under \'${AREG_O
 
 if (AREG_PLATFORM_WINDOWS)
 
-    if(CMAKE_BUILD_TYPE MATCHES Release)
+    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
         list(APPEND AREG_COMPILER_OPTIONS -O2)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     else()
         list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
     endif()
@@ -25,13 +26,13 @@ if (AREG_PLATFORM_WINDOWS)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS  advapi32   psapi   shell32   ws2_32)
     set(AREG_LDFLAGS_STR   "-ladvapi32 -lpsapi -lshell32 -lws2_32")
-
+        
 else()
 
-    if(NOT CMAKE_BUILD_TYPE MATCHES Release)
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
-    else()
+    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
         list(APPEND AREG_COMPILER_OPTIONS -O2)
+    else()
+        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
     endif()
 
     # POSIX API

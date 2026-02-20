@@ -108,7 +108,7 @@ END_MESSAGE_MAP( )
 void PageConnections::OnClickedButtonBroadcast()
 {
     UpdateData(TRUE);
-    ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getService( ) : nullptr;
+    ConnectionController* service = !mTextBroadcast.IsEmpty() ? ConnectionController::getConnectionService( ) : nullptr;
     if ( service != nullptr )
     {
         DateTime timestamp = DateTime::getNow();

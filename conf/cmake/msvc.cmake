@@ -13,10 +13,11 @@ if (${AREG_BITNESS} EQUAL 64)
     add_definitions(-DWIN64 -D_WIN64)
 endif()
 
-if (AREG_BUILD_TYPE MATCHES "Debug")
-    list(APPEND AREG_COMPILER_OPTIONS /Od /RTC1 /c)
-else()
+if(${CMAKE_BUILD_TYPE} MATCHES "Release")
     list(APPEND AREG_COMPILER_OPTIONS /O2 /GL /c)  # Optimize for speed + LTO
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+    list(APPEND AREG_COMPILER_OPTIONS /Od /RTC1 /c)
 endif()
 
 # Linker flags (-l is not necessary)

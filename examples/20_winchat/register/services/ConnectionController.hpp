@@ -23,13 +23,6 @@ class ConnectionController  : public    Component
                             , public    ConnectionManagerStub
                             , public    CentralMessagerStub
 {
-//////////////////////////////////////////////////////////////////////////
-// Create and delete component
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    static ConnectionController * getService();
-
 public:
     ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
     virtual ~ConnectionController();
@@ -112,6 +105,8 @@ public:
      * \brief   Returns true if name is reserved by system.
      **/
     bool IsReservedNickname( const String & nickName ) const;
+
+    static ConnectionController* getConnectionService();
 
 protected:
 /************************************************************************/
