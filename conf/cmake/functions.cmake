@@ -1067,7 +1067,6 @@ macro(macro_add_service_interface lib_name interface_doc codegen_root output_pat
     # Set path for generated files
     set(_generate "${codegen_root}/${output_path}")
     
-    message(STATUS "Areg Setup: Generating Service Interface files for \'${_interface_name}\' in \'${_generate}\'.")
     # Run the code generator tool
     execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --doc=${interface_doc} --root=${codegen_root} --target=${output_path})
 
