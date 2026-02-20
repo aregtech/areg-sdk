@@ -58,8 +58,6 @@ macro_declare_executable(20_register    20_generated
 
     register/CentralApp.cpp
     register/CentralAppDefs.cpp
-
-    register/services/ConnectionManager.cpp
     
     register/ui/CentralDialog.cpp
     register/ui/PageBrokerSetup.cpp
