@@ -42,19 +42,6 @@ DEF_LOG_SCOPE(areg_component_ProxyBase_prepareListeners);
 DEF_LOG_SCOPE(areg_component_ProxyBase_stopProxy);
 
 //////////////////////////////////////////////////////////////////////////
-// ProxyBase class statics
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Resource of registered Proxies in the system.
- **/
-ProxyBase::MapProxyResource     ProxyBase::_mapRegisteredProxies;
-
-/**
- * \brief   List of created proxies per thread.
- **/
-ProxyBase::MapThreadProxyList   ProxyBase::_mapThreadProxies;
-
-//////////////////////////////////////////////////////////////////////////
 // ProxyBase::Listener class implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -166,6 +153,20 @@ ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, static methods
 //////////////////////////////////////////////////////////////////////////
+
+inline ProxyBase::MapProxyResource& ProxyBase::map_proxies()
+{
+    static MapProxyResource _mapProxies;
+    return _mapProxies;
+}
+
+inline ProxyBase::MapThreadProxyList& ProxyBase::thread_proxies()
+{
+    static MapThreadProxyList   _threadProxies;
+    return _threadProxies;
+}
+
+
 std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
                                                        , const NEService::SInterfaceData & serviceIfData
                                                        , ProxyListener & connect
@@ -187,7 +188,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
     if (ownerThread.isValid())
     {
         ProxyAddress Key(serviceIfData, roleName, ownerThread.getName() );
-        proxy = _mapRegisteredProxies.findResourceObject(Key);
+        proxy = map_proxies().findResourceObject(Key);
         if (proxy.get() == nullptr )
         {
             LOG_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
@@ -195,8 +196,8 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
             if ( newProxy.get() != nullptr )
             {
                 proxy.swap( newProxy );
-                _mapRegisteredProxies.registerResourceObject( proxy->mProxyAddress, proxy );
-                _mapThreadProxies.registerResourceObject( proxy->mDispatcherThread.getName( ), proxy );
+                map_proxies().registerResourceObject( proxy->mProxyAddress, proxy );
+                thread_proxies().registerResourceObject( proxy->mDispatcherThread.getName( ), proxy );
             }
         }
 
@@ -235,7 +236,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 
 int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
 {
-    ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
+    ThreadProxyList * proxyList = ProxyBase::thread_proxies().findResource(ownerThread.getName());
     int result = proxyList != nullptr ? static_cast<int32_t>(proxyList->getSize()) : 0;
     if ( result > 0 )
     {
@@ -258,7 +259,6 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
 
     return result;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, constructor / destructor
@@ -331,8 +331,8 @@ void ProxyBase::freeProxy( ProxyListener & connect )
         mIsStopped   = true;
 
         mProxyInstCount = 0;
-        _mapRegisteredProxies.unregisterResourceObject( mProxyAddress );
-        _mapThreadProxies.unregisterResourceObject( mDispatcherThread.getName( ), proxy, true );
+        map_proxies().unregisterResourceObject(mProxyAddress);
+        thread_proxies().unregisterResourceObject( mDispatcherThread.getName( ), proxy, true );
     }
     else if ( mProxyInstCount > 0 )
     {
@@ -577,7 +577,7 @@ void ProxyBase::processGenericEvent( Event& eventElem )
 
 std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& proxyAddress )
 {
-    return _mapRegisteredProxies.findResourceObject(proxyAddress);
+    return map_proxies().findResourceObject(proxyAddress);
 }
 
 void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& args, NotificationConsumer *caller )

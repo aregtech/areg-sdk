@@ -703,10 +703,6 @@ private:
      **/
     MapStubSession                      mMapSessions;
 
-    /**
-     * \brief   Stub object resource map.
-     **/
-    static MapStubResource              _mapRegisteredStubs;
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -719,6 +715,8 @@ private:
      * \brief   Returns reference to Stub object
      **/
     inline StubBase & self();
+
+    inline static MapStubResource& map_providers();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

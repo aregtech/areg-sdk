@@ -153,7 +153,7 @@ public:
     /**
      * \brief   Returns the duration in microseconds since scope message object was instantiated.
      */
-    inline const uint32_t getDuration() const;
+    inline uint32_t getDuration() const;
 
     /**
      * \brief   Returns message log module ID. By default, it is process ID.
@@ -269,7 +269,7 @@ inline const DateTime LogMessage::getTimeReceived() const
     return static_cast<DateTime>(this->logReceived);
 }
 
-inline const uint32_t LogMessage::getDuration() const
+inline uint32_t LogMessage::getDuration() const
 {
     return static_cast<uint32_t>(this->logDuration);
 }

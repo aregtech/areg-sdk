@@ -301,7 +301,7 @@ private:
 
     /**
      * \brief   ProxyBase::MapThreadProxyList
-     *          The Map of the lits, where the key is a string and values are list of proxies.
+     *          The Map of the list, where the key is a string and values are list of proxies.
      **/
     using MapThreadProxyList= ConcurrentResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
@@ -495,18 +495,12 @@ public:
     /**
      * \brief   Locks the resources of proxy object. Use if need to search and access cached resource.
      **/
-    static inline void lockProxyResource()
-    {
-        ProxyBase::_mapRegisteredProxies.lock();
-    }
+    static inline void lockProxyResource();
 
     /**
      * \brief   Unlocks the resources of proxy object. Use if need to unlock the access of cached resource.
      **/
-    static inline void unlockProxyResource()
-    {
-        ProxyBase::_mapRegisteredProxies.unlock();
-    }
+    static inline void unlockProxyResource();
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, Constructor / Destructor.
@@ -1050,23 +1044,6 @@ private:
      **/
     bool                            mIsConnected;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
-    /**
-     * \brief   Resource of registered Proxies in the system.
-     **/
-    static MapProxyResource     _mapRegisteredProxies;
-    /**
-     * \brief   The list of proxies per thread.
-     **/
-    static MapThreadProxyList   _mapThreadProxies;
-
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -1075,6 +1052,15 @@ private:
      * \brief   Return reference to Proxy object
      **/
     inline ProxyBase & self();
+
+    /**
+     * \brief   Resource of registered Proxies in the system.
+     **/
+    static MapProxyResource&     map_proxies();
+    /**
+     * \brief   The list of proxies per thread.
+     **/
+    static MapThreadProxyList&   thread_proxies();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -1091,6 +1077,16 @@ private:
 inline ProxyBase & ProxyBase::self()
 {
     return (*this);
+}
+
+inline void ProxyBase::lockProxyResource()
+{
+    ProxyBase::map_proxies().lock();
+}
+
+inline void ProxyBase::unlockProxyResource()
+{
+    ProxyBase::map_proxies().unlock();
 }
 
 inline const ProxyAddress& ProxyBase::getProxyAddress() const

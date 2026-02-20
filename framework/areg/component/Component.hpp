@@ -352,6 +352,11 @@ private:
      **/
     static unsigned int _magicNumber( Component & comp );
 
+    /**
+     * \brief   Returns the static resource map of created components.
+     **/
+    static Component::MapComponentResource& resource_map();
+
 private:
 /************************************************************************/
 // Private member variables
@@ -364,10 +369,6 @@ private:
      * \brief   List of registered server services
      **/
     Component::ListServers                  mServerList;
-    /**
-     * \brief   Static Resource map of created in system component.
-     **/
-    static  Component::MapComponentResource _mapComponentResource;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)

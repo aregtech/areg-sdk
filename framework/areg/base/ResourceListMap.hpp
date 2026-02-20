@@ -31,27 +31,27 @@
    * Hierarchies. Following class are declared.
    ************************************************************************/
    // HashMap 
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class HashMap, class Tracker> class ResourceListMapBase;
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class HashMap, class Tracker> class ConcurrentResourceListMap;
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class HashMap, class Tracker> class ResourceListMap;
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class MapContainer, class Tracker> class ResourceListMapBase;
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class MapContainer, class Tracker> class ConcurrentResourceListMap;
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class MapContainer, class Tracker> class ResourceListMap;
 
 /************************************************************************
  * \brief   This file contains declarations of following class templates:
  *
- *              1.  ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>,
+ *              1.  ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>,
  *                  which is a generic list of resource map class template;
  *
- *              2.  ResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>,
+ *              2.  ResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>,
  *                  which is a no thread safe list of resource map class template;
  *
- *              3.  ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>,
+ *              3.  ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>,
  *                  which is a thread safe list of resource map class template;
  *
  *          For more information, see descriptions bellow
  ************************************************************************/
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> class template declaration
+// ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   ResourceListMapBase is a class template of Hash Map container used to keep
@@ -65,12 +65,12 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, c
  *          runtime if needed. For additional of locking resources see 
  *          ConcurrentResourceListMap and ResourceListMap class templates.
  * 
- *          See HashMap for details of computing hash value.
+ *          See MapContainer for details of computing hash value.
  *
  * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
  * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the list.
  * \tparam  ResourceList        The name of class that contains list of resources.
- * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
  * \tparam  Tracker             Helper class to track the resources when add, remove all clean resource object from the list.
  * 
  * \see    ConcurrentResourceListMap, ResourceListMap
@@ -78,10 +78,10 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, c
 template <typename RESOURCE_KEY
         , typename RESOURCE_OBJECT
         , class ResourceList = LinkedList<RESOURCE_OBJECT>
-        , class HashMap      = HashMap<RESOURCE_KEY, ResourceList>
+        , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
         , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
-class ResourceListMapBase : protected HashMap
-                        , protected Tracker
+class ResourceListMapBase   : protected MapContainer
+                            , protected Tracker
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -261,14 +261,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     ResourceListMapBase() = delete;
-    ResourceListMapBase( const ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & /*src*/) = delete;
-    ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & operator = ( const ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & /*src*/) = delete;
-    ResourceListMapBase( ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> && /*src*/ ) noexcept = delete;
-    ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> & operator = ( ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> && /*src*/ ) noexcept = delete;
+    ResourceListMapBase( const ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & /*src*/) = delete;
+    ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & operator = ( const ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & /*src*/) = delete;
+    ResourceListMapBase( ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> && /*src*/ ) noexcept = delete;
+    ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & operator = ( ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList> class template declaration
+// ResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, ResourceList> class template declaration
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -279,7 +279,7 @@ private:
  * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
  * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the list.
  * \tparam  ResourceList        The name of class that contains list of resources.
- * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
  * \tparam  Tracker             Helper class to track the resources when add, remove all clean resource object from the list.
  *
  * \see    ResourceListMap
@@ -287,9 +287,9 @@ private:
 template <typename RESOURCE_KEY
         , typename RESOURCE_OBJECT
         , class ResourceList = LinkedList<RESOURCE_OBJECT>
-        , class HashMap      = HashMap<RESOURCE_KEY, ResourceList>
+        , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
         , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
-class ResourceListMap  : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>
+class ResourceListMap  : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -322,7 +322,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker> class template declaration
+// ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Resource list map to use when there is no need to synchronize resource
@@ -331,7 +331,7 @@ private:
  * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
  * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the list.
  * \tparam  ResourceList        The name of class that contains list of resources.
- * \tparam  HashMap             HashMap class to inherit to implement resource list map.
+ * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
  * \tparam  Tracker             Helper class to track the resources when add, remove all clean resource object from the list.
  *
  * \see    ConcurrentResourceListMap
@@ -339,9 +339,9 @@ private:
 template <typename RESOURCE_KEY
         , typename RESOURCE_OBJECT
         , class ResourceList = LinkedList<RESOURCE_OBJECT>
-        , class HashMap      = HashMap<RESOURCE_KEY, ResourceList>
+        , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
         , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
-class ConcurrentResourceListMap    : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>
+class ConcurrentResourceListMap    : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -377,17 +377,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, ResourceList> class template implementation
+// ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, ResourceList> class template implementation
 //////////////////////////////////////////////////////////////////////////
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::ResourceListMapBase( Lockable & syncObject )
-    : HashMap   ( )
-    , Tracker   ( )
+ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::ResourceListMapBase( Lockable & syncObject )
+    : MapContainer  ( )
+    , Tracker       ( )
 
     , mSyncObj  ( syncObject )
 {
@@ -396,9 +396,9 @@ ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracke
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::~ResourceListMapBase()
+inline ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::~ResourceListMapBase()
 {
     removeAllResources();
 }
@@ -406,9 +406,9 @@ inline ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap,
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::lock() const
+inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::lock() const
 {
     mSyncObj.lock( NECommon::WAIT_INFINITE );
 }
@@ -416,9 +416,9 @@ inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unlock() const
+inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::unlock() const
 {
     mSyncObj.unlock( );
 }
@@ -426,9 +426,9 @@ inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::tryLock() const
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::tryLock() const
 {
     return mSyncObj.tryLock( );
 }
@@ -436,33 +436,33 @@ inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
+inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
 {
     Lock lock( mSyncObj );
 
-    ResourceList & resourceList = HashMap::operator[](Key);
+    ResourceList & resourceList = MapContainer::operator[](Key);
     addResourceObject( resourceList, Resource );
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty /*= true*/ )
+inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::unregisterResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource, bool removeEmpty /*= true*/ )
 {
     Lock lock( mSyncObj );
 
-    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
-    if (HashMap::isValidPosition(pos))
+    typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
+    if (MapContainer::isValidPosition(pos))
     {
-        ResourceList & resList = HashMap::valueAtPosition(pos);
+        ResourceList & resList = MapContainer::valueAtPosition(pos);
         removeResourceObject( resList, Resource );
         if (removeEmpty && resList.isEmpty())
         {
-            HashMap::removePosition(pos);
+            MapContainer::removePosition(pos);
         }
     }
 }
@@ -470,94 +470,94 @@ inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList & ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::registerResource( const RESOURCE_KEY & Key )
+inline ResourceList & ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::registerResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSyncObj );
 
-    return HashMap::getAt(Key);
+    return MapContainer::getAt(Key);
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::unregisterResource( const RESOURCE_KEY & Key )
+inline ResourceList ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::unregisterResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSyncObj );
 
     ResourceList result;
-    HashMap::removeAt( Key, result );
+    MapContainer::removeAt( Key, result );
     return result;
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::findResource( const RESOURCE_KEY & Key )
+inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::findResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSyncObj );
 
-    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
-    return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
+    typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
+    return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::findResource( const RESOURCE_KEY & Key ) const
+inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::findResource( const RESOURCE_KEY & Key ) const
 {
     Lock lock( mSyncObj );
 
-    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
-    return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
+    typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
+    return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getResource( const RESOURCE_KEY & Key )
+inline ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::getResource( const RESOURCE_KEY & Key )
 {
     Lock lock( mSyncObj );
 
-    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
-    return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
+    typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
+    return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getResource( const RESOURCE_KEY & Key ) const
+inline const ResourceList * ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::getResource( const RESOURCE_KEY & Key ) const
 {
     Lock lock( mSyncObj );
 
-    typename HashMap::MAPPOS pos = HashMap::isEmpty() ? HashMap::invalidPosition() : HashMap::find(Key);
-    return (HashMap::isValidPosition(pos) ? &HashMap::valueAtPosition(pos) : nullptr);
+    typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(Key);
+    return (MapContainer::isValidPosition(pos) ? &MapContainer::valueAtPosition(pos) : nullptr);
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeResourceObject( RESOURCE_OBJECT Resource, bool remEmptyList )
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::removeResourceObject( RESOURCE_OBJECT Resource, bool remEmptyList )
 {
     Lock lock( mSyncObj );
 
     bool result = false;
-    for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); )
+    for (typename MapContainer::MAPPOS pos = MapContainer::firstPosition( ); MapContainer::isValidPosition(pos); )
     {
-        ResourceList & list = HashMap::valueAtPosition( pos );
+        ResourceList & list = MapContainer::valueAtPosition( pos );
         if ( removeResourceObject(list, Resource) )
         {
             result = true;
@@ -565,11 +565,11 @@ inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 
         if (remEmptyList && list.isEmpty())
         {
-            pos = HashMap::removePosition(pos);
+            pos = MapContainer::removePosition(pos);
         }
         else
         {
-            pos = HashMap::nextPosition( pos );
+            pos = MapContainer::nextPosition( pos );
         }
     }
 
@@ -579,69 +579,69 @@ inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeAllResources()
+inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::removeAllResources()
 {
     Lock lock( mSyncObj );
 
-    for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); pos = HashMap::nextPosition( pos ) )
+    for (typename MapContainer::MAPPOS pos = MapContainer::firstPosition( ); MapContainer::isValidPosition(pos); pos = MapContainer::nextPosition( pos ) )
     {
-        cleanResourceList(HashMap::keyAtPosition(pos), HashMap::valueAtPosition(pos));
+        cleanResourceList(MapContainer::keyAtPosition(pos), MapContainer::valueAtPosition(pos));
     }
 
-    HashMap::clear( );
+    MapContainer::clear( );
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline const std::unordered_map<RESOURCE_KEY, ResourceList>& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getData() const
+inline const std::unordered_map<RESOURCE_KEY, ResourceList>& ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::getData() const
 {
-    return HashMap::getData();
+    return MapContainer::getData();
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline uint32_t ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getSize() const
-{
-    Lock lock( mSyncObj );
-    return HashMap::getSize( );
-}
-
-template < typename RESOURCE_KEY
-         , typename RESOURCE_OBJECT
-         , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
-         , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::isEmpty() const
+inline uint32_t ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::getSize() const
 {
     Lock lock( mSyncObj );
-    return HashMap::isEmpty( );
+    return MapContainer::getSize( );
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::existResource( const RESOURCE_KEY & Key ) const
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::isEmpty() const
 {
     Lock lock( mSyncObj );
-    return HashMap::contains( Key );
+    return MapContainer::isEmpty( );
 }
 
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::cleanResourceList( RESOURCE_KEY & Key, ResourceList & List )
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::existResource( const RESOURCE_KEY & Key ) const
+{
+    Lock lock( mSyncObj );
+    return MapContainer::contains( Key );
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::cleanResourceList( RESOURCE_KEY & Key, ResourceList & List )
 {
     Tracker::implCleanResourceList(Key, List);
 }
@@ -649,9 +649,9 @@ inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::addResourceObject( ResourceList & List, RESOURCE_OBJECT Resource )
+inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::addResourceObject( ResourceList & List, RESOURCE_OBJECT Resource )
 {
     Tracker::implAddResource(List, Resource);
 }
@@ -659,38 +659,38 @@ inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, Has
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::removeResourceObject( ResourceList & List, RESOURCE_OBJECT Resource )
+inline bool ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::removeResourceObject( ResourceList & List, RESOURCE_OBJECT Resource )
 {
     return Tracker::implRemoveResource(List, Resource);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// TENoLockResourceMap class template implementation
+// ResourceListMap class template implementation
 //////////////////////////////////////////////////////////////////////////
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-ResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::ResourceListMap()
-    : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<Lockable &>(mNoLock) )
+ResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::ResourceListMap()
+    : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>( static_cast<Lockable &>(mNoLock) )
 
     , mNoLock   ( )
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ConcurrentResourceMap class template implementation
+// ConcurrentResourceListMap class template implementation
 //////////////////////////////////////////////////////////////////////////
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class ResourceList   /*= LinkedList<RESOURCE_OBJECT>*/
-         , class HashMap        /*= HashMap<RESOURCE_KEY, ResourceList>*/
+         , class MapContainer   /*= HashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::ConcurrentResourceListMap()
-    : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>( static_cast<Lockable &>(mLock) )
+ConcurrentResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::ConcurrentResourceListMap()
+    : ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>( static_cast<Lockable &>(mLock) )
 
     , mLock ( )
 {

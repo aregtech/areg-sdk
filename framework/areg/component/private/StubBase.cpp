@@ -37,12 +37,6 @@ DEF_LOG_SCOPE( areg_component_StubBase_clientConnected );
 DEF_LOG_SCOPE( areg_component_StubBase_addNotificationListener );
 
 //////////////////////////////////////////////////////////////////////////
-// StubBase class statics
-//////////////////////////////////////////////////////////////////////////
-
-StubBase::MapStubResource   StubBase::_mapRegisteredStubs;
-
-//////////////////////////////////////////////////////////////////////////
 // StubBase::Listener implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -72,6 +66,14 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 // StubBase implementation
 //////////////////////////////////////////////////////////////////////////
 
+inline StubBase::MapStubResource& StubBase::map_providers()
+{
+    static StubBase::MapStubResource   _mapProviders;
+    return _mapProviders;
+}
+
+
+
 StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & siData )
     : StubEventConsumer   ( mAddress )
 
@@ -84,13 +86,13 @@ StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & si
     , mSessionId            (0)
     , mMapSessions          ( )
 {
-    _mapRegisteredStubs.registerResourceObject(mAddress, this);
+    map_providers().registerResourceObject(mAddress, this);
     masterComp.registerServerItem(self());
 }
 
 StubBase::~StubBase()
 {
-    _mapRegisteredStubs.unregisterResourceObject(mAddress);
+    map_providers().unregisterResourceObject(mAddress);
 }
 
 bool StubBase::isBusy( unsigned int requestId ) const
@@ -267,7 +269,7 @@ ComponentThread & StubBase::getComponentThread() const
 
 StubBase* StubBase::findStubByAddress( const StubAddress& address )
 {
-    return _mapRegisteredStubs.findResourceObject(address);
+    return map_providers().findResourceObject(address);
 }
 
 void StubBase::startupServiceInterface( Component&  holder )
@@ -510,13 +512,13 @@ void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEServ
     if ( NEService::isServiceConnected( status) )
     {
         ASSERT( stubTarget.isValid() );
-        _mapRegisteredStubs.lock();
-        _mapRegisteredStubs.unregisterResourceObject(mAddress);
+        map_providers().lock();
+        map_providers().unregisterResourceObject(mAddress);
 
         mAddress = stubTarget;
         
-        _mapRegisteredStubs.registerResourceObject(mAddress, this);
-        _mapRegisteredStubs.unlock();
+        map_providers().registerResourceObject(mAddress, this);
+        map_providers().unlock();
     }
 
     mConnectionStatus = status;

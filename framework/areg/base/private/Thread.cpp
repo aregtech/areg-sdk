@@ -259,7 +259,7 @@ const ThreadAddress & Thread::getThreadAddress( id_type threadId )
     return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
-const size_t Thread::getCurrentStackSize()
+size_t Thread::getCurrentStackSize()
 {
     Thread* threadObj = Thread::getCurrentThread();
     return (threadObj != nullptr ? _osGetCurrentStackSize(threadObj->mThreadHandle) : 0);

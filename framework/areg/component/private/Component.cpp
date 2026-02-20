@@ -31,11 +31,6 @@
 AREG_IMPLEMENT_RUNTIME(Component, RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
-// Static variables
-//////////////////////////////////////////////////////////////////////////
-Component::MapComponentResource       Component::_mapComponentResource;
-
-//////////////////////////////////////////////////////////////////////////
 // Static Methods
 //////////////////////////////////////////////////////////////////////////
 Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, ComponentThread & componentThread )
@@ -87,26 +82,26 @@ Component* Component::findComponentByName( const String & roleName )
 {
     ASSERT(roleName.isEmpty() == false);
     
-    return _mapComponentResource.findResourceObject(NEMath::crc32Calculate(roleName.getString()));
+    return resource_map().findResourceObject(NEMath::crc32Calculate(roleName.getString()));
 }
 
 Component * Component::findComponentByNumber(unsigned int magicNum)
 {
     ASSERT(magicNum != NEMath::CHECKSUM_IGNORE);
 
-    return _mapComponentResource.findResourceObject(magicNum);
+    return resource_map().findResourceObject(magicNum);
 }
 
 Component* Component::findComponentByAddress( const ComponentAddress& comAddress )
 {
-    Component* result = _mapComponentResource.findResourceObject( static_cast<unsigned int>(comAddress.getRoleName()) );
+    Component* result = resource_map().findResourceObject( static_cast<unsigned int>(comAddress.getRoleName()) );
     return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);
 }
 
 bool Component::existComponent( const String & roleName )
 {
     ASSERT(roleName.isEmpty() == false);
-    return _mapComponentResource.existResource(NEMath::crc32Calculate(roleName.getString()));
+    return resource_map().existResource(NEMath::crc32Calculate(roleName.getString()));
 }
 
 ComponentThread& Component::_getCurrentComponentThread()
@@ -126,7 +121,7 @@ Component::Component( const String & roleName, ComponentThread & ownerThread )
     , mMagicNum     ( Component::_magicNumber(self()) )
     , mServerList   ( )
 {
-    _mapComponentResource.registerResourceObject(mMagicNum, this);
+    resource_map().registerResourceObject(mMagicNum, this);
 }
 
 Component::Component( const NERegistry::ComponentEntry & regEntry, ComponentThread & ownerThread )
@@ -136,7 +131,7 @@ Component::Component( const NERegistry::ComponentEntry & regEntry, ComponentThre
     , mMagicNum     ( Component::_magicNumber(self()) )
     , mServerList   ( )
 {
-    _mapComponentResource.registerResourceObject(mMagicNum, this);
+    resource_map().registerResourceObject(mMagicNum, this);
 }
 
 Component::Component( const String & roleName )
@@ -146,13 +141,13 @@ Component::Component( const String & roleName )
     , mMagicNum         ( Component::_magicNumber(self()) )
     , mServerList       ( )
 {
-    _mapComponentResource.registerResourceObject(mMagicNum, this);
+    resource_map().registerResourceObject(mMagicNum, this);
 }
 
 
 Component::~Component()
 {
-    _mapComponentResource.unregisterResourceObject(mMagicNum);
+    resource_map().unregisterResourceObject(mMagicNum);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -299,6 +294,12 @@ unsigned int Component::_magicNumber(Component & comp)
     }
 
     return result;
+}
+
+Component::MapComponentResource& Component::resource_map()
+{
+    static Component::MapComponentResource  _mapResource;
+    return _mapResource;
 }
 
 inline void Component::_shutdownServices()

@@ -398,7 +398,7 @@ public:
     /**
      * \brief   Returns the stack size of the current thread in bytes.
      **/
-    static const size_t getCurrentStackSize();
+    static size_t getCurrentStackSize();
 
 /************************************************************************/
 // Thread debugging function
