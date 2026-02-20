@@ -78,7 +78,7 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
     mOptions.mLines     = NEUtilities::LINES_PER_BLOCK;
     mOptions.mPixelTime = NEUtilities::DWELL_TIME;
     mOptions.mChannels  = NEUtilities::CHANNELS_SOURCE;
-    mOptions.mFlags     = static_cast<uint32_t>(NEUtilities::eOptionFlags::CmdStop);
+    mOptions.mFlags     = static_cast<uint32_t>(NEUtilities::OptionFlag::CmdStop);
 }
 
 void ServicingComponent::startupServiceInterface( Component & holder )

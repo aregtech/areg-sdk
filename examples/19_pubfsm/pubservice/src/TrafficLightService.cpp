@@ -101,7 +101,7 @@ void TrafficLightService::actionPowerOff()
     lights.lightVehicle     = TrafficController::VehicleTrafficLight::Off;
     lights.lightPedestrian  = TrafficController::PedestrianTrafficLight::Off;
 
-    setLightsPowerState(PowerManager::ePoweredState::LightsOFF);
+    setLightsPowerState(PowerManager::PowerState::LightsOFF);
 
     lights.trafficDirection = TrafficController::TrafficDirection::SouthNorth;
     setTrafficSouthNorth(lights);
@@ -123,7 +123,7 @@ void TrafficLightService::actionPowerOn()
     lights.lightVehicle     = TrafficController::VehicleTrafficLight::Initializing;
     lights.lightPedestrian  = TrafficController::PedestrianTrafficLight::Off;
 
-    setLightsPowerState(PowerManager::ePoweredState::LightsON);
+    setLightsPowerState(PowerManager::PowerState::LightsON);
 
     lights.trafficDirection = TrafficController::TrafficDirection::SouthNorth;
     setTrafficSouthNorth(lights);

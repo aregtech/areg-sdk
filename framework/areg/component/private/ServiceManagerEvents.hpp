@@ -50,7 +50,7 @@ public:
     /**
      * \brief   The Service Manager event commands
      **/
-    typedef enum class E_ServiceManagerCommands
+    enum class ServiceManagerCommand    : uint16_t
     {
           CMD_StopRoutingClient         //!< Requested to stop Service Manager client connection
         , CMD_RegisterProxy             //!< Requested to register Proxy
@@ -67,13 +67,13 @@ public:
         , CMD_ShutdownService           //!< Request to shutdown service.
         , CMD_TerminateComponentThread  //!< Request to terminate component thread.
         , CMD_StartComponentThread      //!< Request to start component thread.
-    } eServiceManagerCommands;
+    };
 
     /**
      * \brief   Converts event command to string
      * \param   val     The command to convert to string
      **/
-    static const char * getString( ServiceManagerEventData::eServiceManagerCommands val );
+    static const char * getString( ServiceManagerEventData::ServiceManagerCommand val );
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -179,7 +179,7 @@ public:
      * \brief   Constructor. Sets Service Manager event command
      * \param   cmdServiceManager    The command to set
      **/
-    inline explicit ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands cmdServiceManager );
+    inline explicit ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand cmdServiceManager );
 
     /**
      * \brief   Copy constructor.
@@ -228,13 +228,13 @@ public:
     /**
      * \brief   Returns Service Manager command
      **/
-    inline ServiceManagerEventData::eServiceManagerCommands getCommand() const;
+    inline ServiceManagerEventData::ServiceManagerCommand getCommand() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    eServiceManagerCommands mCommand;   //!< Service Manager event data command
+    ServiceManagerCommand mCommand;   //!< Service Manager event data command
     SharedBuffer            mStream;    //!< Service Manager event data streaming object to write and read data.
 
 //////////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ AREG_DECLARE_EVENT(ServiceManagerEventData, ServiceManagerEvent, ServiceManagerE
 // ServiceManagerEventData inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands cmdServiceManager )
+inline ServiceManagerEventData::ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand cmdServiceManager )
     : mCommand  ( cmdServiceManager )
     , mStream   ( )
 {
@@ -297,47 +297,47 @@ inline OutStream & ServiceManagerEventData::getWriteStream()
     return static_cast<OutStream &>(mStream);
 }
 
-inline ServiceManagerEventData::eServiceManagerCommands ServiceManagerEventData::getCommand() const
+inline ServiceManagerEventData::ServiceManagerCommand ServiceManagerEventData::getCommand() const
 {
     return mCommand;
 }
 
-inline const char * ServiceManagerEventData::getString( ServiceManagerEventData::eServiceManagerCommands val )
+inline const char * ServiceManagerEventData::getString( ServiceManagerEventData::ServiceManagerCommand val )
 {
     switch ( val )
     {
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterProxy:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterProxy";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterStub:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterStub";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread";
     default:
-        return "ERR: undefined ServiceManagerEventData::eServiceManagerCommands value!!!";
+        return "ERR: undefined ServiceManagerEventData::ServiceManagerCommand value!!!";
     }
 }
 

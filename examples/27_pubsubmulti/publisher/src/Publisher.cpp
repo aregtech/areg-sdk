@@ -65,11 +65,11 @@ namespace
 
 const OptionParser::sOptionSetup Publisher::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int>(eCommands::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int>(eCommands::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int>(eCommands::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int>(eCommands::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int>(eCommands::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int>(OptionFlag::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int>(OptionFlag::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int>(OptionFlag::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -240,9 +240,9 @@ void Publisher::onThreadRuns()
     OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
-    printMessage(String::EmptyString, eCommands::CMD_Undefined);
+    printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
 
-    eCommands cmd = eCommands::CMD_Undefined;
+    OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
@@ -252,67 +252,67 @@ void Publisher::onThreadRuns()
         if (parser.parseOptionLine(usrInput.getString()))
         {
             const OptionParser::InputOptionList & opts = parser.getOptions();
-            cmd = opts.getSize() == 1u ? static_cast<eCommands>(opts[0u].inCommand) : eCommands::CMD_Error;
+            cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
-            case Publisher::eCommands::CMD_Invalidate:
+            case Publisher::OptionFlag::CMD_Invalidate:
                 invalidate();
                 message = "Requested to invalidate data...";
                 break;
 
-            case Publisher::eCommands::CMD_Pause:
+            case Publisher::OptionFlag::CMD_Pause:
                 stop();
                 message = "Requested to pause service...";
                 break;
 
-            case Publisher::eCommands::CMD_Start:
+            case Publisher::OptionFlag::CMD_Start:
                 start();
                 message = "Requested to start service...";
                 break;
 
-            case Publisher::eCommands::CMD_Quit:
+            case Publisher::OptionFlag::CMD_Quit:
                 quit();
                 message = "Request to quit application...";
                 break;
 
-            case Publisher::eCommands::CMD_Help:
+            case Publisher::OptionFlag::CMD_Help:
                 break;
 
-            case Publisher::eCommands::CMD_Error:
-            case Publisher::eCommands::CMD_Undefined:
+            case Publisher::OptionFlag::CMD_Error:
+            case Publisher::OptionFlag::CMD_Undefined:
             default:
-                cmd = Publisher::eCommands::CMD_Error;
+                cmd = Publisher::OptionFlag::CMD_Error;
                 message.format(_fmtError.data(), usrInput.getString());
                 break;
             }
         }
         else
         {
-            cmd = Publisher::eCommands::CMD_Error;
+            cmd = Publisher::OptionFlag::CMD_Error;
             message.format(_fmtError.data(), usrInput.getString());
         }
 
         printMessage(message, cmd);
 
-    } while (cmd != eCommands::CMD_Quit);
+    } while (cmd != OptionFlag::CMD_Quit);
 }
 
 
-inline void Publisher::printMessage(const String & message, eCommands cmd)
+inline void Publisher::printMessage(const String & message, OptionFlag cmd)
 {
     Console & console = Console::getInstance();
     console.clearScreen();
     console.outputStr(_coordTitle       , _title);
     console.outputStr(_coordSubtitle    , _separator);
-    if (cmd == eCommands::CMD_Error)
+    if (cmd == OptionFlag::CMD_Error)
     {
         console.outputStr(_coordErrorMsg, message);
     }
-    else if (cmd == eCommands::CMD_Help)
+    else if (cmd == OptionFlag::CMD_Help)
     {
         console.outputStr(_coordErrorMsg, _help);
     }
-    else if (cmd != eCommands::CMD_Undefined)
+    else if (cmd != OptionFlag::CMD_Undefined)
     {
         console.outputMsg(_coordInfoMsg, message);
     }

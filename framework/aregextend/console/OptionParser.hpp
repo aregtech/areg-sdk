@@ -126,7 +126,7 @@
  *              like 'rectangle' and 'triangle', where rectangle has pattern ({x, y}, width, height) and
  *              the triangle is {{x, y}, {x, y}, {x, y}}. In this case the option setup can be done:
  * 
- *              enum Figure
+ *              enum class Figure
  *              {
  *                    Triangle  = 1
  *                  , Rectangle = 2

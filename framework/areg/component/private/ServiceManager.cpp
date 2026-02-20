@@ -244,7 +244,7 @@ ServiceManager::ServiceManager()
 void ServiceManager::processEvent( const ServiceManagerEventData & data )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
-    ServiceManagerEventData::eServiceManagerCommands cmdService { data.getCommand( ) };
+    ServiceManagerEventData::ServiceManagerCommand cmdService { data.getCommand( ) };
     LOG_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::getString( cmdService ) );
 
     mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnectionProvider( ), getServiceRegisterProvider() );

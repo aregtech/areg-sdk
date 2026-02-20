@@ -280,7 +280,7 @@ void ScopeController::changeScopeActivityStatus( bool makeActive )
     {
         for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
         {
-            mMapLogScope.valueAtPosition( pos )->setPriority( NELogging::LogPriority::PrioNotset );
+            mMapLogScope.valueAtPosition( pos )->setPriority( static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) );
         }
     }
 

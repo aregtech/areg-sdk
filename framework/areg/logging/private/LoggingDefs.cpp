@@ -521,7 +521,7 @@ AREG_API_IMPL String NELogging::makePrioString(unsigned int priorities)
 AREG_API_IMPL unsigned int NELogging::makePriorities(const String& prioString)
 {
     uint16_t id = static_cast<uint16_t>(Identifier::convFromString(prioString, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid)));
-    return static_cast<NELogging::LogPriority>(id);
+    return static_cast<uint32_t>(static_cast<NELogging::LogPriority>(id));
 }
 
 //////////////////////////////////////////////////////////////////////////

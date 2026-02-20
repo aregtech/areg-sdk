@@ -168,7 +168,7 @@ namespace NEService
     };
 
     /**
-     * \brief   Returns string value of NEService::eDataType type
+     * \brief   Returns string value of NEService::ServiceConnectionState type
      **/
     inline const char* getString( NEService::ServiceConnectionState serviceConnection );
 

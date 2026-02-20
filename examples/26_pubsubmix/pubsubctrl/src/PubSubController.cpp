@@ -42,11 +42,11 @@ namespace
 
 const OptionParser::sOptionSetup PubSubController::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int>(eCommands::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int>(eCommands::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int>(eCommands::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int>(eCommands::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int>(eCommands::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int>(OptionFlag::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int>(OptionFlag::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int>(OptionFlag::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,10 +82,10 @@ void PubSubController::onThreadRuns()
     OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.lockConsole();
     console.enableConsoleInput(true);
-    printMessage(String::EmptyString, eCommands::CMD_Undefined);
+    printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
     console.unlockConsole();
 
-    eCommands cmd = eCommands::CMD_Undefined;
+    OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
@@ -96,65 +96,65 @@ void PubSubController::onThreadRuns()
         if (parser.parseOptionLine(usrInput.getString()))
         {
             const OptionParser::InputOptionList & opts = parser.getOptions();
-            cmd = opts.getSize() == 1u ? static_cast<eCommands>(opts[0u].inCommand) : eCommands::CMD_Error;
+            cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
-            case PubSubController::eCommands::CMD_Invalidate:
+            case PubSubController::OptionFlag::CMD_Invalidate:
                 invalidate();
                 message = "Requested to invalidate data...";
                 break;
 
-            case PubSubController::eCommands::CMD_Pause:
+            case PubSubController::OptionFlag::CMD_Pause:
                 stop();
                 message = "Requested to pause service...";
                 break;
 
-            case PubSubController::eCommands::CMD_Start:
+            case PubSubController::OptionFlag::CMD_Start:
                 start();
                 message = "Requested to start service...";
                 break;
 
-            case PubSubController::eCommands::CMD_Quit:
+            case PubSubController::OptionFlag::CMD_Quit:
                 quit();
                 message = "Request to quit application...";
                 break;
 
-            case PubSubController::eCommands::CMD_Help:
+            case PubSubController::OptionFlag::CMD_Help:
                 break;
 
-            case PubSubController::eCommands::CMD_Undefined:
-            case PubSubController::eCommands::CMD_Error:
+            case PubSubController::OptionFlag::CMD_Undefined:
+            case PubSubController::OptionFlag::CMD_Error:
             default:
-                cmd = PubSubController::eCommands::CMD_Error;
+                cmd = PubSubController::OptionFlag::CMD_Error;
                 message.format(pubsub::FormatError.data(), usrInput.getString());
                 break;
             }
         }
         else
         {
-            cmd = PubSubController::eCommands::CMD_Error;
+            cmd = PubSubController::OptionFlag::CMD_Error;
             message.format(pubsub::FormatError.data(), usrInput.getString());
         }
 
         printMessage(message, cmd);
         console.unlockConsole();
 
-    } while (cmd != eCommands::CMD_Quit);
+    } while (cmd != OptionFlag::CMD_Quit);
 }
 
 
-inline void PubSubController::printMessage(const String & message, eCommands cmd)
+inline void PubSubController::printMessage(const String & message, OptionFlag cmd)
 {
     Console & console = Console::getInstance();
-    if (cmd == eCommands::CMD_Error)
+    if (cmd == OptionFlag::CMD_Error)
     {
         console.outputStr(pubsub::CoordInfoMsg, message);
     }
-    else if (cmd == eCommands::CMD_Help)
+    else if (cmd == OptionFlag::CMD_Help)
     {
         console.outputStr(pubsub::CoordInfoMsg, _help);
     }
-    else if (cmd != eCommands::CMD_Undefined)
+    else if (cmd != OptionFlag::CMD_Undefined)
     {
         console.outputMsg(pubsub::CoordInfoMsg, message);
     }

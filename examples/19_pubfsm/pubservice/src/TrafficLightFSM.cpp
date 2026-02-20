@@ -115,7 +115,7 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
        
         switch ( data.mData )
         {
-        case NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight:
+        case NETrafficLightFSM::FsmEventValue::EVENT_StartTrafficLight:
             mFsm.onEventStartTrafficLight();
             break;
 
@@ -417,7 +417,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             break;
 
         case TrafficLightFSM::FsmState::TRAFFIC_LIGHT_START:
-            sendEvent(NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight);
+            sendEvent(NETrafficLightFSM::FsmEventValue::EVENT_StartTrafficLight);
             break;
 
         case TrafficLightFSM::FsmState::UNDEFINED:  // fall through

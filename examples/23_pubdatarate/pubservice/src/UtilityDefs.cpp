@@ -24,7 +24,7 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
 
     Tokenizer tokens(cmd, _delimiter, false);
     const StringArray& list = tokens.getList();
-    mFlags = static_cast<uint32_t>(eOptionFlags::CmdNothing);
+    mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
     for (uint32_t i = 0; i < list.getSize(); ++i)
     {
@@ -55,7 +55,7 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
 
         if (found == false)
         {
-            mFlags = static_cast<uint32_t>(eOptionFlags::Error);
+            mFlags = static_cast<uint32_t>(OptionFlag::Error);
             break;
         }
     }
@@ -76,50 +76,50 @@ bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t which
         ((whichOpt.minValue != 0) && (whichValue < whichOpt.minValue)) ||
         ((whichOpt.maxValue != 0) && (whichValue > whichOpt.maxValue)))
     {
-        mFlags = static_cast<uint32_t>(eOptionFlags::Error);
+        mFlags = static_cast<uint32_t>(OptionFlag::Error);
         return false;
     }
 
     bool result{ true };
     switch (whichOpt.cmdValue)
     {
-    case eOptionFlags::CmdWidth:
+    case OptionFlag::CmdWidth:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         mWidth = whichValue;
         break;
 
-    case eOptionFlags::CmdHeight:
+    case OptionFlag::CmdHeight:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         mHeight = whichValue;
         break;
 
-    case eOptionFlags::CmdLinesPerBlock:
+    case OptionFlag::CmdLinesPerBlock:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         mLines = whichValue;
         break;
 
-    case eOptionFlags::CmdPixelTime:
+    case OptionFlag::CmdPixelTime:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         mPixelTime = whichValue;
         break;
 
-    case eOptionFlags::CmdChannels:
+    case OptionFlag::CmdChannels:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         mChannels = whichValue;
         break;
 
-    case eOptionFlags::CmdInformation:
-    case eOptionFlags::CmdHelp:
-    case eOptionFlags::CmdStart:
-    case eOptionFlags::CmdStop:
-    case eOptionFlags::CmdQuit:
-    case eOptionFlags::CmdNothing:
+    case OptionFlag::CmdInformation:
+    case OptionFlag::CmdHelp:
+    case OptionFlag::CmdStart:
+    case OptionFlag::CmdStop:
+    case OptionFlag::CmdQuit:
+    case OptionFlag::CmdNothing:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         break;
 
-    case eOptionFlags::Error:
+    case OptionFlag::Error:
     default:
-        mFlags = static_cast<uint32_t>(eOptionFlags::Error);
+        mFlags = static_cast<uint32_t>(OptionFlag::Error);
         result = false;
         break;
     }
@@ -129,27 +129,27 @@ bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t which
 
 const NEUtilities::sOptionData& NEUtilities::sOptionData::normalizeOptions(const sOptionData& oldOptions)
 {
-    if ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdWidth)) == 0)
+    if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdWidth)) == 0)
     {
         mWidth = oldOptions.mWidth;
     }
 
-    if ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdHeight)) == 0)
+    if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdHeight)) == 0)
     {
         mHeight = oldOptions.mHeight;
     }
 
-    if ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdLinesPerBlock)) == 0)
+    if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdLinesPerBlock)) == 0)
     {
         mLines = oldOptions.mLines;
     }
 
-    if ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdPixelTime)) == 0)
+    if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdPixelTime)) == 0)
     {
         mPixelTime = oldOptions.mPixelTime;
     }
 
-    if ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdChannels)) == 0)
+    if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdChannels)) == 0)
     {
         mChannels = oldOptions.mChannels;
     }

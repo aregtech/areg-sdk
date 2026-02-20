@@ -207,42 +207,42 @@ private:
 
 inline bool ScopeMessage::isScopeEnabled() const
 {
-    return (mScopePrio &  static_cast<unsigned int>(NELogging::PrioScope));
+    return (mScopePrio &  static_cast<unsigned int>(NELogging::LogPriority::PrioScope));
 }
 
 inline bool ScopeMessage::isDbgEnabled() const
 {
-    return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioDebug));
+    return (mScopePrio >= static_cast<unsigned int>(NELogging::LogPriority::PrioDebug));
 }
 
 inline bool ScopeMessage::isInfoEnabled() const
 {
-    return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioInfo));
+    return (mScopePrio >= static_cast<unsigned int>(NELogging::LogPriority::PrioInfo));
 }
 
 inline bool ScopeMessage::isWarnEnabled() const
 {
-    return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioWarning));
+    return (mScopePrio >= static_cast<unsigned int>(NELogging::LogPriority::PrioWarning));
 }
 
 inline bool ScopeMessage::isErrEnabled() const
 {
-    return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioError));
+    return (mScopePrio >= static_cast<unsigned int>(NELogging::LogPriority::PrioError));
 }
 
 inline bool ScopeMessage::isFatalEnabled() const
 {
-    return (mScopePrio >= static_cast<unsigned int>(NELogging::PrioFatal));
+    return (mScopePrio >= static_cast<unsigned int>(NELogging::LogPriority::PrioFatal));
 }
 
 inline bool ScopeMessage::isLogEnabled() const
 {
-    return (mScopePrio != static_cast<unsigned int>(NELogging::PrioNotset));
+    return (mScopePrio != static_cast<unsigned int>(NELogging::LogPriority::PrioNotset));
 }
 
 inline bool ScopeMessage::isPrioEnabled(NELogging::LogPriority msgPrio) const
 {
-    return (msgPrio == NELogging::PrioScope ? mScopePrio &  static_cast<unsigned int>(NELogging::PrioScope) : mScopePrio >= static_cast<unsigned int>(msgPrio)) ;
+    return (msgPrio == NELogging::LogPriority::PrioScope ? mScopePrio &  static_cast<unsigned int>(NELogging::LogPriority::PrioScope) : mScopePrio >= static_cast<unsigned int>(msgPrio)) ;
 }
 
 #endif  // AREG_LOGS

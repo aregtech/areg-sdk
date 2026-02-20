@@ -160,8 +160,6 @@ public:
 
     /**
      * \brief   Returns the state of client.
-     *          For more information, see description of states
-     *          defined in ClientInfo::eClientState
      **/
     inline NEService::ServiceConnectionState getConnectionStatus() const;
 

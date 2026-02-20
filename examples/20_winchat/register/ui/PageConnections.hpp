@@ -13,15 +13,7 @@ class PageConnections : public CPropertyPage
 
     static LPCTSTR HEADER_TITILES[];
 
-    typedef enum E_Header
-    {
-          NickName  = 0
-        , Message
-        , SentAt
-        , ReceivedAt
-    } eHeader;
-
-    typedef ArrayList<chat::sMessageData *>   TypingList;
+    using TypingList = ArrayList<chat::sMessageData *>;
 
 DECLARE_DYNAMIC(PageConnections)
 

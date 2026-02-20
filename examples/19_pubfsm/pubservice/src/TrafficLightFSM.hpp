@@ -218,7 +218,7 @@ public:
      * \brief   Call to send and event.
      * \param   data    The name of event, generated in NETrafficLightFSM namespace.
      **/
-    inline void sendEvent( const NETrafficLightFSM::eFsmEventData data );   
+    inline void sendEvent( const NETrafficLightFSM::FsmEventValue data );
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLight State Machine Triggers
@@ -568,7 +568,7 @@ inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::FsmTimer wh
 /**
  * \brief   Sends FSM event to be processed. By default the Event is external
  **/
-inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::eFsmEventData data )
+inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::FsmEventValue data )
 {
     if (mMasterThread != nullptr )
         NETrafficLightFSM::FsmEvent::sendEvent(NETrafficLightFSM::FsmEventData( data ), static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread);

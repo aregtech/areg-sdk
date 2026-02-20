@@ -91,7 +91,7 @@ namespace NESystemService
     };
 
     /**
-     * \brief   Returns the human readable string of NESystemService::eSystemState value
+     * \brief   Returns the human readable string of NESystemService::ServicePhase value
      **/
     inline const char * getString( NESystemService::ServicePhase serviceState );
 

@@ -31,7 +31,7 @@
 
 LogScope::LogScope( const char * scopeName, NELogging::LogPriority priority /*= NELogging::PrioNotset*/ )
     : mScopeId      ( NELogging::makeScopeId(scopeName)  )
-    , mScopePrio    ( priority )
+    , mScopePrio    ( static_cast<uint32_t>(priority) )
     , mScopeName    ( scopeName != nullptr ? scopeName : "" )
     , mIsRegistered ( true )
     , mSessionId    ( 0 )
@@ -58,12 +58,12 @@ LogScope::~LogScope()
 
 void LogScope::setPriority(const char* newPrio)
 {
-    setPriority(NELogging::stringToLogPrio(newPrio));
+    setPriority(static_cast<uint32_t>(NELogging::stringToLogPrio(newPrio)));
 }
 
 void LogScope::setPriority(const String& newPrio)
 {
-    setPriority(NELogging::stringToLogPrio(newPrio));
+    setPriority(static_cast<uint32_t>(NELogging::stringToLogPrio(newPrio)));
 }
 
 #else   // AREG_LOGS

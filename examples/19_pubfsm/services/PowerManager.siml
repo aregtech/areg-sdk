@@ -4,7 +4,7 @@
         <Description>This is a power manager of Traffic Light Controller. It powers the lights ON and OFF.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="3" Name="ePoweredState" Type="Enumeration" Values="default">
+        <DataType ID="3" Name="PowerState" Type="Enumeration" Values="default">
             <Description>The power state of the traffic lights.</Description>
             <FieldList>
                 <EnumEntry ID="4" Name="LightsOFF">
@@ -17,7 +17,7 @@
         </DataType>
     </DataTypeList>
     <AttributeList>
-        <Attribute ID="6" Name="LightsPowerState" DataType="ePoweredState" Notify="OnChange">
+        <Attribute ID="6" Name="LightsPowerState" DataType="PowerState" Notify="OnChange">
             <Description>The power state of the traffic lights.</Description>
         </Attribute>
     </AttributeList>

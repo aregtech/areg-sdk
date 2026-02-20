@@ -65,7 +65,7 @@ public:
      * \param   connectProvider     The instance of service connection provider to forward connection requests.
      * \param   registerProvider    The instance of service register provider to forward register requests
      **/
-    void processServiceEvent( ServiceManagerEventData::eServiceManagerCommands cmdService
+    void processServiceEvent( ServiceManagerEventData::ServiceManagerCommand cmdService
                             , const InStream & stream
                             , ConnectionProvider& connectProvider
                             , RegistrationProvider & registerProvider );

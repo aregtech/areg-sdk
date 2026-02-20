@@ -181,7 +181,7 @@ public:
     static inline const char* getString(Event::EventType eventType);
 
     /**
-     * \brief   Event::eEventPiority
+     * \brief   Event::EventPriority
      *          The priorities of the events.
      **/
     enum class EventPriority  : uint32_t

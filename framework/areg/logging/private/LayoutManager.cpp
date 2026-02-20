@@ -70,7 +70,7 @@ void LayoutManager::deleteLayouts()
 
 void LayoutManager::logMessage(const NELogging::sLogMessage & logMsg, OutStream & stream) const
 {
-    if (logMsg.logMessagePrio == NELogging::PrioIgnoreLayout)
+    if (logMsg.logMessagePrio == NELogging::LogPriority::PrioIgnoreLayout)
     {
         stream.write(logMsg.logMessage);
     }

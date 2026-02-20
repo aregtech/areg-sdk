@@ -120,7 +120,7 @@ namespace NELogOptions
     /**
      * \brief   The default logging priority
      **/
-    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NELogging::PrioNotset) };
+    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate

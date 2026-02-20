@@ -46,7 +46,7 @@ namespace NERemoteService
      * \brief   NERemoteService::ConnectionType
      *          Remote services connection types.
      **/
-    enum ConnectionType : uint32_t
+    enum class ConnectionType   : uint32_t
     {
           Undefined     = 0 //!< Undefined connection
         , Tcpip         = 1 //!< Service connection via TCP/IP
@@ -59,7 +59,7 @@ namespace NERemoteService
      * \brief   NERemoteService::RemoteServiceKind
      *          Remote services
      **/
-    enum RemoteServiceKind : uint32_t
+    enum class RemoteServiceKind : uint32_t
     {
           Unknown = 0 //!< Undefined service.
         , Router  = 1 //!< Message routing service.
@@ -69,7 +69,7 @@ namespace NERemoteService
     /**
      * \brief   Indicates the connect or disconnect of the remote instance.
      **/
-    enum RemoteConnectionState : uint32_t
+    enum class RemoteConnectionState : uint32_t
     {
           Disconnected  = 0 //!< Remote instance is disconnected.
         , Connected     = 1 //!< Remote instance is connected.

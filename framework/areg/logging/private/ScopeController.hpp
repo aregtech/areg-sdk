@@ -414,7 +414,7 @@ inline bool ScopeController::isScopeRegistered( const char * scopeName ) const
 
 inline void ScopeController::setScopePriority( unsigned int scopeId, const String & newPrio )
 {
-    setScopePriority( scopeId, NELogging::stringToLogPrio( newPrio ) );
+    setScopePriority( scopeId, static_cast<uint32_t>(NELogging::stringToLogPrio( newPrio )) );
 }
 
 inline void ScopeController::setScopePriority( const String & scopeName, unsigned int newPrio )
@@ -424,7 +424,7 @@ inline void ScopeController::setScopePriority( const String & scopeName, unsigne
 
 inline void ScopeController::setScopePriority( const String & scopeName, const String & newPrio )
 {
-    setScopePriority( NELogging::makeScopeId( scopeName ), NELogging::stringToLogPrio( newPrio ) );
+    setScopePriority( NELogging::makeScopeId( scopeName ), static_cast<uint32_t>(NELogging::stringToLogPrio( newPrio )) );
 }
 
 inline void ScopeController::addScopePriority( unsigned int scopeId, const String & addPrio )
@@ -459,7 +459,7 @@ inline void ScopeController::removeScopePriority( const String & scopeName, cons
 
 inline int ScopeController::setScopeGroupPriority( const String & scopeGroupName, const String & newPrio )
 {
-    return setScopeGroupPriority( scopeGroupName, NELogging::stringToLogPrio( newPrio ) );
+    return setScopeGroupPriority( scopeGroupName, static_cast<uint32_t>(NELogging::stringToLogPrio( newPrio )) );
 }
 
 inline int ScopeController::addScopeGroupPriority( const String & scopeGroupName, const String & addPrio )

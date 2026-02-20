@@ -150,7 +150,7 @@ private:
     };
 
     /**
-     * \brief   SyncLockAndWaitPosix::eEventFired
+     * \brief   SyncLockAndWaitPosix::SignalState
      *          Describes the fired state of each event.
      **/
     enum class SignalState

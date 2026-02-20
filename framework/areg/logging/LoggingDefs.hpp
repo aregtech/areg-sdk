@@ -92,7 +92,7 @@ namespace NELogging
      * \brief   NELogging::LogTarget
      *          The logging types in Areg framework
      **/
-    enum LogTarget : uint32_t
+    enum class LogTarget    : uint32_t
     {
           Undefined  = 0 //!< Logging is undefined
         , Remote     = 1 //!< Logging is to remote log collector
@@ -105,7 +105,7 @@ namespace NELogging
      * \brief   NELogging::LogPriority
      *          Log priority definition set when logging message
      **/
-    enum LogPriority : uint16_t
+    enum class LogPriority : uint16_t
     {
           PrioInvalid       = 0x0000  //!< Invalid priority,          bit set:  0000 0000 0000
         , PrioNotset        = 0x0001  //!< No priority is set,        bit set:  0000 0000 0001
@@ -695,7 +695,7 @@ inline const char* NELogging::getString(NELogging::LogPriority prio)
         return "NELogging::PrioValid";
     default:
         ASSERT(false);
-        return "ERR: Unexpected NELogging::eLogPrior value";
+        return "ERR: Unexpected NELogging::LogPriority value";
     }
 }
 

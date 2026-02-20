@@ -48,7 +48,7 @@ class Publisher : public    Component
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The commands of PubSub
-    enum class eCommands : int
+    enum class OptionFlag : int
     {
           CMD_Undefined     //!< Undefined command, no command is entered
         , CMD_Error         //!< Error happened
@@ -148,7 +148,7 @@ private:
     void quit();
 
     //! Outputs message on console
-    inline void printMessage(const String & message, eCommands cmd);
+    inline void printMessage(const String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
     inline Publisher & self();

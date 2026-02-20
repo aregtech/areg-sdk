@@ -22,9 +22,9 @@ namespace NEUtilities
 {
     /**
      * \brief   Bit settings of option flag.
-     *          NEOptions::eOptionFlags
+     *          NEOptions::OptionFlag
      **/
-    enum class eOptionFlags : uint32_t
+    enum class OptionFlag : uint32_t
     {
         /**
          * \brief   No command.
@@ -77,14 +77,14 @@ namespace NEUtilities
     };
 
     //!< Returns the string value of the option flag.
-    inline const char * getString(NEUtilities::eOptionFlags flag);
+    inline const char * getString(NEUtilities::OptionFlag flag);
 
     //! The structure of options command
     struct sOptions
     {
         std::string_view    cmdShort;   //!< The short name of the option command
         std::string_view    cmdLong;    //!< The long name of the option command
-        eOptionFlags        cmdValue;   //!< The appropriate value
+        OptionFlag        cmdValue;   //!< The appropriate value
         uint32_t            minValue;   //!< The minimum value of the command, ignore if zero
         uint32_t            maxValue;   //!< The maximum value of the command, ignore if zero
     };
@@ -92,16 +92,16 @@ namespace NEUtilities
     //! List of supported commands and options.
     constexpr sOptions  OptionList[]
     {
-          {"-w=", "--width=",   eOptionFlags::CmdWidth,         32,     32'768} //! Width in pixels
-        , {"-h=", "--height",   eOptionFlags::CmdHeight,        32,     32'768} //! Height in pixels
-        , {"-l=", "--lines=",   eOptionFlags::CmdLinesPerBlock,  1,          0} //! Lines per block, maximum is equal to height
-        , {"-t=", "--time=" ,   eOptionFlags::CmdPixelTime,      1,    100'000} //! Pixel time in nanoseconds
-        , {"-c=", "--channels=",eOptionFlags::CmdChannels,       1,         64} //! Number of channels
-        , {"-i" , "--info",     eOptionFlags::CmdInformation,    0,          0} //! Display information
-        , {"-h" , "--help",     eOptionFlags::CmdHelp,           0,          0} //! Display help
-        , {"-s" , "--start",    eOptionFlags::CmdStart,          0,          0} //! Start large data service
-        , {"-p" , "--stop",     eOptionFlags::CmdStop,           0,          0} //! Stop large data service
-        , {"-q" , "--quit",     eOptionFlags::CmdQuit,           0,          0} //! Quit application
+          {"-w=", "--width=",   OptionFlag::CmdWidth,         32,     32'768} //! Width in pixels
+        , {"-h=", "--height",   OptionFlag::CmdHeight,        32,     32'768} //! Height in pixels
+        , {"-l=", "--lines=",   OptionFlag::CmdLinesPerBlock,  1,          0} //! Lines per block, maximum is equal to height
+        , {"-t=", "--time=" ,   OptionFlag::CmdPixelTime,      1,    100'000} //! Pixel time in nanoseconds
+        , {"-c=", "--channels=",OptionFlag::CmdChannels,       1,         64} //! Number of channels
+        , {"-i" , "--info",     OptionFlag::CmdInformation,    0,          0} //! Display information
+        , {"-h" , "--help",     OptionFlag::CmdHelp,           0,          0} //! Display help
+        , {"-s" , "--start",    OptionFlag::CmdStart,          0,          0} //! Start large data service
+        , {"-p" , "--stop",     OptionFlag::CmdStop,           0,          0} //! Stop large data service
+        , {"-q" , "--quit",     OptionFlag::CmdQuit,           0,          0} //! Quit application
     };
 
     //!< Default bits per pixel.
@@ -127,7 +127,7 @@ namespace NEUtilities
 //////////////////////////////////////////////////////////////////////////
     public:
         //! Option flags, set bitwise
-        uint32_t    mFlags      { static_cast<uint32_t>(eOptionFlags::CmdNothing) };
+        uint32_t    mFlags      { static_cast<uint32_t>(OptionFlag::CmdNothing) };
         //! Image width in pixels
         uint32_t    mWidth      { 0 };
         //! Image height in pixels
@@ -269,32 +269,32 @@ namespace NEUtilities
 //////////////////////////////////////////////////////////////////////////
 inline bool NEUtilities::sOptionData::hasPrintInfo() const
 {
-    return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdInformation)) != 0);
+    return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdInformation)) != 0);
 }
 
 inline bool NEUtilities::sOptionData::hasPrintHelp() const
 {
-    return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdHelp)) != 0);
+    return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdHelp)) != 0);
 }
 
 inline bool NEUtilities::sOptionData::hasStart() const
 {
-    return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdStart)) != 0);
+    return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStart)) != 0);
 }
 
 inline bool NEUtilities::sOptionData::hasStop() const
 {
-    return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdStop)) != 0);
+    return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0);
 }
 
 inline bool NEUtilities::sOptionData::hasQuit() const
 {
-    return ((mFlags & static_cast<uint32_t>(eOptionFlags::CmdQuit)) != 0);
+    return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0);
 }
 
 inline bool NEUtilities::sOptionData::hasError() const
 {
-    return ((mFlags & static_cast<uint32_t>(eOptionFlags::Error)) != 0);
+    return ((mFlags & static_cast<uint32_t>(OptionFlag::Error)) != 0);
 }
 
 inline uint32_t NEUtilities::sOptionData::blocksCount() const
@@ -368,88 +368,88 @@ inline String NEUtilities::sOptionData::getState() const
 
 inline void NEUtilities::sOptionData::update(const sOptionData& newOption)
 {
-    mFlags = static_cast<uint32_t>(eOptionFlags::CmdNothing);
+    mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdWidth)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdWidth)) != 0)
     {
         mWidth = newOption.mWidth;
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdWidth);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdWidth);
     }
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdHeight)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdHeight)) != 0)
     {
         mHeight = newOption.mHeight;
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdHeight);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdHeight);
     }
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdLinesPerBlock)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdLinesPerBlock)) != 0)
     {
         mLines = newOption.mLines;
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdLinesPerBlock);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdLinesPerBlock);
     }
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdPixelTime)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdPixelTime)) != 0)
     {
         mPixelTime = newOption.mPixelTime;
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdPixelTime);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdPixelTime);
     }
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdChannels)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdChannels)) != 0)
     {
         mChannels = newOption.mChannels;
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdChannels);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdChannels);
     }
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdStart)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdStart)) != 0)
     {
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStop);
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdStart);
+        mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStop);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdStart);
     }
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdStop)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0)
     {
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStart);
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdStop);
+        mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStart);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdStop);
     }
 
-    if ((newOption.mFlags & static_cast<uint32_t>(eOptionFlags::CmdQuit)) != 0)
+    if ((newOption.mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0)
     {
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStart);
-        mFlags &= ~static_cast<uint32_t>(eOptionFlags::CmdStop);
-        mFlags |= static_cast<uint32_t>(eOptionFlags::CmdQuit);
+        mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStart);
+        mFlags &= ~static_cast<uint32_t>(OptionFlag::CmdStop);
+        mFlags |= static_cast<uint32_t>(OptionFlag::CmdQuit);
     }
 }
 
-inline const char * NEUtilities::getString(NEUtilities::eOptionFlags flag)
+inline const char * NEUtilities::getString(NEUtilities::OptionFlag flag)
 {
     switch (flag)
     {
-    case NEUtilities::eOptionFlags::CmdNothing:
-        return "NEUtilities::eOptionFlags::CmdNothing";
-    case NEUtilities::eOptionFlags::CmdWidth:
-        return "NEUtilities::eOptionFlags::CmdWidth";
-    case NEUtilities::eOptionFlags::CmdHeight:
-        return "NEUtilities::eOptionFlags::CmdHeight";
-    case NEUtilities::eOptionFlags::CmdLinesPerBlock:
-        return "NEUtilities::eOptionFlags::CmdLinesPerBlock";
-    case NEUtilities::eOptionFlags::CmdPixelTime:
-        return "NEUtilities::eOptionFlags::CmdPixelTime";
-    case NEUtilities::eOptionFlags::CmdChannels:
-        return "NEUtilities::eOptionFlags::CmdChannels";
-    case NEUtilities::eOptionFlags::CmdInformation:
-        return "NEUtilities::eOptionFlags::CmdInformation";
-    case NEUtilities::eOptionFlags::CmdHelp:
-        return "NEUtilities::eOptionFlags::CmdHelp";
-    case NEUtilities::eOptionFlags::CmdStart:
-        return "NEUtilities::eOptionFlags::CmdStart";
-    case NEUtilities::eOptionFlags::CmdStop:
-        return "NEUtilities::eOptionFlags::CmdStop";
-    case NEUtilities::eOptionFlags::CmdQuit:
-        return "NEUtilities::eOptionFlags::CmdQuit";
-    case NEUtilities::eOptionFlags::Error:
-        return "NEUtilities::eOptionFlags::Error";
+    case NEUtilities::OptionFlag::CmdNothing:
+        return "NEUtilities::OptionFlag::CmdNothing";
+    case NEUtilities::OptionFlag::CmdWidth:
+        return "NEUtilities::OptionFlag::CmdWidth";
+    case NEUtilities::OptionFlag::CmdHeight:
+        return "NEUtilities::OptionFlag::CmdHeight";
+    case NEUtilities::OptionFlag::CmdLinesPerBlock:
+        return "NEUtilities::OptionFlag::CmdLinesPerBlock";
+    case NEUtilities::OptionFlag::CmdPixelTime:
+        return "NEUtilities::OptionFlag::CmdPixelTime";
+    case NEUtilities::OptionFlag::CmdChannels:
+        return "NEUtilities::OptionFlag::CmdChannels";
+    case NEUtilities::OptionFlag::CmdInformation:
+        return "NEUtilities::OptionFlag::CmdInformation";
+    case NEUtilities::OptionFlag::CmdHelp:
+        return "NEUtilities::OptionFlag::CmdHelp";
+    case NEUtilities::OptionFlag::CmdStart:
+        return "NEUtilities::OptionFlag::CmdStart";
+    case NEUtilities::OptionFlag::CmdStop:
+        return "NEUtilities::OptionFlag::CmdStop";
+    case NEUtilities::OptionFlag::CmdQuit:
+        return "NEUtilities::OptionFlag::CmdQuit";
+    case NEUtilities::OptionFlag::Error:
+        return "NEUtilities::OptionFlag::Error";
     
     default:
-        return "ERR: Invalid NEUtilities::eOptionFlags value!";
+        return "ERR: Invalid NEUtilities::OptionFlag value!";
     }
 }
