@@ -348,8 +348,8 @@ class Container { };
 namespace areg
 {
     // Implementation
-}   // IPC, utilies, etc.
-
+    // IPC, utilies, etc. implementations
+}
 ```
 
 Exceptions are `areg` framework OS/Platform specific implementations, they should be wrapped in `areg::os` namespace.
@@ -373,7 +373,7 @@ Here is the list of namespace names and modules:
 | `areglog`         | All files of areg logger library located in `framework/areglogger`sub-directory                   |
 
 Since `logcollector`, `logobserver` and `mtrouter` are stand-alone applications and they are not supposed to be integrated in other applications,
-having namespace name for them is optional and can be escaped, or the same name of module should be used like `logcollector`, `logobserver` and `mtrouter`.
+using a namespace for them is optional and can be omitted; if you choose to use one, it should match the module name, such as `logcollector`, `logobserver`, or `mtrouter`.
 
 ---
 
